@@ -12,13 +12,13 @@ Proctor consists of data-model, client specification, client loader, matrix buil
 - java code generation for A/B tests groups
 
 # Installation
-See [Quick Start](http://indeed.github.io/proctor/docs/quick-start) guide
+See [Quick Start](http://indeedeng.github.io/proctor/docs/quick-start) guide
 
 # Example
 See [proctor demo](http://www.github.com/indeedeng/proctor-demo)
 
 # Documentation
-http://indeed.github.io/proctor
+http://indeedeng.github.io/proctor
 
 ## Building documentation locally
 
