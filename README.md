@@ -15,7 +15,7 @@ Proctor consists of data-model, client specification, client loader, matrix buil
 See [Quick Start](http://indeed.github.io/proctor/docs/quick-start) guide
 
 # Example
-* [proctor demo](http://www.github.com/indeedeng/proctor-demo)
+See [proctor demo](http://www.github.com/indeedeng/proctor-demo)
 
 # Documentation
 http://indeed.github.io/proctor
@@ -29,6 +29,10 @@ $ bundle install
 $ rake clean serve
   => open http://localhost:4000/ in browser
 ```
+
+# Discussion
+
+Join the [indeedeng-proctor-users](https://groups.google.com/d/forum/indeedeng-proctor-users) mailing list to ask questions and discuss use of Proctor.
 
 # Deploying
 
