@@ -7,6 +7,12 @@
         <version>1.0.0-SNAPSHOT</version>
     </parent>
 
+    <scm>
+        <url>https://github.com/indeedeng/proctor</url>
+        <connection>scm:git:https://github.com/indeedeng/proctor.git</connection>
+        <developerConnection>scm:git:git@github.com:indeedeng/proctor.git</developerConnection>
+    </scm>
+
     <packaging>pom</packaging>
 
     <artifactId>proctor-tomcat-deps-provided</artifactId>
