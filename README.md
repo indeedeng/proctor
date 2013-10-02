@@ -45,3 +45,5 @@ Join the [indeedeng-proctor-users](https://groups.google.com/d/forum/indeedeng-p
 - [assaf/vanity](https://github.com/assaf/vanity)
 
 # License
+
+[Apache License Version 2.0](https://github.com/indeedeng/proctor/blob/master/LICENSE)
