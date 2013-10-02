@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+
+<project name="proctor-consumer" default="compile" basedir=".">
+    <property environment="env"/>
+    <!-- cross-platform hack to get the host name -->
+    <property name="env.HOSTNAME" value="${env.COMPUTERNAME}" />
+
+    <!-- ====================================================================== -->
+    <!-- Load properties files                                                  -->
+    <!-- ====================================================================== -->
+    <!-- first load local settings in build.properties (ant properties are immutable so we load this first) -->
+    <property file="build.properties"/>
+    <!-- then load defaults from build.properties.default -->
+    <property file="build.properties.default"/>
+
+    <!-- temporary jarfile that is non-consumer specific during transition to proctor/webapp -->
+    <property name="build.jarfile.name" value="proctor-consumer.jar" />
+
+    <property name="build.notwebapp" value="true"/>
+    <property name="svn.project.dir" value="proctor/consumer"/>
+
+    <property name="indeed.project.dir" value="${env.INDEED_PROJECT_DIR}"/>
+    <property name="common.build.dir" value="${indeed.project.dir}/javadev/build"/>
+
+    <import file="${common.build.dir}/common-build.xml"/>
+</project>

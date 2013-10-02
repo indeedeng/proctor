@@ -1,0 +1,40 @@
+{
+  "version" : 1,
+  "testType" : "USER",
+  "salt" : "exampletst",
+  "buckets" : [ {
+    "name" : "control",
+    "value" : 0,
+    "description" : null
+  }, {
+    "name" : "test",
+    "value" : 1,
+    "description" : null
+  }],
+  "allocations" : [ {
+    "rule" : "${lang == ENGLISH}",
+    "ranges" : [ {
+      "length" : 0.25,
+      "bucketValue" : 0
+    }, {
+      "length" : 0.75,
+      "bucketValue" : 1
+    } ]
+  }, {
+    "rule" : null,
+    "ranges" : [ {
+      "length" : 0.1,
+      "bucketValue" : 0
+    }, {
+      "length" : 0.90,
+      "bucketValue" : 1
+    } ]
+  } ],
+  "constants" : {
+    "ENGLISH" : "en"
+  },
+  "description" : "An example test",
+  "specialConstants" : {
+  },
+  "subrule" : "loggedIn"
+}

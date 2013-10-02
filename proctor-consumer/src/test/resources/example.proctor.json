@@ -1,0 +1,139 @@
+{
+    "audit" : {
+        "version" : 1524,
+        "updated" : 1313525000000,
+        "updatedBy" : "ketan"
+    },
+
+    "tests" : {
+        "pimple" : {
+            "constants" : {
+                "ae_or_it_Countries" : ["AE", "IT"],
+                "fr_or_mx_Countries" : ["FR", "MX"]
+            },
+            "version" : 98,
+            "salt" : "of the earth",
+            "testType" : "PAGE",
+            "rule" : "${loggedIn}",
+            "description" : "a pimple on your face makes a gross pop (but only if you're logged in)",
+            "buckets" : [
+                            {
+                                "name" : "inactive",
+                                "value" : -1
+                            },
+                            {
+                                "name" : "control",
+                                "value" : 0
+                            },
+                            {
+                                "name" : "test",
+                                "value" : 1
+                            }
+                ],
+            "allocations" : [
+                {
+                    "rule" : "${proctor:contains(ae_or_it_Countries, country)}",
+                    "ratios" : [ 0.8, 0.1, 0.1 ]
+                },
+                {
+                    "rule" : "${proctor:contains(fr_or_mx_Countries, country)}",
+                    "ratios" : [ 0.2, 0.4, 0.4 ]
+                },
+                {
+                    "ratios" : [ 1.0, 0, 0 ]
+                }
+            ]
+        },
+
+        "kluj" : {
+            "version" : 11,
+            "salt" : "bilterm",
+            "testType" : "USER",
+            "description" : "kluj is a city in Romania; I have no idea how to pronounce it",
+            "buckets" : [
+                            {
+                                "name" : "control",
+                                "value" : 0
+                            },
+                            {
+                                "name" : "test",
+                                "value" : 1
+                            },
+                            {
+                                "name" : "kloo",
+                                "value" : 2
+                            },
+                            {
+                                "name" : "loooj",
+                                "value" : 3
+                            }
+            ],
+            "allocations" : [
+                {
+                    "ratios" : [ 0.25, 0.25, 0.25, 0.25 ]
+                }
+            ]
+        },
+
+        "oop_poop" : {
+            "version" : 17,
+            "salt" : "do not want",
+            "testType" : "USER",
+            "description" : "oops there's poop",
+            "buckets" : [
+                            {
+                                "name" : "control",
+                                "value" : 0
+                            },
+                            {
+                                "name" : "test",
+                                "value" : 1
+                            },
+                            {
+                                "name" : "oop",
+                                "value" : 2
+                            },
+                            {
+                                "name" : "poop",
+                                "value" : 3
+                            }
+                        ],
+            "allocations" : [
+                            {
+                                "ratios" : [ 0.25, 0.25, 0.25, 0.25 ]
+                            }
+                    ]
+        },
+
+        "salsa" : {
+            "version" : 33,
+            "salt" : "pepa",
+            "testType" : "PAGE",
+            "description" : "alpha beta gamma delta epsilon... okay, I can't remember what comes next.  phi?",
+            "rule" : "${proctor:contains(abcCountries, country)}",
+            "buckets" : [
+                            {
+                                "name" : "inactive",
+                                "value" : -1
+                            },
+                            {
+                                "name" : "control",
+                                "value" : 0
+                            },
+                            {
+                                "name" : "alpha",
+                                "value" : 3
+                            },
+                            {
+                                "name" : "beta",
+                                "value" : 6
+                            }
+            ],
+            "allocations" : [
+                            {
+                                "ratios" : [ 0.7, 0.1, 0.1, 0.1 ]
+                            }
+                    ]
+        }
+    }
+}

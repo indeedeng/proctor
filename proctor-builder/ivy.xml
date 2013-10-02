@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ivy-module version="1.0"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:noNamespaceSchemaLocation="http://incubator.apache.org/ivy/schemas/ivy.xsd">
+
+    <info organisation="indeed" module="proctor-builder" status="integration"/>
+
+    <configurations defaultconfmapping="master->default(master)">
+        <conf name="master"/>
+        <conf name="test" extends="master"/>
+        <conf name="compile" extends="master"/>
+	    <conf name="default" extends="master"/>
+    </configurations>
+
+    <publications>
+        <artifact name="proctor-builder" type="jar" conf="master"/>
+        <artifact name="proctor-builder-src" conf="master" type="source" ext="zip"/>
+        <artifact name="proctor-builder-tests" type="tar.bz2" conf="master"/>
+    </publications>
+
+    <dependencies>
+        <dependency org="apache" name="commons-cli" rev="${commons-cli.version}"/>
+        <dependency org="apache" name="log4j" rev="${log4j.version}" conf="compile->default;test->default"/>
+        <dependency org="google" name="guava" rev="${google-guava.version}"/>
+
+        <!-- test dependencies -->
+        <dependency org="junit" name="junit" rev="${junit.version}" conf="test->default"/>
+        <dependency org="easymock" name="easymock" rev="${easymock.version}" conf="test->default"/>
+    </dependencies>
+</ivy-module>
