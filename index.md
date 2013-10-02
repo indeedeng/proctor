@@ -25,3 +25,5 @@ See the [Quick Start]({{ site.baseurl }}/docs/quick-start) guide to start runnin
 - https://github.com/indeedeng/proctor-demo
 
 # License
+
+[Apache License Version 2.0](https://github.com/indeedeng/proctor/blob/master/LICENSE)
