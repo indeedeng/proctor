@@ -1,26 +1,12 @@
 # Proctor
 Proctor is a A/B testing framework written in Java that enables [data-driven product design](http://engineering.indeed.com/blog/2013/05/indeedeng-data-driven-product-design-slides-video/) at Indeed. 
 
-Proctor consists of data-model, client specification, client loader, matrix builder, java code generator.
-
-# Features:
-- consistent tests across multiple applications
-- group assignment adjustments without code deploys
-- rule-based group assignment: e.g. US users experience 50% A, 50% B and non-US users are 25% A, 25% B, 25% C, 25% D
-- human-readable test format
-- forcing of test groups for internal testing
-- java code generation for A/B tests groups
-
-# Installation
-See [Quick Start](http://indeed.github.io/proctor/docs/quick-start) guide
-
-# Example
-
-=== documentation ===
 # Documentation
 http://indeed.github.io/proctor
 
 ## Building documentation locally
+
+requires ruby 1.9.3+
 
 ```bash
 $ git checkout gh-pages
@@ -30,14 +16,17 @@ $ rake clean serve
   => open http://localhost:4000/ in browser
 ```
 
-# Deploying
+# Modifying documentation
+- All documentation pages' permalink must end with a "/"
+    - Without a trailing slash, the content will be served with content-type "application/octect-stream" and will be downloaded instead of displayed in your web browser
+    - http://pixelcog.com/blog/2013/jekyll-from-scratch-core-architecture/#pitfalls_with_pretty_urls
+- When building a link, use `{{ site.baseurl }}` as the href prefix
+    - GOOD: `{{ site.baseurl }}/docs/new/page/`
+    - BAD: `/docs/new/page/` - This will work locally but will not work when deployed to `http://indeedeng.github.io/proctor`
+- GFM ([github-flavored-markdown](https://help.github.com/articles/github-flavored-markdown)) is NOT available in the markdown for the documentation.
 
-# Contributing
-
-# See Also (other A/B test frameworks)
-- [seatgeek/sixpack](https://github.com/seatgeek/sixpack)
-- [bitlove/rollout](https://github.com/bitlove/rollout)
-- [maccman/abba](https://github.com/maccman/abba)
-- [assaf/vanity](https://github.com/assaf/vanity)
-
-# License
+# References
+- http://jekyllrb.com/
+- https://help.github.com/articles/using-jekyll-with-pages
+- https://help.github.com/articles/pages-don-t-build-unable-to-run-jekyll
+- https://github.com/vmg/redcarpet

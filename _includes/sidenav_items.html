@@ -1,0 +1,20 @@
+<aside>
+  <h4>Getting Started</h4>
+  {% include docs_ul.html items='quick-start installation terminology maven-modules' %}
+  <h4>Application Usage</h4>
+  {% include docs_ul.html items='specification codegen loader using-groups evaluating-tests best-practices' %}
+  <h4>Test Matrix</h4>
+    {% include docs_ul.html items='matrix-schema test-definition test-rules builder' %}  
+  <h4>Deployment</h4>
+  {% include docs_ul.html items='deploying-groups' %}
+  <h4>Miscellaneous</h4>
+  {% include docs_ul.html items='contributing license' %}
+  
+  <h4>All Pages</h4>
+  <ul>
+  {% for p in site.pages %}
+    <li><a href="{{ site.baseurl }}{{ p.url }}">{{ p.title }}</a></li>
+  {% endfor %}
+  </ul>
+  
+</aside>

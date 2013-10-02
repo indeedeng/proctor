@@ -1,3 +1,0 @@
-# Proctor Consumer
-# License
-# Contributing
