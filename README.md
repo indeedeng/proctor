@@ -15,8 +15,8 @@ Proctor consists of data-model, client specification, client loader, matrix buil
 See [Quick Start](http://indeed.github.io/proctor/docs/quick-start) guide
 
 # Example
+* [proctor demo](http://www.github.com/indeedeng/proctor-demo)
 
-=== documentation ===
 # Documentation
 http://indeed.github.io/proctor
 
