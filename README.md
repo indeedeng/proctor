@@ -1,6 +1,8 @@
 # Proctor
 Proctor is a A/B testing framework written in Java that enables [data-driven product design](http://engineering.indeed.com/blog/2013/05/indeedeng-data-driven-product-design-slides-video/) at Indeed. 
 
+Source: https://github.com/indeedeng/proctor
+
 # Documentation
 http://indeed.github.io/proctor
 
