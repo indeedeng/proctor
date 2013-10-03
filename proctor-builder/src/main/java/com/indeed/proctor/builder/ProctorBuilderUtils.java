@@ -10,10 +10,7 @@ import com.indeed.proctor.common.model.TestMatrixVersion;
 import com.indeed.proctor.store.ProcterReader;
 import com.indeed.proctor.store.StoreException;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.Map;
 
 /**
@@ -21,7 +18,7 @@ import java.util.Map;
  */
 class ProctorBuilderUtils {
 
-    static void generateArtifact(final ProcterReader proctorPersister, final String outputDirectory, final String filename,
+    static void generateArtifact(final ProcterReader proctorPersister, final Writer outputSink,
                                            final String authorOverride, final long versionOverride
     ) throws IOException, IncompatibleTestMatrixException, StoreException {
         final TestMatrixVersion currentTestMatrix = proctorPersister.getCurrentTestMatrix();
@@ -45,17 +42,6 @@ class ProctorBuilderUtils {
             ProctorUtils.verifyInternallyConsistentDefinition(td.getKey(), matrixSource, td.getValue());
         }
 
-        if("-".equals(outputDirectory)) {
-            ProctorUtils.serializeArtifact(new PrintWriter(System.out), artifact);
-        } else {
-            final FileWriter writer = new FileWriter(outputDirectory + File.separator + filename);
-            ProctorUtils.serializeArtifact(writer, artifact);
-            writer.close();
-        }
-    }
-
-    static void generateArtifact(ProcterReader proctorPersister, ProctorBuilderArgs arguments) throws IOException, IncompatibleTestMatrixException, StoreException {
-        generateArtifact(proctorPersister, arguments.getOutputdir(), arguments.getFilename(),
-                         arguments.getAuthor(), arguments.getVersion());
+        ProctorUtils.serializeArtifact(outputSink, artifact);
     }
 }
