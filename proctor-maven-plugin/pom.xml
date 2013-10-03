@@ -7,14 +7,14 @@
         <version>1.0.1-SNAPSHOT</version>
     </parent>
 
-    <scm>
-        <url>https://github.com/indeedeng/proctor</url>
-        <connection>scm:git:https://github.com/indeedeng/proctor.git</connection>
-        <developerConnection>scm:git:git@github.com:indeedeng/proctor.git</developerConnection>
-    </scm>
-
     <artifactId>proctor-maven-plugin</artifactId>
     <packaging>maven-plugin</packaging>
+
+    <scm> <!-- prevent Maven from trying to override with subproject suffix -->
+        <url>${project.parent.scm.url}</url>
+        <connection>${project.parent.scm.connection}</connection>
+        <developerConnection>${project.parent.scm.developerConnection}</developerConnection>
+    </scm>
 
     <dependencies>
         <dependency>
