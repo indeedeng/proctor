@@ -48,5 +48,9 @@
         </dependency>
     </dependencies>
 
+    <properties>
+        <proctor.version>${project.version}</proctor.version>
+    </properties>
+
 </project>
 
