@@ -7,7 +7,7 @@ import com.indeed.proctor.common.ProctorUtils;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.TestMatrixArtifact;
 import com.indeed.proctor.common.model.TestMatrixVersion;
-import com.indeed.proctor.store.ProcterReader;
+import com.indeed.proctor.store.ProctorReader;
 import com.indeed.proctor.store.StoreException;
 
 import java.io.*;
@@ -18,7 +18,7 @@ import java.util.Map;
  */
 class ProctorBuilderUtils {
 
-    static void generateArtifact(final ProcterReader proctorPersister, final Writer outputSink,
+    static void generateArtifact(final ProctorReader proctorPersister, final Writer outputSink,
                                            final String authorOverride, final long versionOverride
     ) throws IOException, IncompatibleTestMatrixException, StoreException {
         final TestMatrixVersion currentTestMatrix = proctorPersister.getCurrentTestMatrix();

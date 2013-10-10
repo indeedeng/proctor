@@ -8,14 +8,14 @@ import java.util.List;
 /**
  * @author parker
  */
-public interface ProcterReader {
+public interface ProctorReader {
     TestMatrixVersion getCurrentTestMatrix() throws StoreException;
 
     TestDefinition getCurrentTestDefinition(String test) throws StoreException;
 
     void verifySetup() throws StoreException;
 
-    /***** Versioned ProcterReader *****/
+    /***** Versioned ProctorReader *****/
 
     long getLatestVersion() throws StoreException;
 

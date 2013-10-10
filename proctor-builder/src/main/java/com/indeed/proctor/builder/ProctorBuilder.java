@@ -1,7 +1,7 @@
 package com.indeed.proctor.builder;
 
 import com.indeed.proctor.common.IncompatibleTestMatrixException;
-import com.indeed.proctor.store.ProcterReader;
+import com.indeed.proctor.store.ProctorReader;
 import com.indeed.proctor.store.StoreException;
 import org.apache.log4j.Logger;
 
@@ -12,18 +12,18 @@ public class ProctorBuilder {
 
     private static final Logger LOGGER = Logger.getLogger(ProctorBuilder.class);
 
-    private final ProcterReader proctorReader;
+    private final ProctorReader proctorReader;
     private final Writer outputSink;
     private final String author;
     private long version;
 
-    public ProctorBuilder(final ProcterReader proctorReader, Writer outputSink) {
+    public ProctorBuilder(final ProctorReader proctorReader, Writer outputSink) {
         this(proctorReader, outputSink, null);
     }
-    public ProctorBuilder(final ProcterReader proctorReader, Writer outputSink, String author) {
+    public ProctorBuilder(final ProctorReader proctorReader, Writer outputSink, String author) {
         this(proctorReader, outputSink, author, -1);
     }
-    public ProctorBuilder(final ProcterReader proctorReader, Writer outputSink, String author, long version) {
+    public ProctorBuilder(final ProctorReader proctorReader, Writer outputSink, String author, long version) {
         this.proctorReader = proctorReader;
         this.outputSink = outputSink;
         this.author = author;
