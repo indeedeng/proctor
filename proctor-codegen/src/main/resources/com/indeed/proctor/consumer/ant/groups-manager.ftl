@@ -37,7 +37,6 @@ public class ${mainClassName} extends AbstractGroupsManager {
      * This should be used for non-webapp applications that are working
      * with test groups as those applications will not have a request and response,
      * such as boxcar services.
-     * @deprecated Use the one that takes a Map<TestType, String> instead
      */
     public ProctorResult determineBuckets(final TestType testType, final String identifier<#if contextArguments?has_content>,<#else>) {</#if>
 <#list contextArguments?keys as contextArgumentName>
@@ -95,9 +94,6 @@ public class ${mainClassName} extends AbstractGroupsManager {
         return super.determineBucketsInternal(identifiers, context, forcedGroups);
     }
 
-    /*
-     * @deprecated Use the one that takes a Map<TestType, String> instead
-     */
     public ProctorResult determineBuckets(final HttpServletRequest request, final HttpServletResponse response,
                                             final TestType testType, final String identifier, final boolean allowForcedGroups<#if contextArguments?has_content>,<#else>) {</#if>
 <#list contextArguments?keys as contextArgumentName>
