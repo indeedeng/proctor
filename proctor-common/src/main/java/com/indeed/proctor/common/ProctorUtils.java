@@ -228,16 +228,22 @@ public abstract class ProctorUtils {
         return result;
     }
 
-    /**
-     * Does not mutate the TestMatrix.
-     *
-     * Verifies that the test matrix contains all the required tests and that
-     * each required test is valid.
-     * @param testMatrix
-     * @param matrixSource
-     * @param requiredTests
-     * @return
-     */
+
+    public static ProctorLoadResult verify(@Nonnull final TestMatrixArtifact testMatrix, final String matrixSource, @Nonnull final Map<String, TestSpecification> requiredTests) {
+        return verify(testMatrix, matrixSource, requiredTests, RuleEvaluator.FUNCTION_MAPPER); //use default function mapper
+    }
+
+
+        /**
+         * Does not mutate the TestMatrix.
+         *
+         * Verifies that the test matrix contains all the required tests and that
+         * each required test is valid.
+         * @param testMatrix
+         * @param matrixSource
+         * @param requiredTests
+         * @return
+         */
     public static ProctorLoadResult verify(@Nonnull final TestMatrixArtifact testMatrix, final String matrixSource, @Nonnull final Map<String, TestSpecification> requiredTests, @Nonnull final FunctionMapper functionMapper) {
         final ProctorLoadResult.Builder resultBuilder = ProctorLoadResult.newBuilder();
 
