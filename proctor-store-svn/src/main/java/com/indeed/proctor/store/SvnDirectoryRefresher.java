@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Timer task used to periodically refresh an directory
  * @author parker
  */
-class SvnDirectoryRefresher extends TimerTask {
+public class SvnDirectoryRefresher extends TimerTask {
     final Logger LOGGER = Logger.getLogger(SvnDirectoryRefresher.class);
     final AtomicBoolean shutdown;
     final File directory;
@@ -45,7 +45,7 @@ class SvnDirectoryRefresher extends TimerTask {
         }
     }
 
-    String getDirectoryPath() {
+    public String getDirectoryPath() {
         return directory.getPath();
     }
 }
