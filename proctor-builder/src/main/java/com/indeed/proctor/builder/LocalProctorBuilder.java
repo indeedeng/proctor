@@ -52,11 +52,10 @@ public class LocalProctorBuilder extends ProctorBuilder {
         final LocalProctorBuilderArgs arguments = new LocalProctorBuilderArgs();
         arguments.parse(args);
 
-        String filename = arguments.getFilename();
         try {
             new LocalProctorBuilder(
                     new File(arguments.getInputdir()),
-                    "-".equals(filename) ?
+                    "-".equals(arguments.getOutputdir()) ?
                         new PrintWriter(System.out) :
                         new FileWriter(new File(arguments.getOutputdir(), arguments.getFilename())),
                     arguments.getAuthor(),
