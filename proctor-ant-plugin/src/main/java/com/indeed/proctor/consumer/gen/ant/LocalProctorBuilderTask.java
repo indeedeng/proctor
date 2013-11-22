@@ -85,7 +85,10 @@ public class LocalProctorBuilderTask extends Task {
                     author,
                     version).execute();
         } catch (Exception e) {
-            throw new BuildException("Failed to create test matrix", e);
+            if(e instanceof BuildException) {
+                throw (BuildException) e;
+            }
+            throw new BuildException("Failed to create test matrix: " + e.getMessage(), e);
         }
 
     }
