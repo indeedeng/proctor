@@ -182,6 +182,14 @@ public class TestProctorUtils {
         assertEquals(null, ProctorUtils.removeElExpressionBraces(" "));
         assertEquals(null, ProctorUtils.removeElExpressionBraces(null));
         assertEquals(null, ProctorUtils.removeElExpressionBraces("\t"));
+        assertEquals(null, ProctorUtils.removeElExpressionBraces(" ${} "));
+        assertEquals(null, ProctorUtils.removeElExpressionBraces(" ${ } "));
+        assertEquals("a", ProctorUtils.removeElExpressionBraces("${a}"));
+        assertEquals("a", ProctorUtils.removeElExpressionBraces(" ${a} "));
+        assertEquals("a", ProctorUtils.removeElExpressionBraces(" ${ a } "));
+        assertEquals("a", ProctorUtils.removeElExpressionBraces(" ${ a}"));
+        assertEquals("a", ProctorUtils.removeElExpressionBraces("${a } "));
+        assertEquals("a", ProctorUtils.removeElExpressionBraces(" a "));
         assertEquals("lang == 'en'", ProctorUtils.removeElExpressionBraces("lang == 'en'"));
         assertEquals("lang == 'en'", ProctorUtils.removeElExpressionBraces("${lang == 'en'}"));
         // whitespace should be trimmed

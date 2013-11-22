@@ -510,11 +510,33 @@ public abstract class ProctorUtils {
         if(isEmptyWhitespace(rule)) {
             return null;
         }
-        String rawRule = rule.trim();
-        if(rawRule.startsWith("${") && rawRule.endsWith("}")) {
-            rawRule = rawRule.substring(2, rawRule.length() - 1).trim();
+        int startchar = 0; // inclusive
+        int endchar = rule.length() - 1; // inclusive
+
+        // garbage free trim()
+        while(startchar < rule.length() && CharMatcher.WHITESPACE.matches(rule.charAt(startchar))) {
+            ++startchar;
         }
-        return rawRule;
+        while(endchar > startchar && CharMatcher.WHITESPACE.matches(rule.charAt(endchar))) {
+            --endchar;
+        }
+
+        if(rule.regionMatches(startchar, "${", 0, 2) && rule.charAt(endchar) == '}') {
+            startchar += 2; // skip "${"
+            --endchar; // skip '}'
+        }
+        // garbage free trim()
+        while(startchar < rule.length() && CharMatcher.WHITESPACE.matches(rule.charAt(startchar))) {
+            ++startchar;
+        }
+        while(endchar > startchar && CharMatcher.WHITESPACE.matches(rule.charAt(endchar))) {
+            --endchar;
+        }
+        if(endchar < startchar ) {
+            // null instead of empty string for consistency with 'isEmptyWhitespace' check at the beginning
+            return null;
+        }
+        return rule.substring(startchar, endchar + 1);
     }
 
     // Make a new RuleEvaluator that captures the test constants.
