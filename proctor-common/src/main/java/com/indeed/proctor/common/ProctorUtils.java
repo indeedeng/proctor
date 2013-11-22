@@ -2,7 +2,6 @@ package com.indeed.proctor.common;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
@@ -26,6 +25,7 @@ import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.el.ExpressionFactory;
 import javax.el.FunctionMapper;
 import javax.el.ValueExpression;
@@ -129,9 +129,9 @@ public abstract class ProctorUtils {
         if (countries != null) {
             ruleComponents.add("proctor:contains(__COUNTRIES, country)");
         }
-
-        if (td.getRule() != null) {
-            ruleComponents.add(td.getRule());
+        final String rawRule = removeElExpressionBraces(td.getRule());
+        if (!isEmptyWhitespace(rawRule)) {
+            ruleComponents.add(rawRule);
         }
 
         final String rule;
@@ -152,10 +152,15 @@ public abstract class ProctorUtils {
 
         final List<Allocation> allocations = td.getAllocations();
         for (final Allocation alloc : allocations) {
-            final String allocRule = alloc.getRule();
-            if (allocRule != null && ! (allocRule.startsWith("${") && allocRule.endsWith("}"))) {
-                final String newAllocRule = "${" + allocRule + "}";
-                alloc.setRule(newAllocRule);
+            final String rawAllocRule = removeElExpressionBraces(alloc.getRule());
+            if(isEmptyWhitespace(rawAllocRule)) {
+                alloc.setRule(null);
+            } else {
+                // ensure that all rules in the generated test-matrix are wrapped in "${" ... "}"
+                if (! (rawAllocRule.startsWith("${") && rawAllocRule.endsWith("}"))) {
+                    final String newAllocRule = "${" + rawAllocRule + "}";
+                    alloc.setRule(newAllocRule);
+                }
             }
         }
 
@@ -420,7 +425,8 @@ public abstract class ProctorUtils {
             definedBuckets.add(bucket.getValue());
         }
 
-        for (final Allocation allocation : allocations) {
+        for(int i = 0; i < allocations.size(); i++ ) {
+            final Allocation allocation = allocations.get(i);
             final List<Range> ranges = allocation.getRanges();
             //  ensure that each range refers to a known bucket
             double bucketTotal = 0;
@@ -434,17 +440,24 @@ public abstract class ProctorUtils {
             //  I hate floating points.  TODO: extract a required precision constant/parameter?
             if (bucketTotal < 0.9999 || bucketTotal > 1.0001) { //  compensate for FP imprecision.  TODO: determine what these bounds really should be by testing stuff
                 final StringBuilder sb = new StringBuilder(testName + " range with rule " + allocation.getRule() + " does not add up to 1 : ").append(ranges.get(0).getLength());
-                for (int i = 1; i < ranges.size(); i++) {
+                for (int r = 1; r < ranges.size(); r++) {
                     sb.append(" + ").append(ranges.get(i).getLength());
                 }
                 sb.append(" = ").append(bucketTotal);
                 throw new IncompatibleTestMatrixException(sb.toString());
             }
 
-        }
-        final Allocation lastAllocation = allocations.get(allocations.size() - 1);
-        if (!CharMatcher.WHITESPACE.matchesAllOf(Strings.nullToEmpty(lastAllocation.getRule()))) {
-            throw new IncompatibleTestMatrixException("Final allocation for test " + testName + " from " + matrixSource + " has non-empty rule: " + lastAllocation.getRule());
+            final boolean lastAllocation = i == allocations.size() - 1;
+            final String bareRule = removeElExpressionBraces(allocation.getRule());
+            if(lastAllocation) {
+                if (!isEmptyWhitespace(bareRule)) {
+                    throw new IncompatibleTestMatrixException("Allocation[" + i + "] for test " + testName + " from " + matrixSource + " has non-empty rule: " + allocation.getRule());
+                }
+            } else {
+                if (isEmptyWhitespace(bareRule)) {
+                    throw new IncompatibleTestMatrixException("Allocation[" + i + "] for test " + testName + " from " + matrixSource + " has empty rule: " + allocation.getRule());
+                }
+            }
         }
 
         /*
@@ -472,6 +485,36 @@ public abstract class ProctorUtils {
         if ((nonEmptyPayload != null) && (bucketsWithoutPayloads.size() != 0)) {
             throw new IncompatibleTestMatrixException("Test " + testName + " from " + matrixSource + " has some test buckets without payloads: " + bucketsWithoutPayloads);
         }
+    }
+
+    /**
+     * Returns flag whose value indicates if the string is null, empty or
+     * only contains whitespace characters
+     * @param s
+     * @return
+     */
+    static boolean isEmptyWhitespace(@Nullable final String s) {
+        if (s == null) {
+            return true;
+        }
+        return CharMatcher.WHITESPACE.matchesAllOf(s);
+    }
+
+    /**
+     * Removes the expression braces "${ ... }" surrounding the rule.
+     * @param rule
+     * @return
+     */
+    @Nullable
+    static String removeElExpressionBraces(@Nullable final String rule) {
+        if(isEmptyWhitespace(rule)) {
+            return null;
+        }
+        String rawRule = rule.trim();
+        if(rawRule.startsWith("${") && rawRule.endsWith("}")) {
+            rawRule = rawRule.substring(2, rawRule.length() - 1).trim();
+        }
+        return rawRule;
     }
 
     // Make a new RuleEvaluator that captures the test constants.

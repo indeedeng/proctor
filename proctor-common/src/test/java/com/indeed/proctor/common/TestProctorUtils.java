@@ -9,7 +9,9 @@ import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.Payload;
 import com.indeed.proctor.common.model.Range;
 import com.indeed.proctor.common.model.TestBucket;
+import com.indeed.proctor.common.model.TestDefinition;
 import com.indeed.proctor.common.model.TestMatrixArtifact;
+import com.indeed.proctor.common.model.TestType;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -31,6 +33,178 @@ public class TestProctorUtils {
 
     private static final String TEST_A = "testA";
     private static final String TEST_B = "testB";
+
+
+    /**
+     * Test that top level and allocation rules all respect the same definition
+     * of "empty"
+     */
+    @Test
+    public void convertToConsumableTestDefinitionEmptyRules() {
+        // all of the following "rules" should be treated as empty in the TestDefinition
+        // rule: null
+        // rule: ""
+        // rule: " "
+        final String[] emptyRules = new String[] { null, "", " " };
+        final Range range = new Range(0, 1.0d);
+
+        final int version = 100;
+        final TestType testType = TestType.USER;
+        final String salt = "testsalt";
+        final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
+        final Map<String, Object> constants = Collections.emptyMap();
+        final Map<String, Object> specialConstants = Collections.emptyMap();
+        final String description = "test description";
+
+        for(final String tdRule : emptyRules) {
+            for(String allocRule : emptyRules) {
+                final Allocation allocation = new Allocation(allocRule, Collections.singletonList(range));
+                final TestDefinition testDefinition = new TestDefinition(
+                    version,
+                    tdRule,
+                    testType,
+                    salt,
+                    buckets,
+                    Collections.singletonList(allocation),
+                    constants,
+                    specialConstants,
+                    description
+                );
+
+                final ConsumableTestDefinition ctd = ProctorUtils.convertToConsumableTestDefinition(testDefinition);
+                assertEquals(version, ctd.getVersion());
+                assertEquals(testType, ctd.getTestType());
+                assertEquals(salt, ctd.getSalt());
+                assertEquals(description, ctd.getDescription());
+                assertEquals(0, ctd.getConstants().size());
+                assertEquals(buckets, ctd.getBuckets());
+
+                assertEquals(String.format("TestDefinition rule '%s' should convert to a null ConsumableTestDefinition.rule", tdRule), null, ctd.getRule());
+
+                assertEquals(1, ctd.getAllocations().size());
+                final Allocation ctdAllocation = ctd.getAllocations().get(0);
+                assertEquals(String.format("Allocation rule '%s' should convert to a null ConsumableTestDefinition.Allocation.rule", allocRule), null, ctdAllocation.getRule());
+                assertEquals(allocation.getRanges(), ctdAllocation.getRanges());
+            }
+        }
+    }
+
+
+    /**
+     * Checks that allocation and top level rules can optionally be surrounded by ${ ... }
+     */
+    @Test
+    public void convertToConsumableTestDefinitionTopLevelRules() {
+        // rules can optionally have the "${}" around them.
+        // rule: lang == 'en'
+        // rule: ${lang == 'en'}
+        final Range range = new Range(0, 1.0d);
+
+        final int version = 100;
+        final TestType testType = TestType.USER;
+        final String salt = "testsalt";
+        final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
+        final Map<String, Object> constants = Collections.emptyMap();
+        final Map<String, Object> specialConstants = Collections.emptyMap();
+        final String description = "test description";
+
+
+        for(final String rule : new String[] { "lang == 'en'", "${lang == 'en'}"})
+        {
+            final Allocation allocation = new Allocation(rule, Collections.singletonList(range));
+            final TestDefinition testDefinition = new TestDefinition(
+                version,
+                rule,
+                testType,
+                salt,
+                buckets,
+                Collections.singletonList(allocation),
+                constants,
+                specialConstants,
+                description
+            );
+
+            final ConsumableTestDefinition ctd = ProctorUtils.convertToConsumableTestDefinition(testDefinition);
+            assertEquals(String.format("TestDefinition rule '%s' should convert to a ${lang == 'en'} ConsumableTestDefinition.rule", rule), "${lang == 'en'}", ctd.getRule());
+
+            assertEquals(1, ctd.getAllocations().size());
+            final Allocation ctdAllocation = ctd.getAllocations().get(0);
+            assertEquals(String.format("Allocation rule '%s' should convert to a ${lang == 'en'} ConsumableTestDefinition.Allocation.rule", rule), "${lang == 'en'}", ctdAllocation.getRule());
+            assertEquals(allocation.getRanges(), ctdAllocation.getRanges());
+        }
+    }
+
+    /**
+     * Checks that top level rules respect the special constants and support
+     * rule formats that do and do not contain "${}"
+     */
+    @Test
+    public void convertToConsumableTestDefinitionTopLevelRulesSpecialConstants() {
+        // Top Level rules can optionally have the "${}" around them.
+        // rule: lang == 'en'
+        // rule: ${lang == 'en'}
+        final Range range = new Range(0, 1.0d);
+
+        final int version = 100;
+        final TestType testType = TestType.USER;
+        final String salt = "testsalt";
+        final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
+        final Map<String, Object> constants = Collections.emptyMap();
+        final Map<String, Object> specialConstants = Collections.<String, Object>singletonMap("__COUNTRIES", Lists.newArrayList("US", "CA"));
+        final String description = "test description";
+
+        final Allocation allocation = new Allocation(null, Collections.singletonList(range));
+
+        for(final String tdRule : new String[] { "lang == 'en'", "${lang == 'en'}"})
+        {
+            final TestDefinition testDefinition = new TestDefinition(
+                version,
+                tdRule,
+                testType,
+                salt,
+                buckets,
+                Collections.singletonList(allocation),
+                constants,
+                specialConstants,
+                description
+            );
+
+            final ConsumableTestDefinition ctd = ProctorUtils.convertToConsumableTestDefinition(testDefinition);
+            assertEquals(String.format("TestDefinition rule '%s' should convert to ${proctor:contains(__COUNTRIES, country) && lang == 'en'} ConsumableTestDefinition.rule", tdRule), "${proctor:contains(__COUNTRIES, country) && lang == 'en'}", ctd.getRule());
+            assertEquals(1, ctd.getConstants().size());
+            assertEquals("special constants should be added to constants", Lists.newArrayList("US", "CA"), ctd.getConstants().get("__COUNTRIES"));
+        }
+    }
+
+    @Test
+    public void testRemoveElExpressionBraces() {
+        assertEquals(null, ProctorUtils.removeElExpressionBraces(""));
+        assertEquals(null, ProctorUtils.removeElExpressionBraces(" "));
+        assertEquals(null, ProctorUtils.removeElExpressionBraces(null));
+        assertEquals(null, ProctorUtils.removeElExpressionBraces("\t"));
+        assertEquals("lang == 'en'", ProctorUtils.removeElExpressionBraces("lang == 'en'"));
+        assertEquals("lang == 'en'", ProctorUtils.removeElExpressionBraces("${lang == 'en'}"));
+        // whitespace should be trimmed
+        assertEquals("lang == 'en'", ProctorUtils.removeElExpressionBraces("${ lang == 'en' }"));
+        // whitespace should be removed around braces
+        assertEquals("lang == 'en'", ProctorUtils.removeElExpressionBraces(" ${ lang == 'en' } "));
+        // only single level of braces are removed
+        assertEquals("${lang == 'en'}", ProctorUtils.removeElExpressionBraces("${${lang == 'en'}}"));
+        // mis matched braces are not handled
+        assertEquals("${lang == 'en'", ProctorUtils.removeElExpressionBraces("${lang == 'en'"));
+        // mis matched braces are not handled
+        assertEquals("lang == 'en'}", ProctorUtils.removeElExpressionBraces("lang == 'en'}"));
+    }
+
+    @Test
+    public void testEmptyWhitespace() {
+        assertTrue(ProctorUtils.isEmptyWhitespace(""));
+        assertTrue(ProctorUtils.isEmptyWhitespace(null));
+        assertTrue(ProctorUtils.isEmptyWhitespace("  "));
+        assertTrue(ProctorUtils.isEmptyWhitespace("  \t"));
+        assertFalse(ProctorUtils.isEmptyWhitespace(" x "));
+        assertFalse(ProctorUtils.isEmptyWhitespace("/"));
+    }
 
 
     @Test
@@ -125,11 +299,43 @@ public class TestProctorUtils {
                                                       // Allocations all have rules
                                                       fromCompactAllocationFormat("ruleA|-1:0.0,0:0.0,1:1.0", "ruleB|-1:0.5,0:0.5,1:0.0")));
 
-            final TestMatrixArtifact matrix = constructArtifact(tests);
-
-            assertValid("test missing empty rule is not required", matrix, Collections.<String, TestSpecification>emptyMap());
-            assertMissing("test missing empty rule is required", matrix, requiredTests);
+            assertValid("test missing empty rule is not required", constructArtifact(tests), Collections.<String, TestSpecification>emptyMap());
+            assertMissing("test missing empty rule is required", constructArtifact(tests), requiredTests);
         }
+        {
+            final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
+            tests.put(TEST_A, constructDefinition(buckets,
+                                                      // non-final allocation lacks a non-empty rule
+                                                      fromCompactAllocationFormat("|-1:0.0,0:0.0,1:1.0", "-1:0.5,0:0.5,1:0.0")));
+
+            assertInvalid("non-final rule lacks non-empty rule", constructArtifact(tests), requiredTests);
+            assertValid("non-final rule lacks non-empty rule is allowed when not required", constructArtifact(tests), Collections.<String, TestSpecification>emptyMap());
+        }
+        {
+            final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
+            tests.put(TEST_A, constructDefinition(buckets,
+                                                      fromCompactAllocationFormat("ruleA|-1:0.0,0:0.0,1:1.0", "|-1:0.5,0:0.5,1:0.0")));
+
+            assertValid("allocation with '' rule is valid for final last allocation", constructArtifact(tests), requiredTests);
+        }
+        // NOTE: the two test below illustrate current behavior.
+        // The "${}" rule is treated as non-empty for validation.
+        {
+            final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
+            tests.put(TEST_A, constructDefinition(buckets,
+                                                      // non-final allocation lacks a non-empty rule
+                                                      fromCompactAllocationFormat("${}|-1:0.0,0:0.0,1:1.0", "-1:0.5,0:0.5,1:0.0")));
+
+            assertInvalid("non-final rule of '${}' should be treated as empty rule", constructArtifact(tests), requiredTests);
+        }
+        {
+            final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
+            tests.put(TEST_A, constructDefinition(buckets,
+                                                      fromCompactAllocationFormat("${}|-1:0.5,0:0.5,1:0.0")));
+
+            assertValid("allocation with '${}' rule is valid for final last allocation", constructArtifact(tests), requiredTests);
+        }
+
     }
 
     @Test
@@ -689,10 +895,8 @@ public class TestProctorUtils {
             assertEquals(2, allocationB.getRanges().get(2).getBucketValue());
             assertEquals(0.5, allocationB.getRanges().get(2).getLength(), DELTA);
         }
-
-
-
     }
+
     @Test
     public void testCompactBucketFormatHelperMethods() {
 //        List<TestBucket> buckets_empty = fromCompactBucketFormat("");
@@ -723,10 +927,10 @@ public class TestProctorUtils {
         final ProctorLoadResult proctorLoadResult = ProctorUtils.verifyAndConsolidate(matrix, "[ testcase: " + msg + " ]", requiredTests, RuleEvaluator.FUNCTION_MAPPER);
 
         final Set<String> missingTests = proctorLoadResult.getMissingTests();
-        assertEquals(msg, hasMissing, !missingTests.isEmpty());
+        assertEquals(msg + " missing tests is not empty", hasMissing, !missingTests.isEmpty());
 
         final Set<String> testsWithErrors = proctorLoadResult.getTestsWithErrors();
-        assertEquals(msg, hasInvalid, !testsWithErrors.isEmpty());
+        assertEquals(msg+ " invalid tests is not empty", hasInvalid, !testsWithErrors.isEmpty());
     }
 
 

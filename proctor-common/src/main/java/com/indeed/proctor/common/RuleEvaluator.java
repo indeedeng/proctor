@@ -101,15 +101,15 @@ public class RuleEvaluator {
     }
 
     public boolean evaluateBooleanRule(@Nonnull final String rule, @Nonnull final Map<String, Object> values) throws IllegalArgumentException {
-        if (CharMatcher.WHITESPACE.matchesAllOf(Strings.nullToEmpty(rule))) {
+        if (ProctorUtils.isEmptyWhitespace(rule)) {
             return true;
         }
         if (!rule.startsWith("${") || !rule.endsWith("}")) {
             LOGGER.error("Invalid rule '" +  rule + "'");   //  TODO: should this be an exception?
             return false;
         }
-        final String bareRule = rule.substring(2, rule.length() - 1);
-        if (CharMatcher.WHITESPACE.matchesAllOf(Strings.nullToEmpty(bareRule)) || "true".equalsIgnoreCase(bareRule)) {
+        final String bareRule = ProctorUtils.removeElExpressionBraces(rule);
+        if (ProctorUtils.isEmptyWhitespace(bareRule) || "true".equalsIgnoreCase(bareRule)) {
             return true;    //  always passes
         }
         if ("false".equalsIgnoreCase(bareRule)) {
