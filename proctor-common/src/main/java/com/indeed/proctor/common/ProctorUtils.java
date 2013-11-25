@@ -441,7 +441,7 @@ public abstract class ProctorUtils {
             if (bucketTotal < 0.9999 || bucketTotal > 1.0001) { //  compensate for FP imprecision.  TODO: determine what these bounds really should be by testing stuff
                 final StringBuilder sb = new StringBuilder(testName + " range with rule " + allocation.getRule() + " does not add up to 1 : ").append(ranges.get(0).getLength());
                 for (int r = 1; r < ranges.size(); r++) {
-                    sb.append(" + ").append(ranges.get(i).getLength());
+                    sb.append(" + ").append(ranges.get(r).getLength());
                 }
                 sb.append(" = ").append(bucketTotal);
                 throw new IncompatibleTestMatrixException(sb.toString());
