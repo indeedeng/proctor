@@ -55,7 +55,7 @@ public class TestSerializers {
             Assert.assertEquals(TestType.USER, definition.getTestType());
             Assert.assertEquals("exampletst", definition.getSalt());
             Assert.assertEquals("loggedIn", definition.getRule());
-            Assert.assertEquals("An example test", definition.getDescription());
+            Assert.assertTrue(definition.getDescription().startsWith("An example test"));
             Assert.assertEquals(0, definition.getSpecialConstants().size());
             Assert.assertEquals(1, definition.getConstants().size());
             Assert.assertEquals("en", definition.getConstants().get("ENGLISH"));

@@ -33,7 +33,7 @@
   "constants" : {
     "ENGLISH" : "en"
   },
-  "description" : "An example test",
+  "description" : "An example test that uses a top-level subrule rather than rule to test backwards compatibility. TODO: Remove when subrule is no longer supported",
   "specialConstants" : {
   },
   "subrule" : "loggedIn"
