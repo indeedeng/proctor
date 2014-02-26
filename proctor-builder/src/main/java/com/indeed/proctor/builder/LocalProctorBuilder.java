@@ -40,7 +40,7 @@ public class LocalProctorBuilder extends ProctorBuilder {
         @Override
         protected void extract(CommandLine results)  {
             super.extract(results);
-            this.inputdir = results.getOptionValue("input");
+            this.inputdir = results.getOptionValue("i");
         }
 
         public String getInputdir() {
