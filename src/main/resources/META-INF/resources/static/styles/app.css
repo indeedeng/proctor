@@ -1,0 +1,89 @@
+/* foundation.css additions start */
+span.inline, select.inline  { line-height: 32px; margin: 0 0 12px 0; }
+.ui-form-buttons { text-align: center; }
+div.ui-panel-buttons { background-color: #FFF; border-color: #2BA6CB }
+
+div.alert-box.warning { background-color: #FF6C3C; border-color: #FF4609; color: #FFF; }
+
+.nav-bar { overflow: hidden; }
+.nav-bar > li.nav-bar-right { float: right; padding: 0 20px; }
+.nav-bar > li.nav-bar-right:hover { background-color: inherit;}
+.nav-bar-right .sub-nav { margin: 0; padding: 0}
+.nav-bar-right .sub-nav dt { color: white }
+.nav-bar-right .sub-nav dt, .nav-bar-right .sub-nav dd { margin: 0; margin-left: 10px; }
+
+.ui-popover > .inner { -webkit-border-radius: 3px; -moz-border-radius: 3px; -ms-border-radius: 3px; -o-border-radius: 3px; border-radius: 3px; }
+
+.ui-popover > .inner {
+    background-color: #F2F2F2;
+    border: solid 1px #E6E6E6;
+
+}
+.ui-popover .inner > .hd {
+    background-color: #E6E6E6;
+    border-bottom: 1px solid #DDD;
+}
+.ui-popover .inner > .bd, .ui-popover .inner > .hd { padding: 10px; }
+/* foundation.css additions end */
+
+.collapsible.collapsed .collapse-area { display:none; }
+
+.field-label {font-weight: bold;}
+table.w100 { width: 100%; }
+table.fixed { table-layout: fixed; }
+table.tleft td, table.tleft th { text-align: left }
+table.tright td, table.tleft th { text-align: right }
+
+
+
+.ui-test-definition .hd .field-label { margin-right: 5px }
+.ui-test-definition .hd .media .field-label { min-width: 200px }
+.ui-test-definition .bd .media .field-label { width: 200px; }
+/* .ui-test-definition .def-history { text-align: right; } */
+/* .ui-test-definition .button-group { float: right; } */
+
+.ui-allocation-bar { display: block; border: 1px solid #BBB; overflow: hidden; padding: 5px; background-color: #FFF;}
+.ui-allocation-range { display: inline-block; float:left; text-align: center; white-space: nowrap; padding: 5px 0; overflow: hidden;}
+.ui-allocation-range-lbl { text-align: center; }
+
+/* http://colorbrewer2.org/ - 12 bucket qualitative */
+.ui-color0 { background-color: #8DD3C7;}
+.ui-color1 { background-color: #FFFFB3;}
+.ui-color2 { background-color: #BEBADA;}
+.ui-color3 { background-color: #FB8072;}
+.ui-color4 { background-color: #80B1D3;}
+.ui-color5 { background-color: #FDB462;}
+.ui-color6 { background-color: #B3DE69;}
+.ui-color7 { background-color: #FCCDE5;}
+.ui-color8 { background-color: #D9D9D9;}
+.ui-color9 { background-color: #BC80BD;}
+.ui-color10 { background-color: #CCEBC5;}
+.ui-color11 { background-color: #FFED6F;}
+.ui-color-swatch { width: 1em; height: 1em; display: inline-block; border: 1px solid black;}
+
+.ui-expand-collapse.ui-expanded .ui-expand { display: none; }
+.ui-expand-collapse.ui-collapsed .ui-collapse { display: none; }
+.ui-expand-collapse.ui-collapsed .ui-expand-collapse-bd { display: none}
+
+
+.ui-def-hist-commit { border-bottom: 1px solid #DDD }
+
+.ui-tagbar { overflow: hidden; }
+.ui-tagbar-right { float: right;}
+
+.ui-job-monitor-popup-bg {
+   background : rgba(120, 120, 120, 0.5);
+   position : fixed;
+   left : 0;
+   top : 0;
+   bottom: 0;
+   right: 0;
+   outline : none;
+   z-index: 1000;
+}
+.ui-job-monitor-popup {
+    width: 600px; margin: 0 auto; z-index: 1001;
+    -webkit-box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); -moz-box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+.ui-job-monitor-popup-ft { text-align: center; }
+.ui-job-monitor-log { height: 200px; }

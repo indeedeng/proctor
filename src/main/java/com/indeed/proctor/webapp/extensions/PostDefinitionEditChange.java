@@ -1,0 +1,11 @@
+package com.indeed.proctor.webapp.extensions;
+
+import com.indeed.proctor.common.model.TestDefinition;
+
+import java.util.Map;
+
+/**
+ */
+public interface PostDefinitionEditChange {
+    public DefinitionChangeLog postEdit(final TestDefinition testDefinitionToUpdate, final Map<String, String[]> extensionFields);
+}

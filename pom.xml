@@ -1,0 +1,347 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.indeed</groupId>
+        <artifactId>oss-parent</artifactId>
+        <version>7</version>
+    </parent>
+
+    <artifactId>proctor-webapp-library</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <scm>
+        <url>https://github.com/indeedeng/proctor-webapp-library</url>
+        <connection>scm:git:https://github.com/indeedeng/proctor-webapp-library.git</connection>
+        <developerConnection>scm:git:git@github.com:indeedeng/proctor-webapp-library.git</developerConnection>
+    </scm>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>sonatype-oss-public</id>
+            <url>https://oss.sonatype.org/content/groups/public</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>yuicompressor-maven-plugin</artifactId>
+                <version>1.0.0</version>
+                <executions>
+                    <execution>
+                        <id>combine-css</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>aggregate-css</goal>
+                        </goals>
+                        <configuration>
+                            <sourceDirectory>${basedir}/src/main/resources/META-INF/resources/static/</sourceDirectory>
+                            <includes>
+                                <include>lib/normalize/normalize.css</include>
+                                <include>lib/normalize/normalize.css</include>
+                                <include>lib/foundation/stylesheets/foundation.css</include>
+                                <include>lib/oocss/mod.css</include>
+                                <include>lib/oocss/media.css</include>
+                                <include>lib/oocss/space.css</include>
+                                <include>styles/app.css</include>
+                            </includes>
+                            <output>${project.build.outputDirectory}/META-INF/resources/static/styles/styles-compiled.css</output>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.7</version>
+                <executions>
+                    <execution>
+                        <phase>generate-resources</phase>
+                        <configuration>
+                            <target name="prepare-compile-js-closure">
+                                <taskdef resource="net/sf/antcontrib/antlib.xml"
+                                         classpathref="maven.plugin.classpath" />
+                                <if>
+                                    <not>
+                                        <available file="${basedir}/target/compiler.jar"/>
+                                    </not>
+                                    <then>
+                                        <get src="${closure-compiler-url}" dest="${basedir}/target"/>
+                                        <unzip src="${basedir}/target/${closure-compiler-zip}"
+                                               dest="${basedir}/target/">
+                                            <patternset>
+                                                <include name="*.jar"/>
+                                            </patternset>
+                                        </unzip>
+                                    </then>
+                                </if>
+                                <if>
+                                    <not>
+                                        <available file="${basedir}/target/closure-library/"/>
+                                    </not>
+                                    <then>
+                                        <get src="${closure-library-url}" dest="${basedir}/target"/>
+                                        <unzip src="${basedir}/target/${closure-library-zip}"
+                                               dest="${basedir}/target/closure-library">
+                                        </unzip>
+                                    </then>
+                                </if>
+                            </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>ant-contrib</groupId>
+                        <artifactId>ant-contrib</artifactId>
+                        <version>1.0b3</version>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>ant</groupId>
+                                <artifactId>ant</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.apache.ant</groupId>
+                        <artifactId>ant-nodeps</artifactId>
+                        <version>1.8.1</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.2</version>
+                <executions>
+                    <execution>
+                        <configuration>
+                            <executable>python</executable>
+                            <workingDirectory>${closure-library-dir}/closure/bin/build</workingDirectory>
+                            <arguments>
+                                <argument>closurebuilder.py</argument>
+                                <argument>--root=${basedir}/src/main/resources/META-INF/resources/static/scripts/app/</argument>
+                                <argument>--root=${basedir}/target/closure-library/</argument>
+                                <argument>--namespace=indeed.proctor.app.editor</argument>
+                                <argument>--output_mode=compiled</argument>
+                                <argument>--compiler_jar=${basedir}/target/compiler.jar</argument>
+                                <argument>--output_file=${project.build.outputDirectory}/META-INF/resources/static/scripts/app/editor-compiled.js</argument>
+                            </arguments>
+                        </configuration>
+                        <id>compile editor.js</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <configuration>
+                            <executable>python</executable>
+                            <workingDirectory>${closure-library-dir}/closure/bin/build</workingDirectory>
+                            <arguments>
+                                <argument>closurebuilder.py</argument>
+                                <argument>--root=${basedir}/src/main/resources/META-INF/resources/static/scripts/app/</argument>
+                                <argument>--root=${basedir}/target/closure-library/</argument>
+                                <argument>--namespace=indeed.proctor.app.details</argument>
+                                <argument>--output_mode=compiled</argument>
+                                <argument>--compiler_jar=${basedir}/target/compiler.jar</argument>
+                                <argument>--output_file=${project.build.outputDirectory}/META-INF/resources/static/scripts/app/details-compiled.js</argument>
+                            </arguments>
+                        </configuration>
+                        <id>compile details.js</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <configuration>
+                            <executable>python</executable>
+                            <workingDirectory>${closure-library-dir}/closure/bin/build</workingDirectory>
+                            <arguments>
+                                <argument>closurebuilder.py</argument>
+                                <argument>--root=${basedir}/src/main/resources/META-INF/resources/static/scripts/app/</argument>
+                                <argument>--root=${basedir}/target/closure-library/</argument>
+                                <argument>--namespace=indeed.proctor.app.matrix.list</argument>
+                                <argument>--output_mode=compiled</argument>
+                                <argument>--compiler_jar=${basedir}/target/compiler.jar</argument>
+                                <argument>--output_file=${project.build.outputDirectory}/META-INF/resources/static/scripts/app/matrix-list-compiled.js</argument>
+                            </arguments>
+                        </configuration>
+                        <id>compile matrix-list.js</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+
+    <dependencies>
+
+        <!--Indeed open source dependencies-->
+        <dependency>
+            <groupId>com.indeed</groupId>
+            <artifactId>proctor-common</artifactId>
+            <version>${proctor.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.indeed</groupId>
+            <artifactId>proctor-store</artifactId>
+            <version>${proctor.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.indeed</groupId>
+            <artifactId>proctor-store-svn</artifactId>
+            <version>${proctor.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.indeed</groupId>
+            <artifactId>util-varexport</artifactId>
+            <version>${indeed-util.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.indeed</groupId>
+            <artifactId>util-core</artifactId>
+            <version>${indeed-util.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.indeed.logstash.log4j</groupId>
+            <artifactId>jsonevent-layout</artifactId>
+            <version>${jsonevent-layout.version}</version>
+        </dependency>
+
+        <!--Spring Dependencies-->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-beans</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webmvc</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+
+
+        <!--Test Dependencies-->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.easymock</groupId>
+            <artifactId>easymock</artifactId>
+        </dependency>
+
+        <!--Servlet-Container provded dependencies-->
+        <dependency>
+            <groupId>org.apache.tomcat</groupId>
+            <artifactId>tomcat-jsp-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tomcat</groupId>
+            <artifactId>tomcat-servlet-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!--Other Dependencies-->
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.16</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-configuration</groupId>
+            <artifactId>commons-configuration</artifactId>
+            <version>1.4</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-collections</groupId>
+            <artifactId>commons-collections</artifactId>
+            <version>3.2</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.1.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.tmatesoft.svnkit</groupId>
+            <artifactId>svnkit</artifactId>
+        </dependency>
+
+
+        <!--exclusions-->
+
+    </dependencies>
+
+    <properties>
+        <proctor.version>1.0.3</proctor.version>
+        <jsonevent-layout.version>1.4.2</jsonevent-layout.version>
+        <closure-library.version>0.0-20130212-95c19e7f0f5f</closure-library.version>
+        <closure-library-zip>closure-library-20130212-95c19e7f0f5f.zip</closure-library-zip>
+        <closure-library-url>https://closure-library.googlecode.com/files/${closure-library-zip}</closure-library-url>
+        <closure-library-dir>${basedir}/target/closure-library</closure-library-dir>
+        <closure-compiler.version>r1459</closure-compiler.version>
+        <closure-compiler-zip>compiler-20111003.zip</closure-compiler-zip>
+        <closure-compiler-url>https://closure-compiler.googlecode.com/files/${closure-compiler-zip}</closure-compiler-url>
+    </properties>
+
+</project>
