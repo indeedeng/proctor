@@ -10,6 +10,7 @@
 <%@ attribute name="canonicalLink" required="false" type="java.lang.String" %>
 <%@ attribute name="session" required="false" type="com.indeed.proctor.webapp.model.SessionViewModel" %>
 <%@ attribute name="branch" required="false" type="com.indeed.proctor.webapp.db.Environment" %>
+<%@ attribute name="emptyClients" required="false" type="java.lang.Boolean" %>
 <!DOCTYPE html>
 
 <!-- paulirish.com/2008/conditional-stylesheets-vs-css-hacks-answer-neither/ -->
@@ -49,8 +50,8 @@
         <div class="hd">
             <ul class="nav-bar">
                 <li ><a href="/proctor/">Test Matrix</a></li>
-                <li ><a href="/proctor/usage">Usage</a></li>
-                <li ><a href="/proctor/compatibility">Compatibility</a></li>
+                <c:if test="${empty emptyClients || ! emptyClients}"> <li ><a href="/proctor/usage">Usage</a></li> </c:if>
+                <c:if test="${empty emptyClients || ! emptyClients}"> <li ><a href="/proctor/compatibility">Compatibility</a></li> </c:if>
                 <li><a href="/proctor/definition/create">Create new test</a></li>
                 <proctor:renderBasePageInjectionTemplates position="<%=BasePageRenderer.BasePagePosition.NAVBAR_BUTTON%>" branch="${branch}"/>
                 <li class="nav-bar-right">

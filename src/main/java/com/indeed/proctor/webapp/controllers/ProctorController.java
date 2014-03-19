@@ -106,6 +106,7 @@ public class ProctorController extends AbstractController {
     public String viewTestMatrix(final String branch,
                                  final Model model) {
         final Environment which = determineEnvironmentFromParameter(branch);
+        model.addAttribute("emptyClients", specificationSource.loadAllSpecifications(determineEnvironmentFromParameter(branch)).keySet().isEmpty());
         return getArtifactForView(model, which, View.MATRIX_LIST);
     }
 

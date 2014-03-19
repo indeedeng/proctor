@@ -1048,6 +1048,8 @@ public class ProctorTestDefinitionController extends AbstractController {
                                    // todo get the appropriate js compile / non-compile url
                                .build());
 
+        model.addAttribute("emptyClients", specificationSource.loadAllSpecifications(b).keySet().isEmpty());
+
         final Set<AppVersion> devApplications = specificationSource.activeClients(Environment.WORKING, testName);
         model.addAttribute("devApplications", devApplications);
         final Set<AppVersion> qaApplications = specificationSource.activeClients(Environment.QA, testName);
