@@ -127,10 +127,10 @@
             </div>
         </div>
     </div>
-    <div class="row">
+    <div class="row specialConstantsRow">
         <div class="two columns"><h4>Special Constants</h4></div>
         <div class="ten columns">
-            <div class="panel">
+            <div class="panel specialConstantsPanel">
              <proctor:renderEditPageInjectionTemplates position="<%=EditPageRenderer.EditPagePosition.SPECIAL_CONSTANTS%>" testName="${testName}" testDefinitionJson="${testDefinitionJson}" isCreate="${isCreate}"/>
             </div>
         </div>
@@ -239,8 +239,15 @@
                 parent.appendChild(small);
             }
         }
+
+
+        //Hide Special Constants if there are none
+        var specialConstantsPanel = document.getElementsByClassName('specialConstantsPanel')[0];
+        var specialConstantsRow = document.getElementsByClassName('specialConstantsRow')[0];
+        if (specialConstantsPanel.innerHTML.trim() == "") {
+            document.getElementsByClassName('specialConstantsRow')[0].style.display='none';
+        }
         //]]>
     </script>
-
 
 </layout:base>
