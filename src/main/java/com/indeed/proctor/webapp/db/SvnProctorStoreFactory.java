@@ -6,7 +6,6 @@ import com.google.common.base.Strings;
 import com.indeed.util.varexport.VarExporter;
 import com.indeed.proctor.store.*;
 import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -19,15 +18,13 @@ import java.util.concurrent.TimeUnit;
  */
 public class SvnProctorStoreFactory implements StoreFactory {
     private static final Logger LOGGER = Logger.getLogger(SvnProctorStoreFactory.class);
-    private static final long DEFAULT_TMPDIR_MAX_AGE_MINS = 1440;
-    private static final boolean DEFAULT_CACHE = true;
-    private static final long DEFAULT_SVN_REFRESH_MINS = 5;
 
     final ScheduledExecutorService executor;
 
-    private final PropertiesConfiguration properties;
-
-    boolean cache = false;
+    private boolean cache;
+    private  String svnPath;
+    private String svnUsername;
+    private String svnPassword;
 
     /* The root directory into which we should put the "qa-matrices" or "trunk-matrices"
      * If not set - a the temp directory will be used
@@ -42,13 +39,15 @@ public class SvnProctorStoreFactory implements StoreFactory {
     // The period to use when scheduling a refresh of the svn directory
     private long svnRefreshMillis = TimeUnit.MINUTES.toMillis(5);
 
-    public SvnProctorStoreFactory(final String configFilePath, final ScheduledExecutorService executor) throws IOException, ConfigurationException {
-        final File config = new File(configFilePath);
-        this.properties = new PropertiesConfiguration(config);
+    public SvnProctorStoreFactory(final ScheduledExecutorService executor, final boolean cache, final long tempDirCleanupAgeMinutes,
+                                  final long svnRefreshMinutes, final String svnPath, final String svnUsername, final String svnPassword) throws IOException, ConfigurationException {
         this.executor = executor;
-        this.cache =properties.getBoolean("svn.cache", DEFAULT_CACHE);
-        this.tempDirCleanupAgeMillis = TimeUnit.MINUTES.toMillis(properties.getLong("svn.tempdir.max.age.minutes", DEFAULT_TMPDIR_MAX_AGE_MINS));
-        this.svnRefreshMillis =  TimeUnit.MINUTES.toMillis(properties.getLong("svn.refresh.period.minutes", DEFAULT_SVN_REFRESH_MINS));
+        this.cache = cache;
+        this.tempDirCleanupAgeMillis = TimeUnit.MINUTES.toMillis(tempDirCleanupAgeMinutes);
+        this.svnRefreshMillis= TimeUnit.MINUTES.toMillis(svnRefreshMinutes);
+        this.svnPath = svnPath;
+        this.svnUsername = svnUsername;
+        this.svnPassword = svnPassword;
         this.implicitTempRoot = identifyImplicitTempRoot();
     }
 
@@ -67,16 +66,13 @@ public class SvnProctorStoreFactory implements StoreFactory {
     public ProctorStore createStore(final String relativePath) {
         Preconditions.checkArgument(tempDirCleanupAgeMillis > 0, "tempDirCleanupAgeMillis %s must be greater than zero", tempDirCleanupAgeMillis);
         final File tempDirectory = createTempDirectoryForPath(relativePath);
-        final String path = properties.getString("svn.path");
-        final String username = properties.getString("svn.login");
-        final String password = properties.getString("svn.password");
 
-        Preconditions.checkArgument(!CharMatcher.WHITESPACE.matchesAllOf(Strings.nullToEmpty(path)), "svn.path cannot be empty: loaded from " + properties.getPath());
+        Preconditions.checkArgument(!CharMatcher.WHITESPACE.matchesAllOf(Strings.nullToEmpty(svnPath)), "svn.path property cannot be empty");
         // TODO (parker) 9/13/12 - sanity check that path + relative path make a valid url
-        final String fullPath = path + relativePath;
+        final String fullPath = svnPath + relativePath;
 
         final SvnWorkspaceProviderImpl provider = new SvnWorkspaceProviderImpl(tempDirectory, tempDirCleanupAgeMillis);
-        final SvnPersisterCoreImpl svncore = new SvnPersisterCoreImpl(fullPath, username, password, provider, true /* shutdown provider */);
+        final SvnPersisterCoreImpl svncore = new SvnPersisterCoreImpl(fullPath, svnUsername, svnPassword, provider, true /* shutdown provider */);
 
         // actively clean up directories every hour: (not relying on cache eviction)
         final long cleanupScheduleMillis = Math.min(TimeUnit.HOURS.toMillis(1), tempDirCleanupAgeMillis);
@@ -126,34 +122,6 @@ public class SvnProctorStoreFactory implements StoreFactory {
 
     public boolean isCache() {
         return cache;
-    }
-
-    public void setCache(boolean cache) {
-        this.cache = cache;
-    }
-
-    public long getTempDirCleanupAgeMillis() {
-        return tempDirCleanupAgeMillis;
-    }
-
-    public void setTempDirCleanupAgeMillis(long tempDirCleanupAgeMillis) {
-        this.tempDirCleanupAgeMillis = tempDirCleanupAgeMillis;
-    }
-
-    public void setTempDirCleanupAgeMinutes(long tempDirCleanupAgeMinutes) {
-        setTempDirCleanupAgeMillis(TimeUnit.MINUTES.toMillis(tempDirCleanupAgeMinutes));
-    }
-
-    public long getSvnRefreshMillis() {
-        return svnRefreshMillis;
-    }
-
-    public void setSvnRefreshMillis(long svnRefreshMillis) {
-        this.svnRefreshMillis = svnRefreshMillis;
-    }
-
-    public void setSvnRefreshMinutes(long svnRefreshMinutes) {
-        setSvnRefreshMillis(TimeUnit.MINUTES.toMillis(svnRefreshMinutes));
     }
 
     public File getTempRoot() {

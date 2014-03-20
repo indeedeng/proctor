@@ -22,8 +22,6 @@
     </bean>
 
     <bean id="storeFactory" class="com.indeed.proctor.webapp.db.RevisionControlStoreFactory">
-        <property name="revisionControlType" value="${revision.control}"/>
-        <property name="revisionControlConfigFile" value="${revision.control.configuration.file}"/>
         <property name="scheduledExecutorService" ref="scheduledExecutorService"/>
     </bean>
 
