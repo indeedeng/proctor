@@ -26,10 +26,6 @@ Two configuration files need to be provided to run Proctor-Webapp-Public properl
 1. **${config.dir}/proctor-config.properties**
 
     ```bash
-    verify.http.timeout=1000
-    verify.executor.threads=10
-    use.compiled.css=true
-    use.compiled.javascript=true
     svn.path=https://YOURSVN.com/svn/repos/proctor-data/
     svn.login=REPLACE_WITH_USER
     svn.password=REPLACE_WITH_PASS
