@@ -50,8 +50,8 @@
     <bean id="backgroundJobManager" class="com.indeed.proctor.webapp.controllers.BackgroundJobManager"/>
 
     <bean id="proctorSpecificationSource" class="com.indeed.proctor.webapp.RemoteProctorSpecificationSource" destroy-method="shutdown">
-        <constructor-arg name="httpTimeout" value="${verify.http.timeout}"/>
-        <constructor-arg name="executorThreads" value="${verify.executor.threads}"/>
+        <constructor-arg name="httpTimeout" value="${verify.http.timeout:1000}"/>
+        <constructor-arg name="executorThreads" value="${verify.executor.threads:10}"/>
     </bean>
 
     <bean id="scheduledExecutorService" class="org.springframework.scheduling.concurrent.ScheduledExecutorFactoryBean" lazy-init="false">

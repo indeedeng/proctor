@@ -86,8 +86,8 @@ public class ProctorController extends AbstractController {
                              @Qualifier("trunk") final ProctorStore trunkStore,
                              @Qualifier("qa") final ProctorStore qaStore,
                              @Qualifier("production") final ProctorStore productionStore,
-            @Value("${verify.http.timeout}") final int verificationTimeout,
-            @Value("${verify.executor.threads}") final int executorThreads,
+            @Value("${verify.http.timeout:1000}") final int verificationTimeout,
+            @Value("${verify.executor.threads:10}") final int executorThreads,
             final ProctorSpecificationSource specificationSource) {
         super(configuration, trunkStore, qaStore, productionStore);
         this.verificationTimeout = verificationTimeout;

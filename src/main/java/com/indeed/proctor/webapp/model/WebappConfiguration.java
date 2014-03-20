@@ -18,10 +18,10 @@ public class WebappConfiguration {
 
     @SuppressWarnings({"SpringJavaAutowiringInspection"})
     @Autowired
-    public WebappConfiguration(@Value("${use.compiled.css}") boolean useCompiledCSS,
-                               @Value("${use.compiled.javascript}") boolean useCompiledJavaScript,
-                               @Value("${verify.http.timeout}") int verifyHttpTimeout,
-                               @Value("${verify.executor.threads}") int verifyExecutorThreads) {
+    public WebappConfiguration(@Value("${use.compiled.css:true}") boolean useCompiledCSS,
+                               @Value("${use.compiled.javascript:true}") boolean useCompiledJavaScript,
+                               @Value("${verify.http.timeout:1000}") int verifyHttpTimeout,
+                               @Value("${verify.executor.threads:10}") int verifyExecutorThreads) {
         this.useCompiledCSS = useCompiledCSS;
         this.useCompiledJavaScript = useCompiledJavaScript;
         this.verifyHttpTimeout = verifyHttpTimeout;
