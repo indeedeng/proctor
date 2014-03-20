@@ -17,7 +17,10 @@ Proctor-Webapp-Public is a Java web application that uses the [Proctor-Webapp-Li
 3. Set up configuration (see below).
 4. Start the webapp runner. NOTE: The **config.dir** java variable is set to the example-apache-config, you will still need to update **proctor-config.properties** with the appropriate credentials:
     ```bash
-    $ java -Dconfig.dir="$PWD/example-apache-config" -jar target/dependency/webapp-runner.jar --expand-war --context-xml example-apache-config/proctor-webapp.xml target/proctor-webapp-public-1.0.0-SNAPSHOT.war
+    $ java -Dconfig.dir="$PWD/example-apache-config" \
+           -jar target/dependency/webapp-runner.jar \
+           --context-xml example-apache-config/proctor-webapp.xml \
+           --expand-war target/proctor-webapp-public-1.0.0-SNAPSHOT.war \
     ```
 
 # Configuration
