@@ -15,13 +15,13 @@ Proctor-Webapp-Public is a Java web application that uses the [Proctor-Webapp-Li
 # Deployment
 1. Use git to clone https://github.com/indeedeng/proctor-webapp-public, and run mvn package to build.
 3. Set up configuration (see below).
-4. Start the webapp runner. NOTE: The **config.dir** java variable is set to the example-apache-config, you will still need to update **proctor-svn.properties** with the appropriate credentials:
+4. Start the webapp runner. NOTE: The **config.dir** java variable is set to the example-apache-config, you will still need to update **proctor-config.properties** with the appropriate credentials:
     ```bash
     $ java -Dconfig.dir="$PWD/example-apache-config" -jar target/dependency/webapp-runner.jar --expand-war --context-xml example-apache-config/proctor-webapp.xml target/proctor-webapp-public-1.0.0-SNAPSHOT.war
     ```
 
 # Configuration
-Several configuration files need to be provided to run Proctor-Webapp-Public properly. The properties have the recommended values below.
+Two configuration files need to be provided to run Proctor-Webapp-Public properly. The properties have the recommended values below.
 
 1. **${config.dir}/proctor-config.properties**
 
@@ -30,19 +30,12 @@ Several configuration files need to be provided to run Proctor-Webapp-Public pro
     verify.executor.threads=10
     use.compiled.css=true
     use.compiled.javascript=true
-    revision.control=svn
-    revision.control.configuration.file=${config.dir}/proctor-svn.properties
-    ```
-
-2. **${config.dir}/proctor-svn.properties**
-
-    ```bash
     svn.path=https://YOURSVN.com/svn/repos/proctor-data/
     svn.login=REPLACE_WITH_USER
     svn.password=REPLACE_WITH_PASS
     ```
 
-3. **${config.dir}/proctor-webapp.xml**
+2. **${config.dir}/proctor-webapp.xml**
     ```
     <Context debug="5" reloadable="true" crossContext="true">
         <Parameter name="contextConfigLocation" value="/WEB-INF/spring/applicationContext.xml" override="false"/>
