@@ -22,7 +22,7 @@ public class SvnProctorStoreFactory implements StoreFactory {
     final ScheduledExecutorService executor;
 
     private boolean cache;
-    private  String svnPath;
+    private String svnPath;
     private String svnUsername;
     private String svnPassword;
 
