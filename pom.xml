@@ -7,7 +7,7 @@
         <version>7</version>
     </parent>
 
-    <artifactId>proctor-webapp-public</artifactId>
+    <artifactId>proctor-webapp</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>war</packaging>
 

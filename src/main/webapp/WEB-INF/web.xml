@@ -4,7 +4,7 @@
  xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
  xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
   http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
- id="proctor-webapp-public" version="3.0">
+ id="proctor-webapp" version="3.0">
     
     <display-name>Proctor</display-name>
 

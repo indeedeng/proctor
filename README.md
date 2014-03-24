@@ -1,5 +1,5 @@
 # Proctor
-Proctor-Webapp-Public is a Java web application that uses the [Proctor-Webapp-Library](https://github.com/indeedeng/proctor-webapp-library) to manipulate and view Proctor definitions.
+Proctor-Webapp is a Java web application that uses the [Proctor-Webapp-Library](https://github.com/indeedeng/proctor-webapp-library) to manipulate and view Proctor definitions.
 
 # Features:
 - Create/View/Edit/Delete Proctor definitions
@@ -13,16 +13,16 @@ Proctor-Webapp-Public is a Java web application that uses the [Proctor-Webapp-Li
     * https://YOURSVN.com/svn/repos/proctor-data/branches/deploy/production/matrices/test-definitions/
 
 # Deployment
-1. Use git to clone https://github.com/indeedeng/proctor-webapp-public, and run mvn package to build.
+1. Use git to clone https://github.com/indeedeng/proctor-webapp, and run mvn package to build.
 3. Set up configuration (see below).
 4. Start the webapp runner. NOTE: The **config.dir** java variable is set to the example-apache-config, you will still need to update **proctor-config.properties** with the appropriate credentials:
 
     ```bash
-    java -Dconfig.dir="$PWD/example-apache-config"  -jar target/dependency/webapp-runner.jar --context-xml example-apache-config/proctor-webapp.xml --expand-war target/proctor-webapp-public-1.0.0-SNAPSHOT.war
+    java -Dconfig.dir="$PWD/example-apache-config"  -jar target/dependency/webapp-runner.jar --context-xml example-apache-config/proctor-webapp.xml --expand-war target/proctor-webapp-1.0.0-SNAPSHOT.war
     ```
 
 # Configuration
-Two configuration files need to be provided to run Proctor-Webapp-Public properly. The properties have the recommended values below.
+Two configuration files need to be provided to run Proctor-Webapp properly. The properties have the recommended values below.
 
 1. **${config.dir}/proctor-config.properties**
 
@@ -48,4 +48,4 @@ Join the [indeedeng-proctor-users](https://groups.google.com/d/forum/indeedeng-p
 
 # License
 
-[Apache License Version 2.0](https://github.com/indeedeng/proctor-webapp-public/blob/master/LICENSE)
+[Apache License Version 2.0](https://github.com/indeedeng/proctor-webapp/blob/master/LICENSE)
