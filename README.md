@@ -6,7 +6,7 @@ Proctor-Webapp-Library is a library used for running a web application to create
 # Installation
 
 # Example
-See [proctor-webapp-public](http://www.github.com/indeedeng/proctor-webapp-public)
+See [proctor-webapp](http://www.github.com/indeedeng/proctor-webapp)
 
 # Documentation
 
