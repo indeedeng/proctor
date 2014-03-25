@@ -57,7 +57,7 @@
         <dependency>
             <groupId>com.indeed</groupId>
             <artifactId>proctor-webapp-library</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>1.0.0</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.tomcat</groupId>
