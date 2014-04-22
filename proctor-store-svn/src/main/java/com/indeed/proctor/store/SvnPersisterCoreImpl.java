@@ -3,7 +3,6 @@ package com.indeed.proctor.store;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
-import com.google.common.io.Closeables;
 import com.indeed.util.varexport.Export;
 import com.indeed.proctor.common.Serializers;
 import org.apache.commons.io.FileUtils;
@@ -241,7 +240,9 @@ public class SvnPersisterCoreImpl implements SvnPersisterCore, Closeable {
             final ByteArrayOutputStream baos = new ByteArrayOutputStream();
             client.doGetFileContents(url, svnRevision, svnRevision, /* expandKeywords */ false, baos);
             final C testDefinition = objectMapper.readValue(baos.toByteArray(), c);
-            Closeables.closeQuietly(baos);
+            try {
+                baos.close();
+            } catch (IOException e) { /* ignore */ }
             return testDefinition;
         } catch (SVNException e) {
             throw new StoreException.ReadException("Error reading " + path + " from svn", e);
