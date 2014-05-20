@@ -6,6 +6,7 @@ import org.springframework.web.HttpRequestHandler;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Collection;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -22,11 +23,16 @@ public class ShowTestMatrixHandler implements HttpRequestHandler{
     public void handleRequest(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setContentType("text/plain;charset=UTF-8");
 
+        // Only output matching test names if not null.
+        final Collection<String> testNameFilter = ShowHandlerParamUtil.getTestQueryParameters(request);
+
         final PrintWriter writer = response.getWriter();
 
-        Proctor proctor = proctorSupplier.get();
+        final Proctor proctor = proctorSupplier.get();
         if(proctor == null) {
             writer.println("Did not determine a Proctor instance");
+        } else if (testNameFilter != null) {
+            proctor.appendTestMatrixFiltered(writer, testNameFilter);
         } else {
             proctor.appendTestMatrix(writer);
         }
