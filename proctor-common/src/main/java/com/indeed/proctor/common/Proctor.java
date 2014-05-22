@@ -1,6 +1,7 @@
 package com.indeed.proctor.common;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
@@ -16,6 +17,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.text.NumberFormat;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
@@ -201,6 +203,17 @@ public class Proctor {
         });
     }
 
+    public void appendTestsNameFiltered(final Writer sb, final Collection<String> testNameFilter)
+    {
+        final Function<TestChooser<?>, String> getTestName = new Function<TestChooser<?>, String>() {
+            @Override
+            public String apply(TestChooser<?> input) {
+                return input.getTestName();
+            }
+        };
+        appendTests(sb, Predicates.compose(Predicates.in(testNameFilter), getTestName));
+    }
+
     public void appendTests(Writer sb, @Nonnull Predicate<TestChooser<?>> shouldIncludeTest) {
         final NumberFormat fmt = NumberFormat.getPercentInstance(Locale.US);
         fmt.setMaximumFractionDigits(2);
@@ -217,8 +230,17 @@ public class Proctor {
         }
     }
 
-    public void appendTestMatrix(Writer writer) throws IOException {
+    public void appendTestMatrix(final Writer writer) throws IOException {
         ProctorUtils.serializeArtifact(writer, this.matrix);
+    }
+
+    public void appendTestMatrixFiltered(final Writer writer, final Collection<String> testNameFilter) throws IOException {
+        // Create new matrix object copied from the old one,
+        // but keep only the tests with names in testNameFilter.
+        final TestMatrixArtifact filtered = new TestMatrixArtifact();
+        filtered.setAudit(this.matrix.getAudit());
+        filtered.setTests(Maps.filterKeys(this.matrix.getTests(), Predicates.in(testNameFilter)));
+        ProctorUtils.serializeArtifact(writer, filtered);
     }
 
 }
