@@ -21,6 +21,7 @@ public class ConvertedIdentifyParameters {
     public ConvertedIdentifyParameters(final RawQueryParameters raw)
     {
         // TODO: Actually convert to appropriate types
+        // TODO: Tests with rules that cause a test to be skipped don't show up in output at all. Is this good?
         context = Collections.<String, Object>unmodifiableMap(raw.getContext());
 
         // Convert every key in the identifiers to its matching enum type.
@@ -29,6 +30,7 @@ public class ConvertedIdentifyParameters {
         {
             identMap.put(TestType.valueOf(e.getKey()), e.getValue());
         }
+        // TODO: what is this random parameter for and should it be true or false?
         identifiers = new Identifiers(identMap);
 
         test = raw.getTest();
