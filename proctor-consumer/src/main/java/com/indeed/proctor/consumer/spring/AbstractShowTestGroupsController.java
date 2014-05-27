@@ -66,7 +66,7 @@ public abstract class AbstractShowTestGroupsController implements ShowGroupsHand
      * @param request
      * @return
      */
-    abstract boolean isAccessAllowed(final HttpServletRequest request);
+    protected abstract boolean isAccessAllowed(final HttpServletRequest request);
 
     protected int getAccessDeniedStatusCode() {
         return HttpStatus.NOT_FOUND.value();

@@ -6,12 +6,14 @@ import com.google.common.base.Preconditions;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.springframework.core.io.Resource;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.el.FunctionMapper;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 
 public class JsonProctorLoaderFactory {
@@ -36,17 +38,36 @@ public class JsonProctorLoaderFactory {
         this.filePath = filePath;
     }
 
+    public void setSpecificationResource(@Nonnull final Resource specificationResource) {
+        try {
+            readSpecificationResource(specificationResource.getInputStream(), specificationResource.toString());
+        } catch (IOException e) {
+            throw new IllegalArgumentException("Unable to read proctor specification from " + specificationResource, e);
+        }
+    }
+
     public void setSpecificationResource(@Nonnull final String specificationResource) {
         try {
             if (specificationResource.startsWith("classpath:")) {
-                String specificationResourceClasspath= specificationResource.replace("classpath:", "");
-                this._specification = OBJECT_MAPPER.readValue(this.getClass().getResourceAsStream(specificationResourceClasspath), ProctorSpecification.class);
-            }
-            else {
-                FileInputStream fis = new FileInputStream(specificationResource);
-                this._specification = OBJECT_MAPPER.readValue(fis, ProctorSpecification.class);
+                final String specificationResourceClasspath= specificationResource.replace("classpath:", "");
+                final InputStream is = this.getClass().getResourceAsStream(specificationResourceClasspath);
+                readSpecificationResource(is, specificationResource);
+                is.close();
+
+            } else {
+                final FileInputStream fis = new FileInputStream(specificationResource);
+                readSpecificationResource(fis, specificationResource);
                 fis.close();
             }
+
+        } catch (@Nonnull final IOException e) {
+            throw new IllegalArgumentException("Unable to read proctor specification from " + specificationResource, e);
+        }
+    }
+
+    private void readSpecificationResource(@Nonnull final InputStream stream, @Nonnull final String specificationResource) {
+        try {
+            this._specification = OBJECT_MAPPER.readValue(stream, ProctorSpecification.class);
 
         } catch (@Nonnull final JsonParseException e) {
             throw new IllegalArgumentException("Unable to read proctor specification from " + specificationResource, e);
