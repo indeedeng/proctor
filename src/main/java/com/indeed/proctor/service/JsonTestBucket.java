@@ -13,7 +13,7 @@ import com.indeed.proctor.common.model.TestBucket;
 public class JsonTestBucket {
     final private String name;
     final private int value;
-    final private Payload payload;
+    final private Object payload;
     final private int version;
 
     /**
@@ -24,8 +24,17 @@ public class JsonTestBucket {
     public JsonTestBucket(final TestBucket bucket, final int version) {
         name = bucket.getName();
         value = bucket.getValue();
-        payload = bucket.getPayload();
         this.version = version;
+
+        // The json serializer will automatically make this into whatever json type it should be.
+        // So we don't have to worry about figuring out the type of the payload.
+        // TODO: The serializer converts 0.0 to 0. Is this a problem?
+        final Payload bucketPayload = bucket.getPayload();
+        if (bucketPayload != null) {
+            payload = bucket.getPayload().fetchAValue();
+        } else {
+            payload = null;
+        }
     }
 
     public String getName() {
@@ -36,7 +45,7 @@ public class JsonTestBucket {
         return value;
     }
 
-    public Payload getPayload() {
+    public Object getPayload() {
         return payload;
     }
 
