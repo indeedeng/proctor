@@ -41,6 +41,6 @@ public class RestController {
         ProctorResult result = proctor.determineTestGroups(
                 param.getIdentifiers(), param.getContext(), Collections.<String, Integer>emptyMap());
 
-        return new JsonResult(result, param.getContext(), new Audit());
+        return new JsonResult(result, param.getTest(), param.getContext(), new Audit());
     }
 }
