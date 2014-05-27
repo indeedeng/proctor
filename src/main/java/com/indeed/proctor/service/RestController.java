@@ -5,6 +5,7 @@ import com.indeed.proctor.common.Identifiers;
 import com.indeed.proctor.common.JsonProctorLoaderFactory;
 import com.indeed.proctor.common.Proctor;
 import com.indeed.proctor.common.ProctorResult;
+import com.indeed.proctor.common.model.Audit;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -29,7 +30,7 @@ public class RestController {
     }
 
     @RequestMapping(value="/groups/identify", method= RequestMethod.GET)
-    public @ResponseBody ProctorResult groupsIdentify(
+    public @ResponseBody JsonResult groupsIdentify(
             @RequestParam Map<String, String> queryParams) {
 
         final Proctor proctor = loader.get();
@@ -40,6 +41,6 @@ public class RestController {
         ProctorResult result = proctor.determineTestGroups(
                 param.getIdentifiers(), param.getContext(), Collections.<String, Integer>emptyMap());
 
-        return result;
+        return new JsonResult(result, param.getContext(), new Audit());
     }
 }

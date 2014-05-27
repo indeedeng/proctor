@@ -1,0 +1,46 @@
+package com.indeed.proctor.service;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.indeed.proctor.common.model.Payload;
+import com.indeed.proctor.common.model.TestBucket;
+
+/**
+ * Representation of TestBucket intended for serialization into JSON.
+ *
+ * Mostly a rewriting of TestBucket with a few extras like skipping nulls and included test version for caching.
+ */
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class JsonTestBucket {
+    final private String name;
+    final private int value;
+    final private Payload payload;
+    final private int version;
+
+    /**
+     * Serializes the object using an existing bucket and a separate version.
+     *
+     * Version needs to be obtained outside of the bucket through ProctorResult.getTestVersions()
+     */
+    public JsonTestBucket(final TestBucket bucket, final int version) {
+        name = bucket.getName();
+        value = bucket.getValue();
+        payload = bucket.getPayload();
+        this.version = version;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getValue() {
+        return value;
+    }
+
+    public Payload getPayload() {
+        return payload;
+    }
+
+    public int getVersion() {
+        return version;
+    }
+}
