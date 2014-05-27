@@ -35,8 +35,15 @@ public class JsonResult {
         // As we process each TestBucket into a JsonBucket, we also need to obtain a version for that test.
         Map<String, Integer> versions = result.getTestVersions();
 
-        // Only include tests that exist in the filter.
-        final Map<String, TestBucket> filtered = Maps.filterKeys(result.getBuckets(), Predicates.in(testFilter));
+        final Map<String, TestBucket> filtered;
+        if (testFilter != null) {
+            // Only include tests that exist in the filter.
+            filtered = Maps.filterKeys(result.getBuckets(), Predicates.in(testFilter));
+        } else {
+            // Include all tests since there is no filter.
+            filtered = result.getBuckets();
+        }
+
         for (Map.Entry<String, TestBucket> e : filtered.entrySet())
         {
             final String testName = e.getKey();
