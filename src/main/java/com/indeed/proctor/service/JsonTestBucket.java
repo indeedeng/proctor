@@ -28,7 +28,6 @@ public class JsonTestBucket {
 
         // The json serializer will automatically make this into whatever json type it should be.
         // So we don't have to worry about figuring out the type of the payload.
-        // TODO: The serializer converts 0.0 to 0. Is this a problem?
         final Payload bucketPayload = bucket.getPayload();
         if (bucketPayload != null) {
             payload = bucket.getPayload().fetchAValue();
