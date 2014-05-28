@@ -26,8 +26,7 @@ public class ConvertedIdentifyParameters {
 
         // Convert every key in the identifiers to its matching enum type.
         final Map<TestType, String> identMap = Maps.newHashMap();
-        for (final Map.Entry<String, String> e : raw.getIdentifiers().entrySet())
-        {
+        for (final Map.Entry<String, String> e : raw.getIdentifiers().entrySet()) {
             identMap.put(TestType.valueOf(e.getKey()), e.getValue());
         }
         // TODO: what is this random parameter for and should it be true or false?

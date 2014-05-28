@@ -45,8 +45,7 @@ public class RawQueryParameters {
 
         // Regex to match beginning of input, prefix, and period.
         for (final Map.Entry<String, String> e : Maps.filterKeys(
-                queryParams, Predicates.containsPattern("\\A" + prefix + "\\.")).entrySet())
-        {
+                queryParams, Predicates.containsPattern("\\A" + prefix + "\\.")).entrySet()) {
             // Get rid of the prefix and period character, which are always at the beginning of the string.
             final String key = e.getKey().substring(prefix.length() + 1);
             destination.put(key, e.getValue());

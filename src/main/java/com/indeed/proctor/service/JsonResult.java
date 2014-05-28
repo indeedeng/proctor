@@ -44,8 +44,7 @@ public class JsonResult {
             filtered = result.getBuckets();
         }
 
-        for (Map.Entry<String, TestBucket> e : filtered.entrySet())
-        {
+        for (Map.Entry<String, TestBucket> e : filtered.entrySet()) {
             final String testName = e.getKey();
             final TestBucket testBucket = e.getValue();
 
