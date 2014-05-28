@@ -20,11 +20,11 @@ public class JsonResult {
     // Serialized context used to process this request.
     final private Map<String, Object> context;
 
-    final private Audit audit;
+    final private long auditVersion;
 
-    public JsonResult(final ProctorResult result, final List<String> testFilter, final Map<String, Object> context, final Audit audit) {
+    public JsonResult(final ProctorResult result, final List<String> testFilter, final Map<String, Object> context) {
         this.context = context;
-        this.audit = audit;
+        this.auditVersion = result.getMatrixVersion();
 
         groups = generateJsonBuckets(result, testFilter);
     }
@@ -64,7 +64,7 @@ public class JsonResult {
         return context;
     }
 
-    public Audit getAudit() {
-        return audit;
+    public long getAuditVersion() {
+        return auditVersion;
     }
 }
