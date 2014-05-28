@@ -46,7 +46,7 @@ public class RestController {
     }
 
     @RequestMapping(value="/groups/identify", method= RequestMethod.GET)
-    public @ResponseBody JsonResult groupsIdentify(final HttpServletRequest request) {
+    public @ResponseBody JsonResponse<JsonResult> groupsIdentify(final HttpServletRequest request) {
 
         final Proctor proctor = loader.get();
 
@@ -56,7 +56,8 @@ public class RestController {
         final ProctorResult result = proctor.determineTestGroups(
                 param.getIdentifiers(), param.getContext(), Collections.<String, Integer>emptyMap());
 
-        return new JsonResult(result, param.getTest(), param.getContext());
+        final JsonResult jsonResult = new JsonResult(result, param.getTest(), param.getContext());
+        return new JsonResponse<JsonResult>(jsonResult, null);
     }
 
     @ExceptionHandler(BadRequestException.class)
