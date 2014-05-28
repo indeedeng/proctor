@@ -30,10 +30,10 @@ public class JsonResult {
     }
 
     private Map<String, JsonTestBucket> generateJsonBuckets(final ProctorResult result, final List<String> testFilter) {
-        Map<String, JsonTestBucket> jsonBuckets = Maps.newHashMap();
+        final Map<String, JsonTestBucket> jsonBuckets = Maps.newHashMap();
 
         // As we process each TestBucket into a JsonBucket, we also need to obtain a version for that test.
-        Map<String, Integer> versions = result.getTestVersions();
+        final Map<String, Integer> versions = result.getTestVersions();
 
         final Map<String, TestBucket> filtered;
         if (testFilter != null) {
@@ -49,7 +49,7 @@ public class JsonResult {
             final String testName = e.getKey();
             final TestBucket testBucket = e.getValue();
 
-            JsonTestBucket jsonBucket = new JsonTestBucket(testBucket, versions.get(testName));
+            final JsonTestBucket jsonBucket = new JsonTestBucket(testBucket, versions.get(testName));
             jsonBuckets.put(testName, jsonBucket);
         }
 

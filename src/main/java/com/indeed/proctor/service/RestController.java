@@ -38,7 +38,7 @@ public class RestController {
         final RawQueryParameters raw = new RawQueryParameters(queryParams);
         final ConvertedIdentifyParameters param = new ConvertedIdentifyParameters(raw);
 
-        ProctorResult result = proctor.determineTestGroups(
+        final ProctorResult result = proctor.determineTestGroups(
                 param.getIdentifiers(), param.getContext(), Collections.<String, Integer>emptyMap());
 
         return new JsonResult(result, param.getTest(), param.getContext(), new Audit());
