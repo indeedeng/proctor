@@ -31,11 +31,11 @@ public class RestController {
 
     @RequestMapping(value="/groups/identify", method= RequestMethod.GET)
     public @ResponseBody JsonResult groupsIdentify(
-            @RequestParam Map<String, String> queryParams) {
+            @RequestParam Map<String, String> queryParamMap) {
 
         final Proctor proctor = loader.get();
 
-        final RawQueryParameters raw = new RawQueryParameters(queryParams);
+        final RawQueryParameters raw = new RawQueryParameters(queryParamMap);
         final ConvertedIdentifyParameters param = new ConvertedIdentifyParameters(raw);
 
         final ProctorResult result = proctor.determineTestGroups(
