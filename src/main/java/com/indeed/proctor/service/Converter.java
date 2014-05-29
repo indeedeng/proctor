@@ -51,6 +51,8 @@ public class Converter {
         if (type.equals("boolean") || type.equals("Boolean")) return Boolean.parseBoolean(val);
         if (type.equals("char") || type.equals("Character")) return val.charAt(0);
 
+        if (type.equals("String")) return val;
+
         // Then it must be a custom type.
         return val;
     }
