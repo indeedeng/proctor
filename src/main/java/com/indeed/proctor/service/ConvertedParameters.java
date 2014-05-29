@@ -18,21 +18,10 @@ public class ConvertedParameters {
     final private Identifiers identifiers;
     final private List<String> test;
 
-    public ConvertedParameters(final RawParameters raw)
-    {
-        // TODO: Actually convert to appropriate types
-        // TODO: Tests with rules that cause a test to be skipped don't show up in output at all. Is this good?
-        context = Collections.<String, Object>unmodifiableMap(raw.getContext());
-
-        // Convert every key in the identifiers to its matching enum type.
-        final Map<TestType, String> identMap = Maps.newHashMap();
-        for (final Map.Entry<String, String> e : raw.getIdentifiers().entrySet()) {
-            identMap.put(TestType.valueOf(e.getKey()), e.getValue());
-        }
-        // TODO: what is this random parameter for and should it be true or false?
-        identifiers = new Identifiers(identMap);
-
-        test = raw.getTest();
+    public ConvertedParameters(Map<String, Object> context, Identifiers identifiers, List<String> test) {
+        this.context = context;
+        this.identifiers = identifiers;
+        this.test = test;
     }
 
     public Map<String, Object> getContext() {
