@@ -13,12 +13,12 @@ import java.util.Map;
  *
  * This is mostly cleaning up parameters and types to work with determineTestBuckets.
  */
-public class ConvertedIdentifyParameters {
+public class ConvertedParameters {
     final private Map<String, Object> context;
     final private Identifiers identifiers;
     final private List<String> test;
 
-    public ConvertedIdentifyParameters(final RawQueryParameters raw)
+    public ConvertedParameters(final RawParameters raw)
     {
         // TODO: Actually convert to appropriate types
         // TODO: Tests with rules that cause a test to be skipped don't show up in output at all. Is this good?

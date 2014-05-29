@@ -17,12 +17,18 @@ import java.util.Map;
  * This does NO conversion of types. Everything stays a string just as we got it from the request
  * because at this point we still don't know the intended types of context and id variables.
  */
-public class RawQueryParameters {
+public class RawParameters {
     final private Map<String, String> context;
     final private Map<String, String> identifiers;
     final private List<String> test;
 
-    public RawQueryParameters(final Map<String, String> queryParams) {
+    public RawParameters(Map<String, String> context, Map<String, String> identifiers, List<String> test) {
+        this.context = context;
+        this.identifiers = identifiers;
+        this.test = test;
+    }
+
+    /*public RawParameters(final Map<String, String> queryParams) {
         context = Maps.newHashMap();
         parseDotParameters(queryParams, "ctx", context);
         identifiers = Maps.newHashMap();
@@ -34,7 +40,7 @@ public class RawQueryParameters {
         } else {
             test = null;
         }
-    }
+    }*/
 
     /**
      * Takes all the query parameters, finds the ones that start with prefix and a period, strips it out, and places
