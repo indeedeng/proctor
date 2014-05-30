@@ -69,7 +69,8 @@ public class Extractor {
             final String extractedValue = extractVar(request, varConfig, prefix);
             if (isMissingError && extractedValue == null) {
                 // This is not allowed.
-                return null;
+                throw new BadRequestException(String.format(
+                        "Required parameter '%s' not found where expected. See the service config", varName));
             } else {
                 ret.put(varName, extractedValue);
             }

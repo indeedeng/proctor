@@ -6,14 +6,18 @@ import com.indeed.proctor.common.JsonProctorLoaderFactory;
 import com.indeed.proctor.common.Proctor;
 import com.indeed.proctor.common.ProctorResult;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 
@@ -26,7 +30,7 @@ public class RestController {
     private final Extractor extractor;
     private final Converter converter;
 
-    public RestController() throws Exception
+    public RestController() throws IOException
     {
         final JsonProctorLoaderFactory factory = new JsonProctorLoaderFactory();
         factory.setFilePath("/var/lucene/proctor/proctor-tests-matrix.json");
@@ -53,5 +57,12 @@ public class RestController {
                 param.getIdentifiers(), param.getContext(), Collections.<String, Integer>emptyMap());
 
         return new JsonResult(result, param.getTest(), param.getContext());
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    @ResponseBody
+    public String handleBadRequestException(final BadRequestException e) {
+        return e.getMessage();
     }
 }
