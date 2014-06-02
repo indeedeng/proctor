@@ -116,7 +116,7 @@ key points
 - Accessors for each test `group` are generated and can be used to check if a proctor-result contains the specified `test bucket`.
 
 
-## proctor-maven-plugin
+## <a name="maven"></a>proctor-maven-plugin
 The `proctor-maven-plugin` plugin makes it easy to incorporate Java code generation into the [maven build lifecycle](http://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html).
 
 | Goal | Default Phase | Description |
@@ -169,7 +169,7 @@ src/main/org/your/company/app/ExampleGroups.json
     => org.your.company.app.ExampleGroupsManager.java
 ```
 
-## proctor-ant-plugin
+## <a name="ant"></a>proctor-ant-plugin
 The `proctor-ant-plugin` project provides an ant task, `com.indeed.proctor.consumer.gen.ant.TestGroupsGeneratorTask`, that can be invoked during ant's build process and used to generate Java code.
 
 [TODO: is the ant task bundled properly? Adjust ant task to use file name and package just like maven plugin?]
