@@ -25,13 +25,4 @@ public class ServiceConfig {
     public void setIdentifiers(Map<String, VarConfig> identifiers) {
         this.identifiers = identifiers;
     }
-
-    public void correctDefaultSourceKeys() {
-        for (Map.Entry<String, ? extends VarConfig> e : context.entrySet()) {
-            e.getValue().correctDefaultSourceKey(e.getKey());
-        }
-        for (Map.Entry<String, ? extends VarConfig> e : identifiers.entrySet()) {
-            e.getValue().correctDefaultSourceKey(e.getKey());
-        }
-    }
 }

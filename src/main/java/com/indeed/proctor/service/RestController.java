@@ -40,7 +40,6 @@ public class RestController {
 
         final ObjectMapper mapper = new ObjectMapper();
         serviceConfig = mapper.readValue(new File("/var/lucene/proctor/service-config.json"), ServiceConfig.class);
-        serviceConfig.correctDefaultSourceKeys();
         extractor = new Extractor(serviceConfig);
         converter = new Converter(serviceConfig);
     }
