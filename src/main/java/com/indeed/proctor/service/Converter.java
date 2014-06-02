@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import com.indeed.proctor.common.Identifiers;
 import com.indeed.proctor.common.model.TestType;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -12,10 +13,10 @@ import java.util.Map;
  * Context variables are converted according to the service configuration.
  */
 public class Converter {
-    private final JsonServiceConfig config;
+    private final List<VarValueUtil.ContextVariable> contextList;
 
-    public Converter(final JsonServiceConfig config) {
-        this.config = config;
+    public Converter(final List<VarValueUtil.ContextVariable> contextList) {
+        this.contextList = contextList;
     }
 
     public ConvertedParameters convert(final RawParameters raw) {
@@ -26,35 +27,16 @@ public class Converter {
         );
     }
 
-    private Map<String, Object> convertContext(final Map<String, String> context) {
+    private Map<String, Object> convertContext(final Map<String, String> contextValues) {
         final Map<String, Object> converted = Maps.newHashMap();
-        final Map<String, JsonContextVarConfig> contextConfigMap = config.getContext();
 
-        for (Map.Entry<String, String> e : context.entrySet()) {
-            final String varName = e.getKey();
-            final String varValue = e.getValue();
-
-            converted.put(varName, convertType(varValue, contextConfigMap.get(varName).getType()));
+        for (VarValueUtil.ContextVariable context : contextList) {
+            final String varName = context.getVarName();
+            final Object value = context.getConverter().convert(contextValues.get(varName));
+            converted.put(varName, value);
         }
 
         return converted;
-    }
-
-    private Object convertType(final String val, final String type) {
-        // Primitives
-        if (type.equals("byte") || type.equals("Byte")) return Byte.parseByte(val);
-        if (type.equals("short") || type.equals("Short")) return Short.parseShort(val);
-        if (type.equals("int") || type.equals("Integer")) return Integer.parseInt(val);
-        if (type.equals("long") || type.equals("Long")) return Long.parseLong(val);
-        if (type.equals("float") || type.equals("Float")) return Float.parseFloat(val);
-        if (type.equals("double") || type.equals("Double")) return Double.parseDouble(val);
-        if (type.equals("boolean") || type.equals("Boolean")) return Boolean.parseBoolean(val);
-        if (type.equals("char") || type.equals("Character")) return val.charAt(0);
-
-        if (type.equals("String")) return val;
-
-        // Then it must be a custom type.
-        return val;
     }
 
     private Identifiers convertIdentifiers(final Map<String, String> identifiers) {

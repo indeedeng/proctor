@@ -1,5 +1,6 @@
 package com.indeed.proctor.service;
 
+import com.google.common.collect.Lists;
 import com.indeed.proctor.common.AbstractProctorLoader;
 import com.indeed.proctor.common.Identifiers;
 import com.indeed.proctor.common.JsonProctorLoaderFactory;
@@ -19,6 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -40,8 +42,19 @@ public class RestController {
 
         final ObjectMapper mapper = new ObjectMapper();
         jsonServiceConfig = mapper.readValue(new File("/var/lucene/proctor/service-config.json"), JsonServiceConfig.class);
-        extractor = new Extractor(jsonServiceConfig);
-        converter = new Converter(jsonServiceConfig);
+
+        // Populate context vars and identifiers for use by the extractor and converter.
+        final List<VarValueUtil.ContextVariable> contextList = Lists.newArrayList();
+        for (Map.Entry<String, JsonContextVarConfig> e : jsonServiceConfig.getContext().entrySet()) {
+            contextList.add(new VarValueUtil.ContextVariable(e.getKey(), e.getValue()));
+        }
+        final List<VarValueUtil.Identifier> identifierList = Lists.newArrayList();
+        for (Map.Entry<String, JsonVarConfig> e : jsonServiceConfig.getIdentifiers().entrySet()) {
+            identifierList.add(new VarValueUtil.Identifier(e.getKey(), e.getValue()));
+        }
+
+        extractor = new Extractor(contextList, identifierList);
+        converter = new Converter(contextList);
     }
 
     @RequestMapping(value="/groups/identify", method= RequestMethod.GET)
