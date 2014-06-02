@@ -6,19 +6,19 @@ package com.indeed.proctor.service;
  * data should be a JSON-serializable object, like a JsonResult.
  */
 public class JsonResponse<JsonData> {
-    private JsonData data;
-    private JsonError error;
+    private final JsonData data;
+    private final JsonMeta meta;
 
-    public JsonResponse(final JsonData data, final JsonError error) {
+    public JsonResponse(final JsonData data, final JsonMeta meta) {
         this.data = data;
-        this.error = error;
+        this.meta = meta;
     }
 
     public JsonData getData() {
         return data;
     }
 
-    public JsonError getError() {
-        return error;
+    public JsonMeta getMeta() {
+        return meta;
     }
 }

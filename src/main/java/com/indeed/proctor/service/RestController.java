@@ -57,13 +57,13 @@ public class RestController {
                 param.getIdentifiers(), param.getContext(), Collections.<String, Integer>emptyMap());
 
         final JsonResult jsonResult = new JsonResult(result, param.getTest(), param.getContext());
-        return new JsonResponse<JsonResult>(jsonResult, null);
+        return new JsonResponse<JsonResult>(jsonResult, new JsonMeta(HttpStatus.OK.value()));
     }
 
     @ExceptionHandler(BadRequestException.class)
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     @ResponseBody
-    public String handleBadRequestException(final BadRequestException e) {
-        return e.getMessage();
+    public JsonResponse handleBadRequestException(final BadRequestException e) {
+        return new JsonEmptyDataResponse(new JsonMeta(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
     }
 }
