@@ -26,7 +26,7 @@ public class RestController {
 
     private final AbstractProctorLoader loader;
 
-    private final ServiceConfig serviceConfig;
+    private final JsonServiceConfig jsonServiceConfig;
     private final Extractor extractor;
     private final Converter converter;
 
@@ -39,9 +39,9 @@ public class RestController {
         loader.load();
 
         final ObjectMapper mapper = new ObjectMapper();
-        serviceConfig = mapper.readValue(new File("/var/lucene/proctor/service-config.json"), ServiceConfig.class);
-        extractor = new Extractor(serviceConfig);
-        converter = new Converter(serviceConfig);
+        jsonServiceConfig = mapper.readValue(new File("/var/lucene/proctor/service-config.json"), JsonServiceConfig.class);
+        extractor = new Extractor(jsonServiceConfig);
+        converter = new Converter(jsonServiceConfig);
     }
 
     @RequestMapping(value="/groups/identify", method= RequestMethod.GET)

@@ -3,7 +3,7 @@ package com.indeed.proctor.service;
 /**
  * Context variable configuration, which also requires type conversion.
  */
-public class ContextVarConfig extends VarConfig {
+public class JsonContextVarConfig extends JsonVarConfig {
     private String type;
 
     public String getType() {

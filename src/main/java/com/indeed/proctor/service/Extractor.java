@@ -13,9 +13,9 @@ import java.util.Map;
  * Extracts variables from the HTTP Request according to the service configuration.
  */
 public class Extractor {
-    private ServiceConfig config;
+    private JsonServiceConfig config;
 
-    public Extractor(final ServiceConfig config) {
+    public Extractor(final JsonServiceConfig config) {
         this.config = config;
     }
 
@@ -53,7 +53,7 @@ public class Extractor {
      * @return A mapping of var name to string var value.
      */
     private Map<String, String> extractVarsSubset(
-            final HttpServletRequest request, final Map<String, ? extends VarConfig> varMap, final String prefix,
+            final HttpServletRequest request, final Map<String, ? extends JsonVarConfig> varMap, final String prefix,
             final boolean isMissingError) {
 
         final Map<String, String> ret = Maps.newHashMap();
@@ -62,9 +62,9 @@ public class Extractor {
         // Missing attributes must throw.
         // Extra variables that shouldn't be here must throw.
 
-        for (Map.Entry<String, ? extends VarConfig> e : varMap.entrySet()) {
+        for (Map.Entry<String, ? extends JsonVarConfig> e : varMap.entrySet()) {
             final String varName = e.getKey();
-            final VarConfig varConfig = e.getValue();
+            final JsonVarConfig varConfig = e.getValue();
 
             final String extractedValue = extractVar(request, varConfig, prefix);
             if (isMissingError && extractedValue == null) {
@@ -84,7 +84,7 @@ public class Extractor {
      *
      * @return The string value of the var or null if it was not found.
      */
-    private String extractVar(final HttpServletRequest request, final VarConfig varConfig, final String prefix) {
+    private String extractVar(final HttpServletRequest request, final JsonVarConfig varConfig, final String prefix) {
         // Figure out an appropriate full source key.
         String sourceKey = varConfig.getSourceKey();
         if (varConfig.usesPrefix()) {

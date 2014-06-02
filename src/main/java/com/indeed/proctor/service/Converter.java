@@ -12,9 +12,9 @@ import java.util.Map;
  * Context variables are converted according to the service configuration.
  */
 public class Converter {
-    private final ServiceConfig config;
+    private final JsonServiceConfig config;
 
-    public Converter(final ServiceConfig config) {
+    public Converter(final JsonServiceConfig config) {
         this.config = config;
     }
 
@@ -28,7 +28,7 @@ public class Converter {
 
     private Map<String, Object> convertContext(final Map<String, String> context) {
         final Map<String, Object> converted = Maps.newHashMap();
-        final Map<String, ContextVarConfig> contextConfigMap = config.getContext();
+        final Map<String, JsonContextVarConfig> contextConfigMap = config.getContext();
 
         for (Map.Entry<String, String> e : context.entrySet()) {
             final String varName = e.getKey();

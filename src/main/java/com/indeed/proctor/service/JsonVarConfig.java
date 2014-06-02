@@ -3,7 +3,7 @@ package com.indeed.proctor.service;
 /**
  * Settings for the extraction of a variable in the service config file.
  */
-public class VarConfig {
+public class JsonVarConfig {
     private Source source;
     private String sourceKey;
 
