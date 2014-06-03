@@ -239,7 +239,7 @@ public boolean isEmpty() { ... }
 public void appendTestGroups(final StringBuilder sb, char separator) { ... }
 ```
 
-## forcing groups
+## <a name="forceGroups"></a>forcing groups
 Groups can be forced by using a _prforceGroups_ url parameter. It's value should be a comma-delimited list of group strings identical to that used in the `Groups.toString()` method documented above.
 
 eg. forcing the `altcolor2` bucket (value 1) for the `bgcolortst` in the example groups
@@ -258,6 +258,7 @@ The [proctor loader]({{ site.baseurl }}/docs/loader) provides some state via `Va
 
 Proctor comes with several other servlets that can be used to display the proctor state. Typically these pages are restricted to internal-developers either at the application or apache level.
 
+<a name="AbstractShowTestGroupsController"></a>
 **AbstractShowTestGroupsController**: Spring controller that provides three routes:
 
 | url | page |
@@ -285,7 +286,7 @@ public ExampleShowTestGroupsController extends AbstractShowTestGroupsController 
 }
 ```
 
-
+<a name="ViewProctorSpecificationServlet"></a>
 **ViewProctorSpecificationServlet**: servlet used to display the application's specification
 
 web.xml:
