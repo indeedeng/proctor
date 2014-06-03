@@ -35,9 +35,14 @@ public class Extractor {
     public RawParameters extract(final HttpServletRequest request) {
         checkForUnrecognizedParameters(request.getParameterNames());
 
+        final Map<String, String> contextMap = extractAllVars(request, contextList, true);
+        final Map<String, String> identifierMap = extractAllVars(request, identifierList, false);
+
+        checkAtLeastOneIdentifier(identifierMap);
+
         return new RawParameters(
-            extractAllVars(request, contextList, true),
-            extractAllVars(request, identifierList, false),
+            contextMap,
+            identifierMap,
             extractTest(request)
         );
     }
@@ -68,6 +73,18 @@ public class Extractor {
             throw new BadRequestException(String.format(
                     "Unrecognized query parameters: %s", Joiner.on(", ").join(paramSet))
             );
+        }
+    }
+
+    /**
+     * Checks that there is at least one identifier in the request.
+     *
+     * It's very rare for any test groups to be returned if no identifiers were passed in at all.
+     * Therefore, passing in none should be an error.
+     */
+    private void checkAtLeastOneIdentifier(final Map<String, String> identifierMap) {
+        if (identifierMap.isEmpty()) {
+            throw new BadRequestException("Request must have at least one identifier.");
         }
     }
 
