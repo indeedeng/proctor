@@ -77,7 +77,14 @@ public class ConvertUtil {
 
     private static class CharacterValueConverter implements ValueConverter<Character> {
         public Character convert(String rawValue) {
-            return rawValue.charAt(0);
+            final int length = rawValue.length();
+            if (length != 1) {
+                // User should be passing in exactly one character in the request.
+                throw new ConversionException(String.format(
+                        "Parameter was length %d but expecting length 1.", length));
+            } else {
+                return rawValue.charAt(0);
+            }
         }
     }
 

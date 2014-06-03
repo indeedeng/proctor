@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import com.indeed.proctor.common.Identifiers;
 import com.indeed.proctor.common.model.TestType;
 import com.indeed.proctor.service.var.ContextVariable;
+import com.indeed.proctor.service.var.ConversionException;
 
 import java.util.List;
 import java.util.Map;
@@ -33,8 +34,24 @@ public class Converter {
 
         for (ContextVariable context : contextList) {
             final String varName = context.getVarName();
-            final Object value = context.getConverter().convert(contextValues.get(varName));
-            converted.put(varName, value);
+            final String rawValue = contextValues.get(varName);
+
+            try {
+                final Object value = context.getConverter().convert(rawValue);
+                converted.put(varName, value);
+
+            } catch (final NumberFormatException e) {
+                // It would be too difficult for certain primitive ValueConverters to throw ConversionException.
+                // So we handle it as a separate case.
+                ConversionException convertError = new ConversionException("Number format exception");
+                convertError.setVarName(varName);
+                convertError.setRawValue(rawValue);
+                throw convertError;
+            } catch (final ConversionException e) {
+                e.setVarName(varName);
+                e.setRawValue(rawValue);
+                throw e;
+            }
         }
 
         return converted;
