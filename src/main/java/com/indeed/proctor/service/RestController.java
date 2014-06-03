@@ -2,7 +2,6 @@ package com.indeed.proctor.service;
 
 import com.google.common.collect.Lists;
 import com.indeed.proctor.common.AbstractProctorLoader;
-import com.indeed.proctor.common.Identifiers;
 import com.indeed.proctor.common.JsonProctorLoaderFactory;
 import com.indeed.proctor.common.Proctor;
 import com.indeed.proctor.common.ProctorResult;
@@ -12,7 +11,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 

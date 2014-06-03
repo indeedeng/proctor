@@ -3,10 +3,8 @@ package com.indeed.proctor.service;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Maps;
 import com.indeed.proctor.common.ProctorResult;
-import com.indeed.proctor.common.model.Audit;
 import com.indeed.proctor.common.model.TestBucket;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 

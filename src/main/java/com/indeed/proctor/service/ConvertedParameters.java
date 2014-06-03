@@ -1,10 +1,7 @@
 package com.indeed.proctor.service;
 
-import com.google.common.collect.Maps;
 import com.indeed.proctor.common.Identifiers;
-import com.indeed.proctor.common.model.TestType;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 

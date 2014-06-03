@@ -1,8 +1,6 @@
 package com.indeed.proctor.service;
 
 import com.google.common.base.Predicates;
-import com.google.common.base.Splitter;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import java.util.List;
