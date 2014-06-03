@@ -14,14 +14,15 @@ import com.indeed.proctor.service.BadRequestException;
 public class ConversionException extends BadRequestException {
     private String varName;
     private String rawValue;
+    private String type;
 
     public ConversionException(final String details) {
         super(details);
     }
 
     public String getMessage() {
-        return String.format("Could not convert '%s' to context variable '%s': %s",
-                rawValue, varName, super.getMessage());
+        return String.format("Could not convert raw value '%s' to type '%s' for context variable '%s': %s",
+                rawValue, type, varName, super.getMessage());
     }
 
     public String getVarName() {
@@ -38,5 +39,13 @@ public class ConversionException extends BadRequestException {
 
     public void setRawValue(String rawValue) {
         this.rawValue = rawValue;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }

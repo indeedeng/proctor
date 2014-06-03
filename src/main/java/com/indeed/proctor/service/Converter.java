@@ -46,10 +46,12 @@ public class Converter {
                 ConversionException convertError = new ConversionException("Number format exception");
                 convertError.setVarName(varName);
                 convertError.setRawValue(rawValue);
+                convertError.setType(context.getType());
                 throw convertError;
             } catch (final ConversionException e) {
                 e.setVarName(varName);
                 e.setRawValue(rawValue);
+                e.setType(context.getType());
                 throw e;
             }
         }
