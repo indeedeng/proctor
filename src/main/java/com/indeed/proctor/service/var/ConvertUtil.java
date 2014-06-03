@@ -1,5 +1,6 @@
 package com.indeed.proctor.service.var;
 
+import com.indeed.proctor.service.ConfigurationException;
 import com.indeed.proctor.service.useragents.UserAgent;
 
 /**
@@ -24,7 +25,8 @@ public class ConvertUtil {
         if (type.equals("UserAgent")) return new UserAgentValueConverter();
 
         // Unrecognized type name. You should add any custom converters here and as an implementation of ValueConverter.
-        return null;
+        throw new ConfigurationException(
+                String.format("Type '%s' unrecognized. ConvertUtil lacks a converter for this type.", type));
     }
 
     public static interface ValueConverter<T> {

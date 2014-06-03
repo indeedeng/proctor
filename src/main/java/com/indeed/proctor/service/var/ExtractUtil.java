@@ -1,5 +1,6 @@
 package com.indeed.proctor.service.var;
 
+import com.indeed.proctor.service.ConfigurationException;
 import com.indeed.proctor.service.Source;
 
 import javax.servlet.http.HttpServletRequest;
@@ -17,7 +18,8 @@ public class ExtractUtil {
         } else {
             // This should be impossible if all enum values are in the above if statements.
             // If you add a new source, you need to add handling here and as an implementation of ValueExtractor.
-            return null;
+            throw new ConfigurationException(
+                    String.format("Source '%s' in enum but lacks any Extractor in ExtractUtil.", source));
         }
     }
 
