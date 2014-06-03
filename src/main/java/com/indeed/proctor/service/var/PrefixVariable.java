@@ -8,21 +8,21 @@ import com.indeed.proctor.service.JsonVarConfig;
  */
 public abstract class PrefixVariable {
     final private String varName;
-    final private ValueUtil.ValueExtractor extractor;
+    final private ExtractUtil.ValueExtractor extractor;
 
     public PrefixVariable(final String varName, final JsonVarConfig varConfig, final String prefix) {
         this.varName = varName;
 
         // If the config didn't specify a source key, use the var name. This saves typing in the config file.
         final String sourceKey = (varConfig.getSourceKey() != null ? varConfig.getSourceKey() : varName);
-        extractor = ValueUtil.createValueExtractor(varConfig.getSource(), sourceKey, prefix);
+        extractor = ExtractUtil.createValueExtractor(varConfig.getSource(), sourceKey, prefix);
     }
 
     public String getVarName() {
         return varName;
     }
 
-    public ValueUtil.ValueExtractor getExtractor() {
+    public ExtractUtil.ValueExtractor getExtractor() {
         return extractor;
     }
 }

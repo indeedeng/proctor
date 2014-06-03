@@ -6,14 +6,14 @@ import com.indeed.proctor.service.JsonContextVarConfig;
  * Implementation of PrefixVariable that also includes a ValueConverter for type conversion.
  */
 public class ContextVariable extends PrefixVariable {
-    final private ValueUtil.ValueConverter converter;
+    final private ConvertUtil.ValueConverter converter;
 
     public ContextVariable(final String varName, final JsonContextVarConfig varConfig) {
         super(varName, varConfig, "ctx");
-        converter = ValueUtil.createValueConverter(varConfig.getType());
+        converter = ConvertUtil.createValueConverter(varConfig.getType());
     }
 
-    public ValueUtil.ValueConverter getConverter() {
+    public ConvertUtil.ValueConverter getConverter() {
         return converter;
     }
 }
