@@ -67,9 +67,8 @@ public class Extractor {
             if (isMissingError && value == null) {
                 // This is not allowed for this type of variable.
                 throw new BadRequestException(String.format(
-                        "Required parameter '%s' not found where expected. See the service configuration.", varName));
-            }
-            else {
+                        "Required variable '%s' not found where expected. See the service configuration.", varName));
+            } else {
                 ret.put(varName, value);
             }
         }
