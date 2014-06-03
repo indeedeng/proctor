@@ -1,5 +1,6 @@
-package com.indeed.proctor.service;
+package com.indeed.proctor.service.var;
 
+import com.indeed.proctor.service.Source;
 import com.indeed.proctor.service.useragents.UserAgent;
 
 import javax.servlet.http.HttpServletRequest;
@@ -7,52 +8,9 @@ import javax.servlet.http.HttpServletRequest;
 /**
  * Holds multiple classes related to the extraction and conversion of individual variable values.
  */
-public class VarValueUtil {
+public class ValueUtil {
 
-    public static class ContextVariable extends PrefixVariable {
-        final private ValueConverter converter;
-
-        public ContextVariable(final String varName, final JsonContextVarConfig varConfig) {
-            super(varName, varConfig, "ctx");
-            converter = createValueConverter(varConfig.getType());
-        }
-
-        public ValueConverter getConverter() {
-            return converter;
-        }
-    }
-
-    public static class Identifier extends PrefixVariable {
-        public Identifier(final String varName, final JsonVarConfig varConfig) {
-            super(varName, varConfig, "id");
-        }
-    }
-
-    /**
-     * Used for functionality common to both context and identifier as they both use prefixes in query params.
-     */
-    public static abstract class PrefixVariable {
-        final private String varName;
-        final private ValueExtractor extractor;
-
-        public PrefixVariable(final String varName, final JsonVarConfig varConfig, final String prefix) {
-            this.varName = varName;
-
-            // If the config didn't specify a source key, use the var name. This saves typing in the config file.
-            final String sourceKey = (varConfig.getSourceKey() != null ? varConfig.getSourceKey() : varName);
-            extractor = createValueExtractor(varConfig.getSource(), sourceKey, prefix);
-        }
-
-        public String getVarName() {
-            return varName;
-        }
-
-        public ValueExtractor getExtractor() {
-            return extractor;
-        }
-    }
-
-    private static ValueExtractor createValueExtractor(final Source source, final String sourceKey, final String prefix) {
+    public static ValueExtractor createValueExtractor(final Source source, final String sourceKey, final String prefix) {
         if (source == Source.QUERY) {
             return new QueryValueExtractor(sourceKey, prefix);
         } else if (source == Source.HEADER) {
@@ -94,7 +52,7 @@ public class VarValueUtil {
         }
     }
 
-    private static ValueConverter createValueConverter(final String type) {
+    public static ValueConverter createValueConverter(final String type) {
         // Primitives
         if (type.equals("byte") || type.equals("Byte")) return new ByteValueConverter();
         if (type.equals("short") || type.equals("Short")) return new ShortValueConverter();

@@ -3,6 +3,7 @@ package com.indeed.proctor.service;
 import com.google.common.collect.Maps;
 import com.indeed.proctor.common.Identifiers;
 import com.indeed.proctor.common.model.TestType;
+import com.indeed.proctor.service.var.ContextVariable;
 
 import java.util.List;
 import java.util.Map;
@@ -13,9 +14,9 @@ import java.util.Map;
  * Context variables are converted according to the service configuration.
  */
 public class Converter {
-    private final List<VarValueUtil.ContextVariable> contextList;
+    private final List<ContextVariable> contextList;
 
-    public Converter(final List<VarValueUtil.ContextVariable> contextList) {
+    public Converter(final List<ContextVariable> contextList) {
         this.contextList = contextList;
     }
 
@@ -30,7 +31,7 @@ public class Converter {
     private Map<String, Object> convertContext(final Map<String, String> contextValues) {
         final Map<String, Object> converted = Maps.newHashMap();
 
-        for (VarValueUtil.ContextVariable context : contextList) {
+        for (ContextVariable context : contextList) {
             final String varName = context.getVarName();
             final Object value = context.getConverter().convert(contextValues.get(varName));
             converted.put(varName, value);

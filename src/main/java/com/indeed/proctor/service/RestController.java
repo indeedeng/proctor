@@ -5,6 +5,8 @@ import com.indeed.proctor.common.AbstractProctorLoader;
 import com.indeed.proctor.common.JsonProctorLoaderFactory;
 import com.indeed.proctor.common.Proctor;
 import com.indeed.proctor.common.ProctorResult;
+import com.indeed.proctor.service.var.ContextVariable;
+import com.indeed.proctor.service.var.Identifier;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -42,13 +44,13 @@ public class RestController {
         jsonServiceConfig = mapper.readValue(new File("/var/lucene/proctor/service-config.json"), JsonServiceConfig.class);
 
         // Populate context vars and identifiers for use by the extractor and converter.
-        final List<VarValueUtil.ContextVariable> contextList = Lists.newArrayList();
+        final List<ContextVariable> contextList = Lists.newArrayList();
         for (Map.Entry<String, JsonContextVarConfig> e : jsonServiceConfig.getContext().entrySet()) {
-            contextList.add(new VarValueUtil.ContextVariable(e.getKey(), e.getValue()));
+            contextList.add(new ContextVariable(e.getKey(), e.getValue()));
         }
-        final List<VarValueUtil.Identifier> identifierList = Lists.newArrayList();
+        final List<Identifier> identifierList = Lists.newArrayList();
         for (Map.Entry<String, JsonVarConfig> e : jsonServiceConfig.getIdentifiers().entrySet()) {
-            identifierList.add(new VarValueUtil.Identifier(e.getKey(), e.getValue()));
+            identifierList.add(new Identifier(e.getKey(), e.getValue()));
         }
 
         extractor = new Extractor(contextList, identifierList);

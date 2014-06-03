@@ -3,6 +3,9 @@ package com.indeed.proctor.service;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.indeed.proctor.service.var.ContextVariable;
+import com.indeed.proctor.service.var.Identifier;
+import com.indeed.proctor.service.var.PrefixVariable;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -12,10 +15,10 @@ import java.util.Map;
  * Extracts variables from the HTTP Request according to the service configuration.
  */
 public class Extractor {
-    final List<VarValueUtil.ContextVariable> contextList;
-    final List<VarValueUtil.Identifier> identifierList;
+    final List<ContextVariable> contextList;
+    final List<Identifier> identifierList;
 
-    public Extractor(final List<VarValueUtil.ContextVariable> contextList, final List<VarValueUtil.Identifier> identifierList) {
+    public Extractor(final List<ContextVariable> contextList, final List<Identifier> identifierList) {
         this.contextList = contextList;
         this.identifierList = identifierList;
     }
@@ -53,12 +56,11 @@ public class Extractor {
      * @return A mapping of var name to string var value.
      */
     private Map<String, String> extractAllVars(
-            final HttpServletRequest request, final List<? extends VarValueUtil.PrefixVariable> varList,
-            boolean isMissingError) {
+            final HttpServletRequest request, final List<? extends PrefixVariable> varList, boolean isMissingError) {
 
         final Map<String, String> ret = Maps.newHashMap();
 
-        for (VarValueUtil.PrefixVariable var : varList) {
+        for (PrefixVariable var : varList) {
             final String varName = var.getVarName();
             final String value = var.getExtractor().extract(request);
 
