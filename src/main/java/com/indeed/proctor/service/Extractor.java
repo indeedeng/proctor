@@ -15,8 +15,8 @@ import java.util.Map;
  * Extracts variables from the HTTP Request according to the service configuration.
  */
 public class Extractor {
-    final List<ContextVariable> contextList;
-    final List<Identifier> identifierList;
+    private final List<ContextVariable> contextList;
+    private final List<Identifier> identifierList;
 
     public Extractor(final List<ContextVariable> contextList, final List<Identifier> identifierList) {
         this.contextList = contextList;
