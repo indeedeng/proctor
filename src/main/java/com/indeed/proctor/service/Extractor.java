@@ -1,6 +1,8 @@
 package com.indeed.proctor.service;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
+import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.indeed.proctor.service.var.ContextVariable;
@@ -8,13 +10,20 @@ import com.indeed.proctor.service.var.Identifier;
 import com.indeed.proctor.service.var.PrefixVariable;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Extracts variables from the HTTP Request according to the service configuration.
  */
 public class Extractor {
+    private final String TEST_LIST_PARAM = "test";
+
     private final List<ContextVariable> contextList;
     private final List<Identifier> identifierList;
 
@@ -24,11 +33,42 @@ public class Extractor {
     }
 
     public RawParameters extract(final HttpServletRequest request) {
+        checkForUnrecognizedParameters(request.getParameterNames());
+
         return new RawParameters(
             extractAllVars(request, contextList, true),
             extractAllVars(request, identifierList, false),
             extractTest(request)
         );
+    }
+
+    /**
+     * Checks that all the parameters in our request are valid. If the user passed in something we don't recognize,
+     * we throw because they made an error in their request.
+     */
+    private void checkForUnrecognizedParameters(Enumeration<String> paramNames) {
+        Set<String> paramSet = new HashSet<String>(Collections.list(paramNames));
+
+        // Iterate through all possible parameters and remove them from the set.
+        // It doesn't matter if we remove optional or non-existent parameters. remove() returns false in that case.
+
+        paramSet.remove(TEST_LIST_PARAM);
+
+        Iterator<PrefixVariable> iter = Iterators.concat(contextList.iterator(), identifierList.iterator());
+        while (iter.hasNext()) {
+            PrefixVariable var = iter.next();
+            if (var.getSource() == Source.QUERY) {
+                paramSet.remove(var.getPrefix() + "." + var.getSourceKey());
+                // If the parameter doesn't exist, then an error will be thrown during extraction later on.
+            }
+        }
+
+        // All that remains in paramSet are query parameters that our config had no knowledge of.
+        if (!paramSet.isEmpty()) {
+            throw new BadRequestException(String.format(
+                    "Unrecognized query parameters: %s", Joiner.on(", ").join(paramSet))
+            );
+        }
     }
 
     /**
@@ -38,7 +78,7 @@ public class Extractor {
      */
     public List<String> extractTest(final HttpServletRequest request) {
         // TODO: might this come from post data?
-        final String testParam = request.getParameter("test");
+        final String testParam = request.getParameter(TEST_LIST_PARAM);
         if (testParam == null) {
             return null;
         } else {
