@@ -104,11 +104,13 @@ public class Extractor {
             final String varName = var.getVarName();
             final String value = var.getExtractor().extract(request);
 
-            if (isMissingError && value == null) {
+            if (value == null && isMissingError) {
                 // This is not allowed for this type of variable.
                 throw new BadRequestException(String.format(
                         "Required variable '%s' not found where expected. See the service configuration.", varName));
-            } else {
+            } else if (value != null) {
+                // We don't want to put nulls into our map.
+                // Proctor interprets nulls correctly, but we want an accurate count of identifiers.
                 ret.put(varName, value);
             }
         }
