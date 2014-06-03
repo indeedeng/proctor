@@ -1,5 +1,7 @@
 package com.indeed.proctor.service;
 
+import com.indeed.proctor.service.useragents.UserAgent;
+
 import javax.servlet.http.HttpServletRequest;
 
 /**
@@ -106,10 +108,10 @@ public class VarValueUtil {
         if (type.equals("String")) return new StringValueConverter();
 
         // Custom types
-
+        if (type.equals("UserAgent")) return new UserAgentValueConverter();
 
         // Unrecognized type name. You should add any custom converters here and as an implementation of ValueConverter.
-        return new StringValueConverter();
+        return null;
     }
 
     public static interface ValueConverter<T> {
@@ -167,6 +169,12 @@ public class VarValueUtil {
     private static class StringValueConverter implements ValueConverter<String> {
         public String convert(String rawValue) {
             return rawValue;
+        }
+    }
+
+    private static class UserAgentValueConverter implements ValueConverter<UserAgent> {
+        public UserAgent convert(String rawValue) {
+            return UserAgent.parseUserAgentStringSafely(rawValue);
         }
     }
 }
