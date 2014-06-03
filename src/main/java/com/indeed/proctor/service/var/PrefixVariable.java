@@ -1,6 +1,7 @@
 package com.indeed.proctor.service.var;
 
 import com.indeed.proctor.service.JsonVarConfig;
+import com.indeed.proctor.service.Source;
 
 /**
  * Abstract class representing a context variable or identifier, which is passed with ctx. or id. prefixes in
@@ -8,18 +9,34 @@ import com.indeed.proctor.service.JsonVarConfig;
  */
 public abstract class PrefixVariable {
     final private String varName;
+    final private String prefix;
+    final private Source source;
+    final private String sourceKey;
     final private ExtractUtil.ValueExtractor extractor;
 
     public PrefixVariable(final String varName, final JsonVarConfig varConfig, final String prefix) {
         this.varName = varName;
-
+        this.prefix = prefix;
+        source = varConfig.getSource();
         // If the config didn't specify a source key, use the var name. This saves typing in the config file.
-        final String sourceKey = (varConfig.getSourceKey() != null ? varConfig.getSourceKey() : varName);
-        extractor = ExtractUtil.createValueExtractor(varConfig.getSource(), sourceKey, prefix);
+        sourceKey = (varConfig.getSourceKey() != null ? varConfig.getSourceKey() : varName);
+        extractor = ExtractUtil.createValueExtractor(source, sourceKey, prefix);
     }
 
     public String getVarName() {
         return varName;
+    }
+
+    public String getPrefix() {
+        return prefix;
+    }
+
+    public Source getSource() {
+        return source;
+    }
+
+    public String getSourceKey() {
+        return sourceKey;
     }
 
     public ExtractUtil.ValueExtractor getExtractor() {
