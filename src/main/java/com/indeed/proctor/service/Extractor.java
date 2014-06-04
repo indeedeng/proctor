@@ -22,7 +22,7 @@ import java.util.Set;
  * Extracts variables from the HTTP Request according to the service configuration.
  */
 public class Extractor {
-    private final String TEST_LIST_PARAM = "test";
+    private static final String TEST_LIST_PARAM = "test";
 
     private final List<ContextVariable> contextList;
     private final List<Identifier> identifierList;
