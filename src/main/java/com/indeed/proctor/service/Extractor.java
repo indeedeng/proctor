@@ -93,7 +93,7 @@ public class Extractor {
      *
      * If the test parameter appears multiple times, then only the first occurrence is used.
      */
-    public List<String> extractTest(final HttpServletRequest request) {
+    private List<String> extractTest(final HttpServletRequest request) {
         // TODO: might this come from post data?
         final String testParam = request.getParameter(TEST_LIST_PARAM);
         if (testParam == null) {
