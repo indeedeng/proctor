@@ -8,11 +8,11 @@ import com.indeed.proctor.service.Source;
  * query parameters.
  */
 public abstract class PrefixVariable {
-    final private String varName;
-    final private String prefix;
-    final private Source source;
-    final private String sourceKey;
-    final private ExtractUtil.ValueExtractor extractor;
+    private final String varName;
+    private final String prefix;
+    private final Source source;
+    private final String sourceKey;
+    private final ExtractUtil.ValueExtractor extractor;
 
     public PrefixVariable(final String varName, final JsonVarConfig varConfig, final String prefix) {
         this.varName = varName;

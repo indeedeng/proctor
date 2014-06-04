@@ -11,9 +11,9 @@ import java.util.Map;
  * This is mostly cleaning up parameters and types to work with determineTestBuckets.
  */
 public class ConvertedParameters {
-    final private Map<String, Object> context;
-    final private Identifiers identifiers;
-    final private List<String> test;
+    private final Map<String, Object> context;
+    private final Identifiers identifiers;
+    private final List<String> test;
 
     public ConvertedParameters(Map<String, Object> context, Identifiers identifiers, List<String> test) {
         this.context = context;

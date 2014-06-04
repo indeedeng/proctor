@@ -11,10 +11,10 @@ import com.indeed.proctor.common.model.TestBucket;
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class JsonTestBucket {
-    final private String name;
-    final private int value;
-    final private Object payload;
-    final private int version;
+    private final String name;
+    private final int value;
+    private final Object payload;
+    private final int version;
 
     /**
      * Serializes the object using an existing bucket and a separate version.

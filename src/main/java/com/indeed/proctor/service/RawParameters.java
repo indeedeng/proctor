@@ -13,9 +13,9 @@ import java.util.Map;
  * because at this point we still don't know the intended types of context and id variables.
  */
 public class RawParameters {
-    final private Map<String, String> context;
-    final private Map<String, String> identifiers;
-    final private List<String> test;
+    private final Map<String, String> context;
+    private final Map<String, String> identifiers;
+    private final List<String> test;
 
     public RawParameters(Map<String, String> context, Map<String, String> identifiers, List<String> test) {
         this.context = context;

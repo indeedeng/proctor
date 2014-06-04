@@ -13,12 +13,12 @@ import java.util.Map;
  */
 public class JsonResult {
     // Map of test name to bucket assignment.
-    final private Map<String, JsonTestBucket> groups;
+    private final Map<String, JsonTestBucket> groups;
 
     // Serialized context used to process this request.
-    final private Map<String, Object> context;
+    private final Map<String, Object> context;
 
-    final private long auditVersion;
+    private final long auditVersion;
 
     public JsonResult(final ProctorResult result, final List<String> testFilter, final Map<String, Object> context) {
         this.context = context;
