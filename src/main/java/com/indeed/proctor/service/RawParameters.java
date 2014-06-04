@@ -1,8 +1,5 @@
 package com.indeed.proctor.service;
 
-import com.google.common.base.Predicates;
-import com.google.common.collect.Maps;
-
 import java.util.List;
 import java.util.Map;
 
@@ -24,36 +21,6 @@ public class RawParameters {
         this.context = context;
         this.identifiers = identifiers;
         this.test = test;
-    }
-
-    /*public RawParameters(final Map<String, String> queryParams) {
-        context = Maps.newHashMap();
-        parseDotParameters(queryParams, "ctx", context);
-        identifiers = Maps.newHashMap();
-        parseDotParameters(queryParams, "id", identifiers);
-
-        // Parse the comma-separated tests into a list.
-        if (queryParams.containsKey("test")) {
-            test = Lists.newArrayList(Splitter.on(',').trimResults().omitEmptyStrings().split(queryParams.get("test")));
-        } else {
-            test = null;
-        }
-    }*/
-
-    /**
-     * Takes all the query parameters, finds the ones that start with prefix and a period, strips it out, and places
-     * the key value pair into destination.
-     */
-    private void parseDotParameters(
-            final Map<String, String> queryParams, final String prefix, final Map<String, String> destination) {
-
-        // Regex to match beginning of input, prefix, and period.
-        for (final Map.Entry<String, String> e : Maps.filterKeys(
-                queryParams, Predicates.containsPattern("\\A" + prefix + "\\.")).entrySet()) {
-            // Get rid of the prefix and period character, which are always at the beginning of the string.
-            final String key = e.getKey().substring(prefix.length() + 1);
-            destination.put(key, e.getValue());
-        }
     }
 
     public Map<String, String> getContext() {
