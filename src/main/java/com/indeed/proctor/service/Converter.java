@@ -43,7 +43,7 @@ public class Converter {
             } catch (final NumberFormatException e) {
                 // It would be too difficult for certain primitive ValueConverters to throw ConversionException.
                 // So we handle it as a separate case.
-                ConversionException convertError = new ConversionException("Number format exception");
+                final ConversionException convertError = new ConversionException("Number format exception");
                 convertError.setVarName(varName);
                 convertError.setRawValue(rawValue);
                 convertError.setType(context.getType());

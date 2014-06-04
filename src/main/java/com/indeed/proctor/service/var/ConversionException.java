@@ -29,7 +29,7 @@ public class ConversionException extends BadRequestException {
         return varName;
     }
 
-    public void setVarName(String varName) {
+    public void setVarName(final String varName) {
         this.varName = varName;
     }
 
@@ -37,7 +37,7 @@ public class ConversionException extends BadRequestException {
         return rawValue;
     }
 
-    public void setRawValue(String rawValue) {
+    public void setRawValue(final String rawValue) {
         this.rawValue = rawValue;
     }
 
@@ -45,7 +45,7 @@ public class ConversionException extends BadRequestException {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(final String type) {
         this.type = type;
     }
 }

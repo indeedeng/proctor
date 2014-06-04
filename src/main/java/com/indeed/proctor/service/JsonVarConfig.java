@@ -11,7 +11,7 @@ public class JsonVarConfig {
         return source;
     }
 
-    public void setSource(Source source) {
+    public void setSource(final Source source) {
         this.source = source;
     }
 
@@ -19,7 +19,7 @@ public class JsonVarConfig {
         return sourceKey;
     }
 
-    public void setSourceKey(String sourceKey) {
+    public void setSourceKey(final String sourceKey) {
         this.sourceKey = sourceKey;
     }
 }

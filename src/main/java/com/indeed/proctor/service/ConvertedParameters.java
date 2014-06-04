@@ -15,7 +15,8 @@ public class ConvertedParameters {
     private final Identifiers identifiers;
     private final List<String> test;
 
-    public ConvertedParameters(Map<String, Object> context, Identifiers identifiers, List<String> test) {
+    public ConvertedParameters(final Map<String, Object> context, final Identifiers identifiers,
+                               final List<String> test) {
         this.context = context;
         this.identifiers = identifiers;
         this.test = test;

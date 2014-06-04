@@ -17,7 +17,8 @@ public class RawParameters {
     private final Map<String, String> identifiers;
     private final List<String> test;
 
-    public RawParameters(Map<String, String> context, Map<String, String> identifiers, List<String> test) {
+    public RawParameters(final Map<String, String> context, final Map<String, String> identifiers,
+                         final List<String> test) {
         this.context = context;
         this.identifiers = identifiers;
         this.test = test;

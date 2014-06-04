@@ -51,8 +51,8 @@ public class Extractor {
      * Checks that all the parameters in our request are valid. If the user passed in something we don't recognize,
      * we throw because they made an error in their request.
      */
-    private void checkForUnrecognizedParameters(Enumeration<String> paramNames) {
-        Set<String> paramSet = new HashSet<String>(Collections.list(paramNames));
+    private void checkForUnrecognizedParameters(final Enumeration<String> paramNames) {
+        final Set<String> paramSet = new HashSet<String>(Collections.list(paramNames));
 
         // Iterate through all possible parameters and remove them from the set.
         // It doesn't matter if we remove optional or non-existent parameters. remove() returns false in that case.

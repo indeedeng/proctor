@@ -14,7 +14,7 @@ public class JsonServiceConfig {
         return context;
     }
 
-    public void setContext(Map<String, JsonContextVarConfig> context) {
+    public void setContext(final Map<String, JsonContextVarConfig> context) {
         this.context = context;
     }
 
@@ -22,7 +22,7 @@ public class JsonServiceConfig {
         return identifiers;
     }
 
-    public void setIdentifiers(Map<String, JsonVarConfig> identifiers) {
+    public void setIdentifiers(final Map<String, JsonVarConfig> identifiers) {
         this.identifiers = identifiers;
     }
 }
