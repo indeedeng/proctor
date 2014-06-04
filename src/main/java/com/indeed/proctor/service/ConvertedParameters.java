@@ -14,12 +14,14 @@ public class ConvertedParameters {
     private final Map<String, Object> context;
     private final Identifiers identifiers;
     private final List<String> test;
+    private final Map<String, Integer> forceGroups;
 
     public ConvertedParameters(final Map<String, Object> context, final Identifiers identifiers,
-                               final List<String> test) {
+                               final List<String> test, final Map<String, Integer> forceGroups) {
         this.context = context;
         this.identifiers = identifiers;
         this.test = test;
+        this.forceGroups = forceGroups;
     }
 
     public Map<String, Object> getContext() {
@@ -32,5 +34,9 @@ public class ConvertedParameters {
 
     public List<String> getTest() {
         return test;
+    }
+
+    public Map<String, Integer> getForceGroups() {
+        return forceGroups;
     }
 }

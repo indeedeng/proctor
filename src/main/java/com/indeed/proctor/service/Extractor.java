@@ -1,6 +1,7 @@
 package com.indeed.proctor.service;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.Predicates;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
@@ -23,6 +24,7 @@ import java.util.Set;
  */
 public class Extractor {
     private static final String TEST_LIST_PARAM = "test";
+    private static final String FORCE_GROUPS_PREFIX = "force";
 
     private final List<ContextVariable> contextList;
     private final List<Identifier> identifierList;
@@ -43,7 +45,8 @@ public class Extractor {
         return new RawParameters(
             contextMap,
             identifierMap,
-            extractTest(request)
+            extractTest(request),
+            extractForceGroups(request)
         );
     }
 
@@ -58,6 +61,15 @@ public class Extractor {
         // It doesn't matter if we remove optional or non-existent parameters. remove() returns false in that case.
 
         paramSet.remove(TEST_LIST_PARAM);
+
+        // Remove everything from the set that has the force groups prefix. These are all valid parameters.
+        // Cannot use Guava filter because removing requires a modifiable iterator.
+        for (Iterator<String> iter = paramSet.iterator(); iter.hasNext(); ) {
+            final String param = iter.next();
+            if (param.startsWith(FORCE_GROUPS_PREFIX + ".")) {
+                iter.remove();
+            }
+        }
 
         Iterator<PrefixVariable> iter = Iterators.concat(contextList.iterator(), identifierList.iterator());
         while (iter.hasNext()) {
@@ -101,6 +113,30 @@ public class Extractor {
         } else {
             return Lists.newArrayList(Splitter.on(',').trimResults().omitEmptyStrings().split(testParam));
         }
+    }
+
+    private Map<String, String> extractForceGroups(final HttpServletRequest request) {
+        final Map<String, String> ret = Maps.newHashMap();
+        final Map<String, String[]> paramMap = request.getParameterMap();
+
+        // Regex to match beginning of input, the prefix, and a period.
+        for (Map.Entry<String, String[]> param : Maps.filterKeys(paramMap,
+                Predicates.containsPattern("\\A" + FORCE_GROUPS_PREFIX + "\\.")).entrySet()) {
+
+            final String key = param.getKey();
+            final String[] paramValue = param.getValue();
+            // It doesn't make sense to force several test groups for one test.
+            if (paramValue.length != 1) {
+                throw new BadRequestException(String.format(
+                        "Cannot force multiple test groups for a test. Multiple '%s' parameters found.", key));
+            } else {
+                // Snip out the prefix and period character, which are always at the beginning at a fixed location.
+                final String testName = key.substring(FORCE_GROUPS_PREFIX.length() + 1);
+                final String forcedValue = paramValue[0];
+                ret.put(testName, forcedValue);
+            }
+        }
+        return ret;
     }
 
     /**

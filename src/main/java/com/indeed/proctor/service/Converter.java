@@ -25,7 +25,8 @@ public class Converter {
         return new ConvertedParameters(
                 convertContext(raw.getContext()),
                 convertIdentifiers(raw.getIdentifiers()),
-                raw.getTest() // Already correct type. No processing needed.
+                raw.getTest(), // Already correct type. No processing needed.
+                convertForceGroups(raw.getForceGroups())
         );
     }
 
@@ -67,5 +68,22 @@ public class Converter {
         }
         // TODO: what is this random parameter for and should it be true or false?
         return new Identifiers(identMap);
+    }
+
+    /**
+     * forceGroups should be a mapping of test name to integer bucket value.
+     */
+    private Map<String, Integer> convertForceGroups(final Map<String, String> forceGroups) {
+        final Map<String, Integer> ret = Maps.newHashMap();
+        for (Map.Entry<String, String> entry : forceGroups.entrySet()) {
+            try {
+                ret.put(entry.getKey(), Integer.valueOf(entry.getValue()));
+            } catch (NumberFormatException e) {
+                throw new BadRequestException(String.format(
+                        "Could not convert force groups parameter '%s' with value '%s' into an Integer. " +
+                        "Force parameters must be integer bucket values.", entry.getKey(), entry.getValue()));
+            }
+        }
+        return ret;
     }
 }

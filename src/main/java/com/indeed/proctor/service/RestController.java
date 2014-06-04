@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -66,7 +65,7 @@ public class RestController {
         final ConvertedParameters param = converter.convert(raw);
 
         final ProctorResult result = proctor.determineTestGroups(
-                param.getIdentifiers(), param.getContext(), Collections.<String, Integer>emptyMap());
+                param.getIdentifiers(), param.getContext(), param.getForceGroups());
 
         final JsonResult jsonResult = new JsonResult(result, param.getTest(), param.getContext());
         return new JsonResponse<JsonResult>(jsonResult, new JsonMeta(HttpStatus.OK.value()));
