@@ -6,6 +6,7 @@ import com.indeed.proctor.common.JsonProctorLoaderFactory;
 import com.indeed.proctor.common.Proctor;
 import com.indeed.proctor.common.ProctorResult;
 import com.indeed.proctor.common.model.Audit;
+import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.service.var.ContextVariable;
 import com.indeed.proctor.service.var.Identifier;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -13,6 +14,7 @@ import org.codehaus.jackson.type.TypeReference;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -88,6 +90,23 @@ public class RestController {
     @RequestMapping(value="/proctor/matrix/audit", method=RequestMethod.GET)
     public @ResponseBody JsonResponse<Audit> proctorMatrixAudit() {
         return new JsonResponse<Audit>(loader.getLastAudit(), new JsonMeta(HttpStatus.OK.value()));
+    }
+
+    /**
+     * Returns the test definition for a specific test in JSON format.
+     */
+    @RequestMapping(value="/proctor/matrix/definition/{testName}", method=RequestMethod.GET)
+    public @ResponseBody JsonResponse<ConsumableTestDefinition> proctorMatrixAuditDefinition(
+            @PathVariable String testName) {
+
+        final Proctor proctor = tryLoadProctor();
+
+        final ConsumableTestDefinition testDef = proctor.getTestDefinition(testName);
+        if (testDef == null) {
+            throw new NotFoundException(String.format("'%s' test definition not found in test matrix.", testName));
+        }
+
+        return new JsonResponse<ConsumableTestDefinition>(testDef, new JsonMeta(HttpStatus.OK.value()));
     }
 
     @ExceptionHandler(BadRequestException.class)
