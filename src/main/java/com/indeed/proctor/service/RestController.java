@@ -110,6 +110,15 @@ public class RestController {
     }
 
     /**
+     * Returns the configured context variable parsers from the service configuration file.
+     */
+    @RequestMapping(value="/config/context")
+    public @ResponseBody JsonResponse<Map<String, JsonContextVarConfig>> configContext() {
+        return new JsonResponse<Map<String, JsonContextVarConfig>>(
+                jsonServiceConfig.getContext(), new JsonMeta(HttpStatus.OK.value()));
+    }
+
+    /**
      * Returns the configured identifiers from the service configuration file.
      */
     @RequestMapping(value="/config/identifiers")
