@@ -8,6 +8,7 @@ import com.indeed.proctor.common.ProctorResult;
 import com.indeed.proctor.service.var.ContextVariable;
 import com.indeed.proctor.service.var.Identifier;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.type.TypeReference;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.util.List;
 import java.util.Map;
 
@@ -71,6 +73,14 @@ public class RestController {
         return new JsonResponse<JsonResult>(jsonResult, new JsonMeta(HttpStatus.OK.value()));
     }
 
+    /**
+     * Returns the entire test matrix in JSON format.
+     */
+    @RequestMapping(value="/proctor/matrix", method=RequestMethod.GET)
+    public @ResponseBody JsonResponse<Map<String, Object>> proctorMatrix() {
+        return new JsonResponse<Map<String, Object>>(getJsonMatrix(), new JsonMeta(HttpStatus.OK.value()));
+    }
+
     @ExceptionHandler(BadRequestException.class)
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     @ResponseBody
@@ -95,5 +105,28 @@ public class RestController {
                     String.format("Could not get Proctor from loader: %s", loader.getLastLoadErrorMessage()));
         }
         return proctor;
+    }
+
+    /**
+     * Read the test matrix from Proctor and return it as a JSON simple Map data type.
+     */
+    private Map<String, Object> getJsonMatrix() {
+        final Proctor proctor = tryLoadProctor();
+
+        try {
+            // Proctor only exposes the test matrix as a string written to a Writer.
+            // As a workaround, we'll de-serialize the string and serialize it again.
+            // It's possible to interpret that string as a raw JSON string if its in a POJO so that it isn't put into a
+            // JSON string. But it's easier just to de-serialize it and let Spring serialize it again. This way, we
+            // don't need to write another class, and we're sure the JSON we serve is valid and has no pretty formatting.
+            final ObjectMapper mapper = new ObjectMapper();
+            final StringWriter writer = new StringWriter();
+            proctor.appendTestMatrix(writer);
+            // Reading values into generic types requires this weird TypeReference construct. See Jackson docs on binding.
+            return mapper.readValue(writer.toString(), new TypeReference<Map<String, Object>>() {});
+        } catch (IOException e) {
+            throw new InternalServerException(
+                    String.format("Error while handling JSON test matrix: %s", e.getMessage()));
+        }
     }
 }
