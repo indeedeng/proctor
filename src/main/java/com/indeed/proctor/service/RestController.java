@@ -5,6 +5,7 @@ import com.indeed.proctor.common.AbstractProctorLoader;
 import com.indeed.proctor.common.JsonProctorLoaderFactory;
 import com.indeed.proctor.common.Proctor;
 import com.indeed.proctor.common.ProctorResult;
+import com.indeed.proctor.common.model.Audit;
 import com.indeed.proctor.service.var.ContextVariable;
 import com.indeed.proctor.service.var.Identifier;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -79,6 +80,14 @@ public class RestController {
     @RequestMapping(value="/proctor/matrix", method=RequestMethod.GET)
     public @ResponseBody JsonResponse<Map<String, Object>> proctorMatrix() {
         return new JsonResponse<Map<String, Object>>(getJsonMatrix(), new JsonMeta(HttpStatus.OK.value()));
+    }
+
+    /**
+     * Returns the audit of the test matrix in JSON format.
+     */
+    @RequestMapping(value="/proctor/matrix/audit", method=RequestMethod.GET)
+    public @ResponseBody JsonResponse<Audit> proctorMatrixAudit() {
+        return new JsonResponse<Audit>(loader.getLastAudit(), new JsonMeta(HttpStatus.OK.value()));
     }
 
     @ExceptionHandler(BadRequestException.class)
