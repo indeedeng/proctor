@@ -66,7 +66,8 @@ public class RestController {
         final ProctorResult result = proctor.determineTestGroups(
                 param.getIdentifiers(), param.getContext(), param.getForceGroups());
 
-        final JsonResult jsonResult = new JsonResult(result, param.getTest(), param.getContext());
+        final JsonResult jsonResult = new JsonResult(
+                result, param.getTest(), param.getContext(), loader.getLastAudit());
         return new JsonResponse<JsonResult>(jsonResult, new JsonMeta(HttpStatus.OK.value()));
     }
 

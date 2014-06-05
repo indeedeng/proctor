@@ -3,6 +3,7 @@ package com.indeed.proctor.service;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Maps;
 import com.indeed.proctor.common.ProctorResult;
+import com.indeed.proctor.common.model.Audit;
 import com.indeed.proctor.common.model.TestBucket;
 
 import java.util.List;
@@ -18,11 +19,12 @@ public class JsonResult {
     // Serialized context used to process this request.
     private final Map<String, Object> context;
 
-    private final long auditVersion;
+    private final Audit audit;
 
-    public JsonResult(final ProctorResult result, final List<String> testFilter, final Map<String, Object> context) {
+    public JsonResult(final ProctorResult result, final List<String> testFilter, final Map<String, Object> context,
+                      final Audit audit) {
         this.context = context;
-        this.auditVersion = result.getMatrixVersion();
+        this.audit = audit;
 
         groups = generateJsonBuckets(result, testFilter);
     }
@@ -61,7 +63,7 @@ public class JsonResult {
         return context;
     }
 
-    public long getAuditVersion() {
-        return auditVersion;
+    public Audit getAudit() {
+        return audit;
     }
 }
