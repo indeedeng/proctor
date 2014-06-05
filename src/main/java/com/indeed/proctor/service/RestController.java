@@ -56,10 +56,9 @@ public class RestController {
         converter = new Converter(contextList);
     }
 
-    @RequestMapping(value="/groups/identify", method= RequestMethod.GET)
+    @RequestMapping(value="/groups/identify", method=RequestMethod.GET)
     public @ResponseBody JsonResponse<JsonResult> groupsIdentify(final HttpServletRequest request) {
-
-        final Proctor proctor = loader.get();
+        final Proctor proctor = tryLoadProctor();
 
         final RawParameters raw = extractor.extract(request);
         final ConvertedParameters param = converter.convert(raw);
@@ -76,5 +75,24 @@ public class RestController {
     @ResponseBody
     public JsonResponse handleBadRequestException(final BadRequestException e) {
         return new JsonEmptyDataResponse(new JsonMeta(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
+    }
+
+    @ExceptionHandler(InternalServerException.class)
+    @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
+    @ResponseBody
+    public JsonResponse handleInternalServerException(final InternalServerException e) {
+        return new JsonEmptyDataResponse(new JsonMeta(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage()));
+    }
+
+    /**
+     * Try to load proctor. If that is impossible, throw an InternalServerException.
+     */
+    private Proctor tryLoadProctor() throws InternalServerException {
+        final Proctor proctor = loader.get();
+        if (proctor == null) {
+            throw new InternalServerException(
+                    String.format("Could not get Proctor from loader: %s", loader.getLastLoadErrorMessage()));
+        }
+        return proctor;
     }
 }
