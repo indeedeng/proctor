@@ -109,6 +109,15 @@ public class RestController {
         return new JsonResponse<ConsumableTestDefinition>(testDef, new JsonMeta(HttpStatus.OK.value()));
     }
 
+    /**
+     * Returns the configured identifiers from the service configuration file.
+     */
+    @RequestMapping(value="/config/identifiers")
+    public @ResponseBody JsonResponse<Map<String, JsonVarConfig>> configIdentifiers() {
+        return new JsonResponse<Map<String, JsonVarConfig>>(
+                jsonServiceConfig.getIdentifiers(), new JsonMeta(HttpStatus.OK.value()));
+    }
+
     @ExceptionHandler(BadRequestException.class)
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     @ResponseBody
