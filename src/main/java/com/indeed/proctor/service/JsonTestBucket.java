@@ -1,15 +1,15 @@
 package com.indeed.proctor.service;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.indeed.proctor.common.model.Payload;
 import com.indeed.proctor.common.model.TestBucket;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 /**
  * Representation of TestBucket intended for serialization into JSON.
  *
  * Mostly a rewriting of TestBucket with a few extras like skipping nulls and included test version for caching.
  */
-@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonSerialize(include=JsonSerialize.Inclusion.NON_NULL)
 public class JsonTestBucket {
     private final String name;
     private final int value;

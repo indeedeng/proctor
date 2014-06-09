@@ -1,11 +1,11 @@
 package com.indeed.proctor.service;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 /**
  * Settings for the extraction of a variable in the service config file.
  */
-@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonSerialize(include=JsonSerialize.Inclusion.NON_NULL)
 public class JsonVarConfig {
     private Source source;
     private String sourceKey;

@@ -1,8 +1,8 @@
 package com.indeed.proctor.service;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonSerialize(include=JsonSerialize.Inclusion.NON_NULL)
 public class JsonMeta {
     // HTTP Response Code
     private final int status;
