@@ -1,18 +1,20 @@
 package com.indeed.proctor.service;
 
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.context.web.SpringBootServletInitializer;
 import org.springframework.context.annotation.ComponentScan;
 
 
-/**
- * Temporary file. It's easier to set up jars as I begin development.
- */
 @ComponentScan
 @EnableAutoConfiguration
-public class Application {
+public class Application extends SpringBootServletInitializer {
 
-    public static void main(String[] args) {
-        SpringApplication.run(Application.class, args);
+    /**
+     * Alternative to creating a web.xml
+     */
+    @Override
+    protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
+        return application.sources(Application.class);
     }
 }
