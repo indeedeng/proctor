@@ -69,7 +69,13 @@ public abstract class FreeMarkerCodeGenerator {
     }
 
     public static String packageToPath(final String packageName) {
-        return packageName.replaceAll("\\.", File.separator);
+        final String pathSepForRegExp;
+        if ("\\".equals(File.separator)) {
+            pathSepForRegExp = "\\\\";
+        } else {
+            pathSepForRegExp = File.separator;
+        }
+        return packageName.replaceAll("\\.", pathSepForRegExp);
     }
 
     protected Configuration getFreemarkerConfiguration(final String templatePath) {
