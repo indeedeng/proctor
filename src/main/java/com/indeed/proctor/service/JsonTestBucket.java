@@ -13,7 +13,7 @@ import com.indeed.proctor.common.model.TestBucket;
 public class JsonTestBucket {
     private final String name;
     private final int value;
-    private final Object payload;
+    private final Payload payload;
     private final int version;
 
     /**
@@ -26,14 +26,12 @@ public class JsonTestBucket {
         value = bucket.getValue();
         this.version = version;
 
-        // The json serializer will automatically make this into whatever json type it should be.
-        // So we don't have to worry about figuring out the type of the payload.
-        final Payload bucketPayload = bucket.getPayload();
-        if (bucketPayload != null) {
-            payload = bucket.getPayload().fetchAValue();
-        } else {
-            payload = null;
-        }
+        // This means the JSON output will have type names like "stringValue" and "doubleArray".
+        // It makes the API look less clean, especially for clients that use duck-typed languages.
+        // But it may make deserialization easier for clients with rigid types, especially if they use something like
+        // Jackson's data binding in Java.
+        // This is also consistent with the test matrix definition.
+        payload = bucket.getPayload();
     }
 
     public String getName() {
