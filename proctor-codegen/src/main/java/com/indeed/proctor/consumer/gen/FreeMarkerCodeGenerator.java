@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Map;
+import java.util.regex.Matcher;
 
 import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapper;
@@ -69,13 +70,7 @@ public abstract class FreeMarkerCodeGenerator {
     }
 
     public static String packageToPath(final String packageName) {
-        final String pathSepForRegExp;
-        if ("\\".equals(File.separator)) {
-            pathSepForRegExp = "\\\\";
-        } else {
-            pathSepForRegExp = File.separator;
-        }
-        return packageName.replaceAll("\\.", pathSepForRegExp);
+        return packageName.replaceAll("\\.", Matcher.quoteReplacement(File.separator));
     }
 
     protected Configuration getFreemarkerConfiguration(final String templatePath) {
