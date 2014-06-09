@@ -12,6 +12,8 @@ import com.indeed.proctor.service.var.Identifier;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,8 +29,11 @@ import java.io.StringWriter;
 import java.util.List;
 import java.util.Map;
 
+@EnableScheduling
 @Controller
 public class RestController {
+
+    private static final int reloadMilliseconds = 10000;
 
     private final AbstractProctorLoader loader;
 
@@ -59,6 +64,14 @@ public class RestController {
 
         extractor = new Extractor(contextList, identifierList);
         converter = new Converter(contextList);
+    }
+
+    /**
+     * Periodically reload the test matrix so that changes are reflected during runtime.
+     */
+    @Scheduled(fixedRate=reloadMilliseconds)
+    private void reloadProctor() {
+        loader.load();
     }
 
     @RequestMapping(value="/groups/identify", method=RequestMethod.GET)
