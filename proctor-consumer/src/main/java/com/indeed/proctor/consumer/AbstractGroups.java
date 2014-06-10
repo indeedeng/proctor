@@ -75,6 +75,25 @@ public abstract class AbstractGroups {
         return Payload.EMPTY_PAYLOAD;
     }
 
+
+
+
+    //Returns the Description for "testname" bucket
+    //Test
+    protected String getDescription(final String testName) {
+        // Get the current bucket.
+        final TestBucket testBucket = buckets.get(testName);
+
+        // Lookup descriptions for this test
+        if (testBucket != null) {
+            final String description = testBucket.getDescription();
+            if (description!= null) {
+                return description;
+            }
+        }
+        // Else we didn't find something. Return empty description
+        return null;
+    }
      /**
      * Return the TestBucket, as defined in the current test matrix, for the test called testName with bucket value targetBucket.getValue().
      *

@@ -14,6 +14,8 @@ public class TestSpecification {
     @Nullable
     private PayloadSpecification payload;
 
+    private String description;
+
     public int getFallbackValue() {
         return fallbackValue;
     }
@@ -29,6 +31,15 @@ public class TestSpecification {
 
     public void setBuckets(@Nonnull final Map<String, Integer> buckets) {
         this.buckets = Preconditions.checkNotNull(buckets, "Missing buckets");
+    }
+
+
+    public String getDescription(){
+        return description;
+    }
+
+    public void setDescription(final String description) {
+        this.description = description;
     }
 
     @Nullable

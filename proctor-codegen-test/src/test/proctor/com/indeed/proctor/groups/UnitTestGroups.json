@@ -13,6 +13,7 @@
             "kloo": 2,
             "loooj": 3
             },
+            "description":"2nd test",
             "fallbackValue" : 0
         },
         "bubble" : { "buckets" : {

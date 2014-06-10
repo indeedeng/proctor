@@ -11,6 +11,7 @@ import javax.annotation.Nullable;
  * (but you can extend me.  you'll want to override {@link #toString()}, using {@link #buildTestGroupString()} or {@link #appendTestGroups(StringBuilder)} instead)
  */
 public class ${mainClassName} extends AbstractGroups {
+
     public static final ${mainClassName} EMPTY = new ${mainClassName}(ProctorResult.EMPTY);
 
     public ${mainClassName}(final ProctorResult proctorResult) {
@@ -103,6 +104,10 @@ public class ${mainClassName} extends AbstractGroups {
         return getPayload(${testEnumName}.${testDef.enumName}.getName()).${testDef.payloadAccessorName}();
     }
 
+
+
+
+
     public @Nullable ${testDef.payloadJavaClass} get${testDef.javaClassName}PayloadForBucket(final ${testDef.javaClassName} targetBucket) {
         final @Nullable TestBucket bucket = getTestBucketForBucket(${testEnumName}.${testDef.enumName}.getName(), targetBucket);
         if (bucket == null) {
@@ -115,6 +120,15 @@ public class ${mainClassName} extends AbstractGroups {
         return payload.${testDef.payloadAccessorName}();
     }
     </#if>
+
+
+    <#if (testDef.description)??>
+    public @Nullable String get${testDef.javaClassName}Description() {
+        return description;
+    }
+    </#if>
+
+
 
 <#list testDef.buckets as bucket>
     public boolean is${testDef.javaClassName}${bucket.javaClassName}() {
