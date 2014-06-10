@@ -9,7 +9,6 @@ import org.codehaus.jackson.map.annotate.JsonSerialize;
  *
  * Mostly a rewriting of TestBucket with a few extras like skipping nulls and included test version for caching.
  */
-@JsonSerialize(include=JsonSerialize.Inclusion.NON_NULL)
 public class JsonTestBucket {
     private final String name;
     private final int value;
@@ -42,6 +41,8 @@ public class JsonTestBucket {
         return value;
     }
 
+    // Many tests do not use payloads, so we should just omit this field if it's not set.
+    @JsonSerialize(include=JsonSerialize.Inclusion.NON_NULL)
     public Object getPayload() {
         return payload;
     }

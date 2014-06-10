@@ -2,7 +2,6 @@ package com.indeed.proctor.service;
 
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 
-@JsonSerialize(include=JsonSerialize.Inclusion.NON_NULL)
 public class JsonMeta {
     // HTTP Response Code
     private final int status;
@@ -22,6 +21,8 @@ public class JsonMeta {
         return status;
     }
 
+    // No point in including an error message field if it's null.
+    @JsonSerialize(include=JsonSerialize.Inclusion.NON_NULL)
     public String getError() {
         return error;
     }
