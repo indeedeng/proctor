@@ -124,7 +124,7 @@ public class ${mainClassName} extends AbstractGroups {
 
     <#if (testDef.description)??>
     public @Nullable String get${testDef.javaClassName}Description() {
-        return description;
+        return "${testDef.description}";
     }
     </#if>
 
