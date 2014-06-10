@@ -12,7 +12,6 @@ import com.indeed.proctor.service.var.Identifier;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.springframework.http.HttpStatus;
-import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -29,7 +28,6 @@ import java.io.StringWriter;
 import java.util.List;
 import java.util.Map;
 
-@EnableScheduling
 @Controller
 public class RestController {
 
