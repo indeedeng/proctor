@@ -1,31 +1,27 @@
 package com.indeed.proctor.service;
 
-import org.springframework.web.WebApplicationInitializer;
-import org.springframework.web.context.ContextLoaderListener;
-import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
-import org.springframework.web.servlet.DispatcherServlet;
-
-import javax.servlet.ServletContext;
-import javax.servlet.ServletRegistration;
-
+import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
 /**
- * Alternative to creating a web.xml
+ * Alternative to creating a web.xml by overriding methods in a class.
+ *
+ * Consider using WebApplicationInitializer if you need something more advanced in the future.
+ * (See commit history for previous usage of that.)
  */
-public class AppInit implements WebApplicationInitializer {
+public class AppInit extends AbstractAnnotationConfigDispatcherServletInitializer {
 
     @Override
-    public void onStartup(final ServletContext container) {
-        AnnotationConfigWebApplicationContext root = new AnnotationConfigWebApplicationContext();
-        root.register(AppConfig.class);
-        container.addListener(new ContextLoaderListener(root));
+    protected Class<?>[] getRootConfigClasses() {
+        return null;
+    }
 
-        // No registered dispatcher configuration because it looks like we don't need one.
-        AnnotationConfigWebApplicationContext dispatcherContext = new AnnotationConfigWebApplicationContext();
-        ServletRegistration.Dynamic dispatcher =
-                container.addServlet("dispatcher", new DispatcherServlet(dispatcherContext));
+    @Override
+    protected Class<?>[] getServletConfigClasses() {
+        return new Class[] { AppConfig.class };
+    }
 
-        dispatcher.setLoadOnStartup(1);
-        dispatcher.addMapping("/");
+    @Override
+    protected String[] getServletMappings() {
+        return new String[] { "/" };
     }
 }
