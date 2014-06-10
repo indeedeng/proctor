@@ -8,6 +8,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
+import com.indeed.proctor.common.el.MulticontextReadOnlyVariableMapper;
 import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.Audit;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
@@ -19,6 +20,7 @@ import com.indeed.proctor.common.model.TestMatrixArtifact;
 import com.indeed.proctor.common.model.TestMatrixDefinition;
 import com.indeed.proctor.common.model.TestMatrixVersion;
 import com.indeed.proctor.common.model.TestType;
+import org.apache.el.ExpressionFactoryImpl;
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
@@ -29,6 +31,9 @@ import javax.annotation.Nullable;
 import javax.el.ExpressionFactory;
 import javax.el.FunctionMapper;
 import javax.el.ValueExpression;
+import javax.el.ELContext;
+import javax.el.ELException;
+import javax.el.VariableMapper;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -45,6 +50,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+
 
 public abstract class ProctorUtils {
     private static final ObjectMapper OBJECT_MAPPER = Serializers.lenient();
@@ -217,7 +223,10 @@ public abstract class ProctorUtils {
      * @return
      */
     public static ProctorLoadResult verifyAndConsolidate(@Nonnull final TestMatrixArtifact testMatrix, final String matrixSource, @Nonnull final Map<String, TestSpecification> requiredTests, @Nonnull final FunctionMapper functionMapper) {
-        final ProctorLoadResult result = verify(testMatrix, matrixSource, requiredTests, functionMapper);
+        return verifyAndConsolidate(testMatrix, matrixSource, requiredTests, functionMapper, new ProvidedContext(ProvidedContext.EMPTY_CONTEXT,false));
+    }
+    public static ProctorLoadResult verifyAndConsolidate(@Nonnull final TestMatrixArtifact testMatrix, final String matrixSource, @Nonnull final Map<String, TestSpecification> requiredTests, @Nonnull final FunctionMapper functionMapper, final ProvidedContext providedContext) {
+        final ProctorLoadResult result = verify(testMatrix, matrixSource, requiredTests, functionMapper, providedContext);
 
         final Map<String, ConsumableTestDefinition> definedTests = testMatrix.getTests();
         // Remove any invalid tests so that any required ones will be replaced with default values during the
@@ -235,7 +244,7 @@ public abstract class ProctorUtils {
 
 
     public static ProctorLoadResult verify(@Nonnull final TestMatrixArtifact testMatrix, final String matrixSource, @Nonnull final Map<String, TestSpecification> requiredTests) {
-        return verify(testMatrix, matrixSource, requiredTests, RuleEvaluator.FUNCTION_MAPPER); //use default function mapper
+        return verify(testMatrix, matrixSource, requiredTests, RuleEvaluator.FUNCTION_MAPPER, new ProvidedContext(ProvidedContext.EMPTY_CONTEXT,false)); //use default function mapper
     }
 
 
@@ -249,7 +258,7 @@ public abstract class ProctorUtils {
          * @param requiredTests
          * @return
          */
-    public static ProctorLoadResult verify(@Nonnull final TestMatrixArtifact testMatrix, final String matrixSource, @Nonnull final Map<String, TestSpecification> requiredTests, @Nonnull final FunctionMapper functionMapper) {
+    public static ProctorLoadResult verify(@Nonnull final TestMatrixArtifact testMatrix, final String matrixSource, @Nonnull final Map<String, TestSpecification> requiredTests, @Nonnull final FunctionMapper functionMapper, final ProvidedContext providedContext) {
         final ProctorLoadResult.Builder resultBuilder = ProctorLoadResult.newBuilder();
 
         final Map<String, Map<Integer, String>> allTestsKnownBuckets = Maps.newHashMapWithExpectedSize(requiredTests.size());
@@ -264,7 +273,6 @@ public abstract class ProctorUtils {
         final Map<String, ConsumableTestDefinition> definedTests = testMatrix.getTests();
         final SetView<String> missingTests = Sets.difference(requiredTests.keySet(), definedTests.keySet());
         resultBuilder.recordAllMissing(missingTests);
-
         for (final Entry<String, ConsumableTestDefinition> entry : definedTests.entrySet()) {
             final String testName = entry.getKey();
             final Map<Integer, String> knownBuckets = allTestsKnownBuckets.remove(testName);
@@ -276,7 +284,7 @@ public abstract class ProctorUtils {
             final ConsumableTestDefinition testDefinition = entry.getValue();
 
             try {
-                verifyTest(testName, testDefinition, requiredTests.get(testName), knownBuckets, matrixSource, functionMapper);
+                verifyTest(testName, testDefinition, requiredTests.get(testName), knownBuckets, matrixSource, functionMapper, providedContext);
 
             } catch (IncompatibleTestMatrixException e) {
                 LOGGER.error(String.format("Unable to load test matrix for %s", testName), e);
@@ -286,6 +294,8 @@ public abstract class ProctorUtils {
 
         // TODO mjs - is this check additive?
         resultBuilder.recordAllMissing(allTestsKnownBuckets.keySet());
+
+        resultBuilder.recordVerifiedRules(providedContext.isEvaluable());
 
         final ProctorLoadResult loadResult = resultBuilder.build();
 
@@ -300,6 +310,18 @@ public abstract class ProctorUtils {
             @Nonnull final String matrixSource,
             @Nonnull final FunctionMapper functionMapper
     ) throws IncompatibleTestMatrixException {
+        verifyTest(testName,testDefinition,testSpecification,knownBuckets,matrixSource,functionMapper,new ProvidedContext(ProvidedContext.EMPTY_CONTEXT,false));
+    }
+
+    private static void verifyTest(
+            @Nonnull final String testName,
+            @Nonnull final ConsumableTestDefinition testDefinition,
+            @Nonnull final TestSpecification testSpecification,
+            @Nonnull final Map<Integer, String> knownBuckets,
+            @Nonnull final String matrixSource,
+            @Nonnull final FunctionMapper functionMapper,
+            final ProvidedContext providedContext
+    ) throws IncompatibleTestMatrixException {
         final List<Allocation> allocations = testDefinition.getAllocations();
 
         final TestType declaredType = testDefinition.getTestType();
@@ -308,8 +330,7 @@ public abstract class ProctorUtils {
                     "Test '%s' is included in the application specification but refers to unknown id type '%s'.",
                     testName, declaredType));
         }
-
-        verifyInternallyConsistentDefinition(testName, matrixSource, testDefinition);
+        verifyInternallyConsistentDefinition(testName, matrixSource, testDefinition, functionMapper, providedContext);
             /*
              * test the matrix for adherence to this application's requirements
              */
@@ -424,8 +445,90 @@ public abstract class ProctorUtils {
                 testName);
     }
 
+    public static ProvidedContext convertContextToTestableMap(Map<String,String> providedContext) {
+        final ExpressionFactory expressionFactory = new ExpressionFactoryImpl();
+        boolean methodNotFoundException = false;
+        Map<String, Object> primitiveVals = new HashMap<String, Object>();
+        primitiveVals.put("int", 0);
+        primitiveVals.put("integer", 0);
+        primitiveVals.put("long", (long)0);
+        primitiveVals.put("bool", true);
+        primitiveVals.put("boolean", true);
+        primitiveVals.put("short", (short)0);
+        primitiveVals.put("string", "");
+        primitiveVals.put("double", (double)0);
+        primitiveVals.put("char", "");
+        primitiveVals.put("character", "");
+        primitiveVals.put("byte", (byte)0);
+
+        if (providedContext != null) {
+            Map<String, Object> newProvidedContext = new HashMap<String, Object>();
+            for(Entry<String,String> entry : providedContext.entrySet()) {
+                final String iobjName = entry.getValue();
+                String objName = iobjName;
+                Object toAdd = null;
+                if (primitiveVals.get(objName.toLowerCase()) != null) {
+                    toAdd = primitiveVals.get(objName.toLowerCase());
+                } else {
+                    try {
+                        final Class clazz = Class.forName(objName);
+                        if (clazz.isEnum()) { //If it is a user defined enum
+                            toAdd = clazz.getEnumConstants()[0];
+                        } else { //If it is a user defined non enum class
+                            toAdd = clazz.newInstance();
+                        }
+                    } catch (final IllegalAccessException e) {
+                        methodNotFoundException = true;
+                        LOGGER.debug("Couldn't access default constructor of " + iobjName + " in providedContext");
+                    } catch (final InstantiationException e) {
+                        methodNotFoundException = true;
+                        //if a default constructor is not defined, use this flag to not set context and not evaluate rules
+                        LOGGER.debug("Couldn't find default constructor for " + iobjName + " in providedContext");
+                    } catch (final ClassNotFoundException e) {
+                        LOGGER.error("Class not found for " + iobjName + " in providedContext");
+                        return new ProvidedContext(ProvidedContext.EMPTY_CONTEXT,false);
+                    }
+
+                }
+                newProvidedContext.put(entry.getKey(),toAdd);
+            }
+            if (!methodNotFoundException) { //defaultConstructor method does not exist, can't evaluate rules without instantiation of user defined class
+                return new ProvidedContext(ProctorUtils.convertToValueExpressionMap(expressionFactory, newProvidedContext),true);
+            }
+        }
+        return new ProvidedContext(ProvidedContext.EMPTY_CONTEXT,false);
+    }
+
     public static void verifyInternallyConsistentDefinition(final String testName, final String matrixSource, @Nonnull final ConsumableTestDefinition testDefinition) throws IncompatibleTestMatrixException {
+        verifyInternallyConsistentDefinition(testName, matrixSource, testDefinition, RuleEvaluator.FUNCTION_MAPPER, new ProvidedContext(ProvidedContext.EMPTY_CONTEXT,false));
+    }
+
+    public static void verifyInternallyConsistentDefinition(final String testName, final String matrixSource, @Nonnull final ConsumableTestDefinition testDefinition, final FunctionMapper functionMapper, final ProvidedContext providedContext) throws IncompatibleTestMatrixException {
         final List<Allocation> allocations = testDefinition.getAllocations();
+        ExpressionFactory expressionFactory = new ExpressionFactoryImpl();
+        //verify test rule is valid EL
+        final String testRule = testDefinition.getRule();
+
+        final Map<String, ValueExpression> testConstants = ProctorUtils.convertToValueExpressionMap(expressionFactory, testDefinition.getConstants());
+        final VariableMapper variableMapper = new MulticontextReadOnlyVariableMapper(testConstants, providedContext.getContext());
+        final RuleEvaluator ruleEvaluator = new RuleEvaluator(expressionFactory, functionMapper, testDefinition.getConstants());
+        final ELContext elContext = ruleEvaluator.createELContext(variableMapper);
+        if(!isEmptyWhitespace(testRule)){
+            try {
+                final ValueExpression valueExpression = expressionFactory.createValueExpression(elContext, testRule, Boolean.class);
+                if (providedContext.isEvaluable()) { /*
+                                                       * must have a context to test against, even if it's "Collections.emptyMap()", how to
+                                                       * tell if this method is used for ProctorBuilder or during load of the testMatrix.
+                                                       * also used to check to make sure any classes included in the EL have a
+                                                       * default constructor for evaluation (unless they are an enum)
+                                                       */
+                    valueExpression.getValue(elContext);
+                }
+            } catch (final ELException e) {
+                throw new IncompatibleTestMatrixException("Unable to evaluate rule ${" + testRule + "} in " + testName);
+            }
+        }
+
         if (allocations.isEmpty()) {
             throw new IncompatibleTestMatrixException("No allocations specified in test " + testName);
         }
@@ -460,9 +563,9 @@ public abstract class ProctorUtils {
                 sb.append(" = ").append(bucketTotal);
                 throw new IncompatibleTestMatrixException(sb.toString());
             }
-
+            final String rule = allocation.getRule();
             final boolean lastAllocation = i == allocations.size() - 1;
-            final String bareRule = removeElExpressionBraces(allocation.getRule());
+            final String bareRule = removeElExpressionBraces(rule);
             if(lastAllocation) {
                 if (!isEmptyWhitespace(bareRule)) {
                     throw new IncompatibleTestMatrixException("Allocation[" + i + "] for test " + testName + " from " + matrixSource + " has non-empty rule: " + allocation.getRule());
@@ -472,6 +575,23 @@ public abstract class ProctorUtils {
                     throw new IncompatibleTestMatrixException("Allocation[" + i + "] for test " + testName + " from " + matrixSource + " has empty rule: " + allocation.getRule());
                 }
             }
+            //verify allocation rules are valid EL
+            if(!isEmptyWhitespace(bareRule)){
+                try {
+                    final ValueExpression valueExpression = expressionFactory.createValueExpression(elContext, rule, Boolean.class);
+                    if (providedContext.isEvaluable()) { /*
+                                                           * must have a context to test against, even if it's "Collections.emptyMap()", how to
+                                                           * tell if this method is used for ProctorBuilder or during load of the testMatrix.
+                                                           * also used to check to make sure any classes included in the EL have a
+                                                           * default constructor for evaluation (unless they are an enum)
+                                                           */
+                        valueExpression.getValue(elContext);
+                    }
+                } catch (final ELException e) {
+                    throw new IncompatibleTestMatrixException("Unable to evaluate rule ${" + rule + "} in allocations of " + testName);
+                }
+            }
+
         }
 
         /*

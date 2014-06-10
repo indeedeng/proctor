@@ -110,7 +110,6 @@ public class TestGroupsGenerator extends FreeMarkerCodeGenerator {
                 testDef.put("payloadAccessorName", specifiedPayloadType.javaAccessorName);
             }
 
-            
             if (testSpecification.getDescription() != null) {
                 testDef.put("description", StringEscapeUtils.escapeJava(testSpecification.getDescription()));
             }
