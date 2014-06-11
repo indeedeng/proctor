@@ -34,7 +34,7 @@ public final class ValueConverters {
     }
 
     private static class ByteValueConverter implements ValueConverter<Byte> {
-        public Byte convert(String rawValue) {
+        public Byte convert(String rawValue) throws ConversionException {
             try {
                 return Byte.valueOf(rawValue);
             } catch (NumberFormatException e) {
@@ -44,7 +44,7 @@ public final class ValueConverters {
     }
 
     private static class ShortValueConverter implements ValueConverter<Short> {
-        public Short convert(String rawValue) {
+        public Short convert(String rawValue) throws ConversionException {
             try {
                 return Short.valueOf(rawValue);
             } catch (NumberFormatException e) {
@@ -54,7 +54,7 @@ public final class ValueConverters {
     }
 
     private static class IntegerValueConverter implements ValueConverter<Integer> {
-        public Integer convert(String rawValue) {
+        public Integer convert(String rawValue) throws ConversionException {
             try {
                 return Integer.valueOf(rawValue);
             } catch (NumberFormatException e) {
@@ -64,7 +64,7 @@ public final class ValueConverters {
     }
 
     private static class LongValueConverter implements ValueConverter<Long> {
-        public Long convert(String rawValue) {
+        public Long convert(String rawValue) throws ConversionException {
             try {
                 return Long.valueOf(rawValue);
             } catch (NumberFormatException e) {
@@ -74,7 +74,7 @@ public final class ValueConverters {
     }
 
     private static class FloatValueConverter implements ValueConverter<Float> {
-        public Float convert(String rawValue) {
+        public Float convert(String rawValue) throws ConversionException {
             try {
                 return Float.valueOf(rawValue);
             } catch (NumberFormatException e) {
@@ -84,7 +84,7 @@ public final class ValueConverters {
     }
 
     private static class DoubleValueConverter implements ValueConverter<Double> {
-        public Double convert(String rawValue) {
+        public Double convert(String rawValue) throws ConversionException {
             try {
                 return Double.valueOf(rawValue);
             } catch (NumberFormatException e) {
@@ -105,7 +105,7 @@ public final class ValueConverters {
     }
 
     private static class CharacterValueConverter implements ValueConverter<Character> {
-        public Character convert(String rawValue) {
+        public Character convert(String rawValue) throws ConversionException {
             final int length = rawValue.length();
             if (length != 1) {
                 // User should be passing in exactly one character in the request.
