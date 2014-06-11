@@ -71,7 +71,12 @@ public class ConvertUtil {
 
     private static class BooleanValueConverter implements ValueConverter<Boolean> {
         public Boolean convert(String rawValue) {
-            return Boolean.valueOf(rawValue);
+            // valueOf matches "true" (ignoring case), but we should support "1" as well.
+            if (rawValue != null && rawValue.equals("1")) {
+                return true;
+            } else {
+                return Boolean.valueOf(rawValue);
+            }
         }
     }
 
