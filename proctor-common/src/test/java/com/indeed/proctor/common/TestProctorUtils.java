@@ -1,5 +1,6 @@
 package com.indeed.proctor.common;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -12,8 +13,10 @@ import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.common.model.TestDefinition;
 import com.indeed.proctor.common.model.TestMatrixArtifact;
 import com.indeed.proctor.common.model.TestType;
+import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +36,7 @@ public class TestProctorUtils {
 
     private static final String TEST_A = "testA";
     private static final String TEST_B = "testB";
-
+    private static final String PATH_UNKNOWN_TEST_TYPE = "unknown-test-type.json";
 
     /**
      * Test that top level and allocation rules all respect the same definition
@@ -919,6 +922,25 @@ public class TestProctorUtils {
         assertEquals("two", buckets.get(2).getName());
         assertEquals(2, buckets.get(2).getValue());
     }
+
+    @Test
+    public void testUnrecognizedTestType() throws Exception {
+        final InputStream input = Preconditions.checkNotNull(getClass().getResourceAsStream(PATH_UNKNOWN_TEST_TYPE), "Missing test definition");
+        final ConsumableTestDefinition test = Serializers.lenient().readValue(input, ConsumableTestDefinition.class);
+
+        List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
+        final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets));
+        final Map<String, ConsumableTestDefinition> tests = ImmutableMap.of(TEST_A, test);
+
+        final TestMatrixArtifact matrix = constructArtifact(tests);
+
+        // verifyAndConsolidate should not throw an error because the 'invalidbuckets' test is not required.
+        assertEquals(1, matrix.getTests().size());
+        assertValid("invalid test not required, sum{allocations} < 1.0", matrix, requiredTests);
+        assertEquals(1, matrix.getTests().size());
+    }
+
+
 
     /* Test Helper Methods Below */
 
