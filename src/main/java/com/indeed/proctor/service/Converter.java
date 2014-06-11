@@ -41,10 +41,11 @@ public class Converter {
                 final Object value = context.getConverter().convert(rawValue);
                 converted.put(varName, value);
             } catch (final ConversionException e) {
-                e.setVarName(varName);
-                e.setRawValue(rawValue);
-                e.setType(context.getType());
-                throw e;
+                // When debugging, users are likely to get conversion errors due to typos or misunderstandings.
+                // Include as much information as possible so they can figure out what they did wrong.
+                throw new BadRequestException(
+                        String.format("Could not convert raw value '%s' to type '%s' for context variable '%s': %s",
+                                rawValue, context.getType(), varName, e.getMessage()));
             }
         }
 
