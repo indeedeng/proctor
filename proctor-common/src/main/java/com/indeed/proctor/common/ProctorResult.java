@@ -31,7 +31,8 @@ public class ProctorResult {
             @Nonnull final Map<String, ConsumableTestDefinition> testDefinitions
     ) {
         this.matrixVersion = matrixVersion;
-        this.buckets = buckets;
+        this.buckets = Maps.newTreeMap();
+        this.buckets.putAll(buckets);
         this.testDefinitions = testDefinitions;
     }
 

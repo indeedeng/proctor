@@ -48,10 +48,12 @@ public class TestMatrixArtifact {
 
     @Nonnull
     public Map<String, ConsumableTestDefinition> getTests() {
+        // Return the mutable copy of the map because verification-and-consolidation rewrites it.
+        // That should probably change to returning a modified clone as long as this class needs to remain public.
         return tests;
     }
 
     public void setTests(@Nonnull final Map<String, ConsumableTestDefinition> tests) {
-        this.tests = tests;
+        this.tests = Maps.newHashMap(tests);
     }
 }

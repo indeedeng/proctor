@@ -92,7 +92,7 @@ public class TestUnitTestGroupsManager {
                                                             .build());
 
             final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "FR", /* accountid */ 10);
-            assertEquals("pimple:control0,kluj:kloo2,oop_poop:test1,payloaded:inactive-1,payloaded_verified:inactive-1", calcBuckets(result));
+            assertEquals("kluj:kloo2,oop_poop:test1,payloaded:inactive-1,payloaded_verified:inactive-1,pimple:control0", calcBuckets(result));
         }
         {
             final ImmutableMap<TestType, String> idMap = ImmutableMap.<TestType, String>builder()

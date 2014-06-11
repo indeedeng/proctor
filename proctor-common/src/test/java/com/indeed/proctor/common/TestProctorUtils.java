@@ -311,7 +311,7 @@ public class TestProctorUtils {
                                                       fromCompactAllocationFormat("ruleA|-1:0.0,0:0.0,1:1.0", "ruleB|-1:0.5,0:0.5,1:0.0")));
 
             assertValid("test missing empty rule is not required", constructArtifact(tests), Collections.<String, TestSpecification>emptyMap());
-            assertMissing("test missing empty rule is required", constructArtifact(tests), requiredTests);
+            assertMissing("test missing empty rule is required", constructArtifact(Collections.<String, ConsumableTestDefinition>emptyMap()), requiredTests);
         }
         {
             final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
@@ -932,12 +932,34 @@ public class TestProctorUtils {
         final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets));
         final Map<String, ConsumableTestDefinition> tests = ImmutableMap.of(TEST_A, test);
 
-        final TestMatrixArtifact matrix = constructArtifact(tests);
+        {
+            final TestMatrixArtifact matrix = constructArtifact(tests);
 
-        // verifyAndConsolidate should not throw an error because the 'invalidbuckets' test is not required.
-        assertEquals(1, matrix.getTests().size());
-        assertValid("invalid test not required, sum{allocations} < 1.0", matrix, requiredTests);
-        assertEquals(1, matrix.getTests().size());
+            // verifyAndConsolidate should not throw an error because the 'invalidbuckets' test is not required.
+            assertEquals(1, matrix.getTests().size());
+            assertInvalid("Test not recognized, replaced with 'invalid' marker test", matrix, requiredTests);
+            assertEquals(1, matrix.getTests().size());
+            final ConsumableTestDefinition replacement = matrix.getTests().values().iterator().next();
+            assertEquals(TestType.RANDOM, replacement.getTestType());
+            assertEquals(1, replacement.getBuckets().size());
+            assertEquals(-1, replacement.getBuckets().iterator().next().getValue());
+        }
+
+        final TestType unrecognizedTestType = TestType.register("UNRECOGNIZED");
+        {
+            final TestMatrixArtifact matrix = constructArtifact(tests);
+
+            // verifyAndConsolidate should not throw an error because the 'invalidbuckets' test is not required.
+            assertEquals(1, matrix.getTests().size());
+            final ConsumableTestDefinition original = matrix.getTests().values().iterator().next();
+            assertEquals("Expected only the control and test buckets", 2, original.getBuckets().size());
+
+            assertValid("Test now valid", matrix, requiredTests);
+            assertEquals(1, matrix.getTests().size());
+            final ConsumableTestDefinition stillOriginal = matrix.getTests().values().iterator().next();
+            assertEquals(unrecognizedTestType, stillOriginal.getTestType());
+            assertEquals("Expected only the control and test buckets", 2, stillOriginal.getBuckets().size());
+        }
     }
 
 
@@ -988,6 +1010,7 @@ public class TestProctorUtils {
         test.setVersion(0); // don't care about version for this test
         test.setSalt(null); // don't care about salt for this test
         test.setRule(null); // don't care about rule for this test
+        test.setTestType(TestType.ANONYMOUS_USER);    // don't really care, but need a valid value
         test.setConstants(Collections.<String, Object>emptyMap()); // don't care about constants for this test
 
         test.setBuckets(buckets);

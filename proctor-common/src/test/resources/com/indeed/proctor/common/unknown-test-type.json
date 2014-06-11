@@ -1,6 +1,6 @@
 {
   "version" : 1,
-  "testType" : "USER",
+  "testType" : "UNRECOGNIZED",
   "salt" : "exampletst",
   "buckets" : [ {
     "name" : "control",
