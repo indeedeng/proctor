@@ -1,25 +1,25 @@
 package com.indeed.proctor.service.var;
 
 import com.indeed.proctor.service.ConfigurationException;
-import com.indeed.proctor.service.Source;
+import com.indeed.proctor.service.ExtractorSource;
 
 import javax.servlet.http.HttpServletRequest;
 
 /**
- * Holds classes for all the different extraction sources in the Source enum.
+ * Holds classes for all the different extraction sources in the ExtractorSource enum.
  */
 public final class ExtractUtil {
 
-    public static ValueExtractor createValueExtractor(final Source source, final String sourceKey, final String prefix) {
-        if (source == Source.QUERY) {
+    public static ValueExtractor createValueExtractor(final ExtractorSource source, final String sourceKey, final String prefix) {
+        if (source == ExtractorSource.QUERY) {
             return new QueryValueExtractor(sourceKey, prefix);
-        } else if (source == Source.HEADER) {
+        } else if (source == ExtractorSource.HEADER) {
             return new HeaderValueExtractor(sourceKey);
         } else {
             // This should be impossible if all enum values are in the above if statements.
             // If you add a new source, you need to add handling here and as an implementation of ValueExtractor.
             throw new ConfigurationException(
-                    String.format("Source '%s' in enum but lacks any Extractor in ExtractUtil.", source));
+                    String.format("ExtractorSource '%s' in enum but lacks any Extractor in ExtractUtil.", source));
         }
     }
 

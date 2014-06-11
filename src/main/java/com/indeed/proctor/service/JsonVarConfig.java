@@ -6,14 +6,14 @@ import org.codehaus.jackson.map.annotate.JsonSerialize;
  * Settings for the extraction of a variable in the service config file.
  */
 public class JsonVarConfig {
-    private Source source;
+    private ExtractorSource source;
     private String sourceKey;
 
-    public Source getSource() {
+    public ExtractorSource getSource() {
         return source;
     }
 
-    public void setSource(final Source source) {
+    public void setSource(final ExtractorSource source) {
         this.source = source;
     }
 

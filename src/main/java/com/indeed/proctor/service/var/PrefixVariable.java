@@ -1,7 +1,7 @@
 package com.indeed.proctor.service.var;
 
+import com.indeed.proctor.service.ExtractorSource;
 import com.indeed.proctor.service.JsonVarConfig;
-import com.indeed.proctor.service.Source;
 
 /**
  * Abstract class representing a context variable or identifier, which is passed with ctx. or id. prefixes in
@@ -10,7 +10,7 @@ import com.indeed.proctor.service.Source;
 public abstract class PrefixVariable {
     private final String varName;
     private final String prefix;
-    private final Source source;
+    private final ExtractorSource source;
     private final String sourceKey;
     private final ExtractUtil.ValueExtractor extractor;
 
@@ -31,7 +31,7 @@ public abstract class PrefixVariable {
         return prefix;
     }
 
-    public Source getSource() {
+    public ExtractorSource getSource() {
         return source;
     }
 

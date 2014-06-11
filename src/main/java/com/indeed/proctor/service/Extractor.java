@@ -74,7 +74,7 @@ public class Extractor {
         Iterator<PrefixVariable> iter = Iterators.concat(contextList.iterator(), identifierList.iterator());
         while (iter.hasNext()) {
             PrefixVariable var = iter.next();
-            if (var.getSource() == Source.QUERY) {
+            if (var.getSource() == ExtractorSource.QUERY) {
                 paramSet.remove(var.getPrefix() + "." + var.getSourceKey());
                 // If the parameter doesn't exist, then an error will be thrown during extraction later on.
             }
