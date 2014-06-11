@@ -40,15 +40,6 @@ public class Converter {
             try {
                 final Object value = context.getConverter().convert(rawValue);
                 converted.put(varName, value);
-
-            } catch (final NumberFormatException e) {
-                // It would be too difficult for certain primitive ValueConverters to throw ConversionException.
-                // So we handle it as a separate case.
-                final ConversionException convertError = new ConversionException("Number format exception");
-                convertError.setVarName(varName);
-                convertError.setRawValue(rawValue);
-                convertError.setType(context.getType());
-                throw convertError;
             } catch (final ConversionException e) {
                 e.setVarName(varName);
                 e.setRawValue(rawValue);

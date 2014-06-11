@@ -35,37 +35,61 @@ public final class ValueConverters {
 
     private static class ByteValueConverter implements ValueConverter<Byte> {
         public Byte convert(String rawValue) {
-            return Byte.valueOf(rawValue);
+            try {
+                return Byte.valueOf(rawValue);
+            } catch (NumberFormatException e) {
+                throw new ConversionException(e.getClass().getSimpleName());
+            }
         }
     }
 
     private static class ShortValueConverter implements ValueConverter<Short> {
         public Short convert(String rawValue) {
-            return Short.valueOf(rawValue);
+            try {
+                return Short.valueOf(rawValue);
+            } catch (NumberFormatException e) {
+                throw new ConversionException(e.getClass().getSimpleName());
+            }
         }
     }
 
     private static class IntegerValueConverter implements ValueConverter<Integer> {
         public Integer convert(String rawValue) {
-            return Integer.valueOf(rawValue);
+            try {
+                return Integer.valueOf(rawValue);
+            } catch (NumberFormatException e) {
+                throw new ConversionException(e.getClass().getSimpleName());
+            }
         }
     }
 
     private static class LongValueConverter implements ValueConverter<Long> {
         public Long convert(String rawValue) {
-            return Long.valueOf(rawValue);
+            try {
+                return Long.valueOf(rawValue);
+            } catch (NumberFormatException e) {
+                throw new ConversionException(e.getClass().getSimpleName());
+            }
         }
     }
 
     private static class FloatValueConverter implements ValueConverter<Float> {
         public Float convert(String rawValue) {
-            return Float.valueOf(rawValue);
+            try {
+                return Float.valueOf(rawValue);
+            } catch (NumberFormatException e) {
+                throw new ConversionException(e.getClass().getSimpleName());
+            }
         }
     }
 
     private static class DoubleValueConverter implements ValueConverter<Double> {
         public Double convert(String rawValue) {
-            return Double.valueOf(rawValue);
+            try {
+                return Double.valueOf(rawValue);
+            } catch (NumberFormatException e) {
+                throw new ConversionException(e.getClass().getSimpleName());
+            }
         }
     }
 
