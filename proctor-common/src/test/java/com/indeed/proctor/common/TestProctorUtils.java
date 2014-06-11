@@ -49,7 +49,7 @@ public class TestProctorUtils {
         final Range range = new Range(0, 1.0d);
 
         final int version = 100;
-        final TestType testType = TestType.USER;
+        final TestType testType = TestType.ANONYMOUS_USER;
         final String salt = "testsalt";
         final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
         final Map<String, Object> constants = Collections.emptyMap();
@@ -101,7 +101,7 @@ public class TestProctorUtils {
         final Range range = new Range(0, 1.0d);
 
         final int version = 100;
-        final TestType testType = TestType.USER;
+        final TestType testType = TestType.ANONYMOUS_USER;
         final String salt = "testsalt";
         final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
         final Map<String, Object> constants = Collections.emptyMap();
@@ -146,7 +146,7 @@ public class TestProctorUtils {
         final Range range = new Range(0, 1.0d);
 
         final int version = 100;
-        final TestType testType = TestType.USER;
+        final TestType testType = TestType.ANONYMOUS_USER;
         final String salt = "testsalt";
         final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
         final Map<String, Object> constants = Collections.emptyMap();

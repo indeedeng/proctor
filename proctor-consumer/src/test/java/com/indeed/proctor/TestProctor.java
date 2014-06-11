@@ -3,7 +3,11 @@ package com.indeed.proctor;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.indeed.proctor.common.*;
+import com.indeed.proctor.common.Identifiers;
+import com.indeed.proctor.common.Proctor;
+import com.indeed.proctor.common.ProctorLoadResult;
+import com.indeed.proctor.common.ProctorResult;
+import com.indeed.proctor.common.RuleEvaluator;
 import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.Audit;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
@@ -15,7 +19,6 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -96,7 +99,7 @@ final int id, final int version, final String rule, final TestType testType, fin
 final Map<String, Object> constants, final String description) {
 
          */
-        final ConsumableTestDefinition abcTD = new ConsumableTestDefinition(1, "${num > SOME_NUM && num < ANOTHER_NUM}", TestType.USER, "abcsalt", abcBuckets, abcAllocations, abcTestConstants, "zingle boppity zip zop");
+        final ConsumableTestDefinition abcTD = new ConsumableTestDefinition(1, "${num > SOME_NUM && num < ANOTHER_NUM}", TestType.ANONYMOUS_USER, "abcsalt", abcBuckets, abcAllocations, abcTestConstants, "zingle boppity zip zop");
 
         final TestBucket defBucket0 = new TestBucket("control", 0, "control description", null);
         final TestBucket defBucket1 = new TestBucket("test1", 1, "test1 description", null);
@@ -110,7 +113,7 @@ final Map<String, Object> constants, final String description) {
                 new Range(defBucket1.getValue(), 1/3f),
                 new Range(defBucket2.getValue(), 1/3f),
         })));
-        final ConsumableTestDefinition defTD = new ConsumableTestDefinition(2, "${proctor:contains(COUNTRIES, country) && T}", TestType.USER, "defsalt", defBuckets, defAllocations, defTestConstants, "finkle fangle foop");
+        final ConsumableTestDefinition defTD = new ConsumableTestDefinition(2, "${proctor:contains(COUNTRIES, country) && T}", TestType.ANONYMOUS_USER, "defsalt", defBuckets, defAllocations, defTestConstants, "finkle fangle foop");
 
         final TestBucket ghiBucket0 = new TestBucket("inactive", -1, "inactive description", null);
         final TestBucket ghiBucket1 = new TestBucket("control", 0, "control desc", null);
@@ -129,8 +132,7 @@ final Map<String, Object> constants, final String description) {
                         new Range(ghiBucket3.getValue(), 0.2),
                         new Range(ghiBucket4.getValue(), 0.2),
                 })));
-        final ConsumableTestDefinition ghiTD = new ConsumableTestDefinition(3, "${proctor:contains(LANGUAGES, language)}", TestType.USER, "ghisalt", ghiBuckets, ghiAllocations, ghiTestConstants, "jangle bing zimple plop");
-
+        final ConsumableTestDefinition ghiTD = new ConsumableTestDefinition(3, "${proctor:contains(LANGUAGES, language)}", TestType.ANONYMOUS_USER, "ghisalt", ghiBuckets, ghiAllocations, ghiTestConstants, "jangle bing zimple plop");
         final Map<String, ConsumableTestDefinition> tests = Maps.newLinkedHashMap();
         tests.put("abc", abcTD);
         tests.put("def", defTD);
@@ -152,8 +154,7 @@ final Map<String, Object> constants, final String description) {
         context.put("country", country);
         context.put("language", language);
 
-        final Identifiers identifiers = new Identifiers(TestType.USER, id);
-
+        final Identifiers identifiers = new Identifiers(TestType.ANONYMOUS_USER, id);
         final ProctorResult proctorResult = proctor.determineTestGroups(identifiers, context, forceGroups);
         final StringBuilder buckets = new StringBuilder();
         for (final Iterator<Entry<String, TestBucket>> iterator = proctorResult.getBuckets().entrySet().iterator(); iterator.hasNext(); ) {
