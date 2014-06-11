@@ -12,7 +12,7 @@ public class ContextVariable extends PrefixVariable {
     public ContextVariable(final String varName, final JsonContextVarConfig varConfig) {
         super(varName, varConfig, "ctx");
         type = varConfig.getType();
-        converter = ConvertUtil.createValueConverter(varConfig.getType());
+        converter = ValueConverters.createValueConverter(varConfig.getType());
     }
 
     public String getType() {

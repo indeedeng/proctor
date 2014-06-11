@@ -20,7 +20,7 @@ public abstract class PrefixVariable {
         source = varConfig.getSource();
         // If the config didn't specify a source key, use the var name. This saves typing in the config file.
         sourceKey = (varConfig.getSourceKey() != null ? varConfig.getSourceKey() : varName);
-        extractor = ExtractUtil.createValueExtractor(source, sourceKey, prefix);
+        extractor = ValueExtractors.createValueExtractor(source, sourceKey, prefix);
     }
 
     public String getVarName() {

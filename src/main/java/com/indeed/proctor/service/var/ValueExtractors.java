@@ -8,7 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 /**
  * Holds classes for all the different extraction sources in the ExtractorSource enum.
  */
-public final class ExtractUtil {
+public final class ValueExtractors {
 
     public static ValueExtractor createValueExtractor(final ExtractorSource source, final String sourceKey, final String prefix) {
         if (source == ExtractorSource.QUERY) {
@@ -19,12 +19,12 @@ public final class ExtractUtil {
             // This should be impossible if all enum values are in the above if statements.
             // If you add a new source, you need to add handling here and as an implementation of ValueExtractor.
             throw new ConfigurationException(
-                    String.format("ExtractorSource '%s' in enum but lacks any Extractor in ExtractUtil.", source));
+                    String.format("ExtractorSource '%s' in enum but lacks any extractor in ValueExtractors.", source));
         }
     }
 
-    private ExtractUtil() {
-        throw new UnsupportedOperationException("ExtractUtil should not be initialized.");
+    private ValueExtractors() {
+        throw new UnsupportedOperationException("ValueExtractors should not be initialized.");
     }
 
     private static class QueryValueExtractor implements ValueExtractor {
