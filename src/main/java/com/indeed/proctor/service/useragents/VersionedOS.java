@@ -8,6 +8,8 @@ import nl.bitwalker.useragentutils.Version;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Iterator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author matts
@@ -73,13 +75,13 @@ public class VersionedOS {
         String userAgentString = userAgent.getUserAgentString();
 
         if (userAgent.isIOS()) {
-            return parseOsVersion(Browser.getIOSVersion(userAgentString));
+            return parseOsVersion(getIOSVersion(userAgentString));
         }
         else if (userAgent.isAndroid()) {
-            return parseOsVersion(Browser.getAndroidVersion(userAgentString));
+            return parseOsVersion(getAndroidVersion(userAgentString));
         }
         else if (userAgent.isWindowsPhone()) {
-            return parseOsVersion(Browser.getWindowsPhoneVersion(userAgentString));
+            return parseOsVersion(getWindowsPhoneVersion(userAgentString));
         }
 
         return UNKNOWN_VERSION;
@@ -96,6 +98,48 @@ public class VersionedOS {
         final String minorVersion = it.hasNext() ? it.next() : "";
 
         return new Version(osVersionString, majorVersion, minorVersion);
+    }
+
+    private static final Pattern ANDROID_PATTERN = Pattern.compile("Android (\\d+(?:\\.\\d+)+)");
+    public static String getAndroidVersion(String ua) {
+        final Matcher m = ANDROID_PATTERN.matcher(ua);
+        if (m.find()) {
+            return m.group(1);
+        }
+        return null;
+    }
+
+    @Nullable
+    public static String getIOSVersion(@Nullable final String ua) {
+        if (ua == null) return null;
+        StringBuilder versionBuilder = new StringBuilder(6);
+        int index = ua.indexOf("OS ");
+        if (index == -1) return null;
+        index += 3; // skip over "OS ".
+        if (!Character.isDigit(ua.charAt(index))) {
+            return null;
+        }
+        while (index < ua.length() && ua.charAt(index) != ' ') {
+            versionBuilder.append(ua.charAt(index));
+            index++;
+        }
+        return versionBuilder.toString().replace('_', '.');
+    }
+
+    public static String getWindowsPhoneVersion(String ua) {
+        if (ua == null) return null;
+        StringBuilder versionBuilder = new StringBuilder(6);
+        int index = ua.indexOf("OS ");
+        if (index == -1) return null;
+        index += 3; // skip over "OS ".
+        if (!Character.isDigit(ua.charAt(index))) {
+            return null;
+        }
+        while (index < ua.length() && ua.charAt(index) != ';') {
+            versionBuilder.append(ua.charAt(index));
+            index++;
+        }
+        return versionBuilder.toString();
     }
 
     public static final Version UNKNOWN_VERSION = new Version(null, null, null);
