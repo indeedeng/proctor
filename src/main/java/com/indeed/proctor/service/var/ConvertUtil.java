@@ -6,7 +6,7 @@ import com.indeed.proctor.service.useragents.UserAgent;
 /**
  * Holds classes for all context variable conversions defined in the service configuration file.
  */
-public class ConvertUtil {
+public final class ConvertUtil {
 
     public static ValueConverter createValueConverter(final String type) {
         // Primitives
@@ -27,6 +27,10 @@ public class ConvertUtil {
         // Unrecognized type name. You should add any custom converters here and as an implementation of ValueConverter.
         throw new ConfigurationException(
                 String.format("Type '%s' unrecognized. ConvertUtil lacks a converter for this type.", type));
+    }
+
+    private ConvertUtil() {
+        throw new UnsupportedOperationException("ConvertUtil should not be initialized.");
     }
 
     public static interface ValueConverter<T> {

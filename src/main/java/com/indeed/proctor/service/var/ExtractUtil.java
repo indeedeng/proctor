@@ -8,7 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 /**
  * Holds classes for all the different extraction sources in the Source enum.
  */
-public class ExtractUtil {
+public final class ExtractUtil {
 
     public static ValueExtractor createValueExtractor(final Source source, final String sourceKey, final String prefix) {
         if (source == Source.QUERY) {
@@ -21,6 +21,10 @@ public class ExtractUtil {
             throw new ConfigurationException(
                     String.format("Source '%s' in enum but lacks any Extractor in ExtractUtil.", source));
         }
+    }
+
+    private ExtractUtil() {
+        throw new UnsupportedOperationException("ExtractUtil should not be initialized.");
     }
 
     public static interface ValueExtractor {
