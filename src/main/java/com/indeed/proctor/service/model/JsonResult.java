@@ -1,4 +1,4 @@
-package com.indeed.proctor.service;
+package com.indeed.proctor.service.model;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.Maps;

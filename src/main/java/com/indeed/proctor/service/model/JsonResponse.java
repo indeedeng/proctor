@@ -1,4 +1,4 @@
-package com.indeed.proctor.service;
+package com.indeed.proctor.service.model;
 
 /**
  * Standard envelope response to JSON web requests.

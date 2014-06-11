@@ -1,4 +1,4 @@
-package com.indeed.proctor.service;
+package com.indeed.proctor.service.model;
 
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 

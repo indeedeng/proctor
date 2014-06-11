@@ -1,4 +1,4 @@
-package com.indeed.proctor.service;
+package com.indeed.proctor.service.model;
 
 import java.util.Collections;
 import java.util.Map;
