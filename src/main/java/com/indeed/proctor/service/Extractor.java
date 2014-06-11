@@ -110,7 +110,7 @@ public class Extractor {
         // TODO: might this come from post data?
         final String testParam = request.getParameter(TEST_LIST_PARAM);
         if (testParam == null) {
-            return null;
+            return Collections.emptyList();
         } else {
             return Lists.newArrayList(COMMA_SPLITTER.split(testParam));
         }
