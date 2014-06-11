@@ -189,21 +189,6 @@ public class UserAgent {
         return isPhone() && !isSmartPhone();
     }
 
-    /**
-     * Returns whether a given agent is capable of uploading a file.
-     *
-     * Note that this is NOT limited to just images, and therefore iOS does not qualify.
-     *
-     * Works for any non mobile agent
-     * Works for Android devices running Android v2.1+.
-     * @return
-     */
-    public boolean isFileUploadCapable() {
-        return  !isMobileDevice() ||
-                (isAndroid()
-                && meetsMinimumVersion(2, 1, getOS().getMajorVersion(), getOS().getMinorVersion()));
-    }
-
     private boolean meetsMinimumVersion(final int minMajorVersion, final int minMinorVersion,
                                      final int majorVersion, final int minorVersion) {
         return (majorVersion > minMajorVersion) || (majorVersion == minMajorVersion && minorVersion >= minMinorVersion);
