@@ -1,4 +1,4 @@
-package com.indeed.proctor.service;
+package com.indeed.proctor.service.config;
 
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -9,6 +9,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 @Configuration
 @EnableWebMvc
 @EnableScheduling
-@ComponentScan
+@ComponentScan("com.indeed.proctor.service")
 public class AppConfig extends WebMvcConfigurerAdapter {
 }

@@ -1,4 +1,4 @@
-package com.indeed.proctor.service;
+package com.indeed.proctor.service.config;
 
 /**
  * Exception for errors found during the processing of the service configuration file (before web).

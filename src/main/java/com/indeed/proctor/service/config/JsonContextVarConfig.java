@@ -1,4 +1,4 @@
-package com.indeed.proctor.service;
+package com.indeed.proctor.service.config;
 
 /**
  * Context variable configuration, which also requires type conversion.

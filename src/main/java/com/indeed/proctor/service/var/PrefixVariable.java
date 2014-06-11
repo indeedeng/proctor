@@ -1,7 +1,7 @@
 package com.indeed.proctor.service.var;
 
-import com.indeed.proctor.service.ExtractorSource;
-import com.indeed.proctor.service.JsonVarConfig;
+import com.indeed.proctor.service.config.ExtractorSource;
+import com.indeed.proctor.service.config.JsonVarConfig;
 
 /**
  * Abstract class representing a context variable or identifier, which is passed with ctx. or id. prefixes in

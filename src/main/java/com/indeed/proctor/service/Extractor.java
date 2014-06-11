@@ -6,6 +6,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.indeed.proctor.service.config.ExtractorSource;
 import com.indeed.proctor.service.var.ContextVariable;
 import com.indeed.proctor.service.var.Identifier;
 import com.indeed.proctor.service.var.PrefixVariable;

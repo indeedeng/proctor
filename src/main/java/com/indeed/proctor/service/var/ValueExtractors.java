@@ -1,7 +1,7 @@
 package com.indeed.proctor.service.var;
 
-import com.indeed.proctor.service.ConfigurationException;
-import com.indeed.proctor.service.ExtractorSource;
+import com.indeed.proctor.service.config.ConfigurationException;
+import com.indeed.proctor.service.config.ExtractorSource;
 
 import javax.servlet.http.HttpServletRequest;
 

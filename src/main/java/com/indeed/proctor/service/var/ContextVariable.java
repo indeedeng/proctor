@@ -1,6 +1,6 @@
 package com.indeed.proctor.service.var;
 
-import com.indeed.proctor.service.JsonContextVarConfig;
+import com.indeed.proctor.service.config.JsonContextVarConfig;
 
 /**
  * Implementation of PrefixVariable that also includes a ValueConverter for type conversion.
