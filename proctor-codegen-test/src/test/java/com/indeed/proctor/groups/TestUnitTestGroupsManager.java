@@ -276,6 +276,17 @@ public class TestUnitTestGroupsManager {
         assertEquals(grps.getKlujDescription(),"2nd test");
     }
 
+    @Test
+    public void testTestDescriptions_checkEscaping(){
+        final Identifiers identifiers = new Identifiers(TestType.USER, "16s2o7s01001d9vj");
+        final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "FR", /* accountid */ 10);
+        assertEquals("kluj:test1,oop_poop:control0,payloaded:inactive-1,payloaded_verified:inactive-1", calcBuckets(result));
+        // Check and make sure UnitTestGroups respects these groups and works as expected.
+        final UnitTestGroups grps = new UnitTestGroups(result);
+        //make sure getDescription method exists and returns the correct description with escaping
+        assertEquals(grps.getBubbleDescription(),"3rd \n\t\"test");
+    }
+
     private String calcBuckets(ProctorResult proctorResult) {
         final StringBuilder sb = new StringBuilder();
         // Current behavior is mapping from { testName -> TestBucket }

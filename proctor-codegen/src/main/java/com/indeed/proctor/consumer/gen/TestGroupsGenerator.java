@@ -8,6 +8,7 @@ import com.indeed.proctor.common.PayloadType;
 import com.indeed.proctor.common.ProctorSpecification;
 import com.indeed.proctor.common.ProctorUtils;
 import com.indeed.proctor.common.TestSpecification;
+import org.apache.commons.lang.StringEscapeUtils;
 
 import java.io.File;
 import java.util.Arrays;
@@ -111,7 +112,7 @@ public class TestGroupsGenerator extends FreeMarkerCodeGenerator {
 
             
             if (testSpecification.getDescription() != null) {
-                testDef.put("description", testSpecification.getDescription());
+                testDef.put("description", StringEscapeUtils.escapeJava(testSpecification.getDescription()));
             }
 
 

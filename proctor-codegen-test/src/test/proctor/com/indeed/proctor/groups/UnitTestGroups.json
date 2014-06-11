@@ -22,6 +22,7 @@
             "oop": 2,
             "poop": 3
             },
+            "description":"3rd \n\t\"test",
             "fallbackValue" : 0
         },
         "dubblez" : { "buckets" : {
