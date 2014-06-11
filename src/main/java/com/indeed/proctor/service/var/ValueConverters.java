@@ -34,61 +34,61 @@ public final class ValueConverters {
     }
 
     private static class ByteValueConverter implements ValueConverter<Byte> {
-        public Byte convert(String rawValue) throws ConversionException {
+        public Byte convert(String rawValue) throws ValueConversionException {
             try {
                 return Byte.valueOf(rawValue);
             } catch (NumberFormatException e) {
-                throw new ConversionException(e.getClass().getSimpleName());
+                throw new ValueConversionException(e.getClass().getSimpleName());
             }
         }
     }
 
     private static class ShortValueConverter implements ValueConverter<Short> {
-        public Short convert(String rawValue) throws ConversionException {
+        public Short convert(String rawValue) throws ValueConversionException {
             try {
                 return Short.valueOf(rawValue);
             } catch (NumberFormatException e) {
-                throw new ConversionException(e.getClass().getSimpleName());
+                throw new ValueConversionException(e.getClass().getSimpleName());
             }
         }
     }
 
     private static class IntegerValueConverter implements ValueConverter<Integer> {
-        public Integer convert(String rawValue) throws ConversionException {
+        public Integer convert(String rawValue) throws ValueConversionException {
             try {
                 return Integer.valueOf(rawValue);
             } catch (NumberFormatException e) {
-                throw new ConversionException(e.getClass().getSimpleName());
+                throw new ValueConversionException(e.getClass().getSimpleName());
             }
         }
     }
 
     private static class LongValueConverter implements ValueConverter<Long> {
-        public Long convert(String rawValue) throws ConversionException {
+        public Long convert(String rawValue) throws ValueConversionException {
             try {
                 return Long.valueOf(rawValue);
             } catch (NumberFormatException e) {
-                throw new ConversionException(e.getClass().getSimpleName());
+                throw new ValueConversionException(e.getClass().getSimpleName());
             }
         }
     }
 
     private static class FloatValueConverter implements ValueConverter<Float> {
-        public Float convert(String rawValue) throws ConversionException {
+        public Float convert(String rawValue) throws ValueConversionException {
             try {
                 return Float.valueOf(rawValue);
             } catch (NumberFormatException e) {
-                throw new ConversionException(e.getClass().getSimpleName());
+                throw new ValueConversionException(e.getClass().getSimpleName());
             }
         }
     }
 
     private static class DoubleValueConverter implements ValueConverter<Double> {
-        public Double convert(String rawValue) throws ConversionException {
+        public Double convert(String rawValue) throws ValueConversionException {
             try {
                 return Double.valueOf(rawValue);
             } catch (NumberFormatException e) {
-                throw new ConversionException(e.getClass().getSimpleName());
+                throw new ValueConversionException(e.getClass().getSimpleName());
             }
         }
     }
@@ -105,12 +105,12 @@ public final class ValueConverters {
     }
 
     private static class CharacterValueConverter implements ValueConverter<Character> {
-        public Character convert(String rawValue) throws ConversionException {
+        public Character convert(String rawValue) throws ValueConversionException {
             final int length = rawValue.length();
             if (length != 1) {
                 // User should be passing in exactly one character in the request.
-                throw new ConversionException(String.format(
-                        "Parameter was length %d but expecting length 1.", length));
+                throw new ValueConversionException(
+                        String.format("Parameter was length %d but expecting length 1.", length));
             } else {
                 return rawValue.charAt(0);
             }

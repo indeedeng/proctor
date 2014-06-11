@@ -4,7 +4,7 @@ import com.google.common.collect.Maps;
 import com.indeed.proctor.common.Identifiers;
 import com.indeed.proctor.common.model.TestType;
 import com.indeed.proctor.service.var.ContextVariable;
-import com.indeed.proctor.service.var.ConversionException;
+import com.indeed.proctor.service.var.ValueConversionException;
 
 import java.util.List;
 import java.util.Map;
@@ -40,7 +40,7 @@ public class Converter {
             try {
                 final Object value = context.getConverter().convert(rawValue);
                 converted.put(varName, value);
-            } catch (final ConversionException e) {
+            } catch (final ValueConversionException e) {
                 // When debugging, users are likely to get conversion errors due to typos or misunderstandings.
                 // Include as much information as possible so they can figure out what they did wrong.
                 throw new BadRequestException(
