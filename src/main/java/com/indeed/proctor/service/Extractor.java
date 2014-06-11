@@ -25,6 +25,7 @@ import java.util.Set;
 public class Extractor {
     private static final String TEST_LIST_PARAM = "test";
     private static final String FORCE_GROUPS_PREFIX = "force";
+    private static final Splitter COMMA_SPLITTER = Splitter.on(',').trimResults().omitEmptyStrings();
 
     private final List<ContextVariable> contextList;
     private final List<Identifier> identifierList;
@@ -111,7 +112,7 @@ public class Extractor {
         if (testParam == null) {
             return null;
         } else {
-            return Lists.newArrayList(Splitter.on(',').trimResults().omitEmptyStrings().split(testParam));
+            return Lists.newArrayList(COMMA_SPLITTER.split(testParam));
         }
     }
 
