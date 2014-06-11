@@ -92,7 +92,7 @@ public class Extractor {
     /**
      * Checks that there is at least one identifier in the request.
      *
-     * It's very rare for any test groups to be returned if no identifiers were passed in at all.
+     * Zero identifiers is only valid if all the tests are of RANDOM type. This is very rare.
      * Therefore, passing in none should be an error.
      */
     private void checkAtLeastOneIdentifier(final Map<String, String> identifierMap) {
