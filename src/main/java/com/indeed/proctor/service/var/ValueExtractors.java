@@ -28,16 +28,15 @@ public final class ValueExtractors {
     }
 
     private static class QueryValueExtractor implements ValueExtractor {
-        final private String sourceKey;
-        final private String prefix;
+        final private String prefixedSourceKey;
 
         public QueryValueExtractor(final String sourceKey, final String prefix) {
-            this.sourceKey = sourceKey;
-            this.prefix = prefix;
+            // Store the concatenation here so that we don't have to do it every call to extract().
+            this.prefixedSourceKey = prefix + "." + sourceKey;
         }
 
         public String extract(final HttpServletRequest request) {
-            return request.getParameter(prefix + "." + sourceKey);
+            return request.getParameter(prefixedSourceKey);
         }
     }
 
