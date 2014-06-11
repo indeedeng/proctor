@@ -7,7 +7,7 @@ import com.indeed.proctor.service.JsonContextVarConfig;
  */
 public class ContextVariable extends PrefixVariable {
     private final String type;
-    private final ConvertUtil.ValueConverter converter;
+    private final ValueConverter converter;
 
     public ContextVariable(final String varName, final JsonContextVarConfig varConfig) {
         super(varName, varConfig, "ctx");
@@ -19,7 +19,7 @@ public class ContextVariable extends PrefixVariable {
         return type;
     }
 
-    public ConvertUtil.ValueConverter getConverter() {
+    public ValueConverter getConverter() {
         return converter;
     }
 }

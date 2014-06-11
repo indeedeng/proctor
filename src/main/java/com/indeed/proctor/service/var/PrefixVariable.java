@@ -12,7 +12,7 @@ public abstract class PrefixVariable {
     private final String prefix;
     private final ExtractorSource source;
     private final String sourceKey;
-    private final ExtractUtil.ValueExtractor extractor;
+    private final ValueExtractor extractor;
 
     public PrefixVariable(final String varName, final JsonVarConfig varConfig, final String prefix) {
         this.varName = varName;
@@ -39,7 +39,7 @@ public abstract class PrefixVariable {
         return sourceKey;
     }
 
-    public ExtractUtil.ValueExtractor getExtractor() {
+    public ValueExtractor getExtractor() {
         return extractor;
     }
 }

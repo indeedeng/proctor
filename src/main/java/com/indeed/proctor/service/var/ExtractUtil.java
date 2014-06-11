@@ -27,10 +27,6 @@ public final class ExtractUtil {
         throw new UnsupportedOperationException("ExtractUtil should not be initialized.");
     }
 
-    public static interface ValueExtractor {
-        public String extract(final HttpServletRequest request);
-    }
-
     private static class QueryValueExtractor implements ValueExtractor {
         final private String sourceKey;
         final private String prefix;

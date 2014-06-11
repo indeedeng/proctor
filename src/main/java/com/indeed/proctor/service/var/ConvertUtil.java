@@ -33,10 +33,6 @@ public final class ConvertUtil {
         throw new UnsupportedOperationException("ConvertUtil should not be initialized.");
     }
 
-    public static interface ValueConverter<T> {
-        public T convert(String rawValue);
-    }
-
     private static class ByteValueConverter implements ValueConverter<Byte> {
         public Byte convert(String rawValue) {
             return Byte.valueOf(rawValue);
