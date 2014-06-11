@@ -56,7 +56,14 @@ public class Converter {
         // Convert every key in the identifiers to its matching enum type.
         final Map<TestType, String> identMap = Maps.newHashMap();
         for (final Map.Entry<String, String> e : identifiers.entrySet()) {
-            identMap.put(TestType.valueOf(e.getKey()), e.getValue());
+            try {
+                identMap.put(TestType.valueOf(e.getKey()), e.getValue());
+            } catch (IllegalArgumentException ex) {
+                // TODO: Needs change after Proctor changes to use String for TestType.
+                // TODO: Might be better to check this ahead of time when loading the service configuration.
+                throw new BadRequestException(
+                        String.format("Could not convert identifier '%s' to TestType", e.getKey()));
+            }
         }
         // TODO: what is this random parameter for and should it be true or false?
         return new Identifiers(identMap);
