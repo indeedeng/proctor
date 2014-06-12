@@ -19,7 +19,7 @@ The test definition describes a test's buckets, allocations, eligibility rules, 
 | ------------- | ----------- |
 | `testType` | The [Identifier]({{ site.baseurl }}/docs/terminology/#toc_10) to use for this test |
 | `version` | the version for this test |
-| `salt` | A salt used in the hashing function used to map String identifiers to integer values. By convention this is set as the test name |
+| `salt` | A salt used in the hashing function used to map String identifiers to integer values. A good convention is to use the test name. Salts that start with "&" can allow you to align bucket assignments by using identical salts. |
 | `description` | description of the tests and the features impacted by this test |
 | `rule` | (optional) [eligibility rule]({{ site.baseurl }}/docs/test-rules/) for this test |
 | `constants` | (optional) collection of variables available in the `rules` for this test |
