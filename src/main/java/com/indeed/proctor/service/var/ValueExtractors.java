@@ -10,7 +10,9 @@ import javax.servlet.http.HttpServletRequest;
  */
 public final class ValueExtractors {
 
-    public static ValueExtractor createValueExtractor(final ExtractorSource source, final String sourceKey, final String prefix) {
+    public static ValueExtractor createValueExtractor(final ExtractorSource source,
+                                                      final String sourceKey,
+                                                      final String prefix) {
         if (source == ExtractorSource.QUERY) {
             return new QueryValueExtractor(sourceKey, prefix);
         } else if (source == ExtractorSource.HEADER) {

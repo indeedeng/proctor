@@ -16,8 +16,10 @@ public class ConvertedParameters {
     private final List<String> test;
     private final Map<String, Integer> forceGroups;
 
-    public ConvertedParameters(final Map<String, Object> context, final Identifiers identifiers,
-                               final List<String> test, final Map<String, Integer> forceGroups) {
+    public ConvertedParameters(final Map<String, Object> context,
+                               final Identifiers identifiers,
+                               final List<String> test,
+                               final Map<String, Integer> forceGroups) {
         this.context = context;
         this.identifiers = identifiers;
         this.test = test;

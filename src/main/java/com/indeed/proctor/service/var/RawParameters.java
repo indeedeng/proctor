@@ -18,8 +18,10 @@ public class RawParameters {
     private final List<String> test;
     private final Map<String, String> forceGroups;
 
-    public RawParameters(final Map<String, String> context, final Map<String, String> identifiers,
-                         final List<String> test, Map<String, String> forceGroups) {
+    public RawParameters(final Map<String, String> context,
+                         final Map<String, String> identifiers,
+                         final List<String> test,
+                         Map<String, String> forceGroups) {
         this.context = context;
         this.identifiers = identifiers;
         this.test = test;

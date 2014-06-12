@@ -21,7 +21,9 @@ public class JsonResult {
 
     private final Audit audit;
 
-    public JsonResult(final ProctorResult result, final List<String> testFilter, final Map<String, Object> context,
+    public JsonResult(final ProctorResult result,
+                      final List<String> testFilter,
+                      final Map<String, Object> context,
                       final Audit audit) {
         this.context = context;
         this.audit = audit;

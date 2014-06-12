@@ -148,9 +148,9 @@ public class Extractor {
      *                       an error to omit them in the request.
      * @return A mapping of var name to string var value.
      */
-    private Map<String, String> extractAllVars(
-            final HttpServletRequest request, final List<? extends PrefixVariable> varList, boolean isMissingError) {
-
+    private Map<String, String> extractAllVars(final HttpServletRequest request,
+                                               final List<? extends PrefixVariable> varList,
+                                               boolean isMissingError) {
         final Map<String, String> ret = Maps.newHashMap();
 
         for (PrefixVariable var : varList) {
