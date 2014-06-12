@@ -21,6 +21,7 @@ public abstract class PrefixVariable {
     // How the variable is referenced in the HTTP request. For example, user agents are typically User-Agent.
     // This is the name we use to extract the variable from the HTTP request.
     // If the configuration did not specify a sourceKey explicitly, we default it to varName.
+    // If the source is QUERY, then the prefix is prepended to the source key since query parameters must use a prefix.
     private final String sourceKey;
 
     private final ValueExtractor extractor;
@@ -29,9 +30,16 @@ public abstract class PrefixVariable {
         this.varName = varName;
         this.prefix = prefix;
         source = varConfig.getSource();
+
         // If the config didn't specify a source key, use the var name. This saves typing in the config file.
-        sourceKey = (varConfig.getSourceKey() != null ? varConfig.getSourceKey() : varName);
-        extractor = ValueExtractors.createValueExtractor(source, sourceKey, prefix);
+        final String defaultedSourceKey = (varConfig.getSourceKey() != null ? varConfig.getSourceKey() : varName);
+        if (source == ExtractorSource.QUERY) {
+            sourceKey = prefix + "." + defaultedSourceKey;
+        } else {
+            sourceKey = defaultedSourceKey;
+        }
+
+        extractor = ValueExtractors.createValueExtractor(source, sourceKey);
     }
 
     public String getVarName() {

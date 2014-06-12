@@ -75,7 +75,7 @@ public class Extractor {
         while (iter.hasNext()) {
             PrefixVariable var = iter.next();
             if (var.getSource() == ExtractorSource.QUERY) {
-                paramSet.remove(var.getPrefix() + "." + var.getSourceKey());
+                paramSet.remove(var.getSourceKey());
                 // If the parameter doesn't exist, then an error will be thrown during extraction later on.
             }
         }

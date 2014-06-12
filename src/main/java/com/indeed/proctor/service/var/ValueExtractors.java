@@ -11,10 +11,9 @@ import javax.servlet.http.HttpServletRequest;
 public final class ValueExtractors {
 
     public static ValueExtractor createValueExtractor(final ExtractorSource source,
-                                                      final String sourceKey,
-                                                      final String prefix) {
+                                                      final String sourceKey) {
         if (source == ExtractorSource.QUERY) {
-            return new QueryValueExtractor(sourceKey, prefix);
+            return new QueryValueExtractor(sourceKey);
         } else if (source == ExtractorSource.HEADER) {
             return new HeaderValueExtractor(sourceKey);
         } else {
@@ -30,15 +29,15 @@ public final class ValueExtractors {
     }
 
     private static class QueryValueExtractor implements ValueExtractor {
-        final private String prefixedSourceKey;
+        final private String sourceKey;
 
-        public QueryValueExtractor(final String sourceKey, final String prefix) {
+        public QueryValueExtractor(final String sourceKey) {
             // Store the concatenation here so that we don't have to do it every call to extract().
-            this.prefixedSourceKey = prefix + "." + sourceKey;
+            this.sourceKey = sourceKey;
         }
 
         public String extract(final HttpServletRequest request) {
-            return request.getParameter(prefixedSourceKey);
+            return request.getParameter(sourceKey);
         }
     }
 
