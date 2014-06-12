@@ -58,6 +58,9 @@ public abstract class PrefixVariable {
         return sourceKey;
     }
 
+    // Returns null if object has no configured default value or it makes no sense for it to.
+    public abstract String getDefaultValue();
+
     public ValueExtractor getExtractor() {
         return extractor;
     }

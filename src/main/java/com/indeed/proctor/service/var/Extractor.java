@@ -140,12 +140,16 @@ public class Extractor {
         for (PrefixVariable var : varList) {
             final String varName = var.getVarName();
             final String value = var.getExtractor().extract(request);
+            final String defaultValue = var.getDefaultValue();
 
-            if (value == null && isMissingError) {
-                // This is not allowed for this type of variable.
+            if (value == null && defaultValue == null && isMissingError) {
+                // This is not allowed for this type of variable, and there is no default to fall back on.
                 throw new BadRequestException(String.format(
                         "Required variable '%s' not found in '%s' at source key '%s'. See the service configuration.",
                         varName, var.getSource().toString(), var.getSourceKey()));
+            } else if (value == null && defaultValue != null) {
+                // We have a default to fall back on.
+                ret.put(varName, defaultValue);
             } else if (value != null) {
                 // We don't want to put nulls into our map.
                 // Proctor interprets nulls correctly, but we want an accurate count of identifiers.
