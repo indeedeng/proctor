@@ -1,7 +1,6 @@
 package com.indeed.proctor.service.var;
 
 import com.google.common.base.Joiner;
-import com.google.common.base.Predicates;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
@@ -10,6 +9,8 @@ import com.indeed.proctor.service.web.BadRequestException;
 import com.indeed.proctor.service.config.ExtractorSource;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -23,7 +24,11 @@ import java.util.Set;
  */
 public class Extractor {
     private static final String TEST_LIST_PARAM = "test";
-    private static final String FORCE_GROUPS_PREFIX = "force";
+    private static final String FORCE_GROUPS_PARAM = "prforceGroups";
+    // List of all valid API parameters. This is everything the API uses without the user explicitly configuring.
+    private static final Collection<String> API_QUERY_PARAMS =
+            Arrays.asList(TEST_LIST_PARAM, FORCE_GROUPS_PARAM);
+
     private static final Splitter COMMA_SPLITTER = Splitter.on(',').trimResults().omitEmptyStrings();
 
     private final List<ContextVariable> contextList;
@@ -60,16 +65,7 @@ public class Extractor {
         // Iterate through all possible parameters and remove them from the set.
         // It doesn't matter if we remove optional or non-existent parameters. remove() returns false in that case.
 
-        paramSet.remove(TEST_LIST_PARAM);
-
-        // Remove everything from the set that has the force groups prefix. These are all valid parameters.
-        // Cannot use Guava filter because removing requires a modifiable iterator.
-        for (Iterator<String> iter = paramSet.iterator(); iter.hasNext(); ) {
-            final String param = iter.next();
-            if (param.startsWith(FORCE_GROUPS_PREFIX + ".")) {
-                iter.remove();
-            }
-        }
+        paramSet.removeAll(API_QUERY_PARAMS);
 
         Iterator<PrefixVariable> iter = Iterators.concat(contextList.iterator(), identifierList.iterator());
         while (iter.hasNext()) {
@@ -115,28 +111,16 @@ public class Extractor {
         }
     }
 
-    private Map<String, String> extractForceGroups(final HttpServletRequest request) {
-        final Map<String, String> ret = Maps.newHashMap();
-        final Map<String, String[]> paramMap = request.getParameterMap();
-
-        // Regex to match beginning of input, the prefix, and a period.
-        for (Map.Entry<String, String[]> param : Maps.filterKeys(paramMap,
-                Predicates.containsPattern("\\A" + FORCE_GROUPS_PREFIX + "\\.")).entrySet()) {
-
-            final String key = param.getKey();
-            final String[] paramValue = param.getValue();
-            // It doesn't make sense to force several test groups for one test.
-            if (paramValue.length != 1) {
-                throw new BadRequestException(String.format(
-                        "Cannot force multiple test groups for a test. Multiple '%s' parameters found.", key));
-            } else {
-                // Snip out the prefix and period character, which are always at the beginning at a fixed location.
-                final String testName = key.substring(FORCE_GROUPS_PREFIX.length() + 1);
-                final String forcedValue = paramValue[0];
-                ret.put(testName, forcedValue);
-            }
+    private String extractForceGroups(final HttpServletRequest request) {
+        // forceGroups extracted as a plain String because proctor has one method for splitting and int conversion.
+        // If we did the split here like we do for extractTest(), that method wouldn't work for us.
+        final String param = request.getParameter(FORCE_GROUPS_PARAM);
+        if (param == null) {
+            // Proctor's method can't deal with null, so it's better to return empty string if no force groups param.
+            return "";
+        } else {
+            return param;
         }
-        return ret;
     }
 
     /**

@@ -16,12 +16,12 @@ public class RawParameters {
     private final Map<String, String> context;
     private final Map<String, String> identifiers;
     private final List<String> test;
-    private final Map<String, String> forceGroups;
+    private final String forceGroups;
 
     public RawParameters(final Map<String, String> context,
                          final Map<String, String> identifiers,
                          final List<String> test,
-                         Map<String, String> forceGroups) {
+                         final String forceGroups) {
         this.context = context;
         this.identifiers = identifiers;
         this.test = test;
@@ -46,7 +46,7 @@ public class RawParameters {
         return test;
     }
 
-    public Map<String, String> getForceGroups() {
+    public String getForceGroups() {
         return forceGroups;
     }
 }

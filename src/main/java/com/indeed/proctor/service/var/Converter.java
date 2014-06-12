@@ -3,6 +3,7 @@ package com.indeed.proctor.service.var;
 import com.google.common.collect.Maps;
 import com.indeed.proctor.common.Identifiers;
 import com.indeed.proctor.common.model.TestType;
+import com.indeed.proctor.consumer.ProctorConsumerUtils;
 import com.indeed.proctor.service.web.BadRequestException;
 
 import java.util.List;
@@ -71,17 +72,10 @@ public class Converter {
     /**
      * forceGroups should be a mapping of test name to integer bucket value.
      */
-    private Map<String, Integer> convertForceGroups(final Map<String, String> forceGroups) {
-        final Map<String, Integer> ret = Maps.newHashMap();
-        for (Map.Entry<String, String> entry : forceGroups.entrySet()) {
-            try {
-                ret.put(entry.getKey(), Integer.valueOf(entry.getValue()));
-            } catch (NumberFormatException e) {
-                throw new BadRequestException(String.format(
-                        "Could not convert force groups parameter '%s' with value '%s' into an Integer. " +
-                        "Force parameters must be integer bucket values.", entry.getKey(), entry.getValue()));
-            }
-        }
-        return ret;
+    private Map<String, Integer> convertForceGroups(final String forceGroups) {
+        // Same format as Proctor's force groups parameter.
+        // The client can store this force parameter in a cookie and not worry about parsing it at all.
+        // NOTE: this is technically a @VisibleForTesting method!!
+        return ProctorConsumerUtils.parseForceGroupsList(forceGroups);
     }
 }
