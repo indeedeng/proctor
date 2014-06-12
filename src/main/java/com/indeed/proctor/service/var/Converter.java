@@ -1,10 +1,9 @@
-package com.indeed.proctor.service;
+package com.indeed.proctor.service.var;
 
 import com.google.common.collect.Maps;
 import com.indeed.proctor.common.Identifiers;
 import com.indeed.proctor.common.model.TestType;
-import com.indeed.proctor.service.var.ContextVariable;
-import com.indeed.proctor.service.var.ValueConversionException;
+import com.indeed.proctor.service.BadRequestException;
 
 import java.util.List;
 import java.util.Map;

@@ -1,4 +1,4 @@
-package com.indeed.proctor.service;
+package com.indeed.proctor.service.var;
 
 import java.util.List;
 import java.util.Map;

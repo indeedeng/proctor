@@ -1,4 +1,4 @@
-package com.indeed.proctor.service;
+package com.indeed.proctor.service.var;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Predicates;
@@ -6,10 +6,8 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.indeed.proctor.service.BadRequestException;
 import com.indeed.proctor.service.config.ExtractorSource;
-import com.indeed.proctor.service.var.ContextVariable;
-import com.indeed.proctor.service.var.Identifier;
-import com.indeed.proctor.service.var.PrefixVariable;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Collections;
