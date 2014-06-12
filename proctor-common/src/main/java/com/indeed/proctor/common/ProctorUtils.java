@@ -292,8 +292,22 @@ public abstract class ProctorUtils {
         return loadResult;
     }
 
-    private static void verifyTest(String testName, @Nonnull ConsumableTestDefinition testDefinition, TestSpecification testSpecification, @Nonnull Map<Integer, String> knownBuckets, String matrixSource, FunctionMapper functionMapper) throws IncompatibleTestMatrixException {
+    private static void verifyTest(
+            @Nonnull final String testName,
+            @Nonnull final ConsumableTestDefinition testDefinition,
+            @Nonnull final TestSpecification testSpecification,
+            @Nonnull final Map<Integer, String> knownBuckets,
+            @Nonnull final String matrixSource,
+            @Nonnull final FunctionMapper functionMapper
+    ) throws IncompatibleTestMatrixException {
         final List<Allocation> allocations = testDefinition.getAllocations();
+
+        final TestType declaredType = testDefinition.getTestType();
+        if (!TestType.all().contains(declaredType)) {
+            throw new IncompatibleTestMatrixException(String.format(
+                    "Test '%s' is included in the application specification but refers to unknown id type '%s'.",
+                    testName, declaredType));
+        }
 
         verifyInternallyConsistentDefinition(testName, matrixSource, testDefinition);
             /*

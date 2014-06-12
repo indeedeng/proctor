@@ -52,7 +52,7 @@ public class TestSerializers {
         try {
             final TestDefinition definition = mapper.readValue(input, TestDefinition.class);
             Assert.assertEquals(1, definition.getVersion());
-            Assert.assertEquals(TestType.USER, definition.getTestType());
+            Assert.assertEquals(TestType.ANONYMOUS_USER, definition.getTestType());
             Assert.assertEquals("exampletst", definition.getSalt());
             Assert.assertEquals("loggedIn", definition.getRule());
             Assert.assertTrue(definition.getDescription().startsWith("An example test"));

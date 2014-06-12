@@ -57,7 +57,7 @@ public class TestStandardTestChooser {
         );
         testDefinition = new ConsumableTestDefinition();
         testDefinition.setConstants(Collections.<String, Object>emptyMap());
-        testDefinition.setTestType(TestType.ACCOUNT);
+        testDefinition.setTestType(TestType.AUTHENTICATED_USER);
         // most tests just set the salt to be the same as the test name
         testDefinition.setSalt(testName);
         testDefinition.setBuckets(buckets);
@@ -159,7 +159,7 @@ public class TestStandardTestChooser {
         testDefinition.setConstants(Collections.<String, Object>emptyMap());
         testDefinition.setRule("${lang == 'en'}");
 
-        testDefinition.setTestType(TestType.USER);
+        testDefinition.setTestType(TestType.ANONYMOUS_USER);
 
         // most tests just set the salt to be the same as the test name
         testDefinition.setSalt(testName);

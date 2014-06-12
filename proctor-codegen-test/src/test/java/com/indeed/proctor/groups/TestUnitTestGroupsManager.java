@@ -86,18 +86,20 @@ public class TestUnitTestGroupsManager {
     public void testMultipleTypes() {
         {
             final Identifiers identifiers = new Identifiers(ImmutableMap.<TestType, String>builder()
-                                                                .put(TestType.USER, SPECIFICATION_MATRIX)
-                                                                .put(TestType.PAGE, SPECIFICATION_MATRIX)
+                                                            .put(TestType.ANONYMOUS_USER, SPECIFICATION_MATRIX)
+                                                            .put(TestType.AUTHENTICATED_USER, SPECIFICATION_MATRIX)
+                                                            .put(TestType.PAGE, SPECIFICATION_MATRIX)
                                                             .build());
 
             final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "FR", /* accountid */ 10);
-            assertEquals("pimple:control0,kluj:kloo2,oop_poop:test1,payloaded:inactive-1,payloaded_verified:inactive-1", calcBuckets(result));
+            assertEquals("kluj:kloo2,oop_poop:test1,payloaded:inactive-1,payloaded_verified:inactive-1,pimple:control0", calcBuckets(result));
         }
         {
             final ImmutableMap<TestType, String> idMap = ImmutableMap.<TestType, String>builder()
-                                                                .put(TestType.EMAIL, SPECIFICATION_MATRIX)
+                                                                .put(TestType.EMAIL_ADDRESS, SPECIFICATION_MATRIX)
+                                                                .put(TestType.AUTHENTICATED_USER, SPECIFICATION_MATRIX)
                                                                 .put(TestType.PAGE, SPECIFICATION_MATRIX)
-                                                            .build();
+                                                                .build();
             final Identifiers identifiers = new Identifiers(idMap, true);
 
             final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "FR", /* accountid */ 10);
@@ -125,7 +127,7 @@ public class TestUnitTestGroupsManager {
     @Test
     public void testUserBuckets() {
         {
-            final Identifiers identifiers = new Identifiers(TestType.USER, "16s2o7s01001d9vj");
+            final Identifiers identifiers = new Identifiers(TestType.ANONYMOUS_USER, "16s2o7s01001d9vj");
             final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "FR", /* accountid */ 10);
             assertEquals("kluj:test1,oop_poop:control0,payloaded:inactive-1,payloaded_verified:inactive-1", calcBuckets(result));
             // Check and make sure UnitTestGroups respects these groups and works as expected.
@@ -240,7 +242,7 @@ public class TestUnitTestGroupsManager {
     @Test
     public void testPayloads() {
         final Identifiers identifiers = new Identifiers(ImmutableMap.<TestType, String>builder()
-                .put(TestType.USER, SPECIFICATION_MATRIX)
+                .put(TestType.ANONYMOUS_USER, SPECIFICATION_MATRIX)
                 .build());
         final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "US", /* accountid */ 10);
         assertEquals("kluj:kloo2,oop_poop:test1,payloaded:inactive-1,payloaded_verified:inactive-1", calcBuckets(result));
