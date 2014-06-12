@@ -1,4 +1,4 @@
-package com.indeed.proctor.service;
+package com.indeed.proctor.service.web;
 
 /**
  * Thrown when we encounter an internal error that is not the fault of the user or the request parameters.

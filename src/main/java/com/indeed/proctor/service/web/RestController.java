@@ -1,4 +1,4 @@
-package com.indeed.proctor.service;
+package com.indeed.proctor.service.web;
 
 import com.google.common.collect.Lists;
 import com.indeed.proctor.common.AbstractProctorLoader;
@@ -7,12 +7,9 @@ import com.indeed.proctor.common.Proctor;
 import com.indeed.proctor.common.ProctorResult;
 import com.indeed.proctor.common.model.Audit;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
-import com.indeed.proctor.service.BadRequestException;
 import com.indeed.proctor.service.var.ConvertedParameters;
 import com.indeed.proctor.service.var.Converter;
 import com.indeed.proctor.service.var.Extractor;
-import com.indeed.proctor.service.InternalServerException;
-import com.indeed.proctor.service.NotFoundException;
 import com.indeed.proctor.service.var.RawParameters;
 import com.indeed.proctor.service.config.JsonContextVarConfig;
 import com.indeed.proctor.service.config.JsonServiceConfig;

@@ -6,7 +6,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.indeed.proctor.service.BadRequestException;
+import com.indeed.proctor.service.web.BadRequestException;
 import com.indeed.proctor.service.config.ExtractorSource;
 
 import javax.servlet.http.HttpServletRequest;

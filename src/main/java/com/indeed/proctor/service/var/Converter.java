@@ -3,7 +3,7 @@ package com.indeed.proctor.service.var;
 import com.google.common.collect.Maps;
 import com.indeed.proctor.common.Identifiers;
 import com.indeed.proctor.common.model.TestType;
-import com.indeed.proctor.service.BadRequestException;
+import com.indeed.proctor.service.web.BadRequestException;
 
 import java.util.List;
 import java.util.Map;
