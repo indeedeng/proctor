@@ -5,6 +5,7 @@ import com.indeed.proctor.common.Identifiers;
 import com.indeed.proctor.common.model.TestType;
 import com.indeed.proctor.consumer.ProctorConsumerUtils;
 import com.indeed.proctor.service.web.BadRequestException;
+import com.indeed.proctor.service.web.InternalServerException;
 
 import java.util.List;
 import java.util.Map;
@@ -36,6 +37,13 @@ public class Converter {
         for (ContextVariable context : contextList) {
             final String varName = context.getVarName();
             final String rawValue = contextValues.get(varName);
+
+            if (rawValue == null) {
+                // This shouldn't happen for context variables.
+                // Extractor should not allow contexts to be null or should replace them with defaults.
+                throw new InternalServerException(String.format(
+                        "Context variable '%s' is null. This may be a server bug.", varName));
+            }
 
             try {
                 final Object value = context.getConverter().convert(rawValue);

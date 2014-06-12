@@ -3,6 +3,8 @@ package com.indeed.proctor.service.var;
 import com.indeed.proctor.service.config.ConfigurationException;
 import com.indeed.proctor.service.useragents.UserAgent;
 
+import javax.annotation.Nonnull;
+
 /**
  * Holds classes for all context variable conversions defined in the service configuration file.
  */
@@ -34,7 +36,7 @@ public final class ValueConverters {
     }
 
     private static class ByteValueConverter implements ValueConverter<Byte> {
-        public Byte convert(String rawValue) throws ValueConversionException {
+        public Byte convert(@Nonnull String rawValue) throws ValueConversionException {
             try {
                 return Byte.valueOf(rawValue);
             } catch (NumberFormatException e) {
@@ -44,7 +46,7 @@ public final class ValueConverters {
     }
 
     private static class ShortValueConverter implements ValueConverter<Short> {
-        public Short convert(String rawValue) throws ValueConversionException {
+        public Short convert(@Nonnull String rawValue) throws ValueConversionException {
             try {
                 return Short.valueOf(rawValue);
             } catch (NumberFormatException e) {
@@ -54,7 +56,7 @@ public final class ValueConverters {
     }
 
     private static class IntegerValueConverter implements ValueConverter<Integer> {
-        public Integer convert(String rawValue) throws ValueConversionException {
+        public Integer convert(@Nonnull String rawValue) throws ValueConversionException {
             try {
                 return Integer.valueOf(rawValue);
             } catch (NumberFormatException e) {
@@ -64,7 +66,7 @@ public final class ValueConverters {
     }
 
     private static class LongValueConverter implements ValueConverter<Long> {
-        public Long convert(String rawValue) throws ValueConversionException {
+        public Long convert(@Nonnull String rawValue) throws ValueConversionException {
             try {
                 return Long.valueOf(rawValue);
             } catch (NumberFormatException e) {
@@ -74,7 +76,7 @@ public final class ValueConverters {
     }
 
     private static class FloatValueConverter implements ValueConverter<Float> {
-        public Float convert(String rawValue) throws ValueConversionException {
+        public Float convert(@Nonnull String rawValue) throws ValueConversionException {
             try {
                 return Float.valueOf(rawValue);
             } catch (NumberFormatException e) {
@@ -84,7 +86,7 @@ public final class ValueConverters {
     }
 
     private static class DoubleValueConverter implements ValueConverter<Double> {
-        public Double convert(String rawValue) throws ValueConversionException {
+        public Double convert(@Nonnull String rawValue) throws ValueConversionException {
             try {
                 return Double.valueOf(rawValue);
             } catch (NumberFormatException e) {
@@ -94,9 +96,9 @@ public final class ValueConverters {
     }
 
     private static class BooleanValueConverter implements ValueConverter<Boolean> {
-        public Boolean convert(String rawValue) {
+        public Boolean convert(@Nonnull String rawValue) {
             // valueOf matches "true" (ignoring case), but we should support "1" as well.
-            if (rawValue != null && rawValue.equals("1")) {
+            if (rawValue.equals("1")) {
                 return true;
             } else {
                 return Boolean.valueOf(rawValue);
@@ -105,7 +107,7 @@ public final class ValueConverters {
     }
 
     private static class CharacterValueConverter implements ValueConverter<Character> {
-        public Character convert(String rawValue) throws ValueConversionException {
+        public Character convert(@Nonnull String rawValue) throws ValueConversionException {
             final int length = rawValue.length();
             if (length != 1) {
                 // User should be passing in exactly one character in the request.
@@ -118,13 +120,13 @@ public final class ValueConverters {
     }
 
     private static class StringValueConverter implements ValueConverter<String> {
-        public String convert(String rawValue) {
+        public String convert(@Nonnull String rawValue) {
             return rawValue;
         }
     }
 
     private static class UserAgentValueConverter implements ValueConverter<UserAgent> {
-        public UserAgent convert(String rawValue) {
+        public UserAgent convert(@Nonnull String rawValue) {
             return UserAgent.parseUserAgentStringSafely(rawValue);
         }
     }
