@@ -1,8 +1,6 @@
 package com.indeed.proctor.service.core.web;
 
-import com.google.common.collect.Lists;
 import com.indeed.proctor.common.AbstractProctorLoader;
-import com.indeed.proctor.common.JsonProctorLoaderFactory;
 import com.indeed.proctor.common.Proctor;
 import com.indeed.proctor.common.ProctorResult;
 import com.indeed.proctor.common.model.Audit;
@@ -18,10 +16,9 @@ import com.indeed.proctor.service.core.model.JsonEmptyDataResponse;
 import com.indeed.proctor.service.core.model.JsonMeta;
 import com.indeed.proctor.service.core.model.JsonResponse;
 import com.indeed.proctor.service.core.model.JsonResult;
-import com.indeed.proctor.service.core.var.ContextVariable;
-import com.indeed.proctor.service.core.var.Identifier;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
@@ -33,10 +30,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -50,29 +45,21 @@ public class RestController {
     private final Extractor extractor;
     private final Converter converter;
 
-    public RestController() throws IOException
-    {
-        final JsonProctorLoaderFactory factory = new JsonProctorLoaderFactory();
-        factory.setFilePath("/var/lucene/proctor/proctor-tests-matrix.json");
-        factory.setSpecificationResource("/var/lucene/proctor/spec.json");
-        loader = factory.getLoader();
-        loader.load();
+    @Autowired
+    public RestController(final JsonServiceConfig jsonServiceConfig,
+                          final Extractor extractor,
+                          final Converter converter,
+                          final AbstractProctorLoader loader) {
 
-        final ObjectMapper mapper = new ObjectMapper();
-        jsonServiceConfig = mapper.readValue(new File("/var/lucene/proctor/service-config.json"), JsonServiceConfig.class);
+        this.jsonServiceConfig = jsonServiceConfig;
+        this.extractor = extractor;
+        this.converter = converter;
+        this.loader = loader;
 
-        // Populate context vars and identifiers for use by the extractor and converter.
-        final List<ContextVariable> contextList = Lists.newArrayList();
-        for (Map.Entry<String, JsonContextVarConfig> e : jsonServiceConfig.getContext().entrySet()) {
-            contextList.add(new ContextVariable(e.getKey(), e.getValue()));
+        // If the bean did not do a load, ensure that we do one.
+        if (loader.get() == null) {
+            loader.load();
         }
-        final List<Identifier> identifierList = Lists.newArrayList();
-        for (Map.Entry<String, JsonVarConfig> e : jsonServiceConfig.getIdentifiers().entrySet()) {
-            identifierList.add(new Identifier(e.getKey(), e.getValue()));
-        }
-
-        extractor = new Extractor(contextList, identifierList);
-        converter = new Converter(contextList);
     }
 
     /**
