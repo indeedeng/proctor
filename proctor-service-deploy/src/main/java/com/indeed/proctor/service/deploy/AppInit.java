@@ -1,4 +1,4 @@
-package com.indeed.proctor.service.core.config;
+package com.indeed.proctor.service.deploy;
 
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 

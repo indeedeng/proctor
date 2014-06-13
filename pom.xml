@@ -14,5 +14,6 @@
 
     <modules>
         <module>proctor-service-core</module>
+        <module>proctor-service-deploy</module>
     </modules>
 </project>

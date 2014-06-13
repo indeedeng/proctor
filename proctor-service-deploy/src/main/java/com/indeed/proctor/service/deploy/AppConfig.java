@@ -1,4 +1,4 @@
-package com.indeed.proctor.service.core.config;
+package com.indeed.proctor.service.deploy;
 
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
