@@ -1,8 +1,11 @@
 package com.indeed.proctor.service.deploy;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.indeed.proctor.common.AbstractProctorLoader;
 import com.indeed.proctor.service.core.config.CoreConfig;
 import com.indeed.proctor.service.core.config.JsonServiceConfig;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -15,6 +18,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @Configuration
 @EnableWebMvc
@@ -22,6 +28,8 @@ import java.io.IOException;
 @Import(CoreConfig.class)
 @ComponentScan("com.indeed.proctor.service.core")
 public class AppConfig extends WebMvcConfigurerAdapter {
+
+    private static final int RELOAD_PROCTOR_SECONDS = 10;
 
     @Bean
     public JsonServiceConfig jsonServiceConfig(@Value("${proctor.service.config.path}") final String serviceConfigPath) throws IOException {
@@ -33,5 +41,18 @@ public class AppConfig extends WebMvcConfigurerAdapter {
     public PropertySourcesPlaceholderConfigurer placeholderConfigurer() {
         // this is *required* to get ${...} replacements to work
         return new PropertySourcesPlaceholderConfigurer();
+    }
+
+    @Bean(destroyMethod = "shutdownNow")
+    @Autowired
+    public ScheduledExecutorService scheduledExecutorService(final AbstractProctorLoader loader) {
+        final ThreadFactoryBuilder threadFactoryBuilder = new ThreadFactoryBuilder();
+        final ScheduledExecutorService executorService =
+                Executors.newScheduledThreadPool(4, threadFactoryBuilder.build());
+
+        // tasks
+        executorService.scheduleWithFixedDelay(loader, 0, RELOAD_PROCTOR_SECONDS, TimeUnit.SECONDS);
+
+        return executorService;
     }
 }

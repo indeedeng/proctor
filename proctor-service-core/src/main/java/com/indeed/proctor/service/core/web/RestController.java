@@ -20,7 +20,6 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -36,9 +35,6 @@ import java.util.Map;
 
 @Controller
 public class RestController {
-
-    private static final int reloadMilliseconds = 10000;
-
     private final AbstractProctorLoader loader;
 
     private final JsonServiceConfig jsonServiceConfig;
@@ -60,14 +56,6 @@ public class RestController {
         if (loader.get() == null) {
             loader.load();
         }
-    }
-
-    /**
-     * Periodically reload the test matrix so that changes are reflected during runtime.
-     */
-    @Scheduled(fixedRate=reloadMilliseconds)
-    private void reloadProctor() {
-        loader.load();
     }
 
     @RequestMapping(value="/groups/identify", method=RequestMethod.GET)
