@@ -29,8 +29,6 @@ import java.util.concurrent.TimeUnit;
 @ComponentScan("com.indeed.proctor.service.core")
 public class AppConfig extends WebMvcConfigurerAdapter {
 
-    private static final int RELOAD_PROCTOR_SECONDS = 10;
-
     @Bean
     public JsonServiceConfig jsonServiceConfig(@Value("${proctor.service.config.path}") final String serviceConfigPath) throws IOException {
         final ObjectMapper mapper = new ObjectMapper();
@@ -45,13 +43,15 @@ public class AppConfig extends WebMvcConfigurerAdapter {
 
     @Bean(destroyMethod = "shutdownNow")
     @Autowired
-    public ScheduledExecutorService scheduledExecutorService(final AbstractProctorLoader loader) {
+    public ScheduledExecutorService scheduledExecutorService(
+            final AbstractProctorLoader loader,
+            @Value("${proctor.service.reload.seconds}") final int proctorReloadSeconds) {
+
         final ThreadFactoryBuilder threadFactoryBuilder = new ThreadFactoryBuilder();
         final ScheduledExecutorService executorService =
                 Executors.newScheduledThreadPool(4, threadFactoryBuilder.build());
 
-        // tasks
-        executorService.scheduleWithFixedDelay(loader, 0, RELOAD_PROCTOR_SECONDS, TimeUnit.SECONDS);
+        executorService.scheduleWithFixedDelay(loader, 0, proctorReloadSeconds, TimeUnit.SECONDS);
 
         return executorService;
     }
