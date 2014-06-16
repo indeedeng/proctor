@@ -3,6 +3,7 @@ package com.indeed.proctor.service.deploy;
 import com.indeed.proctor.service.core.config.CoreConfig;
 import com.indeed.proctor.service.core.config.JsonServiceConfig;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -22,8 +23,8 @@ import java.io.IOException;
 public class AppConfig extends WebMvcConfigurerAdapter {
 
     @Bean
-    public JsonServiceConfig jsonServiceConfig() throws IOException {
+    public JsonServiceConfig jsonServiceConfig(@Value("${proctor.service.config.path}") final String serviceConfigPath) throws IOException {
         final ObjectMapper mapper = new ObjectMapper();
-        return mapper.readValue(new File("/var/lucene/proctor/service-config.json"), JsonServiceConfig.class);
+        return mapper.readValue(new File(serviceConfigPath), JsonServiceConfig.class);
     }
 }

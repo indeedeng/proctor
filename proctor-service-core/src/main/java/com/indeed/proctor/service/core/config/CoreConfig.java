@@ -8,6 +8,7 @@ import com.indeed.proctor.service.core.var.Converter;
 import com.indeed.proctor.service.core.var.Extractor;
 import com.indeed.proctor.service.core.var.Identifier;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -33,10 +34,12 @@ public class CoreConfig {
     }
 
     @Bean
-    public AbstractProctorLoader proctorLoader() {
+    public AbstractProctorLoader proctorLoader(
+            @Value("${proctor.test.matrix.path}") final String testMatrixPath,
+            @Value("${proctor.test.specification.path}") final String testSpecPath) {
         final JsonProctorLoaderFactory factory = new JsonProctorLoaderFactory();
-        factory.setFilePath("/var/lucene/proctor/proctor-tests-matrix.json");
-        factory.setSpecificationResource("/var/lucene/proctor/spec.json");
+        factory.setFilePath(testMatrixPath);
+        factory.setSpecificationResource(testSpecPath);
         return factory.getLoader();
     }
 
