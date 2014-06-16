@@ -6,9 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Converts a RawQueryParameters into the correct types for easy usage.
- *
- * This is mostly cleaning up parameters and types to work with determineTestBuckets.
+ * The final variables used for determineTestBuckets().
  */
 public class ConvertedParameters {
     private final Map<String, Object> context;

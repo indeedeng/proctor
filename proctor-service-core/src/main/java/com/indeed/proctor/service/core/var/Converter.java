@@ -11,9 +11,11 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Converts variables to their appropriate final types.
+ * Converts RawQueryParameters into their correct, final types.
  *
  * Context variables are converted according to the service configuration.
+ *
+ * This is mostly cleaning up parameters and types to work with determineTestBuckets.
  */
 public class Converter {
     private final List<ContextVariable> contextList;

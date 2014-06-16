@@ -21,6 +21,12 @@ import java.util.Set;
 
 /**
  * Extracts variables from the HTTP Request according to the service configuration.
+ *
+ * Parses out the special query parameters like ctx.country and id.USER and stores them in maps.
+ * Also parses the comma-separated test parameter into a List and gets the forcegroups parameter.
+ *
+ * This does NO conversion of types. Everything stays a string just as we got it from the request
+ * because at this point we still don't know the intended types of context and id variables.
  */
 public class Extractor {
     private static final String TEST_LIST_PARAM = "test";
