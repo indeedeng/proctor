@@ -31,7 +31,7 @@ public class PropertiesInitializer implements ApplicationContextInitializer<Conf
         final ConfigurableEnvironment springEnv = applicationContext.getEnvironment();
 
         final MutablePropertySources propSources = springEnv.getPropertySources();
-        for(String location : getPropertyLocations(applicationContext)) {
+        for (String location : getPropertyLocations(applicationContext)) {
             tryAddPropertySource(applicationContext, propSources, location);
         }
         addPropertySources(applicationContext, propSources);
@@ -51,11 +51,11 @@ public class PropertiesInitializer implements ApplicationContextInitializer<Conf
                                            final MutablePropertySources propSources,
                                            final String filePath) {
 
-        if(filePath == null) {
+        if (filePath == null) {
             return false;
         }
         Resource propertiesResource = applicationContext.getResource(filePath);
-        if(!propertiesResource.exists()) {
+        if (!propertiesResource.exists()) {
             return false;
         }
         try {
@@ -69,6 +69,7 @@ public class PropertiesInitializer implements ApplicationContextInitializer<Conf
 
     /**
      * Can be overridden to add custom property sources.
+     *
      * @param applicationContext Context to use for loading
      * @param propSources Where to append to
      */
@@ -82,7 +83,7 @@ public class PropertiesInitializer implements ApplicationContextInitializer<Conf
 
     protected String getConfigFileName(String suffix) {
         String fileName = getWebappName();
-        if(!Strings.isNullOrEmpty(suffix)) {
+        if (!Strings.isNullOrEmpty(suffix)) {
             fileName += "-" + suffix;
         }
         fileName += ".properties";
@@ -108,7 +109,7 @@ public class PropertiesInitializer implements ApplicationContextInitializer<Conf
     }
 
     protected List<String> getTomcatContextPropertyLocations(ConfigurableApplicationContext applicationContext) {
-        if(!(applicationContext instanceof ConfigurableWebApplicationContext)) {
+        if (!(applicationContext instanceof ConfigurableWebApplicationContext)) {
             return Collections.emptyList();
         }
         ConfigurableWebApplicationContext webApplicationContext = (ConfigurableWebApplicationContext) applicationContext;
