@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
@@ -26,5 +27,11 @@ public class AppConfig extends WebMvcConfigurerAdapter {
     public JsonServiceConfig jsonServiceConfig(@Value("${proctor.service.config.path}") final String serviceConfigPath) throws IOException {
         final ObjectMapper mapper = new ObjectMapper();
         return mapper.readValue(new File(serviceConfigPath), JsonServiceConfig.class);
+    }
+
+    @Bean
+    public PropertySourcesPlaceholderConfigurer placeholderConfigurer() {
+        // this is *required* to get ${...} replacements to work
+        return new PropertySourcesPlaceholderConfigurer();
     }
 }

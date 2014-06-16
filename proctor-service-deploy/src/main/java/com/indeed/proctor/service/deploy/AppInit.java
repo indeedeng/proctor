@@ -1,7 +1,5 @@
 package com.indeed.proctor.service.deploy;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
 import javax.servlet.ServletRegistration;
@@ -27,12 +25,6 @@ public class AppInit extends AbstractAnnotationConfigDispatcherServletInitialize
     @Override
     protected String[] getServletMappings() {
         return new String[] { "/" };
-    }
-
-    @Bean
-    public PropertySourcesPlaceholderConfigurer placeholderConfigurer() {
-        // this is *required* to get ${...} replacements to work
-        return new PropertySourcesPlaceholderConfigurer();
     }
 
     @Override
