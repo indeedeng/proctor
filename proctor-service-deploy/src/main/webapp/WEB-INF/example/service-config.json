@@ -1,0 +1,23 @@
+{
+    "context": {
+        "country": {
+            "source": "QUERY",
+            "type": "String"
+        },
+        "loggedIn": {
+            "source": "QUERY",
+            "type": "boolean",
+            "defaultValue": false
+        },
+        "userAgent": {
+            "source": "HEADER",
+            "sourceKey": "User-Agent",
+            "type": "UserAgent"
+        }
+    },
+    "identifiers": {
+        "USER": {
+            "source": "QUERY"
+        }
+    }
+}

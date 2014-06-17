@@ -1,0 +1,37 @@
+{
+    "tests": {
+        "buttoncolortst": {
+            "buckets": {
+                "inactive": -1,
+                "control": 0,
+                "blue": 1,
+                "green": 2
+            },
+            "payload": {
+                "type": "stringValue"
+            }
+        },
+        "newfeaturerollout" : {
+            "buckets": {
+                "inactive": -1,
+                "active": 0
+            }
+        },
+        "countryalgotst" : {
+            "buckets": {
+                "inactive": -1,
+                "control": 0,
+                "new": 1
+            },
+            "payload": {
+                "type": "longArray"
+            }
+        },
+        "mobileonly" : {
+            "buckets": {
+                "inactive": -1,
+                "active": 0
+            }
+        }
+    }
+}
