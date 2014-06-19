@@ -21,7 +21,7 @@ public class LocalProctorBuilder extends ProctorBuilder {
         super(new LocalDirectoryStore(inputDir), outputSink, author);
     }
 
-    public LocalProctorBuilder(File inputDir, Writer outputSink, String author, long version) {
+    public LocalProctorBuilder(File inputDir, Writer outputSink, String author, String version) {
         super(new LocalDirectoryStore(inputDir), outputSink, author, version);
     }
 

@@ -29,7 +29,7 @@ public abstract class AbstractGroups {
         }
     }
 
-    public Map<String, Integer> getTestVersions() {
+    public Map<String, String> getTestVersions() {
         return proctorResult.getTestVersions();
     }
 
@@ -58,8 +58,8 @@ public abstract class AbstractGroups {
         return testBucket.getValue();
     }
 
-    public Map<String, Integer> getTestVersions(final Set<String> tests) {
-        final Map<String, Integer> selectedTestVersions = Maps.newLinkedHashMap();
+    public Map<String, String> getTestVersions(final Set<String> tests) {
+        final Map<String, String> selectedTestVersions = Maps.newLinkedHashMap();
         final Map<String, ConsumableTestDefinition> testDefinitions = proctorResult.getTestDefinitions();
         for (final String testName : tests) {
             final ConsumableTestDefinition testDefinition = testDefinitions.get(testName);

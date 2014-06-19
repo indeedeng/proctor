@@ -11,7 +11,7 @@ import java.util.Map;
  * @author ketan
  */
 public class TestDefinition {
-    private int version = -1;
+    private String version;
     @Nonnull
     private Map<String, Object> constants = Collections.emptyMap();
     @Nonnull
@@ -37,7 +37,7 @@ public class TestDefinition {
     public TestDefinition() { /* intentionally empty */ }
 
     public TestDefinition(
-            final int version,
+            final String version,
             @Nullable final String rule,
             @Nonnull final TestType testType,
             @Nonnull final String salt,
@@ -58,11 +58,11 @@ public class TestDefinition {
         this.description = description;
     }
 
-    public int getVersion() {
+    public String getVersion() {
         return version;
     }
 
-    public void setVersion(final int version) {
+    public void setVersion(final String version) {
         this.version = version;
     }
 

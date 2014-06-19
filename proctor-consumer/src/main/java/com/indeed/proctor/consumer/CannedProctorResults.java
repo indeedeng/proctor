@@ -3,6 +3,7 @@ package com.indeed.proctor.consumer;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import com.indeed.proctor.common.ProctorResult;
+import com.indeed.proctor.common.model.Audit;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.TestBucket;
 
@@ -29,7 +30,7 @@ public class CannedProctorResults {
             buckets.put(testName, testBucket);
         }
 
-        return (new ProctorResult(-1, buckets, testVersions));
+        return (new ProctorResult(Audit.EMPTY_VERSION, buckets, testVersions));
     }
 
     public static ProctorResult of(
@@ -51,6 +52,6 @@ public class CannedProctorResults {
             buckets.put(testName, testBucket);
         }
 
-        return (new ProctorResult(-1, buckets, testVersions));
+        return (new ProctorResult(Audit.EMPTY_VERSION, buckets, testVersions));
     }
 }

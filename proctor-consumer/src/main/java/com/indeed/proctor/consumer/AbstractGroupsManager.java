@@ -3,6 +3,7 @@ package com.indeed.proctor.consumer;
 import com.indeed.proctor.common.Identifiers;
 import com.indeed.proctor.common.Proctor;
 import com.indeed.proctor.common.ProctorResult;
+import com.indeed.proctor.common.model.Audit;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.common.model.TestType;
@@ -59,7 +60,7 @@ public abstract class AbstractGroupsManager implements ProctorContextDescriptor 
             for (final String testName : buckets.keySet()) {
                 versions.put(testName, Integer.valueOf(-1));
             }
-            return new ProctorResult(-1, buckets, Collections.<String, ConsumableTestDefinition>emptyMap());
+            return new ProctorResult(Audit.EMPTY_VERSION, buckets, Collections.<String, ConsumableTestDefinition>emptyMap());
         }
         final ProctorResult result = proctor.determineTestGroups(identifiers, context, forcedGroups);
         return result;
