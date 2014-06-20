@@ -206,25 +206,25 @@ From given identifiers and context variables, determine the test groups that sho
 
 In addition to the query parameters below, the service configuration can declare that certain variables come from the request headers instead.
 
-* ctx.{sourceKey}
+* ctx.{sourceKey} _(context variables without a defaultValue are required)_
 
     All query parameters starting with _ctx._ are treated as context variables and converted to the type specified in the service configuration.
 
     Context variables are used in evaluating Proctor rule expressions.
 
-* id.{sourceKey}
+* id.{sourceKey} _(at least one identifier is required)_
 
     All query parameters starting with _id._ are treated as identifiers.
 
     Identifiers are used to differentiate different users based on tracking cookie, account id, email, or anything else that is supported by Proctor.
 
-* test
+* test _(optional)_
 
     Filter the returned tests by name.
 
     A comma-separated list of test names.
 
-* prforceGroups
+* prforceGroups _(optional)_
 
     Force certain test group assignments in this API request. This lets privileged users (developers) test their groups.
 
@@ -241,6 +241,20 @@ In addition to the query parameters below, the service configuration can declare
            If you use a simple cookie instead of signed cookies or sessions IDs, ensure that you check for user privilege before using the cookie value. Otherwise this is a **security issue** because ordinary users could manually set that cookie to force groups.
 
     3. Otherwise, do not include the _prforceGroups_ parameter (or use a blank string).
+
+Here is an example of a request using all of these parameters:
+
+```
+GET /groups/identify
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:28.0) Gecko/20100101 Firefox/28.0
+
+ctx.country=US
+ctx.loggedIn=true
+id.USER=pa5xq0lz4n80
+id.acctid=5083
+test=buttoncolortst,newfeaturerollout,mobileonly
+prforceGroups=buttoncolortst2,newfeaturerollout0
+```
 
 #### Response
 
