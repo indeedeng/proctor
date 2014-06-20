@@ -331,3 +331,17 @@ Returns the configured context variables from the service configuration.
 ### GET /config/identifiers
 
 Returns the identifiers from the service configuration.
+
+## See Also
+
+* [Proctor Documentation](http://indeedeng.github.io/proctor/)
+
+* [Proctor Github Repo](https://github.com/indeedeng/proctor)
+
+* [Proctor Webapp](https://github.com/indeedeng/proctor-webapp) for editing the test matrix.
+
+* [indeedeng-proctor-users](https://groups.google.com/forum/#!forum/indeedeng-proctor-users) for questions and comments.
+
+* [Proctor Blog Post](http://engineering.indeed.com/blog/2014/06/proctor-a-b-testing-framework/) on the Indeed Engineering blog.
+
+* [Proctor Tech Talk](http://engineering.indeed.com/talks/managing-experiments-behavior-dynamically-proctor/)
