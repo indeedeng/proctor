@@ -48,7 +48,7 @@ public class FormatCommitMessageDisplayTagHandler extends TagSupport {
                 throw new IllegalArgumentException("Multiple beans of type " + CommitMessageDisplayFormatter.class.getSimpleName()  + " found, expected 0 or 1.");
             }
         } catch (Exception e) {
-            LOGGER.error("An error occured when formatting commit message.", e);
+            LOGGER.error("An error occurred when formatting commit message.", e);
             return commitMessage;
         }
     }

@@ -50,7 +50,7 @@ public class FormatDefinitionRevisionDisplayTagHandler extends TagSupport {
                 throw new IllegalArgumentException("Multiple beans of type " + DefinitionRevisionDisplayFormatter.class.getSimpleName()  + " found, expected 0 or 1.");
             }
         } catch (Exception e) {
-            LOGGER.error("An error occured when retrieving revision url.", e);
+            LOGGER.error("An error occurred when retrieving revision url.", e);
             return defaultFormattedRevision;
         }
     }
