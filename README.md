@@ -210,7 +210,7 @@ In addition to the query parameters below, the service configuration can declare
 
     All query parameters starting with _ctx._ are treated as context variables and converted to the type specified in the service configuration.
 
-    Context variables are used in evaluating Proctor rule expressions.
+    Context variables are used in evaluating Proctor [rule expressions](http://indeedeng.github.io/proctor/docs/test-rules/).
 
 * id.{sourceKey} _(at least one identifier is required)_
 
