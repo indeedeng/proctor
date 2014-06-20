@@ -166,3 +166,168 @@ For identifiers, the key is the [test type](http://indeedeng.github.io/proctor/d
     If a defaultValue is not specified, then this context variable is required and must be included in every /groups/identify API call.
 
     The JSON type of this value does not matter.
+
+## API Endpoints
+
+All API responses are wrapped in a JSON envelope with _data_ and _meta_ fields.
+
+```json
+{
+    "data": {
+        ...
+    },
+    "meta": {
+        "status": 200
+    }
+}
+```
+
+_data_ contains the true content of the API response. _data_ is always present, but it can be empty.
+
+_meta_ contains metadata about the API response. _meta.status_ contains the HTTP response code.
+
+If there was an error with the API request, _meta.error_ will contain a string with an error message. For example:
+
+```json
+{
+    "data": { },
+    "meta": {
+        "status": 400,
+        "error": "Request must have at least one identifier."
+    }
+}
+```
+
+### GET /groups/identify
+
+From given identifiers and context variables, determine the test groups that should be used.
+
+#### Parameters
+
+In addition to the query parameters below, the service configuration can declare that certain variables come from the request headers instead.
+
+* ctx.{sourceKey}
+
+    All query parameters starting with _ctx._ are treated as context variables and converted to the type specified in the service configuration.
+
+    Context variables are used in evaluating Proctor rule expressions.
+
+* id.{sourceKey}
+
+    All query parameters starting with _id._ are treated as identifiers.
+
+    Identifiers are used to differentiate different users based on tracking cookie, account id, email, or anything else that is supported by Proctor.
+
+* test
+
+    Filter the returned tests by name.
+
+    A comma-separated list of test names.
+
+* prforceGroups
+
+    Force certain test group assignments in this API request. This lets privileged users (developers) test their groups.
+
+    This parameter works exactly like Proctor's [prforceGroups](http://indeedeng.github.io/proctor/docs/using-groups/#forceGroups).
+
+    Formatted as a comma-separated list of groups strings in the format of {groupName}{bucketValue}. For example: _prforceGroups=buttoncolortst2,newfeaturerollout0_
+
+    This parameter is deliberately simple so that your web backend can easily implement force groups like Proctor:
+
+    1. If the user is privileged and includes a _prforceGroups_ query parameter in their request, store its value in a session cookie and use the value in this API call.
+
+    2. If the user is privileged and has that cookie and does not use the query parameter, use the cookie's value in this API call.
+
+           If you use a simple cookie instead of signed cookies or sessions IDs, ensure that you check for user privilege before using the cookie value. Otherwise this is a **security issue** because ordinary users could manually set that cookie to force groups.
+
+    3. Otherwise, do not include the _prforceGroups_ parameter (or use a blank string).
+
+#### Response
+
+```json
+{
+    "data": {
+        "groups": {
+            ...
+        },
+        "context": {
+            "userAgent": {
+                ...
+            },
+            "loggedIn": true,
+            "country": "US"
+        },
+        "audit": {
+            "version": 1,
+            "updated": 1,
+            "updatedBy": "example"
+        },
+    "meta": {
+        "status": 200
+    }
+}
+```
+
+The response to the /groups/identify API call contains three major components:
+
+##### groups
+
+_groups_ contains a mapping of test name to values associated with the test group assignment.
+
+```json
+{
+    "buttoncolortst": {
+        "name": "control",
+        "value": 0,
+        "version": 1,
+        "payload": {
+            "stringValue": "#C0C0C0"
+        }
+    },
+    "newfeaturerollout": {
+        "name": "inactive",
+        "value": -1,
+        "version": 1
+    }
+}
+```
+
+The values include the bucket _name_, the bucket _value_, the _version_ of the test definition, and possibly a _payload_.
+
+_payload_ is only included if the test definition and the specification contain payload values and a [payload type](http://indeedeng.github.io/proctor/docs/specification/#toc_4).
+
+If test groups you are expecting are not in the _groups_ mapping, it's possible that an [eligibility rule](http://indeedeng.github.io/proctor/docs/terminology/#toc_7) excludes them, or there was no identifier with the proper test type. Ensure that you have appropriate [default behavior](http://indeedeng.github.io/proctor/docs/using-groups/#toc_4) for these situations. This default behavior would also be useful if your Proctor Service instance goes down or stops responding.
+
+##### context
+
+_context_ contains all the context variables with their converted values.
+
+The user agent output is especially helpful to help debug any rules based on user agent.
+
+##### audit
+
+_audit_ contains the audit of the test matrix just like /proctor/matrix/audit.
+
+This can be useful for caching.
+
+### GET /proctor/matrix
+
+Returns the entire test matrix.
+
+### GET /proctor/matrix/audit
+
+Returns the audit of the test matrix.
+
+The response includes a _version_ number, an _updated_ timestamp, and an _updatedBy_ name.
+
+### GET /proctor/matrix/definition/{testname}
+
+Returns the definition for a specific test as defined in the test matrix.
+
+### GET /config/context
+
+Returns the configured context variables from the service configuration.
+
+### GET /config/identifiers
+
+Returns the identifiers from the service configuration.
