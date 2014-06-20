@@ -129,7 +129,7 @@ Here is a full example of a service configuration:
 
 _context_ contains a map of all context variables, and _identifiers_ contains a map of all identifiers.
 
-For context variables, the key is the name of context variable, which is also used for Proctor rules in the test matrix.
+For context variables, the key is the name of the context variable, which is also used for Proctor rules in the test matrix.
 
 For identifiers, the key is the [test type](http://indeedeng.github.io/proctor/docs/terminology/#toc_11), such as _USER_ or _ACCOUNT_.
 
