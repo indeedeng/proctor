@@ -3,7 +3,7 @@ goog.provide('indeed.foundation.alerts');
 goog.require('goog.dom');
 goog.require('goog.dom.classes');
 goog.require('goog.style');
-
+goog.require('goog.string');
 
 /**
  *
@@ -13,7 +13,7 @@ goog.require('goog.style');
 indeed.foundation.alerts.displayProgress = function(container, message) {
   if (container) {
     goog.dom.classes.addRemove(container, ['alert', 'success'], null);
-    container.innerHTML = message;
+    container.innerHTML = goog.string.htmlEscape(message, false);
     goog.style.showElement(container, true);
   }
 };
@@ -28,7 +28,7 @@ indeed.foundation.alerts.displaySuccess = function(container, message) {
   if (container) {
     goog.dom.classes.addRemove(container, 'alert', 'success');
     if (message) {
-      container.innerHTML = message;
+      container.innerHTML = goog.string.htmlEscape(message, false);
       goog.style.showElement(container, true);
     } else {
       goog.style.showElement(container, false);
@@ -45,7 +45,7 @@ indeed.foundation.alerts.displaySuccess = function(container, message) {
 indeed.foundation.alerts.displayError = function(container, message) {
   if (container) {
     goog.dom.classes.addRemove(container, 'success', 'alert');
-    container.innerHTML = message;
+    container.innerHTML = goog.string.htmlEscape(message, false);
     goog.style.showElement(container, true);
   }
 };

@@ -532,7 +532,7 @@ indeed.proctor.editor.AllocationEditor.prototype.buildAllocationBar_ =
         {'class': 'ui-allocation-range-lbl'});
     // get bucket by bucket value
     var bucket = this.getBucketByValue_(bucketValue, this.buckets);
-    label.innerHTML = bucket['name'] + ' - ' + percent;
+    label.innerHTML = goog.string.htmlEscape(bucket['name'] + ' - ' + percent, false);
     goog.dom.appendChild(span, label);
     goog.dom.appendChild(df, span);
   }
