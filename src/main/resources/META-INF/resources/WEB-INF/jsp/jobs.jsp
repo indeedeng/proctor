@@ -3,6 +3,7 @@
 <%@ taglib prefix="ui" tagdir="/WEB-INF/tags/ui" %>
 <%@ taglib prefix="layout" tagdir="/WEB-INF/tags/layout" %>
 <%@ taglib prefix="proctor" uri="http://tags.indeed.com/proctor" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%--@elvariable id="session" type="com.indeed.proctor.webapp.model.SessionViewModel"--%>
 <%--@elvariable id="jobs" type="java.util.List<com.indeed.proctor.webapp.controllers.BackgroundJob>"--%>
 
@@ -19,8 +20,8 @@
         <c:forEach items="${jobs}" var="job" varStatus="loopStatus">
             <tr data-jobid="${job.id}">
                 <td>${job.id}</td>
-                <td><a href="#${job.id}" class="tiny button js-job-view"><c:choose><c:when test="${job.running}">RUNNING</c:when><c:otherwise>${job.status}</c:otherwise></c:choose></a></td>
-                <td>${job.title}</td>
+                <td><a href="#${job.id}" class="tiny button js-job-view"><c:choose><c:when test="${job.running}">RUNNING</c:when><c:otherwise>${fn:escapeXml(job.status)}</c:otherwise></c:choose></a></td>
+                <td>${fn:escapeXml(job.title)}</td>
             </tr>
         </c:forEach>
 

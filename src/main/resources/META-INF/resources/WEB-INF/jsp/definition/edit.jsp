@@ -29,13 +29,13 @@
         </c:when>
         <c:otherwise>
             <div>
-                <h2><span class="mrm">${testName}</span> (<a href="/proctor/definition/${testName}?branch=${branch.name}">view</a>)</h2>
-                <c:if test="${!empty testDefinition.description}"><h3 class="subheader">${testDefinition.description}</h3></c:if>
+                <h2><span class="mrm">${fn:escapeXml(testName)}</span> (<a href="/proctor/definition/${proctor:urlencode(testName)}?branch=${branch.name}">view</a>)</h2>
+                <c:if test="${!empty testDefinition.description}"><h3 class="subheader">${fn:escapeXml(testDefinition.description)}</h3></c:if>
             </div>
         </c:otherwise>
     </c:choose>
 
-<c:set var="action" value="/proctor/definition/${testName}/edit"/>
+<c:set var="action" value="/proctor/definition/${proctor:urlencode(testName)}/edit"/>
 <c:if test="${isCreate}">
     <c:set var="action" value="/proctor/definition/{testName}/edit"/>
 </c:if>
@@ -62,7 +62,7 @@
                     </ui:grid-columns>
                     <ui:grid-columns width="ten">
                         <input class="json" name="description" type="text" placeholder="e.g. [ISSUE] - Description"
-                               value="${testDefinition.description}"/>
+                               value="${fn:escapeXml(testDefinition.description)}"/>
                     </ui:grid-columns>
                 </ui:grid-row>
                 <ui:grid-row>
@@ -74,7 +74,7 @@
                             <span class="inline">
                               <select class="json" name="testType" class="two" disabled="disabled">
                                   <c:forEach items="${testTypes}" var="testType">
-                                  <option value="${testType}" <c:if test="${testType == testDefinition.testType}">selected="selected"</c:if> >${testType}</option>
+                                  <option value="${fn:escapeXml(testType)}" <c:if test="${testType == testDefinition.testType}">selected="selected"</c:if> >${fn:escapeXml(testType)}</option>
                                   </c:forEach>
                               </select>
                             </span>
@@ -88,7 +88,7 @@
                             <span class="inline">
                               <select class="json" name="testType" class="two">
                                   <c:forEach items="${testTypes}" var="testType">
-                                      <option value="${testType}" <c:if test="${testType == testDefinition.testType}">selected="selected"</c:if> >${testType}</option>
+                                      <option value="${fn:escapeXml(testType)}" <c:if test="${testType == testDefinition.testType}">selected="selected"</c:if> >${fn:escapeXml(testType)}</option>
                                   </c:forEach>
                               </select>
                             </span>
@@ -100,7 +100,7 @@
                         <label class="right inline">Salt</label>
                     </ui:grid-columns>
                     <ui:grid-columns width="ten">
-                        <input class="json" name="salt" type="text" value="${testDefinition.salt}"/>
+                        <input class="json" name="salt" type="text" value="${fn:escapeXml(testDefinition.salt)}"/>
                     </ui:grid-columns>
                 </ui:grid-row>
                 <ui:grid-row>
@@ -111,7 +111,7 @@
                         <div class="row collapse">
                             <c:set var="pfix" value="${"/>
                             <div class="one columns"><span class="prefix">${pfix}</span></div>
-                            <div class="ten columns"><input class="json" name="rule" type="text" value="${testDefinition.rule}"/></div>
+                            <div class="ten columns"><input class="json" name="rule" type="text" value="${fn:escapeXml(testDefinition.rule)}"/></div>
                             <div class="one columns"><span class="postfix">}</span></div>
                         </div>
                     </ui:grid-columns>

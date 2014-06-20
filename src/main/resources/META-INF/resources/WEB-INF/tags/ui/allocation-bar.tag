@@ -12,7 +12,7 @@
     <fmt:formatNumber var="percentWidth" value="${range.length}" type="PERCENT" maxFractionDigits="3" />
     <fmt:formatNumber var="percent" value="${range.length}" type="PERCENT" maxFractionDigits="2"/>
     <c:set var="tstBucket" value="${proctor:getTestBucketForRange(definition, range)}"/>
-    <span title="${fn:escapeXml(tstBucket.name)} - ${percent}" class="ui-allocation-range ui-color${(1+range.bucketValue) % 12}" style="width: ${percentWidth};" ><span class="ui-allocation-range-lbl">${tstBucket.name} - ${percent}</span></span>
+    <span title="${fn:escapeXml(tstBucket.name)} - ${percent}" class="ui-allocation-range ui-color${(1+range.bucketValue) % 12}" style="width: ${percentWidth};" ><span class="ui-allocation-range-lbl">${fn:escapeXml(tstBucket.name)} - ${percent}</span></span>
     </c:if>
 </c:forEach>
 </div>

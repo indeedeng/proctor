@@ -2,7 +2,7 @@
 <%@ attribute name="constants" required="true" type="java.util.Map" %>
 
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <c:if test="${empty constants}">
 [None]
 </c:if>
@@ -17,8 +17,8 @@
     <tbody>
         <c:forEach items="${constants}" var="constantVariable">
         <tr>
-            <td><c:out value="${constantVariable.key}" /></td>
-            <td><c:out value="${constantVariable.value}" /></td>
+            <td>${fn:escapeXml(constantVariable.key)}</td>
+            <td>${fn:escapeXml(constantVariable.value)}</td>
         </tr>
         </c:forEach>
     </tbody>

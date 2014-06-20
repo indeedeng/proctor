@@ -3,6 +3,7 @@
 <%@ taglib prefix="ui" tagdir="/WEB-INF/tags/ui" %>
 <%@ taglib prefix="layout" tagdir="/WEB-INF/tags/layout" %>
 <%@ taglib prefix="proctor" uri="http://tags.indeed.com/proctor" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%--@elvariable id="session" type="com.indeed.proctor.webapp.model.SessionViewModel"--%>
 <%--@elvariable id="tests" type="java.util.Map<String, com.indeed.proctor.webapp.controllers.ProctorController.CompatibilityRow>"--%>
 <%--@elvariable id="devMatrix" type="com.indeed.proctor.webapp.TestMatrixVersion"--%>
@@ -26,11 +27,11 @@
             <c:set var="inProductionMatrix" value="${proctor:containsKey(productionMatrix.testMatrixDefinition.tests, testName)}"/>
             <tr>
                 <td>
-                    <a href="/proctor/definition/${testName}"><h6>${testName}</h6></a>
+                    <a href="/proctor/definition/${proctor:urlencode(testName)}"><h6>${fn:escapeXml(testName)}</h6></a>
                 </td>
                 <td>
                     <ul class="nice">
-                        <c:if test="${inDevMatrix}"><li><a class="label" href="/proctor/definition/${testName}">TRUNK MATRIX</a></li></c:if>
+                        <c:if test="${inDevMatrix}"><li><a class="label" href="/proctor/definition/${proctor:urlencode(testName)}">TRUNK MATRIX</a></li></c:if>
                         <c:if test="${empty row.dev}"><li>[no webapps]</li></c:if>
                         <c:forEach items="${row.dev}" var="version">
                             <li><ui:compatible-result version="${version}" branch="trunk" /></li>
@@ -39,7 +40,7 @@
                 </td>
                 <td>
                     <ul class="nice">
-                        <c:if test="${inQaMatrix}"><li><a class="label" href="/proctor/definition/${testName}?branch=qa">QA MATRIX</a></li></c:if>
+                        <c:if test="${inQaMatrix}"><li><a class="label" href="/proctor/definition/${proctor:urlencode(testName)}?branch=qa">QA MATRIX</a></li></c:if>
                         <c:if test="${empty row.qa}"><li>[no webapps]</li></c:if>
                         <c:forEach items="${row.qa}" var="version">
                             <li><ui:compatible-result version="${version}" branch="qa" /></li>
@@ -48,7 +49,7 @@
                 </td>
                 <td>
                     <ul class="nice">
-                        <c:if test="${inProductionMatrix}"><li><a class="label" href="/proctor/definition/${testName}?branch=production">PRODUCTION MATRIX</a></li></c:if>
+                        <c:if test="${inProductionMatrix}"><li><a class="label" href="/proctor/definition/${proctor:urlencode(testName)}?branch=production">PRODUCTION MATRIX</a></li></c:if>
                         <c:if test="${empty row.production}"><li>[no webapps]</li></c:if>
                         <c:forEach items="${row.production}" var="version">
                             <li><ui:compatible-result version="${version}" branch="production" /></li>

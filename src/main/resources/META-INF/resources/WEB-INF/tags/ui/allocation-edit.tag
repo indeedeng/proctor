@@ -17,7 +17,7 @@
                     <label class="inline">Rule</label>
                 </ui:grid-columns>
                 <ui:grid-columns width="ten">
-                    <input type="text" class="json js-input-rule" name="allocations[${allocationIndex}].rule" value="${allocation.rule}" />
+                    <input type="text" class="json js-input-rule" name="allocations[${allocationIndex}].rule" value="${fn:escapeXml(allocation.rule)}" />
                 </ui:grid-columns>
             </ui:grid-row>
         </c:if>

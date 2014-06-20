@@ -3,6 +3,7 @@
 <%@ taglib prefix="ui" tagdir="/WEB-INF/tags/ui" %>
 <%@ taglib prefix="layout" tagdir="/WEB-INF/tags/layout" %>
 <%@ taglib prefix="proctor" uri="http://tags.indeed.com/proctor" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%--@elvariable id="session" type="com.indeed.proctor.webapp.model.SessionViewModel"--%>
 <%--@elvariable id="testName" type="java.lang.String"--%>
 <%--@elvariable id="testDefinition" type="com.indeed.proctor.common.model.TestDefinition"--%>
@@ -18,8 +19,8 @@
 <layout:base title="${testName} | Proctor" session="${session}" >
 
     <div>
-        <h2><span class="mrm">${testName}</span> (<a href="/proctor/definition/${testName}/edit">edit</a>)</h2>
-        <c:if test="${!empty testDefinition.description}"><h3 class="subheader">${testDefinition.description}</h3></c:if>
+        <h2><span class="mrm">${fn:escapeXml(testName)}</span> (<a href="/proctor/definition/${proctor:urlencode(testName)}/edit">edit</a>)</h2>
+        <c:if test="${!empty testDefinition.description}"><h3 class="subheader">${fn:escapeXml(testDefinition.description)}</h3></c:if>
     </div>
     <div class="js-tabs-container">
         <dl class="tabs contained">
@@ -52,8 +53,6 @@
             </li>
         </ul>
     </div>
-
-
 
     <layout:javascript
             useCompiledJavascript="${session.useCompiledJavaScript}"

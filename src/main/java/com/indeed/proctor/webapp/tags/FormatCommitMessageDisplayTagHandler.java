@@ -1,6 +1,7 @@
 package com.indeed.proctor.webapp.tags;
 
 import com.indeed.proctor.webapp.extensions.CommitMessageDisplayFormatter;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.web.context.WebApplicationContext;
@@ -40,7 +41,7 @@ public class FormatCommitMessageDisplayTagHandler extends TagSupport {
 
             if (formatterBeans.size() == 0) {
                 //No bean found, which is acceptable.
-                return commitMessage;
+                return StringEscapeUtils.escapeHtml(commitMessage);
             } else if (formatterBeans.size() == 1) {
                 CommitMessageDisplayFormatter formatter = (CommitMessageDisplayFormatter) formatterBeans.values().toArray()[0];
                 return formatter.formatMessage(commitMessage);
