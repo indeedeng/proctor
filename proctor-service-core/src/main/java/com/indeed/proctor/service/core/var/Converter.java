@@ -75,8 +75,7 @@ public class Converter {
                         String.format("Could not convert identifier '%s' to TestType", e.getKey()));
             }
         }
-        // TODO: what is this random parameter for and should it be true or false?
-        return new Identifiers(identMap);
+        return new Identifiers(identMap, true);
     }
 
     /**
