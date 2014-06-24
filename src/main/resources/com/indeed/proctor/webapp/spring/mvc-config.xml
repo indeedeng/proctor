@@ -29,9 +29,5 @@
     <mvc:resources mapping="/static/**" location="/static/" cache-period="604800" />
     <!--suppress SpringModelInspection -->
     <mvc:resources mapping="/s/**" location="/s/" cache-period="31556926" />
-    <mvc:resources mapping="/favicon.ico" location="/favicon.ico" />
-
-    <mvc:resources mapping="/private/current_version.txt" location="/" />
-    <mvc:resources mapping="/private/artifact_version.txt" location="/" />
 
 </beans>
