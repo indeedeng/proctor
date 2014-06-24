@@ -3,34 +3,20 @@
 <%@ taglib prefix="ui" tagdir="/WEB-INF/tags/ui" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="proctor" uri="http://tags.indeed.com/proctor" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ attribute name="testName" required="true" type="java.lang.String" %>
 <%@ attribute name="definition" required="true" type="com.indeed.proctor.common.model.TestDefinition" %>
 <div class="ui-test-definition ui-popover mod collapsible">
     <div class="inner">
         <div class="hd">
             <div class="media">
-                <div><span class="field-label">Description:</span>${definition.description}</div>
-                <div><span class="field-label">Type:</span>${definition.testType}</div>
+                <div><span class="field-label">Description:</span>${fn:escapeXml(definition.description)}</div>
+                <div><span class="field-label">Type:</span>${fn:escapeXml(definition.testType)}</div>
                 <div><span class="field-label">version:</span>${definition.version}</div>
-                <div><span class="field-label">rule:</span>${definition.rule}</div>
-                <div><span class="field-label">salt:</span>${definition.salt}</div>
+                <div><span class="field-label">rule:</span>${fn:escapeXml(definition.rule)}</div>
+                <div><span class="field-label">salt:</span>${fn:escapeXml(definition.salt)}</div>
                 <proctor:renderDefinitionDetailsPageInjectionTemplates position="<%=DefinitionDetailsPageRenderer.DefinitionDetailsPagePosition.TOP%>" testName="${testName}" testDefinition="${definition}"/>
             </div>
-            <%--
-            <div class="row">
-                <div class="three columns">
-                    <h5>${testName}</h5>
-                </div>
-                <div class="nine columns">
-                    <div class="row"><ui:grid-columns width="nine"><span class="field-label">Description:</span>${definition.description}</ui:grid-columns></div>
-                    <div class="row">
-                        <div class="two columns"><span class="field-label">ver:</span>${definition.version}</div>
-                        <div class="four columns"><span class="field-label">rule:</span>${definition.rule}</div>
-                        <div class="three columns"><span class="field-label">salt:</span>${definition.salt}</div>
-                    </div>
-                </div>
-            </div>
-            --%>
         </div>
         <div class="bd collapse-area ui-definition-bd">
             <c:if test="${!empty definition.constants}">

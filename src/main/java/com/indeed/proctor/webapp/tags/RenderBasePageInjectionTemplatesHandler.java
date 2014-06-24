@@ -51,7 +51,7 @@ public class RenderBasePageInjectionTemplatesHandler extends TagSupport {
                 }
             }
         } catch (Exception e) {
-            LOGGER.error("An error occured when attempting to inject template.", e);
+            LOGGER.error("An error occurred when attempting to inject template.", e);
         }
         return renderedHTML.toString();
     }

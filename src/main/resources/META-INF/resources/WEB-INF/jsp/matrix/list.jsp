@@ -4,6 +4,7 @@
 <%@ taglib prefix="ui" tagdir="/WEB-INF/tags/ui" %>
 <%@ taglib prefix="layout" tagdir="/WEB-INF/tags/layout" %>
 <%@ taglib prefix="proctor" uri="http://tags.indeed.com/proctor" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%--@elvariable id="session" type="com.indeed.proctor.webapp.model.SessionViewModel"--%>
 <%--@elvariable id="testMatrixVersion" type="com.indeed.proctor.webapp.TestMatrixVersion"--%>
 <%--@elvariable id="testMatrixDefinition" type="java.lang.String"--%>
@@ -16,11 +17,11 @@
             <div class="panel radius">
             <ui:grid-row extraCssClass="ui-test-definition">
                 <ui:grid-columns width="three">
-                    <h6 class="mtn"><a class="" href="/proctor/definition/${proctor:urlencode(test.key)}?branch=${branch.name}">${test.key}</a></h6>
+                    <h6 class="mtn"><a class="" href="/proctor/definition/${proctor:urlencode(test.key)}?branch=${proctor:urlencode(branch.name)}">${fn:escapeXml(test.key)}</a></h6>
                     <ul class="button-group radius">
-                        <li><a class="tiny button secondary radius" href="/proctor/definition/${proctor:urlencode(test.key)}/edit?branch=${branch.name}">edit</a></li>
+                        <li><a class="tiny button secondary radius" href="/proctor/definition/${proctor:urlencode(test.key)}/edit?branch=${proctor:urlencode(branch.name)}">edit</a></li>
                         <%--<li><a class="tiny button secondary radius" href="/proctor/definition/${test.key}/history">history</a></li>--%>
-                        <li><a class="tiny button secondary radius" href="/proctor/definition/${proctor:urlencode(test.key)}?branch=${branch.name}">details</a></li>
+                        <li><a class="tiny button secondary radius" href="/proctor/definition/${proctor:urlencode(test.key)}?branch=${proctor:urlencode(branch.name)}">details</a></li>
                     </ul>
                     <proctor:renderMatrixListPageInjectionTemplates position="<%=MatrixListPageRenderer.MatrixListPagePosition.LINK%>" testName="${proctor:urlencode(test.key)}" testMatrixVersion="${testMatrixVersion}" testDefinition="${testDefinition}"/>
                 </ui:grid-columns>
@@ -28,7 +29,7 @@
                     <div class="def-description">
                         <proctor:formatCommitMessageDisplay commitMessage="${testDefinition.description}"/>
                     </div>
-                    <c:if test="${!empty testDefinition.rule}"><div class="rule">rule: ${testDefinition.rule}</div></c:if>
+                    <c:if test="${!empty testDefinition.rule}"><div class="rule">rule: ${fn:escapeXml(testDefinition.rule)}</div></c:if>
                     <ui:allocations definition="${testDefinition}"/>
                 </ui:grid-columns>
             </ui:grid-row>

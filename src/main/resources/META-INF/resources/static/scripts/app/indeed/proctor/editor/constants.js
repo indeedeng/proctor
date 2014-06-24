@@ -130,7 +130,7 @@ indeed.proctor.editor.ConstantsEditor.prototype.buildConstantRow_ =
 indeed.proctor.editor.ConstantsEditor.prototype.buildValueLabel_ =
     function(variable, value) {
   var label = goog.dom.createDom(goog.dom.TagName.LABEL, {'class': 'inline' });
-  label.innerHTML = value;
+  label.innerHTML = goog.string.htmlEscape(value);
   return label;
 };
 
@@ -145,7 +145,7 @@ indeed.proctor.editor.ConstantsEditor.prototype.buildValueLabel_ =
 indeed.proctor.editor.ConstantsEditor.prototype.buildVariableLabel_ =
     function(variable, value) {
   var label = goog.dom.createDom(goog.dom.TagName.LABEL, {'class': 'inline' });
-  label.innerHTML = variable;
+  label.innerHTML = goog.string.htmlEscape(variable);
   return label;
 };
 
@@ -201,7 +201,7 @@ indeed.proctor.editor.ConstantsEditor.prototype.displayError_ =
     function(error) {
   var container = goog.dom.getElementByClass('constants-msg-container',
                                              this.container);
-  container.innerHTML = error;
+  container.innerHTML = goog.string.htmlEscape(error, false);
   goog.dom.classes.addRemove(container, 'success', 'alert');
   goog.style.showElement(container, true);
 };

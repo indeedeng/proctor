@@ -2,6 +2,7 @@ package com.indeed.proctor.webapp.tags;
 
 import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.webapp.extensions.DefinitionRevisionDisplayFormatter;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.web.context.WebApplicationContext;
@@ -42,7 +43,7 @@ public class FormatDefinitionRevisionDisplayTagHandler extends TagSupport {
 
             if (formatterBeans.isEmpty()) {
                 //No bean found, which is acceptable.
-                return defaultFormattedRevision;
+                return StringEscapeUtils.escapeHtml(defaultFormattedRevision);
             } else if (formatterBeans.size() == 1) {
                 DefinitionRevisionDisplayFormatter formatter = formatterBeans.values().iterator().next();
                 return formatter.formatRevision(revision);
@@ -50,7 +51,7 @@ public class FormatDefinitionRevisionDisplayTagHandler extends TagSupport {
                 throw new IllegalArgumentException("Multiple beans of type " + DefinitionRevisionDisplayFormatter.class.getSimpleName()  + " found, expected 0 or 1.");
             }
         } catch (Exception e) {
-            LOGGER.error("An error occured when retrieving revision url.", e);
+            LOGGER.error("An error occurred when retrieving revision url.", e);
             return defaultFormattedRevision;
         }
     }

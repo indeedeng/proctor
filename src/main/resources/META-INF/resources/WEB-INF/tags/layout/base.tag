@@ -19,7 +19,7 @@
 <!--[if IE 8]>    <html class="lt-ie9" lang="en"> <![endif]-->
 <!--[if gt IE 8]><!--> <html class="" lang="en"> <!--<![endif]-->
 <head>
-  <title>${not empty title ? title : 'JobHost' }</title>
+  <title>${not empty title ? fn:escapeXml(title): 'Proctor' }</title>
   <meta charset="utf-8" />
 
   <!-- Set the viewport width to device width for mobile -->

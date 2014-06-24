@@ -24,7 +24,7 @@ indeed.foundation.forms.addError = function(el, errormessage, opt_label) {
   } else {
     small = small[0];
   }
-  small.innerHTML = errormessage;
+  small.innerHTML = goog.string.htmlEscape(errormessage, false);
   goog.dom.classes.add(el, 'error');
 };
 

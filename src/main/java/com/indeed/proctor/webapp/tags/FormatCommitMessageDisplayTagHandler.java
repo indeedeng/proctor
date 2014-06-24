@@ -1,6 +1,7 @@
 package com.indeed.proctor.webapp.tags;
 
 import com.indeed.proctor.webapp.extensions.CommitMessageDisplayFormatter;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.web.context.WebApplicationContext;
@@ -40,7 +41,7 @@ public class FormatCommitMessageDisplayTagHandler extends TagSupport {
 
             if (formatterBeans.size() == 0) {
                 //No bean found, which is acceptable.
-                return commitMessage;
+                return StringEscapeUtils.escapeHtml(commitMessage);
             } else if (formatterBeans.size() == 1) {
                 CommitMessageDisplayFormatter formatter = (CommitMessageDisplayFormatter) formatterBeans.values().toArray()[0];
                 return formatter.formatMessage(commitMessage);
@@ -48,7 +49,7 @@ public class FormatCommitMessageDisplayTagHandler extends TagSupport {
                 throw new IllegalArgumentException("Multiple beans of type " + CommitMessageDisplayFormatter.class.getSimpleName()  + " found, expected 0 or 1.");
             }
         } catch (Exception e) {
-            LOGGER.error("An error occured when formatting commit message.", e);
+            LOGGER.error("An error occurred when formatting commit message.", e);
             return commitMessage;
         }
     }
