@@ -25,8 +25,6 @@
   <!-- Set the viewport width to device width for mobile -->
   <meta name="viewport" content="width=device-width" />
 
-  <title>Welcome to Foundation</title>
-
   <!-- Included CSS Files -->
     <c:choose>
         <c:when test="${session.useCompiledCSS}">
