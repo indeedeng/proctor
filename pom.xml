@@ -224,11 +224,6 @@
             <artifactId>util-core</artifactId>
             <version>${indeed-util.version}</version>
         </dependency>
-        <dependency>
-            <groupId>com.indeed.logstash.log4j</groupId>
-            <artifactId>jsonevent-layout</artifactId>
-            <version>${jsonevent-layout.version}</version>
-        </dependency>
 
         <!--Spring Dependencies-->
         <dependency>
@@ -331,7 +326,6 @@
 
     <properties>
         <proctor.version>1.0.9</proctor.version>
-        <jsonevent-layout.version>1.4.2</jsonevent-layout.version>
         <closure-library.version>0.0-20130212-95c19e7f0f5f</closure-library.version>
         <closure-library-zip>closure-library-20130212-95c19e7f0f5f.zip</closure-library-zip>
         <closure-library-url>https://closure-library.googlecode.com/files/${closure-library-zip}</closure-library-url>
