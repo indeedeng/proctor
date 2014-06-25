@@ -7,9 +7,13 @@ public class ProctorClientApplication {
     private final String baseApplicationUrl;
     private final String address;
     private final Date lastUpdate;
-    private final int version;
+    private final String version;
 
-    public ProctorClientApplication(final String application, final String baseApplicationUrl, final String address, final Date lastUpdate, final int version) {
+    public ProctorClientApplication(final String application,
+                                    final String baseApplicationUrl,
+                                    final String address,
+                                    final Date lastUpdate,
+                                    final String version) {
         this.application = application;
         this.baseApplicationUrl = baseApplicationUrl;
         this.address = address;
@@ -33,18 +37,17 @@ public class ProctorClientApplication {
         return lastUpdate;
     }
 
-    public int getVersion() {
+    public String getVersion() {
         return version;
     }
 
     @Override
     public int hashCode() {
-        final int prime = 31;
         int result = 1;
-        result = prime * result + address.hashCode();
-        result = prime * result + application.hashCode();
-        result = prime * result + baseApplicationUrl.hashCode();
-        result = prime * result + version;
+        result = 31 * result + address.hashCode();
+        result = 31 * result + application.hashCode();
+        result = 31 * result + baseApplicationUrl.hashCode();
+        result = 31 * result + version.hashCode();
         return result;
     }
 
@@ -63,7 +66,7 @@ public class ProctorClientApplication {
         return address.equals(that.address)
                 && application.equals(that.application)
                 && baseApplicationUrl.equals(that.baseApplicationUrl)
-                && (version == that.version);
+                && (version.equals(that.version));
     }
 
     @Override

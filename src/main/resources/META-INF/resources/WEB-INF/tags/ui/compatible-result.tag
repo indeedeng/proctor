@@ -3,10 +3,10 @@
 <%@ taglib prefix="proctor" uri="http://tags.indeed.com/proctor" %>
 <%@ taglib prefix="ui" tagdir="/WEB-INF/tags/ui" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
-<%@ attribute name="version" required="true" type="java.lang.Object" description="com.indeed.proctor.webapp.controllers.ProctorController$CompatibleSpecificationResult" %>
+<%@ attribute name="version" required="true" type="java.lang.Object" description="com.indeed.proctor.webapp.controllers.ProctorController$CompatibleSpecificProctorControllerationResult" %>
 <%@ attribute name="branch" required="true" type="java.lang.String" %>
 <c:if test="${version.compatible}">
-    <span class="label success">${fn:escapeXml(version)}</span><a class="ui-icon" href="/proctor/specification?branch=${proctor:urlencode(branch)}&version=${version.appVersion.version}&app=${proctor:urlencode(version.appVersion.app)}">sp</a>
+    <span class="label success">${fn:escapeXml(version)}</span><a class="ui-icon" href="/proctor/specification?branch=${proctor:urlencode(branch)}&version=${proctor:urlencode(version.appVersion.version)}&app=${proctor:urlencode(version.appVersion.app)}">sp</a>
 </c:if>
 <c:if test="${!version.compatible}">
     <div class="ui-expand-collapse ui-collapsed">

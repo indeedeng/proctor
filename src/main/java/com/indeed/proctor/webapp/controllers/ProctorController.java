@@ -142,9 +142,9 @@ public class ProctorController extends AbstractController {
     @RequestMapping(value = "/specification")
     public JsonView viewProctorSpecification(final String branch,
                                              final String app,
-                                             final long version) throws IOException {
+                                             final String version) throws IOException {
         final Environment environment = determineEnvironmentFromParameter(branch);
-        final AppVersion appVersion = new AppVersion(app, (int) version);
+        final AppVersion appVersion = new AppVersion(app, version);
         final RemoteSpecificationResult spec = specificationSource.getRemoteResult(environment, appVersion);
 
         return new JsonView(spec);
