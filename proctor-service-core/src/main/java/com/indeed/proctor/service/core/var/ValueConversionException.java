@@ -7,4 +7,8 @@ public class ValueConversionException extends Exception {
     public ValueConversionException(final String message) {
         super(message);
     }
+
+    public ValueConversionException(final String s, final Throwable throwable) {
+        super(s, throwable);
+    }
 }

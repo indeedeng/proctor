@@ -12,28 +12,19 @@
     <properties>
         <proctor.version>1.0.9</proctor.version>
         <util.version>1.0.0</util.version>
-        <bitwalker.version>1.13</bitwalker.version>
     </properties>
-
-    <repositories>
-        <repository>
-            <id>bitwalker.user-agent-utils.mvn.repo</id>
-            <url>
-                https://raw.githubusercontent.com/HaraldWalker/user-agent-utils/mvn-repo/
-            </url>
-            <!-- use snapshot version -->
-            <snapshots>
-                <enabled>true</enabled>
-                <updatePolicy>always</updatePolicy>
-            </snapshots>
-        </repository>
-    </repositories>
 
     <dependencies>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-webmvc</artifactId>
             <version>${spring.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <version>${spring.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.codehaus.jackson</groupId>
@@ -76,9 +67,9 @@
             <version>${util.version}</version>
         </dependency>
         <dependency>
-           <groupId>bitwalker</groupId>
-           <artifactId>UserAgentUtils</artifactId>
-           <version>${bitwalker.version}</version>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

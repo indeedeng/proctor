@@ -10,6 +10,24 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
+    <properties>
+        <bitwalker.version>1.13</bitwalker.version>
+    </properties>
+
+    <repositories>
+        <repository>
+            <id>bitwalker.user-agent-utils.mvn.repo</id>
+            <url>
+                https://raw.githubusercontent.com/HaraldWalker/user-agent-utils/mvn-repo/
+            </url>
+            <!-- use snapshot version -->
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+            </snapshots>
+        </repository>
+    </repositories>
+
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -20,6 +38,11 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-webmvc</artifactId>
             <version>${spring.version}</version>
+        </dependency>
+        <dependency>
+           <groupId>bitwalker</groupId>
+           <artifactId>UserAgentUtils</artifactId>
+           <version>${bitwalker.version}</version>
         </dependency>
         <dependency>
             <groupId>org.codehaus.jackson</groupId>

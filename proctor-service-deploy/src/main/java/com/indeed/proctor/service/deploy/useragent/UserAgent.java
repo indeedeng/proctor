@@ -1,4 +1,4 @@
-package com.indeed.proctor.service.core.useragents;
+package com.indeed.proctor.service.deploy.useragent;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Splitter;

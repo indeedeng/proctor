@@ -5,10 +5,11 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.indeed.proctor.service.core.web.BadRequestException;
 import com.indeed.proctor.service.core.config.ExtractorSource;
+import com.indeed.proctor.service.core.config.JsonContextVarConfig;
+import com.indeed.proctor.service.core.config.JsonVarConfig;
+import com.indeed.proctor.service.core.web.BadRequestException;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -18,6 +19,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * Extracts variables from the HTTP Request according to the service configuration.
@@ -151,8 +153,8 @@ public class Extractor {
             if (value == null && defaultValue == null && isMissingError) {
                 // This is not allowed for this type of variable, and there is no default to fall back on.
                 throw new BadRequestException(String.format(
-                        "Required variable '%s' not found in '%s' at source key '%s'. See the service configuration.",
-                        varName, var.getSource().toString(), var.getSourceKey()));
+                        "Required variable '%s' not found by '%s'. See the service configuration.",
+                        varName, var.getExtractor().toString()));
             } else if (value == null && defaultValue != null) {
                 // We have a default to fall back on.
                 ret.put(varName, defaultValue);
@@ -165,4 +167,21 @@ public class Extractor {
 
         return ret;
     }
+
+    public final Map<String, JsonContextVarConfig> toContextJson() {
+        final Map<String, JsonContextVarConfig> context = Maps.newHashMap();
+        for (final ContextVariable variable : this.contextList) {
+            context.put(variable.getVarName(), variable.toContextJson());
+        }
+        return context;
+    }
+
+    public final Map<String, JsonVarConfig> toIdentifierJson() {
+        final Map<String, JsonVarConfig> identifiers = Maps.newHashMap();
+        for (final Identifier identifier : this.identifierList) {
+            identifiers.put(identifier.getVarName(), identifier.toIdentifierJson());
+        }
+        return identifiers;
+    }
+
 }

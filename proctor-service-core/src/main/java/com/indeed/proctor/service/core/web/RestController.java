@@ -5,6 +5,7 @@ import com.indeed.proctor.common.Proctor;
 import com.indeed.proctor.common.ProctorResult;
 import com.indeed.proctor.common.model.Audit;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
+import com.indeed.proctor.service.core.var.VariableConfiguration;
 import com.indeed.proctor.service.core.var.ConvertedParameters;
 import com.indeed.proctor.service.core.var.Converter;
 import com.indeed.proctor.service.core.var.Extractor;
@@ -43,14 +44,12 @@ public class RestController {
     private final Converter converter;
 
     @Autowired
-    public RestController(final JsonServiceConfig jsonServiceConfig,
-                          final Extractor extractor,
-                          final Converter converter,
+    public RestController(final VariableConfiguration configuration,
                           final AbstractProctorLoader loader) {
 
-        this.jsonServiceConfig = jsonServiceConfig;
-        this.extractor = extractor;
-        this.converter = converter;
+        this.jsonServiceConfig = configuration.getJsonConfig();
+        this.extractor = configuration.getExtractor();
+        this.converter = configuration.getConverter();
         this.loader = loader;
     }
 

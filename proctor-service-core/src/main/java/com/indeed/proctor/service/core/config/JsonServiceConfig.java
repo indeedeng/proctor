@@ -1,5 +1,6 @@
 package com.indeed.proctor.service.core.config;
 
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -7,8 +8,8 @@ import java.util.Map;
  * conversion type of context variables.
  */
 public class JsonServiceConfig {
-    private Map<String, JsonContextVarConfig> context;
-    private Map<String, JsonVarConfig> identifiers;
+    private Map<String, JsonContextVarConfig> context = Collections.emptyMap();
+    private Map<String, JsonVarConfig> identifiers = Collections.emptyMap();
 
     public Map<String, JsonContextVarConfig> getContext() {
         return context;
