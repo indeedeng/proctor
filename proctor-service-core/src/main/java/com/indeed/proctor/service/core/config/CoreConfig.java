@@ -40,7 +40,9 @@ public class CoreConfig {
         final JsonProctorLoaderFactory factory = new JsonProctorLoaderFactory();
         factory.setFilePath(testMatrixPath);
         factory.setSpecificationResource(testSpecPath);
-        return factory.getLoader();
+        final AbstractProctorLoader loader = factory.getLoader();
+        loader.run(); // ensure ProctorLoader runs once
+        return loader;
     }
 
     /**

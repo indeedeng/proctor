@@ -51,11 +51,6 @@ public class RestController {
         this.extractor = extractor;
         this.converter = converter;
         this.loader = loader;
-
-        // If the bean did not do a load, ensure that we do one.
-        if (loader.get() == null) {
-            loader.load();
-        }
     }
 
     @RequestMapping(value="/groups/identify", method=RequestMethod.GET)
