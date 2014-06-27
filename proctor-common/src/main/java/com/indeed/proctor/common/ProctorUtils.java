@@ -20,7 +20,9 @@ import com.indeed.proctor.common.model.TestMatrixDefinition;
 import com.indeed.proctor.common.model.TestMatrixVersion;
 import com.indeed.proctor.common.model.TestType;
 import org.apache.log4j.Logger;
+import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 
@@ -88,6 +90,12 @@ public abstract class ProctorUtils {
         serializeObject(writer, definition);
     }
 
+    public static JsonNode readJsonFromFile(File input) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.configure(JsonParser.Feature.ALLOW_COMMENTS,true);
+        JsonNode rootNode = mapper.readValue(input, JsonNode.class);
+        return rootNode;
+    }
 
     private static <T> void serializeObject(Writer writer, final T artifact) throws IOException {
         OBJECT_MAPPER.defaultPrettyPrintingWriter().writeValue(writer, artifact);

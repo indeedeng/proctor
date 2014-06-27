@@ -7,12 +7,16 @@ import com.google.common.collect.Sets;
 import com.indeed.proctor.common.PayloadType;
 import com.indeed.proctor.common.ProctorSpecification;
 import com.indeed.proctor.common.ProctorUtils;
+import com.indeed.proctor.common.Serializers;
 import com.indeed.proctor.common.TestSpecification;
 import org.apache.commons.lang.StringEscapeUtils;
+import org.codehaus.jackson.map.ObjectMapper;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -22,6 +26,8 @@ import java.util.TreeSet;
 
 
 public class TestGroupsGenerator extends FreeMarkerCodeGenerator {
+    private static final ObjectMapper OBJECT_MAPPER = Serializers.lenient();
+
     public void generate(final String input, final String target, final String packageName, final String groupsClass, final String groupsManagerClass) throws CodeGenException {
         final String templatePath = "/com/indeed/proctor/consumer/ant/";
         final String groupsTemplateName = "groups.ftl";
@@ -37,6 +43,48 @@ public class TestGroupsGenerator extends FreeMarkerCodeGenerator {
         if (groupsManagerClass != null) {
             generate(input, target, baseContext, packageName, groupsManagerClass, templatePath, groupsManagerTemplateName);
         }
+    }
+
+    public static File makeTotalSpecification(File dir) throws CodeGenException {
+        File[] dirFiles = dir.listFiles();
+        String name = "";
+        final String folderPath = dir.getAbsolutePath();
+        Map<String,TestSpecification> testSpec = new LinkedHashMap<String, TestSpecification>();
+        Map<String,String> providedContext = new LinkedHashMap<String,String>();
+        for(File child : dirFiles) {
+            if(child.getName().startsWith("providedContext.json")){
+                try {
+                    providedContext = OBJECT_MAPPER.readValue(child,Map.class);
+                } catch (IOException e) {
+                    throw new CodeGenException("Could not read json correctly " + child.getAbsolutePath(), e);
+                }
+            }
+            else if (child.getName().endsWith(".json")){
+                name = folderPath.substring(folderPath.lastIndexOf(File.separator));
+                final Map<String,TestSpecification> spec;
+                try {
+                    spec = OBJECT_MAPPER.readValue(child,Map.class);
+                } catch (IOException e) {
+                    throw new CodeGenException("Could not read json correctly " + child.getAbsolutePath(),e);
+                }
+                testSpec.putAll(spec);
+            }
+        }
+        ProctorSpecification totalSpec = new ProctorSpecification();
+        totalSpec.setProvidedContext(providedContext);
+        totalSpec.setTests(testSpec);
+        final File output;
+        try {
+            output = File.createTempFile(name + "Groups", ".json");
+        } catch (IOException e) {
+            throw new CodeGenException("Could not create temp file",e);
+        }
+        try {
+            OBJECT_MAPPER.defaultPrettyPrintingWriter().writeValue(output, totalSpec);
+        } catch (IOException e) {
+            throw new CodeGenException("Could not write to temp file " + output.getAbsolutePath(),e);
+        }
+        return output;
     }
 
     @Override

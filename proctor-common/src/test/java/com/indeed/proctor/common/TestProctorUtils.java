@@ -13,7 +13,6 @@ import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.common.model.TestDefinition;
 import com.indeed.proctor.common.model.TestMatrixArtifact;
 import com.indeed.proctor.common.model.TestType;
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.InputStream;
