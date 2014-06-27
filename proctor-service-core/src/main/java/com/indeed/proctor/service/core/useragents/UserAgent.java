@@ -3,10 +3,10 @@ package com.indeed.proctor.service.core.useragents;
 import com.google.common.base.Objects;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
-import nl.bitwalker.useragentutils.Browser;
-import nl.bitwalker.useragentutils.DeviceType;
-import nl.bitwalker.useragentutils.OperatingSystem;
-import nl.bitwalker.useragentutils.Version;
+import eu.bitwalker.useragentutils.Browser;
+import eu.bitwalker.useragentutils.DeviceType;
+import eu.bitwalker.useragentutils.OperatingSystem;
+import eu.bitwalker.useragentutils.Version;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -17,13 +17,13 @@ import java.util.Iterator;
  * Wrapper around bitwalker UserAgentUtils that provides lots of helpful convenience methods
  * for defining proctor rules.
  *
- * @see nl.bitwalker.useragentutils.UserAgent
+ * @see eu.bitwalker.useragentutils.UserAgent
  * @author gaurav
  * @author matts
  */
 public class UserAgent {
     @Nonnull
-    private final nl.bitwalker.useragentutils.UserAgent userAgent;
+    private final eu.bitwalker.useragentutils.UserAgent userAgent;
     @Nonnull
     private final VersionedOS os;
     @Nonnull
@@ -34,14 +34,14 @@ public class UserAgent {
     @Deprecated // Use UserAgent#parseUserAgentString instead
     public UserAgent(@Nonnull final String userAgentString) {
         this.userAgentString = userAgentString;
-        this.userAgent = nl.bitwalker.useragentutils.UserAgent.parseUserAgentString(userAgentString);
+        this.userAgent = eu.bitwalker.useragentutils.UserAgent.parseUserAgentString(userAgentString);
         this.os = VersionedOS.fromUserAgent(this);
         this.version = UserAgentVersion.from(userAgent.getBrowserVersion());
     }
 
     private UserAgent(
             @Nullable final String userAgentHeader,
-            @Nonnull final nl.bitwalker.useragentutils.UserAgent delegate,
+            @Nonnull final eu.bitwalker.useragentutils.UserAgent delegate,
             @Nonnull final UserAgentVersion version
     ) {
         this.userAgentString = Strings.nullToEmpty(userAgentHeader);
@@ -85,7 +85,7 @@ public class UserAgent {
         }
 
         UserAgent temp = (UserAgent) o;
-        final nl.bitwalker.useragentutils.UserAgent other = temp.userAgent;
+        final eu.bitwalker.useragentutils.UserAgent other = temp.userAgent;
 
         return userAgent.equals(other);
     }
@@ -202,8 +202,8 @@ public class UserAgent {
     private static final String NEXUS_7_SIGNATURE = "Nexus 7";
     private static final String KINDLE_FIRE_SIGNATURE = "Kindle Fire";
 
-    private static final nl.bitwalker.useragentutils.UserAgent UNKNOWN_USER_AGENT =
-            new nl.bitwalker.useragentutils.UserAgent(OperatingSystem.UNKNOWN, Browser.UNKNOWN);
+    private static final eu.bitwalker.useragentutils.UserAgent UNKNOWN_USER_AGENT =
+            new eu.bitwalker.useragentutils.UserAgent(OperatingSystem.UNKNOWN, Browser.UNKNOWN);
 
     public static Builder newBuilder() {
         return new Builder();
@@ -246,10 +246,10 @@ public class UserAgent {
             }
 
             @Nullable
-            final nl.bitwalker.useragentutils.UserAgent userAgent =
-                    nl.bitwalker.useragentutils.UserAgent.parseUserAgentString(userAgentString);
+            final eu.bitwalker.useragentutils.UserAgent userAgent =
+                    eu.bitwalker.useragentutils.UserAgent.parseUserAgentString(userAgentString);
 
-            final nl.bitwalker.useragentutils.UserAgent userAgentToUse = Objects.firstNonNull(userAgent, UNKNOWN_USER_AGENT);
+            final eu.bitwalker.useragentutils.UserAgent userAgentToUse = Objects.firstNonNull(userAgent, UNKNOWN_USER_AGENT);
             final UserAgentVersion version = UserAgentVersion.from(userAgent.getBrowserVersion());
 
             return new UserAgent(userAgentString, userAgentToUse, version);

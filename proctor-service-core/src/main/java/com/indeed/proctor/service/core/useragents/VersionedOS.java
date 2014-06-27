@@ -2,8 +2,8 @@ package com.indeed.proctor.service.core.useragents;
 
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
-import nl.bitwalker.useragentutils.OperatingSystem;
-import nl.bitwalker.useragentutils.Version;
+import eu.bitwalker.useragentutils.OperatingSystem;
+import eu.bitwalker.useragentutils.Version;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

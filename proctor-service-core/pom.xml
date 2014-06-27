@@ -12,7 +12,22 @@
     <properties>
         <proctor.version>1.0.9</proctor.version>
         <util.version>1.0.0</util.version>
+        <bitwalker.version>1.13</bitwalker.version>
     </properties>
+
+    <repositories>
+        <repository>
+            <id>bitwalker.user-agent-utils.mvn.repo</id>
+            <url>
+                https://raw.githubusercontent.com/HaraldWalker/user-agent-utils/mvn-repo/
+            </url>
+            <!-- use snapshot version -->
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+            </snapshots>
+        </repository>
+    </repositories>
 
     <dependencies>
         <dependency>
@@ -61,9 +76,9 @@
             <version>${util.version}</version>
         </dependency>
         <dependency>
-            <groupId>nl.bitwalker</groupId>
-            <artifactId>UserAgentUtils</artifactId>
-            <version>1.2.4</version>
+           <groupId>bitwalker</groupId>
+           <artifactId>UserAgentUtils</artifactId>
+           <version>${bitwalker.version}</version>
         </dependency>
     </dependencies>
 
