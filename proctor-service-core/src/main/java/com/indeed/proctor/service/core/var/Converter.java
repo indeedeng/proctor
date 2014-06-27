@@ -7,6 +7,7 @@ import com.indeed.proctor.consumer.ProctorConsumerUtils;
 import com.indeed.proctor.service.core.web.BadRequestException;
 import com.indeed.proctor.service.core.web.InternalServerException;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -65,17 +66,34 @@ public class Converter {
     private Identifiers convertIdentifiers(final Map<String, String> identifiers) {
         // Convert every key in the identifiers to its matching enum type.
         final Map<TestType, String> identMap = Maps.newHashMap();
+        final Collection<TestType> registered = TestType.all();
         for (final Map.Entry<String, String> e : identifiers.entrySet()) {
-            try {
-                identMap.put(TestType.valueOf(e.getKey()), e.getValue());
-            } catch (IllegalArgumentException ex) {
-                // TODO: Needs change after Proctor changes to use String for TestType.
-                // TODO: Might be better to check this ahead of time when loading the service configuration.
+            final TestType testType = lookupTestType(registered, e.getKey());
+            if (testType == null) {
                 throw new BadRequestException(
                         String.format("Could not convert identifier '%s' to TestType", e.getKey()));
             }
+            identMap.put(testType, e.getValue());
         }
         return new Identifiers(identMap, true);
+    }
+
+    /**
+     * Looks up the TestType given a string representation of the test type.
+     * Likely belongs in TestType proper
+     * @param registered
+     * @param testType
+     * @return
+     */
+    private static TestType lookupTestType(final Collection<TestType> registered,
+                                           final String testType) {
+        // we cannot use registered.contains(TestType) because the TestType constructor is private
+        for (final TestType type : registered) {
+            if (type.name().equals(testType)) {
+                return type;
+            }
+        }
+        return null;
     }
 
     /**

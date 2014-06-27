@@ -10,7 +10,7 @@
     </parent>
 
     <properties>
-        <proctor.version>1.0.6</proctor.version>
+        <proctor.version>1.0.9</proctor.version>
         <util.version>1.0.0</util.version>
     </properties>
 
@@ -81,4 +81,4 @@
         </plugins>
     </build>
 </project>
-    
+
