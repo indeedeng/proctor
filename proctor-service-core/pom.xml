@@ -52,11 +52,6 @@
         </dependency>
         <dependency>
             <groupId>com.indeed</groupId>
-            <artifactId>proctor-maven-plugin</artifactId>
-            <version>${proctor.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.indeed</groupId>
             <artifactId>util-core</artifactId>
             <version>${util.version}</version>
         </dependency>
