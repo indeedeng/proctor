@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.indeed</groupId>
         <artifactId>oss-parent</artifactId>
-        <version>7</version>
+        <version>9</version>
     </parent>
 
     <artifactId>proctor-webapp</artifactId>
@@ -57,7 +57,7 @@
         <dependency>
             <groupId>com.indeed</groupId>
             <artifactId>proctor-webapp-library</artifactId>
-            <version>1.0.0</version>
+            <version>1.0.2</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.tomcat</groupId>
