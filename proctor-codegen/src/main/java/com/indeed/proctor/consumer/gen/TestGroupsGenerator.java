@@ -44,7 +44,11 @@ public class TestGroupsGenerator extends FreeMarkerCodeGenerator {
             generate(input, target, baseContext, packageName, groupsManagerClass, templatePath, groupsManagerTemplateName);
         }
     }
-
+    /*
+     * If a folder of split jsons defining a proctor specification is provided, this method iterates over the folder
+     * contents, using the individual TestDefinition jsons and a providedContext.json to create one large
+     * temporary ProctorSpecification json to be used for code generation
+     */
     public static File makeTotalSpecification(File dir) throws CodeGenException {
         final File[] dirFiles = dir.listFiles();
         String name = "";
