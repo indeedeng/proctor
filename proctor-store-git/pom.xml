@@ -1,0 +1,39 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.indeed</groupId>
+        <artifactId>proctor-parent</artifactId>
+        <version>1.0.11-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>proctor-store-svn</artifactId>
+
+    <scm> <!-- prevent Maven from trying to override with subproject suffix -->
+        <url>${project.parent.scm.url}</url>
+        <connection>${project.parent.scm.connection}</connection>
+        <developerConnection>${project.parent.scm.developerConnection}</developerConnection>
+    </scm>
+
+    <dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>proctor-store</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.indeed</groupId>
+            <artifactId>util-varexport</artifactId>
+            <version>${indeed-util.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.tmatesoft.svnkit</groupId>
+            <artifactId>svnkit</artifactId>
+        </dependency>
+    </dependencies>
+</project>
