@@ -46,7 +46,7 @@ public class TestGroupsGenerator extends FreeMarkerCodeGenerator {
     }
 
     public static File makeTotalSpecification(File dir) throws CodeGenException {
-        File[] dirFiles = dir.listFiles();
+        final File[] dirFiles = dir.listFiles();
         String name = "";
         final String folderPath = dir.getAbsolutePath();
         Map<String,TestSpecification> testSpec = new LinkedHashMap<String, TestSpecification>();
@@ -70,7 +70,7 @@ public class TestGroupsGenerator extends FreeMarkerCodeGenerator {
                 testSpec.putAll(spec);
             }
         }
-        ProctorSpecification totalSpec = new ProctorSpecification();
+        final ProctorSpecification totalSpec = new ProctorSpecification();
         totalSpec.setProvidedContext(providedContext);
         totalSpec.setTests(testSpec);
         final File output;

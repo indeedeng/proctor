@@ -14,13 +14,14 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
 public abstract class AbstractProctorMojo extends AbstractMojo {
 
     private final TestGroupsGenerator gen = new TestGroupsGenerator();
-    private static Map<String, Boolean> accessed;
+    private static List<String> accessed;
     abstract File getOutputDirectory();
     abstract File getTopDirectory();
 
@@ -28,13 +29,16 @@ public abstract class AbstractProctorMojo extends AbstractMojo {
         getLog().info(String.format("Building resources for %s", packageName));
         gen.generate(file.getPath(), getOutputDirectory().getPath(), packageName, className, className + "Manager");
     }
-
+    /*
+     * traverse through main specification folder to find large proctor specifications (determined if they have the test
+     * attribute) or individual test specifications (if they do not have this attribute).
+     */
     private void searchDirectory(File dir, String packageNamePrefix) throws CodeGenException {
         if (dir.equals(null)) {
             getLog().error("searchDirectory called with null pointer");
             return;
         }
-        File[] files = dir.listFiles();
+        final File[] files = dir.listFiles();
         if (files == null) {
             return;
         }
@@ -56,13 +60,13 @@ public abstract class AbstractProctorMojo extends AbstractMojo {
                                 entry.getName().substring(0, entry.getName().lastIndexOf(".json")));
                     } else {
                         String filePath = entry.getAbsolutePath().substring(0, entry.getAbsolutePath().lastIndexOf(File.separator));
-                        if(accessed.get(filePath)==null) {
+                        if(!accessed.contains(filePath)) {
                             final File newInput = gen.makeTotalSpecification(entry.getParentFile());
                             processFile(
                                     newInput,
                                     packageNamePrefix == null ? "" : packageNamePrefix.substring(0,packageNamePrefix.lastIndexOf(File.separator)).replace(File.separator, "."),
                                     dir.getName()+"Groups");
-                            accessed.put(filePath, true);
+                            accessed.add(filePath);
                         }
                     }
                 }
@@ -79,7 +83,7 @@ public abstract class AbstractProctorMojo extends AbstractMojo {
 
     @Override
     public void execute() throws MojoExecutionException {
-        accessed = new HashMap<String, Boolean>();
+        accessed = new ArrayList<String>();
         File topDirectory = getTopDirectory();
         if(topDirectory == null) {
             getLog().error("topDirectory not substituted with configured value?");

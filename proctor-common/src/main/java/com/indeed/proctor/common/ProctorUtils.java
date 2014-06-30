@@ -90,10 +90,10 @@ public abstract class ProctorUtils {
         serializeObject(writer, definition);
     }
 
-    public static JsonNode readJsonFromFile(File input) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
+    public static JsonNode readJsonFromFile(final File input) throws IOException {
+        final ObjectMapper mapper = Serializers.lenient();
         mapper.configure(JsonParser.Feature.ALLOW_COMMENTS,true);
-        JsonNode rootNode = mapper.readValue(input, JsonNode.class);
+        final JsonNode rootNode = mapper.readValue(input, JsonNode.class);
         return rootNode;
     }
 

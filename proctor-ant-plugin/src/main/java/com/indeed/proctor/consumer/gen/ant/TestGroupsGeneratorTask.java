@@ -7,14 +7,11 @@ import org.apache.log4j.Logger;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.JsonParser;
-import org.codehaus.jackson.map.ObjectMapper;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class TestGroupsGeneratorTask extends Task {
@@ -25,7 +22,7 @@ public class TestGroupsGeneratorTask extends Task {
     private String packageName;
     private String groupsClass;
     private String groupsManagerClass;
-    private static Map<String, Boolean> accessed;
+    private static List<String> accessed;
     private static final Logger LOGGER = Logger.getLogger(TestGroupsGeneratorTask.class);
 
     public String getInput() {
@@ -68,18 +65,21 @@ public class TestGroupsGeneratorTask extends Task {
         this.groupsManagerClass = groupsManagerClass;
     }
 
-    private void searchDirectory(File dir) throws CodeGenException {
+    /*
+     * traverse through main specification folder to find large proctor specifications (determined if they have the test
+     * attribute) or individual test specifications (if they do not have this attribute).
+     */
+    private void recursiveSpecificationsFinder(File dir) throws CodeGenException {
         if (dir.equals(null)) {
-            LOGGER.error("searchDirectory called with null pointer");
-            return;
+            throw new CodeGenException("searchDirectory called with null pointer");
         }
-        File[] files = dir.listFiles();
+        final File[] files = dir.listFiles();
         if (files == null) {
             return;
         }
         for(File entry : files) {
             if (entry.isDirectory()) {
-                searchDirectory(entry);
+                recursiveSpecificationsFinder(entry);
             } else {
                 if (entry.getName().endsWith(".json")) {
                     final JsonNode fullTest;
@@ -96,14 +96,14 @@ public class TestGroupsGeneratorTask extends Task {
                                 groupsManagerClass);
                     } else {
                         String filePath = entry.getAbsolutePath().substring(0, entry.getAbsolutePath().lastIndexOf(File.separator));
-                        if (accessed.get(filePath)==null) {
+                        if (!accessed.contains(filePath)) {
                             final File newInput = gen.makeTotalSpecification(new File(filePath));
                             gen.generate(newInput.getAbsolutePath(),
                                     target,
                                     packageName,
                                     dir.getName()+"Groups",
                                     dir.getName()+"GroupsManager");
-                            accessed.put(filePath, true);
+                            accessed.add(filePath);
                         }
                     }
 
@@ -115,14 +115,14 @@ public class TestGroupsGeneratorTask extends Task {
     @Override
     public void execute() throws BuildException {
         //  TODO: validate
-        accessed = new HashMap<String, Boolean>();
+        accessed = new ArrayList<String>();
         File topDirectory = (new File(input)).getParentFile();
         if (topDirectory == null || !topDirectory.isDirectory()) {
             LOGGER.error("input not substituted with configured value");
             return;
         }
         try {
-            searchDirectory(topDirectory);
+            recursiveSpecificationsFinder(topDirectory);
         } catch (final CodeGenException ex) {
             throw new BuildException("Unable to generate code " + ex.toString(), ex);
         }
