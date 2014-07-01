@@ -22,6 +22,7 @@ public class TestGroupsGeneratorTask extends Task {
     private String packageName;
     private String groupsClass;
     private String groupsManagerClass;
+    private String fileCreateDir;
     private static List<String> accessed;
     private static final Logger LOGGER = Logger.getLogger(TestGroupsGeneratorTask.class);
 
@@ -97,7 +98,7 @@ public class TestGroupsGeneratorTask extends Task {
                     } else {
                         String filePath = entry.getAbsolutePath().substring(0, entry.getAbsolutePath().lastIndexOf(File.separator));
                         if (!accessed.contains(filePath)) {
-                            final File newInput = gen.makeTotalSpecification(new File(filePath));
+                            final File newInput = gen.makeTotalSpecification(new File(filePath), fileCreateDir);
                             gen.generate(newInput.getAbsolutePath(),
                                     target,
                                     packageName,
@@ -116,6 +117,7 @@ public class TestGroupsGeneratorTask extends Task {
     public void execute() throws BuildException {
         //  TODO: validate
         accessed = new ArrayList<String>();
+        fileCreateDir = target.substring(0,target.lastIndexOf(File.separator));
         File topDirectory = (new File(input)).getParentFile();
         if (topDirectory == null || !topDirectory.isDirectory()) {
             LOGGER.error("input not substituted with configured value");

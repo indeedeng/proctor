@@ -49,7 +49,7 @@ public class TestGroupsGenerator extends FreeMarkerCodeGenerator {
      * contents, using the individual TestDefinition jsons and a providedContext.json to create one large
      * temporary ProctorSpecification json to be used for code generation
      */
-    public static File makeTotalSpecification(File dir) throws CodeGenException {
+    public static File makeTotalSpecification(File dir, String targetDir) throws CodeGenException {
         final File[] dirFiles = dir.listFiles();
         String name = "";
         final String folderPath = dir.getAbsolutePath();
@@ -77,12 +77,15 @@ public class TestGroupsGenerator extends FreeMarkerCodeGenerator {
         final ProctorSpecification totalSpec = new ProctorSpecification();
         totalSpec.setProvidedContext(providedContext);
         totalSpec.setTests(testSpec);
-        final File output;
-        try {
-            output = File.createTempFile(name + "Groups", ".json");
-        } catch (IOException e) {
-            throw new CodeGenException("Could not create temp file",e);
+
+        final File folderToCreate = new File(targetDir + "/specifications");
+        final boolean folderCreationSuccess = (folderToCreate).mkdirs();
+
+        if (!folderCreationSuccess && !folderToCreate.exists() && folderToCreate.isDirectory()) {
+           throw new CodeGenException("failed to create specifications dir in transient build folder");
         }
+
+        final File output =  new File(targetDir + "/specifications/" + name + "Groups.json");
         try {
             OBJECT_MAPPER.defaultPrettyPrintingWriter().writeValue(output, totalSpec);
         } catch (IOException e) {

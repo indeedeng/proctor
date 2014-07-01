@@ -7,16 +7,11 @@ import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.JsonParser;
-import org.codehaus.jackson.map.ObjectMapper;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.logging.Logger;
 
 public abstract class AbstractProctorMojo extends AbstractMojo {
 
@@ -61,7 +56,7 @@ public abstract class AbstractProctorMojo extends AbstractMojo {
                     } else {
                         String filePath = entry.getAbsolutePath().substring(0, entry.getAbsolutePath().lastIndexOf(File.separator));
                         if(!accessed.contains(filePath)) {
-                            final File newInput = gen.makeTotalSpecification(entry.getParentFile());
+                            final File newInput = gen.makeTotalSpecification(entry.getParentFile(),getOutputDirectory().getPath());
                             processFile(
                                     newInput,
                                     packageNamePrefix == null ? "" : packageNamePrefix.substring(0,packageNamePrefix.lastIndexOf(File.separator)).replace(File.separator, "."),
