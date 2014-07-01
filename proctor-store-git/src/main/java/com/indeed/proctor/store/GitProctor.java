@@ -37,6 +37,13 @@ public class GitProctor extends FileBasedProctorStore {
         this.gitUrl = gitUrl;
         this.username = username;
         this.password = password;
+        this(new GitPersisterCoreImpl(gitUrl, username, password, Files.createTempDir()));
+    }
+
+    public GitProctor(final GitPersisterCore core) {
+        super(core);
+        this.repo = core.getRepo();
+        this.gitUrl = core.getGitUrl();
     }
 
     public static void main(String args[]) throws IOException {
@@ -63,5 +70,35 @@ public class GitProctor extends FileBasedProctorStore {
             System.out.println("Deleting temp dir : " + tempDir);
             FileUtils.deleteDirectory(tempDir);
         }
+    }
+
+    @Override
+    public void verifySetup() throws StoreException {
+
+    }
+
+    @Override
+    public boolean cleanUserWorkspace(String username) {
+        return false;
+    }
+
+    @Override
+    public long getLatestVersion() throws StoreException {
+        return 0;
+    }
+
+    @Override
+    public List<Revision> getMatrixHistory(int start, int limit) throws StoreException {
+        return null;
+    }
+
+    @Override
+    public List<Revision> getHistory(String test, int start, int limit) throws StoreException {
+        return null;
+    }
+
+    @Override
+    public List<Revision> getHistory(String test, long revision, int start, int limit) throws StoreException {
+        return null;
     }
 }
