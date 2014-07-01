@@ -35,6 +35,7 @@
         <module>proctor-consumer</module>
         <module>proctor-maven-plugin</module>
         <module>proctor-store</module>
+        <module>proctor-store-git</module>
         <module>proctor-store-svn</module>
         <module>proctor-tomcat-deps</module>
         <module>proctor-tomcat-deps-provided</module>

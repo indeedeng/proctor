@@ -7,7 +7,7 @@
         <version>1.0.11-SNAPSHOT-DUMMY</version>
     </parent>
 
-    <artifactId>proctor-store-svn</artifactId>
+    <artifactId>proctor-store-git</artifactId>
 
     <scm> <!-- prevent Maven from trying to override with subproject suffix -->
         <url>${project.parent.scm.url}</url>
@@ -34,6 +34,11 @@
         <dependency>
             <groupId>org.tmatesoft.svnkit</groupId>
             <artifactId>svnkit</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jgit</groupId>
+            <artifactId>org.eclipse.jgit</artifactId>
+            <version>3.4.1.201406201815-r</version>
         </dependency>
     </dependencies>
 </project>

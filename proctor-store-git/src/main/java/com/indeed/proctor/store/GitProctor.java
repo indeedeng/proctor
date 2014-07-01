@@ -5,7 +5,7 @@ import com.google.common.io.Files;
 import com.indeed.proctor.common.model.TestMatrixVersion;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
-import org.eclipse.jgit.api.Repository;
+import org.eclipse.jgit.lib.Repository;
 
 import java.io.File;
 import java.io.IOException;
@@ -46,7 +46,7 @@ public class GitProctor extends FileBasedProctorStore {
         
         final File tempDir = Files.createTempDir();
         try {
-            final GitProctor client = new SvnProctor(gitUrl, gituser, password);
+            final GitProctor client = new GitProctor(gitUrl, gituser, password);
 
             System.out.println("Running load matrix for last " + num_revisions + " revisions");
             final long start = System.currentTimeMillis();
@@ -64,3 +64,4 @@ public class GitProctor extends FileBasedProctorStore {
             FileUtils.deleteDirectory(tempDir);
         }
     }
+}
