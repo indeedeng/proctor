@@ -220,9 +220,9 @@
         indeed.proctor.app.editor.start('${testName}', ${testDefinitionJson},
                 <c:choose>
                     <c:when test="${fn:length(testDefinitionHistory) > 0}">
-                        ${testDefinitionHistory[0].revision}
+                        "${testDefinitionHistory[0].revision}"
                     </c:when>
-                    <c:otherwise>-1</c:otherwise>
+                    <c:otherwise>"-1"</c:otherwise>
                 </c:choose>
                 , ${isCreate});
 

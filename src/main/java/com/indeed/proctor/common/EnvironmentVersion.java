@@ -7,8 +7,8 @@ import com.indeed.proctor.webapp.db.Environment;
 * @author parker
 */
 public class EnvironmentVersion {
-    public static final int UNKNOWN_REVISION = -1;
-    public static final int UNKNOWN_VERSION = -1;
+    public static final String UNKNOWN_REVISION = "-1";
+    public static final String UNKNOWN_VERSION = "-1";
 
     private final String testName;
 
@@ -16,18 +16,18 @@ public class EnvironmentVersion {
     private final Revision trunk;
     // @Nullable - The last commit on the qa branch
     private final Revision qa;
-    private final long qaEffectiveRevision; // "effective" revision, aka the 'version' number from the TestDefinition on the Production Branch. This should refer to a revision on the TRUNK branch
+    private final String qaEffectiveRevision; // "effective" revision, aka the 'version' number from the TestDefinition on the Production Branch. This should refer to a revision on the TRUNK branch
 
     // @Nullable - The last commit on the production
     private final Revision production;
-    private final long productionEffectiveRevision; // "effective" revision, aka the 'version' number from the TestDefinition on the Production Branch. This should refer to a revision on the TRUNK branch
+    private final String productionEffectiveRevision; // "effective" revision, aka the 'version' number from the TestDefinition on the Production Branch. This should refer to a revision on the TRUNK branch
 
     public EnvironmentVersion(final String testName,
                               final Revision trunk,
                               final Revision qa,
-                              final long qaEffectiveRevision,
+                              final String qaEffectiveRevision,
                               final Revision production,
-                              final long productionEffectiveRevision) {
+                              final String productionEffectiveRevision) {
         this.testName = testName;
         this.trunk = trunk;
         this.qa = qa;
@@ -45,7 +45,7 @@ public class EnvironmentVersion {
      * @param effectiveRevision
      * @return
      */
-    public EnvironmentVersion update(final Environment branch, final Revision version, final long effectiveRevision ) {
+    public EnvironmentVersion update(final Environment branch, final Revision version, final String effectiveRevision ) {
         return new EnvironmentVersion(testName ,
                                       Environment.WORKING == branch ? version : this.trunk,
                                       Environment.QA == branch ? version : this.qa,
@@ -64,11 +64,11 @@ public class EnvironmentVersion {
         return trunk;
     }
 
-    public long getTrunkRevision() {
+    public String getTrunkRevision() {
         return getRevision(trunk);
     }
 
-    public long getTrunkVersion() {
+    public String getTrunkVersion() {
         return getTrunkRevision();
     }
 
@@ -77,11 +77,11 @@ public class EnvironmentVersion {
         return qa;
     }
 
-    public long getQaRevision() {
+    public String getQaRevision() {
         return getRevision(qa);
     }
 
-    public long getQaVersion() {
+    public String getQaVersion() {
         return qaEffectiveRevision;
     }
 
@@ -90,16 +90,16 @@ public class EnvironmentVersion {
         return production;
     }
 
-    public long getProductionRevision() {
+    public String getProductionRevision() {
         return getRevision(production);
     }
 
 
-    public long getProductionVersion() {
+    public String getProductionVersion() {
         return productionEffectiveRevision;
     }
 
-    public long getRevision(final Environment branch) {
+    public String getRevision(final Environment branch) {
         switch (branch) {
             case WORKING:
                 return getTrunkRevision();
@@ -112,7 +112,7 @@ public class EnvironmentVersion {
         }
     }
 
-    public long getVersion(final Environment branch) {
+    public String getVersion(final Environment branch) {
         switch (branch) {
             case WORKING:
                 return getTrunkVersion();
@@ -125,7 +125,7 @@ public class EnvironmentVersion {
         }
     }
 
-    private static long getRevision(Revision version) {
+    private static String getRevision(Revision version) {
         return version != null ? version.getRevision() : UNKNOWN_REVISION;
     }
 }

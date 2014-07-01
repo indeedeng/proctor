@@ -113,13 +113,13 @@ public final class TestDefinitionFunctions {
      * @param revision
      * @return
      */
-    private static boolean isPromotedRevision(Revision history, Environment source, long revision) {
+    private static boolean isPromotedRevision(Revision history, Environment source, String revision) {
         // Look for <branch> rXXXX in the commit message
         final String needle = String.format("%s r%s", source.getName(), revision);
         return history.getMessage().contains(needle);
     }
 
-    private static boolean isCharmedRevision(Revision history, long revision) {
+    private static boolean isCharmedRevision(Revision history, String revision) {
         // Look for "merged rXXXX: in the commit message
         final String needle = String.format("merged r%s:", revision);
         return history.getMessage().startsWith(needle);

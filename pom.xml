@@ -23,7 +23,7 @@
         <connection>scm:git:https://github.com/indeedeng/proctor-webapp-library.git</connection>
         <developerConnection>scm:git:git@github.com:indeedeng/proctor-webapp-library.git</developerConnection>
     </scm>
-
+    
     <pluginRepositories>
         <pluginRepository>
             <id>sonatype-oss-public</id>
@@ -216,6 +216,11 @@
         </dependency>
         <dependency>
             <groupId>com.indeed</groupId>
+            <artifactId>proctor-store-git</artifactId>
+            <version>${proctor.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.indeed</groupId>
             <artifactId>util-varexport</artifactId>
             <version>${indeed-util.version}</version>
         </dependency>
@@ -325,7 +330,7 @@
     </dependencies>
 
     <properties>
-        <proctor.version>1.0.9</proctor.version>
+        <proctor.version>1.0.12-SNAPSHOT</proctor.version>
         <closure-library.version>0.0-20130212-95c19e7f0f5f</closure-library.version>
         <closure-library-zip>closure-library-20130212-95c19e7f0f5f.zip</closure-library-zip>
         <closure-library-url>https://closure-library.googlecode.com/files/${closure-library-zip}</closure-library-url>

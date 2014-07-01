@@ -28,22 +28,22 @@ public class TestTestDefinitionFunctions {
      */
     private static final String WHO = "developer-A";
     private static final Date WHEN = new Date(2012, 01, 12);
-    private static final Map<Long, Revision> PROMOTED_REVISIONS = ImmutableMap.<Long, Revision>builder()
-        .put(134L, new Revision(134L, WHO, WHEN, "INDAPPW-537: Feature flag for html5 history based question navigation"))
-        .put(135L, new Revision(135L, WHO, WHEN, "Promoting iahtml5qsthisttst (trunk r134) to qa"))
-        .put(136L, new Revision(136L, WHO, WHEN, "Promoting iahtml5qsthisttst (qa r135) to production\nPromoting iahtml5qsthisttst (trunk r134) to qa"))
-        .put(137L, new Revision(137L, WHO, WHEN, "INDAPPW-537: Adjusting test ratio allocations"))
-        .put(138L, new Revision(138L, WHO, WHEN, "Promoting iahtml5qsthisttst (trunk r137) to production"))
-        .put(139L, new Revision(139L, WHO, WHEN, "Promoting iahtml5qsthisttst (trunk r137) to qa"))
-        .put(140L, new Revision(140L, WHO, WHEN, "Promoting iahtml5qsthisttst (qa r135) to production\nPromoting iahtml5qsthisttst (trunk r134) to qa"))
+    private static final Map<String, Revision> PROMOTED_REVISIONS = ImmutableMap.<String, Revision>builder()
+        .put("134", new Revision("134", WHO, WHEN, "INDAPPW-537: Feature flag for html5 history based question navigation"))
+        .put("135", new Revision("135", WHO, WHEN, "Promoting iahtml5qsthisttst (trunk r134) to qa"))
+        .put("136", new Revision("136", WHO, WHEN, "Promoting iahtml5qsthisttst (qa r135) to production\nPromoting iahtml5qsthisttst (trunk r134) to qa"))
+        .put("137", new Revision("137", WHO, WHEN, "INDAPPW-537: Adjusting test ratio allocations"))
+        .put("138", new Revision("138", WHO, WHEN, "Promoting iahtml5qsthisttst (trunk r137) to production"))
+        .put("139", new Revision("139", WHO, WHEN, "Promoting iahtml5qsthisttst (trunk r137) to qa"))
+        .put("140", new Revision("140", WHO, WHEN, "Promoting iahtml5qsthisttst (qa r135) to production\nPromoting iahtml5qsthisttst (trunk r134) to qa"))
         .build();
     private static final EnvironmentVersion PROMOTED_STATE_OF_THE_WORLD = new EnvironmentVersion("iahtml5qsthisttst",
                                                                       // current trunk revision
-                                                                      PROMOTED_REVISIONS.get(137L),
+                                                                      PROMOTED_REVISIONS.get("137"),
                                                                       // QA revision = 139, promoted from Trunk r137 (effective version)
-                                                                      PROMOTED_REVISIONS.get(139L), 137L,
+                                                                      PROMOTED_REVISIONS.get("139"), "137",
                                                                       // PROD revision = 140, promoted from Trunk r134 (effective version)
-                                                                      PROMOTED_REVISIONS.get(140L), 134L);
+                                                                      PROMOTED_REVISIONS.get("140"), "134");
 
     /*
         Example Charm Commit history:
@@ -59,32 +59,32 @@ public class TestTestDefinitionFunctions {
         r178374 - merged r178090: COMP-1654 - changed the rule to check userlanguage, rather than jasxlanguage
         ( not yet merged r182781)
      */
-    private static final Map<Long, Revision> CHARMED_REVISIONS = ImmutableMap.<Long, Revision>builder()
+    private static final Map<String, Revision> CHARMED_REVISIONS = ImmutableMap.<String, Revision>builder()
         // trunk
-        .put(178090L, new Revision(178090L, WHO, WHEN, "COMP-1654 - changed the rule to check userlanguage, rather than jasxlanguage"))
-        .put(182781L, new Revision(182781L, WHO, WHEN, "COMP-1683 - Roll out the test 100% globally"))
+        .put("178090", new Revision("178090", WHO, WHEN, "COMP-1654 - changed the rule to check userlanguage, rather than jasxlanguage"))
+        .put("182781", new Revision("182781", WHO, WHEN, "COMP-1683 - Roll out the test 100% globally"))
 
         // QA
-        .put(178100L, new Revision(178100L, WHO, WHEN, "merged r178090: COMP-1654 - changed the rule to check userlanguage, rather than jasxlanguage"))
-        .put(182787L, new Revision(182787L, WHO, WHEN, "merged r182781: COMP-1683 - Roll out the test 100% globally"))
+        .put("178100", new Revision("178100", WHO, WHEN, "merged r178090: COMP-1654 - changed the rule to check userlanguage, rather than jasxlanguage"))
+        .put("182787", new Revision("182787", WHO, WHEN, "merged r182781: COMP-1683 - Roll out the test 100% globally"))
 
         // production
-        .put(178374L, new Revision(178374L, WHO, WHEN, "merged r178090: COMP-1654 - changed the rule to check userlanguage, rather than jasxlanguage"))
+        .put("178374", new Revision("178374", WHO, WHEN, "merged r178090: COMP-1654 - changed the rule to check userlanguage, rather than jasxlanguage"))
         .build();
     private static final EnvironmentVersion CHARMED_STATE_OF_THE_WORLD = new EnvironmentVersion("acmecmpattrtst",
                                                                       // current trunk revision
-                                                                      CHARMED_REVISIONS.get(182781L),
+                                                                      CHARMED_REVISIONS.get("182781"),
                                                                       // QA revision = 182787, last merged trunk revision r182781 (effective version)
-                                                                      CHARMED_REVISIONS.get(182787L), 182781L,
+                                                                      CHARMED_REVISIONS.get("182787"), "182781",
                                                                       // PROD revision = 178374, merged from trunk revision 178090 (effective version)
-                                                                      CHARMED_REVISIONS.get(178374L), 178090);
+                                                                      CHARMED_REVISIONS.get("178374"), "178090");
 
 
 
     @Test
     public void testIsCurrentVersionViewingTrunkPromoted() {
-        final Revision r134 = PROMOTED_REVISIONS.get(134L);
-        final Revision r137 = PROMOTED_REVISIONS.get(137L);
+        final Revision r134 = PROMOTED_REVISIONS.get("134");
+        final Revision r137 = PROMOTED_REVISIONS.get("137");
 
         final Environment viewing = Environment.WORKING;
         Assert.assertFalse("r134 is not current trunk revision", TestDefinitionFunctions.isCurrentVersionOnTrunk(viewing, r134, PROMOTED_STATE_OF_THE_WORLD));
@@ -103,8 +103,8 @@ public class TestTestDefinitionFunctions {
 
     @Test
     public void testIsCurrentVersionViewingQaPromoted() {
-        final Revision r135 = PROMOTED_REVISIONS.get(135L);
-        final Revision r139 = PROMOTED_REVISIONS.get(139L);
+        final Revision r135 = PROMOTED_REVISIONS.get("135");
+        final Revision r139 = PROMOTED_REVISIONS.get("139");
 
         final Environment viewing = Environment.QA;
 
@@ -121,9 +121,9 @@ public class TestTestDefinitionFunctions {
 
     @Test
     public void testIsCurrentVersionViewingProductionPromoted() {
-        final Revision r136 = PROMOTED_REVISIONS.get(136L);
-        final Revision r138 = PROMOTED_REVISIONS.get(138L);
-        final Revision r140 = PROMOTED_REVISIONS.get(140L);
+        final Revision r136 = PROMOTED_REVISIONS.get("136");
+        final Revision r138 = PROMOTED_REVISIONS.get("138");
+        final Revision r140 = PROMOTED_REVISIONS.get("140");
 
         final Environment viewing = Environment.PRODUCTION;
 
@@ -143,8 +143,8 @@ public class TestTestDefinitionFunctions {
 
     @Test
     public void testIsCurrentVersionViewingTrunkCharmed() {
-        final Revision r178090 = CHARMED_REVISIONS.get(178090L);
-        final Revision r182781 = CHARMED_REVISIONS.get(182781L);
+        final Revision r178090 = CHARMED_REVISIONS.get("178090");
+        final Revision r182781 = CHARMED_REVISIONS.get("182781");
 
         final Environment viewing = Environment.WORKING;
         Assert.assertFalse("r178090 is not current trunk revision", TestDefinitionFunctions.isCurrentVersionOnTrunk(viewing, r178090, CHARMED_STATE_OF_THE_WORLD));
@@ -159,8 +159,8 @@ public class TestTestDefinitionFunctions {
 
     @Test
     public void testIsCurrentVersionViewingQaCharmed() {
-        final Revision r178100 = CHARMED_REVISIONS.get(178100L);
-        final Revision r182787 = CHARMED_REVISIONS.get(182787L);
+        final Revision r178100 = CHARMED_REVISIONS.get("178100");
+        final Revision r182787 = CHARMED_REVISIONS.get("182787");
 
         final Environment viewing = Environment.QA;
         Assert.assertFalse("r178100 is merged r178090 (not current trunk revision)", TestDefinitionFunctions.isCurrentVersionOnTrunk(viewing, r178100, CHARMED_STATE_OF_THE_WORLD));
@@ -175,7 +175,7 @@ public class TestTestDefinitionFunctions {
 
     @Test
     public void testIsCurrentVersionViewingProductionCharmed() {
-        final Revision r178374 = CHARMED_REVISIONS.get(178374L);
+        final Revision r178374 = CHARMED_REVISIONS.get("178374");
 
         final Environment viewing = Environment.PRODUCTION;
         Assert.assertFalse("r178374 is merged r178090 (not current trunk revision)", TestDefinitionFunctions.isCurrentVersionOnTrunk(viewing, r178374, CHARMED_STATE_OF_THE_WORLD));

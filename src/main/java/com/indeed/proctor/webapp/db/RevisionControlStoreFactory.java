@@ -12,25 +12,25 @@ import java.util.concurrent.ScheduledExecutorService;
 public class RevisionControlStoreFactory implements FactoryBean<StoreFactory> {
     private final Logger LOGGER = Logger.getLogger(RevisionControlStoreFactory.class);
 
-    @Value("${revision.control:svn}")
+    @Value("${revision.control}")
     private String revisionControlType;
     private ScheduledExecutorService scheduledExecutorService;
 
     private boolean cache;
     private long tempDirCleanupAgeMinutes;
-    private long svnRefreshMinutes;
-    private String svnPath;
-    private String svnUsername;
-    private String svnPassword;
+    private long scmRefreshMinutes;
+    private String scmPath;
+    private String scmUsername;
+    private String scmPassword;
 
 
     @Override
     public StoreFactory getObject() throws Exception {
         if ("svn".equals(revisionControlType)) {
             return new SvnProctorStoreFactory(scheduledExecutorService, cache, tempDirCleanupAgeMinutes,
-                                              svnRefreshMinutes, svnPath, svnUsername, svnPassword);
+                                              scmRefreshMinutes, scmPath, scmUsername, scmPassword);
         } else if ("git".equals(revisionControlType)) {
-            LOGGER.error("Git is not yet supported as a revision control type.");
+            return new GitProctorStoreFactory(scheduledExecutorService, scmRefreshMinutes, scmPath, scmUsername, scmPassword);
         }
         return null;
     }
@@ -45,6 +45,7 @@ public class RevisionControlStoreFactory implements FactoryBean<StoreFactory> {
         return true;
     }
 
+    @Value("${revision.control}")
     public void setRevisionControlType(String revisionControlType) {
         this.revisionControlType = revisionControlType;
     }
@@ -71,23 +72,23 @@ public class RevisionControlStoreFactory implements FactoryBean<StoreFactory> {
         this.tempDirCleanupAgeMinutes = tempDirCleanupAgeMinutes;
     }
 
-    @Value("${svn.refresh.period.minutes:5}")
-    public void setSvnRefreshMinutes(long svnRefreshMinutes) {
-        this.svnRefreshMinutes = svnRefreshMinutes;
+    @Value("${scm.refresh.period.minutes:5}")
+    public void setScmRefreshMinutes(long scmRefreshMinutes) {
+        this.scmRefreshMinutes = scmRefreshMinutes;
     }
 
-    @Value("${svn.path}")
-    public void setSvnPath(final String svnPath) {
-        this.svnPath = svnPath;
+    @Value("${scm.path}")
+    public void setScmPath(final String scmPath) {
+        this.scmPath = scmPath;
     }
 
-    @Value("${svn.login}")
-    public void setSvnUsername(final String svnUsername) {
-        this.svnUsername = svnUsername;
+    @Value("${scm.login}")
+    public void setScmUsername(final String scmUsername) {
+        this.scmUsername = scmUsername;
     }
 
-    @Value("${svn.password}")
-    public void setSvnPassword(final String svnPassword) {
-        this.svnPassword = svnPassword;
+    @Value("${scm.password}")
+    public void setScmPassword(final String scmPassword) {
+        this.scmPassword = scmPassword;
     }
 }

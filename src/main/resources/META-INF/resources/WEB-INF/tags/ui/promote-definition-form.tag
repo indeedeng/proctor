@@ -6,9 +6,9 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ attribute name="testName" type="java.lang.String" description="Test Name" %>
 <%@ attribute name="src" type="java.lang.String" description="Source branch name" %>
-<%@ attribute name="srcRevision" type="java.lang.Long" description="Source revision number" %>
+<%@ attribute name="srcRevision" type="java.lang.String" description="Source revision number" %>
 <%@ attribute name="dest" type="java.lang.String" description="Destination branch name" %>
-<%@ attribute name="destRevision" type="java.lang.Long" description="Destination revision number" %>
+<%@ attribute name="destRevision" type="java.lang.String" description="Destination revision number" %>
 <%@ attribute name="promoteText" type="java.lang.String" description="Test Name" %>
 <%@ attribute name="testDefinitionVersion" type="com.indeed.proctor.store.Revision" description="Test Definition Version" %>
 <form class="js-promote-definition" action="/proctor/definition/${proctor:urlencode(testName)}/promote" method="POST">

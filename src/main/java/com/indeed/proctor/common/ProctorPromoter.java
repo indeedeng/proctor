@@ -27,12 +27,12 @@ import java.util.regex.Pattern;
  */
 public class ProctorPromoter extends DataLoadingTimerTask {
     private static final Logger LOGGER = Logger.getLogger(ProctorPromoter.class);
-    private static final int UNKNOWN_VERSION = EnvironmentVersion.UNKNOWN_VERSION;
+    private static final String UNKNOWN_VERSION = EnvironmentVersion.UNKNOWN_VERSION;
 
     final ProctorStore trunk;
     final ProctorStore qa;
     final ProctorStore production;
-    private volatile ConcurrentMap<String, EnvironmentVersion> environmentVersions;
+    private volatile ConcurrentMap<String, EnvironmentVersion>  environmentVersions;
 
     public ProctorPromoter(final ProctorStore trunk,
                            final ProctorStore qa,
@@ -43,17 +43,17 @@ public class ProctorPromoter extends DataLoadingTimerTask {
         this.production = production;
     }
 
-    public void promoteTrunkToQa(final String testName, long trunkRevision, long qaRevision,
+    public void promoteTrunkToQa(final String testName, String trunkRevision, String qaRevision,
                                  String username, String password, Map<String, String> metadata) throws StoreException, TestPromotionException {
         promote(testName, Environment.WORKING, trunkRevision, Environment.QA, qaRevision, username, password, metadata);
     }
 
-    public void promoteQaToProduction(final String testName, long qaRevision, long prodRevision,
+    public void promoteQaToProduction(final String testName, String qaRevision, String prodRevision,
                                  String username, String password, Map<String, String> metadata) throws StoreException, TestPromotionException {
         promote(testName, Environment.QA, qaRevision, Environment.PRODUCTION, prodRevision, username, password, metadata);
     }
 
-    public void promoteTrunkToProduction(final String testName, long trunkRevision, long prodRevision,
+    public void promoteTrunkToProduction(final String testName, String trunkRevision, String prodRevision,
                                  String username, String password, Map<String, String> metadata) throws StoreException, TestPromotionException {
         promote(testName, Environment.WORKING, trunkRevision, Environment.PRODUCTION, prodRevision, username, password, metadata);
     }
@@ -71,15 +71,15 @@ public class ProctorPromoter extends DataLoadingTimerTask {
             if(current == null) {
                 updated = new EnvironmentVersion(testName, trunkVersion, null, UNKNOWN_VERSION, null, UNKNOWN_VERSION);
             } else {
-                updated = current.update(branch, trunkVersion, trunkVersion.getRevision());
+                updated = current.update(branch, trunkVersion, trunkVersion.getRevision().toString());
             }
             versions.replace(testName, updated);
         }
     }
 
     private void updateTestVersion(final String testName,
-                                  final Environment branch,
-                                  final long effectiveVersion) throws StoreException {
+                                   final Environment branch,
+                                   final String effectiveVersion) throws StoreException {
         final ConcurrentMap<String, EnvironmentVersion> versions = this.environmentVersions;
         if(versions != null) {
             final ProctorStore store = getStoreFromBranch(branch);
@@ -94,9 +94,10 @@ public class ProctorPromoter extends DataLoadingTimerTask {
 
 
     @SuppressWarnings({"MethodWithTooManyParameters"})
-    private void promote(final String testName, final Environment srcBranch, final long srcRevision, final Environment destBranch, long destRevision,
+    private void promote(final String testName, final Environment srcBranch, final String srcRevision, final Environment destBranch, String destRevision,
                          String username, String password, Map<String, String> metadata) throws TestPromotionException, StoreException {
-        LOGGER.info(String.format("%s : Promoting %s from %s r%d to %s r%d", username, testName, srcBranch, srcRevision, destBranch, destRevision));
+        LOGGER.info(String.format("%s : Promoting %s from %s r%s to %s r%s", username, testName, srcBranch,
+                srcRevision, destBranch, destRevision));
         final ProctorStore src = getStoreFromBranch(srcBranch);
         final ProctorStore dest = getStoreFromBranch(destBranch);
         final boolean isSrcTrunk = Environment.WORKING == srcBranch;
@@ -104,20 +105,20 @@ public class ProctorPromoter extends DataLoadingTimerTask {
         final TestDefinition d = getTestDefinition(src, testName, srcRevision);
 
         final EnvironmentVersion version = getEnvironmentVersion(testName);
-        final long knownDestRevision = version != null ? version.getRevision(destBranch) : UNKNOWN_VERSION;
+        final String knownDestRevision = version != null ? version.getRevision(destBranch) : UNKNOWN_VERSION;
 
         // destRevision > 0 indicates destination revision expected
-        if(knownDestRevision < 0 && destRevision > 0) {
+        // TODO (parker) 7/1/14 - alloq ProctorStore to implement valid / unknown revision parsing
+        if(knownDestRevision.length() == 0 && destRevision.length() > 0) {
             throw new TestPromotionException("Positive revision r" + destRevision + " given for destination ( " + destBranch + " ) but '" + testName + "' does not exist.");
-        } else if (knownDestRevision >= 0 && destRevision <= 0) {
+        } else if (!knownDestRevision.equals("-1") && knownDestRevision.length() > 0 && destRevision.length() == 0) {
             throw new TestPromotionException("Non-Positive revision r" + destRevision + " given for destination ( " + destBranch + " ) but '" + testName + "' exists.");
         }
 
         // Update the Test Definition Version to the svn-revision of the source
         if(isSrcTrunk) {
             // If source is trunk, we want to set the version of the test-matrix to be the revision on trunk
-            // TODO (parker) 9/24/12 - make version long
-            d.setVersion((int) srcRevision);
+            d.setVersion(srcRevision);
         }
 
         final List<Revision> srcHistory = getHistoryFromRevision(src, testName, srcRevision);
@@ -126,18 +127,19 @@ public class ProctorPromoter extends DataLoadingTimerTask {
         }
         final Revision srcVersion = srcHistory.get(0);
 
-        if(knownDestRevision >= 0) {
+        if(!knownDestRevision.equals("-1") && knownDestRevision.length() > 0) {
             // This test exists in the destination branch. Get its most recent test-history in the event that EnvironmentVersion is stale.
             List<Revision> history = getMostRecentHistory(dest, testName);
             if(history.isEmpty()) {
                 throw new TestPromotionException("No history found for '" + testName + "' in destination ( " + destBranch + ").");
             }
             final Revision destVersion = history.get(0);
-            if(destVersion.getRevision() != destRevision) {
+            if(!destVersion.getRevision().equals(destRevision)) {
                 throw new TestPromotionException("Test '" + testName + "' updated since " + destRevision + ". Currently at " + history.get(0).getRevision());
             }
             final String commitMessage = formatCommitMessage(testName , srcBranch, srcRevision, destBranch, srcVersion.getMessage());
-            LOGGER.info(String.format("%s : Committing %s from %s r%d to %s r%d", username, testName, srcBranch, srcRevision, destBranch, destRevision));
+            LOGGER.info(String.format("%s : Committing %s from %s r%s to %s r%s", username, testName, srcBranch,
+                    srcRevision, destBranch, destRevision));
             dest.updateTestDefinition(username, password, destRevision, testName, d, metadata, commitMessage);
         } else {
             final String commitMessage = formatCommitMessage(testName , srcBranch, srcRevision, destBranch, srcVersion.getMessage());
@@ -159,9 +161,9 @@ public class ProctorPromoter extends DataLoadingTimerTask {
         throw new IllegalArgumentException("No store for branch " + srcBranch);
     }
 
-    private static String formatCommitMessage(final String testName, final Environment src, final long srcRevision, final Environment dest, final String comment) {
+    private static String formatCommitMessage(final String testName, final Environment src, final String srcRevision, final Environment dest, final String comment) {
         final StringBuilder sb = new StringBuilder();
-        sb.append(String.format("Promoting %s (%s r%d) to %s", testName, src.getName(), srcRevision, dest.getName()));
+        sb.append(String.format("Promoting %s (%s r%s) to %s", testName, src.getName(), srcRevision, dest.getName()));
         if(!CharMatcher.WHITESPACE.matchesAllOf(Strings.nullToEmpty(comment))) {
             // PROW-59: Replace smart-commit commit messages when promoting tests
             final String cleanedComment = comment.replace("+review", "_review");
@@ -182,9 +184,9 @@ public class ProctorPromoter extends DataLoadingTimerTask {
 
     @Override
     public boolean load() {
-        final long trunkMatrixVersion;
-        final long qaMatrixVersion;
-        final long prodMatrixVersion;
+        final String trunkMatrixVersion;
+        final String qaMatrixVersion;
+        final String prodMatrixVersion;
         try {
             trunkMatrixVersion = trunk.getLatestVersion();
             qaMatrixVersion = qa.getLatestVersion();
@@ -196,7 +198,7 @@ public class ProctorPromoter extends DataLoadingTimerTask {
 
 
         // Compute version as "trunk=@Version,qa=@Version,production=@Version"
-        final String version = String.format("trunk=%d,qa=%d,production=%d",
+        final String version = String.format("trunk=%s,qa=%s,production=%s",
                                              trunkMatrixVersion,
                                              qaMatrixVersion,
                                              prodMatrixVersion);
@@ -257,8 +259,8 @@ public class ProctorPromoter extends DataLoadingTimerTask {
     }
 
     private final Pattern CHARM_MERGE_REVISION = Pattern.compile("^merged r([\\d]+):", Pattern.MULTILINE);
-    private long identifyEffectiveRevision(final TestDefinition branchDefinition,
-                                           final Revision branchRevision) {
+    private String identifyEffectiveRevision(final TestDefinition branchDefinition,
+                                             final Revision branchRevision) {
         if(branchDefinition == null) {
             return UNKNOWN_VERSION;
         }
@@ -267,7 +269,7 @@ public class ProctorPromoter extends DataLoadingTimerTask {
         }
         final Matcher m = CHARM_MERGE_REVISION.matcher(branchRevision.getMessage());
         if(m.find()) {
-            final long trunkRevision = Integer.parseInt(m.group(1));
+            final String trunkRevision = m.group(1);
             return trunkRevision;
         }
         return branchDefinition.getVersion();
@@ -317,7 +319,7 @@ public class ProctorPromoter extends DataLoadingTimerTask {
 
     private static List<Revision> getHistoryFromRevision(final ProctorStore src,
                                                          final String testName,
-                                                         final long srcRevision) throws StoreException {
+                                                         final String srcRevision) throws StoreException {
         return src.getHistory(testName, srcRevision, 0, 1);
     }
 
@@ -327,7 +329,7 @@ public class ProctorPromoter extends DataLoadingTimerTask {
     }
 
     // @Nullable
-    private static TestDefinition getTestDefinition(final ProctorStore store, final String testName, long version) throws StoreException {
+    private static TestDefinition getTestDefinition(final ProctorStore store, final String testName, String version) throws StoreException {
         return store.getTestDefinition(testName, version);
     }
 
@@ -350,6 +352,5 @@ public class ProctorPromoter extends DataLoadingTimerTask {
             super(message, cause);
         }
     }
-
 
 }

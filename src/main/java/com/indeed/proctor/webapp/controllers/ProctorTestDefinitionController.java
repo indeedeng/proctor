@@ -87,7 +87,7 @@ import javax.servlet.http.HttpServletRequest;
 @RequestMapping({"/definition", "/proctor/definition"})
 public class ProctorTestDefinitionController extends AbstractController {
     private static final Logger LOGGER = Logger.getLogger(ProctorTestDefinitionController.class);
-    private static final Revision UNKNOWN_VERSION = new Revision(-1, "[unknown]", new Date(0), "History unknown");
+    private static final Revision UNKNOWN_VERSION = new Revision("", "[unknown]", new Date(0), "History unknown");
 
     private static final Pattern ALPHA_NUMERIC_PATTERN = Pattern.compile("^[a-z0-9_]+$", Pattern.CASE_INSENSITIVE);
     private static final Pattern VALID_TEST_NAME_PATTERN = ALPHA_NUMERIC_PATTERN;
@@ -173,7 +173,7 @@ public class ProctorTestDefinitionController extends AbstractController {
     ) {
 
         final TestDefinition definition = new TestDefinition(
-            -1 /* version */,
+            "" /* version */,
             null /* rule */,
             TestType.USER /* testType */,
             "" /* salt */,
@@ -194,14 +194,14 @@ public class ProctorTestDefinitionController extends AbstractController {
     public String show(
         @PathVariable final String testName,
         @RequestParam(required = false) final String branch,
-        @RequestParam(required = false, defaultValue = "-1", value = "r") final long revision,
+        @RequestParam(required = false, defaultValue = "", value = "r") final String revision,
         final Model model
     ) {
         final Environment theEnvironment = determineEnvironmentFromParameter(branch);
         final ProctorStore store = determineStoreFromEnvironment(theEnvironment);
 
         final TestDefinition definition;
-        if (revision > 0) {
+        if (revision.length() > 0) {
             definition = getTestDefinition(store, testName, revision);
         } else {
             definition = getTestDefinition(store, testName);
@@ -222,7 +222,7 @@ public class ProctorTestDefinitionController extends AbstractController {
         @PathVariable String testName,
         final Model model
     ) {
-        final Environment theEnvironment = Environment.WORKING; // only allow editting of  TRUNK!
+        final Environment theEnvironment = Environment.WORKING; // only allow editing of TRUNK!
         final ProctorStore store = determineStoreFromEnvironment(theEnvironment);
 
         final TestDefinition definition = getTestDefinition(store, testName);
@@ -240,7 +240,7 @@ public class ProctorTestDefinitionController extends AbstractController {
     public View doDeletePost(
         @PathVariable final String testName,
         @RequestParam(required = false) String src,
-        @RequestParam(required = false) final long srcRevision,
+        @RequestParam(required = false) final String srcRevision,
 
         @RequestParam(required = false) final String username,
         @RequestParam(required = false) final String password,
@@ -274,7 +274,7 @@ public class ProctorTestDefinitionController extends AbstractController {
     private BackgroundJob<Boolean> createDeleteBackgroundJob(
         final String testName,
         final Environment source,
-        final long srcRevision,
+        final String srcRevision,
 
         final String username,
         final String password,
@@ -307,7 +307,7 @@ public class ProctorTestDefinitionController extends AbstractController {
                     final List<Revision> history = getTestHistory(store, testName, 1);
                     if (history.size() > 0) {
                         prevVersion = history.get(0);
-                        if (prevVersion.getRevision() != srcRevision) {
+                        if (!prevVersion.getRevision().equals(srcRevision)) {
                             throw new IllegalArgumentException("Test has been updated since r" + srcRevision + " currently at r" + prevVersion.getRevision());
                         }
                     } else {
@@ -359,9 +359,9 @@ public class ProctorTestDefinitionController extends AbstractController {
         @RequestParam(required = false) final String password,
 
         @RequestParam(required = false) final String src,
-        @RequestParam(required = false) final long srcRevision,
+        @RequestParam(required = false) final String srcRevision,
         @RequestParam(required = false) final String dest,
-        @RequestParam(required = false) final long destRevision,
+        @RequestParam(required = false) final String destRevision,
         final HttpServletRequest request,
         final Model model
     ) {
@@ -385,9 +385,9 @@ public class ProctorTestDefinitionController extends AbstractController {
                                             final String username,
                                             final String password,
                                             final Environment source,
-                                            final long srcRevision,
+                                            final String srcRevision,
                                             final Environment destination,
-                                            final long destRevision,
+                                            final String destRevision,
                                             final Map<String, String[]> requestParameterMap
     ) {
         return new BackgroundJob<Void>() {
@@ -444,7 +444,7 @@ public class ProctorTestDefinitionController extends AbstractController {
                         }
 
 
-                        log(String.format("Promoted %s from %s (r%d) to %s (r%d)", testName, source.getName(), srcRevision, destination.getName(), destRevision));
+                        log(String.format("Promoted %s from %s (r%s) to %s (r%s)", testName, source.getName(), srcRevision, destination.getName(), destRevision));
                         addUrl("/proctor/definition/" + UtilityFunctions.urlEncode(testName) + "?branch=" + destination.getName(), "view " + testName + " on " + destination.getName());
                     }
                 } catch (ProctorPromoter.TestPromotionException exp) {
@@ -495,8 +495,8 @@ public class ProctorTestDefinitionController extends AbstractController {
 
         boolean promoteTest(BackgroundJob job,
                             final String testName,
-                            final long srcRevision,
-                            final long destRevision,
+                            final String srcRevision,
+                            final String destRevision,
                             final String username,
                             final String password,
                             final Map<String, String> metadata) throws IllegalArgumentException, ProctorPromoter.TestPromotionException, StoreException.TestUpdateException;
@@ -516,8 +516,8 @@ public class ProctorTestDefinitionController extends AbstractController {
         @Override
         public boolean promoteTest(final BackgroundJob job,
                                    final String testName,
-                                   final long srcRevision,
-                                   final long destRevision,
+                                   final String srcRevision,
+                                   final String destRevision,
                                    final String username,
                                    final String password,
                                    final Map<String, String> metadata) throws IllegalArgumentException, ProctorPromoter.TestPromotionException, StoreException.TestUpdateException, StoreException.TestUpdateException {
@@ -541,7 +541,7 @@ public class ProctorTestDefinitionController extends AbstractController {
             return destination;
         }
 
-        abstract void doPromotion(BackgroundJob job, String testName, long srcRevision, long destRevision,
+        abstract void doPromotion(BackgroundJob job, String testName, String srcRevision, String destRevision,
                                   String username, String password, Map<String, String> metadata)
                 throws ProctorPromoter.TestPromotionException, StoreException;
     }
@@ -551,8 +551,8 @@ public class ProctorTestDefinitionController extends AbstractController {
         @Override
         void doPromotion(final BackgroundJob job,
                          final String testName,
-                         final long srcRevision,
-                         final long destRevision,
+                         final String srcRevision,
+                         final String destRevision,
                          final String username,
                          final String password,
                          final Map<String, String> metadata)
@@ -567,8 +567,8 @@ public class ProctorTestDefinitionController extends AbstractController {
         @Override
         void doPromotion(final BackgroundJob job,
                          final String testName,
-                         final long srcRevision,
-                         final long destRevision,
+                         final String srcRevision,
+                         final String destRevision,
                          final String username,
                          final String password,
                          final Map<String, String> metadata)
@@ -583,8 +583,8 @@ public class ProctorTestDefinitionController extends AbstractController {
         @Override
         void doPromotion(final BackgroundJob job,
                          final String testName,
-                         final long srcRevision,
-                         final long destRevision,
+                         final String srcRevision,
+                         final String destRevision,
                          final String username,
                          final String password,
                          final Map<String, String> metadata) throws ProctorPromoter.TestPromotionException, StoreException {
@@ -607,7 +607,7 @@ public class ProctorTestDefinitionController extends AbstractController {
         @RequestParam(required = false, defaultValue = "false") final boolean isCreate,
         @RequestParam(required = false) final String comment,
         @RequestParam(required = false) final String testDefinition, // testDefinition is JSON representation of test-definition
-        @RequestParam(required = false, defaultValue = "-1") final long previousRevision,
+        @RequestParam(required = false, defaultValue = "") final String previousRevision,
         final HttpServletRequest request,
         final Model model) {
 
@@ -640,7 +640,7 @@ public class ProctorTestDefinitionController extends AbstractController {
         final boolean isCreate,
         final String comment,
         final String testDefinitionJson,
-        final long previousRevision,
+        final String previousRevision,
         final Map<String, String[]> requestParameterMap) {
 
         return new BackgroundJob<Boolean>() {
@@ -651,7 +651,7 @@ public class ProctorTestDefinitionController extends AbstractController {
 
             @Override
             public Boolean call() throws Exception {
-                final Environment theEnvironment = Environment.WORKING; // only allow editting of  TRUNK!
+                final Environment theEnvironment = Environment.WORKING; // only allow editing of TRUNK!
                 final ProctorStore store = determineStoreFromEnvironment(theEnvironment);
 
                 try {
@@ -663,12 +663,12 @@ public class ProctorTestDefinitionController extends AbstractController {
 
 
                     final Revision prevVersion;
-                    if (previousRevision > 0) {
+                    if (previousRevision.length() > 0) {
                         log("(svn) getting svn history for '" + testName + "'");
                         final List<Revision> history = getTestHistory(store, testName, 1);
                         if (history.size() > 0) {
                             prevVersion = history.get(0);
-                            if (prevVersion.getRevision() != previousRevision) {
+                            if (! prevVersion.getRevision().equals(previousRevision)) {
                                 throw new IllegalArgumentException("Test has been updated since r" + previousRevision + " currently at r" + prevVersion.getRevision());
                             }
                         } else {
@@ -697,7 +697,7 @@ public class ProctorTestDefinitionController extends AbstractController {
                     log("(svn) loading existing test definition for '" + testName + "'");
                     // Getting the TestDefinition via currentTestMatrix instead of trunkStore.getTestDefinition because the test
                     final TestDefinition existingTestDefinition = trunkStore.getCurrentTestMatrix().getTestMatrixDefinition().getTests().get(testName);
-                    if (previousRevision <= 0 && existingTestDefinition != null) {
+                    if (previousRevision.length() <= 0 && existingTestDefinition != null) {
                         throw new IllegalArgumentException("Current tests exists with name : '" + testName + "'");
                     }
 
@@ -794,7 +794,7 @@ public class ProctorTestDefinitionController extends AbstractController {
         (
             @PathVariable String testName,
             @RequestParam(required = false) String src,
-            @RequestParam(required = false) long srcRevision,
+            @RequestParam(required = false) String srcRevision,
             @RequestParam(required = false) String dest,
             final HttpServletRequest request,
             final Model model
@@ -829,7 +829,7 @@ public class ProctorTestDefinitionController extends AbstractController {
                                           final TestDefinition potential) {
         final TestMatrixVersion tmv = new TestMatrixVersion();
         tmv.setAuthor("author");
-        tmv.setVersion(-1);
+        tmv.setVersion("");
         tmv.setDescription("fake matrix for validation of " + testName);
         tmv.setPublished(new Date());
 
@@ -1114,7 +1114,7 @@ public class ProctorTestDefinitionController extends AbstractController {
     }
 
     // @Nullable
-    private static TestDefinition getTestDefinition(final ProctorStore store, final String testName, final long revision) {
+    private static TestDefinition getTestDefinition(final ProctorStore store, final String testName, final String revision) {
         try {
             return store.getTestDefinition(testName, revision);
         } catch (StoreException e) {

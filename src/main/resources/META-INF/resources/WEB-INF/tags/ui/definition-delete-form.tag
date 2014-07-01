@@ -5,7 +5,7 @@
 <%@ taglib prefix="ui" tagdir="/WEB-INF/tags/ui" %>
 <%@ attribute name="testName" type="java.lang.String" description="Test Name" %>
 <%@ attribute name="src" type="java.lang.String" description="Source branch name" %>
-<%@ attribute name="srcRevision" type="java.lang.Long" description="Source revision number" %>
+<%@ attribute name="srcRevision" type="java.lang.String" description="Source revision number" %>
 <form class="js-delete-definition" action="/proctor/definition/${testName}/delete" method="POST">
     <input type="hidden" value="${src}" name="src"/>
     <input type="hidden" value="${srcRevision}" name="srcRevision"/>
