@@ -5,6 +5,7 @@ import com.google.common.io.Files;
 import com.indeed.proctor.common.model.TestMatrixVersion;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.eclipse.jgit.api.Repository;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,7 +13,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class GitProctor extends FileBasedProctorStore {
-    private static final Logger LOGGER = Logger.getLogger(SvnProctor.class);
+    private static final Logger LOGGER = Logger.getLogger(GitProctor.class);
 
     /* Storage Schema:
         ${svnPath}/
@@ -25,154 +26,27 @@ public class GitProctor extends FileBasedProctorStore {
                     metadata.json
     */
 
-    private final SVNClientManager clientManager;
-    private final SVNRepository repo;
-    private final SVNURL svnUrl;
+    private final Repository repo;
+    private final String gitUrl;
+    private final String username;
+    private final String password;
 
-    public SvnProctor(final String svnPath,
+    public GitProctor(final String gitUrl,
                       final String username,
                       final String password) throws IOException {
-        this(new SvnPersisterCoreImpl(svnPath, username, password, Files.createTempDir()));
-    }
-
-    public SvnProctor(final SvnPersisterCore core) {
-        super(core);
-        this.clientManager = core.getClientManager();
-        this.repo = core.getRepo();
-        this.svnUrl = core.getSvnUrl();
-    }
-
-    @Override
-    public List<Revision> getHistory(final String test, final int start, final int limit) throws StoreException {
-        try {
-            final long latestRevision = repo.getLatestRevision();
-            return getHistory(test, latestRevision, start, limit);
-        } catch (final SVNException e) {
-            throw new RuntimeException("Unable to get older revisions for " + test, e);
-        }
-    }
-
-    @Override
-    public List<Revision> getHistory(String test, long revision, final int start, int limit) throws StoreException {
-        try {
-            // check path before executing svn log
-            final String testPath = TEST_DEFINITIONS_DIRECTORY + "/" + test;
-            final SVNNodeKind kind = repo.checkPath(testPath, revision);
-            if(kind == SVNNodeKind.NONE) {
-                return Collections.emptyList();
-            }
-
-            final String[] targetPaths = { testPath };
-
-
-            final SVNRevision svnRevision = SVNRevision.create(revision);
-            return getSVNLogs(targetPaths, svnRevision, start, limit);
-        } catch (final SVNException e) {
-            throw new RuntimeException("Unable to get older revisions for " + test + " r" + revision, e);
-        }
-    }
-
-    @Override
-    public long getLatestVersion() throws StoreException {
-        try {
-            final String[] targetPaths = { };
-            final SVNRevision svnRevision = SVNRevision.HEAD;
-            final SVNLogClient logClient = clientManager.getLogClient();
-            final FilterableSVNLogEntryHandler handler = new FilterableSVNLogEntryHandler();
-
-            // In order to get history is "descending" order, the startRevision should be the one closer to HEAD
-            logClient.doLog(svnUrl, targetPaths, /* pegRevision */ SVNRevision.HEAD, svnRevision, SVNRevision.create(1),
-                            /* stopOnCopy */ false, /* discoverChangedPaths */ false, /* includeMergedRevisions */ false,
-                            /* limit */ 1,
-                            new String[]{SVNRevisionProperty.LOG}, handler);
-            final SVNLogEntry entry = handler.getLogEntries().size() > 0 ? handler.getLogEntries().get(0) : null;
-            return entry == null ? -1 : entry.getRevision();
-        } catch (SVNException e) {
-            throw new RuntimeException("Unable to get latest revision", e);
-        }
-    }
-
-    @Override
-    public boolean cleanUserWorkspace(String username) {
-        return getSvnCore().cleanUserWorkspace(username);
-    }
-
-    @Override
-    public List<Revision> getMatrixHistory(final int start, final int limit) throws StoreException {
-        final String[] targetPaths = { };
-        return getSVNLogs(targetPaths, SVNRevision.HEAD, start, limit);
-    }
-
-    private List<Revision> getSVNLogs(final String[] paths, final SVNRevision startRevision, final int start, final int limit) throws StoreException.ReadException {
-        try {
-            final SVNLogClient logClient = clientManager.getLogClient();
-            final FilterableSVNLogEntryHandler handler = new FilterableSVNLogEntryHandler();
-
-            // In order to get history is "descending" order, the startRevision should be the one closer to HEAD
-            logClient.doLog(svnUrl, paths, /* pegRevision */ SVNRevision.HEAD, startRevision, SVNRevision.create(1),
-                            /* stopOnCopy */ false, /* discoverChangedPaths */ false, /* includeMergedRevisions */ false,
-                            /* limit */ start + limit,
-                            new String[]{SVNRevisionProperty.LOG, SVNRevisionProperty.AUTHOR, SVNRevisionProperty.DATE}, handler);
-
-            final List<SVNLogEntry> entries = handler.getLogEntries();
-
-            final List<Revision> revisions;
-            if (entries.size() <= start) {
-                revisions = Collections.emptyList();
-            } else {
-                final int end = Math.min(start + limit, entries.size());
-
-                revisions = Lists.newArrayListWithCapacity(end - start);
-
-                for (int i = 0; i < end - start; i++) {
-                    final SVNLogEntry entry = entries.get(start + i);
-                    revisions.add(new Revision(entry.getRevision(), entry.getAuthor(), entry.getDate(), entry.getMessage()));
-                }
-            }
-            return revisions;
-        } catch (final SVNException e) {
-            throw new StoreException.ReadException("Unable to get older revisions");
-        }
-    }
-
-    @Override
-    public void verifySetup() throws StoreException {
-        try {
-            final long latestRevision = repo.getLatestRevision();
-            if(latestRevision <= 0) {
-                throw new StoreException("Found non-positive revision (" + latestRevision + ") for svn-path: " + repo.getLocation());
-            }
-        } catch (SVNException e) {
-            throw new StoreException("Failed to get latest revision for svn-path: " + repo.getLocation(), e);
-        }
-    }
-
-    @Override
-    public String toString() {
-        return core.toString();
-    }
-
-    private SvnPersisterCore getSvnCore() {
-        return (SvnPersisterCore) this.core;
+        this.gitUrl = gitUrl;
+        this.username = username;
+        this.password = password;
     }
 
     public static void main(String args[]) throws IOException {
-        final String svnpath = System.console().readLine("svn path: ");
-        final String svnuser = System.console().readLine("user: ");
+        final String gitUrl = System.console().readLine("git url: ");
+        final String gituser = System.console().readLine("user: ");
         final String password = new String(System.console().readPassword("password: "));
-        final boolean usecache = "y".equals(System.console().readLine("cache (y/n): "));
-        final int num_revisions = Integer.parseInt(System.console().readLine("number of histories: "));
-
+        
         final File tempDir = Files.createTempDir();
         try {
-            final SvnPersisterCoreImpl core = new SvnPersisterCoreImpl(svnpath, svnuser, password, tempDir);
-            final SvnPersisterCore core1;
-            if(usecache) {
-                core1 = new CachedSvnPersisterCore(core);
-            } else {
-                core1 = core;
-            }
-            final SvnProctor client = new SvnProctor(core1);
+            final GitProctor client = new SvnProctor(gitUrl, gituser, password);
 
             System.out.println("Running load matrix for last " + num_revisions + " revisions");
             final long start = System.currentTimeMillis();
@@ -190,4 +64,3 @@ public class GitProctor extends FileBasedProctorStore {
             FileUtils.deleteDirectory(tempDir);
         }
     }
-}
