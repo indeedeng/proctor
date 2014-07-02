@@ -10,9 +10,17 @@ import org.apache.log4j.Logger;
 import org.codehaus.jackson.JsonProcessingException;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.ObjectLoader;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevTree;
+import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
+import org.eclipse.jgit.treewalk.TreeWalk;
+import org.eclipse.jgit.treewalk.filter.PathFilter;
 
 public class GitPersisterCoreImpl implements GitPersisterCore, Closeable {
     private static final Logger LOGGER = Logger.getLogger(GitPersisterCoreImpl.class);
@@ -66,7 +74,35 @@ public class GitPersisterCoreImpl implements GitPersisterCore, Closeable {
                 System.out.println(ref.getName());
                 //request.setAttribute("bob", ref.getName());//doesn't work
             }
-        } catch (GitAPIException e) {
+
+            // try and read a file from github
+            // find the HEAD
+            ObjectId lastCommitId = repo.resolve(Constants.HEAD);
+
+            // a RevWalk allows to walk over commits based on some filtering that is defined
+            RevWalk revWalk = new RevWalk(repo);
+            RevCommit commit = revWalk.parseCommit(lastCommitId);
+            // and using commit's tree find the path
+            RevTree tree = commit.getTree();
+            System.out.println("Having tree: " + tree);
+
+            // now try to find a specific file
+            TreeWalk treeWalk = new TreeWalk(repo);
+            treeWalk.addTree(tree);
+            treeWalk.setRecursive(true);
+            treeWalk.setFilter(PathFilter.create("README.md"));
+            if (!treeWalk.next()) {
+                throw new IllegalStateException("Did not find expected file 'README.md'");
+            }
+
+            ObjectId objectId = treeWalk.getObjectId(0);
+            ObjectLoader loader = repo.open(objectId);
+
+            // and then one can the loader to read the file
+            loader.copyTo(System.out);
+
+            repo.close();
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -147,6 +183,7 @@ public class GitPersisterCoreImpl implements GitPersisterCore, Closeable {
                 rcsClient.add(null);
                 git.commit().setMessage(comment).call();
                 git.push().setCredentialsProvider(user).call();
+
             }
         } catch (Exception e) {
             System.out.println("error while messing with rcsClient " + e);
