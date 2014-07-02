@@ -39,6 +39,7 @@ public class GitProctor extends FileBasedProctorStore {
         super(core);
         this.repo = core.getRepo();
         this.gitUrl = core.getGitUrl();
+        System.out.println("hi - GitProctor constructor\n\n\n\n");
     }
     /*
     public static void main(String args[]) throws IOException {
@@ -85,16 +86,16 @@ public class GitProctor extends FileBasedProctorStore {
 
     @Override
     public List<Revision> getMatrixHistory(int start, int limit) throws StoreException {
-        return null;
+        return Collections.emptyList();
     }
 
     @Override
     public List<Revision> getHistory(String test, int start, int limit) throws StoreException {
-        return null;
+        return Collections.emptyList();
     }
 
     @Override
     public List<Revision> getHistory(String test, long revision, int start, int limit) throws StoreException {
-        return null;
+        return Collections.emptyList();
     }
 }

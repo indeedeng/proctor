@@ -207,6 +207,7 @@ public abstract class FileBasedProctorStore implements ProctorStore {
 
     @Override
     public final void addTestDefinition(final String username, final String password, final String testName, final TestDefinition testDefinition, final Map<String, String> metadata, final String comment) throws StoreException.TestUpdateException {
+        System.out.println("addTestDefinition start\n");
         LOGGER.info(String.format("Add Test Definition: %s %s", username, testName));
         core.doInWorkingDirectory(username, password, comment, 0, new ProctorUpdater() {
             @Override
