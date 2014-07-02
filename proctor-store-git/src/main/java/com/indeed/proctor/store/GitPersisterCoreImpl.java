@@ -28,15 +28,12 @@ public class GitPersisterCoreImpl implements GitPersisterCore, Closeable {
     private final String gitUrl;
     private final Repository repo;
     private final File tempDir;
-/*
-    public GitPersisterCoreImpl(final String gitUrl, final String username, final String password, final File tempDir) {
-        this(gitUrl, username, password, tempDir);
-    }
-*/
+
     /**
      * @param gitUrl
      * @param username
      * @param password
+     * @param tempDir
      * @param
      */
     public GitPersisterCoreImpl(final String gitUrl, final String username, final String password, final File tempDir) {
@@ -72,10 +69,11 @@ public class GitPersisterCoreImpl implements GitPersisterCore, Closeable {
             System.out.println(git.branchList().call());
             for (Ref ref : git.branchList().call()) {
                 System.out.println(ref.getName());
-                //request.setAttribute("bob", ref.getName());//doesn't work
             }
 
-            // try and read a file from github
+            /***********
+             * try and read a file from github
+             ***********/
             // find the HEAD
             ObjectId lastCommitId = repo.resolve(Constants.HEAD);
 
@@ -120,14 +118,14 @@ public class GitPersisterCoreImpl implements GitPersisterCore, Closeable {
 
     @Override
     public boolean cleanUserWorkspace(String username) {
-        return false;
+        return false; // TODO
     }
 
     @Override
     public <C> C getFileContents(Class<C> c, String[] path, C defaultValue, long revision)
             throws StoreException.ReadException, JsonProcessingException {
         System.out.println("\nCall to getFileContents which will cause a nullpointerex\n");
-        return null;
+        return null; // TODO
     }
 
     static class GitRcsClient implements FileBasedProctorStore.RcsClient {
@@ -153,13 +151,13 @@ public class GitPersisterCoreImpl implements GitPersisterCore, Closeable {
             FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException {
         System.out.println("tempDir name: " + tempDir.getName());
         System.out.println("tempDir path: " + tempDir.getAbsolutePath());
-        System.out.println(username);
-        System.out.println(comment);
-        String localPath = "/Users/jcheng/Documents/git/abcabctest";
-        String gitURI = "http://github.wvrgroup.internal/jcheng/git-proctor-test-definitions.git";
+        System.out.println("username: " + username);
+        System.out.println("comment: " + comment);
+        String localPath = "/Users/jcheng/Documents/git/abcabctest"; // TODO shouldn't be hardcoded here
+        String gitURI = "http://github.wvrgroup.internal/jcheng/git-proctor-test-definitions.git"; //TODO shouldn't be hardcoded here
 
         UsernamePasswordCredentialsProvider user = new UsernamePasswordCredentialsProvider(username, password);
-        Git git = null;
+        Git git = null; // TODO fix try catch structure here
         try {
             git = Git.open(new File(localPath));
             System.out.println(git.branchList().call());
@@ -175,11 +173,10 @@ public class GitPersisterCoreImpl implements GitPersisterCore, Closeable {
             final FileBasedProctorStore.RcsClient rcsClient = new GitPersisterCoreImpl.GitRcsClient(git);
             System.out.println(git.getRepository().getDirectory().getAbsolutePath());
             System.out.println(git.getRepository().getDirectory().getName());
-            System.out.println(git.getRepository().getDirectory().toString());
             final boolean thingsChanged = updater.doInWorkingDirectory(rcsClient, new File(localPath));
 
             if (thingsChanged) {
-                System.out.println("things changed! now you gotta commit and push stuff"); //TODO
+                System.out.println("things changed! now on to committing and pushing all files"); //TODO
                 rcsClient.add(null);
                 git.commit().setMessage(comment).call();
                 git.push().setCredentialsProvider(user).call();
@@ -199,9 +196,6 @@ public class GitPersisterCoreImpl implements GitPersisterCore, Closeable {
             git = clone.call();
             */
 
-
-
-
     }
 
     @Override
@@ -213,11 +207,11 @@ public class GitPersisterCoreImpl implements GitPersisterCore, Closeable {
                 "dummyAuthor",
                 0,
                 "dummydesccommitmessage"
-        );
+        ); // TODO
     }
 
     @Override
     public void close() throws IOException {
-
+        // TODO
     }
 }
