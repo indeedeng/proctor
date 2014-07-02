@@ -28,10 +28,9 @@ public abstract class AbstractProctorMojo extends AbstractMojo {
      * traverse through main specification folder to find large proctor specifications (determined if they have the test
      * attribute) or individual test specifications (if they do not have this attribute).
      */
-    private void searchDirectory(File dir, String packageNamePrefix) throws CodeGenException {
+    private void RecursiveSpecificationsFinder(File dir, String packageNamePrefix) throws CodeGenException {
         if (dir.equals(null)) {
-            getLog().error("searchDirectory called with null pointer");
-            return;
+            throw new CodeGenException("RecursiveSpecificationsFinder called with null pointer");
         }
         final File[] files = dir.listFiles();
         if (files == null) {
@@ -39,7 +38,7 @@ public abstract class AbstractProctorMojo extends AbstractMojo {
         }
         for(File entry : files) {
             if (entry.isDirectory()) {
-                searchDirectory(entry, (packageNamePrefix == null) ? entry.getName() : packageNamePrefix + "/" + entry.getName());
+                RecursiveSpecificationsFinder(entry, (packageNamePrefix == null) ? entry.getName() : packageNamePrefix + "/" + entry.getName());
             } else {
                 if (entry.getName().endsWith(".json")) {
                     final JsonNode fullTest;
@@ -85,7 +84,7 @@ public abstract class AbstractProctorMojo extends AbstractMojo {
             return;
         }
         try {
-            searchDirectory(topDirectory, null);
+            RecursiveSpecificationsFinder(topDirectory, null);
         } catch (final CodeGenException ex) {
             throw new MojoExecutionException("Unable to generate code", ex);
         }
