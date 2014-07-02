@@ -28,16 +28,11 @@ public class GitProctor extends FileBasedProctorStore {
 
     private final Repository repo;
     private final String gitUrl;
-    private final String username;
-    private final String password;
 
-    public GitProctor(final String gitUrl,
+    public GitProctor(final String gitPath,
                       final String username,
                       final String password) throws IOException {
-        this.gitUrl = gitUrl;
-        this.username = username;
-        this.password = password;
-        this(new GitPersisterCoreImpl(gitUrl, username, password, Files.createTempDir()));
+        this(new GitPersisterCoreImpl(gitPath, username, password, Files.createTempDir()));
     }
 
     public GitProctor(final GitPersisterCore core) {
@@ -45,7 +40,7 @@ public class GitProctor extends FileBasedProctorStore {
         this.repo = core.getRepo();
         this.gitUrl = core.getGitUrl();
     }
-
+    /*
     public static void main(String args[]) throws IOException {
         final String gitUrl = System.console().readLine("git url: ");
         final String gituser = System.console().readLine("user: ");
@@ -71,6 +66,7 @@ public class GitProctor extends FileBasedProctorStore {
             FileUtils.deleteDirectory(tempDir);
         }
     }
+    */
 
     @Override
     public void verifySetup() throws StoreException {
