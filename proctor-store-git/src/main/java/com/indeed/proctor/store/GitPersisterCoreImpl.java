@@ -140,10 +140,13 @@ public class GitPersisterCoreImpl implements GitPersisterCore, Closeable {
             System.out.println(git.getRepository().getDirectory().getAbsolutePath());
             System.out.println(git.getRepository().getDirectory().getName());
             System.out.println(git.getRepository().getDirectory().toString());
-            final boolean thingsChanged = updater.doInWorkingDirectory(rcsClient, git.getRepository().getDirectory());
+            final boolean thingsChanged = updater.doInWorkingDirectory(rcsClient, new File(localPath));
 
             if (thingsChanged) {
                 System.out.println("things changed! now you gotta commit and push stuff"); //TODO
+                rcsClient.add(null);
+                git.commit().setMessage(comment).call();
+                git.push().setCredentialsProvider(user).call();
             }
         } catch (Exception e) {
             System.out.println("error while messing with rcsClient " + e);
