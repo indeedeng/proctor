@@ -16,7 +16,7 @@ public class GitProctor extends FileBasedProctorStore {
     private static final Logger LOGGER = Logger.getLogger(GitProctor.class);
 
     /* Storage Schema:
-        ${svnPath}/
+        ${gitPath}/
             test-definitions/
                 test-name-one/
                     definition.json
@@ -39,8 +39,8 @@ public class GitProctor extends FileBasedProctorStore {
         super(core);
         this.repo = core.getRepo();
         this.gitUrl = core.getGitUrl();
-        System.out.println("hi - GitProctor constructor\n\n\n\n");
     }
+    
     /*
     public static void main(String args[]) throws IOException {
         final String gitUrl = System.console().readLine("git url: ");
@@ -71,31 +71,31 @@ public class GitProctor extends FileBasedProctorStore {
 
     @Override
     public void verifySetup() throws StoreException {
-
+        // TODO
     }
 
     @Override
     public boolean cleanUserWorkspace(String username) {
-        return false;
+        return false; // TODO
     }
 
     @Override
     public long getLatestVersion() throws StoreException {
-        return 0;
+        return 0; // TODO
     }
 
     @Override
     public List<Revision> getMatrixHistory(int start, int limit) throws StoreException {
-        return Collections.emptyList();
+        return Collections.emptyList(); // TODO
     }
 
     @Override
     public List<Revision> getHistory(String test, int start, int limit) throws StoreException {
-        return Collections.emptyList();
+        return Collections.emptyList(); // TODO
     }
 
     @Override
     public List<Revision> getHistory(String test, long revision, int start, int limit) throws StoreException {
-        return Collections.emptyList();
+        return Collections.emptyList(); // TODO
     }
 }
