@@ -2,14 +2,20 @@ package com.indeed.proctor.store;
 
 import com.google.common.collect.Lists;
 import com.google.common.io.Files;
-import com.indeed.proctor.common.model.TestMatrixVersion;
-import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
-import org.eclipse.jgit.lib.Repository;
 
-import java.io.File;
+import org.apache.log4j.Logger;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.LogCommand;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.errors.AmbiguousObjectException;
+import org.eclipse.jgit.errors.IncorrectObjectTypeException;
+import org.eclipse.jgit.errors.MissingObjectException;
+import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.revwalk.RevCommit;
+
 import java.io.IOException;
-import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 public class GitProctor extends FileBasedProctorStore {
@@ -26,21 +32,19 @@ public class GitProctor extends FileBasedProctorStore {
                     metadata.json
     */
 
-    private final Repository repo;
-    private final String gitUrl;
+    private final Git git;
 
     public GitProctor(final String gitPath,
                       final String username,
                       final String password) throws IOException {
-        this(new GitPersisterCoreImpl(gitPath, username, password, Files.createTempDir()));
+        this(new GitProctorCore(gitPath, username, password, Files.createTempDir()));
     }
 
-    public GitProctor(final GitPersisterCore core) {
+    public GitProctor(final GitProctorCore core) {
         super(core);
-        this.repo = core.getRepo();
-        this.gitUrl = core.getGitUrl();
+        this.git = core.getGit();
     }
-    
+
     /*
     public static void main(String args[]) throws IOException {
         final String gitUrl = System.console().readLine("git url: ");
@@ -71,31 +75,112 @@ public class GitProctor extends FileBasedProctorStore {
 
     @Override
     public void verifySetup() throws StoreException {
-        // TODO
+        final String refName = getGitCore().getRefName();
+        try {
+            final ObjectId branchHead = git.getRepository().resolve(refName);
+            if (branchHead == null) {
+                throw new StoreException("git repository couldn't resolve " + refName);
+            }
+        } catch (IncorrectObjectTypeException e) {
+            throw new StoreException("Could get resolve " + refName);
+        } catch (AmbiguousObjectException e) {
+            throw new StoreException("Could get resolve " + refName);
+        } catch (IOException e) {
+            throw new StoreException("Could get resolve " + refName);
+        }
+    }
+
+    protected GitProctorCore getGitCore() {
+        return (GitProctorCore) core;
     }
 
     @Override
     public boolean cleanUserWorkspace(String username) {
-        return false; // TODO
+        System.out.println("can't cleanUserWorkspace - not implemented");
+        throw new UnsupportedOperationException("Not implemented"); //TODO
+    }
+
+    // TODO check this works as intended
+    @Override
+    public String getLatestVersion() throws StoreException {
+        System.out.println("getLatestVersion start");
+        try {
+            final Ref branch = git.getRepository().getRef(getGitCore().getRefName());
+            // final RevWalk walk = new RevWalk(git.getRepository());
+            // final RevCommit headCommit = walk.parseCommit(branch.getObjectId());
+            System.out.println("branch.getObjectId().name - " + branch.getObjectId().name());
+            return branch.getObjectId().name();
+        } catch (IOException e) {
+            throw new StoreException(e);
+        }
     }
 
     @Override
-    public long getLatestVersion() throws StoreException {
-        return 0; // TODO
+    public List<Revision> getMatrixHistory(final int start,
+                                                   final int limit) throws StoreException {
+        final LogCommand logCommand;
+        try {
+            final ObjectId branchHead = git.getRepository().resolve(getGitCore().getRefName());
+            logCommand = git.log()
+                .add(branchHead)
+                .setSkip(start)
+                .setMaxCount(limit);
+            return getHistoryFromLogCommand(logCommand);
+        } catch (MissingObjectException e) {
+            throw new StoreException("Could not get history for starting at " + getGitCore().getRefName(), e);
+        } catch (IncorrectObjectTypeException e) {
+            throw new StoreException("Could not get history for starting at " + getGitCore().getRefName(), e);
+        } catch (AmbiguousObjectException e) {
+            throw new StoreException("Could not get history for starting at " + getGitCore().getRefName(), e);
+        } catch (IOException e) {
+            throw new StoreException("Could not get history for starting at " + getGitCore().getRefName(), e);
+        }
     }
 
     @Override
-    public List<Revision> getMatrixHistory(int start, int limit) throws StoreException {
-        return Collections.emptyList(); // TODO
+    public List<Revision> getHistory(final String test,
+                                             final int start,
+                                             final int limit) throws StoreException {
+        return getHistory(test, getLatestVersion(), start, limit);
     }
 
     @Override
-    public List<Revision> getHistory(String test, int start, int limit) throws StoreException {
-        return Collections.emptyList(); // TODO
+    public List<Revision> getHistory(final String test,
+                                             final String revision,
+                                             final int start,
+                                             final int limit) throws StoreException {
+        try {
+            final ObjectId commitId = ObjectId.fromString(revision);
+            System.out.println("commitId\n" + commitId);
+            final LogCommand logCommand = git.log()
+                // TODO: create path to definition.json file, sanitize test name for invalid / relative characters
+                .addPath("matrices/test-definitions/" + test + "/definition.json")
+                .add(commitId)
+                .setSkip(start)
+                .setMaxCount(limit);
+            return getHistoryFromLogCommand(logCommand);
+
+        } catch (IOException e) {
+            throw new StoreException("Could not get history for " + test + " starting at " + getGitCore().getRefName(), e);
+        }
     }
 
-    @Override
-    public List<Revision> getHistory(String test, long revision, int start, int limit) throws StoreException {
-        return Collections.emptyList(); // TODO
+    private List<Revision> getHistoryFromLogCommand(final LogCommand command) throws StoreException {
+        final List<Revision> versions = Lists.newArrayList();
+        final Iterable<RevCommit> commits;
+        try {
+            commits = command.call();
+        } catch (GitAPIException e) {
+            throw new StoreException("Could not get history", e);
+        }
+        for( RevCommit commit : commits) {
+            versions.add(new Revision(
+                commit.getName(),
+                commit.getAuthorIdent().toExternalString(),
+                new Date(commit.getCommitTime()),
+                commit.getFullMessage()
+            ));
+        }
+        return versions;
     }
 }

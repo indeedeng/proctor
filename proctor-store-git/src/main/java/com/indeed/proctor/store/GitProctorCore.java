@@ -1,15 +1,15 @@
 package com.indeed.proctor.store;
 
-import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.JsonProcessingException;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectLoader;
@@ -20,11 +20,19 @@ import org.eclipse.jgit.revwalk.RevTree;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.jgit.treewalk.TreeWalk;
+import org.eclipse.jgit.treewalk.filter.AndTreeFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
+import org.eclipse.jgit.treewalk.filter.PathSuffixFilter;
 
-public class GitPersisterCoreImpl implements GitPersisterCore, Closeable {
-    private static final Logger LOGGER = Logger.getLogger(GitPersisterCoreImpl.class);
+import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
+import com.indeed.proctor.common.Serializers;
 
+public class GitProctorCore implements FileBasedPersisterCore {
+    private static final Logger LOGGER = Logger.getLogger(GitProctorCore.class);
+    private static final String DIRECTORY_IDENTIFIER = ".git";
+
+    private Git git; //TODO should be final
     private final String gitUrl;
     private final Repository repo;
     private final File tempDir;
@@ -36,17 +44,18 @@ public class GitPersisterCoreImpl implements GitPersisterCore, Closeable {
      * @param tempDir
      * @param
      */
-    public GitPersisterCoreImpl(final String gitUrl, final String username, final String password, final File tempDir) {
+    public GitProctorCore(final String gitUrl, final String username, final String password, final File tempDir) {
         /*
          * Eventually, make a temp dir, clone the github repo, then delete temp dir when done
          */
         String localPath = "/Users/jcheng/Documents/git/abcabctest"; // change to tempDir
+        //File localPath = tempDir;
         //this.gitUrl = gitUrl;
         this.tempDir = tempDir;
         this.gitUrl = "http://github.wvrgroup.internal/jcheng/git-proctor-test-definitions.git";
 
         UsernamePasswordCredentialsProvider user = new UsernamePasswordCredentialsProvider(username, password);
-        Git git = null;
+        //Git git = null;
         try {
             git = Git.open(new File(localPath));
         } catch (IOException e) {
@@ -107,25 +116,49 @@ public class GitPersisterCoreImpl implements GitPersisterCore, Closeable {
     }
 
     @Override
-    public Repository getRepo() {
-        return repo;
+    public <C> C getFileContents(final Class<C> c,
+                                 final java.lang.String[] path,
+                                 final C defaultValue,
+                                 final String revision) throws StoreException.ReadException, JsonProcessingException {
+        try {
+            if (!ObjectId.isId(revision)) {
+                throw new StoreException.ReadException("Malformed id " + revision);
+            }
+            final ObjectId blobOrCommitId = ObjectId.fromString(revision);
+
+            final ObjectLoader loader = git.getRepository().open(blobOrCommitId);
+
+            if (loader.getType() == Constants.OBJ_COMMIT) {
+                // look up the file at this revision
+                final RevCommit commit = RevCommit.parse(loader.getCachedBytes());
+
+                final TreeWalk treeWalk2 = new TreeWalk(git.getRepository());
+                treeWalk2.addTree(commit.getTree());
+                treeWalk2.setRecursive(true);
+                final String joinedPath = "matrices" + "/" + Joiner.on("/").join(path);
+                System.out.println("getFileContents joinedPath var - " + joinedPath);
+                treeWalk2.setFilter(PathFilter.create(joinedPath));
+
+                if (!treeWalk2.next()) {
+                    throw new StoreException.ReadException("Did not find expected file '" + joinedPath + "'");
+                }
+                final ObjectId blobId = treeWalk2.getObjectId(0);
+                return getFileContents(c, blobId);
+            } else if (loader.getType() == Constants.OBJ_BLOB) {
+                return getFileContents(c, blobOrCommitId);
+            } else {
+                throw new StoreException.ReadException("Invalid Object Type " + loader.getType() + " for id " + revision);
+            }
+        } catch (IOException e) {
+            throw new StoreException.ReadException(e);
+        }
     }
 
-    @Override
-    public String getGitUrl() {
-        return gitUrl;
-    }
-
-    @Override
-    public boolean cleanUserWorkspace(String username) {
-        return false; // TODO
-    }
-
-    @Override
-    public <C> C getFileContents(Class<C> c, String[] path, C defaultValue, long revision)
-            throws StoreException.ReadException, JsonProcessingException {
-        System.out.println("\nCall to getFileContents which will cause a nullpointerex\n");
-        return null; // TODO
+    private <C> C getFileContents(final Class<C> c,
+                                  final ObjectId blobId) throws IOException {
+        ObjectLoader loader = git.getRepository().open(blobId);
+        final ObjectMapper mapper = Serializers.lenient();
+        return mapper.readValue(loader.getBytes(), c);
     }
 
     static class GitRcsClient implements FileBasedProctorStore.RcsClient {
@@ -147,7 +180,7 @@ public class GitPersisterCoreImpl implements GitPersisterCore, Closeable {
     }
 
     @Override
-    public void doInWorkingDirectory(String username, String password, String comment, long previousVersion,
+    public void doInWorkingDirectory(String username, String password, String comment, String previousVersion,
             FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException {
         System.out.println("tempDir name: " + tempDir.getName());
         System.out.println("tempDir path: " + tempDir.getAbsolutePath());
@@ -163,14 +196,13 @@ public class GitPersisterCoreImpl implements GitPersisterCore, Closeable {
             System.out.println(git.branchList().call());
             for (Ref ref : git.branchList().call()) {
                 System.out.println(ref.getName());
-                //request.setAttribute("bob", ref.getName());//doesn't work
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
 
         try {
-            final FileBasedProctorStore.RcsClient rcsClient = new GitPersisterCoreImpl.GitRcsClient(git);
+            final FileBasedProctorStore.RcsClient rcsClient = new GitProctorCore.GitRcsClient(git);
             System.out.println(git.getRepository().getDirectory().getAbsolutePath());
             System.out.println(git.getRepository().getDirectory().getName());
             final boolean thingsChanged = updater.doInWorkingDirectory(rcsClient, new File(localPath));
@@ -197,7 +229,7 @@ public class GitPersisterCoreImpl implements GitPersisterCore, Closeable {
             */
 
     }
-
+/*
     @Override
     public FileBasedProctorStore.TestVersionResult determineVersions(long fetchRevision)
             throws StoreException.ReadException {
@@ -209,9 +241,75 @@ public class GitPersisterCoreImpl implements GitPersisterCore, Closeable {
                 "dummydesccommitmessage"
         ); // TODO
     }
+*/
+
+    @Override
+    public TestVersionResult determineVersions(final String fetchRevision) throws StoreException.ReadException {
+        try {
+            System.out.println("determineVersions start");
+            final RevWalk walk = new RevWalk(git.getRepository());
+            final ObjectId commitId = ObjectId.fromString(fetchRevision);
+            final RevCommit headTree = walk.parseCommit(commitId);
+            final RevTree tree = headTree.getTree();
+            System.out.println("Having tree: " + tree);
+
+
+            // now use a TreeWalk to iterate over all files in the Tree recursively
+            // you can set Filters to narrow down the results if needed
+            TreeWalk treeWalk = new TreeWalk(git.getRepository());
+            treeWalk.addTree(tree);
+            treeWalk.setFilter(AndTreeFilter
+                    .create(PathFilter.create("test-definitions"), PathSuffixFilter.create("definition.json")));
+            treeWalk.setRecursive(true);
+
+            final List<TestVersionResult.Test> tests = Lists.newArrayList();
+            while (treeWalk.next()) {
+                final ObjectId id = treeWalk.getObjectId(0);
+                // final RevTree revTree = walk.lookupTree(id);
+
+                final String path = treeWalk.getPathString();
+                System.out.println("determineVersions path var - " + path);
+                final String[] pieces = path.split("/");
+                final String testname = pieces[pieces.length - 2]; // tree / parent directory name
+                System.out.println("determineVersions testname var - " + testname);
+
+                // testname, blobid pair
+                // note this is the blobid hash - not a commit hash
+                // RevTree.id and RevBlob.id
+                tests.add(new TestVersionResult.Test(testname, id.name()));
+            }
+
+            walk.dispose();
+            return new TestVersionResult(
+                tests,
+                new Date(headTree.getCommitTime()),
+                headTree.getAuthorIdent().toExternalString(),
+                headTree.toObjectId().getName(),
+                headTree.getFullMessage()
+            );
+        } catch (IOException e) {
+            throw new StoreException.ReadException(e);
+        }
+    }
+
+    Git getGit() {
+        return git;
+    }
+
+    String getRefName() {
+        return Constants.HEAD;
+        //return refName;
+    }
 
     @Override
     public void close() throws IOException {
-        // TODO
+        // Is this ThreadSafe ?
+        git.getRepository().close();
+    }
+
+
+    @Override
+    public String getAddTestRevision() {
+        return ObjectId.zeroId().name();
     }
 }
