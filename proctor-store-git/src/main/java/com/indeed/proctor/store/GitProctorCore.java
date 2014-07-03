@@ -15,9 +15,11 @@ import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectLoader;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.lib.TextProgressMonitor;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevTree;
 import org.eclipse.jgit.revwalk.RevWalk;
+import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.AndTreeFilter;
@@ -34,7 +36,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
 
     private Git git; //TODO should be final
     private final String gitUrl;
-    private final Repository repo;
+    private Repository repo; //TODO should be final
     private final File tempDir;
 
     /**
@@ -48,14 +50,42 @@ public class GitProctorCore implements FileBasedPersisterCore {
         /*
          * Eventually, make a temp dir, clone the github repo, then delete temp dir when done
          */
-        String localPath = "/Users/jcheng/Documents/git/abcabctest"; // change to tempDir
-        //File localPath = tempDir;
-        //this.gitUrl = gitUrl;
+        //String localPath = "/Users/jcheng/Documents/git/abcabctest"; // change to tempDir
+        File localPath = tempDir;
+        this.gitUrl = gitUrl;
         this.tempDir = tempDir;
-        this.gitUrl = "http://github.wvrgroup.internal/jcheng/git-proctor-test-definitions.git";
+        //this.gitUrl = "http://github.wvrgroup.internal/jcheng/git-proctor-test-definitions.git";
 
         UsernamePasswordCredentialsProvider user = new UsernamePasswordCredentialsProvider(username, password);
+
+        try {
+            // then clone
+            System.out.println("Cloning from " + gitUrl + " to " + localPath);
+            git = Git.cloneRepository()
+                    .setURI(gitUrl)
+                    .setDirectory(localPath)
+                    .setProgressMonitor(new TextProgressMonitor())
+                    .setCredentialsProvider(user)
+                    .call();
+
+            git.fetch()
+                    .setProgressMonitor(new TextProgressMonitor())
+                    .setCredentialsProvider(user)
+                    .call();
+
+            // now open the created repository
+            FileRepositoryBuilder builder = new FileRepositoryBuilder();
+            repo = builder.setGitDir(new File(localPath, ".git"))
+                    .readEnvironment() // scan environment GIT_* variables
+                    .findGitDir() // scan up the file system tree
+                    .build();
+        } catch (Exception e) {
+            System.out.println("error while cloning/opening repo");
+            e.printStackTrace();
+        }
+
         //Git git = null;
+            /*
         try {
             git = Git.open(new File(localPath));
         } catch (IOException e) {
@@ -63,16 +93,8 @@ public class GitProctorCore implements FileBasedPersisterCore {
             System.out.println("Error when opening git\n\n");
             e.printStackTrace();
         }
-        this.repo = git.getRepository();
-        // CLONING A GITHUB REPO
-        /*
-        CloneCommand clone = git.cloneRepository();
-        clone.setBare(false);
-        clone.setCloneAllBranches(true);
-        clone.setDirectory(new File(localPath)).setURI(gitUrl);
-        clone.setCredentialsProvider(user);
-        git = clone.call();
         */
+        //this.repo = git.getRepository();
 
         try {
             System.out.println(git.branchList().call());
@@ -85,7 +107,8 @@ public class GitProctorCore implements FileBasedPersisterCore {
              ***********/
             // find the HEAD
             ObjectId lastCommitId = repo.resolve(Constants.HEAD);
-
+            System.out.println("lastCommitId: " + lastCommitId);
+            System.out.println("lastCommitId toString(): " + lastCommitId.toString());
             // a RevWalk allows to walk over commits based on some filtering that is defined
             RevWalk revWalk = new RevWalk(repo);
             RevCommit commit = revWalk.parseCommit(lastCommitId);
@@ -117,9 +140,9 @@ public class GitProctorCore implements FileBasedPersisterCore {
 
     @Override
     public <C> C getFileContents(final Class<C> c,
-                                 final java.lang.String[] path,
-                                 final C defaultValue,
-                                 final String revision) throws StoreException.ReadException, JsonProcessingException {
+            final java.lang.String[] path,
+            final C defaultValue,
+            final String revision) throws StoreException.ReadException, JsonProcessingException {
         try {
             if (!ObjectId.isId(revision)) {
                 throw new StoreException.ReadException("Malformed id " + revision);
@@ -135,7 +158,8 @@ public class GitProctorCore implements FileBasedPersisterCore {
                 final TreeWalk treeWalk2 = new TreeWalk(git.getRepository());
                 treeWalk2.addTree(commit.getTree());
                 treeWalk2.setRecursive(true);
-                final String joinedPath = "matrices" + "/" + Joiner.on("/").join(path);
+                //final String joinedPath = "matrices" + "/" + Joiner.on("/").join(path);
+                final String joinedPath = Joiner.on("/").join(path);
                 System.out.println("getFileContents joinedPath var - " + joinedPath);
                 treeWalk2.setFilter(PathFilter.create(joinedPath));
 
@@ -155,7 +179,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
     }
 
     private <C> C getFileContents(final Class<C> c,
-                                  final ObjectId blobId) throws IOException {
+            final ObjectId blobId) throws IOException {
         ObjectLoader loader = git.getRepository().open(blobId);
         final ObjectMapper mapper = Serializers.lenient();
         return mapper.readValue(loader.getBytes(), c);
@@ -182,30 +206,19 @@ public class GitProctorCore implements FileBasedPersisterCore {
     @Override
     public void doInWorkingDirectory(String username, String password, String comment, String previousVersion,
             FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException {
+
         System.out.println("tempDir name: " + tempDir.getName());
         System.out.println("tempDir path: " + tempDir.getAbsolutePath());
         System.out.println("username: " + username);
         System.out.println("comment: " + comment);
-        String localPath = "/Users/jcheng/Documents/git/abcabctest"; // TODO shouldn't be hardcoded here
-        String gitURI = "http://github.wvrgroup.internal/jcheng/git-proctor-test-definitions.git"; //TODO shouldn't be hardcoded here
 
         UsernamePasswordCredentialsProvider user = new UsernamePasswordCredentialsProvider(username, password);
-        Git git = null; // TODO fix try catch structure here
-        try {
-            git = Git.open(new File(localPath));
-            System.out.println(git.branchList().call());
-            for (Ref ref : git.branchList().call()) {
-                System.out.println(ref.getName());
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
 
         try {
             final FileBasedProctorStore.RcsClient rcsClient = new GitProctorCore.GitRcsClient(git);
             System.out.println(git.getRepository().getDirectory().getAbsolutePath());
             System.out.println(git.getRepository().getDirectory().getName());
-            final boolean thingsChanged = updater.doInWorkingDirectory(rcsClient, new File(localPath));
+            final boolean thingsChanged = updater.doInWorkingDirectory(rcsClient, tempDir);
 
             if (thingsChanged) {
                 System.out.println("things changed! now on to committing and pushing all files"); //TODO
@@ -217,31 +230,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
         } catch (Exception e) {
             System.out.println("error while messing with rcsClient " + e);
         }
-
-        // CLONING A GITHUB REPO
-            /*
-            CloneCommand clone = git.cloneRepository();
-            clone.setBare(false);
-            clone.setCloneAllBranches(true);
-            clone.setDirectory(new File(localPath)).setURI(gitURI);
-            clone.setCredentialsProvider(user);
-            git = clone.call();
-            */
-
     }
-/*
-    @Override
-    public FileBasedProctorStore.TestVersionResult determineVersions(long fetchRevision)
-            throws StoreException.ReadException {
-        return new FileBasedProctorStore.TestVersionResult(
-                Collections.<FileBasedProctorStore.TestVersionResult.Test>emptyList(),
-                new Date(),
-                "dummyAuthor",
-                0,
-                "dummydesccommitmessage"
-        ); // TODO
-    }
-*/
 
     @Override
     public TestVersionResult determineVersions(final String fetchRevision) throws StoreException.ReadException {
@@ -281,11 +270,11 @@ public class GitProctorCore implements FileBasedPersisterCore {
 
             walk.dispose();
             return new TestVersionResult(
-                tests,
-                new Date(headTree.getCommitTime()),
-                headTree.getAuthorIdent().toExternalString(),
-                headTree.toObjectId().getName(),
-                headTree.getFullMessage()
+                    tests,
+                    new Date(headTree.getCommitTime()),
+                    headTree.getAuthorIdent().toExternalString(),
+                    headTree.toObjectId().getName(),
+                    headTree.getFullMessage()
             );
         } catch (IOException e) {
             throw new StoreException.ReadException(e);
@@ -298,7 +287,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
 
     String getRefName() {
         return Constants.HEAD;
-        //return refName;
+        //return refName; //TODO
     }
 
     @Override

@@ -150,11 +150,14 @@ public class GitProctor extends FileBasedProctorStore {
                                              final int start,
                                              final int limit) throws StoreException {
         try {
+            System.out.println("getHistory start");
+            System.out.println("test - " + test);
+            System.out.println("rev - " + revision);
             final ObjectId commitId = ObjectId.fromString(revision);
             System.out.println("commitId\n" + commitId);
             final LogCommand logCommand = git.log()
                 // TODO: create path to definition.json file, sanitize test name for invalid / relative characters
-                .addPath("matrices/test-definitions/" + test + "/definition.json")
+                .addPath("test-definitions/" + test + "/definition.json")
                 .add(commitId)
                 .setSkip(start)
                 .setMaxCount(limit);
