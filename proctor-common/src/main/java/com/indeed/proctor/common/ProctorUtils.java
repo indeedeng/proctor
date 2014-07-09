@@ -22,7 +22,6 @@ import com.indeed.proctor.common.model.TestType;
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 
@@ -90,9 +89,9 @@ public abstract class ProctorUtils {
         serializeObject(writer, definition);
     }
 
+    @SuppressWarnings("UnusedDeclaration")
     public static JsonNode readJsonFromFile(final File input) throws IOException {
         final ObjectMapper mapper = Serializers.lenient();
-        mapper.configure(JsonParser.Feature.ALLOW_COMMENTS,true);
         final JsonNode rootNode = mapper.readValue(input, JsonNode.class);
         return rootNode;
     }

@@ -15,7 +15,9 @@ import org.codehaus.jackson.map.ObjectMapper;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,13 +52,15 @@ public class TestGroupsGenerator extends FreeMarkerCodeGenerator {
      * temporary ProctorSpecification json to be used for code generation
      */
     public static File makeTotalSpecification(File dir, String targetDir) throws CodeGenException {
+        return makeTotalSpecification(dir,targetDir,"");
+    }
+    public static File makeTotalSpecification(File dir, String targetDir, String name) throws CodeGenException {
         final File[] dirFiles = dir.listFiles();
-        String name = "";
         final String folderPath = dir.getAbsolutePath();
         Map<String,TestSpecification> testSpec = new LinkedHashMap<String, TestSpecification>();
         Map<String,String> providedContext = new LinkedHashMap<String,String>();
         for(File child : dirFiles) {
-            if(child.getName().startsWith("providedContext.json")){
+            if(child.getName().equals("providedcontext.json")){
                 try {
                     providedContext = OBJECT_MAPPER.readValue(child,Map.class);
                 } catch (IOException e) {
@@ -64,7 +68,9 @@ public class TestGroupsGenerator extends FreeMarkerCodeGenerator {
                 }
             }
             else if (child.getName().endsWith(".json")){
-                name = folderPath.substring(folderPath.lastIndexOf(File.separator));
+                if(name.equals("")) {
+                    name = folderPath.substring(folderPath.lastIndexOf(File.separator) + 1) + "Groups.json";
+                }
                 final Map<String,TestSpecification> spec;
                 try {
                     spec = OBJECT_MAPPER.readValue(child,Map.class);
@@ -74,18 +80,12 @@ public class TestGroupsGenerator extends FreeMarkerCodeGenerator {
                 testSpec.putAll(spec);
             }
         }
-        final ProctorSpecification totalSpec = new ProctorSpecification();
-        totalSpec.setProvidedContext(providedContext);
-        totalSpec.setTests(testSpec);
+        final Map<String,Object> totalSpec = new LinkedHashMap<String, Object>();
+        totalSpec.put("tests",testSpec);
+        totalSpec.put("providedContext", providedContext);
+        totalSpec.put("generated","true");
 
-        final File folderToCreate = new File(targetDir + "/specifications");
-        final boolean folderCreationSuccess = (folderToCreate).mkdirs();
-
-        if (!folderCreationSuccess && !folderToCreate.exists() && folderToCreate.isDirectory()) {
-           throw new CodeGenException("failed to create specifications dir in transient build folder");
-        }
-
-        final File output =  new File(targetDir + "/specifications/" + name + "Groups.json");
+        final File output =  new File(targetDir + (targetDir.endsWith(File.separator) ? "": File.separator) + name);
         try {
             OBJECT_MAPPER.defaultPrettyPrintingWriter().writeValue(output, totalSpec);
         } catch (IOException e) {

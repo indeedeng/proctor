@@ -6,7 +6,6 @@ import com.indeed.proctor.consumer.gen.TestGroupsGenerator;
 import org.apache.log4j.Logger;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
-import org.codehaus.jackson.JsonNode;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,10 +21,9 @@ public class TestGroupsGeneratorTask extends Task {
     private String packageName;
     private String groupsClass;
     private String groupsManagerClass;
-    private String fileCreateDir;
+    private String name;
     private static List<String> accessed;
     private static final Logger LOGGER = Logger.getLogger(TestGroupsGeneratorTask.class);
-
     public String getInput() {
         return input;
     }
@@ -67,10 +65,9 @@ public class TestGroupsGeneratorTask extends Task {
     }
 
     /*
-     * traverse through main specification folder to find large proctor specifications (determined if they have the test
-     * attribute) or individual test specifications (if they do not have this attribute).
+     * Generates total specifications from any partial specifications found
      */
-    private void recursiveSpecificationsFinder(File dir) throws CodeGenException {
+    private void totalSpecificationGenerator(File dir) throws CodeGenException {
         if (dir.equals(null)) {
             throw new CodeGenException("searchDirectory called with null pointer");
         }
@@ -80,34 +77,18 @@ public class TestGroupsGeneratorTask extends Task {
         }
         for(File entry : files) {
             if (entry.isDirectory()) {
-                recursiveSpecificationsFinder(entry);
+                totalSpecificationGenerator(entry);
             } else {
-                if (entry.getName().endsWith(".json")) {
-                    final JsonNode fullTest;
-                    try {
-                        fullTest = ProctorUtils.readJsonFromFile(entry);
-                    } catch (IOException e) {
-                        throw new CodeGenException("Could not read json correctly " + entry.getAbsolutePath(),e);
-                    }
-                    if (fullTest.has("tests")) {
-                        gen.generate(entry.getAbsolutePath(),
-                                target,
-                                packageName,
-                                groupsClass,
-                                groupsManagerClass);
-                    } else {
+                try {
+                    if(entry.getName().endsWith(".json") && !ProctorUtils.readJsonFromFile(entry).has("tests")) {
                         String filePath = entry.getAbsolutePath().substring(0, entry.getAbsolutePath().lastIndexOf(File.separator));
                         if (!accessed.contains(filePath)) {
-                            final File newInput = gen.makeTotalSpecification(new File(filePath), fileCreateDir);
-                            gen.generate(newInput.getAbsolutePath(),
-                                    target,
-                                    packageName,
-                                    dir.getName()+"Groups",
-                                    dir.getName()+"GroupsManager");
+                            gen.makeTotalSpecification(new File(filePath), filePath.substring(0,filePath.lastIndexOf(File.separator)), name);
                             accessed.add(filePath);
                         }
                     }
-
+                } catch (IOException e) {
+                    throw new CodeGenException("Could not create total specification file ",e);
                 }
             }
         }
@@ -117,14 +98,16 @@ public class TestGroupsGeneratorTask extends Task {
     public void execute() throws BuildException {
         //  TODO: validate
         accessed = new ArrayList<String>();
-        fileCreateDir = target.substring(0,target.lastIndexOf(File.separator));
-        File topDirectory = (new File(input)).getParentFile();
+        File bottom = new File(input);
+        name = bottom.getName();
+        File topDirectory = bottom.getParentFile();
         if (topDirectory == null || !topDirectory.isDirectory()) {
             LOGGER.error("input not substituted with configured value");
             return;
         }
         try {
-            recursiveSpecificationsFinder(topDirectory);
+            totalSpecificationGenerator(topDirectory);
+            gen.generate(input, target, packageName, groupsClass, groupsManagerClass);
         } catch (final CodeGenException ex) {
             throw new BuildException("Unable to generate code " + ex.toString(), ex);
         }

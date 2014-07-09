@@ -31,6 +31,7 @@ public class ProctorMojo extends AbstractProctorMojo {
     @Override
     public void execute() throws MojoExecutionException {
         project.addCompileSourceRoot(getOutputDirectory().getPath());
+        super.createTotalSpecifications(getTopDirectory());
         project.addResource(getResource());
         super.execute();
     }
