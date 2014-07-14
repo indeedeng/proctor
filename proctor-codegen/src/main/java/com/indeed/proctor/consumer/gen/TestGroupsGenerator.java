@@ -1,6 +1,7 @@
 package com.indeed.proctor.consumer.gen;
 
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -68,7 +69,7 @@ public class TestGroupsGenerator extends FreeMarkerCodeGenerator {
                 }
             }
             else if (child.getName().endsWith(".json")){
-                if(name.equals("")) {
+                if(Strings.isNullOrEmpty(name)) {
                     name = folderPath.substring(folderPath.lastIndexOf(File.separator) + 1) + "Groups.json";
                 }
                 final Map<String,TestSpecification> spec;

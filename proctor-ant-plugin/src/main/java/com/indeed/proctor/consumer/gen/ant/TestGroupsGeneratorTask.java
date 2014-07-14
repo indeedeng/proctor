@@ -81,13 +81,13 @@ public class TestGroupsGeneratorTask extends Task {
             } else {
                 try {
                     if(entry.getName().endsWith(".json") && !ProctorUtils.readJsonFromFile(entry).has("tests")) {
-                        String filePath = entry.getAbsolutePath().substring(0, entry.getAbsolutePath().lastIndexOf(File.separator));
+                        final String filePath = entry.getAbsolutePath().substring(0, entry.getAbsolutePath().lastIndexOf(File.separator));
                         if (!accessed.contains(filePath)) {
                             gen.makeTotalSpecification(new File(filePath), filePath.substring(0,filePath.lastIndexOf(File.separator)), name);
                             accessed.add(filePath);
                         }
                     }
-                } catch (IOException e) {
+                } catch (final IOException e) {
                     throw new CodeGenException("Could not create total specification file ",e);
                 }
             }
@@ -98,9 +98,9 @@ public class TestGroupsGeneratorTask extends Task {
     public void execute() throws BuildException {
         //  TODO: validate
         accessed = new ArrayList<String>();
-        File bottom = new File(input);
+        final File bottom = new File(input);
         name = bottom.getName();
-        File topDirectory = bottom.getParentFile();
+        final File topDirectory = bottom.getParentFile();
         if (topDirectory == null || !topDirectory.isDirectory()) {
             LOGGER.error("input not substituted with configured value");
             return;

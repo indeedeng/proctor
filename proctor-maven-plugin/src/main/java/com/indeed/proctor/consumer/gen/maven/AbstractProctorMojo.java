@@ -19,7 +19,7 @@ public abstract class AbstractProctorMojo extends AbstractMojo {
     abstract File getOutputDirectory();
     abstract File getTopDirectory();
 
-    private void processFile(File file, String packageName, String className) throws CodeGenException {
+    private void processFile(final File file, final String packageName, final String className) throws CodeGenException {
         getLog().info(String.format("Building resources for %s", packageName));
         gen.generate(file.getAbsolutePath(), getOutputDirectory().getAbsolutePath(), packageName, className, className + "Manager");
     }
@@ -27,7 +27,7 @@ public abstract class AbstractProctorMojo extends AbstractMojo {
      * traverse through main specification folder to find large proctor specifications (determined if they have the test
      * attribute)
      */
-    private void RecursiveSpecificationsFinder(File dir, String packageNamePrefix) throws CodeGenException {
+    private void RecursiveSpecificationsFinder(final File dir, final String packageNamePrefix) throws CodeGenException {
         if (dir.equals(null)) {
             throw new CodeGenException("RecursiveSpecificationsFinder called with null pointer");
         }
@@ -35,7 +35,7 @@ public abstract class AbstractProctorMojo extends AbstractMojo {
         if (files == null) {
             return;
         }
-        for(File entry : files) {
+        for(final File entry : files) {
             try {
                 if (entry.isDirectory()) {
                     RecursiveSpecificationsFinder(entry, (packageNamePrefix == null) ? entry.getName() : packageNamePrefix + "/" + entry.getName());
@@ -55,7 +55,7 @@ public abstract class AbstractProctorMojo extends AbstractMojo {
     /*
      * Adds any non partial specifications to resources
      */
-    private void addNonPartialsToResources(File dir, Resource resource) throws CodeGenException {
+    private void addNonPartialsToResources(final File dir, final Resource resource) throws CodeGenException {
         if (dir.equals(null)) {
             throw new CodeGenException("Could not read from directory " + dir.getAbsolutePath());
         }
@@ -81,7 +81,7 @@ public abstract class AbstractProctorMojo extends AbstractMojo {
     /*
      * Finds any partial specifications and creates a generated specification
      */
-    void createTotalSpecifications(File dir) throws MojoExecutionException {
+    void createTotalSpecifications(final File dir) throws MojoExecutionException {
 
         if (dir.equals(null)) {
             throw new MojoExecutionException("Could not read from directory " + dir.getAbsolutePath());
@@ -112,7 +112,7 @@ public abstract class AbstractProctorMojo extends AbstractMojo {
     }
 
     Resource getResource() throws MojoExecutionException {
-        Resource resource = new Resource();
+        final Resource resource = new Resource();
         resource.setDirectory(getTopDirectory().getAbsolutePath());
 
         final File topDir = new File(getTopDirectory().getPath());
