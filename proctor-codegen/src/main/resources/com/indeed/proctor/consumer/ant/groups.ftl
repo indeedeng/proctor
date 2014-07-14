@@ -79,6 +79,14 @@ public class ${mainClassName} extends AbstractGroups {
         public String getFullName() {
             return fullName;
         }
+
+    <#list testDef.buckets as bucket>
+        <#if testDef.defaultValue == bucket.value>
+        public static ${testDef.javaClassName} getFallback() {
+            return ${testDef.javaClassName}.${bucket.enumName};
+        }
+        </#if>
+    </#list>
     }
 
 </#list>
@@ -110,7 +118,8 @@ public class ${mainClassName} extends AbstractGroups {
 
     <#if (testDef.payloadJavaClass)??>
     public @Nullable ${testDef.payloadJavaClass} get${testDef.javaClassName}Payload() {
-        return getPayload(${testEnumName}.${testDef.enumName}.getName()).${testDef.payloadAccessorName}();
+        final Payload payload = getPayload(${testEnumName}.${testDef.enumName}.getName(), ${testDef.javaClassName}.getFallback());
+        return payload.${testDef.payloadAccessorName}();
     }
 
     public @Nullable ${testDef.payloadJavaClass} get${testDef.javaClassName}PayloadForBucket(final ${testDef.javaClassName} targetBucket) {

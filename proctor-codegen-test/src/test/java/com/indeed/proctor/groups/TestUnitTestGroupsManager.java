@@ -12,6 +12,7 @@ import com.indeed.proctor.common.ProctorUtils;
 import com.indeed.proctor.common.StringProctorLoader;
 import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.common.model.TestType;
+import com.indeed.proctor.groups.UnitTestGroups.Payloaded;
 import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,6 +27,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -248,7 +250,6 @@ public class TestUnitTestGroupsManager {
         assertEquals("kluj:kloo2,oop_poop:test1,payloaded:inactive-1,payloaded_verified:inactive-1", calcBuckets(result));
         // Check and make sure UnitTestGroups respects these groups and works as expected.
         final UnitTestGroups grps = new UnitTestGroups(result);
-        System.out.println("grps == "+grps);
         assertNotNull(grps.getPayloaded_verified());
         assertEquals(-1, grps.getPayloaded_verifiedValue(-99));
         // The "Inactive" condition should be true.
@@ -263,6 +264,14 @@ public class TestUnitTestGroupsManager {
         assertEquals(50, grps.getPayloaded_verifiedPayloadForBucket(UnitTestGroups.Payloaded_verified.TEST), 0.001);
 
         assertEquals("kluj2,oop_poop1", grps.toString());
+
+        assertNotNull(grps.getPayloaded_excluded());
+        assertEquals(
+                "Expected inactive even though there are no explicit assignments made to that group",
+                Payloaded.INACTIVE, grps.getPayloaded());
+        assertArrayEquals(
+                "Expected inactive payload to be used, not 'empty' default",
+                new String[]{"preexisting"}, grps.getPayloaded_excludedPayload());
     }
 
     @Test
