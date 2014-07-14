@@ -5,6 +5,7 @@ import com.indeed.proctor.common.model.Payload;
 import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.consumer.*;
 import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
 
 /*
  * GENERATED source; do not edit directly
@@ -82,7 +83,7 @@ public class ${mainClassName} extends AbstractGroups {
 
 </#list>
 <#list testDefs as testDef>
-    @Nullable
+    @Nonnull
     public ${testDef.javaClassName} get${testDef.javaClassName}() {
         for (final ${testDef.javaClassName} bucket : ${testDef.javaClassName}.values()) {
             final String testName = Test.${testDef.enumName}.getName();
@@ -90,7 +91,10 @@ public class ${mainClassName} extends AbstractGroups {
                 return bucket;
             }
         }
-        return null;
+
+        // Safe to throw NPE here because the code generator ensures that the default value
+        //  is a valid bucket in the test.
+        throw new NullPointerException("No fallback bucket found for '${testDef.name}'");
     }
 
     /**

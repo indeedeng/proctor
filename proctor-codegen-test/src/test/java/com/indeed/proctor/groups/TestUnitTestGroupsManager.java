@@ -133,7 +133,7 @@ public class TestUnitTestGroupsManager {
             // Check and make sure UnitTestGroups respects these groups and works as expected.
             final UnitTestGroups grps = new UnitTestGroups(result);
 
-            assertNull(grps.getPimple());
+            assertNotNull(grps.getPimple());
             assertEquals(-99, grps.getPimpleValue(-99));
             assertEquals(UnitTestGroups.Kluj.TEST, grps.getKluj());
             assertEquals(1, grps.getKlujValue(-99));
@@ -141,7 +141,7 @@ public class TestUnitTestGroupsManager {
             assertEquals(0, grps.getOop_poopValue(-99));
 
             // Check the boolean conditions for one of the tests
-            assertFalse(grps.isPimpleInactive());
+            assertTrue(grps.isPimpleInactive());
             assertFalse(grps.isPimpleControl());
             assertFalse(grps.isPimpleTest());
 
@@ -165,9 +165,9 @@ public class TestUnitTestGroupsManager {
             final UnitTestGroups grps = new UnitTestGroups(result);
             assertEquals(UnitTestGroups.Pimple.TEST, grps.getPimple());
             assertEquals(1, grps.getPimpleValue(-99));
-            assertNull(grps.getKluj());
+            assertNotNull(grps.getKluj());
             assertEquals(-99, grps.getKlujValue(-99));
-            assertNull(grps.getOop_poop());
+            assertNotNull(grps.getOop_poop());
             assertEquals(-99, grps.getOop_poopValue(-99));
 
             // Check the boolean conditions for one of the tests
@@ -185,9 +185,9 @@ public class TestUnitTestGroupsManager {
             final UnitTestGroups grps = new UnitTestGroups(result);
             assertEquals(UnitTestGroups.Pimple.INACTIVE, grps.getPimple());
             assertEquals(-1, grps.getPimpleValue(-99));
-            assertNull(grps.getKluj());
+            assertNotNull(grps.getKluj());
             assertEquals(-99, grps.getKlujValue(-99));
-            assertNull(grps.getOop_poop());
+            assertNotNull(grps.getOop_poop());
             assertEquals(-99, grps.getOop_poopValue(-99));
 
             // Check the boolean conditions for one of the tests
@@ -203,15 +203,15 @@ public class TestUnitTestGroupsManager {
             assertEquals("", calcBuckets(result));
             // Check and make sure UnitTestGroups respects these groups and works as expected.
             final UnitTestGroups grps = new UnitTestGroups(result);
-            assertNull(grps.getPimple());
+            assertNotNull(grps.getPimple());
             assertEquals(-99, grps.getPimpleValue(-99));
-            assertNull(grps.getKluj());
+            assertNotNull(grps.getKluj());
             assertEquals(-99, grps.getKlujValue(-99));
-            assertNull(grps.getOop_poop());
+            assertNotNull(grps.getOop_poop());
             assertEquals(-99, grps.getOop_poopValue(-99));
 
             // Check the boolean conditions for one of the tests
-            assertFalse(grps.isPimpleInactive());
+            assertTrue(grps.isPimpleInactive());
             assertFalse(grps.isPimpleControl());
             assertFalse(grps.isPimpleTest());
             assertEquals("", grps.toString());
@@ -225,15 +225,15 @@ public class TestUnitTestGroupsManager {
         assertEquals("", calcBuckets(result));
         // Check and make sure UnitTestGroups respects these groups and works as expected.
         final UnitTestGroups grps = new UnitTestGroups(result);
-        assertNull(grps.getPimple());
+        assertNotNull(grps.getPimple());
         assertEquals(-99, grps.getPimpleValue(-99));
-        assertNull(grps.getKluj());
+        assertNotNull(grps.getKluj());
         assertEquals(-99, grps.getKlujValue(-99));
-        assertNull(grps.getOop_poop());
+        assertNotNull(grps.getOop_poop());
         assertEquals(-99, grps.getOop_poopValue(-99));
 
         // Check the boolean conditions for one of the tests
-        assertFalse(grps.isPimpleInactive());
+        assertTrue(grps.isPimpleInactive());
         assertFalse(grps.isPimpleControl());
         assertFalse(grps.isPimpleTest());
         assertEquals("", grps.toString());
