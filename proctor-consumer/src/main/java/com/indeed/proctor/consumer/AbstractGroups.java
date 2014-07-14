@@ -93,6 +93,7 @@ public abstract class AbstractGroups {
         return Payload.EMPTY_PAYLOAD;
     }
 
+    @Nonnull
     protected Payload getPayload(final String testName, @Nonnull final Bucket<?> fallbackBucket) {
         // Get the current bucket.
         final TestBucket testBucket = buckets.get(testName);
