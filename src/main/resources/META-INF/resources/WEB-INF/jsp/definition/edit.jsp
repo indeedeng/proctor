@@ -175,6 +175,9 @@
                     <input type="submit" class="button js-save-form" value="Save">
                     <span class="button tiny secondary js-clean-workspace">clean workspace</span>
                     <div style="display:none;" class="mam save-msg-container alert-box"></div>
+                    <label for="autopromote-checkbox">
+                        <input id="autopromote-checkbox" type="checkbox" class="mrs mts" value="autopromote">Enable Autopromote
+                    </label>
                 </div>
             </div>
         </ui:grid-columns>

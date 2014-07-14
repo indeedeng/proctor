@@ -7,5 +7,5 @@ import java.util.Map;
 /**
  */
 public interface PostDefinitionPromoteChange {
-    public DefinitionChangeLog postPromote(final Map<String, String[]> extensionFields, final Environment src, final Environment destination);
+    public DefinitionChangeLog postPromote(final Map<String, String[]> extensionFields, final Environment src, final Environment destination, final boolean isAutopromote);
 }

@@ -196,13 +196,15 @@ indeed.proctor.app.editor.DefinitionEditor.prototype.save_ = function() {
   for (var i = 0; i < formElementsArray.length; i++) {
       formData[formElementsArray[i].name] = formElementsArray[i].value;
   }
+
   var jsData = {
     'testDefinition': serializer.serialize(json),
     'username': goog.dom.forms.getValue(this.svninfo.username),
     'password': goog.dom.forms.getValue(this.svninfo.password),
     'comment': goog.dom.forms.getValue(this.svninfo.comment),
     'previousRevision': this.prevRevision,
-    'isCreate' : this.isCreate
+    'isCreate' : this.isCreate,
+    'isAutopromote' : goog.dom.getElement("autopromote-checkbox").checked
   };
   var data = {};
   for (var key in formData) {

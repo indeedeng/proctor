@@ -11,6 +11,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.indeed.proctor.common.model.Payload;
 import com.indeed.proctor.webapp.controllers.BackgroundJob.ResultUrl;
 import com.indeed.proctor.common.EnvironmentVersion;
 import com.indeed.proctor.common.IncompatibleTestMatrixException;
@@ -398,7 +399,6 @@ public class ProctorTestDefinitionController extends AbstractController {
 
             @Override
             public Void call() throws Exception {
-                final Map<String, String> metadata = Collections.emptyMap();
                 /*
                     Valid permutations:
                     TRUNK -> QA
@@ -406,47 +406,7 @@ public class ProctorTestDefinitionController extends AbstractController {
                     QA -> PRODUCTION
                  */
                 try {
-                    validateUsernamePassword(username, password);
-
-                    // TODO (parker) 9/5/12 - Verify that promoting to the destination branch won't cause issues
-                    final ProctorStore srcStore = determineStoreFromEnvironment(source);
-                    final TestDefinition testDefintion = getTestDefinition(srcStore, testName, srcRevision);
-                    //            if(d == null) {
-                    //                return "could not find " + testName + " on " + source + " with revision " + srcRevision;
-                    //            }
-
-                    final CheckMatrixResult result = checkMatrix(destination, testName, testDefintion);
-                    if (!result.isValid()) {
-                        throw new IllegalArgumentException(String.format("Test Promotion not compatible, errors: %s", Joiner.on("\n").join(result.getErrors())));
-                    } else {
-                        final Map<Environment, PromoteAction> actions = PROMOTE_ACTIONS.get(source);
-                        if (actions == null || !actions.containsKey(destination)) {
-                            throw new IllegalArgumentException("Invalid combination of source and destination: source=" + source + " dest=" + destination);
-                        }
-                        final PromoteAction action = actions.get(destination);
-                        final BackgroundJob job = this;
-
-                        //PreDefinitionPromoteChanges
-                        log("Executing pre promote extension tasks.");
-                        for (final PreDefinitionPromoteChange preDefinitionPromoteChange: preDefinitionPromoteChanges) {
-                            final DefinitionChangeLog definitionChangeLog = preDefinitionPromoteChange.prePromote(testDefintion, requestParameterMap, source, destination);
-                            logDefinitionChangeLog(definitionChangeLog, preDefinitionPromoteChange.getClass().getSimpleName(), this);
-                        }
-
-                        //Promote Change
-                        final boolean success = action.promoteTest(job, testName, srcRevision, destRevision, username, password, metadata);
-
-                        //PostDefinitionPromoteChanges
-                        log("Executing post promote extension tasks.");
-                        for (final PostDefinitionPromoteChange postDefinitionPromoteChange: postDefinitionPromoteChanges) {
-                            final DefinitionChangeLog definitionChangeLog = postDefinitionPromoteChange.postPromote(requestParameterMap, source, destination);
-                            logDefinitionChangeLog(definitionChangeLog, postDefinitionPromoteChange.getClass().getSimpleName(), this);
-                        }
-
-
-                        log(String.format("Promoted %s from %s (r%s) to %s (r%s)", testName, source.getName(), srcRevision, destination.getName(), destRevision));
-                        addUrl("/proctor/definition/" + UtilityFunctions.urlEncode(testName) + "?branch=" + destination.getName(), "view " + testName + " on " + destination.getName());
-                    }
+                    doJobIndependentPromoteInternal(testName, username, password, source, srcRevision, destination, destRevision, requestParameterMap, this, false);
                 } catch (ProctorPromoter.TestPromotionException exp) {
                     logFailedJob(this, exp);
                     LOGGER.error("Promotion Failed: " + getTitle(), exp);
@@ -464,6 +424,59 @@ public class ProctorTestDefinitionController extends AbstractController {
                 return null;
             }
         };
+    }
+    private boolean doJobIndependentPromoteInternal(final String testName,
+                                                    final String username,
+                                                    final String password,
+                                                    final Environment source,
+                                                    final String srcRevision,
+                                                    final Environment destination,
+                                                    final String destRevision,
+                                                    final Map<String, String[]> requestParameterMap,
+                                                    final BackgroundJob job,
+                                                    final boolean isAutopromote) throws Exception {
+        final Map<String, String> metadata = Collections.emptyMap();
+        validateUsernamePassword(username, password);
+
+        // TODO (parker) 9/5/12 - Verify that promoting to the destination branch won't cause issues
+        final ProctorStore srcStore = determineStoreFromEnvironment(source);
+        final TestDefinition testDefintion = getTestDefinition(srcStore, testName, srcRevision);
+        //            if(d == null) {
+        //                return "could not find " + testName + " on " + source + " with revision " + srcRevision;
+        //            }
+
+        final CheckMatrixResult result = checkMatrix(destination, testName, testDefintion);
+        if (!result.isValid()) {
+            throw new IllegalArgumentException(String.format("Test Promotion not compatible, errors: %s", Joiner.on("\n").join(result.getErrors())));
+        } else {
+            final Map<Environment, PromoteAction> actions = PROMOTE_ACTIONS.get(source);
+            if (actions == null || !actions.containsKey(destination)) {
+                throw new IllegalArgumentException("Invalid combination of source and destination: source=" + source + " dest=" + destination);
+            }
+            final PromoteAction action = actions.get(destination);
+
+            //PreDefinitionPromoteChanges
+            job.log("Executing pre promote extension tasks.");
+            for (final PreDefinitionPromoteChange preDefinitionPromoteChange: preDefinitionPromoteChanges) {
+                final DefinitionChangeLog definitionChangeLog = preDefinitionPromoteChange.prePromote(testDefintion, requestParameterMap, source, destination, isAutopromote);
+                logDefinitionChangeLog(definitionChangeLog, preDefinitionPromoteChange.getClass().getSimpleName(), job);
+            }
+
+            //Promote Change
+            final boolean success = action.promoteTest(job, testName, srcRevision, destRevision, username, password, metadata);
+
+            //PostDefinitionPromoteChanges
+            job.log("Executing post promote extension tasks.");
+            for (final PostDefinitionPromoteChange postDefinitionPromoteChange: postDefinitionPromoteChanges) {
+                final DefinitionChangeLog definitionChangeLog = postDefinitionPromoteChange.postPromote(requestParameterMap, source, destination, isAutopromote);
+                logDefinitionChangeLog(definitionChangeLog, postDefinitionPromoteChange.getClass().getSimpleName(), job);
+            }
+
+
+            job.log(String.format("Promoted %s from %s (r%s) to %s (r%s)", testName, source.getName(), srcRevision, destination.getName(), destRevision));
+            job.addUrl("/proctor/definition/" + UtilityFunctions.urlEncode(testName) + "?branch=" + destination.getName(), "view " + testName + " on " + destination.getName());
+            return success;
+        }
     }
 
     private void logDefinitionChangeLog(DefinitionChangeLog definitionChangeLog, String changeName, BackgroundJob backgroundJob) {
@@ -608,6 +621,7 @@ public class ProctorTestDefinitionController extends AbstractController {
         @RequestParam(required = false) final String comment,
         @RequestParam(required = false) final String testDefinition, // testDefinition is JSON representation of test-definition
         @RequestParam(required = false, defaultValue = "") final String previousRevision,
+        @RequestParam(required = false, defaultValue = "false") final boolean isAutopromote,
         final HttpServletRequest request,
         final Model model) {
 
@@ -622,6 +636,7 @@ public class ProctorTestDefinitionController extends AbstractController {
                                              comment,
                                              testDefinition,
                                              previousRevision,
+                                             isAutopromote,
                                              requestParameterMap);
         jobManager.submit(job);
         if (isAJAXRequest(request)) {
@@ -641,6 +656,7 @@ public class ProctorTestDefinitionController extends AbstractController {
         final String comment,
         final String testDefinitionJson,
         final String previousRevision,
+        final boolean isAutopromote,
         final Map<String, String[]> requestParameterMap) {
 
         return new BackgroundJob<Boolean>() {
@@ -653,6 +669,9 @@ public class ProctorTestDefinitionController extends AbstractController {
             public Boolean call() throws Exception {
                 final Environment theEnvironment = Environment.WORKING; // only allow editing of TRUNK!
                 final ProctorStore store = determineStoreFromEnvironment(theEnvironment);
+                final EnvironmentVersion environmentVersion = promoter.getEnvironmentVersion(testName);
+                final String qaRevision = environmentVersion == null ? EnvironmentVersion.UNKNOWN_REVISION : environmentVersion.getQaRevision();
+                final String prodRevision = environmentVersion == null ? EnvironmentVersion.UNKNOWN_REVISION : environmentVersion.getProductionRevision();
 
                 try {
                     if (CharMatcher.WHITESPACE.matchesAllOf(Strings.nullToEmpty(testDefinitionJson))) {
@@ -760,6 +779,34 @@ public class ProctorTestDefinitionController extends AbstractController {
                         }
                     }
 
+                    //Autopromote if necessary
+                    if (isAutopromote
+                            && existingTestDefinition!= null
+                            && isAllocationOnlyChange(existingTestDefinition, testDefinitionToUpdate)) {
+                        final boolean isQaPromoted;
+                        log("allocation only change, checking against other branches for auto-promote capability for test " + testName + "\nat QA revision " + qaRevision + " and PRODUCTION revision " + prodRevision);
+                        final ProctorStore qaStore = determineStoreFromEnvironment(Environment.QA);
+                        final boolean isQaPromotable = qaRevision != EnvironmentVersion.UNKNOWN_REVISION
+                                && isAllocationOnlyChange(getTestDefinition(qaStore,testName,qaRevision),testDefinitionToUpdate);
+                        if (isQaPromotable) {
+                            log("auto-promoting changes to QA");
+                            isQaPromoted = doJobIndependentPromoteInternal(testName, username, password, Environment.WORKING, trunkStore.getLatestVersion(), Environment.QA, qaRevision, requestParameterMap, this, true);
+                        } else {
+                            isQaPromoted = false;
+                            log("previous revision changes prevented auto-promote to QA");
+                        }
+                        final ProctorStore prodStore = determineStoreFromEnvironment(Environment.PRODUCTION);
+                        if (isQaPromotable && isQaPromoted
+                                && prodRevision != EnvironmentVersion.UNKNOWN_REVISION
+                                && isAllocationOnlyChange(getTestDefinition(prodStore,testName,prodRevision),testDefinitionToUpdate)) {
+                            log("auto-promoting changes to PRODUCTION");
+                            doJobIndependentPromoteInternal(testName, username, password, Environment.WORKING, trunkStore.getLatestVersion(), Environment.PRODUCTION, prodRevision, requestParameterMap, this, true);
+
+                        } else {
+                            log("previous revision changes prevented auto-promote to PRODUCTION");
+                        }
+                    }
+
                     log("COMPLETE");
                     addUrl("/proctor/definition/" + UtilityFunctions.urlEncode(testName) + "?branch=" + theEnvironment.getName(), "View Result");
                     return true;
@@ -779,6 +826,85 @@ public class ProctorTestDefinitionController extends AbstractController {
                 return false;
             }
         };
+    }
+
+     public static boolean isAllocationOnlyChange(final TestDefinition existingTestDefinition, final TestDefinition testDefinitionToUpdate) {
+         final List<Allocation> existingAllocations = existingTestDefinition.getAllocations();
+         final List<Allocation> allocationsToUpdate = testDefinitionToUpdate.getAllocations();
+         final boolean nullRule = existingTestDefinition.getRule() == null;
+         final boolean nullDescription = existingTestDefinition.getDescription() == null;
+         if (nullRule && testDefinitionToUpdate.getRule() != null) {
+             return false;
+         } else if (!nullRule && !existingTestDefinition.getRule().equals(testDefinitionToUpdate.getRule())) {
+             return false;
+         }
+         if (nullDescription && testDefinitionToUpdate.getDescription() != null) {
+             return false;
+         } else if (!nullDescription && !existingTestDefinition.getDescription().equals(testDefinitionToUpdate.getDescription())) {
+             return false;
+         }
+         if (!existingTestDefinition.getConstants().equals(testDefinitionToUpdate.getConstants())
+            || !existingTestDefinition.getSpecialConstants().equals(testDefinitionToUpdate.getSpecialConstants())
+            || !existingTestDefinition.getTestType().equals(testDefinitionToUpdate.getTestType())
+            || !existingTestDefinition.getSalt().equals(testDefinitionToUpdate.getSalt())
+            || !existingTestDefinition.getBuckets().equals(testDefinitionToUpdate.getBuckets())
+            || existingAllocations.size()!=allocationsToUpdate.size())
+            return false;
+
+        /*
+         * TestBucket .equals() override only checks name equality
+         * loop below compares each attribute of a TestBucket
+         */
+        for (int i = 0; i<existingTestDefinition.getBuckets().size(); i++) {
+            final TestBucket bucketOne = existingTestDefinition.getBuckets().get(i);
+            final TestBucket bucketTwo = testDefinitionToUpdate.getBuckets().get(i);
+            if (bucketOne == null) {
+                if (bucketTwo != null) {
+                    return false;
+                }
+            } else if (bucketTwo == null) {
+                return false;
+            } else {
+                if (bucketOne.getValue() != bucketTwo.getValue()) {
+                    return false;
+                }
+                final Payload payloadOne = bucketOne.getPayload();
+                final Payload payloadTwo = bucketTwo.getPayload();
+                if (payloadOne == null) {
+                    if (payloadTwo != null) {
+                        return false;
+                    }
+                } else if (!payloadOne.equals(payloadTwo)) {
+                    return false;
+                }
+                if (bucketOne.getDescription() == null) {
+                    if (bucketTwo.getDescription() != null) {
+                        return false;
+                    }
+                } else if (!bucketOne.getDescription().equals(bucketTwo.getDescription())) {
+                    return false;
+                }
+            }
+        }
+
+        /*
+         * Comparing everything in an allocation except the lengths
+         */
+        for (int i = 0; i<existingAllocations.size(); i++) {
+            final List<Range> existingAllocationRanges = existingAllocations.get(i).getRanges();
+            final List<Range> allocationToUpdateRanges = allocationsToUpdate.get(i).getRanges();
+            if (existingAllocations.get(i).getRule() == null && allocationsToUpdate.get(i).getRule() != null)
+                return false;
+            else if (existingAllocations.get(i).getRule() != null && !existingAllocations.get(i).getRule().equals(allocationsToUpdate.get(i).getRule()))
+                return false;
+            for (int aIndex = 0; aIndex < existingAllocationRanges.size(); aIndex++) {
+                if (existingAllocationRanges.get(aIndex).getLength() == 0 && allocationToUpdateRanges.get(aIndex).getLength() != 0)
+                    return false;
+                if (existingAllocationRanges.get(aIndex).getLength() != 1 && allocationToUpdateRanges.get(aIndex).getLength() == 1)
+                    return false;
+            }
+        }
+        return true;
     }
 
     private String formatFullComment(final String comment, final Map<String,String[]> requestParameterMap) {

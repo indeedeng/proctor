@@ -26,7 +26,6 @@ public class WebappConfiguration {
         this.useCompiledJavaScript = useCompiledJavaScript;
         this.verifyHttpTimeout = verifyHttpTimeout;
         this.verifyExecutorThreads = verifyExecutorThreads;
-
         Preconditions.checkArgument(verifyHttpTimeout > 0, "verifyHttpTimeout > 0");
         Preconditions.checkArgument(verifyExecutorThreads > 0, "verifyExecutorThreads > 0");
     }

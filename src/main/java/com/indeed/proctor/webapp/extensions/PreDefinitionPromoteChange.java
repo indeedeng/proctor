@@ -8,5 +8,5 @@ import java.util.Map;
 /**
  */
 public interface PreDefinitionPromoteChange {
-    public DefinitionChangeLog prePromote(final TestDefinition testDefinition, final Map<String, String[]> extensionFields, final Environment src, final Environment destination);
+    public DefinitionChangeLog prePromote(final TestDefinition testDefinition, final Map<String, String[]> extensionFields, final Environment src, final Environment destination, final boolean isAutopromote);
 }

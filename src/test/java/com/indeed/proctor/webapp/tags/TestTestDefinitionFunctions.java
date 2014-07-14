@@ -9,7 +9,6 @@ import org.junit.Test;
 
 import java.util.Date;
 import java.util.Map;
-
 /**
  * Tests for tag functions : TestDefinitionFunctions.java
  */
@@ -193,15 +192,13 @@ public class TestTestDefinitionFunctions {
 
         Assert.assertTrue("r178374 current production.revision", TestDefinitionFunctions.isCurrentVersionOnProduction(viewing, r178374, CHARMED_STATE_OF_THE_WORLD));
     }
-
-
     private static Revision copyRevision(final Revision r) {
         return new Revision(
-            // create a new String for revision. Revision was previously an int, and a bug escaped because comparisons were via == instead of .equals
-            new String(r.getRevision()),
-            r.getAuthor(),
-            r.getDate(),
-            r.getMessage()
+                // create a new String for revision. Revision was previously an int, and a bug escaped because comparisons were via == instead of .equals
+                new String(r.getRevision()),
+                r.getAuthor(),
+                r.getDate(),
+                r.getMessage()
         );
     }
 }
