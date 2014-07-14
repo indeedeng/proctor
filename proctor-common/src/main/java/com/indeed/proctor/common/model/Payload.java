@@ -5,6 +5,7 @@ import com.google.common.base.Joiner;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Arrays;
 
 /**
  * Models a payload value for a bucket in a test, generally meant to have one kind of value per bucket.
@@ -231,5 +232,23 @@ public class Payload {
             return stringArray;
         }
         return null;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Payload payload = (Payload) o;
+
+        if (!Arrays.equals(doubleArray, payload.doubleArray)) return false;
+        if (doubleValue != null ? !doubleValue.equals(payload.doubleValue) : payload.doubleValue != null) return false;
+        if (!Arrays.equals(longArray, payload.longArray)) return false;
+        if (longValue != null ? !longValue.equals(payload.longValue) : payload.longValue != null) return false;
+        if (!Arrays.equals(stringArray, payload.stringArray)) return false;
+        if (stringValue != null ? !stringValue.equals(payload.stringValue) : payload.stringValue != null) return false;
+
+        return true;
     }
 }
