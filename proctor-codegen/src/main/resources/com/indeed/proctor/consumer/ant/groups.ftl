@@ -93,20 +93,20 @@ public class ${mainClassName} extends AbstractGroups {
     }
 
     /**
-      * perhaps defaultValue should be specified in and supplied from src/proctor/proctor-specification.json
+      * @deprecated Use {@link #get${testDef.javaClassName}Value()} instead
       */
     public int get${testDef.javaClassName}Value(final int defaultValue) {
         return getValue(${testEnumName}.${testDef.enumName}.getName(), defaultValue);
+    }
+
+    public int get${testDef.javaClassName}Value() {
+        return getValue(${testEnumName}.${testDef.enumName}.getName(), ${testDef.defaultValue});
     }
 
     <#if (testDef.payloadJavaClass)??>
     public @Nullable ${testDef.payloadJavaClass} get${testDef.javaClassName}Payload() {
         return getPayload(${testEnumName}.${testDef.enumName}.getName()).${testDef.payloadAccessorName}();
     }
-
-
-
-
 
     public @Nullable ${testDef.payloadJavaClass} get${testDef.javaClassName}PayloadForBucket(final ${testDef.javaClassName} targetBucket) {
         final @Nullable TestBucket bucket = getTestBucketForBucket(${testEnumName}.${testDef.enumName}.getName(), targetBucket);
