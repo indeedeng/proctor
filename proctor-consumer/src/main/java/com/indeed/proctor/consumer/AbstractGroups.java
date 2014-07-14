@@ -30,9 +30,21 @@ public abstract class AbstractGroups {
         return proctorResult.getTestVersions();
     }
 
+    /**
+     * @deprecated Use {@link #isBucketActive(String, int, int)} instead
+     */
     protected boolean isBucketActive(final String testName, final int value) {
         final TestBucket testBucket = buckets.get(testName);
         return ((testBucket != null) && (value == testBucket.getValue()));
+    }
+
+    protected boolean isBucketActive(final String testName, final int value, final int defaultValue) {
+        final TestBucket testBucket = buckets.get(testName);
+        if (null == testBucket) {
+            return value == defaultValue;
+        } else {
+            return value == testBucket.getValue();
+        }
     }
 
     protected int getValue(final String testName, final int defaultValue) {

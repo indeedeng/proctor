@@ -82,10 +82,11 @@ public class ${mainClassName} extends AbstractGroups {
 
 </#list>
 <#list testDefs as testDef>
+    @Nullable
     public ${testDef.javaClassName} get${testDef.javaClassName}() {
         for (final ${testDef.javaClassName} bucket : ${testDef.javaClassName}.values()) {
             final String testName = Test.${testDef.enumName}.getName();
-            if (isBucketActive(testName, bucket.getValue())) {
+            if (isBucketActive(testName, bucket.getValue(), ${testDef.defaultValue})) {
                 return bucket;
             }
         }
@@ -121,20 +122,17 @@ public class ${mainClassName} extends AbstractGroups {
     }
     </#if>
 
-
     <#if (testDef.description)??>
     public @Nullable String get${testDef.javaClassName}Description() {
         return "${testDef.description}";
     }
     </#if>
 
-
-
 <#list testDef.buckets as bucket>
     public boolean is${testDef.javaClassName}${bucket.javaClassName}() {
         final String testName = Test.${testDef.enumName}.getName();
         final int bucketValue = ${testDef.javaClassName}.${bucket.enumName}.getValue();
-        return isBucketActive(testName, bucketValue);
+        return isBucketActive(testName, bucketValue, ${testDef.defaultValue});
     }
 <#if bucket_has_next || testDef_has_next>
 
