@@ -29,15 +29,15 @@ public class CachedSvnPersisterCore implements SvnPersisterCore {
         .softValues()
         .build();
 
-    private final LoadingCache<Long, FileBasedProctorStore.TestVersionResult> versionCache = CacheBuilder.newBuilder()
+    private final LoadingCache<Long, TestVersionResult> versionCache = CacheBuilder.newBuilder()
         .maximumSize(50)
         .expireAfterAccess(60, TimeUnit.MINUTES)
         .softValues()
-        .build(new CacheLoader<Long, FileBasedProctorStore.TestVersionResult>() {
+        .build(new CacheLoader<Long, TestVersionResult>() {
             @Override
-            public FileBasedProctorStore.TestVersionResult load(Long revision) {
+            public TestVersionResult load(Long revision) {
                 try {
-                    return core.determineVersions(revision.longValue());
+                    return core.determineVersions(String.valueOf(revision.longValue()));
                 } catch (StoreException.ReadException e) {
                     throw Throwables.propagate(e);
                 }
@@ -80,8 +80,8 @@ public class CachedSvnPersisterCore implements SvnPersisterCore {
     public <C> C getFileContents(final Class<C> c,
                                  final String[] path,
                                  final C defaultValue,
-                                 final long revision) throws StoreException.ReadException, JsonProcessingException {
-        final FileContentsKey key = new FileContentsKey(c, path, revision);
+                                 final String revision) throws StoreException.ReadException, JsonProcessingException {
+        final FileContentsKey key = new FileContentsKey(c, path, core.parseRevisionOrDie(revision));
         final Object obj = cache.getIfPresent(key);
         if (obj == null) {
             final C x = core.getFileContents(c, path, defaultValue, revision);
@@ -98,14 +98,19 @@ public class CachedSvnPersisterCore implements SvnPersisterCore {
     }
 
     @Override
-    public void doInWorkingDirectory(String username, String password, String comment, long previousVersion, FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException {
+    public void doInWorkingDirectory(String username, String password, String comment, String previousVersion, FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException {
         core.doInWorkingDirectory(username, password, comment, previousVersion, updater);
     }
 
     @Override
-    public FileBasedProctorStore.TestVersionResult determineVersions(long fetchRevision) throws StoreException.ReadException {
+    public TestVersionResult determineVersions(final String fetchRevision) throws StoreException.ReadException {
         // return core.determineVersions(fetchRevision);
-        return versionCache.getUnchecked(fetchRevision);
+        return versionCache.getUnchecked(core.parseRevisionOrDie(fetchRevision));
+    }
+
+    @Override
+    public String getAddTestRevision() {
+        return core.getAddTestRevision();
     }
 
     public void shutdown() {

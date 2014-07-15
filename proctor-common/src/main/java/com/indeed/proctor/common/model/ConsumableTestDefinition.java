@@ -13,7 +13,7 @@ import java.util.Map;
 public class ConsumableTestDefinition {
     @Nonnull
     private Map<String, Object> constants = Collections.emptyMap();
-    private int version;
+    private String version;
     @Nullable
     private String salt;
     @Nullable
@@ -31,7 +31,7 @@ public class ConsumableTestDefinition {
     public ConsumableTestDefinition() { /* intentionally empty */ }
 
     public ConsumableTestDefinition(
-            final int version,
+            final String version,
             @Nullable final String rule,
             @Nonnull final TestType testType,
             @Nullable final String salt,
@@ -59,11 +59,11 @@ public class ConsumableTestDefinition {
         this.constants = constants;
     }
 
-    public int getVersion() {
+    public String getVersion() {
         return version;
     }
 
-    public void setVersion(final int version) {
+    public void setVersion(final String version) {
         this.version = version;
     }
 

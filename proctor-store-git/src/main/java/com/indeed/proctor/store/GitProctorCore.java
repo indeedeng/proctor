@@ -2,24 +2,22 @@ package com.indeed.proctor.store;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectLoader;
-import org.eclipse.jgit.lib.Ref;
-import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.lib.TextProgressMonitor;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevTree;
 import org.eclipse.jgit.revwalk.RevWalk;
-import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.AndTreeFilter;
@@ -27,115 +25,74 @@ import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.treewalk.filter.PathSuffixFilter;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.indeed.proctor.common.Serializers;
 
 public class GitProctorCore implements FileBasedPersisterCore {
     private static final Logger LOGGER = Logger.getLogger(GitProctorCore.class);
-    private static final String DIRECTORY_IDENTIFIER = ".git";
 
-    private Git git; //TODO should be final
+    private Git git;
     private final String gitUrl;
-    private Repository repo; //TODO should be final
-    private final File tempDir;
+    private final String refName;
+    private final GitWorkspaceProvider workspaceProvider;
+
+    public GitProctorCore(final String gitUrl, final String username, final String password,
+            final File tempDir) {
+        this(gitUrl, username, password, new GitWorkspaceProviderImpl(tempDir, TimeUnit.DAYS.toMillis(1)));
+    }
 
     /**
      * @param gitUrl
      * @param username
      * @param password
-     * @param tempDir
      * @param
      */
-    public GitProctorCore(final String gitUrl, final String username, final String password, final File tempDir) {
-        /*
-         * Eventually, make a temp dir, clone the github repo, then delete temp dir when done
-         */
-        //String localPath = "/Users/jcheng/Documents/git/abcabctest"; // change to tempDir
-        File localPath = tempDir;
+    public GitProctorCore(final String gitUrl, final String username, final String password,
+            final GitWorkspaceProviderImpl workspaceProvider) {
         this.gitUrl = gitUrl;
-        this.tempDir = tempDir;
-        //this.gitUrl = "http://github.wvrgroup.internal/jcheng/git-proctor-test-definitions.git";
+        this.refName = Constants.HEAD;
+        this.workspaceProvider = Preconditions
+                .checkNotNull(workspaceProvider, "GitWorkspaceProvider should not be null");
 
         UsernamePasswordCredentialsProvider user = new UsernamePasswordCredentialsProvider(username, password);
+        File workingDir = workspaceProvider.getRootDirectory();
+        File gitDirectory = new File(workingDir, ".git");
 
         try {
-            // then clone
-            System.out.println("Cloning from " + gitUrl + " to " + localPath);
-            git = Git.cloneRepository()
-                    .setURI(gitUrl)
-                    .setDirectory(localPath)
-                    .setProgressMonitor(new TextProgressMonitor())
-                    .setCredentialsProvider(user)
-                    .call();
+            if (gitDirectory.exists()) {
+                try {
+                    git = Git.open(workingDir);
+                    git.pull().setCredentialsProvider(user).call();
+                } catch (Exception e) {
+                    workspaceProvider.cleanWorkingDirectory();
+                    git = Git.cloneRepository()
+                            .setURI(gitUrl)
+                            .setDirectory(workingDir)
+                            .setProgressMonitor(new TextProgressMonitor())
+                            .setCredentialsProvider(user)
+                            .call();
+                }
+            } else {
+                git = Git.cloneRepository()
+                        .setURI(gitUrl)
+                        .setDirectory(workingDir)
+                        .setProgressMonitor(new TextProgressMonitor())
+                        .setCredentialsProvider(user)
+                        .call();
+            }
+        } catch (GitAPIException e) {
+            LOGGER.error("Unable to clone git repository at " + gitUrl);
+        }
 
+        try {
             git.fetch()
                     .setProgressMonitor(new TextProgressMonitor())
                     .setCredentialsProvider(user)
                     .call();
-
-            // now open the created repository
-            FileRepositoryBuilder builder = new FileRepositoryBuilder();
-            repo = builder.setGitDir(new File(localPath, ".git"))
-                    .readEnvironment() // scan environment GIT_* variables
-                    .findGitDir() // scan up the file system tree
-                    .build();
-        } catch (Exception e) {
-            System.out.println("error while cloning/opening repo");
-            e.printStackTrace();
+        } catch (GitAPIException e) {
+            LOGGER.error("Unable to fetch from " + gitUrl);
         }
-
-        //Git git = null;
-            /*
-        try {
-            git = Git.open(new File(localPath));
-        } catch (IOException e) {
-            //System.err.println("Could not open directory at " + localPath, e);
-            System.out.println("Error when opening git\n\n");
-            e.printStackTrace();
-        }
-        */
-        //this.repo = git.getRepository();
-
-        try {
-            System.out.println(git.branchList().call());
-            for (Ref ref : git.branchList().call()) {
-                System.out.println(ref.getName());
-            }
-
-            /***********
-             * try and read a file from github
-             ***********/
-            // find the HEAD
-            ObjectId lastCommitId = repo.resolve(Constants.HEAD);
-            System.out.println("lastCommitId: " + lastCommitId);
-            System.out.println("lastCommitId toString(): " + lastCommitId.toString());
-            // a RevWalk allows to walk over commits based on some filtering that is defined
-            RevWalk revWalk = new RevWalk(repo);
-            RevCommit commit = revWalk.parseCommit(lastCommitId);
-            // and using commit's tree find the path
-            RevTree tree = commit.getTree();
-            System.out.println("Having tree: " + tree);
-
-            // now try to find a specific file
-            TreeWalk treeWalk = new TreeWalk(repo);
-            treeWalk.addTree(tree);
-            treeWalk.setRecursive(true);
-            treeWalk.setFilter(PathFilter.create("README.md"));
-            if (!treeWalk.next()) {
-                throw new IllegalStateException("Did not find expected file 'README.md'");
-            }
-
-            ObjectId objectId = treeWalk.getObjectId(0);
-            ObjectLoader loader = repo.open(objectId);
-
-            // and then one can the loader to read the file
-            loader.copyTo(System.out);
-
-            repo.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
     }
 
     @Override
@@ -160,7 +117,6 @@ public class GitProctorCore implements FileBasedPersisterCore {
                 treeWalk2.setRecursive(true);
                 //final String joinedPath = "matrices" + "/" + Joiner.on("/").join(path);
                 final String joinedPath = Joiner.on("/").join(path);
-                System.out.println("getFileContents joinedPath var - " + joinedPath);
                 treeWalk2.setFilter(PathFilter.create(joinedPath));
 
                 if (!treeWalk2.next()) {
@@ -185,63 +141,78 @@ public class GitProctorCore implements FileBasedPersisterCore {
         return mapper.readValue(loader.getBytes(), c);
     }
 
+    public boolean cleanUserWorkspace(String user) {
+        workspaceProvider.deleteWorkspaceQuietly(user);
+        return false;
+    }
+
+    /**
+     * Creates a background task that can be scheduled to refresh a template directory used to
+     * seed each user workspace during a commit.
+     * @return
+     */
+    public GitDirectoryRefresher createRefresherTask(String username, String password) {
+        return new GitDirectoryRefresher(workspaceProvider.getRootDirectory(), git, username, password);
+    }
+
     static class GitRcsClient implements FileBasedProctorStore.RcsClient {
         private final Git git;
 
-        public GitRcsClient(Git git) {
+        public GitRcsClient(final Git git) {
             this.git = git;
         }
 
         @Override
-        public void add(File file) throws Exception {
-            git.add().addFilepattern(".").call(); //TODO
+        public void add(final File file) throws Exception {
+            git.add().addFilepattern("test-definitions/" + file.getAbsoluteFile().getParentFile().getName() + "/" +
+                    file.getName()).call();
         }
 
         @Override
         public void delete(File testDefinitionDirectory) throws Exception {
-            //TODO
+            for (File file : testDefinitionDirectory.listFiles()) {
+                git.rm().addFilepattern("test-definitions/" + testDefinitionDirectory.getName()
+                        + "/" + file.getName()).call();
+            }
+        }
+
+        @Override
+        public String getRevisionControlType() {
+            return "git";
         }
     }
 
     @Override
-    public void doInWorkingDirectory(String username, String password, String comment, String previousVersion,
-            FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException {
-
-        System.out.println("tempDir name: " + tempDir.getName());
-        System.out.println("tempDir path: " + tempDir.getAbsolutePath());
-        System.out.println("username: " + username);
-        System.out.println("comment: " + comment);
-
+    public void doInWorkingDirectory(String username,
+                                     String password,
+                                     String comment,
+                                     String previousVersion,
+                                     FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException {
         UsernamePasswordCredentialsProvider user = new UsernamePasswordCredentialsProvider(username, password);
 
+        final FileBasedProctorStore.RcsClient rcsClient = new GitProctorCore.GitRcsClient(git);
+        final File workingDir = workspaceProvider.getRootDirectory();
+        final boolean thingsChanged;
         try {
-            final FileBasedProctorStore.RcsClient rcsClient = new GitProctorCore.GitRcsClient(git);
-            System.out.println(git.getRepository().getDirectory().getAbsolutePath());
-            System.out.println(git.getRepository().getDirectory().getName());
-            final boolean thingsChanged = updater.doInWorkingDirectory(rcsClient, tempDir);
-
+            thingsChanged = updater.doInWorkingDirectory(rcsClient, workingDir);
             if (thingsChanged) {
-                System.out.println("things changed! now on to committing and pushing all files"); //TODO
-                rcsClient.add(null);
                 git.commit().setMessage(comment).call();
                 git.push().setCredentialsProvider(user).call();
-
             }
-        } catch (Exception e) {
-            System.out.println("error while messing with rcsClient " + e);
+        } catch (final GitAPIException e) {
+            throw new StoreException.TestUpdateException("Unable to commit/push changes", e);
+        } catch (final Exception e) {
+            throw new StoreException.TestUpdateException("Unable to perform operation", e);
         }
     }
 
     @Override
     public TestVersionResult determineVersions(final String fetchRevision) throws StoreException.ReadException {
         try {
-            System.out.println("determineVersions start");
             final RevWalk walk = new RevWalk(git.getRepository());
             final ObjectId commitId = ObjectId.fromString(fetchRevision);
             final RevCommit headTree = walk.parseCommit(commitId);
             final RevTree tree = headTree.getTree();
-            System.out.println("Having tree: " + tree);
-
 
             // now use a TreeWalk to iterate over all files in the Tree recursively
             // you can set Filters to narrow down the results if needed
@@ -257,10 +228,8 @@ public class GitProctorCore implements FileBasedPersisterCore {
                 // final RevTree revTree = walk.lookupTree(id);
 
                 final String path = treeWalk.getPathString();
-                System.out.println("determineVersions path var - " + path);
                 final String[] pieces = path.split("/");
                 final String testname = pieces[pieces.length - 2]; // tree / parent directory name
-                System.out.println("determineVersions testname var - " + testname);
 
                 // testname, blobid pair
                 // note this is the blobid hash - not a commit hash
@@ -271,7 +240,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
             walk.dispose();
             return new TestVersionResult(
                     tests,
-                    new Date(headTree.getCommitTime()),
+                    new Date(Long.valueOf(headTree.getCommitTime()) * 1000 /* convert seconds to milliseconds */),
                     headTree.getAuthorIdent().toExternalString(),
                     headTree.toObjectId().getName(),
                     headTree.getFullMessage()
@@ -286,8 +255,11 @@ public class GitProctorCore implements FileBasedPersisterCore {
     }
 
     String getRefName() {
-        return Constants.HEAD;
-        //return refName; //TODO
+        return refName;
+    }
+
+    String getGitUrl() {
+        return gitUrl;
     }
 
     @Override
@@ -295,7 +267,6 @@ public class GitProctorCore implements FileBasedPersisterCore {
         // Is this ThreadSafe ?
         git.getRepository().close();
     }
-
 
     @Override
     public String getAddTestRevision() {

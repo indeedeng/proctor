@@ -51,7 +51,7 @@ public class TestProctorUtils {
         final String[] emptyRules = new String[] { null, "", " " };
         final Range range = new Range(0, 1.0d);
 
-        final int version = 100;
+        final String version = "100";
         final TestType testType = TestType.ANONYMOUS_USER;
         final String salt = "testsalt";
         final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
@@ -103,7 +103,7 @@ public class TestProctorUtils {
         // rule: ${lang == 'en'}
         final Range range = new Range(0, 1.0d);
 
-        final int version = 100;
+        final String version = "100";
         final TestType testType = TestType.ANONYMOUS_USER;
         final String salt = "testsalt";
         final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
@@ -148,7 +148,7 @@ public class TestProctorUtils {
         // rule: ${lang == 'en'}
         final Range range = new Range(0, 1.0d);
 
-        final int version = 100;
+        final String version = "100";
         final TestType testType = TestType.ANONYMOUS_USER;
         final String salt = "testsalt";
         final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
@@ -997,7 +997,7 @@ public class TestProctorUtils {
 
     private Audit constructAudit() {
         final Audit audit = new Audit();
-        audit.setVersion(1);
+        audit.setVersion("1");
         audit.setUpdatedBy("unit test");
         audit.setUpdated(1337133701337L);
         return audit;
@@ -1007,7 +1007,7 @@ public class TestProctorUtils {
                                                          List<Allocation> allocations) {
 
         final ConsumableTestDefinition test = new ConsumableTestDefinition();
-        test.setVersion(0); // don't care about version for this test
+        test.setVersion(""); // don't care about version for this test
         test.setSalt(null); // don't care about salt for this test
         test.setRule(null); // don't care about rule for this test
         test.setTestType(TestType.ANONYMOUS_USER);    // don't really care, but need a valid value

@@ -135,7 +135,6 @@ public class ProctorConsumerUtils {
 
         //  be sure to quote cookies because they have characters that are not allowed raw
         final StringBuilder sb = new StringBuilder(10*forceGroups.size());
-        sb.append('"');
         for (final Iterator<Entry<String, Integer>> iterator = forceGroups.entrySet().iterator(); iterator.hasNext(); ) {
             final Entry<String, Integer> next = iterator.next();
             sb.append(next.getKey()).append(next.getValue());
@@ -143,7 +142,6 @@ public class ProctorConsumerUtils {
                 sb.append(',');
             }
         }
-        sb.append('"');
 
         final String contextPath = request.getContextPath();
         final String cookiePath;

@@ -2,8 +2,11 @@ package com.indeed.proctor.store;
 
 import com.google.common.collect.Lists;
 import com.google.common.io.Files;
+import com.indeed.proctor.common.model.TestMatrixVersion;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.eclipse.jgit.api.CreateBranchCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.LogCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -14,6 +17,7 @@ import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.revwalk.RevCommit;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
@@ -36,8 +40,16 @@ public class GitProctor extends FileBasedProctorStore {
 
     public GitProctor(final String gitPath,
                       final String username,
-                      final String password) throws IOException {
+                      final String password) {
         this(new GitProctorCore(gitPath, username, password, Files.createTempDir()));
+    }
+
+    public GitProctor(final String gitPath,
+                      final String username,
+                      final String password,
+                      final String branch) {
+        this(new GitProctorCore(gitPath, username, password, Files.createTempDir()));
+        checkoutBranch(branch);
     }
 
     public GitProctor(final GitProctorCore core) {
@@ -45,11 +57,17 @@ public class GitProctor extends FileBasedProctorStore {
         this.git = core.getGit();
     }
 
-    /*
+    public GitProctor(final GitProctorCore core, final String branchName) {
+        super(core);
+        this.git = core.getGit();
+        checkoutBranch(branchName);
+    }
+
     public static void main(String args[]) throws IOException {
         final String gitUrl = System.console().readLine("git url: ");
         final String gituser = System.console().readLine("user: ");
         final String password = new String(System.console().readPassword("password: "));
+        final int num_revisions = Integer.parseInt(System.console().readLine("number of histories: "));
         
         final File tempDir = Files.createTempDir();
         try {
@@ -71,7 +89,6 @@ public class GitProctor extends FileBasedProctorStore {
             FileUtils.deleteDirectory(tempDir);
         }
     }
-    */
 
     @Override
     public void verifySetup() throws StoreException {
@@ -96,19 +113,16 @@ public class GitProctor extends FileBasedProctorStore {
 
     @Override
     public boolean cleanUserWorkspace(String username) {
-        System.out.println("can't cleanUserWorkspace - not implemented");
-        throw new UnsupportedOperationException("Not implemented"); //TODO
+        //TODO: Currently deletes the temp directories which breaks the webapp
+        //      Not sure what the intent of this function is
+        //return getGitCore().cleanUserWorkspace(username);
+        return false;
     }
 
-    // TODO check this works as intended
     @Override
     public String getLatestVersion() throws StoreException {
-        System.out.println("getLatestVersion start");
         try {
             final Ref branch = git.getRepository().getRef(getGitCore().getRefName());
-            // final RevWalk walk = new RevWalk(git.getRepository());
-            // final RevCommit headCommit = walk.parseCommit(branch.getObjectId());
-            System.out.println("branch.getObjectId().name - " + branch.getObjectId().name());
             return branch.getObjectId().name();
         } catch (IOException e) {
             throw new StoreException(e);
@@ -150,11 +164,7 @@ public class GitProctor extends FileBasedProctorStore {
                                              final int start,
                                              final int limit) throws StoreException {
         try {
-            System.out.println("getHistory start");
-            System.out.println("test - " + test);
-            System.out.println("rev - " + revision);
             final ObjectId commitId = ObjectId.fromString(revision);
-            System.out.println("commitId\n" + commitId);
             final LogCommand logCommand = git.log()
                 // TODO: create path to definition.json file, sanitize test name for invalid / relative characters
                 .addPath("test-definitions/" + test + "/definition.json")
@@ -180,10 +190,24 @@ public class GitProctor extends FileBasedProctorStore {
             versions.add(new Revision(
                 commit.getName(),
                 commit.getAuthorIdent().toExternalString(),
-                new Date(commit.getCommitTime()),
+                new Date(Long.valueOf(commit.getCommitTime()) * 1000 /* convert seconds to milliseconds */),
                 commit.getFullMessage()
             ));
         }
         return versions;
+    }
+
+    public void checkoutBranch(String branchName) {
+        try {
+            git.branchCreate()
+                    .setName(branchName)
+                    .setUpstreamMode(CreateBranchCommand.SetupUpstreamMode.SET_UPSTREAM)
+                    .setStartPoint("origin/" + branchName)
+                    .setForce(true)
+                    .call();
+            git.checkout().setName(branchName).call();
+        } catch (GitAPIException e) {
+            LOGGER.error("Unable to create/checkout branch " + branchName, e);
+        }
     }
 }

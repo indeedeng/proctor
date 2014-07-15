@@ -15,15 +15,15 @@ public class ProctorBuilder {
     private final ProctorReader proctorReader;
     private final Writer outputSink;
     private final String author;
-    private long version;
+    private String version;
 
     public ProctorBuilder(final ProctorReader proctorReader, Writer outputSink) {
         this(proctorReader, outputSink, null);
     }
     public ProctorBuilder(final ProctorReader proctorReader, Writer outputSink, String author) {
-        this(proctorReader, outputSink, author, -1);
+        this(proctorReader, outputSink, author, "");
     }
-    public ProctorBuilder(final ProctorReader proctorReader, Writer outputSink, String author, long version) {
+    public ProctorBuilder(final ProctorReader proctorReader, Writer outputSink, String author, String version) {
         this.proctorReader = proctorReader;
         this.outputSink = outputSink;
         this.author = author;
