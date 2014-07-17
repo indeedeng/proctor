@@ -57,38 +57,38 @@ public class TestGroupsGenerator extends FreeMarkerCodeGenerator {
     }
     public static File makeTotalSpecification(File dir, String targetDir, String name) throws CodeGenException {
         final File[] dirFiles = dir.listFiles();
-        final String folderPath = dir.getAbsolutePath();
+        final String folderPath = dir.getPath();
         Map<String,TestSpecification> testSpec = new LinkedHashMap<String, TestSpecification>();
         Map<String,String> providedContext = new LinkedHashMap<String,String>();
         for(File child : dirFiles) {
-            if(child.getName().equals("providedcontext.json")){
+            final String childName = child.getName();
+            if(childName.equals("providedcontext.json")){
                 try {
                     providedContext = OBJECT_MAPPER.readValue(child,Map.class);
                 } catch (IOException e) {
                     throw new CodeGenException("Could not read json correctly " + child.getAbsolutePath(), e);
                 }
             }
-            else if (child.getName().endsWith(".json")){
+            else if (childName.endsWith(".json")){
                 if(Strings.isNullOrEmpty(name)) {
                     name = folderPath.substring(folderPath.lastIndexOf(File.separator) + 1) + "Groups.json";
                 }
-                final Map<String,TestSpecification> spec;
+                final TestSpecification spec;
                 try {
-                    spec = OBJECT_MAPPER.readValue(child,Map.class);
+                    spec = OBJECT_MAPPER.readValue(child,TestSpecification.class);
                 } catch (IOException e) {
                     throw new CodeGenException("Could not read json correctly " + child.getAbsolutePath(),e);
                 }
-                testSpec.putAll(spec);
+                testSpec.put(childName.substring(4 /* excluding word "test" */, childName.indexOf(".json")),spec);
             }
         }
-        final Map<String,Object> totalSpec = new LinkedHashMap<String, Object>();
-        totalSpec.put("tests",testSpec);
-        totalSpec.put("providedContext", providedContext);
-        totalSpec.put("generated","true");
+        final ProctorSpecification proctorSpecification = new ProctorSpecification();
+        proctorSpecification.setTests(testSpec);
+        proctorSpecification.setProvidedContext(providedContext);
 
-        final File output =  new File(targetDir + (targetDir.endsWith(File.separator) ? "": File.separator) + name);
+        final File output =  new File(targetDir, name);
         try {
-            OBJECT_MAPPER.defaultPrettyPrintingWriter().writeValue(output, totalSpec);
+            OBJECT_MAPPER.defaultPrettyPrintingWriter().writeValue(output, proctorSpecification);
         } catch (IOException e) {
             throw new CodeGenException("Could not write to temp file " + output.getAbsolutePath(),e);
         }

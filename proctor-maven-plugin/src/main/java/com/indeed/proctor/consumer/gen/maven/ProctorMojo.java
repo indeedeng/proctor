@@ -1,5 +1,6 @@
 package com.indeed.proctor.consumer.gen.maven;
 
+import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -28,11 +29,21 @@ public class ProctorMojo extends AbstractProctorMojo {
         return outputDirectory;
     }
 
+    @Parameter(property = "specificationOutput", defaultValue = "${project.build.directory}/generated-resources/proctor", required = true)
+    private File specificationOutput;
+
+    File getSpecificationOutput() {
+        return specificationOutput;
+    }
+
     @Override
     public void execute() throws MojoExecutionException {
         project.addCompileSourceRoot(getOutputDirectory().getPath());
-        super.createTotalSpecifications(getTopDirectory());
-        project.addResource(getResource());
+        super.createTotalSpecifications(getTopDirectory(), null);
+        Resource[] resources = getResources();
+        for(Resource resource : resources) {
+            project.addResource(resource);
+        }
         super.execute();
     }
 }
