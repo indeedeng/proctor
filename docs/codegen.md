@@ -169,6 +169,26 @@ src/main/org/your/company/app/ExampleGroups.json
     => org.your.company.app.ExampleGroupsManager.java
 ```
 
+Alternatively, for a split specification, the format would look like
+```bash
+.
+├── src
+|   ├── main
+|       ├── org/your/company/app/Example
+|           ├── providedcontext.json
+|           ├── examplefirsttest.json
+|           ├── examplesecondtest.json
+|           ├── examplethirdtest.json
+|   ├── test
+|       ├── org/your/company/app/Example
+|           ├── providedcontext.json
+|           ├── examplefirsttest.json
+|           ├── examplesecondtest.json
+|           ├── examplethirdtest.json
+```
+
+
+
 ## <a name="ant"></a>proctor-ant-plugin
 The `proctor-ant-plugin` project provides an ant task, `com.indeed.proctor.consumer.gen.ant.TestGroupsGeneratorTask`, that can be invoked during ant's build process and used to generate Java code.
 
@@ -197,6 +217,22 @@ The `proctor-ant-plugin` project provides an ant task, `com.indeed.proctor.consu
     |       ├── org/your/company/app/ExampleGroups.json
   ```
 
+  Alternatively, for a split specification, the format would look like
+
+  ```bash
+  .
+  ├── src
+  |   ├── resources
+  |       ├── org/your/company/app
+  |           ├── providedcontext.json
+  |           ├── examplefirsttest.json
+  |           ├── examplesecondtest.json
+  |           ├── examplethirdtest.json
+  ```
+
+
+
+
 3. Add a classpath ref for the _proctor_ configuration and define a ant target for invoking `TestGroupsGeneratorTask`. Unlike the maven plugin, the package, groups class name, and groups manager class name must be specified in the ant task. Typically, the _compile_ target depends on the _proctor-generate_ target and the generated-code (in `generated-src`) is not committed to version-control.
 
   ```xml
@@ -223,5 +259,18 @@ The `proctor-ant-plugin` project provides an ant task, `com.indeed.proctor.consu
   ```
 
   See [example ivy.xml and build.xml gist](https://gist.github.com/parker/9eebd91fcb57ea416c6a) for a complete example
+
+  However, for a split specification the _proctor-gen_ task must be called with the input parameter as the containing folder of the jsons, and with the extra parameter `specificationOutput` as the output 
+  
+  ```xml
+        <proctor-gen 
+                  input="src/resources/org/your/company/app"
+                  target="generated-src/java"
+                  specificationOutput="generated-src/resources"
+                  packageName="org.your.company.app"
+                  groupsClass="ExampleGroups"
+                  groupsManagerClass="ExampleGroupsManager"/>
+  ```
+
 
 [Loader]: {{ site.baseurl }}/docs/loader

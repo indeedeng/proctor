@@ -28,6 +28,36 @@ specification: ToyStoreGroups.json
 |       ├── org/your/organisation/app/store/ToyStoreGroups.json
 ```
 
+or for split specifications
+```bash
+# File Structure if using proctor-maven-plugin
+.
+├── src
+|   ├── main
+|       ├── proctor
+|           ├── org/your/organisation/app/store/ToyStore
+|               ├── firsttest.json
+|               ├── secondtest.json
+|               ├── thirdtest.json
+|               ├── providedcontext.json
+
+# File Structure if using proctor-ant-task
+.
+├── src
+|   ├── resources
+|       ├── org/your/organisation/app/store
+|           ├── firsttest.json
+|           ├── secondtest.json
+|           ├── thirdtest.json
+|           ├── providedcontext.json
+```
+  Where `providedcontext.json` is a required file and the other _part_ specifications contain single test specifications. The names of the test are determined from the form `testname`.json. 
+###Ant
+  In ant, the generated class will still use the provided build.xml classnames and package names, however the input parameter must be the containing directory, and the output for the generated specifications must be specified.
+###Maven
+  In maven the generated class will use the standard of `Directory`Groups and `Directory`GroupsManager in naming files where `Directory` is the containing directory of the jsons (In this case: **ToyStore**) 
+  
+
 See [code generator][Codegen] for how to use the maven and ant plugins to generate code based on your application's specification.
 
 ## JSON Schema
@@ -40,6 +70,8 @@ See [code generator][Codegen] for how to use the maven and ant plugins to genera
 | `tests.$testName.payload.type` | (optional) string value indicating the type of payload for this test. See [Payloads][Payload] section below. |
 | `tests.$testName.payload.validator` | (optional) string value indicating the [payload validator][PayloadValidator] for `$testName` |
 | `tests.providedContext` | (optional) Collection of the variables to use in definition rules. Maps `$variableName => $variableType`. See [Context][Context] section below |
+
+With a split specification each file defines a test that would be a property of tests, as well as provided context being separately defined.
 
 ## Defining Tests
 {% gist parker/3bb0e94b9b238b48429f 0-ExampleGroups.json %}
@@ -158,6 +190,36 @@ Multiple tests can be enumerated in an application's test specification by addin
     }
 }
 ```
+
+## Split Specifications
+A split specification (as opposed to a single large specification) can be used as documented above and in [the Code Generation page]({{ site.baseurl }}/codegen). How to format these split specifications with a test similar to the **Multiple Tests** example would look like this:
+
+
+`featureA.json`
+```javascript
+{
+    // Using a proctor test as a feature flag 
+     "buckets" : {"inactive": -1, "disabled":0, "enabled":1}, 
+     "fallbackValue" : -1 
+}
+```
+`layouttst.json`
+```javascript
+{
+    // horizontal/vertical/reverse layout test
+    "buckets" : {"inactive": -1, "horizontal":0, "vertical":1, "reverse":2}, 
+    "fallbackValue" : -1 
+}
+```
+`providedcontext.json`
+```javascript
+{
+    "lang": "String",
+    "country" : "String"
+}
+```
+
+
 
 ## A note on fallback values
 A test's `fallbackValue` corresponds to the bucket value that should be used if a test matrix is not valid with the application's specification. The `proctor-loader` section describes how a test-definition can be invalid. In this scenario, the a new definition will be used in place of the invalid matrix. This definition	will have type=RANDOM and will allocation 100% of users to the test bucket signified by `fallbackValue`. Note, if `Identifiers.randomEnabled` is set to `false` the invalid test will not be allocated. See `using groups interface` for how to properly handle this in your application's code.
