@@ -39,8 +39,8 @@ public class ProctorTestMojo extends AbstractProctorMojo {
     public void execute() throws MojoExecutionException {
         project.addTestCompileSourceRoot(getOutputDirectory().getPath());
         super.createTotalSpecifications(getTopDirectory(),null);
-        Resource[] resources = getResources();
-        for(Resource resource : resources) {
+        final Resource[] resources = getResources();
+        for(final Resource resource : resources) {
             project.addTestResource(resource);
         }
         super.execute();

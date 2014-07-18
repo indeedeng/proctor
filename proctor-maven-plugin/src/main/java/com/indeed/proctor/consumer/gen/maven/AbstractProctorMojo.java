@@ -121,7 +121,7 @@ public abstract class AbstractProctorMojo extends AbstractMojo {
         final File specificationOutputDir = getSpecificationOutput();
         resourceGenerated.setDirectory(specificationOutputDir.getPath());
         resourceGenerated.addInclude("**/*.json");
-        Resource[] resources = {resourceNonGenerated,resourceGenerated};
+        final Resource[] resources = {resourceNonGenerated,resourceGenerated};
         return resources;
 
     }

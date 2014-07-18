@@ -21,7 +21,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -31,15 +30,15 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-public class TestSpecificationCreationGroupsManager {
-    private static final Logger LOGGER = Logger.getLogger(TestSpecificationCreationGroupsManager.class);
-    private static final String SPECIFICATION_RESOURCE = "SpecificationCreationGroups.json";
-    private static final String SPECIFICATION_MATRIX = "specificationcreation.proctor-matrix.json";
+public class TestSplitSpecificationTestGroupsManager {
+    private static final Logger LOGGER = Logger.getLogger(TestSplitSpecificationTestGroupsManager.class);
+    private static final String SPECIFICATION_RESOURCE = "SplitSpecificationTestGroups.json";
+    private static final String SPECIFICATION_MATRIX = "splitspecificationtest.proctor-matrix.json";
 
-    private SpecificationCreationGroupsManager manager;
+    private SplitSpecificationTestGroupsManager manager;
 
 
-    public TestSpecificationCreationGroupsManager() {
+    public TestSplitSpecificationTestGroupsManager() {
     }
 
     @Before()
@@ -48,7 +47,7 @@ public class TestSpecificationCreationGroupsManager {
     }
 
     private void setUp(final Proctor proctor) {
-        manager = new SpecificationCreationGroupsManager(new Supplier<Proctor>() {
+        manager = new SplitSpecificationTestGroupsManager(new Supplier<Proctor>() {
             @Override
             public Proctor get() {
                 return proctor;
@@ -89,7 +88,7 @@ public class TestSpecificationCreationGroupsManager {
                     .build());
 
             final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "FR", /* accountid */ 10);
-            assertEquals("one:test10,three:inactive-1,two:test22", calcBuckets(result));
+            assertEquals("one:test32,three:inactive-1,two:test22", calcBuckets(result));
         }
         {
             final ImmutableMap<TestType, String> idMap = ImmutableMap.<TestType, String>builder()
@@ -100,7 +99,7 @@ public class TestSpecificationCreationGroupsManager {
             final Identifiers identifiers = new Identifiers(idMap, true);
 
             final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "FR", /* accountid */ 10);
-            assertEquals(result.getBuckets().get("one").getValue(),0);
+            assertEquals(result.getBuckets().get("one").getValue(),2);
         }
     }
 
@@ -111,11 +110,11 @@ public class TestSpecificationCreationGroupsManager {
             final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "FR", /* accountid */ 10);
             assertEquals("three:inactive-1,two:test33", calcBuckets(result));
             // Check and make sure SpecificationCreationGroups respects these groups and works as expected.
-            final SpecificationCreationGroups grps = new SpecificationCreationGroups(result);
+            final SplitSpecificationTestGroups grps = new SplitSpecificationTestGroups(result);
 
             assertNull(grps.getOne());
             assertEquals(-99, grps.getOneValue(-99));
-            assertEquals(SpecificationCreationGroups.Two.TEST3, grps.getTwo());
+            assertEquals(SplitSpecificationTestGroups.Two.TEST3, grps.getTwo());
             assertEquals(3, grps.getTwoValue(-99));
 
             // Check the boolean conditions for one of the tests
@@ -138,7 +137,7 @@ public class TestSpecificationCreationGroupsManager {
         final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "US", /* accountid */ 10);
         assertEquals("three:inactive-1,two:test22", calcBuckets(result));
         // Check and make sure SpecificationCreationGroups respects these groups and works as expected.
-        final SpecificationCreationGroups grps = new SpecificationCreationGroups(result);
+        final SplitSpecificationTestGroups grps = new SplitSpecificationTestGroups(result);
         System.out.println("grps == "+grps);
         assertNotNull(grps.getThree());
         assertEquals(-1, grps.getThreeValue(-99));
@@ -149,9 +148,9 @@ public class TestSpecificationCreationGroupsManager {
         // Get the current test payload
         assertEquals(0, grps.getThreePayload(), 0.001);
         // Test per-bucket payload fetch
-        assertEquals(0, grps.getThreePayloadForBucket(SpecificationCreationGroups.Three.INACTIVE), 0.001);
-        assertEquals(5, grps.getThreePayloadForBucket(SpecificationCreationGroups.Three.CONTROL), 0.001);
-        assertEquals(50, grps.getThreePayloadForBucket(SpecificationCreationGroups.Three.TEST), 0.001);
+        assertEquals(0, grps.getThreePayloadForBucket(SplitSpecificationTestGroups.Three.INACTIVE), 0.001);
+        assertEquals(5, grps.getThreePayloadForBucket(SplitSpecificationTestGroups.Three.CONTROL), 0.001);
+        assertEquals(50, grps.getThreePayloadForBucket(SplitSpecificationTestGroups.Three.TEST), 0.001);
 
         assertEquals("two2", grps.toString());
     }
@@ -162,7 +161,7 @@ public class TestSpecificationCreationGroupsManager {
         final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "FR", /* accountid */ 10);
         assertEquals("three:inactive-1,two:test33", calcBuckets(result));
         // Check and make sure SpecificationCreationGroups respects these groups and works as expected.
-        final SpecificationCreationGroups grps = new SpecificationCreationGroups(result);
+        final SplitSpecificationTestGroups grps = new SplitSpecificationTestGroups(result);
         //make sure getDescription method exists and returns the correct description
         assertEquals(grps.getThreeDescription(),"2nd test");
         assertEquals(grps.getOneDescription(),"3rd \n\t\"test");

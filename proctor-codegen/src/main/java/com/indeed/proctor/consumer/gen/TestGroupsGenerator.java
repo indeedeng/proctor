@@ -79,7 +79,7 @@ public class TestGroupsGenerator extends FreeMarkerCodeGenerator {
                 } catch (IOException e) {
                     throw new CodeGenException("Could not read json correctly " + child.getAbsolutePath(),e);
                 }
-                testSpec.put(childName.substring(4 /* excluding word "test" */, childName.indexOf(".json")),spec);
+                testSpec.put(childName.substring(0, childName.indexOf(".json")),spec);
             }
         }
         final ProctorSpecification proctorSpecification = new ProctorSpecification();
