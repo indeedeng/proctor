@@ -99,18 +99,19 @@ public abstract class AbstractGroups {
         final TestBucket testBucket = buckets.get(testName);
 
         // Lookup Payloads for this test
-        final Payload payload;
+        @Nullable final Payload payload;
         if (testBucket != null) {
             payload = testBucket.getPayload();
 
         } else {
-            final TestBucket fallbackTestBucket = Preconditions.checkNotNull(
-                    getTestBucketForBucket(testName, fallbackBucket),
-                    "Invalid fallback bucket '%s' for test '%s'",
-                    fallbackBucket.getName(),
-                    testName);
+            final TestBucket fallbackTestBucket = getTestBucketForBucket(testName, fallbackBucket);
 
-            payload = fallbackTestBucket.getPayload();
+            if (null != fallbackTestBucket) {
+                payload = fallbackTestBucket.getPayload();
+
+            } else {
+                payload = null;
+            }
         }
 
         return Objects.firstNonNull(payload, Payload.EMPTY_PAYLOAD);
