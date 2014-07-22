@@ -8,9 +8,7 @@
                 "b3":2,
                 "b4":3
             },
-            "fallbackValue": -1,
-            "payload" : {
-            }
+            "fallbackValue": -1
         }
       },
     "providedContext": {

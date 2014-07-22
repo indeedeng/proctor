@@ -36,6 +36,7 @@ import com.indeed.proctor.common.model.TestType;
 import org.junit.Test;
 
 import javax.el.ELException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -878,6 +879,165 @@ public class TestProctorUtils {
             // internally consistent matrix
             assertValid("vector payloads can be different lengths", matrix, requiredTests);
         }
+        {
+            final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
+            Payload p = new Payload();
+            p.setMap(ImmutableMap.<String,Object>of("val1",1.0,"val2","one","val3",new ArrayList<String>()));
+            buckets.get(0).setPayload(p);
+            p = new Payload();
+            p.setMap(ImmutableMap.<String,Object>of("val1",2.0,"val2","tw","val3",new ArrayList<String>(){{add("a");add("c");}}));
+            buckets.get(1).setPayload(p);
+            p = new Payload();
+            p.setMap(ImmutableMap.<String,Object>of("val1",2.0,"val2","th","val3",new ArrayList<String>(){{add("foo");add("bar");}}));
+            buckets.get(2).setPayload(p);
+
+            final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets,"map",
+                    ImmutableMap.of("val1","doubleValue","val2","stringValue","val3","stringArray"), null));
+            final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
+
+            tests.put(TEST_A, constructDefinition(buckets, fromCompactAllocationFormat("-1:0.2,0:0.4,1:0.4")));
+
+            final TestMatrixArtifact matrix = constructArtifact(tests);
+
+            assertValid("correct allocation and object, map with double values", matrix, requiredTests);
+        }
+        {
+            final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
+            Payload p = new Payload();
+            p.setMap(ImmutableMap.<String,Object>of("val1",1.0,"val2",3.0,"val3",1.0));
+            buckets.get(0).setPayload(p);
+            p = new Payload();
+            p.setMap(ImmutableMap.<String,Object>of("val1",2.0,"val3",1.0,"val4",3.0));
+            buckets.get(1).setPayload(p);
+            p = new Payload();
+            p.setMap(ImmutableMap.<String,Object>of("val1",2.0,"val2",2.0,"val3",2.0));
+            buckets.get(2).setPayload(p);
+
+            final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets,"map",
+                    ImmutableMap.of("val1","doubleValue","val2","doubleValue","val3","doubleValue"), null));
+            final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
+
+            tests.put(TEST_A, constructDefinition(buckets, fromCompactAllocationFormat("-1:0.2,0:0.4,1:0.4")));
+
+            final TestMatrixArtifact matrix = constructArtifact(tests);
+
+            // internally consistent matrix
+            assertInvalid("map payloads can't have different variable names", matrix, requiredTests);
+        }
+        {
+            final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
+            Payload p = new Payload();
+            p.setMap(ImmutableMap.<String,Object>of("val1",1.0,"val2","yea1","val3",1.0));
+            buckets.get(0).setPayload(p);
+            p = new Payload();
+            p.setMap(ImmutableMap.<String,Object>of("val1",2.0,"val2","yea2","val3",3.0));
+            buckets.get(1).setPayload(p);
+            p = new Payload();
+            p.setMap(ImmutableMap.<String,Object>of("val1",2.0,"val2","yea3","val3",2.0));
+            buckets.get(2).setPayload(p);
+
+            final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets,"map",
+                    ImmutableMap.of("val1","doubleValue","val2","doubleValue","val3","doubleValue"), null));
+            final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
+
+            tests.put(TEST_A, constructDefinition(buckets, fromCompactAllocationFormat("-1:0.2,0:0.4,1:0.4")));
+
+            final TestMatrixArtifact matrix = constructArtifact(tests);
+
+            // internally consistent matrix
+            assertInvalid("map payloads can't have different variable types than specified", matrix, requiredTests);
+        }
+        {
+            final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
+            Payload p = new Payload();
+            p.setMap(ImmutableMap.<String,Object>of("val1",1.0,"val2",3.0,"val3",1.0));
+            buckets.get(0).setPayload(p);
+            p = new Payload();
+            p.setMap(ImmutableMap.<String,Object>of("val1",2.0,"val2",1.0,"val3",3.0));
+            buckets.get(1).setPayload(p);
+            p = new Payload();
+            p.setMap(ImmutableMap.<String,Object>of("val1",2.0,"val2",2.0,"val3",2.0));
+            buckets.get(2).setPayload(p);
+
+            final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets,"map",
+                    ImmutableMap.of("val1","doubleValue","val2","doubleValue","val3","doubleValue","val4","doubleArray"), null));
+            final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
+
+            tests.put(TEST_A, constructDefinition(buckets, fromCompactAllocationFormat("-1:0.2,0:0.4,1:0.4")));
+
+            final TestMatrixArtifact matrix = constructArtifact(tests);
+
+            // internally consistent matrix
+            assertInvalid("map payloads can't have less variable types than specified", matrix, requiredTests);
+        }
+        {
+            final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
+            Payload p = new Payload();
+            p.setMap(ImmutableMap.<String,Object>of("val1",1.0,"val2",3.0,"val3",1.0));
+            buckets.get(0).setPayload(p);
+            p = new Payload();
+            p.setMap(ImmutableMap.<String,Object>of("val1",2.0,"val2",new ArrayList<Double>(){{add(1.0D);}},"val3",3.0));
+            buckets.get(1).setPayload(p);
+            p = new Payload();
+            p.setMap(ImmutableMap.<String,Object>of("val1",2.0,"val2",2.0,"val3",2.0));
+            buckets.get(2).setPayload(p);
+
+            final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets,"map",
+                    ImmutableMap.of("val1","doubleValue","val2","doubleValue","val3","doubleValue"), null));
+            final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
+
+            tests.put(TEST_A, constructDefinition(buckets, fromCompactAllocationFormat("-1:0.2,0:0.4,1:0.4")));
+
+            final TestMatrixArtifact matrix = constructArtifact(tests);
+
+            // internally consistent matrix
+            assertInvalid("map payloads can't have different variable types than specified -- an array instead of a single value", matrix, requiredTests);
+        }
+        {
+            final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
+            Payload p = new Payload();
+            p.setMap(ImmutableMap.<String,Object>of("val1",1.0,"val2",ImmutableMap.<String,Object>of("a",1,"b",2),"val3",1.0));
+            buckets.get(0).setPayload(p);
+            p = new Payload();
+            p.setMap(ImmutableMap.<String,Object>of("val1",2.0,"val2",ImmutableMap.<String,Object>of("c",3,"d",4),"val3",3.0));
+            buckets.get(1).setPayload(p);
+            p = new Payload();
+            p.setMap(ImmutableMap.<String,Object>of("val1",2.0,"val2",ImmutableMap.<String,Object>of("e",5,"f",6),"val3",2.0));
+            buckets.get(2).setPayload(p);
+
+            final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets,"map",
+                    ImmutableMap.of("val1","doubleValue","val2","map","val3","doubleValue"), null));
+            final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
+
+            tests.put(TEST_A, constructDefinition(buckets, fromCompactAllocationFormat("-1:0.2,0:0.4,1:0.4")));
+
+            final TestMatrixArtifact matrix = constructArtifact(tests);
+
+            // internally consistent matrix
+            assertInvalid("map payloads can't nested map payloads", matrix, requiredTests);
+        }
+        {
+            final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
+            Payload p = new Payload();
+            p.setMap(ImmutableMap.<String,Object>of("val1",1.0,"val2","one","val3",new ArrayList<String>()));
+            buckets.get(0).setPayload(p);
+            p = new Payload();
+            p.setMap(ImmutableMap.<String,Object>of("val1",2.0,"val2","tw","val3",new ArrayList<String>(){{add("a");add("c");}}));
+            buckets.get(1).setPayload(p);
+            p = new Payload();
+            p.setMap(ImmutableMap.<String,Object>of("val1",2.0,"val2","th","val3",new ArrayList(){{add(2.1D);add("bar");}}));
+            buckets.get(2).setPayload(p);
+
+            final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets,"map",
+                    ImmutableMap.of("val1","doubleValue","val2","stringValue","val3","stringArray"), null));
+            final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
+
+            tests.put(TEST_A, constructDefinition(buckets, fromCompactAllocationFormat("-1:0.2,0:0.4,1:0.4")));
+
+            final TestMatrixArtifact matrix = constructArtifact(tests);
+
+            assertInvalid("map payload nested arrays can't have multiple types", matrix, requiredTests);
+        }
     }
 
     @Test
@@ -1013,6 +1173,50 @@ public class TestProctorUtils {
 
             // internally consistent matrix
             assertInvalid("stringValue: a payload value doesn't pass validation", matrix, requiredTests);
+        }
+        {
+            final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
+            Payload p = new Payload();
+            p.setMap(ImmutableMap.<String,Object>of("val1",1.0,"val2",3.0,"val3",1.0));
+            buckets.get(0).setPayload(p);
+            p = new Payload();
+            p.setMap(ImmutableMap.<String,Object>of("val1",2.0,"val2",4.0,"val3",1.0));
+            buckets.get(1).setPayload(p);
+            p = new Payload();
+            p.setMap(ImmutableMap.<String,Object>of("val1",2.0,"val2",2.0,"val3",2.0));
+            buckets.get(2).setPayload(p);
+
+            final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets, "map", ImmutableMap.of("val1","doubleValue","val2","doubleValue","val3","doubleValue"), "${val1 + val2 + val3 < 10}"));
+            final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
+
+            tests.put(TEST_A, constructDefinition(buckets, fromCompactAllocationFormat("-1:0.2,0:0.4,1:0.4")));
+
+            final TestMatrixArtifact matrix = constructArtifact(tests);
+
+            // internally consistent matrix
+            assertValid("map: a payload value that should pass validation", matrix, requiredTests);
+        }
+        {
+            final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
+            Payload p = new Payload();
+            p.setMap(ImmutableMap.<String,Object>of("val1",1.0,"val2",3.0,"val3",1.0));
+            buckets.get(0).setPayload(p);
+            p = new Payload();
+            p.setMap(ImmutableMap.<String,Object>of("val1",2.0,"val2",4.0,"val3",1.0));
+            buckets.get(1).setPayload(p);
+            p = new Payload();
+            p.setMap(ImmutableMap.<String,Object>of("val1",2.0,"val2",6.0,"val3",2.0));
+            buckets.get(2).setPayload(p);
+
+            final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets, "map", ImmutableMap.of("val1","doubleValue","val2","doubleValue","val3","doubleValue"), "${val1 + val2 + val3 < 10}"));
+            final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
+
+            tests.put(TEST_A, constructDefinition(buckets, fromCompactAllocationFormat("-1:0.2,0:0.4,1:0.4")));
+
+            final TestMatrixArtifact matrix = constructArtifact(tests);
+
+            // internally consistent matrix
+            assertInvalid("map: a payload value doesn't pass validation", matrix, requiredTests);
         }
     }
 
@@ -1303,7 +1507,15 @@ public class TestProctorUtils {
         testSpec.setBuckets(buckets);
         return testSpec;
     }
-
+    private TestSpecification transformTestBuckets(final List<TestBucket> testBuckets, final String payloadType, final Map<String,String> schema, final String validator) {
+        TestSpecification testSpec = transformTestBuckets(testBuckets);
+        PayloadSpecification payloadSpec = new PayloadSpecification();
+        payloadSpec.setType(payloadType);
+        payloadSpec.setValidator(validator);
+        payloadSpec.setSchema(schema);
+        testSpec.setPayload(payloadSpec);
+        return testSpec;
+    }
     private TestSpecification transformTestBuckets(List<TestBucket> testBuckets, String payloadType, String validator) {
         TestSpecification testSpec = transformTestBuckets(testBuckets);
         PayloadSpecification payloadSpec = new PayloadSpecification();

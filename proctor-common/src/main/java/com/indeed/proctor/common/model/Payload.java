@@ -6,6 +6,7 @@ import com.google.common.base.Joiner;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Arrays;
+import java.util.Map;
 
 /**
  * Models a payload value for a bucket in a test, generally meant to have one kind of value per bucket.
@@ -29,7 +30,8 @@ public class Payload {
     private String stringValue;
     @Nullable
     private String[] stringArray;
-
+    @Nullable
+    private Map<String,Object> map;
     // Used for returning something when we can't return a null.
     public static final Payload EMPTY_PAYLOAD = new Payload();
 
@@ -89,11 +91,20 @@ public class Payload {
         this.stringArray = stringArray;
     }
 
+    @Nullable
+    public Map<String,Object> getMap() {
+        return map;
+    }
+    public void setMap(@Nullable final Map<String, Object> map) {
+        precheckStateAllNull();
+        this.map = map;
+    }
     // Sanity check precondition for above setters
     private void precheckStateAllNull() throws IllegalStateException {
         if ((doubleValue != null) || (doubleArray != null)
             || (longValue != null) || (longArray != null)
-            || (stringValue != null) || (stringArray != null)) {
+            || (stringValue != null) || (stringArray != null)
+            || (map != null)) {
             throw new IllegalStateException("Expected all properties to be empty: " + this);
         }
     }
@@ -103,6 +114,13 @@ public class Payload {
     public String toString() {
         final StringBuilder s = new StringBuilder("{");
         // careful of the autoboxing...
+        if (map != null) {
+            s.append(" map : [");
+            for(Map.Entry<String,Object> Entry : map.entrySet()) {
+                s.append("(" + Entry.getKey() + "," + Entry.getValue() + ")");
+            }
+            s.append("]");
+        }
         if (doubleValue != null) {
             s.append(" doubleValue : ").append(doubleValue);
         }
@@ -159,6 +177,9 @@ public class Payload {
         if (stringArray != null) {
             return "stringArray";
         }
+        if (map != null) {
+            return "map";
+        }
         return "none";
     }
 
@@ -177,11 +198,15 @@ public class Payload {
                 && ((longValue == null) == (that.longValue == null))
                 && ((longArray == null) == (that.longArray == null))
                 && ((stringValue == null) == (that.stringValue == null))
-                && ((stringArray == null) == (that.stringArray == null)));
+                && ((stringArray == null) == (that.stringArray == null))
+                && ((map == null) == (that.map == null)));
     }
 
     public int numFieldsDefined() {
         int i = 0;
+        if (map != null) {
+            i++;
+        }
         if (doubleValue != null) {
             i++;
         }
@@ -230,6 +255,9 @@ public class Payload {
         }
         if (stringArray != null) {
             return stringArray;
+        }
+        if (map != null) {
+            return map;
         }
         return null;
     }

@@ -15,6 +15,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -35,17 +36,22 @@ public class TestGroupsGenerator extends FreeMarkerCodeGenerator {
         final String templatePath = "/com/indeed/proctor/consumer/ant/";
         final String groupsTemplateName = "groups.ftl";
         final String groupsManagerTemplateName = "groups-manager.ftl";
-
+        final String payloadTemplateName = "payload.ftl";
+        final String payloadClass = groupsClass + "Payload";
         final Map<String, Object> baseContext = Maps.newHashMap();
         baseContext.put("groupsClassName", groupsClass);
         baseContext.put("groupsManagerClassName", groupsManagerClass);
-
+        baseContext.put("payloadClassName",groupsClass + "Payload");
         if (groupsClass != null) {
             generate(input, target, baseContext, packageName, groupsClass, templatePath, groupsTemplateName);
         }
         if (groupsManagerClass != null) {
             generate(input, target, baseContext, packageName, groupsManagerClass, templatePath, groupsManagerTemplateName);
         }
+        if (groupsClass != null) {
+            generate(input, target, baseContext, packageName, payloadClass, templatePath, payloadTemplateName);
+        }
+
     }
     /*
      * If a folder of split jsons defining a proctor specification is provided, this method iterates over the folder
@@ -153,12 +159,32 @@ public class TestGroupsGenerator extends FreeMarkerCodeGenerator {
             testDef.put("javaClassName", uppercaseFirstChar(name));
             testDef.put("buckets", buckets);
             testDef.put("defaultValue", testSpecification.getFallbackValue());
-
+            final List<Map<String, String>> nestedPayloadsList = new ArrayList<Map<String,String>>();
             // Only define testDef.payloadJavaClass if the API user has
             // claimed she expects a payload.
             if (testSpecification.getPayload() != null) {
                 final String specifiedPayloadTypeName = testSpecification.getPayload().getType();
                 final PayloadType specifiedPayloadType = PayloadType.payloadTypeForName(specifiedPayloadTypeName);
+                if(specifiedPayloadType == PayloadType.MAP) {
+                    testDef.put("isMap","true");
+                    for(Map.Entry<String,String> entry : testSpecification.getPayload().getSchema().entrySet()) {
+                        final Map<String,String> nestedPayloadsMap = Maps.newHashMap();
+                        nestedPayloadsMap.put("key",entry.getKey());
+                        final PayloadType payloadTypeForValue = PayloadType.payloadTypeForName(entry.getValue());
+                        if(payloadTypeForValue != PayloadType.MAP) {
+                            nestedPayloadsMap.put("value", payloadTypeForValue.javaClassName);
+                            nestedPayloadsMap.put("valueWithoutArray",
+                                    payloadTypeForValue.javaClassName.substring(0, payloadTypeForValue.javaClassName.length() - 2));
+                            if (PayloadType.STRING_ARRAY == payloadTypeForValue) {
+                                nestedPayloadsMap.put("notANumber", "true");
+                            }
+                            nestedPayloadsMap.put("payloadTypeName", payloadTypeForValue.payloadTypeName);
+                            nestedPayloadsList.add(nestedPayloadsMap);
+                        } else {
+                            throw new IllegalArgumentException("Nested Map Payloads are not allowed");
+                        }
+                    }
+                }
                 testDef.put("payloadJavaClass", specifiedPayloadType.javaClassName);
                 testDef.put("payloadAccessorName", specifiedPayloadType.javaAccessorName);
             }
@@ -166,8 +192,7 @@ public class TestGroupsGenerator extends FreeMarkerCodeGenerator {
             if (testSpecification.getDescription() != null) {
                 testDef.put("description", StringEscapeUtils.escapeJava(testSpecification.getDescription()));
             }
-
-
+            testDef.put("nestedPayloadsList",nestedPayloadsList);
 
             testDefs.add(testDef);
         }

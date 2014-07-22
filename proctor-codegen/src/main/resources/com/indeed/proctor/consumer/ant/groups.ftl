@@ -6,7 +6,7 @@ import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.consumer.*;
 import javax.annotation.Nullable;
 import javax.annotation.Nonnull;
-
+import java.util.Map;
 /*
  * GENERATED source; do not edit directly
  * (but you can extend me.  you'll want to override {@link #toString()}, using {@link #buildTestGroupString()} or {@link #appendTestGroups(StringBuilder)} instead)
@@ -117,6 +117,23 @@ public class ${mainClassName} extends AbstractGroups {
     }
 
     <#if (testDef.payloadJavaClass)??>
+    <#if (testDef.isMap)??>
+    public @Nullable ${mainClassName}Payload.${testDef.name?cap_first} get${testDef.javaClassName}Payload() {
+        final @Nullable TestBucket bucket = getTestBucketForBucket(${testEnumName}.${testDef.enumName}.getName(), ${testDef.javaClassName}.getFallback());
+        if (bucket == null) {
+            return null;
+        }
+        return new ${mainClassName}Payload.${testDef.name?cap_first}(bucket);
+    }
+
+    public @Nullable ${mainClassName}Payload.${testDef.name?cap_first} get${testDef.javaClassName}PayloadForBucket(final ${testDef.javaClassName} targetBucket) {
+        final @Nullable TestBucket bucket = getTestBucketForBucket(${testEnumName}.${testDef.enumName}.getName(), targetBucket);
+        if (bucket == null) {
+            return null;
+        }
+        return new ${mainClassName}Payload.${testDef.name?cap_first}(bucket);
+    }
+    <#else>
     public @Nullable ${testDef.payloadJavaClass} get${testDef.javaClassName}Payload() {
         final Payload payload = getPayload(${testEnumName}.${testDef.enumName}.getName(), ${testDef.javaClassName}.getFallback());
         return payload.${testDef.payloadAccessorName}();
@@ -133,6 +150,7 @@ public class ${mainClassName} extends AbstractGroups {
         }
         return payload.${testDef.payloadAccessorName}();
     }
+    </#if>
     </#if>
 
     <#if (testDef.description)??>

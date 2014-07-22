@@ -71,6 +71,7 @@ public class TestUnitTestGroupsManager {
 
         final ProctorSpecification specification = getProctorSpecification();
         final StringProctorLoader loader = new StringProctorLoader(specification, SPECIFICATION_MATRIX, matrixString.toString());
+
         assertTrue("StringProctorLoader should load", loader.load());
         return loader.get();
     }
@@ -94,7 +95,7 @@ public class TestUnitTestGroupsManager {
                                                             .build());
 
             final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "FR", /* accountid */ 10);
-            assertEquals("kluj:kloo2,oop_poop:test1,payloaded:inactive-1,payloaded_verified:inactive-1,pimple:control0", calcBuckets(result));
+            assertEquals("kluj:kloo2,map_payload:inactive-1,oop_poop:test1,payloaded:inactive-1,payloaded_verified:inactive-1,pimple:control0", calcBuckets(result));
         }
         {
             final ImmutableMap<TestType, String> idMap = ImmutableMap.<TestType, String>builder()
@@ -131,7 +132,7 @@ public class TestUnitTestGroupsManager {
         {
             final Identifiers identifiers = new Identifiers(TestType.ANONYMOUS_USER, "16s2o7s01001d9vj");
             final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "FR", /* accountid */ 10);
-            assertEquals("kluj:test1,oop_poop:control0,payloaded:inactive-1,payloaded_verified:inactive-1", calcBuckets(result));
+            assertEquals("kluj:test1,map_payload:inactive-1,oop_poop:control0,payloaded:inactive-1,payloaded_verified:inactive-1", calcBuckets(result));
             // Check and make sure UnitTestGroups respects these groups and works as expected.
             final UnitTestGroups grps = new UnitTestGroups(result);
 
@@ -247,7 +248,7 @@ public class TestUnitTestGroupsManager {
                 .put(TestType.ANONYMOUS_USER, SPECIFICATION_MATRIX)
                 .build());
         final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "US", /* accountid */ 10);
-        assertEquals("kluj:kloo2,oop_poop:test1,payloaded:inactive-1,payloaded_verified:inactive-1", calcBuckets(result));
+        assertEquals("kluj:kloo2,map_payload:inactive-1,oop_poop:test1,payloaded:inactive-1,payloaded_verified:inactive-1", calcBuckets(result));
         // Check and make sure UnitTestGroups respects these groups and works as expected.
         final UnitTestGroups grps = new UnitTestGroups(result);
         assertNotNull(grps.getPayloaded_verified());
@@ -278,7 +279,7 @@ public class TestUnitTestGroupsManager {
     public void testTestDescriptions(){
         final Identifiers identifiers = new Identifiers(TestType.USER, "16s2o7s01001d9vj");
         final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "FR", /* accountid */ 10);
-        assertEquals("kluj:test1,oop_poop:control0,payloaded:inactive-1,payloaded_verified:inactive-1", calcBuckets(result));
+        assertEquals("kluj:test1,map_payload:inactive-1,oop_poop:control0,payloaded:inactive-1,payloaded_verified:inactive-1", calcBuckets(result));
         // Check and make sure UnitTestGroups respects these groups and works as expected.
         final UnitTestGroups grps = new UnitTestGroups(result);
         //make sure getDescription method exists and returns the correct description
@@ -289,11 +290,39 @@ public class TestUnitTestGroupsManager {
     public void testTestDescriptions_checkEscaping(){
         final Identifiers identifiers = new Identifiers(TestType.USER, "16s2o7s01001d9vj");
         final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "FR", /* accountid */ 10);
-        assertEquals("kluj:test1,oop_poop:control0,payloaded:inactive-1,payloaded_verified:inactive-1", calcBuckets(result));
+        assertEquals("kluj:test1,map_payload:inactive-1,oop_poop:control0,payloaded:inactive-1,payloaded_verified:inactive-1", calcBuckets(result));
         // Check and make sure UnitTestGroups respects these groups and works as expected.
         final UnitTestGroups grps = new UnitTestGroups(result);
         //make sure getDescription method exists and returns the correct description with escaping
         assertEquals(grps.getBubbleDescription(),"3rd \n\t\"test");
+    }
+
+    @Test
+    public void testMapPayloadReturns(){
+        final Identifiers identifiers = new Identifiers(TestType.USER, "16s2o7s01001d9vj");
+        final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "FR", /* accountid */ 10);
+
+        final UnitTestGroups grps = new UnitTestGroups(result);
+        assertEquals(grps.getMap_payloadPayload().getAstring(),"lol");
+        assertEquals(grps.getMap_payloadPayload().getAdouble(), (Double) 2.1);
+        assertArrayEquals(grps.getMap_payloadPayload().getAnarray(), new Long[]{1L, 2L, 3L});
+        assertArrayEquals(grps.getMap_payloadPayload().getAstringarr(), new String[]{"one","two","three"});
+        assertArrayEquals(grps.getMap_payloadPayload().getAdarray(), new Double[]{1.1,2.1,3.1});
+
+        final UnitTestGroupsPayload.Map_payload unitTestGroupsPayloadTest = grps.getMap_payloadPayloadForBucket(UnitTestGroups.Map_payload.TEST);
+        assertEquals(unitTestGroupsPayloadTest.getAstring(),"l");
+        assertEquals(unitTestGroupsPayloadTest.getAdouble(), (Double) 1.1);
+        assertArrayEquals(unitTestGroupsPayloadTest.getAnarray(), new Long[]{1L, 2L, 3L});
+        assertArrayEquals(unitTestGroupsPayloadTest.getAstringarr(), new String[]{"one","two","three"});
+        assertArrayEquals(unitTestGroupsPayloadTest.getAdarray(), new Double[]{1.1,2.1,3.1});
+
+        final UnitTestGroupsPayload.Map_payload unitTestGroupsPayloadControl = grps.getMap_payloadPayloadForBucket(UnitTestGroups.Map_payload.CONTROL);
+        assertEquals(unitTestGroupsPayloadControl.getAstring(),"str2");
+        assertEquals(unitTestGroupsPayloadControl.getAdouble(), (Double) 3.1);
+        assertArrayEquals(unitTestGroupsPayloadControl.getAnarray(), new Long[]{1L, 2L, 3L});
+        assertArrayEquals(unitTestGroupsPayloadControl.getAstringarr(), new String[]{"one","two","three"});
+        assertArrayEquals(unitTestGroupsPayloadControl.getAdarray(), new Double[]{1.1,2.1,3.1});
+
     }
 
     private String calcBuckets(ProctorResult proctorResult) {

@@ -44,6 +44,7 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -396,6 +397,14 @@ public abstract class ProctorUtils {
         if (payloadSpec != null) {
             final String specifiedPayloadTypeName = Preconditions.checkNotNull(payloadSpec.getType(), "Missing payload spec type");
             final PayloadType specifiedPayloadType = PayloadType.payloadTypeForName(specifiedPayloadTypeName);
+            final Map<String,String> specificationPayloadTypes = payloadSpec.getSchema();
+            if(specifiedPayloadType == PayloadType.MAP) {
+                if(specificationPayloadTypes.isEmpty()
+                        || specificationPayloadTypes == null) {
+                    throw new IncompatibleTestMatrixException("For test " + testName + " from " + matrixSource + " expected non empty payload");
+                }
+            }
+
             if (specifiedPayloadType == null) {
                 // This is probably redundant vs. TestGroupsGenerator.
                 throw new IncompatibleTestMatrixException("For test " + testName + " from " + matrixSource + " test specification payload type unknown: " + specifiedPayloadTypeName);
@@ -407,9 +416,10 @@ public abstract class ProctorUtils {
                 if (payload != null) {
                     if (!specifiedPayloadType.payloadHasThisType(payload)) {
                         throw new IncompatibleTestMatrixException("For test " + testName + " from " + matrixSource + " expected payload of type " + specifiedPayloadType.payloadTypeName + " but matrix has a test bucket payload with wrong type: " + bucket);
-
                     }
-                    if (payloadValidatorRule != null) {
+                    if (specifiedPayloadType == PayloadType.MAP) {
+                        checkMapPayloadTypes(payload,specificationPayloadTypes,matrixSource,testName,specifiedPayloadType,payloadValidatorRule,bucket,functionMapper);
+                    } else if (payloadValidatorRule != null) {
                         final boolean payloadIsValid = evaluatePayloadValidator(ruleEvaluator, payloadValidatorRule, payload);
                         if (!payloadIsValid) {
                             throw new IncompatibleTestMatrixException("For test " + testName + " from " + matrixSource + " payload validation rule " + payloadValidatorRule + " failed for test bucket: " + bucket);
@@ -419,6 +429,75 @@ public abstract class ProctorUtils {
             }
         }
     }
+
+    private static void checkMapPayloadTypes(final Payload payload,
+                                             final Map<String,String> specificationPayloadTypes,
+                                             final String matrixSource,
+                                             final String testName,
+                                             final PayloadType specifiedPayloadType,
+                                             final String payloadValidatorRule,
+                                             final TestBucket bucket,
+                                             final FunctionMapper functionMapper) throws IncompatibleTestMatrixException {
+        final RuleEvaluator ruleEvaluator = makeRuleEvaluator(RuleEvaluator.EXPRESSION_FACTORY, functionMapper);
+        if (payload.getMap() == null) {
+            throw new IncompatibleTestMatrixException("For test " + testName + " from " + matrixSource + " expected payload of type " + specifiedPayloadType.payloadTypeName + " but matrix has a test bucket payload with wrong type: " + bucket);
+        }
+        if (specificationPayloadTypes.size() > payload.getMap().size()) {
+            throw new IncompatibleTestMatrixException("For test " + testName + " from " + matrixSource + " expected payload of equal size to specification " + specifiedPayloadType + "  but matrix has a test bucket payload with wrong type size: " + bucket);
+        }
+        final Map<String,Object> bucketPayloadMap = payload.getMap();
+        for (final Entry<String,String> specificationPayloadEntry : specificationPayloadTypes.entrySet()) {
+            if (!bucketPayloadMap.containsKey(specificationPayloadEntry.getKey())) {
+                throw new IncompatibleTestMatrixException("For test " + testName + " from " + matrixSource + " expected payload of same order and variable names as specificied in " + specifiedPayloadType + " but matrix has a test bucket payload with wrong type: " + bucket);
+            }
+            final PayloadType expectedPayloadType;
+            try {
+                expectedPayloadType = PayloadType.payloadTypeForName(specificationPayloadEntry.getValue());
+            } catch (IllegalArgumentException e) {
+                throw new IncompatibleTestMatrixException("For test " + testName + " from " + matrixSource + " specification payload type unknown in: " + specifiedPayloadType.payloadTypeName);
+            }
+            if(expectedPayloadType == PayloadType.MAP) {
+                throw new IncompatibleTestMatrixException("For test " + testName + " from " + matrixSource + " specification payload type has unallowed nested map types: " + specifiedPayloadType.payloadTypeName);
+            }
+            final Object actualPayload = bucketPayloadMap.get(specificationPayloadEntry.getKey());
+            if(actualPayload instanceof ArrayList) {
+                for(final Object actualPayloadEntry : (ArrayList)actualPayload) {
+                    final Class actualClazz = actualPayloadEntry.getClass();
+                    if(PayloadType.STRING_ARRAY == expectedPayloadType) {
+                        if(!String.class.isAssignableFrom(actualClazz)) {
+                            throw new IncompatibleTestMatrixException("For test " + testName + " from " + matrixSource + " expected payload of type " + specifiedPayloadType.payloadTypeName + " but matrix has a test bucket payload with wrong nested type: " + bucket);
+                        }
+                    } else if(PayloadType.LONG_ARRAY == expectedPayloadType
+                            || PayloadType.DOUBLE_ARRAY == expectedPayloadType) {
+                        if(!Number.class.isAssignableFrom(actualClazz)) {
+                            throw new IncompatibleTestMatrixException("For test " + testName + " from " + matrixSource + " expected payload of type " + specifiedPayloadType.payloadTypeName + " but matrix has a test bucket payload with wrong nested type: " + bucket);
+                        }
+                    } else {
+                        throw new IncompatibleTestMatrixException("For test " + testName + " from " + matrixSource + " expected payload of type " + specifiedPayloadType.payloadTypeName + " but matrix has a test bucket payload with wrong nested type: " +  bucket);
+                    }
+                }
+            } else if (PayloadType.DOUBLE_ARRAY == expectedPayloadType
+                    || PayloadType.STRING_ARRAY == expectedPayloadType
+                    || PayloadType.LONG_ARRAY == expectedPayloadType) {
+                throw new IncompatibleTestMatrixException("For test " + testName + " from " + matrixSource + " expected payload of type " + specifiedPayloadType.payloadTypeName + " but matrix has a test bucket payload with wrong nested type: " +  bucket);
+            } else {
+                try {
+                    if(!Class.forName("java.lang."+expectedPayloadType.javaClassName).isInstance(actualPayload)) {
+                        throw new IncompatibleTestMatrixException("For test " + testName + " from " + matrixSource + " expected payload of type " + specifiedPayloadType.payloadTypeName + " but matrix has a test bucket payload with wrong nested type: " +  bucket);
+                    }
+                } catch (ClassNotFoundException e) {
+                    throw new IncompatibleTestMatrixException("For test " + testName + " from " + matrixSource + " incompatible payload type?");
+                }
+            }
+        }
+        if (payloadValidatorRule != null) {
+            final boolean payloadIsValid = evaluatePayloadMapValidator(ruleEvaluator, payloadValidatorRule, payload);
+            if (!payloadIsValid) {
+                throw new IncompatibleTestMatrixException("For test " + testName + " from " + matrixSource + " payload validation rule " + payloadValidatorRule + " failed for test bucket: " + bucket);
+            }
+        }
+    }
+
 
     private static void consolidate(@Nonnull final TestMatrixArtifact testMatrix, @Nonnull final Map<String, TestSpecification> requiredTests) {
         final Map<String, ConsumableTestDefinition> definedTests = testMatrix.getTests();
@@ -717,6 +796,15 @@ public abstract class ProctorUtils {
         final Map<String, Object> testConstants = Collections.emptyMap();
 
         return new RuleEvaluator(expressionFactory, functionMapper, testConstants);
+    }
+
+    private static boolean evaluatePayloadMapValidator(@Nonnull final RuleEvaluator ruleEvaluator, final String rule, @Nonnull final Payload payload) throws IncompatibleTestMatrixException {
+        try {
+            return ruleEvaluator.evaluateBooleanRule(rule, payload.getMap());
+        } catch (@Nonnull final IllegalArgumentException e) {
+            LOGGER.error("Unable to evaluate rule ${" + rule + "} with payload " + payload, e);
+        }
+        return true;
     }
 
     private static boolean evaluatePayloadValidator(@Nonnull final RuleEvaluator ruleEvaluator, final String rule, @Nonnull final Payload payload) throws IncompatibleTestMatrixException {
