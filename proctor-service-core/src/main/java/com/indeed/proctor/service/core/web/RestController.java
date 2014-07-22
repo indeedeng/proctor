@@ -21,12 +21,13 @@ import org.codehaus.jackson.type.TypeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
@@ -54,7 +55,7 @@ public class RestController {
     }
 
     @RequestMapping(value="/groups/identify", method=RequestMethod.GET)
-    public @ResponseBody JsonResponse<JsonResult> groupsIdentify(final HttpServletRequest request) {
+    public JsonResponseView groupsIdentify(final HttpServletRequest request, final Model model) {
         final Proctor proctor = tryLoadProctor();
 
         final RawParameters raw = extractor.extract(request);
@@ -65,30 +66,34 @@ public class RestController {
 
         final JsonResult jsonResult = new JsonResult(
                 result, param.getTest(), param.getContext(), loader.getLastAudit());
-        return new JsonResponse<JsonResult>(jsonResult, new JsonMeta(HttpStatus.OK.value()));
+        model.addAttribute(new JsonResponse<JsonResult>(jsonResult, new JsonMeta(HttpStatus.OK.value())));
+        return new JsonResponseView();
     }
 
     /**
      * Returns the entire test matrix in JSON format.
      */
     @RequestMapping(value="/proctor/matrix", method=RequestMethod.GET)
-    public @ResponseBody JsonResponse<Map<String, Object>> proctorMatrix() {
-        return new JsonResponse<Map<String, Object>>(getJsonMatrix(), new JsonMeta(HttpStatus.OK.value()));
+    public JsonResponseView proctorMatrix(final Model model) {
+        model.addAttribute(new JsonResponse<Map<String, Object>>(getJsonMatrix(), new JsonMeta(HttpStatus.OK.value())));
+        return new JsonResponseView();
     }
 
     /**
      * Returns the audit of the test matrix in JSON format.
      */
     @RequestMapping(value="/proctor/matrix/audit", method=RequestMethod.GET)
-    public @ResponseBody JsonResponse<Audit> proctorMatrixAudit() {
-        return new JsonResponse<Audit>(loader.getLastAudit(), new JsonMeta(HttpStatus.OK.value()));
+    public JsonResponseView proctorMatrixAudit(final Model model) {
+        model.addAttribute(new JsonResponse<Audit>(loader.getLastAudit(), new JsonMeta(HttpStatus.OK.value())));
+        return new JsonResponseView();
     }
 
     /**
      * Returns the test definition for a specific test in JSON format.
      */
     @RequestMapping(value="/proctor/matrix/definition/{testName}", method=RequestMethod.GET)
-    public @ResponseBody JsonResponse<ConsumableTestDefinition> proctorMatrixAuditDefinition(
+    public JsonResponseView proctorMatrixDefinition(
+            final Model model,
             @PathVariable String testName) {
 
         final Proctor proctor = tryLoadProctor();
@@ -98,46 +103,52 @@ public class RestController {
             throw new NotFoundException(String.format("'%s' test definition not found in test matrix.", testName));
         }
 
-        return new JsonResponse<ConsumableTestDefinition>(testDef, new JsonMeta(HttpStatus.OK.value()));
+        model.addAttribute(new JsonResponse<ConsumableTestDefinition>(testDef, new JsonMeta(HttpStatus.OK.value())));
+        return new JsonResponseView();
     }
 
     /**
      * Returns the configured context variable parsers from the service configuration file.
      */
     @RequestMapping(value="/config/context")
-    public @ResponseBody JsonResponse<Map<String, JsonContextVarConfig>> configContext() {
-        return new JsonResponse<Map<String, JsonContextVarConfig>>(
-                jsonServiceConfig.getContext(), new JsonMeta(HttpStatus.OK.value()));
+    public JsonResponseView configContext(final Model model) {
+        model.addAttribute(new JsonResponse<Map<String, JsonContextVarConfig>>(
+                jsonServiceConfig.getContext(), new JsonMeta(HttpStatus.OK.value())));
+        return new JsonResponseView();
     }
 
     /**
      * Returns the configured identifiers from the service configuration file.
      */
     @RequestMapping(value="/config/identifiers")
-    public @ResponseBody JsonResponse<Map<String, JsonVarConfig>> configIdentifiers() {
-        return new JsonResponse<Map<String, JsonVarConfig>>(
-                jsonServiceConfig.getIdentifiers(), new JsonMeta(HttpStatus.OK.value()));
+    public JsonResponseView configIdentifiers(final Model model) {
+        model.addAttribute(new JsonResponse<Map<String, JsonVarConfig>>(
+                jsonServiceConfig.getIdentifiers(), new JsonMeta(HttpStatus.OK.value())));
+        return new JsonResponseView();
     }
 
     @ExceptionHandler(BadRequestException.class)
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-    @ResponseBody
-    public JsonResponse handleBadRequestException(final BadRequestException e) {
-        return new JsonEmptyDataResponse(new JsonMeta(HttpStatus.BAD_REQUEST.value(), e.getMessage()));
+    public ModelAndView handleBadRequestException(final BadRequestException e) {
+        ModelAndView mav = new ModelAndView(new JsonResponseView());
+        mav.addObject(new JsonEmptyDataResponse(new JsonMeta(HttpStatus.BAD_REQUEST.value(), e.getMessage())));
+        return mav;
     }
 
     @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(value = HttpStatus.NOT_FOUND)
-    @ResponseBody
-    public JsonResponse handleInternalServerException(final NotFoundException e) {
-        return new JsonEmptyDataResponse(new JsonMeta(HttpStatus.NOT_FOUND.value(), e.getMessage()));
+    public ModelAndView handleNotFoundException(final NotFoundException e) {
+        ModelAndView mav = new ModelAndView(new JsonResponseView());
+        mav.addObject(new JsonEmptyDataResponse(new JsonMeta(HttpStatus.NOT_FOUND.value(), e.getMessage())));
+        return mav;
     }
 
     @ExceptionHandler(InternalServerException.class)
     @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
-    @ResponseBody
-    public JsonResponse handleInternalServerException(final InternalServerException e) {
-        return new JsonEmptyDataResponse(new JsonMeta(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage()));
+    public ModelAndView handleInternalServerException(final InternalServerException e) {
+        ModelAndView mav = new ModelAndView(new JsonResponseView());
+        mav.addObject(new JsonEmptyDataResponse(new JsonMeta(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage())));
+        return mav;
     }
 
     /**
@@ -163,7 +174,7 @@ public class RestController {
             // As a workaround, we'll de-serialize the string and serialize it again.
             // It's possible to interpret that string as a raw JSON string if its in a POJO so that it isn't put into a
             // JSON string. But it's easier just to de-serialize it and let Spring serialize it again. This way, we
-            // don't need to write another class, and we're sure the JSON we serve is valid and has no pretty formatting.
+            // don't need to write another class, and we're sure the JSON we serve is valid.
             final ObjectMapper mapper = new ObjectMapper();
             final StringWriter writer = new StringWriter();
             proctor.appendTestMatrix(writer);
