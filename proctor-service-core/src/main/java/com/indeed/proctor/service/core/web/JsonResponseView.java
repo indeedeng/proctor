@@ -15,5 +15,6 @@ public class JsonResponseView extends MappingJacksonJsonView {
     public JsonResponseView() {
         super();
         setExtractValueFromSingleKeyModel(true);
+        setPrettyPrint(true);
     }
 }
