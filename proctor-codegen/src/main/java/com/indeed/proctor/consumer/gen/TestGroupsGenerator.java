@@ -49,15 +49,15 @@ public class TestGroupsGenerator extends FreeMarkerCodeGenerator {
     }
     /*
      * If a folder of split jsons defining a proctor specification is provided, this method iterates over the folder
-     * contents, using the individual TestDefinition jsons and a providedContext.json to create one large
+     * contents, using the individual TestDefinition jsons and a providedcontext.json to create one large
      * temporary ProctorSpecification json to be used for code generation
      */
     public static File makeTotalSpecification(File dir, String targetDir) throws CodeGenException {
-        return makeTotalSpecification(dir,targetDir,"");
+        //If no name is provided use the name of the containing folder
+        return makeTotalSpecification(dir,targetDir,dir.getPath().substring(dir.getPath().lastIndexOf(File.separator) + 1) + "Groups.json");
     }
     public static File makeTotalSpecification(File dir, String targetDir, String name) throws CodeGenException {
         final File[] dirFiles = dir.listFiles();
-        final String folderPath = dir.getPath();
         Map<String,TestSpecification> testSpec = new LinkedHashMap<String, TestSpecification>();
         Map<String,String> providedContext = new LinkedHashMap<String,String>();
         for(File child : dirFiles) {
@@ -70,9 +70,6 @@ public class TestGroupsGenerator extends FreeMarkerCodeGenerator {
                 }
             }
             else if (childName.endsWith(".json")){
-                if(Strings.isNullOrEmpty(name)) {
-                    name = folderPath.substring(folderPath.lastIndexOf(File.separator) + 1) + "Groups.json";
-                }
                 final TestSpecification spec;
                 try {
                     spec = OBJECT_MAPPER.readValue(child,TestSpecification.class);
