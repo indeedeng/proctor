@@ -74,12 +74,14 @@ public class TestGroupsGeneratorTask extends Task {
     /*
      * Generates total specifications from any partial specifications found
      */
-    private void totalSpecificationGenerator(final File dir, final String packageDirectory) throws CodeGenException {
+    private void totalSpecificationGenerator(final File dir) throws CodeGenException {
         if (dir.equals(null)) {
-            throw new CodeGenException("searchDirectory called with null pointer");
+            throw new CodeGenException("input directory creates null file");
         }
         final File[] providedContextFiles = dir.listFiles((java.io.FileFilter) FileFilterUtils.andFileFilter(FileFilterUtils.fileFileFilter(), FileFilterUtils.nameFileFilter("providedcontext.json")));
         if (providedContextFiles.length == 1) {
+            //make directory if it doesn't exist
+            (new File(specificationOutput.substring(0,specificationOutput.lastIndexOf(File.separator)))).mkdirs();
             final File specificationOutputFile = new File(specificationOutput);
             final File output = gen.makeTotalSpecification(dir, specificationOutputFile.getParent(), specificationOutputFile.getName());
             gen.generate(output.getPath(),target,packageName,groupsClass,groupsManagerClass);
@@ -100,7 +102,7 @@ public class TestGroupsGeneratorTask extends Task {
         if (inputFile.isDirectory()) {
             if(!Strings.isNullOrEmpty(getSpecificationOutput())) {
                 try {
-                    totalSpecificationGenerator(inputFile, null);
+                    totalSpecificationGenerator(inputFile);
                 } catch (final CodeGenException e) {
                     throw new BuildException("Could not create total specification", e);
                 }
