@@ -15,12 +15,23 @@ public class ProctorLoadResult {
     @Nonnull
     private final Set<String> missingTests;
 
+    private final boolean verifiedRules;
     public ProctorLoadResult(
             @Nonnull final Set<String> testsWithErrors,
             @Nonnull Set<String> missingTests
     ) {
         this.testsWithErrors = testsWithErrors;
         this.missingTests = missingTests;
+        this.verifiedRules = false;
+    }
+    public ProctorLoadResult(
+            @Nonnull final Set<String> testsWithErrors,
+            @Nonnull Set<String> missingTests,
+            final boolean verifiedRules
+    ) {
+        this.testsWithErrors = testsWithErrors;
+        this.missingTests = missingTests;
+        this.verifiedRules = verifiedRules;
     }
 
     @Nonnull
@@ -33,6 +44,10 @@ public class ProctorLoadResult {
         return missingTests;
     }
 
+
+    public boolean getVerifiedRules() {
+        return verifiedRules;
+    }
     @SuppressWarnings("UnusedDeclaration")
     public boolean hasInvalidTests() {
         return !(testsWithErrors.isEmpty() && missingTests.isEmpty());
@@ -52,7 +67,7 @@ public class ProctorLoadResult {
     public static class Builder {
         private ImmutableSet.Builder<String> testsWithErrors = ImmutableSet.builder();
         private ImmutableSet.Builder<String> missingTests = ImmutableSet.builder();
-
+        private boolean verifiedRules = false;
         private Builder() { }
 
         @Nonnull
@@ -73,9 +88,14 @@ public class ProctorLoadResult {
             return this;
         }
 
+        public Builder recordVerifiedRules(final boolean verifiedRulesInput){
+            verifiedRules = verifiedRulesInput;
+            return this;
+        }
+
         @Nonnull
         public ProctorLoadResult build() {
-            return new ProctorLoadResult(testsWithErrors.build(), missingTests.build());
+            return new ProctorLoadResult(testsWithErrors.build(), missingTests.build(), verifiedRules);
         }
     }
 }

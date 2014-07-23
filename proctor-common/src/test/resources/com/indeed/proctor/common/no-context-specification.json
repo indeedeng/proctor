@@ -1,0 +1,18 @@
+{
+    "tests" : {
+        "nocontextspec": {
+            "buckets":{
+                "inactive":-1,
+                "b1":0,
+                "b2":1,
+                "b3":2,
+                "b4":3
+            },
+            "fallbackValue": -1,
+            "payload" : {
+            }
+        }
+      },
+    "providedContext": {
+    }
+}

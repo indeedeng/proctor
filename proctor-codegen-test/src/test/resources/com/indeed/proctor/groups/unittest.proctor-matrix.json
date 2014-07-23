@@ -267,6 +267,45 @@
                     ]
                 }
             ]
+        },
+
+        "payloaded_excluded" : {
+            "version" : 1,
+            "salt" : "in the cookies",
+            "testType" : "USER",
+            "description" : "This test has simple payloads on control and test",
+            "rule": "${false}",
+            "buckets" : [
+                {
+                    "name" : "inactive",
+                    "value" : -1,
+                    "payload" : {
+                        "stringArray" : [ "preexisting" ]
+                    }
+                },
+                {
+                    "name" : "control",
+                    "value" : 0,
+                    "payload" : {
+                        "stringArray" : ["just", "like", "normal"]
+                    }
+                },
+                {
+                    "name" : "test",
+                    "value" : 1,
+                    "payload" : {
+                        "stringArray" : ["nothing", "to", "see", "here"]
+                    }
+                }
+            ],
+            "allocations" : [
+                {
+                    "ranges" : [
+                        {"bucketValue":  0, "length": 0.5 },
+                        {"bucketValue":  1, "length": 0.5 }
+                    ]
+                }
+            ]
         }
     }
 }

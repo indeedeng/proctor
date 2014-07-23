@@ -27,11 +27,19 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
     private String lastLoadErrorMessage= "load never attempted";
     @Nonnull
     private final FunctionMapper functionMapper;
-
+    private final ProvidedContext providedContext;
     public AbstractProctorLoader(@Nonnull final Class<?> cls, @Nonnull final ProctorSpecification specification, @Nonnull final FunctionMapper functionMapper) {
         super(cls.getSimpleName());
         this.requiredTests = specification.getTests();
+        this.providedContext = createProvidedContext(specification);
+        if (!this.providedContext.isEvaluable()) {
+            LOGGER.debug("providedContext Objects missing necessary functions for validation, rules will not be tested.");
+        }
         this.functionMapper = functionMapper;
+    }
+
+    protected ProvidedContext createProvidedContext(final ProctorSpecification specification) {
+        return ProctorUtils.convertContextToTestableMap(specification.getProvidedContext());
     }
 
     @Nullable
@@ -69,7 +77,7 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
             throw new MissingTestMatrixException("Failed to load Test Matrix from " + getSource());
         }
 
-        final ProctorLoadResult loadResult = ProctorUtils.verifyAndConsolidate(testMatrix, getSource(), requiredTests, functionMapper);
+        final ProctorLoadResult loadResult = ProctorUtils.verifyAndConsolidate(testMatrix, getSource(), requiredTests, functionMapper, providedContext);
         final Audit newAudit = testMatrix.getAudit();
         if (lastAudit != null) {
             final Audit audit = Preconditions.checkNotNull(newAudit, "Missing audit");
