@@ -112,7 +112,7 @@ public class TestSplitSpecificationTestGroupsManager {
             // Check and make sure SpecificationCreationGroups respects these groups and works as expected.
             final SplitSpecificationTestGroups grps = new SplitSpecificationTestGroups(result);
 
-            assertNull(grps.getOne());
+            assertNotNull(grps.getOne());
             assertEquals(-99, grps.getOneValue(-99));
             assertEquals(SplitSpecificationTestGroups.Two.TEST3, grps.getTwo());
             assertEquals(3, grps.getTwoValue(-99));
