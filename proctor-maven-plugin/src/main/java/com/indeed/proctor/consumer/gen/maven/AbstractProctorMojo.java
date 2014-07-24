@@ -16,7 +16,6 @@ import java.util.List;
 public abstract class AbstractProctorMojo extends AbstractMojo {
 
     private final TestGroupsGenerator gen = new TestGroupsGenerator();
-    private static List<String> accessed;
     abstract File getOutputDirectory();
     abstract File getTopDirectory();
     abstract File getSpecificationOutput();
@@ -117,6 +116,9 @@ public abstract class AbstractProctorMojo extends AbstractMojo {
         } catch (CodeGenException e) {
             throw new MojoExecutionException("Couldn't add non partial specifications to resources");
         }
+        if (resourceNonGenerated.getIncludes().isEmpty()) {
+            resourceNonGenerated.addExclude("**/*");
+        }
         Resource resourceGenerated = new Resource();
         final File specificationOutputDir = getSpecificationOutput();
         resourceGenerated.setDirectory(specificationOutputDir.getPath());
@@ -128,7 +130,6 @@ public abstract class AbstractProctorMojo extends AbstractMojo {
 
     @Override
     public void execute() throws MojoExecutionException {
-        accessed = new ArrayList<String>();
         File topDirectory = getTopDirectory();
         if(topDirectory == null) {
             getLog().error("topDirectory not substituted with configured value?");

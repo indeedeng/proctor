@@ -22,7 +22,6 @@ public class TestGroupsGeneratorTask extends Task {
     private String groupsClass;
     private String groupsManagerClass;
     private String specificationOutput;
-    private static List<String> accessed;
     private static final Logger LOGGER = Logger.getLogger(TestGroupsGeneratorTask.class);
     public String getInput() {
         return input;
@@ -93,7 +92,6 @@ public class TestGroupsGeneratorTask extends Task {
     @Override
     public void execute() throws BuildException {
         //  TODO: validate
-        accessed = new ArrayList<String>();
         final File inputFile = new File(input);
         if (inputFile == null) {
             LOGGER.error("input not substituted with configured value");
