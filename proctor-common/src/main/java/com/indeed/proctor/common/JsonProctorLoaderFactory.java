@@ -84,6 +84,10 @@ public class JsonProctorLoaderFactory {
         this._specification = Preconditions.checkNotNull(specification, "Null specifications are not supported");
     }
 
+    public void setAbsentSpecification() {
+        this._specification = new AbsentProctorSpecification();
+    }
+
     public void setFunctionMapper(@Nonnull final FunctionMapper functionMapper) {
         this.functionMapper = functionMapper;
     }
