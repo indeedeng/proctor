@@ -61,10 +61,10 @@ public class RestController {
         final ConvertedParameters param = converter.convert(raw);
 
         final ProctorResult result = proctor.determineTestGroups(
-                param.getIdentifiers(), param.getContext(), param.getForceGroups());
+                param.getIdentifiers(), param.getContext(), param.getForceGroups(), param.getTest());
 
         final JsonResult jsonResult = new JsonResult(
-                result, param.getTest(), param.getContext(), loader.getLastAudit());
+                result, param.getContext(), loader.getLastAudit());
         model.addAttribute(new JsonResponse<JsonResult>(jsonResult, new JsonMeta(HttpStatus.OK.value())));
         return new JsonResponseView();
     }
