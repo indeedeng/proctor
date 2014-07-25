@@ -1,5 +1,6 @@
 package com.indeed.proctor.webapp.controllers;
 
+import com.google.common.collect.ImmutableMap;
 import com.indeed.proctor.common.EnvironmentVersion;
 import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.Payload;
@@ -12,6 +13,7 @@ import java.util.Collections;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -117,6 +119,46 @@ public class TestProctorTestDefinitionController {
             final double[] rangeOne = {.7, .3};
             final double[] rangeTwo = {.5, .5};
             final TestDefinition testDefinitionOne = createTestDefinition("testbuck:0,control:2",TestType.RANDOM, "salt1",rangeOne,null);
+            final TestDefinition testDefinitionTwo = createTestDefinition("testbuck:0,control:2",TestType.RANDOM, "salt1", rangeTwo,payloadst2);
+            Assert.assertFalse(ProctorTestDefinitionController.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
+        }
+        { //testing map payload autopromote equality
+            final Payload payloadBucket1Test2 = new Payload();
+            HashMap<String, Object> one = new HashMap<String, Object>();
+            one.put("A", new ArrayList(){{add(1);}});
+            one.put("B", 2.1);
+            payloadBucket1Test2.setMap(one);
+            final Payload payloadBucket2Test2 = new Payload();
+            payloadBucket2Test2.setMap(ImmutableMap.<String,Object>of("A", "asdf"));
+            final Payload[] payloadst2 = {payloadBucket1Test2,payloadBucket2Test2};
+            final Payload payloadBucket1Test1 = new Payload();
+            HashMap<String, Object> two = new HashMap<String, Object>();
+            two.put("B", 2.1);
+            two.put("A", new ArrayList(){{add(1);}});
+            payloadBucket1Test1.setMap(two);
+            final Payload payloadBucket2Test1 = new Payload();
+            payloadBucket2Test1.setMap(ImmutableMap.<String,Object>of("A", "asdf"));
+            final Payload[] payloadst1 = {payloadBucket1Test1,payloadBucket2Test1};
+            final double[] rangeOne = {.7, .3};
+            final double[] rangeTwo = {.5, .5};
+            final TestDefinition testDefinitionOne = createTestDefinition("testbuck:0,control:2",TestType.RANDOM, "salt1",rangeOne,payloadst1);
+            final TestDefinition testDefinitionTwo = createTestDefinition("testbuck:0,control:2",TestType.RANDOM, "salt1", rangeTwo,payloadst2);
+            Assert.assertTrue(ProctorTestDefinitionController.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
+        }
+        { //testing map payload failed autopromote equality
+            final Payload payloadBucket1Test2 = new Payload();
+            payloadBucket1Test2.setMap(ImmutableMap.<String,Object>of("A", new ArrayList(){{add("ff");}}));
+            final Payload payloadBucket2Test2 = new Payload();
+            payloadBucket2Test2.setMap(ImmutableMap.<String,Object>of("A", "asdf"));
+            final Payload[] payloadst2 = {payloadBucket1Test2,payloadBucket2Test2};
+            final Payload payloadBucket1Test1 = new Payload();
+            payloadBucket1Test1.setMap(ImmutableMap.<String,Object>of("A", new ArrayList(){{add(1);}}));
+            final Payload payloadBucket2Test1 = new Payload();
+            payloadBucket2Test1.setMap(ImmutableMap.<String,Object>of("A", "asdf"));
+            final Payload[] payloadst1 = {payloadBucket1Test1,payloadBucket2Test1};
+            final double[] rangeOne = {.7, .3};
+            final double[] rangeTwo = {.5, .5};
+            final TestDefinition testDefinitionOne = createTestDefinition("testbuck:0,control:2",TestType.RANDOM, "salt1",rangeOne,payloadst1);
             final TestDefinition testDefinitionTwo = createTestDefinition("testbuck:0,control:2",TestType.RANDOM, "salt1", rangeTwo,payloadst2);
             Assert.assertFalse(ProctorTestDefinitionController.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
         }

@@ -292,6 +292,7 @@ indeed.proctor.editor.BucketsEditor.prototype.validPayloadStringForType_ =
         if ('longValue' == payloadType && 'number' == typeOf && goog.math.isInt(value)) return true;
         if ('doubleValue' == payloadType && 'number' == typeOf && goog.math.isFiniteNumber(value)) return true;
         if ('stringValue' == payloadType && 'string' == typeOf) return true;
+        if ('map' == payloadType && 'object' == typeOf) return true;
         if ('array' == typeOf) {
             var valid = true;
             for (var i = 0; i < value.length; i++) {
@@ -327,6 +328,8 @@ indeed.proctor.editor.BucketsEditor.prototype.expectedExample_ =
           return '[ 3.14, -27, 50.5 ]';
       case 'stringArray':
           return '[ "foo", "bar", "baz" ]';
+      case 'map':
+          return '{"foo":"bar","baz":2.1}';
       case 'none':
           return '(empty string)';
       default:
@@ -477,6 +480,8 @@ indeed.proctor.editor.BucketsEditor.prototype.prettyPrintPayloadValue_ =
       this.ppObject_(payload['longArray'], outputBuffer);
     } else if (goog.isDefAndNotNull(payload['stringArray'])) {
       this.ppObject_(payload['stringArray'], outputBuffer);
+    } else if (goog.isDefAndNotNull(payload['map'])) {
+        this.ppObject_(payload['map'], outputBuffer);
     } else {
       return null;   // We don't know how to handle this type.
     }
