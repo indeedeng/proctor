@@ -1,7 +1,6 @@
 package com.indeed.proctor.common;
 
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
@@ -79,13 +78,11 @@ public class JsonProctorLoaderFactory {
     }
 
     @SuppressWarnings("UnusedDeclaration")
-    @VisibleForTesting
+    /**
+     * setSpecificationResource() is likely more convenient to use instead of this method.
+     */
     public void setSpecification(@Nonnull final ProctorSpecification specification) {
         this._specification = Preconditions.checkNotNull(specification, "Null specifications are not supported");
-    }
-
-    public void setAbsentSpecification() {
-        this._specification = new AbsentProctorSpecification();
     }
 
     public void setFunctionMapper(@Nonnull final FunctionMapper functionMapper) {

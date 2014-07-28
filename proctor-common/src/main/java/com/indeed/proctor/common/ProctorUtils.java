@@ -258,7 +258,10 @@ public abstract class ProctorUtils {
      * Does a limited set of sanity checks that are applicable when there is no specification,
      * and thus no required tests or provided context.
      */
-    public static ProctorLoadResult verifyWithoutSpecification(@Nonnull final TestMatrixArtifact testMatrix, final String matrixSource) {
+    public static ProctorLoadResult verifyWithoutSpecification(@Nonnull final TestMatrixArtifact testMatrix,
+                                                               final String matrixSource,
+                                                               @Nonnull final FunctionMapper functionMapper,
+                                                               @Nonnull final ProvidedContext providedContext) {
         final ProctorLoadResult.Builder resultBuilder = ProctorLoadResult.newBuilder();
 
         for (final Entry<String, ConsumableTestDefinition> entry : testMatrix.getTests().entrySet()) {
@@ -266,7 +269,7 @@ public abstract class ProctorUtils {
             final ConsumableTestDefinition testDefinition = entry.getValue();
 
             try {
-                verifyInternallyConsistentDefinition(testName, matrixSource, testDefinition);
+                verifyInternallyConsistentDefinition(testName, matrixSource, testDefinition, functionMapper, providedContext);
             } catch (IncompatibleTestMatrixException e) {
                 LOGGER.error(String.format("Unable to load test matrix for %s", testName), e);
                 resultBuilder.recordError(testName);
