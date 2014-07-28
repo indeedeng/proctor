@@ -1,5 +1,9 @@
 package com.indeed.proctor.service.core.var;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.indeed.proctor.common.model.TestType;
+
 import java.util.List;
 import java.util.Map;
 
@@ -8,17 +12,17 @@ import java.util.Map;
  */
 public class RawParameters {
     private final Map<String, String> context;
-    private final Map<String, String> identifiers;
+    private final Map<TestType, String> identifiers;
     private final List<String> test;
     private final String forceGroups;
 
     public RawParameters(final Map<String, String> context,
-                         final Map<String, String> identifiers,
+                         final Map<TestType, String> identifiers,
                          final List<String> test,
                          final String forceGroups) {
-        this.context = context;
-        this.identifiers = identifiers;
-        this.test = test;
+        this.context = ImmutableMap.copyOf(context);
+        this.identifiers = ImmutableMap.copyOf(identifiers);
+        this.test = ImmutableList.copyOf(test);
         this.forceGroups = forceGroups;
     }
 
@@ -26,7 +30,7 @@ public class RawParameters {
         return context;
     }
 
-    public Map<String, String> getIdentifiers() {
+    public Map<TestType, String> getIdentifiers() {
         return identifiers;
     }
 

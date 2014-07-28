@@ -4,6 +4,9 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.indeed.proctor.common.AbstractProctorLoader;
 import com.indeed.proctor.service.core.config.CoreConfig;
 import com.indeed.proctor.service.core.config.JsonServiceConfig;
+import com.indeed.proctor.service.core.config.VariableConfigurationJsonParser;
+import com.indeed.proctor.service.core.var.VariableConfiguration;
+import com.indeed.proctor.service.deploy.useragent.UserAgentValueConverter;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,6 +42,17 @@ public class AppConfig extends WebMvcConfigurerAdapter {
     public PropertySourcesPlaceholderConfigurer placeholderConfigurer() {
         // this is *required* to get ${...} replacements to work
         return new PropertySourcesPlaceholderConfigurer();
+    }
+
+    @Bean
+    @Autowired
+    public VariableConfiguration variableConfiguration(final JsonServiceConfig jsonServiceConfig) {
+        return VariableConfigurationJsonParser.newParser()
+            .registerStandardConverters()
+            // Custom types for UserAgent
+            .registerValueConverterByCanonicalName(UserAgentValueConverter.userAgentValueConverter())
+            .registerValueConverterBySimpleName(UserAgentValueConverter.userAgentValueConverter())
+            .buildFrom(jsonServiceConfig);
     }
 
     @Bean(destroyMethod = "shutdownNow")

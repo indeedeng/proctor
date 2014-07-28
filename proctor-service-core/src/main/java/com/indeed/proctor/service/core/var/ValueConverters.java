@@ -1,8 +1,5 @@
 package com.indeed.proctor.service.core.var;
 
-import com.indeed.proctor.service.core.config.ConfigurationException;
-import com.indeed.proctor.service.core.useragents.UserAgent;
-
 import javax.annotation.Nonnull;
 
 /**
@@ -10,29 +7,36 @@ import javax.annotation.Nonnull;
  */
 public final class ValueConverters {
 
-    public static ValueConverter createValueConverter(final String type) {
-        // Primitives
-        if (type.equals("byte") || type.equals("Byte")) return new ByteValueConverter();
-        if (type.equals("short") || type.equals("Short")) return new ShortValueConverter();
-        if (type.equals("int") || type.equals("Integer")) return new IntegerValueConverter();
-        if (type.equals("long") || type.equals("Long")) return new LongValueConverter();
-        if (type.equals("float") || type.equals("Float")) return new FloatValueConverter();
-        if (type.equals("double") || type.equals("Double")) return new DoubleValueConverter();
-        if (type.equals("boolean") || type.equals("Boolean")) return new BooleanValueConverter();
-        if (type.equals("char") || type.equals("Character")) return new CharacterValueConverter();
-
-        if (type.equals("String")) return new StringValueConverter();
-
-        // Custom types
-        if (type.equals("UserAgent")) return new UserAgentValueConverter();
-
-        // Unrecognized type name. You should add any custom converters here and as an implementation of ValueConverter.
-        throw new ConfigurationException(
-                String.format("Type '%s' unrecognized. ValueConverters lacks a converter for this type.", type));
-    }
-
     private ValueConverters() {
         throw new UnsupportedOperationException("ValueConverters should not be initialized.");
+    }
+
+    public static ValueConverter<Byte> byteValueConverter() {
+        return new ByteValueConverter();
+    }
+    public static ValueConverter<Short> shortValueConverter() {
+        return new ShortValueConverter();
+    }
+    public static ValueConverter<Integer> integerValueConverter() {
+        return new IntegerValueConverter();
+    }
+    public static ValueConverter<Long> longValueConverter() {
+        return new LongValueConverter();
+    }
+    public static ValueConverter<Float> floatValueConverter() {
+        return new FloatValueConverter();
+    }
+    public static ValueConverter<Double> doubleValueConverter() {
+        return new DoubleValueConverter();
+    }
+    public static ValueConverter<Boolean> booleanValueConverter() {
+        return new BooleanValueConverter();
+    }
+    public static ValueConverter<Character> characterValueConverter() {
+        return new CharacterValueConverter();
+    }
+    public static ValueConverter<String> stringValueConverter(){
+        return new StringValueConverter();
     }
 
     private static class ByteValueConverter implements ValueConverter<Byte> {
@@ -40,8 +44,13 @@ public final class ValueConverters {
             try {
                 return Byte.valueOf(rawValue);
             } catch (NumberFormatException e) {
-                throw new ValueConversionException(e.getClass().getSimpleName());
+                throw new ValueConversionException(e.getClass().getSimpleName(), e);
             }
+        }
+
+        @Override
+        public Class<Byte> getType() {
+            return Byte.class;
         }
     }
 
@@ -50,8 +59,13 @@ public final class ValueConverters {
             try {
                 return Short.valueOf(rawValue);
             } catch (NumberFormatException e) {
-                throw new ValueConversionException(e.getClass().getSimpleName());
+                throw new ValueConversionException(e.getClass().getSimpleName(), e);
             }
+        }
+
+        @Override
+        public Class<Short> getType() {
+            return Short.class;
         }
     }
 
@@ -60,8 +74,13 @@ public final class ValueConverters {
             try {
                 return Integer.valueOf(rawValue);
             } catch (NumberFormatException e) {
-                throw new ValueConversionException(e.getClass().getSimpleName());
+                throw new ValueConversionException(e.getClass().getSimpleName(), e);
             }
+        }
+
+        @Override
+        public Class<Integer> getType() {
+            return Integer.class;
         }
     }
 
@@ -70,8 +89,13 @@ public final class ValueConverters {
             try {
                 return Long.valueOf(rawValue);
             } catch (NumberFormatException e) {
-                throw new ValueConversionException(e.getClass().getSimpleName());
+                throw new ValueConversionException(e.getClass().getSimpleName(), e);
             }
+        }
+
+        @Override
+        public Class<Long> getType() {
+            return Long.class;
         }
     }
 
@@ -80,8 +104,13 @@ public final class ValueConverters {
             try {
                 return Float.valueOf(rawValue);
             } catch (NumberFormatException e) {
-                throw new ValueConversionException(e.getClass().getSimpleName());
+                throw new ValueConversionException(e.getClass().getSimpleName(), e);
             }
+        }
+
+        @Override
+        public Class<Float> getType() {
+            return Float.class;
         }
     }
 
@@ -90,8 +119,13 @@ public final class ValueConverters {
             try {
                 return Double.valueOf(rawValue);
             } catch (NumberFormatException e) {
-                throw new ValueConversionException(e.getClass().getSimpleName());
+                throw new ValueConversionException(e.getClass().getSimpleName(), e);
             }
+        }
+
+        @Override
+        public Class<Double> getType() {
+            return Double.class;
         }
     }
 
@@ -103,6 +137,11 @@ public final class ValueConverters {
             } else {
                 return Boolean.valueOf(rawValue);
             }
+        }
+
+        @Override
+        public Class<Boolean> getType() {
+            return Boolean.class;
         }
     }
 
@@ -117,17 +156,21 @@ public final class ValueConverters {
                 return rawValue.charAt(0);
             }
         }
+
+        @Override
+        public Class<Character> getType() {
+            return Character.class;
+        }
     }
 
     private static class StringValueConverter implements ValueConverter<String> {
         public String convert(@Nonnull String rawValue) {
             return rawValue;
         }
-    }
 
-    private static class UserAgentValueConverter implements ValueConverter<UserAgent> {
-        public UserAgent convert(@Nonnull String rawValue) {
-            return UserAgent.parseUserAgentStringSafely(rawValue);
+        @Override
+        public Class<String> getType() {
+            return String.class;
         }
     }
 }

@@ -1,4 +1,4 @@
-package com.indeed.proctor.service.core.useragents;
+package com.indeed.proctor.service.deploy.useragent;
 
 import com.google.common.base.Strings;
 import eu.bitwalker.useragentutils.Version;

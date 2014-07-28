@@ -1,5 +1,8 @@
 package com.indeed.proctor.service.core.var;
 
+import com.google.common.base.Objects;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import com.indeed.proctor.service.core.config.ExtractorSource;
 import com.indeed.proctor.service.core.config.JsonVarConfig;
 
@@ -10,10 +13,6 @@ import com.indeed.proctor.service.core.config.JsonVarConfig;
 public abstract class PrefixVariable {
     // The name used in Proctor rule expressions and as the key in the json service configuration.
     private final String varName;
-
-    // For ONLY query parameters, this string followed by a period is prefixed to all source keys for extraction.
-    // This lets us differentiate configured variables vs. built-in API parameters like "test".
-    private final String prefix;
 
     // Where the variable comes from in the HTTP request (QUERY or HEADER).
     private final ExtractorSource source;
@@ -26,28 +25,20 @@ public abstract class PrefixVariable {
 
     private final ValueExtractor extractor;
 
-    public PrefixVariable(final String varName, final JsonVarConfig varConfig, final String prefix) {
+    protected PrefixVariable(final String varName,
+                             final ExtractorSource source,
+                             final String sourceKey,
+                             final ValueExtractor extractor) {
+        Preconditions.checkArgument(! Strings.isNullOrEmpty(varName), "VarName cannot be empty or null");
+        Preconditions.checkArgument(! Strings.isNullOrEmpty(sourceKey), "SourceKey cannot be empty or null");
         this.varName = varName;
-        this.prefix = prefix;
-        source = varConfig.getSource();
-
-        // If the config didn't specify a source key, use the var name. This saves typing in the config file.
-        final String defaultedSourceKey = (varConfig.getSourceKey() != null ? varConfig.getSourceKey() : varName);
-        if (source == ExtractorSource.QUERY) {
-            sourceKey = prefix + "." + defaultedSourceKey;
-        } else {
-            sourceKey = defaultedSourceKey;
-        }
-
-        extractor = ValueExtractors.createValueExtractor(source, sourceKey);
+        this.source = Preconditions.checkNotNull(source, "ExtractorSource is required");
+        this.sourceKey = sourceKey;
+        this.extractor = Preconditions.checkNotNull(extractor, "ValueExtractor is required");
     }
 
     public String getVarName() {
         return varName;
-    }
-
-    public String getPrefix() {
-        return prefix;
     }
 
     public ExtractorSource getSource() {
@@ -63,5 +54,76 @@ public abstract class PrefixVariable {
 
     public ValueExtractor getExtractor() {
         return extractor;
+    }
+
+    public static class Builder<T extends PrefixVariable, B extends Builder<T, B>> {
+        private String varName;
+
+        private ExtractorSource source = ExtractorSource.QUERY;
+
+        private String sourceKey;
+
+        private String prefix;
+
+        private ValueExtractor valueExtractor;
+
+        protected Builder() { }
+
+        public B setVarName(final String varName) {
+            this.varName = varName;
+            return cast();
+        }
+
+        protected String getVarName() {
+            return varName;
+        }
+
+        public B setSource(final ExtractorSource source) {
+            this.source = source;
+            return cast();
+        }
+
+        protected ExtractorSource getSource() {
+            return source;
+        }
+
+        public B setSourceKey(final String sourceKey) {
+            this.sourceKey = sourceKey;
+            return cast();
+        }
+
+        public B setPrefix(final String prefix) {
+            this.prefix = prefix;
+            return cast();
+        }
+
+        public B setValueExtractor(final ValueExtractor valueExtractor) {
+            this.valueExtractor = valueExtractor;
+            return cast();
+        }
+
+        protected String computeSourceKey() {
+            final String defaultedSourceKey = Objects.firstNonNull(Strings.emptyToNull(sourceKey), varName);
+            final String computedSourceKey;
+            if (! Strings.isNullOrEmpty(prefix) && source == ExtractorSource.QUERY) {
+                computedSourceKey = prefix + "." + defaultedSourceKey;
+            } else {
+                computedSourceKey = defaultedSourceKey;
+            }
+            return computedSourceKey;
+        }
+
+        protected ValueExtractor getOrCreateValueExtractor() {
+            if (valueExtractor != null) {
+                return valueExtractor;
+            }
+            final String computedSourceKey = computeSourceKey();
+            return ValueExtractors.createValueExtractor(source, computedSourceKey);
+        }
+
+        protected B cast() {
+            //noinspection unchecked
+            return (B) this;
+        }
     }
 }

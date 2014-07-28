@@ -1,14 +1,17 @@
 package com.indeed.proctor.service.core.var;
 
+import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.indeed.proctor.service.core.web.BadRequestException;
+import com.indeed.proctor.common.model.TestType;
 import com.indeed.proctor.service.core.config.ExtractorSource;
+import com.indeed.proctor.service.core.config.JsonContextVarConfig;
+import com.indeed.proctor.service.core.config.JsonVarConfig;
+import com.indeed.proctor.service.core.web.BadRequestException;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -18,6 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * Extracts variables from the HTTP Request according to the service configuration.
@@ -40,16 +44,32 @@ public class Extractor {
     private final List<ContextVariable> contextList;
     private final List<Identifier> identifierList;
 
-    public Extractor(final List<ContextVariable> contextList, final List<Identifier> identifierList) {
+    public Extractor(final List<ContextVariable> contextList,
+                     final List<Identifier> identifierList) {
         this.contextList = contextList;
         this.identifierList = identifierList;
     }
 
+    private static final Function<PrefixVariable, String> PREFIX_VARIABLE_STRING_FUNCTION = new Function<PrefixVariable, String>() {
+        @Override
+        public String apply(final PrefixVariable variable) {
+            return variable.getVarName();
+        }
+    };
+    private static final Function<Identifier, TestType> IDENTIFIER_TEST_TYPE_FUNCTION = new Function<Identifier, TestType>() {
+        @Override
+        public TestType apply(final Identifier variable) {
+            return variable.getTestType();
+        }
+    };
+
+
     public RawParameters extract(final HttpServletRequest request) {
         checkForUnrecognizedParameters(request.getParameterNames());
 
-        final Map<String, String> contextMap = extractAllVars(request, contextList, true);
-        final Map<String, String> identifierMap = extractAllVars(request, identifierList, false);
+
+        final Map<String, String> contextMap = extractAllVars(request, contextList, PREFIX_VARIABLE_STRING_FUNCTION, true);
+        final Map<TestType, String> identifierMap = extractAllVars(request, identifierList, IDENTIFIER_TEST_TYPE_FUNCTION, false);
 
         checkAtLeastOneIdentifier(identifierMap);
 
@@ -96,7 +116,7 @@ public class Extractor {
      * Zero identifiers is only valid if all the tests are of RANDOM type. This is very rare.
      * Therefore, passing in none should be an error.
      */
-    private void checkAtLeastOneIdentifier(final Map<String, String> identifierMap) {
+    private void checkAtLeastOneIdentifier(final Map<TestType, String> identifierMap) {
         if (identifierMap.isEmpty()) {
             throw new BadRequestException("Request must have at least one identifier.");
         }
@@ -134,35 +154,57 @@ public class Extractor {
      *
      * @param request The HTTP request.
      * @param varList The list of variables to process.
+     * @param mapKeyFn A function used to create key for the map returned based on the input PrefixVariable
      * @param isMissingError Whether or not a missing var constitutes an error. Identifiers are optional, so it is not
      *                       an error to omit them in the request.
      * @return A mapping of var name to string var value.
      */
-    private Map<String, String> extractAllVars(final HttpServletRequest request,
-                                               final List<? extends PrefixVariable> varList,
-                                               boolean isMissingError) {
-        final Map<String, String> ret = Maps.newHashMap();
+    private <KeyType, VariableType extends PrefixVariable> Map<KeyType, String> extractAllVars(
+        final HttpServletRequest request,
+        final List<VariableType> varList,
+        final Function<? super VariableType, KeyType> mapKeyFn,
+        boolean isMissingError
+    ) {
+        final Map<KeyType, String> ret = Maps.newHashMap();
 
-        for (PrefixVariable var : varList) {
+        for (final VariableType var : varList) {
             final String varName = var.getVarName();
             final String value = var.getExtractor().extract(request);
             final String defaultValue = var.getDefaultValue();
+            final KeyType mapKey = mapKeyFn.apply(var);
 
             if (value == null && defaultValue == null && isMissingError) {
                 // This is not allowed for this type of variable, and there is no default to fall back on.
                 throw new BadRequestException(String.format(
-                        "Required variable '%s' not found in '%s' at source key '%s'. See the service configuration.",
-                        varName, var.getSource().toString(), var.getSourceKey()));
+                        "Required variable '%s' not found by '%s'. See the service configuration.",
+                        varName, var.getExtractor().toString()));
             } else if (value == null && defaultValue != null) {
                 // We have a default to fall back on.
-                ret.put(varName, defaultValue);
+                ret.put(mapKey, defaultValue);
             } else if (value != null) {
                 // We don't want to put nulls into our map.
                 // Proctor interprets nulls correctly, but we want an accurate count of identifiers.
-                ret.put(varName, value);
+                ret.put(mapKey, value);
             }
         }
 
         return ret;
     }
+
+    public final Map<String, JsonContextVarConfig> toContextJson() {
+        final Map<String, JsonContextVarConfig> context = Maps.newHashMap();
+        for (final ContextVariable variable : this.contextList) {
+            context.put(variable.getVarName(), variable.toContextJson());
+        }
+        return context;
+    }
+
+    public final Map<String, JsonVarConfig> toIdentifierJson() {
+        final Map<String, JsonVarConfig> identifiers = Maps.newHashMap();
+        for (final Identifier identifier : this.identifierList) {
+            identifiers.put(identifier.getVarName(), identifier.toIdentifierJson());
+        }
+        return identifiers;
+    }
+
 }

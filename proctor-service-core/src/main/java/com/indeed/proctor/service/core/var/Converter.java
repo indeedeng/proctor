@@ -1,5 +1,6 @@
 package com.indeed.proctor.service.core.var;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.indeed.proctor.common.Identifiers;
 import com.indeed.proctor.common.model.TestType;
@@ -63,37 +64,8 @@ public class Converter {
         return converted;
     }
 
-    private Identifiers convertIdentifiers(final Map<String, String> identifiers) {
-        // Convert every key in the identifiers to its matching enum type.
-        final Map<TestType, String> identMap = Maps.newHashMap();
-        final Collection<TestType> registered = TestType.all();
-        for (final Map.Entry<String, String> e : identifiers.entrySet()) {
-            final TestType testType = lookupTestType(registered, e.getKey());
-            if (testType == null) {
-                throw new BadRequestException(
-                        String.format("Could not convert identifier '%s' to TestType", e.getKey()));
-            }
-            identMap.put(testType, e.getValue());
-        }
-        return new Identifiers(identMap, true);
-    }
-
-    /**
-     * Looks up the TestType given a string representation of the test type.
-     * Likely belongs in TestType proper
-     * @param registered
-     * @param testType
-     * @return
-     */
-    private static TestType lookupTestType(final Collection<TestType> registered,
-                                           final String testType) {
-        // we cannot use registered.contains(TestType) because the TestType constructor is private
-        for (final TestType type : registered) {
-            if (type.name().equals(testType)) {
-                return type;
-            }
-        }
-        return null;
+    private Identifiers convertIdentifiers(final Map<TestType, String> identifiers) {
+        return new Identifiers(ImmutableMap.copyOf(identifiers), true);
     }
 
     /**
