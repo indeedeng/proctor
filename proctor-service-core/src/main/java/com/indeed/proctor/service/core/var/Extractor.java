@@ -50,24 +50,26 @@ public class Extractor {
         this.identifierList = identifierList;
     }
 
+    private static final Function<PrefixVariable, String> PREFIX_VARIABLE_STRING_FUNCTION = new Function<PrefixVariable, String>() {
+        @Override
+        public String apply(final PrefixVariable variable) {
+            return variable.getVarName();
+        }
+    };
+    private static final Function<Identifier, TestType> IDENTIFIER_TEST_TYPE_FUNCTION = new Function<Identifier, TestType>() {
+        @Override
+        public TestType apply(final Identifier variable) {
+            return variable.getTestType();
+        }
+    };
+
+
     public RawParameters extract(final HttpServletRequest request) {
         checkForUnrecognizedParameters(request.getParameterNames());
 
-        final Function<PrefixVariable, String> mapKeyFn = new Function<PrefixVariable, String>() {
-            @Override
-            public String apply(final PrefixVariable variable) {
-                return variable.getVarName();
-            }
-        };
-        final Function<Identifier, TestType> variableKeyFn = new Function<Identifier, TestType>() {
-                    @Override
-                    public TestType apply(final Identifier variable) {
-                        return variable.getTestType();
-                    }
-                };
 
-        final Map<String, String> contextMap = extractAllVars(request, contextList, mapKeyFn, true);
-        final Map<TestType, String> identifierMap = extractAllVars(request, identifierList, variableKeyFn, false);
+        final Map<String, String> contextMap = extractAllVars(request, contextList, PREFIX_VARIABLE_STRING_FUNCTION, true);
+        final Map<TestType, String> identifierMap = extractAllVars(request, identifierList, IDENTIFIER_TEST_TYPE_FUNCTION, false);
 
         checkAtLeastOneIdentifier(identifierMap);
 
@@ -152,23 +154,24 @@ public class Extractor {
      *
      * @param request The HTTP request.
      * @param varList The list of variables to process.
+     * @param mapKeyFn A function used to create key for the map returned based on the input PrefixVariable
      * @param isMissingError Whether or not a missing var constitutes an error. Identifiers are optional, so it is not
      *                       an error to omit them in the request.
      * @return A mapping of var name to string var value.
      */
-    private <T, PrefixVariableType extends PrefixVariable> Map<T, String> extractAllVars(
+    private <KeyType, VariableType extends PrefixVariable> Map<KeyType, String> extractAllVars(
         final HttpServletRequest request,
-        final List<PrefixVariableType> varList,
-        final Function<? super PrefixVariableType, T> mapKeyFn,
+        final List<VariableType> varList,
+        final Function<? super VariableType, KeyType> mapKeyFn,
         boolean isMissingError
     ) {
-        final Map<T, String> ret = Maps.newHashMap();
+        final Map<KeyType, String> ret = Maps.newHashMap();
 
-        for (final PrefixVariableType var : varList) {
+        for (final VariableType var : varList) {
             final String varName = var.getVarName();
             final String value = var.getExtractor().extract(request);
             final String defaultValue = var.getDefaultValue();
-            final T mapKey = mapKeyFn.apply(var);
+            final KeyType mapKey = mapKeyFn.apply(var);
 
             if (value == null && defaultValue == null && isMissingError) {
                 // This is not allowed for this type of variable, and there is no default to fall back on.
