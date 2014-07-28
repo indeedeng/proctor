@@ -16,7 +16,6 @@ Through this API, other programming languages only need an HTTP client to use Pr
 
     ```ini
     proctor.test.matrix.path=/your/path/to/proctor-tests-matrix.json
-    proctor.test.specification.path=/your/path/to/proctor-specification.json
     proctor.service.config.path=/your/path/to/service-config.json
     proctor.service.reload.seconds=10
     ```
@@ -41,7 +40,7 @@ Through this API, other programming languages only need an HTTP client to use Pr
 
 ## Configuration
 
-There are four configuration files required by Proctor Service.
+There are three configuration files required by Proctor Service.
 
 ### service.properties
 
@@ -61,10 +60,6 @@ The properties file requires the following fields:
 
     Path to the Proctor test matrix.
 
-* proctor.test.specification.path
-
-    Path to the Proctor test specification.
-
 * proctor.service.config.path
 
     Path to the service configuration.
@@ -80,16 +75,6 @@ The properties file requires the following fields:
 A JSON file with a list of all test definitions used by Proctor Service, including all test buckets and payload values.
 
 See: [Proctor Test Matrix Schema](http://indeedeng.github.io/proctor/docs/matrix-schema/)
-
-### Test Specification
-
-A simple JSON file that describes which tests Proctor Service is using. This is mostly a repeat of tests described in the test matrix but with a slightly different format.
-
-The _providedContext_ section is not used in Proctor Service and can safely be omitted. Types are instead defined in the service configuration file.
-
-This configuration file will hopefully be removed from Proctor Service soon. It is only required due to Proctor internals.
-
-See: [Proctor Specification](http://indeedeng.github.io/proctor/docs/specification/)
 
 ### Service Configuration
 
@@ -308,7 +293,7 @@ _groups_ contains a mapping of test name to values associated with the test grou
 
 The values include the bucket _name_, the bucket _value_, the _version_ of the test definition, and possibly a _payload_.
 
-_payload_ is only included if the test definition and the specification contain payload values and a [payload type](http://indeedeng.github.io/proctor/docs/specification/#toc_4).
+_payload_ is only included if the test definition contains payload values and a [payload type](http://indeedeng.github.io/proctor/docs/specification/#toc_4).
 
 If test groups you are expecting are not in the _groups_ mapping, it's possible that an [eligibility rule](http://indeedeng.github.io/proctor/docs/terminology/#toc_7) excludes them, or there was no identifier with the proper test type. Ensure that you have appropriate [default behavior](http://indeedeng.github.io/proctor/docs/using-groups/#toc_4) for these situations. This default behavior would also be useful if your Proctor Service instance goes down or stops responding.
 
