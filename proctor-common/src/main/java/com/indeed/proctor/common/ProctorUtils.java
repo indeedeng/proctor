@@ -258,7 +258,7 @@ public abstract class ProctorUtils {
      * Does a limited set of sanity checks that are applicable when there is no specification,
      * and thus no required tests or provided context.
      */
-    public static ProctorLoadResult verifyLimited(@Nonnull final TestMatrixArtifact testMatrix, final String matrixSource) {
+    public static ProctorLoadResult verifyWithoutSpecification(@Nonnull final TestMatrixArtifact testMatrix, final String matrixSource) {
         final ProctorLoadResult.Builder resultBuilder = ProctorLoadResult.newBuilder();
 
         for (final Entry<String, ConsumableTestDefinition> entry : testMatrix.getTests().entrySet()) {
