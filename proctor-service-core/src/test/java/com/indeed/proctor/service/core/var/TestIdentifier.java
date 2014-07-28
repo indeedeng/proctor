@@ -1,5 +1,6 @@
 package com.indeed.proctor.service.core.var;
 
+import com.indeed.proctor.common.model.TestType;
 import com.indeed.proctor.service.core.config.ExtractorSource;
 import junit.framework.Assert;
 import org.junit.Test;
@@ -15,7 +16,6 @@ public class TestIdentifier {
         Assert.assertEquals("user", country.getVarName());
         Assert.assertEquals(null, country.getDefaultValue());
         Assert.assertEquals("default source is QUERY", ExtractorSource.QUERY, country.getSource());
-        Assert.assertEquals("default source is QUERY", ValueExtractors.QueryValueExtractor.getClass(), country.getExtractor().getClass());
     }
 
     @Test
@@ -24,30 +24,28 @@ public class TestIdentifier {
         final ValueExtractor header = ValueExtractors.fromQueryParameter("X-USER");
         final ValueExtractor chained = ValueExtractors.chain(extractor, header);
 
-        final Idenfifier = custom = Identifier.newBuilder()
-                           .setVarName("user")
+        final Identifier custom = Identifier.newBuilder()
+                           .setVarName("UsEr")
                            .setPrefix("")
                            .setSourceKey("usr")
                            .setValueExtractor(chained)
                            .build();
-        Assert.assertEquals("Source Key should not contain prefix if empty", "usr", country.getSourceKey());
-        Assert.assertEquals("user", country.getVarName());
-        Assert.assertEquals(null, country.getDefaultValue());
-        Assert.assertEquals("default source is QUERY", ExtractorSource.QUERY, country.getSource());
-        Assert.assertEquals("custom extractor provided", chained, country.getExtractor());
-
+        Assert.assertEquals("Source Key should not contain prefix if empty", "usr", custom.getSourceKey());
+        Assert.assertEquals("UsEr", custom.getVarName());
+        Assert.assertEquals(null, custom.getDefaultValue());
+        Assert.assertEquals("default source is QUERY", ExtractorSource.QUERY, custom.getSource());
     }
 
     @Test
     public void testHeaderParserBuilder() throws Exception {
         final Identifier country = Identifier.newBuilder()
-            .setVarName("country")
+            .setTestType(TestType.ANONYMOUS_USER)
             .setSource(ExtractorSource.HEADER)
+            .setSourceKey("usr")
             .build();
-        Assert.assertEquals("Source key should not include prefix if type is HEADER", "country", country.getSourceKey());
-        Assert.assertEquals("country", country.getVarName());
+        Assert.assertEquals("Source key should not include prefix if type is HEADER", "usr", country.getSourceKey());
+        Assert.assertEquals("user", country.getVarName());
         Assert.assertEquals(null, country.getDefaultValue());
         Assert.assertEquals("specified source is HEADER", ExtractorSource.HEADER, country.getSource());
-        Assert.assertEquals("extractor for HEADER ", ValueExtractors.HeaderValueExtractor.getClass(), country.getExtractor().getClass());
     }
 }

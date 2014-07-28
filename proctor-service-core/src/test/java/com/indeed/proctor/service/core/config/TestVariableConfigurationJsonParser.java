@@ -52,7 +52,7 @@ public class TestVariableConfigurationJsonParser {
         final VariableConfigurationJsonParser parser = VariableConfigurationJsonParser.newParser();
         // first check for a registered type
         doCheckConverterClass(parser, "double", ValueConverters.doubleValueConverter().getClass());
-        parser.reset();
+        parser.clearAll();
         try {
             parser.lookupConverter("double");
             Assert.fail("Lookup Converter should throw ConfigurationException for unknown types");
@@ -64,23 +64,23 @@ public class TestVariableConfigurationJsonParser {
     @Test
     public void testRegisterCustomConverter() {
         final VariableConfigurationJsonParser parser = VariableConfigurationJsonParser.newParser();
-        parser.reset();
+        parser.clearAll();
 
         final ValueConverter<String> converter = ValueConverters.stringValueConverter();
 
         parser.registerValueConverterByType("custom", converter);
         doCheckConverterClass(parser, "custom", converter);
 
-        parser.reset();
+        parser.clearAll();
         // should use "String" (the class Name of the Type)
         parser.registerValueConverterByName(converter);
         doCheckConverterClass(parser, "java.lang.String", converter);
 
-        parser.reset();
+        parser.clearAll();
         parser.registerValueConverterBySimpleName(converter);
         doCheckConverterClass(parser, "String", converter);
 
-        parser.reset();
+        parser.clearAll();
         parser.registerValueConverterByCanonicalName(converter);
         doCheckConverterClass(parser, "java.lang.String", converter);
     }

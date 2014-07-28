@@ -2,10 +2,11 @@ package com.indeed.proctor.service.core.var;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import com.google.common.collect.Iterators;
 import com.indeed.proctor.service.core.config.ConfigurationException;
 import com.indeed.proctor.service.core.config.ExtractorSource;
 
-import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
@@ -80,7 +81,7 @@ public final class ValueExtractors {
         public String toString() {
             final StringBuilder sb = new StringBuilder("ChainedValueExtractor{");
             sb.append("chained(");
-            final Iterator<ValueExtractor> iter;
+            final Iterator<ValueExtractor> iter = Iterators.forArray(extractors);
             while(iter.hasNext()) {
                 final ValueExtractor extractor = iter.next();
                 sb.append(extractor);

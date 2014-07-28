@@ -125,7 +125,7 @@ public class VariableConfigurationJsonParser {
         return this;
     }
 
-    public VariableConfigurationJsonParser reset() {
+    public VariableConfigurationJsonParser clearAll() {
         clearRegisteredConverters();
         clearAdditionalVariables();
         clearAdditionalIdentifiers();

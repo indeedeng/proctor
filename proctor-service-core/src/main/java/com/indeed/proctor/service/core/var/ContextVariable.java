@@ -35,7 +35,7 @@ public class ContextVariable extends PrefixVariable {
         return converter;
     }
 
-    public JsonContextConfig toContextJson() {
+    public JsonContextVarConfig toContextJson() {
         final JsonContextVarConfig config = new JsonContextVarConfig();
         config.setType(getType());
         config.setDefaultValue(getDefaultValue());

@@ -1,5 +1,7 @@
 package com.indeed.proctor.service.core.var;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.indeed.proctor.common.Identifiers;
 
 import java.util.List;
@@ -18,10 +20,10 @@ public class ConvertedParameters {
                                final Identifiers identifiers,
                                final List<String> test,
                                final Map<String, Integer> forceGroups) {
-        this.context = context;
+        this.context = ImmutableMap.copyOf(context);
         this.identifiers = identifiers;
-        this.test = test;
-        this.forceGroups = forceGroups;
+        this.test = ImmutableList.copyOf(test);
+        this.forceGroups = ImmutableMap.copyOf(forceGroups);
     }
 
     public Map<String, Object> getContext() {

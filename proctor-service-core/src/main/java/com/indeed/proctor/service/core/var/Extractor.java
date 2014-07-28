@@ -1,10 +1,12 @@
 package com.indeed.proctor.service.core.var;
 
+import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.indeed.proctor.common.model.TestType;
 import com.indeed.proctor.service.core.config.ExtractorSource;
 import com.indeed.proctor.service.core.config.JsonContextVarConfig;
 import com.indeed.proctor.service.core.config.JsonVarConfig;
@@ -42,7 +44,8 @@ public class Extractor {
     private final List<ContextVariable> contextList;
     private final List<Identifier> identifierList;
 
-    public Extractor(final List<ContextVariable> contextList, final List<Identifier> identifierList) {
+    public Extractor(final List<ContextVariable> contextList,
+                     final List<Identifier> identifierList) {
         this.contextList = contextList;
         this.identifierList = identifierList;
     }
@@ -50,8 +53,21 @@ public class Extractor {
     public RawParameters extract(final HttpServletRequest request) {
         checkForUnrecognizedParameters(request.getParameterNames());
 
-        final Map<String, String> contextMap = extractAllVars(request, contextList, true);
-        final Map<String, String> identifierMap = extractAllVars(request, identifierList, false);
+        final Function<PrefixVariable, String> mapKeyFn = new Function<PrefixVariable, String>() {
+            @Override
+            public String apply(final PrefixVariable variable) {
+                return variable.getVarName();
+            }
+        };
+        final Function<Identifier, TestType> variableKeyFn = new Function<Identifier, TestType>() {
+                    @Override
+                    public TestType apply(final Identifier variable) {
+                        return variable.getTestType();
+                    }
+                };
+
+        final Map<String, String> contextMap = extractAllVars(request, contextList, mapKeyFn, true);
+        final Map<TestType, String> identifierMap = extractAllVars(request, identifierList, variableKeyFn, false);
 
         checkAtLeastOneIdentifier(identifierMap);
 
@@ -98,7 +114,7 @@ public class Extractor {
      * Zero identifiers is only valid if all the tests are of RANDOM type. This is very rare.
      * Therefore, passing in none should be an error.
      */
-    private void checkAtLeastOneIdentifier(final Map<String, String> identifierMap) {
+    private void checkAtLeastOneIdentifier(final Map<TestType, String> identifierMap) {
         if (identifierMap.isEmpty()) {
             throw new BadRequestException("Request must have at least one identifier.");
         }
@@ -140,15 +156,19 @@ public class Extractor {
      *                       an error to omit them in the request.
      * @return A mapping of var name to string var value.
      */
-    private Map<String, String> extractAllVars(final HttpServletRequest request,
-                                               final List<? extends PrefixVariable> varList,
-                                               boolean isMissingError) {
-        final Map<String, String> ret = Maps.newHashMap();
+    private <T, PrefixVariableType extends PrefixVariable> Map<T, String> extractAllVars(
+        final HttpServletRequest request,
+        final List<PrefixVariableType> varList,
+        final Function<? super PrefixVariableType, T> mapKeyFn,
+        boolean isMissingError
+    ) {
+        final Map<T, String> ret = Maps.newHashMap();
 
-        for (PrefixVariable var : varList) {
+        for (final PrefixVariableType var : varList) {
             final String varName = var.getVarName();
             final String value = var.getExtractor().extract(request);
             final String defaultValue = var.getDefaultValue();
+            final T mapKey = mapKeyFn.apply(var);
 
             if (value == null && defaultValue == null && isMissingError) {
                 // This is not allowed for this type of variable, and there is no default to fall back on.
@@ -157,11 +177,11 @@ public class Extractor {
                         varName, var.getExtractor().toString()));
             } else if (value == null && defaultValue != null) {
                 // We have a default to fall back on.
-                ret.put(varName, defaultValue);
+                ret.put(mapKey, defaultValue);
             } else if (value != null) {
                 // We don't want to put nulls into our map.
                 // Proctor interprets nulls correctly, but we want an accurate count of identifiers.
-                ret.put(varName, value);
+                ret.put(mapKey, value);
             }
         }
 
