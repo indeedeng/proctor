@@ -109,7 +109,7 @@ public final class ValueExtractors {
 
         @Override
         public String toString() {
-            return sourceKey + ":" + sourceKey;
+            return ExtractorSource.QUERY + ":" + sourceKey;
         }
     }
 
@@ -127,7 +127,7 @@ public final class ValueExtractors {
 
         @Override
         public String toString() {
-            return sourceKey + ":" + sourceKey;
+            return ExtractorSource.HEADER + ":" + sourceKey;
         }
     }
 }
