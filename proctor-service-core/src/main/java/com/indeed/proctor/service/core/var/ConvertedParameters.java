@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.indeed.proctor.common.Identifiers;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 
@@ -22,7 +23,7 @@ public class ConvertedParameters {
                                final Map<String, Integer> forceGroups) {
         this.context = ImmutableMap.copyOf(context);
         this.identifiers = identifiers;
-        this.test = ImmutableList.copyOf(test);
+        this.test = test != null ? ImmutableList.copyOf(test) : null;
         this.forceGroups = ImmutableMap.copyOf(forceGroups);
     }
 
@@ -34,6 +35,7 @@ public class ConvertedParameters {
         return identifiers;
     }
 
+    @Nullable
     public List<String> getTest() {
         return test;
     }

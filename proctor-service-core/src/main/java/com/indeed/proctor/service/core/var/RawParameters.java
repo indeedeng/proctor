@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.indeed.proctor.common.model.TestType;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 
@@ -22,7 +23,7 @@ public class RawParameters {
                          final String forceGroups) {
         this.context = ImmutableMap.copyOf(context);
         this.identifiers = ImmutableMap.copyOf(identifiers);
-        this.test = ImmutableList.copyOf(test);
+        this.test = test != null ? ImmutableList.copyOf(test) : null;
         this.forceGroups = forceGroups;
     }
 
@@ -40,6 +41,7 @@ public class RawParameters {
      * Returns an empty list if the query parameter was present but empty (ex: "?test=")
      * Returns null if the query parameter was absent.
      */
+    @Nullable
     public List<String> getTest() {
         return test;
     }

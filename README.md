@@ -209,6 +209,12 @@ In addition to the query parameters below, the service configuration can declare
 
     A comma-separated list of test names.
 
+    Use this parameter to return only the tests that your web application is interested in and can supply the relevant context variables for rules.
+
+    If this parameter is not present, no filter is applied, and the API attempts to return **all tests in the test matrix**. If your test matrix is large and contains tests and rules from many different projects, this may be a bad idea. If a rule fails to execute because a context variable was missing, the API will log an error message to the logfile/console, skip the test, and continue.
+
+    If this parameter is empty, zero tests are returned, so _groups_ will be empty. The audit information is still accurate.
+
 * prforceGroups _(optional)_
 
     Force certain test group assignments in this API request. This lets privileged users (developers) test their groups.

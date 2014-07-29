@@ -4,14 +4,15 @@ import com.google.common.collect.ImmutableList;
 import com.indeed.proctor.common.model.TestType;
 import com.indeed.proctor.service.core.config.ExtractorSource;
 import com.indeed.proctor.service.core.web.BadRequestException;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 import java.util.Map;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /** @author parker */
 public class TestExtractor {
@@ -43,7 +44,7 @@ public class TestExtractor {
         assertEquals(1, ids.size());
         assertEquals(userId, ids.get(TestType.ANONYMOUS_USER));
 
-        assertEquals(0, parameters.getTest().size());
+        assertNull(parameters.getTest());
         assertEquals("", parameters.getForceGroups());
     }
 
@@ -67,7 +68,7 @@ public class TestExtractor {
         assertEquals(1, ids.size());
         assertEquals(userId, ids.get(TestType.ANONYMOUS_USER));
 
-        assertEquals(0, parameters.getTest().size());
+        assertNull(parameters.getTest());
         assertEquals("", parameters.getForceGroups());
     }
 
@@ -87,8 +88,28 @@ public class TestExtractor {
         final RawParameters parameters = extractor.extract(request);
 
 
-        assertEquals(0, parameters.getTest().size());
+        assertNull(parameters.getTest());
         assertEquals("mytestbucket1", parameters.getForceGroups());
+    }
+
+    @Test
+    public void testEmptyFilterTestsProvided() {
+        final Extractor extractor = getBasicExtractor();
+
+        final String fr = "fr";
+        final String userId = "123456";
+        final MockHttpServletRequest request = new MockHttpServletRequest();
+        request.addHeader(LANGUAGE_HEADER_NAME, fr);
+        request.setParameter(USER_IDENTIFIER_QUERY_PARAM, userId);
+
+
+        request.setParameter("test", "");
+
+        final RawParameters parameters = extractor.extract(request);
+
+
+        assertNotNull(parameters.getTest());
+        assertTrue(parameters.getTest().isEmpty());
     }
 
     @Test
@@ -107,6 +128,7 @@ public class TestExtractor {
         final RawParameters parameters = extractor.extract(request);
 
 
+        assertNotNull(parameters.getTest());
         assertEquals(3, parameters.getTest().size());
         assertTrue(parameters.getTest().contains("firsttest"));
         assertTrue(parameters.getTest().contains("secondtest"));

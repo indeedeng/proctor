@@ -126,12 +126,14 @@ public class Extractor {
      * Parse the comma-separated tests into a List.
      *
      * If the test parameter appears multiple times, then only the first occurrence is used.
+     *
+     * Return null if there was no test parameter, which means use no test filter.
      */
     private List<String> extractTest(final HttpServletRequest request) {
         // TODO: might this come from post data?
         final String testParam = request.getParameter(TEST_LIST_PARAM);
         if (testParam == null) {
-            return Collections.emptyList();
+            return null;
         } else {
             return Lists.newArrayList(COMMA_SPLITTER.split(testParam));
         }

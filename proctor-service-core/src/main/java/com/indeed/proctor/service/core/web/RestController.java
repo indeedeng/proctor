@@ -33,6 +33,7 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.Collections;
 import java.util.Map;
 
 @Controller
@@ -60,8 +61,20 @@ public class RestController {
         final RawParameters raw = extractor.extract(request);
         final ConvertedParameters param = converter.convert(raw);
 
-        final ProctorResult result = proctor.determineTestGroups(
-                param.getIdentifiers(), param.getContext(), param.getForceGroups(), param.getTest());
+        final ProctorResult result;
+        if (param.getTest() == null) {
+            // Get all existing tests.
+            // This can log many errors if not all context variables in the test matrix were provided.
+            result = proctor.determineTestGroups(
+                    param.getIdentifiers(), param.getContext(), param.getForceGroups(), Collections.<String>emptyList());
+        } else if (param.getTest().isEmpty()) {
+            // Get zero tests.
+            result = ProctorResult.EMPTY;
+        } else {
+            // Get tests specified in parameter.
+            result = proctor.determineTestGroups(
+                    param.getIdentifiers(), param.getContext(), param.getForceGroups(), param.getTest());
+        }
 
         final JsonResult jsonResult = new JsonResult(
                 result, param.getContext(), loader.getLastAudit());
