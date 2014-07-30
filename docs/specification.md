@@ -29,7 +29,10 @@ specification: ToyStoreGroups.json
 ```
 
 or for split specifications
+
+
 ```bash
+
 # File Structure if using proctor-maven-plugin
 .
 ├── src
@@ -51,6 +54,7 @@ or for split specifications
 |           ├── thirdtest.json
 |           ├── providedcontext.json
 ```
+
   Where `providedcontext.json` is a required file and the other _part_ specifications contain single test specifications. The names of the test are determined from the form `testname`.json. 
 ###Ant
   In ant, the generated class will still use the provided build.xml classnames and package names, however the input parameter must be the containing directory, and the output for the generated specifications must be specified.
@@ -196,6 +200,7 @@ A split specification (as opposed to a single large specification) can be used a
 
 
 `featureA.json`
+
 ```javascript
 {
     // Using a proctor test as a feature flag 
@@ -203,7 +208,9 @@ A split specification (as opposed to a single large specification) can be used a
      "fallbackValue" : -1 
 }
 ```
+
 `layouttst.json`
+
 ```javascript
 {
     // horizontal/vertical/reverse layout test
@@ -211,7 +218,9 @@ A split specification (as opposed to a single large specification) can be used a
     "fallbackValue" : -1 
 }
 ```
+
 `providedcontext.json`
+
 ```javascript
 {
     "lang": "String",
