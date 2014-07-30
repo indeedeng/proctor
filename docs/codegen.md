@@ -170,6 +170,7 @@ src/main/org/your/company/app/ExampleGroups.json
 ```
 
 Alternatively, for a split specification, the format would look like
+
 ```bash
 .
 ├── src
