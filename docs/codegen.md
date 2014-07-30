@@ -187,7 +187,18 @@ Alternatively, for a split specification, the format would look like
 |           ├── examplethirdtest.json
 ```
 
+The generated file is sent to target/generated-resources/proctor and must be added separately in the pom.xml for inclusion in classpath resources, this could look like:
 
+```bash
+  <build>
+   ...
+      <resources>
+          <resource>
+              <directory>${project.build.directory}/generated-resources/proctor</directory>
+          </resource>
+      </resources>
+  </build>
+```
 
 ## <a name="ant"></a>proctor-ant-plugin
 The `proctor-ant-plugin` project provides an ant task, `com.indeed.proctor.consumer.gen.ant.TestGroupsGeneratorTask`, that can be invoked during ant's build process and used to generate Java code.
