@@ -26,6 +26,15 @@ public class ProctorResult {
     @Nonnull
     private final Map<String, ConsumableTestDefinition> testDefinitions;
 
+    @Deprecated
+    public ProctorResult(
+            final int matrixVersion,
+            @Nonnull final Map<String, TestBucket> buckets,
+            @Nonnull final Map<String, ConsumableTestDefinition> testDefinitions
+    ) {
+        this(new Integer(matrixVersion).toString(), buckets, testDefinitions);
+    }
+
     public ProctorResult(
             final String matrixVersion,
             @Nonnull final Map<String, TestBucket> buckets,
