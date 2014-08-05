@@ -72,13 +72,14 @@ public class RuleEvaluator {
 
     public static LibraryFunctionMapperBuilder defaultFunctionMapperBuilder() {
         final LibraryFunctionMapperBuilder builder = new LibraryFunctionMapperBuilder()
+                                                .add("indeed", ProctorRuleFunctions.class) //backwards compatibility
                                                 .add("fn", Functions.class)
                                                 .add("proctor", ProctorRuleFunctions.class);
         return builder;
     }
 
     @Nonnull
-    private ELContext createELContext(@Nonnull final VariableMapper variableMapper) {
+    ELContext createELContext(@Nonnull final VariableMapper variableMapper) {
         return new ELContext() {
             @Nonnull
             @Override

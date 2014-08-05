@@ -1,11 +1,14 @@
 package com.indeed.proctor.consumer;
 
+import com.google.common.base.Objects;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import com.indeed.proctor.common.ProctorResult;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.Payload;
 import com.indeed.proctor.common.model.TestBucket;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -30,9 +33,21 @@ public abstract class AbstractGroups {
         return proctorResult.getTestVersions();
     }
 
+    /**
+     * @deprecated Use {@link #isBucketActive(String, int, int)} instead
+     */
     protected boolean isBucketActive(final String testName, final int value) {
         final TestBucket testBucket = buckets.get(testName);
         return ((testBucket != null) && (value == testBucket.getValue()));
+    }
+
+    protected boolean isBucketActive(final String testName, final int value, final int defaultValue) {
+        final TestBucket testBucket = buckets.get(testName);
+        if (null == testBucket) {
+            return value == defaultValue;
+        } else {
+            return value == testBucket.getValue();
+        }
     }
 
     protected int getValue(final String testName, final int defaultValue) {
@@ -59,7 +74,10 @@ public abstract class AbstractGroups {
      * Return the Payload attached to the current active bucket for |test|.
      * Always returns a payload so the client doesn't crash on a malformed
      * test definition.
+     *
+     * @deprecated Use {@link #getPayload(String, Bucket)} instead
      */
+    @Nonnull
     protected Payload getPayload(final String testName) {
         // Get the current bucket.
         final TestBucket testBucket = buckets.get(testName);
@@ -67,12 +85,36 @@ public abstract class AbstractGroups {
         // Lookup Payloads for this test
         if (testBucket != null) {
             final Payload payload = testBucket.getPayload();
-            if (payload != null) {
+            if (null != payload) {
                 return payload;
             }
         }
-        // Else we didn't find something.  Return our emptyPayload
+
         return Payload.EMPTY_PAYLOAD;
+    }
+
+    @Nonnull
+    protected Payload getPayload(final String testName, @Nonnull final Bucket<?> fallbackBucket) {
+        // Get the current bucket.
+        final TestBucket testBucket = buckets.get(testName);
+
+        // Lookup Payloads for this test
+        @Nullable final Payload payload;
+        if (testBucket != null) {
+            payload = testBucket.getPayload();
+
+        } else {
+            final TestBucket fallbackTestBucket = getTestBucketForBucket(testName, fallbackBucket);
+
+            if (null != fallbackTestBucket) {
+                payload = fallbackTestBucket.getPayload();
+
+            } else {
+                payload = null;
+            }
+        }
+
+        return Objects.firstNonNull(payload, Payload.EMPTY_PAYLOAD);
     }
 
 

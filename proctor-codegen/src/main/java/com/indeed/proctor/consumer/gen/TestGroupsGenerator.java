@@ -1,18 +1,25 @@
 package com.indeed.proctor.consumer.gen;
 
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.indeed.proctor.common.PayloadType;
 import com.indeed.proctor.common.ProctorSpecification;
 import com.indeed.proctor.common.ProctorUtils;
+import com.indeed.proctor.common.Serializers;
 import com.indeed.proctor.common.TestSpecification;
 import org.apache.commons.lang.StringEscapeUtils;
+import org.codehaus.jackson.map.ObjectMapper;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -22,6 +29,8 @@ import java.util.TreeSet;
 
 
 public class TestGroupsGenerator extends FreeMarkerCodeGenerator {
+    private static final ObjectMapper OBJECT_MAPPER = Serializers.lenient();
+
     public void generate(final String input, final String target, final String packageName, final String groupsClass, final String groupsManagerClass) throws CodeGenException {
         final String templatePath = "/com/indeed/proctor/consumer/ant/";
         final String groupsTemplateName = "groups.ftl";
@@ -37,6 +46,50 @@ public class TestGroupsGenerator extends FreeMarkerCodeGenerator {
         if (groupsManagerClass != null) {
             generate(input, target, baseContext, packageName, groupsManagerClass, templatePath, groupsManagerTemplateName);
         }
+    }
+    /*
+     * If a folder of split jsons defining a proctor specification is provided, this method iterates over the folder
+     * contents, using the individual TestDefinition jsons and a providedcontext.json to create one large
+     * temporary ProctorSpecification json to be used for code generation
+     */
+    public static File makeTotalSpecification(File dir, String targetDir) throws CodeGenException {
+        //If no name is provided use the name of the containing folder
+        return makeTotalSpecification(dir,targetDir,dir.getPath().substring(dir.getPath().lastIndexOf(File.separator) + 1) + "Groups.json");
+    }
+    public static File makeTotalSpecification(File dir, String targetDir, String name) throws CodeGenException {
+        final File[] dirFiles = dir.listFiles();
+        Map<String,TestSpecification> testSpec = new LinkedHashMap<String, TestSpecification>();
+        Map<String,String> providedContext = new LinkedHashMap<String,String>();
+        for(File child : dirFiles) {
+            final String childName = child.getName();
+            if(childName.equals("providedcontext.json")){
+                try {
+                    providedContext = OBJECT_MAPPER.readValue(child,Map.class);
+                } catch (IOException e) {
+                    throw new CodeGenException("Could not read json correctly " + child.getAbsolutePath(), e);
+                }
+            }
+            else if (childName.endsWith(".json")){
+                final TestSpecification spec;
+                try {
+                    spec = OBJECT_MAPPER.readValue(child,TestSpecification.class);
+                } catch (IOException e) {
+                    throw new CodeGenException("Could not read json correctly " + child.getAbsolutePath(),e);
+                }
+                testSpec.put(childName.substring(0, childName.indexOf(".json")),spec);
+            }
+        }
+        final ProctorSpecification proctorSpecification = new ProctorSpecification();
+        proctorSpecification.setTests(testSpec);
+        proctorSpecification.setProvidedContext(providedContext);
+
+        final File output =  new File(targetDir, name);
+        try {
+            OBJECT_MAPPER.defaultPrettyPrintingWriter().writeValue(output, proctorSpecification);
+        } catch (IOException e) {
+            throw new CodeGenException("Could not write to temp file " + output.getAbsolutePath(),e);
+        }
+        return output;
     }
 
     @Override
@@ -110,7 +163,6 @@ public class TestGroupsGenerator extends FreeMarkerCodeGenerator {
                 testDef.put("payloadAccessorName", specifiedPayloadType.javaAccessorName);
             }
 
-            
             if (testSpecification.getDescription() != null) {
                 testDef.put("description", StringEscapeUtils.escapeJava(testSpecification.getDescription()));
             }

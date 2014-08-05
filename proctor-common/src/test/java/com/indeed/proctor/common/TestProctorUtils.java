@@ -13,21 +13,42 @@ import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.common.model.TestDefinition;
 import com.indeed.proctor.common.model.TestMatrixArtifact;
 import com.indeed.proctor.common.model.TestType;
-import org.junit.Assert;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Test;
 
+import javax.el.ValueExpression;
+import java.io.IOException;
 import java.io.InputStream;
+import com.google.common.base.CharMatcher;
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.indeed.proctor.common.model.Allocation;
+import com.indeed.proctor.common.model.Audit;
+import com.indeed.proctor.common.model.ConsumableTestDefinition;
+import com.indeed.proctor.common.model.Payload;
+import com.indeed.proctor.common.model.Range;
+import com.indeed.proctor.common.model.TestBucket;
+import com.indeed.proctor.common.model.TestDefinition;
+import com.indeed.proctor.common.model.TestMatrixArtifact;
+import com.indeed.proctor.common.model.TestType;
+import org.junit.Test;
+
+import javax.el.ELException;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 
 /**
  * @author parker
@@ -301,8 +322,211 @@ public class TestProctorUtils {
     }
 
     @Test
+    public void testELValidity_inProctorBuilderAllocationRules() throws IncompatibleTestMatrixException {
+
+        //testing invalid allocation rule
+        final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
+        final ConsumableTestDefinition testDefInVal = constructDefinition(buckets,
+                fromCompactAllocationFormat("${b4t#+=}|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25")); // invalid EL, nonsense rule
+        try {
+            ProctorUtils.verifyInternallyConsistentDefinition("testELevalInval", "test el recognition - inval", testDefInVal);
+            fail("expected IncompatibleTestMatrixException");
+        } catch (IncompatibleTestMatrixException e) {
+            //expected
+        }
+
+        //testing valid functions pass with proctor included functions (will throw exception if can't find) and backwards compatibility
+        final ConsumableTestDefinition testDefVal1 = constructDefinition(buckets,
+                fromCompactAllocationFormat("${proctor:now()==indeed:now()}|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25"));
+        ProctorUtils.verifyInternallyConsistentDefinition("testELevalProctor", "test el recognition", testDefVal1);
+
+    }
+    @Test
+    public void testELValidity_inProctorBuilderTestRule() throws IncompatibleTestMatrixException {
+        //Testing syntax validation with a test rule
+        final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
+        final ConsumableTestDefinition testDefInValTestRule = constructDefinition(buckets,
+                fromCompactAllocationFormat("${proctor:now()>-1}|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25"));
+        testDefInValTestRule.setRule("${b4t#+=}");
+        try {
+            ProctorUtils.verifyInternallyConsistentDefinition("testELevalInValTestRule", "test el recognition - inval test rule", testDefInValTestRule);
+            fail("expected IncompatibleTestMatrixException");
+        } catch (IncompatibleTestMatrixException e) {
+            //expected
+        }
+
+        //testing the test rule el function recognition
+        final ConsumableTestDefinition testDefValTestRule = constructDefinition(buckets,
+                fromCompactAllocationFormat("${true}|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25"));
+        testDefValTestRule.setRule("${proctor:now()==indeed:now()}");
+        ProctorUtils.verifyInternallyConsistentDefinition("testELevalValTestRule", "test el recognition - val test rule and functions", testDefValTestRule);
+
+
+    }
+
+    @Test
+    public void testProvidedContextConversion() throws IncompatibleTestMatrixException {
+        final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
+        { //verify primitive types convert correctly
+            final ConsumableTestDefinition testDef = constructDefinition(buckets,
+                    fromCompactAllocationFormat("${time eq ''}|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25"));
+            final Map<String, String> providedContextString = new HashMap<String, String>();
+            providedContextString.put("time", "String");
+            final ProvidedContext providedContext = ProctorUtils.convertContextToTestableMap(providedContextString);
+            ProctorUtils.verifyInternallyConsistentDefinition("testProvidedContextConversion", "test Provided Context Conversion String", testDef, RuleEvaluator.FUNCTION_MAPPER, providedContext);
+            //checking to make sure it can evaluate with converted provided context
+        }
+        { //verify primitive types convert correctly
+            final ConsumableTestDefinition testDef = constructDefinition(buckets,
+                    fromCompactAllocationFormat("${time eq 0}|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25"));
+            final Map<String, String> providedContextInteger = new HashMap<String, String>();
+            providedContextInteger.put("time", "int");
+            final ProvidedContext providedContext = ProctorUtils.convertContextToTestableMap(providedContextInteger);
+            ProctorUtils.verifyInternallyConsistentDefinition("testProvidedContextConversion", "test Provided Context Conversion Integer", testDef, RuleEvaluator.FUNCTION_MAPPER, providedContext);
+            //checking to make sure it can evaluate with converted provided context
+        }
+        { //verify primitive types convert correctly
+            final ConsumableTestDefinition testDef = constructDefinition(buckets,
+                    fromCompactAllocationFormat("${time eq ''}|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25"));
+            final Map<String, String> providedContextChar = new HashMap<String, String>();
+            providedContextChar.put("time", "char");
+            final ProvidedContext providedContext = ProctorUtils.convertContextToTestableMap(providedContextChar);
+            ProctorUtils.verifyInternallyConsistentDefinition("testProvidedContextConversion", "test Provided Context Conversion Char", testDef, RuleEvaluator.FUNCTION_MAPPER, providedContext);
+            //checking to make sure it can evaluate with converted provided context
+        }
+        { //verify primitive types convert correctly
+            final ConsumableTestDefinition testDef = constructDefinition(buckets,
+                    fromCompactAllocationFormat("${time}|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25"));
+            final Map<String, String> providedContextBoolean = new HashMap<String, String>();
+            providedContextBoolean.put("time", "Boolean");
+            final ProvidedContext providedContext = ProctorUtils.convertContextToTestableMap(providedContextBoolean);
+            ProctorUtils.verifyInternallyConsistentDefinition("testProvidedContextConversion", "test Provided Context Conversion Boolean", testDef, RuleEvaluator.FUNCTION_MAPPER, providedContext);
+            //checking to make sure it can evaluate with converted provided context
+        }
+        { //verify User Defined enum Classes convert correctly
+            final ConsumableTestDefinition testDef = constructDefinition(buckets,
+                    fromCompactAllocationFormat("${time eq 'SPADES'}|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25"));
+            final Map<String, String> providedContextClass = new HashMap<String, String>();
+            providedContextClass.put("time", "com.indeed.proctor.common.TestEnumType");
+            final ProvidedContext providedContext = ProctorUtils.convertContextToTestableMap(providedContextClass);
+            ProctorUtils.verifyInternallyConsistentDefinition("testProvidedContextConversion", "test Provided Context Conversion Class", testDef, RuleEvaluator.FUNCTION_MAPPER, providedContext);
+            //checking to make sure it can evaluate with converted provided context
+        }
+        { //verify enums are actually used and an error is thrown with a nonexistent constant
+            final ConsumableTestDefinition testDef = constructDefinition(buckets,
+                    fromCompactAllocationFormat("${time eq 'SP'}|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25"));
+            final Map<String, String> providedContextClass = new HashMap<String, String>();
+            providedContextClass.put("time", "com.indeed.proctor.common.TestEnumType");
+            try {
+                final ProvidedContext providedContext = ProctorUtils.convertContextToTestableMap(providedContextClass);
+                ProctorUtils.verifyInternallyConsistentDefinition("testProvidedContextConversion", "test Provided Context Conversion Class", testDef, RuleEvaluator.FUNCTION_MAPPER, providedContext);
+                fail("expected IncompatibleTestMatrixException due to nonexistent enum constant");
+            } catch (IncompatibleTestMatrixException e) {
+                //expected
+            }
+        }
+        { //verify class names are verified correctly
+            final Map<String, String> providedContextBadClass = new HashMap<String, String>();
+            providedContextBadClass.put("time", "com.indeed.proctor.common.TestRulesCla");
+            final ProvidedContext providedContext = ProctorUtils.convertContextToTestableMap(providedContextBadClass);
+            assertFalse(providedContext.isEvaluable());
+            //false due to bad classname
+        }
+        { //verify missing constructors are verified correctly
+            final Map<String, String> providedContextNoConstructor = new HashMap<String, String>();
+            providedContextNoConstructor.put("time", "com.indeed.proctor.common.AbstractProctorLoader");
+            final ProvidedContext providedContext = ProctorUtils.convertContextToTestableMap(providedContextNoConstructor);
+            assertFalse(providedContext.isEvaluable());
+            //false due to no default constructor
+        }
+    }
+
+    @Test
+    public void testELValidity_atTestMatrixLoadTime() throws IncompatibleTestMatrixException, IOException {
+        final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
+        {
+            //testing recognition of test constants
+            final ConsumableTestDefinition testDefValConstants = constructDefinition(buckets,
+                    fromCompactAllocationFormat("${proctor:now()>time}|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25"));
+            final Map<String, Object> providedConstantsVal = new HashMap<String, Object>();
+            providedConstantsVal.put("time", "1");
+            testDefValConstants.setConstants(providedConstantsVal);
+            final Map<String, String> providedContext = Collections.emptyMap();
+            ProctorUtils.verifyInternallyConsistentDefinition("testELevalwithcontext", "test context recognition", testDefValConstants, RuleEvaluator.FUNCTION_MAPPER,
+                    ProctorUtils.convertContextToTestableMap(providedContext));
+        }
+        {//test if the providedContext is read in correctly
+            final ConsumableTestDefinition testDefValConstants2 = constructDefinition(buckets,
+                    fromCompactAllocationFormat("${proctor:now()>time}|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25"));
+            final ObjectMapper objectMapper = new ObjectMapper();
+            final ProctorSpecification spec = objectMapper.readValue(getClass().getResourceAsStream("no-context-specification.json"), ProctorSpecification.class);
+            final Map<String, String> providedContext2 = spec.getProvidedContext(); //needs to read in empty provided context as Collections.emptyMap() and not null
+            try {
+                ProctorUtils.verifyInternallyConsistentDefinition("testELevalwithcontext", "test context recognition", testDefValConstants2, RuleEvaluator.FUNCTION_MAPPER,
+                        ProctorUtils.convertContextToTestableMap(providedContext2));
+                fail("expected IncompatibleTestMatrixException");
+            } catch (IncompatibleTestMatrixException e) {
+                //expected
+            }
+        }
+        {//test that an error is thrown with missing providedContext
+            final ConsumableTestDefinition testDef = constructDefinition(buckets,
+                    fromCompactAllocationFormat("${time eq ''}|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25"));
+            try {
+                ProctorUtils.verifyInternallyConsistentDefinition("testProvidedContextMissing", "test Provided Context Missing", testDef, RuleEvaluator.FUNCTION_MAPPER, new ProvidedContext(ProvidedContext.EMPTY_CONTEXT,true));
+                //checking to make sure it can evaluate with converted provided context
+                fail("expected IncompatibleTestMatrixException due to missing provided Context");
+            } catch (IncompatibleTestMatrixException e) {
+                //expected
+            }
+        }
+        {//testing recognition of providedContext in testRule
+            final Map<String, String> providedContextVal = new HashMap<String, String>();
+            providedContextVal.put("time", "Integer");
+            ConsumableTestDefinition testDefValContextTestRule = constructDefinition(buckets,
+                    fromCompactAllocationFormat("${proctor:now()>-1}|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25"));
+            testDefValContextTestRule.setRule("${proctor:now()>time}");
+            ProctorUtils.verifyInternallyConsistentDefinition("testELevalwithcontext", "test context recognition in test rule", testDefValContextTestRule, RuleEvaluator.FUNCTION_MAPPER,
+                    ProctorUtils.convertContextToTestableMap(providedContextVal));
+        }
+        { //testing that invalid properties are recognized
+            final ConsumableTestDefinition testDef = constructDefinition(buckets,
+                    fromCompactAllocationFormat("${ua.iPad}|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25"));
+            final Map<String, String> providedContextClass = new HashMap<String, String>();
+            providedContextClass.put("ua", "com.indeed.proctor.common.TestRulesClass");
+            final ProvidedContext providedContext = ProctorUtils.convertContextToTestableMap(providedContextClass);
+            try {
+                ProctorUtils.verifyInternallyConsistentDefinition("testProvidedContextConversion", "test Provided Context Conversion Class", testDef, RuleEvaluator.FUNCTION_MAPPER, providedContext);
+                fail("expected IncompatibleTestMatrixException due to missing attribute");
+            } catch (IncompatibleTestMatrixException e) {
+                // expected due to incorrect spelling
+            }
+        }
+        { //testing that valid properties are recognized
+            final ConsumableTestDefinition testDef = constructDefinition(buckets,
+                    fromCompactAllocationFormat("${ua.IPad}|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25"));
+            final Map<String, String> providedContextClass = new HashMap<String, String>();
+            providedContextClass.put("ua", "com.indeed.proctor.common.TestRulesClass");
+            final ProvidedContext providedContext = ProctorUtils.convertContextToTestableMap(providedContextClass);
+            ProctorUtils.verifyInternallyConsistentDefinition("testProvidedContextConversion", "test Provided Context Conversion Class", testDef, RuleEvaluator.FUNCTION_MAPPER, providedContext);
+        }
+        { //testing that invalid functions are recognized
+            final ConsumableTestDefinition testDef = constructDefinition(buckets,
+                    fromCompactAllocationFormat("${proctor:notafunction(5)}|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25"));
+
+            try {
+                ProctorUtils.verifyInternallyConsistentDefinition("testProvidedContextConversion", "test Provided Context Conversion Class", testDef, RuleEvaluator.FUNCTION_MAPPER, new ProvidedContext(ProvidedContext.EMPTY_CONTEXT,true));
+                fail("expected IncompatibleTestMatrixException due to missing function");
+            } catch (IncompatibleTestMatrixException e) {
+                // expected due to incorrect spelling
+            }
+        }
+    }
+
+
+    @Test
     public void verifyAndConsolidateShouldFailIfMissingDefaultAllocation() throws IncompatibleTestMatrixException {
-        List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
+        final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
         Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets));
         {
             final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
