@@ -60,27 +60,13 @@ public class GitProctorCore implements FileBasedPersisterCore {
         File gitDirectory = new File(workingDir, ".git");
 
         try {
-            if (gitDirectory.exists()) {
-                try {
-                    git = Git.open(workingDir);
-                    git.pull().setCredentialsProvider(user).call();
-                } catch (Exception e) {
-                    workspaceProvider.cleanWorkingDirectory();
-                    git = Git.cloneRepository()
-                            .setURI(gitUrl)
-                            .setDirectory(workingDir)
-                            .setProgressMonitor(new TextProgressMonitor())
-                            .setCredentialsProvider(user)
-                            .call();
-                }
-            } else {
-                git = Git.cloneRepository()
-                        .setURI(gitUrl)
-                        .setDirectory(workingDir)
-                        .setProgressMonitor(new TextProgressMonitor())
-                        .setCredentialsProvider(user)
-                        .call();
-            }
+            workspaceProvider.cleanWorkingDirectory();
+            git = Git.cloneRepository()
+                    .setURI(gitUrl)
+                    .setDirectory(workingDir)
+                    .setProgressMonitor(new TextProgressMonitor())
+                    .setCredentialsProvider(user)
+                    .call();
         } catch (GitAPIException e) {
             LOGGER.error("Unable to clone git repository at " + gitUrl);
         }
