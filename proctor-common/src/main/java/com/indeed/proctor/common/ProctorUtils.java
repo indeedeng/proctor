@@ -103,6 +103,10 @@ public abstract class ProctorUtils {
         return rootNode;
     }
 
+    public static void serializeTestSpecification(Writer writer, final TestSpecification specification) throws IOException {
+        serializeObject(writer, specification);
+    }
+
     private static <T> void serializeObject(Writer writer, final T artifact) throws IOException {
         OBJECT_MAPPER.defaultPrettyPrintingWriter().writeValue(writer, artifact);
     }
@@ -748,6 +752,37 @@ public abstract class ProctorUtils {
         }
         return CharMatcher.WHITESPACE.matchesAllOf(s);
     }
+
+    /**
+     * Generates a usable test specification for a given test definition
+     *
+     */
+    public static TestSpecification generateSpecification(TestDefinition testDefinition) {
+        final TestSpecification testSpecification = new TestSpecification();
+        final Map<String,Integer> buckets = Maps.newHashMap();
+        final List<TestBucket> testDefinitionBuckets = testDefinition.getBuckets();
+        testSpecification.setFallbackValue(testDefinitionBuckets.get(0).getValue());
+
+        final PayloadSpecification payloadSpecification= new PayloadSpecification();
+        final String payloadSpecificationType = testDefinitionBuckets.get(0).getPayload().fetchType();
+        payloadSpecification.setType(payloadSpecificationType);
+        if("map".equals(payloadSpecificationType)) {
+            final Map<String,String> payloadSpecificationSchema = new HashMap<String,String>();
+            for(Map.Entry<String,Object> entry : testDefinitionBuckets.get(0).getPayload().getMap().entrySet()) {
+                payloadSpecificationSchema.put(entry.getKey(), PayloadType.payloadTypeForValue(entry.getValue()).payloadTypeName);
+            }
+            payloadSpecification.setSchema(payloadSpecificationSchema);
+        }
+        testSpecification.setPayload(payloadSpecification);
+
+        for(int i = 0; i<testDefinitionBuckets.size(); i++) {
+            buckets.put(testDefinitionBuckets.get(i).getName(), testDefinitionBuckets.get(i).getValue());
+        }
+        testSpecification.setBuckets(buckets);
+        testSpecification.setDescription(testDefinition.getDescription());
+        return testSpecification;
+    }
+
 
     /**
      * Removes the expression braces "${ ... }" surrounding the rule.

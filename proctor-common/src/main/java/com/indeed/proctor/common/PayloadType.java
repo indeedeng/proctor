@@ -85,6 +85,43 @@ public enum PayloadType {
     }
 
     /**
+     * Flexible method for determining payload type from a value
+     *
+     */
+    @Nonnull
+    public static PayloadType payloadTypeForValue(@Nonnull final Object payloadValue) throws IllegalArgumentException{
+        if(payloadValue instanceof ArrayList) {
+            if(((ArrayList)payloadValue).size() > 0) {
+                final Object firstValue = ((ArrayList) payloadValue).get(0);
+                if (firstValue instanceof Long || firstValue instanceof Integer) {
+                    return PayloadType.LONG_ARRAY;
+                } else if (firstValue instanceof Double || firstValue instanceof Float) {
+                    return PayloadType.DOUBLE_ARRAY;
+                } else if (firstValue instanceof String) {
+                    return PayloadType.STRING_ARRAY;
+                }
+            } else {
+                throw new IllegalArgumentException("No items in payload ArrayList, cannot determine type");
+            }
+        } else if (payloadValue instanceof Long || payloadValue instanceof Integer) {
+            return PayloadType.LONG_VALUE;
+        } else if (payloadValue instanceof Double || payloadValue instanceof Float) {
+            return PayloadType.DOUBLE_VALUE;
+        } else if (payloadValue instanceof String) {
+            return PayloadType.STRING_VALUE;
+        } else if (payloadValue instanceof String[]) {
+            return PayloadType.STRING_ARRAY;
+        } else if (payloadValue instanceof Long[] || payloadValue instanceof Integer[]) {
+            return PayloadType.LONG_ARRAY;
+        } else if (payloadValue instanceof Double[] || payloadValue instanceof Float[]) {
+            return PayloadType.DOUBLE_ARRAY;
+        } else if (payloadValue instanceof Map) {
+            return PayloadType.MAP;
+        }
+        throw new IllegalArgumentException("Payload value does not correspond to a payload type");
+    }
+
+    /**
      * For printing useful error messages, the proctor webapp, and for testing.
      */
     @Nonnull
