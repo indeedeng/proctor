@@ -50,7 +50,7 @@ public class TestProctor {
         final TestMatrixArtifact matrix = new TestMatrixArtifact();
 
         final Audit audit = new Audit();
-        audit.setVersion(10);
+        audit.setVersion("10");
         audit.setUpdated(1000);
         audit.setUpdatedBy("nobody");
         matrix.setAudit(audit);
@@ -65,7 +65,7 @@ public class TestProctor {
         assertEquals(3, auditNode.size());
 
         assertTrue(auditNode.has("version"));
-        assertEquals(10, auditNode.get("version").getIntValue());
+        assertEquals("10", auditNode.get("version").getTextValue());
         assertTrue(auditNode.has("updated"));
         assertEquals(1000, auditNode.get("updated").getIntValue());
         assertTrue(auditNode.has("updatedBy"));

@@ -438,7 +438,7 @@ public abstract class ProctorUtils {
         allocation.setRanges(ImmutableList.of(new Range(testSpecification.getFallbackValue(), 1.0)));
 
         return new ConsumableTestDefinition(
-                testSpecification.getFallbackValue(),
+                "default",
                 null,
                 TestType.RANDOM,
                 testName,

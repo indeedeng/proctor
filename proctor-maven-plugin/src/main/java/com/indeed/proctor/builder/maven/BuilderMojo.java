@@ -23,7 +23,7 @@ public class BuilderMojo extends AbstractMojo {
     private String author;
 
     @Parameter(property = "version", defaultValue = "-1")
-    private long version;
+    private String version;
 
     @Override
     public final void execute() throws MojoExecutionException {

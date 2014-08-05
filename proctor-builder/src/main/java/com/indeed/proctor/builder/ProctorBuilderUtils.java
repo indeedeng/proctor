@@ -19,7 +19,7 @@ import java.util.Map;
 class ProctorBuilderUtils {
 
     static void generateArtifact(final ProctorReader proctorPersister, final Writer outputSink,
-                                           final String authorOverride, final long versionOverride
+                                           final String authorOverride, final String versionOverride
     ) throws IOException, IncompatibleTestMatrixException, StoreException {
         final TestMatrixVersion currentTestMatrix = proctorPersister.getCurrentTestMatrix();
         if(currentTestMatrix == null) {
@@ -30,7 +30,7 @@ class ProctorBuilderUtils {
         if(!CharMatcher.WHITESPACE.matchesAllOf(Strings.nullToEmpty(authorOverride))) {
             currentTestMatrix.setAuthor(authorOverride);
         }
-        if(versionOverride > 0) {
+        if(!Strings.isNullOrEmpty(versionOverride)) {
             currentTestMatrix.setVersion(versionOverride);
         }
 

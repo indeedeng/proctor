@@ -8,16 +8,18 @@ import javax.annotation.Nullable;
  * @author ketan
  */
 public class Audit {
-    private long version;
+    public static final String EMPTY_VERSION = "";
+
+    private String version;
     private long updated;
     @Nullable
     private String updatedBy;
 
-    public long getVersion() {
+    public String getVersion() {
         return version;
     }
 
-    public void setVersion(final long version) {
+    public void setVersion(final String version) {
         this.version = version;
     }
 

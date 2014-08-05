@@ -16,8 +16,8 @@ public class LocalDirectoryStore extends FileBasedProctorStore {
     }
 
     @Override
-    public long getLatestVersion() throws StoreException {
-        return -1;
+    public String getLatestVersion() throws StoreException {
+        return "";
     }
 
     @Override
@@ -32,7 +32,7 @@ public class LocalDirectoryStore extends FileBasedProctorStore {
     }
 
     @Override
-    public List<Revision> getHistory(String test, long revision, int start, int limit) throws StoreException {
+    public List<Revision> getHistory(String test, String revision, int start, int limit) throws StoreException {
         throw new UnsupportedOperationException("Not implemented yet");
     }
     @Override

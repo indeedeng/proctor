@@ -30,7 +30,7 @@ public class LocalDirectoryCore implements FileBasedPersisterCore {
     }
 
     @Override
-    public <C> C getFileContents(Class<C> c, String[] path_parts, C defaultValue, long revision) throws StoreException.ReadException, JsonProcessingException {
+    public <C> C getFileContents(Class<C> c, String[] path_parts, C defaultValue, String revision) throws StoreException.ReadException, JsonProcessingException {
         final String path = Joiner.on(File.separator).join(path_parts);
         FileReader reader = null;
 
@@ -74,11 +74,16 @@ public class LocalDirectoryCore implements FileBasedPersisterCore {
         public void delete(File testDefinitionDirectory) throws Exception {
             testDefinitionDirectory.delete();
         }
+
+        @Override
+        public String getRevisionControlType() {
+            return null;
+        }
     }
 
 
     @Override
-    public void doInWorkingDirectory(String username, String password, String comment, long previousVersion, FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException {
+    public void doInWorkingDirectory(String username, String password, String comment, String previousVersion, FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException {
         try {
             final FileBasedProctorStore.RcsClient rcsClient = new LocalRcsClient();
             final boolean thingsChanged = updater.doInWorkingDirectory(rcsClient, baseDir);
@@ -89,23 +94,27 @@ public class LocalDirectoryCore implements FileBasedPersisterCore {
     }
 
     @Override
-    public FileBasedProctorStore.TestVersionResult determineVersions(long fetchRevision) throws StoreException.ReadException {
+    public TestVersionResult determineVersions(String fetchRevision) throws StoreException.ReadException {
         final File testDir = new File(baseDir + File.separator + FileBasedProctorStore.TEST_DEFINITIONS_DIRECTORY);
         // List all of the directories, excluding the directories created by svn (implementation is ignoring directories named '.svn'
         final File[] testDefFiles = testDir.listFiles( (FileFilter) FileFilterUtils.makeSVNAware(FileFilterUtils.directoryFileFilter()) );
-        final List<FileBasedProctorStore.TestVersionResult.Test> tests = Lists.newArrayListWithExpectedSize(testDefFiles.length);
+        final List<TestVersionResult.Test> tests = Lists.newArrayListWithExpectedSize(testDefFiles.length);
         for (final File testDefFile : testDefFiles) {
             final String testName = testDefFile.getName();
-            tests.add(new FileBasedProctorStore.TestVersionResult.Test(testName, fetchRevision));
+            tests.add(new TestVersionResult.Test(testName, fetchRevision));
         }
 
-        return new FileBasedProctorStore.TestVersionResult(
+        return new TestVersionResult(
             tests,
             new Date(System.currentTimeMillis()),
             System.getenv("USER"),
-            System.currentTimeMillis(),
+            String.valueOf(System.currentTimeMillis()),
             ""
         );
+    }
 
+    @Override
+    public String getAddTestRevision() {
+        return "";
     }
 }
