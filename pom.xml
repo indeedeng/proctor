@@ -8,7 +8,7 @@
     </parent>
 
     <artifactId>proctor-webapp-library</artifactId>
-    <version>1.0.3-SNAPSHOT</version>
+    <version>1.0.3</version>
 
     <licenses>
         <license>
