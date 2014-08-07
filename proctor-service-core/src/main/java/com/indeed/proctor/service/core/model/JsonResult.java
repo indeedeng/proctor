@@ -32,7 +32,7 @@ public class JsonResult {
         final Map<String, JsonTestBucket> jsonBuckets = Maps.newHashMap();
 
         // As we process each TestBucket into a JsonBucket, we also need to obtain a version for that test.
-        final Map<String, Integer> versions = result.getTestVersions();
+        final Map<String, String> versions = result.getTestVersions();
 
         for (Map.Entry<String, TestBucket> e : result.getBuckets().entrySet()) {
             final String testName = e.getKey();

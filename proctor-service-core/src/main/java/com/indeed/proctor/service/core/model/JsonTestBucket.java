@@ -13,14 +13,14 @@ public class JsonTestBucket {
     private final String name;
     private final int value;
     private final Payload payload;
-    private final int version;
+    private final String version;
 
     /**
      * Serializes the object using an existing bucket and a separate version.
      *
      * Version needs to be obtained outside of the bucket through ProctorResult.getTestVersions()
      */
-    public JsonTestBucket(final TestBucket bucket, final int version) {
+    public JsonTestBucket(final TestBucket bucket, final String version) {
         name = bucket.getName();
         value = bucket.getValue();
         this.version = version;
@@ -47,7 +47,7 @@ public class JsonTestBucket {
         return payload;
     }
 
-    public int getVersion() {
+    public String getVersion() {
         return version;
     }
 }
