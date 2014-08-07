@@ -249,6 +249,35 @@ public abstract class ProctorUtils {
         return result;
     }
 
+    /**
+     * Verifies that the TestMatrix is correct and sane without using a specification.
+     *
+     * The Proctor API doesn't use a test specification so that it can serve all tests in the matrix
+     * without restriction.
+     *
+     * Does a limited set of sanity checks that are applicable when there is no specification,
+     * and thus no required tests or provided context.
+     */
+    public static ProctorLoadResult verifyWithoutSpecification(@Nonnull final TestMatrixArtifact testMatrix,
+                                                               final String matrixSource,
+                                                               @Nonnull final FunctionMapper functionMapper,
+                                                               @Nonnull final ProvidedContext providedContext) {
+        final ProctorLoadResult.Builder resultBuilder = ProctorLoadResult.newBuilder();
+
+        for (final Entry<String, ConsumableTestDefinition> entry : testMatrix.getTests().entrySet()) {
+            final String testName = entry.getKey();
+            final ConsumableTestDefinition testDefinition = entry.getValue();
+
+            try {
+                verifyInternallyConsistentDefinition(testName, matrixSource, testDefinition, functionMapper, providedContext);
+            } catch (IncompatibleTestMatrixException e) {
+                LOGGER.error(String.format("Unable to load test matrix for %s", testName), e);
+                resultBuilder.recordError(testName);
+            }
+        }
+        return resultBuilder.build();
+    }
+
 
     public static ProctorLoadResult verify(@Nonnull final TestMatrixArtifact testMatrix, final String matrixSource, @Nonnull final Map<String, TestSpecification> requiredTests) {
         return verify(testMatrix, matrixSource, requiredTests, RuleEvaluator.FUNCTION_MAPPER, new ProvidedContext(ProvidedContext.EMPTY_CONTEXT,false)); //use default function mapper

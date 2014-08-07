@@ -17,7 +17,7 @@ import java.util.Map;
 public abstract class AbstractProctorLoader extends DataLoadingTimerTask implements Supplier<Proctor> {
     private static final Logger LOGGER = Logger.getLogger(AbstractProctorLoader.class);
 
-    @Nonnull
+    @Nullable
     protected final Map<String, TestSpecification> requiredTests;
     @Nullable
     private Proctor current = null;
@@ -77,7 +77,14 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
             throw new MissingTestMatrixException("Failed to load Test Matrix from " + getSource());
         }
 
-        final ProctorLoadResult loadResult = ProctorUtils.verifyAndConsolidate(testMatrix, getSource(), requiredTests, functionMapper, providedContext);
+        final ProctorLoadResult loadResult;
+        if (requiredTests == null) {
+            // Probably an absent specification.
+            loadResult = ProctorUtils.verifyWithoutSpecification(testMatrix, getSource(), functionMapper, providedContext);
+        } else {
+            loadResult = ProctorUtils.verifyAndConsolidate(testMatrix, getSource(), requiredTests, functionMapper, providedContext);
+        }
+
         final Audit newAudit = testMatrix.getAudit();
         if (lastAudit != null) {
             final Audit audit = Preconditions.checkNotNull(newAudit, "Missing audit");
