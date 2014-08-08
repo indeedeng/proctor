@@ -755,7 +755,7 @@ public class ProctorTestDefinitionController extends AbstractController {
                     } else {
                         log("Executing post edit extension tasks.");
                         for (final PostDefinitionEditChange postDefinitionEditChange : postDefinitionEditChanges) {
-                            final DefinitionChangeLog definitionChangeLog = postDefinitionEditChange.postEdit(testDefinitionToUpdate, requestParameterMap);
+                            final DefinitionChangeLog definitionChangeLog = postDefinitionEditChange.postEdit(existingTestDefinition, testDefinitionToUpdate, requestParameterMap);
                             logDefinitionChangeLog(definitionChangeLog, postDefinitionEditChange.getClass().getSimpleName(), this);
                         }
                     }

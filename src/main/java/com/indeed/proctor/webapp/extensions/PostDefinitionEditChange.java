@@ -7,5 +7,5 @@ import java.util.Map;
 /**
  */
 public interface PostDefinitionEditChange {
-    public DefinitionChangeLog postEdit(final TestDefinition testDefinitionToUpdate, final Map<String, String[]> extensionFields);
+    public DefinitionChangeLog postEdit(final TestDefinition oldTestDefinition, final TestDefinition newTestDefinition, final Map<String, String[]> extensionFields);
 }
