@@ -158,6 +158,25 @@ public class TestExtractor {
         final RawParameters parameters = extractor.extract(request);
     }
 
+    @Test
+    public void testExtractWithExtraQueryParameters() {
+        final Extractor extractor = getBasicExtractor();
+
+        final String fr = "fr";
+        final String userId = "123456";
+        final MockHttpServletRequest request = new MockHttpServletRequest();
+        request.addHeader(LANGUAGE_HEADER_NAME, fr);
+        request.setParameter(USER_IDENTIFIER_QUERY_PARAM, userId);
+
+
+        request.setParameter("id.blah", "True");
+        request.setParameter("ctx.blah", "True");
+        request.setParameter("blah", "True");
+
+        final RawParameters parameters = extractor.extract(request);
+        // No exception even though unrecognized parameters were passed.
+    }
+
     private Extractor getBasicExtractor() {
         // default country
         final ContextVariable country =
