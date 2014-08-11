@@ -158,22 +158,6 @@ public class TestExtractor {
         final RawParameters parameters = extractor.extract(request);
     }
 
-    @Test(expected = BadRequestException.class)
-    public void testExtractWithExtraQueryParameters() {
-        final Extractor extractor = getBasicExtractor();
-
-        final String fr = "fr";
-        final String userId = "123456";
-        final MockHttpServletRequest request = new MockHttpServletRequest();
-        request.addHeader(LANGUAGE_HEADER_NAME, fr);
-        request.setParameter(USER_IDENTIFIER_QUERY_PARAM, userId);
-
-        request.setParameter("extra.parameter", "this.is.extra");
-
-        final RawParameters parameters = extractor.extract(request);
-    }
-
-
     private Extractor getBasicExtractor() {
         // default country
         final ContextVariable country =
