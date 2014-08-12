@@ -263,7 +263,7 @@ prforceGroups=buttoncolortst2,newfeaturerollout0
             "country": "US"
         },
         "audit": {
-            "version": 1,
+            "version": "1",
             "updated": 1,
             "updatedBy": "example"
         },
@@ -284,7 +284,7 @@ _groups_ contains a mapping of test name to values associated with the test grou
     "buttoncolortst": {
         "name": "control",
         "value": 0,
-        "version": 1,
+        "version": "1",
         "payload": {
             "stringValue": "#C0C0C0"
         }
@@ -292,7 +292,7 @@ _groups_ contains a mapping of test name to values associated with the test grou
     "newfeaturerollout": {
         "name": "inactive",
         "value": -1,
-        "version": 1
+        "version": "1"
     }
 }
 ```
@@ -323,7 +323,7 @@ Returns the entire test matrix.
 
 Returns the audit of the test matrix.
 
-The response includes a _version_ number, an _updated_ timestamp, and an _updatedBy_ name.
+The response includes a _version_ string, an _updated_ timestamp, and an _updatedBy_ name.
 
 ### GET /proctor/matrix/definition/{testname}
 
