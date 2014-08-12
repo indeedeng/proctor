@@ -74,6 +74,8 @@ The properties file requires the following fields:
 
 A JSON file with a list of all test definitions used by Proctor Service, including all test buckets and payload values.
 
+[Proctor Webapp](https://github.com/indeedeng/proctor-webapp) provides a visual interface for viewing and editing the test matrix.
+
 See: [Proctor Test Matrix Schema](http://indeedeng.github.io/proctor/docs/matrix-schema/)
 
 ### Service Configuration
