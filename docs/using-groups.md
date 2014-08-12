@@ -99,63 +99,14 @@ public class ExampleGroups extends AbstractGroups {
 }
 {% endhighlight %}
 
-There are a few subtle nuances around this interface that should be well understood so to not introduce bugs into your application's code.
+#### unassigned -> fallback 
+Previous releases of the proctor library allowed users to be placed in an `unassigned` bucket that differed from the fallback bucket. This is no longer the case; the generated code will now consider unassigned users to be a part of the fallback bucket declared in the project specification.
 
-####the `unassigned` bucket 
-All tests have an implicit `unassigned` group, including those with an `inactive` bucket. If a user fails an `eligibility rule` or does not have a Identifier with the proper `test-type`, she will not be assigned into a test bucket. This situation also occurs when the Groups are initialized with an `EMPTY` ProctorResult. When in the `unassigned` group, the above methods have the following return values:
+ 
+#### sometimes inactive != control 
+For many tests the fallback bucket displays the same behavior as the control group. This is typical if you want to place your users into equal-sized buckets but do not want to set the test-behavior to 50%. 
 
-```java
-Bgcolortst getBgcolortst() => null
-int getBgcolortstValue(int defaultValue) => defaultValue
-
-boolean isBgcolortstInactive() => false
-boolean isBgcolortstAltcolor1() => false
-boolean isBgcolortstAltcolor2() => false
-boolean isBgcolortstAltcolor3() => false
-boolean isBgcolortstAltcolor4() => false
-
-// Payload accessors
-String getBgcolortstPayload() => null
-String getBgcolortstPayloadForBucket(Bgcolortst targetBucket) => null if targetBucket is null
-```
-You application code should handle null values returned from any test bucket accessor and not assume that a user will always have an active bucket assigned.
-
-The following code is **error-prone** and would display the test-behavior to `unassigned` buckets:
-
-```java
-ExampleGroups groups;
-if (group.isBgcolortstInactive()) {
-  // do 'inactive'
-} else if(groups.isBgcolortstAltcolor1()) {
-   // do group 1
-} else if(groups.isBgcolortstAltcolor2()) {
-   // do group 2
-} else if(groups.isBgcolortstAltcolor2()) {
-  // do group 3
-} else {
-  // do group 4
-  // BUG: The 'unassigned' group will fall-through to the test-behavior
-}
-
-switch (group.getBgcolortst()) {
-  case INACTIVE: 
-    // do 'inactive'
-  case ALTCOLOR1:
-    // do group 1
-  case ALTCOLOR2:
-    // do group 2
-  case ALTCOLOR3
-    // do group 3
-  default:
-    // do group 4
-    // BUG: The 'unassigned' group will fall-through to the test-behavior
-}
-```
-
-#### sometimes unassigned/inactive != control 
-For many tests the `unassigned` or inactive buckets display the same behavior as the control group. This is typical if you want to place your users into equal-sized buckets but do not want to set the test-behavior to 50%. 
-
-For example, you're showing an experimental design to 10% of your users; the remaining 90% will continue to see the status-quo (controle). It's common to allocate three buckets: `inactive` (80%), `control` (10%), `test` (10%). Users in the `inactive` bucket will experience the same behavior as users in the `control`. Although `90%` of users will experience the status-quo design, only `10%` will be labeled as control. This makes absolute comparisons across metrics easier because the `control` and `test` groups sizes are of equal size.
+For example, you're showing an experimental design to 10% of your users; the remaining 90% will continue to see the status-quo (control). It's common to allocate three buckets: `inactive` (80%), `control` (10%), `test` (10%), and mark the `inactive` bucket as the fallback. Users in the `inactive` bucket will experience the same behavior as users in the `control`. Although `90%` of users will experience the status-quo design, only `10%` will be labeled as control. This makes absolute comparisons across metrics easier because the `control` and `test` groups sizes are of equal size.
 
 When inactive and control users experience the same behavior, the following code correctly displays the new feature to the test group.
 
@@ -163,13 +114,13 @@ When inactive and control users experience the same behavior, the following code
 if(groups.isFeatureTest()) {
   // do test
 } else {
-  // fall through for "control", "inactive" and "unassigned"
+  // fall through for "control" and "inactive"
 }
 ```
 
-However, there are situations where `control != unassigned` and `control != inactive`. 
+However, there are situations where `control != inactive`. 
 
-For example, you've chosen to integrate with google-analytics help track your tests by setting a custom variable. Users in the `control` and `test` buckets should include a unique GA variable value so their traffic can be segmented in google-analytics. The `inactive` or `unassigned` users will not get a custom variable. Your application code should explicitly handle the `test` and `control` buckets separate from the `unassigned` users.
+For example, you've chosen to integrate with google-analytics help track your tests by setting a custom variable. Users in the `control` and `test` buckets should include a unique GA variable value so their traffic can be segmented in google-analytics. The `inactive` users will not get a custom variable. Your application code should explicitly handle the `test` and `control` buckets separate from the `inactive` users.
 
 ```java
 if(groups.isFeatureTest()) {
@@ -177,15 +128,15 @@ if(groups.isFeatureTest()) {
 } else if(groups.isFeatureControl()) {
   // do control
 } else {
-  // fall through for "inactive" and "unassigned"
+  // fall through for "inactive"
 }
 ```
 
 
-In general: 
+In general:
 
-* program towards the test-behavior, not the control behavior
-* create an `inactive` bucket make its user-visible behavior the same as the implicit `unassigned` behavior
+* program towards the `test` behavior, not the `control` behavior
+* create an `inactive` bucket rather than assigning `control` as the fallback bucket 
 
 ## using payloads interface
 
@@ -193,7 +144,7 @@ In general:
 
 
 ## how to record group assignment
-The `AbstractGroups` interface provides a `toString()` method that contains a comma-delimited list of active groups. Only tests with non-negative bucket value will be logged; this follows the convention that the `inactive` bucket has a value of `-1` and doesn't contain test behavior. The string representation for each group is `[test_name][bucket_value]`.
+The `AbstractGroups` interface provides a `toString()` method that contains a comma-delimited list of active groups. Only tests with non-negative bucket value will be logged; this follows the convention that the `inactive` fallback bucket has a value of `-1` and doesn't contain test behavior. The string representation for each group is `[test_name][bucket_value]`.
 
 Consider the following specification:
 
