@@ -116,7 +116,7 @@ _context_ contains a map of all context variables, and _identifiers_ contains a 
 
 For context variables, the key is the name of the context variable, which is also used for Proctor rules in the test matrix.
 
-For identifiers, the key is the [test type](http://indeedeng.github.io/proctor/docs/terminology/#toc_11), such as _USER_ or _ACCOUNT_.
+For identifiers, the key is the [test type](http://indeedeng.github.io/proctor/docs/terminology/#test-type), such as _USER_ or _ACCOUNT_.
 
 #### Configuration Values
 
@@ -299,9 +299,9 @@ _groups_ contains a mapping of test name to values associated with the test grou
 
 The values include the bucket _name_, the bucket _value_, the _version_ of the test definition, and possibly a _payload_.
 
-_payload_ is only included if the test definition contains payload values and a [payload type](http://indeedeng.github.io/proctor/docs/specification/#toc_4).
+_payload_ is only included if the test definition contains payload values and a [payload type](http://indeedeng.github.io/proctor/docs/specification/#payloads).
 
-If test groups you are expecting are not in the _groups_ mapping, it's possible that an [eligibility rule](http://indeedeng.github.io/proctor/docs/terminology/#toc_7) excludes them, or there was no identifier with the proper test type. Ensure that you have appropriate [default behavior](http://indeedeng.github.io/proctor/docs/using-groups/#toc_4) for these situations. This default behavior would also be useful if your Proctor Service instance goes down or stops responding.
+If test groups you are expecting are not in the _groups_ mapping, it's possible that an [eligibility rule](http://indeedeng.github.io/proctor/docs/terminology/#eligibility-rule) excludes them, or there was no identifier with the proper test type. Ensure that you have appropriate default behavior for these situations. This default behavior would also be useful if your Proctor Service instance goes down or stops responding.
 
 ##### context
 
