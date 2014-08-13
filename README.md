@@ -1,6 +1,6 @@
-# Proctor Service
+# Proctor Pipet
 
-Proctor Service is a Java web application that provides a simple REST API to [Proctor](https://github.com/indeedeng/proctor).
+Proctor Pipet is a Java web application that provides a simple REST API to [Proctor](https://github.com/indeedeng/proctor).
 
 Through this API, other programming languages only need an HTTP client to use Proctor. This makes it easy to get test groups from a non-JVM web backend language like PHP or Python.
 
@@ -8,21 +8,21 @@ Through this API, other programming languages only need an HTTP client to use Pr
 
 1. ```git clone``` the repository or download the sources.
 
-2. Copy the three configuration files in proctor-service-deploy/src/main/webapp/WEB-INF/example/ to any directory.
+2. Copy the three configuration files in proctor-pipet-deploy/src/main/webapp/WEB-INF/example/ to any directory.
 
-    These contain some basic Proctor tests that let you quickly try out Proctor Service.
+    These contain some basic Proctor tests that let you quickly try out Proctor Pipet.
 
-3. Edit the paths in proctor-service-deploy/src/main/webapp/WEB-INF/config/service-base.properties to point to that directory.
+3. Edit the paths in proctor-pipet-deploy/src/main/webapp/WEB-INF/config/pipet-base.properties to point to that directory.
 
     ```ini
     proctor.test.matrix.path=/your/path/to/proctor-tests-matrix.json
-    proctor.service.config.path=/your/path/to/service-config.json
-    proctor.service.reload.seconds=10
+    proctor.pipet.config.path=/your/path/to/pipet-config.json
+    proctor.pipet.reload.seconds=10
     ```
 
 4. Run ```mvn package``` to create a .war package.
 
-5. Run ```java -jar proctor-service-deploy/target/dependency/webapp-runner.jar proctor-service-deploy/target/*.war```. This starts a local web server.
+5. Run ```java -jar proctor-pipet-deploy/target/dependency/webapp-runner.jar proctor-pipet-deploy/target/*.war```. This starts a local web server.
 
 6. Visit [http://localhost:8080/groups/identify?ctx.country=US&ctx.loggedIn=true&id.USER=pa5xq0lz4n80](http://localhost:8080/groups/identify?ctx.country=US&ctx.loggedIn=true&id.USER=pa5xq0lz4n80) in your browser.
 
@@ -36,21 +36,21 @@ Through this API, other programming languages only need an HTTP client to use Pr
 
     The user agent is parsed and can be used in more complex Proctor rules. For example, the _mobileonly_ test only appears if the user agent is a mobile device.
 
-    You can configure the API to accept context variables and identifiers from any source in _service-config.json_. The example is configured to look at the HTTP header _User-Agent_, but this can come from any header name or query parameter.
+    You can configure the API to accept context variables and identifiers from any source in _pipet-config.json_. The example is configured to look at the HTTP header _User-Agent_, but this can come from any header name or query parameter.
 
 ## Configuration
 
-There are three configuration files required by Proctor Service.
+There are three configuration files required by Proctor Pipet.
 
-### service.properties
+### pipet.properties
 
 This is a simple ini-like file that defines paths to other configuration files and sets some other simple properties.
 
-Proctor Service searches for this properties file in the following places in this order:
+Proctor Pipet searches for this properties file in the following places in this order:
 
-1. WEB-INF/config/service-base.properties (This is included in the repository. The included default sets the path of the configuration files to the ${catalina.base}/conf/proctor/ directory.)
+1. WEB-INF/config/pipet-base.properties (This is included in the repository. The included default sets the path of the configuration files to the ${catalina.base}/conf/proctor/ directory.)
 
-2. ${catalina.base}/conf/service.properties
+2. ${catalina.base}/conf/pipet.properties
 
 3. Path pointed to by the _propertyPlaceholderResourceLocation_ Tomcat context parameter.
 
@@ -60,11 +60,11 @@ The properties file requires the following fields:
 
     Path to the Proctor test matrix.
 
-* proctor.service.config.path
+* proctor.pipet.config.path
 
-    Path to the service configuration.
+    Path to the Pipet configuration.
 
-* proctor.service.reload.seconds
+* proctor.pipet.reload.seconds
 
     An integer defining the number of seconds between reloads of the Proctor test matrix.
 
@@ -72,17 +72,17 @@ The properties file requires the following fields:
 
 ### Test Matrix
 
-A JSON file with a list of all test definitions used by Proctor Service, including all test buckets and payload values.
+A JSON file with a list of all test definitions used by Proctor Pipet, including all test buckets and payload values.
 
 [Proctor Webapp](https://github.com/indeedeng/proctor-webapp) provides a visual interface for viewing and editing the test matrix.
 
 See: [Proctor Test Matrix Schema](http://indeedeng.github.io/proctor/docs/matrix-schema/)
 
-### Service Configuration
+### Pipet Configuration
 
 A JSON file that describes the variables that users pass into the /groups/identify API call, including whether they are passed in as a query parameter or as a header.
 
-Here is a full example of a service configuration:
+Here is a full example of a Pipet configuration:
 
 ```json
 {
@@ -126,13 +126,13 @@ For identifiers, the key is the [test type](http://indeedeng.github.io/proctor/d
 
 * source _(required)_
 
-    Where Proctor Service looks for this variable in the /groups/identify web request.
+    Where Proctor Pipet looks for this variable in the /groups/identify web request.
 
     Acceptable values: QUERY or HEADER
 
 * sourceKey _(optional)_
 
-    At which key Proctor Service looks for this variable in the source.
+    At which key Proctor Pipet looks for this variable in the source.
 
     For QUERY, this is the name of the query parameter. For HEADER, this is the header name.
 
@@ -156,9 +156,9 @@ For identifiers, the key is the [test type](http://indeedeng.github.io/proctor/d
 
 #### Deploying New Variables
 
-When you add a new context variable without a defaultValue to the service configuration, all API users are required to include it on every request. Otherwise, the API will return an error.
+When you add a new context variable without a defaultValue to the Pipet configuration, all API users are required to include it on every request. Otherwise, the API will return an error.
 
-To avoid this, before deploying a new context variable, make sure that every user of the API includes that variable in their requests. After that, you can safely deploy this service without causing API errors.
+To avoid this, before deploying a new context variable, make sure that every user of the API includes that variable in their requests. After that, you can safely deploy Pipet without causing API errors.
 
 ## API Endpoints
 
@@ -197,11 +197,11 @@ From given identifiers and context variables, determine the test groups that sho
 
 #### Parameters
 
-In addition to the query parameters below, the service configuration can declare that certain variables come from the request headers instead.
+In addition to the query parameters below, the Pipet configuration can declare that certain variables come from the request headers instead.
 
 * ctx.{sourceKey} _(context variables without a defaultValue are required)_
 
-    All query parameters starting with _ctx._ are treated as context variables and converted to the type specified in the service configuration.
+    All query parameters starting with _ctx._ are treated as context variables and converted to the type specified in the Pipet configuration.
 
     Context variables are used in evaluating Proctor [rule expressions](http://indeedeng.github.io/proctor/docs/test-rules/).
 
@@ -309,7 +309,7 @@ The values include the bucket _name_, the bucket _value_, the _version_ of the t
 
 _payload_ is only included if the test definition contains payload values and a [payload type](http://indeedeng.github.io/proctor/docs/specification/#payloads).
 
-If test groups you are expecting are not in the _groups_ mapping, it's possible that an [eligibility rule](http://indeedeng.github.io/proctor/docs/terminology/#eligibility-rule) excludes them, or there was no identifier with the proper test type. Ensure that you have appropriate default behavior for these situations. This default behavior would also be useful if your Proctor Service instance goes down or stops responding.
+If test groups you are expecting are not in the _groups_ mapping, it's possible that an [eligibility rule](http://indeedeng.github.io/proctor/docs/terminology/#eligibility-rule) excludes them, or there was no identifier with the proper test type. Ensure that you have appropriate default behavior for these situations. This default behavior would also be useful if your Proctor Pipet instance goes down or stops responding.
 
 ##### context
 
@@ -339,11 +339,11 @@ Returns the definition for a specific test as defined in the test matrix.
 
 ### GET /config/context
 
-Returns the configured context variables from the service configuration.
+Returns the configured context variables from the Pipet configuration.
 
 ### GET /config/identifiers
 
-Returns the identifiers from the service configuration.
+Returns the identifiers from the Pipet configuration.
 
 ## See Also
 

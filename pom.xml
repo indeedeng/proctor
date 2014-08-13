@@ -12,12 +12,12 @@
     </properties>
 
     <groupId>com.indeed</groupId>
-    <artifactId>proctor-service-parent</artifactId>
+    <artifactId>proctor-pipet-parent</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
-        <module>proctor-service-core</module>
-        <module>proctor-service-deploy</module>
+        <module>proctor-pipet-core</module>
+        <module>proctor-pipet-deploy</module>
     </modules>
 </project>
