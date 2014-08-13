@@ -154,6 +154,12 @@ For identifiers, the key is the [test type](http://indeedeng.github.io/proctor/d
 
     The JSON type of this value does not matter.
 
+#### Deploying New Variables
+
+When you add a new context variable without a defaultValue to the service configuration, all API users are required to include it on every request. Otherwise, the API will return an error.
+
+To avoid this, before deploying a new context variable, make sure that every user of the API includes that variable in their requests. After that, you can safely deploy this service without causing API errors.
+
 ## API Endpoints
 
 All API responses are wrapped in a JSON envelope with _data_ and _meta_ fields.
