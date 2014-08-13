@@ -7,7 +7,7 @@ import java.util.Map;
  * JSON configuration file that describes the extraction of context variables and identifiers and also the
  * conversion type of context variables.
  */
-public class JsonServiceConfig {
+public class JsonPipetConfig {
     private Map<String, JsonContextVarConfig> context = Collections.emptyMap();
     private Map<String, JsonVarConfig> identifiers = Collections.emptyMap();
 

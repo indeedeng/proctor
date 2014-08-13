@@ -36,17 +36,17 @@ public class CoreConfig {
     @Bean
     @Autowired
     public ProctorSpecification proctorSpecification(final VariableConfiguration varConfig) {
-        // Don't use JsonServiceConfig autowired in method parameters.
+        // Don't use JsonPipetConfig autowired in method parameters.
         // We need the fully qualified type name for ProctorUtils to load the class without errors.
         // VariableConfiguration converted types so that "UserAgent" -> "com.indeed.proctor.pipet.deploy.useragent.UserAgent"
-        final JsonServiceConfig jsonServiceConfig = varConfig.getJsonConfig();
+        final JsonPipetConfig jsonPipetConfig = varConfig.getJsonConfig();
 
         // Let API have access to all existing tests.
         final ProctorSpecification spec = new AbsentProctorSpecification();
 
         // Generate a provided context from our own type configuration.
         final Map<String, String> contextMap = Maps.newHashMap();
-        for (final Map.Entry<String, JsonContextVarConfig> e : jsonServiceConfig.getContext().entrySet()) {
+        for (final Map.Entry<String, JsonContextVarConfig> e : jsonPipetConfig.getContext().entrySet()) {
             final String varName = e.getKey();
             final JsonContextVarConfig var = e.getValue();
             contextMap.put(varName, var.getType());

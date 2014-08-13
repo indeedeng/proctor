@@ -1,7 +1,7 @@
 package com.indeed.proctor.pipet.core.var;
 
 import com.indeed.proctor.pipet.core.config.JsonContextVarConfig;
-import com.indeed.proctor.pipet.core.config.JsonServiceConfig;
+import com.indeed.proctor.pipet.core.config.JsonPipetConfig;
 import com.indeed.proctor.pipet.core.config.JsonVarConfig;
 
 import java.util.Map;
@@ -13,7 +13,7 @@ public final class VariableConfiguration {
 
     private final Converter converter;
 
-    private final JsonServiceConfig jsonConfig;
+    private final JsonPipetConfig jsonConfig;
 
     public VariableConfiguration(final Extractor extractor,
                                  final Converter converter) {
@@ -23,7 +23,7 @@ public final class VariableConfiguration {
         final Map<String, JsonContextVarConfig> context = extractor.toContextJson();
 
         final Map<String, JsonVarConfig> identifiers = extractor.toIdentifierJson();
-        final JsonServiceConfig config = new JsonServiceConfig();
+        final JsonPipetConfig config = new JsonPipetConfig();
         config.setContext(context);
         config.setIdentifiers(identifiers);
 
@@ -38,7 +38,7 @@ public final class VariableConfiguration {
         return converter;
     }
 
-    public JsonServiceConfig getJsonConfig() {
+    public JsonPipetConfig getJsonConfig() {
         return jsonConfig;
     }
 }

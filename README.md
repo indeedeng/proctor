@@ -16,7 +16,7 @@ Through this API, other programming languages only need an HTTP client to use Pr
 
     ```ini
     proctor.test.matrix.path=/your/path/to/proctor-tests-matrix.json
-    proctor.service.config.path=/your/path/to/service-config.json
+    proctor.pipet.config.path=/your/path/to/pipet-config.json
     proctor.pipet.reload.seconds=10
     ```
 
@@ -36,7 +36,7 @@ Through this API, other programming languages only need an HTTP client to use Pr
 
     The user agent is parsed and can be used in more complex Proctor rules. For example, the _mobileonly_ test only appears if the user agent is a mobile device.
 
-    You can configure the API to accept context variables and identifiers from any source in _service-config.json_. The example is configured to look at the HTTP header _User-Agent_, but this can come from any header name or query parameter.
+    You can configure the API to accept context variables and identifiers from any source in _pipet-config.json_. The example is configured to look at the HTTP header _User-Agent_, but this can come from any header name or query parameter.
 
 ## Configuration
 
@@ -60,9 +60,9 @@ The properties file requires the following fields:
 
     Path to the Proctor test matrix.
 
-* proctor.service.config.path
+* proctor.pipet.config.path
 
-    Path to the service configuration.
+    Path to the Pipet configuration.
 
 * proctor.pipet.reload.seconds
 
@@ -78,11 +78,11 @@ A JSON file with a list of all test definitions used by Proctor Pipet, including
 
 See: [Proctor Test Matrix Schema](http://indeedeng.github.io/proctor/docs/matrix-schema/)
 
-### Service Configuration
+### Pipet Configuration
 
 A JSON file that describes the variables that users pass into the /groups/identify API call, including whether they are passed in as a query parameter or as a header.
 
-Here is a full example of a service configuration:
+Here is a full example of a Pipet configuration:
 
 ```json
 {
@@ -156,7 +156,7 @@ For identifiers, the key is the [test type](http://indeedeng.github.io/proctor/d
 
 #### Deploying New Variables
 
-When you add a new context variable without a defaultValue to the service configuration, all API users are required to include it on every request. Otherwise, the API will return an error.
+When you add a new context variable without a defaultValue to the Pipet configuration, all API users are required to include it on every request. Otherwise, the API will return an error.
 
 To avoid this, before deploying a new context variable, make sure that every user of the API includes that variable in their requests. After that, you can safely deploy Pipet without causing API errors.
 
@@ -197,11 +197,11 @@ From given identifiers and context variables, determine the test groups that sho
 
 #### Parameters
 
-In addition to the query parameters below, the service configuration can declare that certain variables come from the request headers instead.
+In addition to the query parameters below, the Pipet configuration can declare that certain variables come from the request headers instead.
 
 * ctx.{sourceKey} _(context variables without a defaultValue are required)_
 
-    All query parameters starting with _ctx._ are treated as context variables and converted to the type specified in the service configuration.
+    All query parameters starting with _ctx._ are treated as context variables and converted to the type specified in the Pipet configuration.
 
     Context variables are used in evaluating Proctor [rule expressions](http://indeedeng.github.io/proctor/docs/test-rules/).
 
@@ -339,11 +339,11 @@ Returns the definition for a specific test as defined in the test matrix.
 
 ### GET /config/context
 
-Returns the configured context variables from the service configuration.
+Returns the configured context variables from the Pipet configuration.
 
 ### GET /config/identifiers
 
-Returns the identifiers from the service configuration.
+Returns the identifiers from the Pipet configuration.
 
 ## See Also
 

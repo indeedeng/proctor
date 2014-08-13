@@ -5,13 +5,13 @@ import com.indeed.proctor.common.Proctor;
 import com.indeed.proctor.common.ProctorResult;
 import com.indeed.proctor.common.model.Audit;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
+import com.indeed.proctor.pipet.core.config.JsonPipetConfig;
 import com.indeed.proctor.pipet.core.var.VariableConfiguration;
 import com.indeed.proctor.pipet.core.var.ConvertedParameters;
 import com.indeed.proctor.pipet.core.var.Converter;
 import com.indeed.proctor.pipet.core.var.Extractor;
 import com.indeed.proctor.pipet.core.var.RawParameters;
 import com.indeed.proctor.pipet.core.config.JsonContextVarConfig;
-import com.indeed.proctor.pipet.core.config.JsonServiceConfig;
 import com.indeed.proctor.pipet.core.config.JsonVarConfig;
 import com.indeed.proctor.pipet.core.model.JsonEmptyDataResponse;
 import com.indeed.proctor.pipet.core.model.JsonMeta;
@@ -40,7 +40,7 @@ import java.util.Map;
 public class RestController {
     private final AbstractProctorLoader loader;
 
-    private final JsonServiceConfig jsonServiceConfig;
+    private final JsonPipetConfig jsonPipetConfig;
     private final Extractor extractor;
     private final Converter converter;
 
@@ -48,7 +48,7 @@ public class RestController {
     public RestController(final VariableConfiguration configuration,
                           final AbstractProctorLoader loader) {
 
-        this.jsonServiceConfig = configuration.getJsonConfig();
+        this.jsonPipetConfig = configuration.getJsonConfig();
         this.extractor = configuration.getExtractor();
         this.converter = configuration.getConverter();
         this.loader = loader;
@@ -125,7 +125,7 @@ public class RestController {
     @RequestMapping(value="/config/context")
     public JsonResponseView configContext(final Model model) {
         model.addAttribute(new JsonResponse<Map<String, JsonContextVarConfig>>(
-                jsonServiceConfig.getContext(), new JsonMeta(HttpStatus.OK.value())));
+                jsonPipetConfig.getContext(), new JsonMeta(HttpStatus.OK.value())));
         return new JsonResponseView();
     }
 
@@ -135,7 +135,7 @@ public class RestController {
     @RequestMapping(value="/config/identifiers")
     public JsonResponseView configIdentifiers(final Model model) {
         model.addAttribute(new JsonResponse<Map<String, JsonVarConfig>>(
-                jsonServiceConfig.getIdentifiers(), new JsonMeta(HttpStatus.OK.value())));
+                jsonPipetConfig.getIdentifiers(), new JsonMeta(HttpStatus.OK.value())));
         return new JsonResponseView();
     }
 

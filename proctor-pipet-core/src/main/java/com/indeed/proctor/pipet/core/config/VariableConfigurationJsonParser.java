@@ -33,10 +33,10 @@ public class VariableConfigurationJsonParser {
 
     private final ObjectMapper deserializer = Serializers.strict();
 
-    // additional identifiers to use if those from the JsonServiceConfig are not available
+    // additional identifiers to use if those from the JsonPipetConfig are not available
     final List<Identifier> additionalIdentifiers = Collections.synchronizedList(Lists.<Identifier>newArrayList());
 
-    // additional identifiers to use from the JsonServiceConfig
+    // additional identifiers to use from the JsonPipetConfig
     final List<ContextVariable> additionalVariables = Collections.synchronizedList(Lists.<ContextVariable>newArrayList());
 
 
@@ -49,7 +49,7 @@ public class VariableConfigurationJsonParser {
     }
 
     public VariableConfiguration buildFrom(final InputStream input) throws IOException {
-        final JsonServiceConfig config = deserializer.readValue(input, JsonServiceConfig.class);
+        final JsonPipetConfig config = deserializer.readValue(input, JsonPipetConfig.class);
         return buildFrom(config);
     }
 
@@ -58,11 +58,11 @@ public class VariableConfigurationJsonParser {
     }
 
     public VariableConfiguration buildFrom(final URL input) throws IOException {
-        final JsonServiceConfig config = deserializer.readValue(input, JsonServiceConfig.class);
+        final JsonPipetConfig config = deserializer.readValue(input, JsonPipetConfig.class);
         return buildFrom(config);
     }
 
-    public VariableConfiguration buildFrom(final JsonServiceConfig config) {
+    public VariableConfiguration buildFrom(final JsonPipetConfig config) {
         // additionalVariables are added in createContextList
         final List<ContextVariable> contextVariableList = createContextList(config);
         // additionalIdentifiers are added in createIdentifierList
@@ -80,9 +80,9 @@ public class VariableConfigurationJsonParser {
         return new VariableConfiguration(extractor, converter);
     }
 
-    private List<ContextVariable> createContextList(final JsonServiceConfig jsonServiceConfig) {
+    private List<ContextVariable> createContextList(final JsonPipetConfig jsonPipetConfig) {
         final ImmutableList.Builder<ContextVariable> contextList = ImmutableList.builder();
-        for (Map.Entry<String, JsonContextVarConfig> e : jsonServiceConfig.getContext().entrySet()) {
+        for (Map.Entry<String, JsonContextVarConfig> e : jsonPipetConfig.getContext().entrySet()) {
             final JsonContextVarConfig config = e.getValue();
             contextList.add(ContextVariable.newBuilder()
                                 .setVarName(e.getKey())
@@ -96,9 +96,9 @@ public class VariableConfigurationJsonParser {
         return contextList.build();
     }
 
-    private List<Identifier> createIdentifierList(final JsonServiceConfig jsonServiceConfig) {
+    private List<Identifier> createIdentifierList(final JsonPipetConfig jsonPipetConfig) {
         final ImmutableList.Builder<Identifier> identifierList = ImmutableList.builder();
-        for (Map.Entry<String, JsonVarConfig> e : jsonServiceConfig.getIdentifiers().entrySet()) {
+        for (Map.Entry<String, JsonVarConfig> e : jsonPipetConfig.getIdentifiers().entrySet()) {
             final JsonVarConfig config = e.getValue();
             identifierList.add(Identifier.newBuilder()
                                    .setVarName(e.getKey())
