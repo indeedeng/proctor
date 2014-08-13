@@ -1,26 +1,16 @@
 package com.indeed.proctor.service.core.var;
 
 import com.google.common.base.Function;
-import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
-import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.indeed.proctor.common.model.TestType;
-import com.indeed.proctor.service.core.config.ExtractorSource;
 import com.indeed.proctor.service.core.config.JsonContextVarConfig;
 import com.indeed.proctor.service.core.config.JsonVarConfig;
 import com.indeed.proctor.service.core.web.BadRequestException;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 
 /**
@@ -35,9 +25,6 @@ import javax.servlet.http.HttpServletRequest;
 public class Extractor {
     private static final String TEST_LIST_PARAM = "test";
     private static final String FORCE_GROUPS_PARAM = "prforceGroups";
-    // List of all valid API parameters. This is everything the API uses without the user explicitly configuring.
-    private static final Collection<String> API_QUERY_PARAMS =
-            Arrays.asList(TEST_LIST_PARAM, FORCE_GROUPS_PARAM);
 
     private static final Splitter COMMA_SPLITTER = Splitter.on(',').trimResults().omitEmptyStrings();
 
@@ -65,9 +52,6 @@ public class Extractor {
 
 
     public RawParameters extract(final HttpServletRequest request) {
-        checkForUnrecognizedParameters(request.getParameterNames());
-
-
         final Map<String, String> contextMap = extractAllVars(request, contextList, PREFIX_VARIABLE_STRING_FUNCTION, true);
         final Map<TestType, String> identifierMap = extractAllVars(request, identifierList, IDENTIFIER_TEST_TYPE_FUNCTION, false);
 
@@ -79,35 +63,6 @@ public class Extractor {
             extractTest(request),
             extractForceGroups(request)
         );
-    }
-
-    /**
-     * Checks that all the parameters in our request are valid. If the user passed in something we don't recognize,
-     * we throw because they made an error in their request.
-     */
-    private void checkForUnrecognizedParameters(final Enumeration<String> paramNames) {
-        final Set<String> paramSet = new HashSet<String>(Collections.list(paramNames));
-
-        // Iterate through all possible parameters and remove them from the set.
-        // It doesn't matter if we remove optional or non-existent parameters. remove() returns false in that case.
-
-        paramSet.removeAll(API_QUERY_PARAMS);
-
-        Iterator<PrefixVariable> iter = Iterators.concat(contextList.iterator(), identifierList.iterator());
-        while (iter.hasNext()) {
-            PrefixVariable var = iter.next();
-            if (var.getSource() == ExtractorSource.QUERY) {
-                paramSet.remove(var.getSourceKey());
-                // If the parameter doesn't exist, then an error will be thrown during extraction later on.
-            }
-        }
-
-        // All that remains in paramSet are query parameters that our config had no knowledge of.
-        if (!paramSet.isEmpty()) {
-            throw new BadRequestException(String.format(
-                    "Unrecognized query parameters: %s", Joiner.on(", ").join(paramSet))
-            );
-        }
     }
 
     /**

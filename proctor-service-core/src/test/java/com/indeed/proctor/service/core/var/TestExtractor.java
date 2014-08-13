@@ -158,7 +158,7 @@ public class TestExtractor {
         final RawParameters parameters = extractor.extract(request);
     }
 
-    @Test(expected = BadRequestException.class)
+    @Test
     public void testExtractWithExtraQueryParameters() {
         final Extractor extractor = getBasicExtractor();
 
@@ -168,11 +168,14 @@ public class TestExtractor {
         request.addHeader(LANGUAGE_HEADER_NAME, fr);
         request.setParameter(USER_IDENTIFIER_QUERY_PARAM, userId);
 
-        request.setParameter("extra.parameter", "this.is.extra");
+
+        request.setParameter("id.blah", "True");
+        request.setParameter("ctx.blah", "True");
+        request.setParameter("blah", "True");
 
         final RawParameters parameters = extractor.extract(request);
+        // No exception even though unrecognized parameters were passed.
     }
-
 
     private Extractor getBasicExtractor() {
         // default country

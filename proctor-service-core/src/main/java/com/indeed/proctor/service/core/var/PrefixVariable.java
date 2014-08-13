@@ -4,7 +4,6 @@ import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.indeed.proctor.service.core.config.ExtractorSource;
-import com.indeed.proctor.service.core.config.JsonVarConfig;
 
 /**
  * Abstract class representing a context variable or identifier, which is passed with ctx. or id. prefixes in
@@ -41,11 +40,11 @@ public abstract class PrefixVariable {
         return varName;
     }
 
-    public ExtractorSource getSource() {
+    protected ExtractorSource getSource() {
         return source;
     }
 
-    public String getSourceKey() {
+    protected String getSourceKey() {
         return sourceKey;
     }
 
