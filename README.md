@@ -205,11 +205,15 @@ In addition to the query parameters below, the Pipet configuration can declare t
 
     Context variables are used in evaluating Proctor [rule expressions](http://indeedeng.github.io/proctor/docs/test-rules/).
 
+    Unrecognized sourceKeys that are not in the Pipet configuration are ignored by Pipet.
+
 * id.{sourceKey} _(at least one identifier is required)_
 
     All query parameters starting with _id._ are treated as identifiers.
 
     Identifiers are used to differentiate different users based on tracking cookie, account id, email, or anything else that is supported by Proctor.
+
+    Unrecognized sourceKeys that are not in the Pipet configuration are ignored by Pipet.
 
 * test _(optional)_
 
