@@ -156,7 +156,7 @@ For identifiers, the key is the [test type](http://indeedeng.github.io/proctor/d
 
 #### Deploying New Variables
 
-When you add a new context variable without a defaultValue to the Pipet configuration, all API users are required to include it on every request. Otherwise, the API will return an error.
+All context variables that don't have a defaultValue must be provided in the API request. When you add a new context variable without a defaultValue to the Pipet configuration, **all API users are immediately required to include it on every request. Otherwise, the API will return an error.**
 
 To avoid this, before deploying a new context variable, make sure that every user of the API includes that variable in their requests. After that, you can safely deploy Pipet without causing API errors.
 
