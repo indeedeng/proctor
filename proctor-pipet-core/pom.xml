@@ -10,7 +10,7 @@
     </parent>
 
     <properties>
-        <proctor.version>1.0.17-internal-20140807092128</proctor.version>
+        <proctor.version>1.0.17-internal-20140814094532</proctor.version>
         <util.version>1.0.0</util.version>
     </properties>
 
