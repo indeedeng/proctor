@@ -54,7 +54,7 @@ public final class TestDefinitionFunctions {
                        isCharmedRevision(history, version.getTrunkRevision());
             case WORKING:
             default:
-                return history.getRevision() == version.getTrunkRevision();
+                return history.getRevision().equals(version.getTrunkRevision());
         }
     }
 
@@ -65,7 +65,7 @@ public final class TestDefinitionFunctions {
         switch (viewing) {
             case WORKING:
                 // trunk.revision gets set to qa.version during promotion
-                return history.getRevision() == version.getQaVersion();
+                return history.getRevision().equals(version.getQaVersion());
             case PRODUCTION:
                 // viewing production history:
                 // (qa r{qa.revision}) - this was a promotion from QA
@@ -75,7 +75,7 @@ public final class TestDefinitionFunctions {
                        isCharmedRevision(history, version.getQaVersion());
             case QA:
             default:
-                return history.getRevision() == version.getQaRevision();
+                return history.getRevision().equals(version.getQaRevision());
         }
     }
 
@@ -86,7 +86,7 @@ public final class TestDefinitionFunctions {
         switch (viewing) {
             case WORKING:
                 // trunk.revision gets set to production.version during promotion
-                return history.getRevision() == version.getProductionVersion();
+                return history.getRevision().equals(version.getProductionVersion());
             case QA:
                 // viewing qa history:
                 // (trunk r{qa.version}) - the same trunk revision was promoted to production, either by QA->PROD or TRUNK->PROD
@@ -94,7 +94,7 @@ public final class TestDefinitionFunctions {
                        isCharmedRevision(history, version.getProductionVersion());
             case PRODUCTION:
             default:
-                return history.getRevision() == version.getProductionRevision();
+                return history.getRevision().equals(version.getProductionRevision());
         }
     }
 

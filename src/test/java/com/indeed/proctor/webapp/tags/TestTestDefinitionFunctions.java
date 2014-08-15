@@ -37,14 +37,23 @@ public class TestTestDefinitionFunctions {
         .put("139", new Revision("139", WHO, WHEN, "Promoting iahtml5qsthisttst (trunk r137) to qa"))
         .put("140", new Revision("140", WHO, WHEN, "Promoting iahtml5qsthisttst (qa r135) to production\nPromoting iahtml5qsthisttst (trunk r134) to qa"))
         .build();
-    private static final EnvironmentVersion PROMOTED_STATE_OF_THE_WORLD = new EnvironmentVersion("iahtml5qsthisttst",
-                                                                      // current trunk revision
-                                                                      PROMOTED_REVISIONS.get("137"),
-                                                                      // QA revision = 139, promoted from Trunk r137 (effective version)
-                                                                      PROMOTED_REVISIONS.get("139"), "137",
-                                                                      // PROD revision = 140, promoted from Trunk r134 (effective version)
-                                                                      PROMOTED_REVISIONS.get("140"), "134");
+    private static final EnvironmentVersion PROMOTED_STATE_OF_THE_WORLD;
+    static {
 
+        final Revision trunkRevision = PROMOTED_REVISIONS.get("137");
+        // QA revision = 139, promoted from Trunk r137 (effective version)
+        final Revision qaRevision = PROMOTED_REVISIONS.get("139");
+        // PROD revision = 140, promoted from Trunk r134 (effective version)
+        final Revision prodRevision = PROMOTED_REVISIONS.get("140");
+
+        PROMOTED_STATE_OF_THE_WORLD = new EnvironmentVersion("iahtml5qsthisttst",
+                                                                      // current trunk revision
+                                                                      copyRevision(trunkRevision),
+                                                                      // QA revision = 139, promoted from Trunk r137 (effective version)
+                                                                      copyRevision(qaRevision), "137",
+                                                                      // PROD revision = 140, promoted from Trunk r134 (effective version)
+                                                                      copyRevision(prodRevision), "134");
+    }
     /*
         Example Charm Commit history:
         (trunk branch)
@@ -183,5 +192,16 @@ public class TestTestDefinitionFunctions {
         Assert.assertFalse("r178374 is merged r178090 not current qa.version (r182781)", TestDefinitionFunctions.isCurrentVersionOnQa(viewing, r178374, CHARMED_STATE_OF_THE_WORLD));
 
         Assert.assertTrue("r178374 current production.revision", TestDefinitionFunctions.isCurrentVersionOnProduction(viewing, r178374, CHARMED_STATE_OF_THE_WORLD));
+    }
+
+
+    private static Revision copyRevision(final Revision r) {
+        return new Revision(
+            // create a new String for revision. Revision was previously an int, and a bug escaped because comparisons were via == instead of .equals
+            new String(r.getRevision()),
+            r.getAuthor(),
+            r.getDate(),
+            r.getMessage()
+        );
     }
 }

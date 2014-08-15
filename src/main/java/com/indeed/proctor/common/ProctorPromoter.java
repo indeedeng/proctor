@@ -111,7 +111,7 @@ public class ProctorPromoter extends DataLoadingTimerTask {
         // TODO (parker) 7/1/14 - alloq ProctorStore to implement valid / unknown revision parsing
         if(knownDestRevision.length() == 0 && destRevision.length() > 0) {
             throw new TestPromotionException("Positive revision r" + destRevision + " given for destination ( " + destBranch + " ) but '" + testName + "' does not exist.");
-        } else if (!knownDestRevision.equals("-1") && knownDestRevision.length() > 0 && destRevision.length() == 0) {
+        } else if (! knownDestRevision.equals(EnvironmentVersion.UNKNOWN_REVISION) && knownDestRevision.length() > 0 && destRevision.length() == 0) {
             throw new TestPromotionException("Non-Positive revision r" + destRevision + " given for destination ( " + destBranch + " ) but '" + testName + "' exists.");
         }
 
@@ -127,7 +127,7 @@ public class ProctorPromoter extends DataLoadingTimerTask {
         }
         final Revision srcVersion = srcHistory.get(0);
 
-        if(!knownDestRevision.equals("-1") && knownDestRevision.length() > 0) {
+        if(!knownDestRevision.equals(EnvironmentVersion.UNKNOWN_REVISION) && knownDestRevision.length() > 0) {
             // This test exists in the destination branch. Get its most recent test-history in the event that EnvironmentVersion is stale.
             List<Revision> history = getMostRecentHistory(dest, testName);
             if(history.isEmpty()) {
