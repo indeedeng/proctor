@@ -11,7 +11,7 @@ import java.util.Map;
  * @author ketan
  */
 public class TestDefinition {
-    private String version;
+    private String version = "-1";
     @Nonnull
     private Map<String, Object> constants = Collections.emptyMap();
     @Nonnull
