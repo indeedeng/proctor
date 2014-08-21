@@ -14,6 +14,12 @@ public class Range {
         this.length = length;
     }
 
+    public Range(final Range other) {
+        this.bucketValue = other.bucketValue;
+        this.length = other.length;
+    }
+
+
     public int getBucketValue() {
         return bucketValue;
     }

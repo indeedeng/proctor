@@ -6,6 +6,7 @@ import com.google.common.base.Joiner;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -36,6 +37,18 @@ public class Payload {
     public static final Payload EMPTY_PAYLOAD = new Payload();
 
     public Payload() { /* intentionally empty */ }
+
+    public Payload(final Payload other) {
+        this.doubleValue = other.doubleValue;
+        this.doubleArray = Arrays.copyOf(other.doubleArray, other.doubleArray.length);
+        this.longValue = other.longValue;
+        this.longArray = Arrays.copyOf(other.longArray, other.longArray.length);
+        this.stringValue = other.stringValue;
+        this.stringArray = Arrays.copyOf(other.stringArray, other.stringArray.length);
+        this.map = new HashMap<String, Object>();
+        this.map.putAll(other.map);
+    }
+
 
     @Nullable
     public Double getDoubleValue() {
