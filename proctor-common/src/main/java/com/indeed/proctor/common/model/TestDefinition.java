@@ -1,10 +1,11 @@
 package com.indeed.proctor.common.model;
 
+import com.google.common.collect.Maps;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -66,11 +67,9 @@ public class TestDefinition {
         this.rule = other.rule;
         this.description = other.description;
 
-        this.constants = new HashMap<String, Object>();
-        this.constants.putAll(other.constants);
+        this.constants = Maps.newHashMap(other.constants);
 
-        this.specialConstants =  new HashMap<String, Object>();
-        this.specialConstants.putAll(other.specialConstants);
+        this.specialConstants =  Maps.newHashMap(other.specialConstants);
 
         this.buckets = new ArrayList<TestBucket>();
         for (final TestBucket bucket : other.buckets) {

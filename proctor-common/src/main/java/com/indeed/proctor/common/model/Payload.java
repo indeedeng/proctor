@@ -1,12 +1,12 @@
 package com.indeed.proctor.common.model;
 
+import com.google.common.collect.Maps;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import com.google.common.base.Joiner;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -45,8 +45,7 @@ public class Payload {
         this.longArray = Arrays.copyOf(other.longArray, other.longArray.length);
         this.stringValue = other.stringValue;
         this.stringArray = Arrays.copyOf(other.stringArray, other.stringArray.length);
-        this.map = new HashMap<String, Object>();
-        this.map.putAll(other.map);
+        this.map = Maps.newHashMap(other.map);
     }
 
 
