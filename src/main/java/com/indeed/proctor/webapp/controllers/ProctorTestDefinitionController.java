@@ -953,7 +953,35 @@ public class ProctorTestDefinitionController extends AbstractController {
         }
     }
 
+    @RequestMapping(value= "/{testName}/specification")
+    @ResponseBody
+    public String doSpecificationGet(
+            @PathVariable String testName,
+            @RequestParam(required = false) final String branch
+    ) {
+        final Environment theEnvironment = determineEnvironmentFromParameter(branch);
+        final ProctorStore store = determineStoreFromEnvironment(theEnvironment);
 
+        final TestDefinition definition = getTestDefinition(store, testName);
+        if (definition == null) {
+            LOGGER.info("Unknown test definition : " + testName);
+            // unknown testdefinition
+            throw new NullPointerException("Unknown test definition");
+        }
+        final StringWriter specificationWriter = new StringWriter();
+        try {
+            writeSpecification(specificationWriter,definition);
+        } catch (IllegalArgumentException e) {
+            LOGGER.error("Could not generate Test Specification", e);
+        } catch (JsonGenerationException e) {
+            LOGGER.error("Could not generate JSON", e);
+        } catch (JsonMappingException e) {
+            LOGGER.error("Could not generate JSON", e);
+        } catch (IOException e) {
+            LOGGER.error("Could not generate JSON", e);
+        }
+        return specificationWriter.toString();
+    }
 
 
     private CheckMatrixResult checkMatrix(final Environment checkAgainst,
@@ -1202,6 +1230,20 @@ public class ProctorTestDefinitionController extends AbstractController {
             LOGGER.error("Could not generate JSON", e);
         }
 
+        try {
+            final StringWriter swSpecification = new StringWriter();
+            writeSpecification(swSpecification, definition);
+            model.addAttribute("testSpecificationJson", swSpecification.toString());
+        } catch (IllegalArgumentException e) {
+            LOGGER.error("Could not generate Test Specification", e);
+        } catch (JsonGenerationException e) {
+            LOGGER.error("Could not generate JSON", e);
+        } catch (JsonMappingException e) {
+            LOGGER.error("Could not generate JSON", e);
+        } catch (IOException e) {
+            LOGGER.error("Could not generate JSON", e);
+        }
+
         model.addAttribute("testDefinitionHistory", history);
         model.addAttribute("testDefinitionVersion", history.size() > 0 && history.get(0) != null ? history.get(0) : UNKNOWN_VERSION);
 
@@ -1272,6 +1314,11 @@ public class ProctorTestDefinitionController extends AbstractController {
             LOGGER.error("Failed to get current test history for: " + testName, e);
             return null;
         }
+    }
+
+    protected void writeSpecification(final StringWriter sw, final TestDefinition testDefinition) throws IllegalArgumentException, JsonGenerationException, JsonMappingException, IOException {
+        sw.write("// GENERATED SPECIFICATION \n");
+        ProctorUtils.serializeTestSpecification(sw, ProctorUtils.generateSpecification(testDefinition));
     }
 
     private static class CheckMatrixResult {
