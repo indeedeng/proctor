@@ -102,7 +102,7 @@ public class ProctorPromoter extends DataLoadingTimerTask {
         final ProctorStore dest = getStoreFromBranch(destBranch);
         final boolean isSrcTrunk = Environment.WORKING == srcBranch;
 
-        final TestDefinition d = getTestDefinition(src, testName, srcRevision);
+        final TestDefinition d = new TestDefinition(getTestDefinition(src, testName, srcRevision));
 
         final EnvironmentVersion version = getEnvironmentVersion(testName);
         final String knownDestRevision = version != null ? version.getRevision(destBranch) : UNKNOWN_VERSION;

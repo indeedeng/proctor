@@ -723,6 +723,12 @@ public class ProctorTestDefinitionController extends AbstractController {
                     if (testDefinitionToUpdate.getTestType() == null && existingTestDefinition != null) {
                         testDefinitionToUpdate.setTestType(existingTestDefinition.getTestType());
                     }
+                    if (isCreate) {
+                        testDefinitionToUpdate.setVersion("-1");
+                    }
+                    else if (existingTestDefinition != null) {
+                        testDefinitionToUpdate.setVersion(existingTestDefinition.getVersion());
+                    }
                     log("verifying test definition and buckets");
                     validateBasicInformation(testDefinitionToUpdate, this);
 
