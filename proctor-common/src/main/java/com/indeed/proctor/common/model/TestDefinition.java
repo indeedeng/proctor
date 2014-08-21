@@ -58,7 +58,7 @@ public class TestDefinition {
         this.description = description;
     }
 
-    public TestDefinition(TestDefinition other) {
+    public TestDefinition(@Nonnull final TestDefinition other) {
         this.version = other.version;
         this.constants = other.constants;
         this.specialConstants = other.specialConstants;
