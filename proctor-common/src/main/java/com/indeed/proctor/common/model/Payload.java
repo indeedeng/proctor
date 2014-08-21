@@ -276,6 +276,7 @@ public class Payload {
         if (longValue != null ? !longValue.equals(payload.longValue) : payload.longValue != null) return false;
         if (!Arrays.equals(stringArray, payload.stringArray)) return false;
         if (stringValue != null ? !stringValue.equals(payload.stringValue) : payload.stringValue != null) return false;
+        if (map != null ? !map.equals(payload.map) : payload.map != null) return false;
 
         return true;
     }
