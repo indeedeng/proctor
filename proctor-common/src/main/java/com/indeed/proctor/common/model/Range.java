@@ -1,5 +1,7 @@
 package com.indeed.proctor.common.model;
 
+import javax.annotation.Nonnull;
+
 public class Range {
     private int bucketValue;
     private double length;
@@ -14,7 +16,7 @@ public class Range {
         this.length = length;
     }
 
-    public Range(final Range other) {
+    public Range(@Nonnull final Range other) {
         this.bucketValue = other.bucketValue;
         this.length = other.length;
     }

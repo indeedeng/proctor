@@ -67,18 +67,26 @@ public class TestDefinition {
         this.rule = other.rule;
         this.description = other.description;
 
-        this.constants = Maps.newHashMap(other.constants);
-
-        this.specialConstants =  Maps.newHashMap(other.specialConstants);
-
-        this.buckets = new ArrayList<TestBucket>();
-        for (final TestBucket bucket : other.buckets) {
-            this.buckets.add(new TestBucket(bucket));
+        if (other.constants != null) {
+            this.constants = Maps.newHashMap(other.constants);
         }
 
-        this.allocations = new ArrayList<Allocation>();
-        for (final Allocation allocation : other.allocations) {
-            this.allocations.add(new Allocation(allocation));
+        if (other.specialConstants != null) {
+            this.specialConstants =  Maps.newHashMap(other.specialConstants);
+        }
+
+        if (other.buckets != null) {
+            this.buckets = new ArrayList<TestBucket>();
+            for (final TestBucket bucket : other.buckets) {
+                this.buckets.add(new TestBucket(bucket));
+            }
+        }
+
+        if (other.allocations != null) {
+            this.allocations = new ArrayList<Allocation>();
+            for (final Allocation allocation : other.allocations) {
+                this.allocations.add(new Allocation(allocation));
+            }
         }
 
         this.testType = other.testType;

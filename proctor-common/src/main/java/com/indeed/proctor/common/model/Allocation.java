@@ -23,7 +23,7 @@ public class Allocation {
         this.ranges = ranges;
     }
 
-    public Allocation(final Allocation other) {
+    public Allocation(@Nonnull final Allocation other) {
         this.rule = other.rule;
         this.ranges = new ArrayList<Range>();
         for (final Range range : other.getRanges()) {

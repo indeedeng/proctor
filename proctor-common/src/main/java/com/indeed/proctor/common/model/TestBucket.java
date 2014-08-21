@@ -46,11 +46,13 @@ public class TestBucket {
         this.payload = payload;
     }
 
-    public TestBucket(final TestBucket other) {
+    public TestBucket(@Nonnull final TestBucket other) {
         this.name = other.name;
         this.value = other.value;
         this.description = other.description;
-        this.payload = new Payload(other.payload);
+        if (other.payload != null) {
+            this.payload = new Payload(other.payload);
+        }
     }
 
 

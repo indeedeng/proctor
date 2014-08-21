@@ -38,14 +38,22 @@ public class Payload {
 
     public Payload() { /* intentionally empty */ }
 
-    public Payload(final Payload other) {
+    public Payload(@Nonnull final Payload other) {
         this.doubleValue = other.doubleValue;
-        this.doubleArray = Arrays.copyOf(other.doubleArray, other.doubleArray.length);
+        if (other.doubleArray != null) {
+            this.doubleArray = Arrays.copyOf(other.doubleArray, other.doubleArray.length);
+        }
         this.longValue = other.longValue;
-        this.longArray = Arrays.copyOf(other.longArray, other.longArray.length);
+        if (other.longArray != null) {
+            this.longArray = Arrays.copyOf(other.longArray, other.longArray.length);
+        }
         this.stringValue = other.stringValue;
-        this.stringArray = Arrays.copyOf(other.stringArray, other.stringArray.length);
-        this.map = Maps.newHashMap(other.map);
+        if (other.stringArray != null) {
+            this.stringArray = Arrays.copyOf(other.stringArray, other.stringArray.length);
+        }
+        if (other.map != null) {
+            this.map = Maps.newHashMap(other.map);
+        }
     }
 
 
