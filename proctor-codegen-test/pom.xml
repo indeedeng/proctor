@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.indeed</groupId>
         <artifactId>proctor-parent</artifactId>
-        <version>1.0.19-SNAPSHOT</version>
+        <version>1.0.19</version>
     </parent>
 
     <artifactId>proctor-codegen-test</artifactId>
