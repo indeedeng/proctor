@@ -970,7 +970,7 @@ public class ProctorTestDefinitionController extends AbstractController {
         }
         final StringWriter specificationWriter = new StringWriter();
         try {
-            writeSpecification(specificationWriter,definition);
+            ProctorUtils.serializeTestSpecification(specificationWriter, ProctorUtils.generateSpecification(definition));
         } catch (IllegalArgumentException e) {
             LOGGER.error("Could not generate Test Specification", e);
         } catch (JsonGenerationException e) {
@@ -1232,7 +1232,7 @@ public class ProctorTestDefinitionController extends AbstractController {
 
         try {
             final StringWriter swSpecification = new StringWriter();
-            writeSpecification(swSpecification, definition);
+            ProctorUtils.serializeTestSpecification(swSpecification, ProctorUtils.generateSpecification(definition));
             model.addAttribute("testSpecificationJson", swSpecification.toString());
         } catch (IllegalArgumentException e) {
             LOGGER.error("Could not generate Test Specification", e);
@@ -1314,11 +1314,6 @@ public class ProctorTestDefinitionController extends AbstractController {
             LOGGER.error("Failed to get current test history for: " + testName, e);
             return null;
         }
-    }
-
-    protected void writeSpecification(final StringWriter sw, final TestDefinition testDefinition) throws IllegalArgumentException, JsonGenerationException, JsonMappingException, IOException {
-        sw.write("// GENERATED SPECIFICATION \n");
-        ProctorUtils.serializeTestSpecification(sw, ProctorUtils.generateSpecification(testDefinition));
     }
 
     private static class CheckMatrixResult {
