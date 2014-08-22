@@ -62,40 +62,40 @@ public class TestPayloadType {
 
     @Test
     public void testPayloadTypeForValueRetrieval_DoubleArrayType() {
-        assertTrue(PayloadType.DOUBLE_ARRAY.equals(PayloadType.payloadTypeForValue(new ArrayList<Double>(){{add(1.1D);}})));
+        assertEquals(PayloadType.DOUBLE_ARRAY,PayloadType.payloadTypeForValue(new ArrayList<Double>(){{add(1.1D);}}));
         assertFalse(PayloadType.DOUBLE_ARRAY.equals(PayloadType.payloadTypeForValue(new ArrayList<Long>(){{add(100L);}})));
-        assertTrue(PayloadType.DOUBLE_ARRAY.equals(PayloadType.payloadTypeForValue(new ArrayList<Float>(){{add(1.2F);}})));
-        assertTrue(PayloadType.DOUBLE_ARRAY.equals(PayloadType.payloadTypeForValue(new Double[]{1.0D, 2.0D})));
-        assertTrue(PayloadType.DOUBLE_ARRAY.equals(PayloadType.payloadTypeForValue(new Float[]{1.0F, 2.0F})));
+        assertEquals(PayloadType.DOUBLE_ARRAY,PayloadType.payloadTypeForValue(new ArrayList<Float>(){{add(1.2F);}}));
+        assertEquals(PayloadType.DOUBLE_ARRAY,PayloadType.payloadTypeForValue(new Double[]{1.0D, 2.0D}));
+        assertEquals(PayloadType.DOUBLE_ARRAY,PayloadType.payloadTypeForValue(new Float[]{1.0F, 2.0F}));
         assertFalse(PayloadType.DOUBLE_ARRAY.equals(PayloadType.payloadTypeForValue(new Long[]{100L, 200L})));
     }
 
     @Test
     public void testPayloadTypeForValueRetrieval_LongArrayType() {
-        assertTrue(PayloadType.LONG_ARRAY.equals(PayloadType.payloadTypeForValue(new ArrayList<Long>(){{add(11L);}})));
-        assertTrue(PayloadType.LONG_ARRAY.equals(PayloadType.payloadTypeForValue(new ArrayList<Integer>(){{add(11);}})));
+        assertEquals(PayloadType.LONG_ARRAY,PayloadType.payloadTypeForValue(new ArrayList<Long>(){{add(11L);}}));
+        assertEquals(PayloadType.LONG_ARRAY,PayloadType.payloadTypeForValue(new ArrayList<Integer>(){{add(11);}}));
         assertFalse(PayloadType.LONG_ARRAY.equals(PayloadType.payloadTypeForValue(new ArrayList<Double>(){{add(1.1D);}})));
-        assertTrue(PayloadType.LONG_ARRAY.equals(PayloadType.payloadTypeForValue(new Long[]{100L, 200L})));
-        assertTrue(PayloadType.LONG_ARRAY.equals(PayloadType.payloadTypeForValue(new Integer[]{10, 20})));
+        assertEquals(PayloadType.LONG_ARRAY,PayloadType.payloadTypeForValue(new Long[]{100L, 200L}));
+        assertEquals(PayloadType.LONG_ARRAY,PayloadType.payloadTypeForValue(new Integer[]{10, 20}));
         assertFalse(PayloadType.LONG_ARRAY.equals(PayloadType.payloadTypeForValue(new Double[]{1.0D, 2.0D})));
     }
 
     @Test
     public void testPayloadTypeForValueRetrieval_StringArrayType() {
-        assertTrue(PayloadType.STRING_ARRAY.equals(PayloadType.payloadTypeForValue(new ArrayList<String>(){{add("Ya");}})));
+        assertEquals(PayloadType.STRING_ARRAY,PayloadType.payloadTypeForValue(new ArrayList<String>(){{add("Ya");}}));
         assertFalse(PayloadType.STRING_ARRAY.equals(PayloadType.payloadTypeForValue(new ArrayList<Integer>(){{add(100);}})));
-        assertTrue(PayloadType.STRING_ARRAY.equals(PayloadType.payloadTypeForValue(new String[]{"yea", "Ya"})));
+        assertEquals(PayloadType.STRING_ARRAY,PayloadType.payloadTypeForValue(new String[]{"yea", "Ya"}));
         assertFalse(PayloadType.STRING_ARRAY.equals(PayloadType.payloadTypeForValue(new Float[]{1.0F, 2.0F})));
     }
 
     @Test
     public void testPayloadTypeForValueRetrieval_NonArrayTypes() {
-        assertTrue(PayloadType.MAP.equals(PayloadType.payloadTypeForValue(ImmutableMap.of("string","string"))));
-        assertTrue(PayloadType.LONG_VALUE.equals(PayloadType.payloadTypeForValue(100)));
-        assertTrue(PayloadType.LONG_VALUE.equals(PayloadType.payloadTypeForValue(100L)));
-        assertTrue(PayloadType.DOUBLE_VALUE.equals(PayloadType.payloadTypeForValue(1.1D)));
-        assertTrue(PayloadType.DOUBLE_VALUE.equals(PayloadType.payloadTypeForValue(2.1F)));
-        assertTrue(PayloadType.STRING_VALUE.equals(PayloadType.payloadTypeForValue("yes")));
+        assertEquals(PayloadType.MAP,PayloadType.payloadTypeForValue(ImmutableMap.of("string","string")));
+        assertEquals(PayloadType.LONG_VALUE,PayloadType.payloadTypeForValue(100));
+        assertEquals(PayloadType.LONG_VALUE,PayloadType.payloadTypeForValue(100L));
+        assertEquals(PayloadType.DOUBLE_VALUE,PayloadType.payloadTypeForValue(1.1D));
+        assertEquals(PayloadType.DOUBLE_VALUE,PayloadType.payloadTypeForValue(2.1F));
+        assertEquals(PayloadType.STRING_VALUE,PayloadType.payloadTypeForValue("yes"));
     }
 
     @Test

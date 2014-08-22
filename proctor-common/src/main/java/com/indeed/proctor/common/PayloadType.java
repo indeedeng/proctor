@@ -85,14 +85,14 @@ public enum PayloadType {
     }
 
     /**
-     * Flexible method for determining payload type from a value
+     * Flexible method for determining payload type from a value - helpful for determining map payload types
      *
      */
     @Nonnull
     public static PayloadType payloadTypeForValue(@Nonnull final Object payloadValue) throws IllegalArgumentException{
-        if(payloadValue instanceof ArrayList) {
+        if(payloadValue instanceof List) {
             if(((ArrayList)payloadValue).size() > 0) {
-                final Object firstValue = ((ArrayList) payloadValue).get(0);
+                final Object firstValue = ((List) payloadValue).get(0);
                 if (firstValue instanceof Long || firstValue instanceof Integer) {
                     return PayloadType.LONG_ARRAY;
                 } else if (firstValue instanceof Double || firstValue instanceof Float) {

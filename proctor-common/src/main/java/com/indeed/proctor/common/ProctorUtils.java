@@ -755,28 +755,33 @@ public abstract class ProctorUtils {
 
     /**
      * Generates a usable test specification for a given test definition
-     *
+     * Uses the first bucket as the fallback value
      */
     public static TestSpecification generateSpecification(TestDefinition testDefinition) {
         final TestSpecification testSpecification = new TestSpecification();
         final Map<String,Integer> buckets = Maps.newHashMap();
         final List<TestBucket> testDefinitionBuckets = testDefinition.getBuckets();
-        testSpecification.setFallbackValue(testDefinitionBuckets.get(0).getValue());
+        if(testDefinitionBuckets.size() > 0) {
+            final TestBucket firstBucket = testDefinitionBuckets.get(0);
+            testSpecification.setFallbackValue(firstBucket.getValue());
 
-        final PayloadSpecification payloadSpecification= new PayloadSpecification();
-        final String payloadSpecificationType = testDefinitionBuckets.get(0).getPayload().fetchType();
-        payloadSpecification.setType(payloadSpecificationType);
-        if("map".equals(payloadSpecificationType)) {
-            final Map<String,String> payloadSpecificationSchema = new HashMap<String,String>();
-            for(Map.Entry<String,Object> entry : testDefinitionBuckets.get(0).getPayload().getMap().entrySet()) {
-                payloadSpecificationSchema.put(entry.getKey(), PayloadType.payloadTypeForValue(entry.getValue()).payloadTypeName);
+            final PayloadSpecification payloadSpecification = new PayloadSpecification();
+            if(firstBucket.getPayload() != null && !firstBucket.getPayload().equals(Payload.EMPTY_PAYLOAD)) {
+                final String payloadSpecificationType = firstBucket.getPayload().fetchType();
+                payloadSpecification.setType(payloadSpecificationType);
+                if ("map".equals(payloadSpecificationType)) {
+                    final Map<String, String> payloadSpecificationSchema = new HashMap<String, String>();
+                    for (Map.Entry<String, Object> entry : testDefinitionBuckets.get(0).getPayload().getMap().entrySet()) {
+                        payloadSpecificationSchema.put(entry.getKey(), PayloadType.payloadTypeForValue(entry.getValue()).payloadTypeName);
+                    }
+                    payloadSpecification.setSchema(payloadSpecificationSchema);
+                }
+                testSpecification.setPayload(payloadSpecification);
             }
-            payloadSpecification.setSchema(payloadSpecificationSchema);
-        }
-        testSpecification.setPayload(payloadSpecification);
 
-        for(int i = 0; i<testDefinitionBuckets.size(); i++) {
-            buckets.put(testDefinitionBuckets.get(i).getName(), testDefinitionBuckets.get(i).getValue());
+            for (int i = 0; i < testDefinitionBuckets.size(); i++) {
+                buckets.put(testDefinitionBuckets.get(i).getName(), testDefinitionBuckets.get(i).getValue());
+            }
         }
         testSpecification.setBuckets(buckets);
         testSpecification.setDescription(testDefinition.getDescription());
