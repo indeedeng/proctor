@@ -330,7 +330,7 @@
     </dependencies>
 
     <properties>
-        <proctor.version>1.0.19</proctor.version>
+        <proctor.version>1.0.20</proctor.version>
         <closure-library.version>0.0-20130212-95c19e7f0f5f</closure-library.version>
         <closure-library-zip>closure-library-20130212-95c19e7f0f5f.zip</closure-library-zip>
         <closure-library-url>https://closure-library.googlecode.com/files/${closure-library-zip}</closure-library-url>
