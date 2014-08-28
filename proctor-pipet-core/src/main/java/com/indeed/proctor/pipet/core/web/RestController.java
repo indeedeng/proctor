@@ -17,8 +17,6 @@ import com.indeed.proctor.pipet.core.model.JsonEmptyDataResponse;
 import com.indeed.proctor.pipet.core.model.JsonMeta;
 import com.indeed.proctor.pipet.core.model.JsonResponse;
 import com.indeed.proctor.pipet.core.model.JsonResult;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.type.TypeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
@@ -34,7 +32,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.Collections;
 import java.util.Map;
 
