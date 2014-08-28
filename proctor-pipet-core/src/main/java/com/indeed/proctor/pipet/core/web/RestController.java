@@ -31,7 +31,9 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Collections;
 import java.util.Map;
@@ -86,9 +88,11 @@ public class RestController {
      * Returns the entire test matrix in JSON format.
      */
     @RequestMapping(value="/proctor/matrix", method=RequestMethod.GET)
-    public JsonResponseView proctorMatrix(final Model model) {
-        model.addAttribute(new JsonResponse<Map<String, Object>>(getJsonMatrix(), new JsonMeta(HttpStatus.OK.value())));
-        return new JsonResponseView();
+    public void proctorMatrix(final HttpServletResponse response) throws IOException {
+        final Proctor proctor = tryLoadProctor();
+        final PrintWriter writer = response.getWriter();
+        response.setContentType("application/json;charset=UTF-8");
+        proctor.appendTestMatrix(writer);
     }
 
     /**
@@ -173,28 +177,5 @@ public class RestController {
                     String.format("Could not get Proctor from loader: %s", loader.getLastLoadErrorMessage()));
         }
         return proctor;
-    }
-
-    /**
-     * Read the test matrix from Proctor and return it as a JSON simple Map data type.
-     */
-    private Map<String, Object> getJsonMatrix() {
-        final Proctor proctor = tryLoadProctor();
-
-        try {
-            // Proctor only exposes the test matrix as a string written to a Writer.
-            // As a workaround, we'll de-serialize the string and serialize it again.
-            // It's possible to interpret that string as a raw JSON string if its in a POJO so that it isn't put into a
-            // JSON string. But it's easier just to de-serialize it and let Spring serialize it again. This way, we
-            // don't need to write another class, and we're sure the JSON we serve is valid.
-            final ObjectMapper mapper = new ObjectMapper();
-            final StringWriter writer = new StringWriter();
-            proctor.appendTestMatrix(writer);
-            // Reading values into generic types requires this weird TypeReference construct. See Jackson docs on binding.
-            return mapper.readValue(writer.toString(), new TypeReference<Map<String, Object>>() {});
-        } catch (IOException e) {
-            throw new InternalServerException(
-                    String.format("Error while handling JSON test matrix: %s", e.getMessage()));
-        }
     }
 }
