@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.indeed</groupId>
         <artifactId>proctor-parent</artifactId>
-        <version>1.0.11-SNAPSHOT</version>
+        <version>1.0.21-SNAPSHOT</version>
     </parent>
 
     <artifactId>proctor-codegen-test</artifactId>
@@ -32,6 +32,11 @@
                 </executions>
             </plugin>
         </plugins>
+        <resources>
+            <resource>
+                <directory>${project.build.directory}/generated-test-resources/proctor</directory>
+            </resource>
+        </resources>
     </build>
 
     <dependencies>

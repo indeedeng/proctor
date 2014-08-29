@@ -2,6 +2,7 @@ package com.indeed.proctor.common.model;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -21,6 +22,15 @@ public class Allocation {
         this.rule = rule;
         this.ranges = ranges;
     }
+
+    public Allocation(@Nonnull final Allocation other) {
+        this.rule = other.rule;
+        this.ranges = new ArrayList<Range>();
+        for (final Range range : other.getRanges()) {
+            this.ranges.add(new Range(range));
+        }
+    }
+
 
     @Nullable
     public String getRule() {

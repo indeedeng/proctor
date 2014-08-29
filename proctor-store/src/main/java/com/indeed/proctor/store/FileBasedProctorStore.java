@@ -15,7 +15,6 @@ import org.codehaus.jackson.map.ObjectMapper;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -86,7 +85,7 @@ public abstract class FileBasedProctorStore implements ProctorStore {
     }
 
     @Override
-    public final TestMatrixVersion getTestMatrix(final long fetchRevision) throws StoreException {
+    public final TestMatrixVersion getTestMatrix(final String fetchRevision) throws StoreException {
         long start = System.currentTimeMillis();
         final TestVersionResult result = core.determineVersions(fetchRevision);
         if(LOGGER.isDebugEnabled()) {
@@ -106,7 +105,7 @@ public abstract class FileBasedProctorStore implements ProctorStore {
             final TestDefinition testDefinition = getTestDefinition(testDefFile.getTestName(), testDefFile.getRevision());
             if(LOGGER.isTraceEnabled()) {
                 final long elapsed = System.currentTimeMillis() - startForTest;
-                LOGGER.debug(String.format("Took %d ms to load %s (r%d) %s", elapsed, testDefFile.getTestName(), testDefFile.getRevision(), testDefinition == null ? "unsuccessfully" : "successfully"));
+                LOGGER.debug(String.format("Took %d ms to load %s (r%s) %s", elapsed, testDefFile.getTestName(), testDefFile.getRevision(), testDefinition == null ? "unsuccessfully" : "successfully"));
             }
             if(testDefinition == null) {
                 LOGGER.info("Returning null TestMatrix because " + testDefFile.getTestName() + " returned null test-definition.");
@@ -146,15 +145,13 @@ public abstract class FileBasedProctorStore implements ProctorStore {
     }
 
     @Override
-    public TestDefinition getTestDefinition(final String testName, long fetchRevision) throws StoreException {
+    public TestDefinition getTestDefinition(final String testName, String fetchRevision) throws StoreException {
         try {
             return getFileContents(TestDefinition.class, new String[] { TEST_DEFINITIONS_DIRECTORY, testName, TEST_DEFINITION_FILENAME }, null, fetchRevision);
         } catch (final JsonProcessingException e) {
-            LOGGER.error(String.format("Unable to deserialize JSON for %s r%d", testName, fetchRevision), e);
-            return null;
+            throw new StoreException(String.format("Unable to deserialize JSON for %s r%s", testName, fetchRevision), e);
         } catch (final StoreException.ReadException e) {
-            LOGGER.error(String.format("Unable to read test %s for r%d", testName, fetchRevision), e);
-            return null;
+            throw e;
         }
     }
 
@@ -171,22 +168,22 @@ public abstract class FileBasedProctorStore implements ProctorStore {
         core.close();
     }
 
-    private final <C> C getFileContents(Class<C> c, String[] path, C defaultValue, long revision) throws StoreException.ReadException, JsonProcessingException {
+    private final <C> C getFileContents(Class<C> c, String[] path, C defaultValue, String revision) throws StoreException.ReadException, JsonProcessingException {
         return core.getFileContents(c, path, defaultValue, revision);
     }
 
     protected final <T> boolean updateThing(final FileBasedProctorStore.RcsClient rcsClient, final File file, final T thing) throws Exception {
         final boolean thingExisted = file.exists();
         final boolean thingChanged = FileBasedProctorStore.writeIfChanged(objectMapper, file, thing);
-        if (!thingExisted) {
+        if (!thingExisted || rcsClient.getRevisionControlType().equals("git")) {
             rcsClient.add(file);
         }
         return thingChanged;
     }
 
     @Override
-    public final void updateTestDefinition(final String username, final String password, final long previousVersion, final String testName, final TestDefinition testDefinition, final Map<String, String> metadata, final String comment) throws StoreException.TestUpdateException {
-        LOGGER.info(String.format("Update Test Definition: %s %s r%d", username, testName, previousVersion));
+    public final void updateTestDefinition(final String username, final String password, final String previousVersion, final String testName, final TestDefinition testDefinition, final Map<String, String> metadata, final String comment) throws StoreException.TestUpdateException {
+        LOGGER.info(String.format("Update Test Definition: %s %s r%s", username, testName, previousVersion));
         core.doInWorkingDirectory(username, password, comment, previousVersion, new ProctorUpdater() {
             @Override
             public boolean doInWorkingDirectory(final RcsClient rcsClient, final File workingDir) throws Exception {
@@ -208,7 +205,7 @@ public abstract class FileBasedProctorStore implements ProctorStore {
     @Override
     public final void addTestDefinition(final String username, final String password, final String testName, final TestDefinition testDefinition, final Map<String, String> metadata, final String comment) throws StoreException.TestUpdateException {
         LOGGER.info(String.format("Add Test Definition: %s %s", username, testName));
-        core.doInWorkingDirectory(username, password, comment, 0, new ProctorUpdater() {
+        core.doInWorkingDirectory(username, password, comment, core.getAddTestRevision(), new ProctorUpdater() {
             @Override
             public boolean doInWorkingDirectory(final RcsClient rcsClient, final File workingDir) throws Exception {
                 final File testDefinitionDirectory = getTestDefinitionDirectory(testName, workingDir);
@@ -233,9 +230,9 @@ public abstract class FileBasedProctorStore implements ProctorStore {
     }
 
     @Override
-    public final void deleteTestDefinition(final String username, final String password, final long previousVersion, final String testName, final TestDefinition testDefinition, final String comment)
+    public final void deleteTestDefinition(final String username, final String password, final String previousVersion, final String testName, final TestDefinition testDefinition, final String comment)
             throws StoreException.TestUpdateException {
-        LOGGER.info(String.format("Delete Test Definition: %s %s r%d ", username, testName, previousVersion));
+        LOGGER.info(String.format("Delete Test Definition: %s %s r%s ", username, testName, previousVersion));
         core.doInWorkingDirectory(username, password, comment, previousVersion, new ProctorUpdater() {
             @Override
             public boolean doInWorkingDirectory(final RcsClient rcsClient, final File workingDir) throws Exception {
@@ -251,67 +248,16 @@ public abstract class FileBasedProctorStore implements ProctorStore {
         });
     }
 
-    interface ProctorUpdater {
+    public interface ProctorUpdater {
         boolean doInWorkingDirectory(FileBasedProctorStore.RcsClient rcsClient, File workingDir) throws Exception;
     }
 
-    interface RcsClient {
+    public interface RcsClient {
         void add(File file) throws Exception;
 
         void delete(File testDefinitionDirectory) throws Exception;
+
+        String getRevisionControlType();
     }
 
-    static class TestVersionResult {
-        private List<TestVersionResult.Test> tests;
-        private Date published;
-        private String author;
-        private long version;
-        private String description;
-
-        TestVersionResult(List<TestVersionResult.Test> tests, Date published, String author, long version, String description) {
-            this.tests = tests;
-            this.published = published;
-            this.author = author;
-            this.version = version;
-            this.description = description;
-        }
-
-        static class Test {
-            final String testName;
-            final long revision;
-
-            Test(String testName, long revision) {
-                this.testName = testName;
-                this.revision = revision;
-            }
-
-            public String getTestName() {
-                return testName;
-            }
-
-            public long getRevision() {
-                return revision;
-            }
-        }
-
-        public List<Test> getTests() {
-            return tests;
-        }
-
-        public Date getPublished() {
-            return published;
-        }
-
-        public String getAuthor() {
-            return author;
-        }
-
-        public long getVersion() {
-            return version;
-        }
-
-        public String getDescription() {
-            return description;
-        }
-    }
 }

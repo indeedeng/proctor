@@ -34,9 +34,10 @@ public class SvnDirectoryRefresher extends TimerTask {
         try {
             if(!shutdown.get()) {
                 LOGGER.info("(svn) refresh of " + directory);
-                final long ms = System.currentTimeMillis();
+                final long startms = System.currentTimeMillis();
                 SvnProctorUtils.cleanUpWorkingDir(LOGGER, directory, svnUrl, userClientManager);
-                LOGGER.info("(svn) refresh of " + directory + " in " + ms + " ms");
+                final long elapsedms = System.currentTimeMillis() - startms;
+                LOGGER.info("(svn) refresh of " + directory + " in " + elapsedms + " ms");
             } else {
                 LOGGER.info("Skipping svn refresh, shutdown in progress");
             }

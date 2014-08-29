@@ -41,7 +41,7 @@ public class Proctor {
         final ExpressionFactory expressionFactory = RuleEvaluator.EXPRESSION_FACTORY;
 
         final Map<String, TestChooser<?>> testChoosers = Maps.newLinkedHashMap();
-        final Map<String, Integer> versions = Maps.newLinkedHashMap();
+        final Map<String, String> versions = Maps.newLinkedHashMap();
 
         for (final Entry<String, ConsumableTestDefinition> entry : matrix.getTests().entrySet()) {
             final String testName = entry.getKey();
@@ -65,7 +65,7 @@ public class Proctor {
         final Audit audit = new Audit();
         audit.setUpdated(0);
         audit.setUpdatedBy("nobody");
-        audit.setVersion(-1);
+        audit.setVersion(Audit.EMPTY_VERSION);
 
         final TestMatrixArtifact testMatrix = new TestMatrixArtifact();
         testMatrix.setAudit(audit);
@@ -137,8 +137,31 @@ public class Proctor {
      */
     @Nonnull
     public ProctorResult determineTestGroups(@Nonnull final Identifiers identifiers, @Nonnull final Map<String, Object> inputContext, @Nonnull final Map<String, Integer> forceGroups) {
+        return determineTestGroups(identifiers, inputContext, forceGroups, Collections.<String>emptyList());
+    }
+
+    /**
+     * See determineTestGroups() above. Adds a test name filter for returning a subset of tests.
+     *
+     * This is useful for the Proctor REST API. It lacks a specification and needs a way to evaluate
+     * only the tests mentioned in the HTTP parameters by each particular query. Otherwise, there will be
+     * logged errors due to missing context variables.
+     *
+     * @param testNameFilter Only evaluates and returns the tests named in this collection. If empty, no filter is applied.
+     */
+    @Nonnull
+    public ProctorResult determineTestGroups(@Nonnull final Identifiers identifiers,
+                                             @Nonnull final Map<String, Object> inputContext,
+                                             @Nonnull final Map<String, Integer> forceGroups,
+                                             @Nonnull final Collection<String> testNameFilter) {
         final Map<String, TestBucket> testGroups = Maps.newLinkedHashMap();
-        for (final Entry<String, TestChooser<?>> entry : testChoosers.entrySet()) {
+
+        Map<String, TestChooser<?>> filteredChoosers = testChoosers;
+        if (!testNameFilter.isEmpty()) {
+            filteredChoosers = Maps.filterKeys(filteredChoosers, Predicates.in(testNameFilter));
+        }
+
+        for (final Entry<String, TestChooser<?>> entry : filteredChoosers.entrySet()) {
             final String testName = entry.getKey();
             final Integer forceGroupBucket = forceGroups.get(testName);
             final TestChooser<?> testChooser = entry.getValue();

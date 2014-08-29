@@ -46,6 +46,16 @@ public class TestBucket {
         this.payload = payload;
     }
 
+    public TestBucket(@Nonnull final TestBucket other) {
+        this.name = other.name;
+        this.value = other.value;
+        this.description = other.description;
+        if (other.payload != null) {
+            this.payload = new Payload(other.payload);
+        }
+    }
+
+
     @Nonnull
     public String getName() {
         return name;

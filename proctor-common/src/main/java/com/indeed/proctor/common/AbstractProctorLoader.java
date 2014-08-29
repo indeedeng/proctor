@@ -17,7 +17,7 @@ import java.util.Map;
 public abstract class AbstractProctorLoader extends DataLoadingTimerTask implements Supplier<Proctor> {
     private static final Logger LOGGER = Logger.getLogger(AbstractProctorLoader.class);
 
-    @Nonnull
+    @Nullable
     protected final Map<String, TestSpecification> requiredTests;
     @Nullable
     private Proctor current = null;
@@ -27,11 +27,19 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
     private String lastLoadErrorMessage= "load never attempted";
     @Nonnull
     private final FunctionMapper functionMapper;
-
+    private final ProvidedContext providedContext;
     public AbstractProctorLoader(@Nonnull final Class<?> cls, @Nonnull final ProctorSpecification specification, @Nonnull final FunctionMapper functionMapper) {
         super(cls.getSimpleName());
         this.requiredTests = specification.getTests();
+        this.providedContext = createProvidedContext(specification);
+        if (!this.providedContext.isEvaluable()) {
+            LOGGER.debug("providedContext Objects missing necessary functions for validation, rules will not be tested.");
+        }
         this.functionMapper = functionMapper;
+    }
+
+    protected ProvidedContext createProvidedContext(final ProctorSpecification specification) {
+        return ProctorUtils.convertContextToTestableMap(specification.getProvidedContext());
     }
 
     @Nullable
@@ -69,11 +77,18 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
             throw new MissingTestMatrixException("Failed to load Test Matrix from " + getSource());
         }
 
-        final ProctorLoadResult loadResult = ProctorUtils.verifyAndConsolidate(testMatrix, getSource(), requiredTests, functionMapper);
+        final ProctorLoadResult loadResult;
+        if (requiredTests == null) {
+            // Probably an absent specification.
+            loadResult = ProctorUtils.verifyWithoutSpecification(testMatrix, getSource(), functionMapper, providedContext);
+        } else {
+            loadResult = ProctorUtils.verifyAndConsolidate(testMatrix, getSource(), requiredTests, functionMapper, providedContext);
+        }
+
         final Audit newAudit = testMatrix.getAudit();
         if (lastAudit != null) {
             final Audit audit = Preconditions.checkNotNull(newAudit, "Missing audit");
-            if(lastAudit.getVersion() == audit.getVersion()) {
+            if(lastAudit.getVersion().equals(audit.getVersion())) {
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug("Not reloading " + getSource() + " test matrix definition because audit is unchanged: " + lastAudit.getVersion() + " @ " + lastAudit.getUpdated() + " by " + lastAudit.getUpdatedBy());
                 }

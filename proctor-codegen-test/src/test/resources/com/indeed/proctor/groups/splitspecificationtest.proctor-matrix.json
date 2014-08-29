@@ -1,0 +1,154 @@
+{
+    "audit" : {
+        "version" : 1524,
+        "updated" : 1313525000000,
+        "updatedBy" : "ryan"
+    },
+
+    "tests" : {
+        "one": {
+            "constants": {
+                "_COUNTRIES": ["US", "FR"]
+            },
+            "version": 98,
+            "salt": "of the earth",
+            "testType": "PAGE",
+            "rule": "${loggedIn}",
+            "description": "constants and rules and stuff",
+            "buckets": [
+                {
+                    "name": "test1",
+                    "value": 0
+                },
+                {
+                    "name": "test2",
+                    "value": 1
+                },
+                {
+                    "name": "test3",
+                    "value": 2
+                }
+            ],
+            "allocations": [
+                {
+                    "rule": "${proctor:contains(_COUNTRIES, country)}",
+                    "ranges": [
+                        {
+                            "bucketValue": 0,
+                            "length": 0.8
+                        },
+                        {
+                            "bucketValue": 1,
+                            "length": 0.1
+                        },
+                        {
+                            "bucketValue": 2,
+                            "length": 0.1
+                        }
+                    ]
+                },
+                {
+                    "ranges": [
+                        {
+                            "bucketValue": 0,
+                            "length": 1.0
+                        },
+                        {
+                            "bucketValue": 1,
+                            "length": 0.0
+                        },
+                        {
+                            "bucketValue": 2,
+                            "length": 0.0
+                        }
+                    ]
+                }
+            ]
+        },
+
+        "two": {
+            "version": 11,
+            "salt": "salted",
+            "testType": "USER",
+            "description": "description and stuff",
+            "buckets": [
+                {
+                    "name": "control",
+                    "value": 0
+                },
+                {
+                    "name": "test1",
+                    "value": 1
+                },
+                {
+                    "name": "test2",
+                    "value": 2
+                },
+                {
+                    "name": "test3",
+                    "value": 3
+                }
+            ],
+            "allocations": [
+                {
+                    "ranges": [
+                        {
+                            "bucketValue": 0,
+                            "length": 0.25
+                        },
+                        {
+                            "bucketValue": 1,
+                            "length": 0.25
+                        },
+                        {
+                            "bucketValue": 2,
+                            "length": 0.25
+                        },
+                        {
+                            "bucketValue": 3,
+                            "length": 0.25
+                        }
+                    ]
+                }
+            ]
+        },
+        "three" : {
+            "version" : 2,
+            "salt" : "salty",
+            "testType" : "USER",
+            "description" : "This test has payloads with verification in spec",
+            "buckets" : [
+                {
+                    "name" : "inactive",
+                    "value" : -1,
+                    "payload" : {
+                        "doubleValue" : 0
+                    }
+                },
+                {
+                    "name" : "control",
+                    "value" : 0,
+                    "payload" : {
+                        "doubleValue" : 5
+                    }
+                },
+                {
+                    "name" : "test",
+                    "value" : 1,
+                    "payload" : {
+                        "doubleValue" : 50
+                    }
+                }
+            ],
+            "allocations" : [
+                {
+                    "ranges" : [
+                        {"bucketValue": -1, "length": 0.8 },
+                        {"bucketValue":  0, "length": 0.1 },
+                        {"bucketValue":  1, "length": 0.1 }
+                    ]
+                }
+            ]
+        }
+    }
+}

@@ -43,9 +43,9 @@
         },
         "payloaded" : {
             "buckets" : {
-            "inactive": -1,
-            "control": 0,
-            "test": 1
+                "inactive": -1,
+                "control": 0,
+                "test": 1
             },
             "fallbackValue" : -1,
             "payload" : {
@@ -62,6 +62,36 @@
             "payload" : {
                 "type" : "doubleValue",
                 "validator" : "${value >= 0}"
+            }
+        },
+        "map_payload" : {
+            "buckets" : {
+                "inactive": -1,
+                "control": 0,
+                "test": 1
+            },
+            "fallbackValue" : -1,
+            "payload" : {
+                "type" : "map",
+                "schema" : {
+                    "astring" : "stringValue",
+                    "adouble" : "doubleValue",
+                    "anarray" : "longArray",
+                    "astringarr" :"stringArray",
+                    "adarray" : "doubleArray"
+                },
+                "validator":"${anarray[0]+adouble>0}"
+            }
+        },
+        "payloaded_excluded" : {
+            "buckets" : {
+                "inactive": -1,
+                "control": 0,
+                "test": 1
+            },
+            "fallbackValue" : -1,
+            "payload" : {
+                "type" : "stringArray"
             }
         }
     },

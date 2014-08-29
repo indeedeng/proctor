@@ -5,7 +5,6 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 
 import java.io.PrintWriter;
@@ -20,7 +19,7 @@ class ProctorBuilderArgs {
 
     // Artifact overrides
     private String author = null;
-    private long version = -1;
+    private String version = "";
 
     protected final Options options;
 
@@ -77,9 +76,9 @@ class ProctorBuilderArgs {
         if (results.hasOption("version")) {
             final String v = results.getOptionValue("version");
             if (v.length() > 0 && v.charAt(0) == 'r') { // support "svn-like" revisions like 'r149569'
-                this.version = Long.parseLong(v.substring(1));
+                this.version = v.substring(1);
             } else {
-                this.version = Long.parseLong(v);
+                this.version = v;
             }
         }
     }
@@ -96,7 +95,7 @@ class ProctorBuilderArgs {
         return author;
     }
 
-    public long getVersion() {
+    public String getVersion() {
         return version;
     }
 }

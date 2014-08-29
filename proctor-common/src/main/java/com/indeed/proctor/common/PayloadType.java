@@ -6,6 +6,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * enum for dealing with Payload types.  Used in code generation for
@@ -19,7 +20,8 @@ public enum PayloadType {
     LONG_VALUE   ("longValue", "Long", "getLongValue"),
     LONG_ARRAY   ("longArray", "Long[]", "getLongArray"),
     STRING_VALUE ("stringValue", "String", "getStringValue"),
-    STRING_ARRAY ("stringArray", "String[]", "getStringArray");
+    STRING_ARRAY ("stringArray", "String[]", "getStringArray"),
+    MAP ("map", "Map<String,Object>", "getMap");
 
     @Nonnull
     public final String payloadTypeName;
@@ -60,6 +62,8 @@ public enum PayloadType {
                 return (payload.getStringValue() != null);
             case STRING_ARRAY:
                 return (payload.getStringArray() != null);
+            case MAP:
+                return (payload.getMap() != null);
             default:
                 throw new IllegalStateException("Unknown payload type: " + this);
         }

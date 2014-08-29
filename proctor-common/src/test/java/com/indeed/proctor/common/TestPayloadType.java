@@ -1,9 +1,11 @@
 package com.indeed.proctor.common;
 
+import com.google.common.collect.ImmutableMap;
 import com.indeed.proctor.common.model.Payload;
 import com.indeed.proctor.common.PayloadType;
 import org.junit.Test;
 
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -17,15 +19,14 @@ public class TestPayloadType {
     @Test
     public void testPayloadTypeNames() {
         List<String> names = PayloadType.allTypeNames();
-        assertEquals(6, names.size());
+        assertEquals(7, names.size());
 
         for (String s : new String[]{"doubleValue", "doubleArray",
                                      "longValue", "longArray",
-                                     "stringValue", "stringArray"}) {
+                                     "stringValue", "stringArray","map"}) {
             PayloadType p = PayloadType.payloadTypeForName(s);
             assertEquals(s, p.payloadTypeName);
         }
-
         // Verify that trying to get the PayloadType for a nonsense
         // name throws an exception.
         try {
@@ -46,6 +47,7 @@ public class TestPayloadType {
         payloads[3].setLongArray(new Long[]{9L, 8L, 7L, 6L, 5L, 4L});
         payloads[4].setStringValue("foobar");
         payloads[5].setStringArray(new String[]{"foo", "bar", "baz"});
+        payloads[6].setMap(ImmutableMap.of("a", new Double(1.0D), "b", new Double[]{57.0D, -8.0D, 79.97D}, "c", (Object) "somevals"));
         return payloads;
     }
 
@@ -53,7 +55,8 @@ public class TestPayloadType {
     private PayloadType[] allPayloadTypes() {
         return new PayloadType[]{PayloadType.DOUBLE_VALUE, PayloadType.DOUBLE_ARRAY,
                                   PayloadType.LONG_VALUE, PayloadType.LONG_ARRAY,
-                                  PayloadType.STRING_VALUE, PayloadType.STRING_ARRAY};
+                                  PayloadType.STRING_VALUE, PayloadType.STRING_ARRAY,
+                                  PayloadType.MAP};
     }
 
     @Test

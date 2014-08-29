@@ -1,6 +1,11 @@
 package com.indeed.proctor.common.model;
 
+import com.google.common.collect.ImmutableMap;
 import org.junit.Test;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -14,7 +19,7 @@ import static org.junit.Assert.assertTrue;
 public class TestPayload {
     // Set up
     private Payload[] getTestPayloads() {
-        Payload[] payloads = new Payload[7];
+        Payload[] payloads = new Payload[8];
         for (int i = 0; i < payloads.length; i++)
             payloads[i] = new Payload();
         // payload[0] is empty.
@@ -24,6 +29,7 @@ public class TestPayload {
         payloads[4].setLongArray(new Long[]{9L, 8L, 7L, 6L, 5L, 4L});
         payloads[5].setStringValue("foobar");
         payloads[6].setStringArray(new String[]{"foo", "bar", "baz"});
+        payloads[7].setMap(ImmutableMap.of("a", new Double(1.0D), "b", new Double[]{57.0D, -8.0D, 79.97D}, "c", (Object) "somevals"));
         return payloads;
     }
 
@@ -73,10 +79,16 @@ public class TestPayload {
         } catch (IllegalStateException e) {
             // expected.
         }
+        try {
+            payloads[7].setMap(Collections.<String, Object>emptyMap());
+            assertFalse("should have thrown IllegalStateException on setMap()", true);
+        } catch (IllegalStateException e) {
+            // expected.
+        }
     }
 
     private Payload[] getDifferentTestPayloads() {
-        Payload[] payloads = new Payload[7];
+        Payload[] payloads = new Payload[8];
         for (int i = 0; i < payloads.length; i++)
             payloads[i] = new Payload();
         // payload[0] is empty.
@@ -86,6 +98,7 @@ public class TestPayload {
         payloads[4].setLongArray(new Long[]{1L, 3L, 5L, 7L});
         payloads[5].setStringValue("xyzzy");
         payloads[6].setStringArray(new String[]{"quux", "toad"});
+        payloads[7].setMap(ImmutableMap.of("a", new Double(2.0D), "b", new Double[]{37.0D, -4.0D, 97D}, "c", (Object) "somevals2"));
         return payloads;
     }
 
@@ -142,6 +155,13 @@ public class TestPayload {
             assertNull(payloads[k].getStringArray());
         }
 
+        if (k == 7) {
+            assertNotNull(payloads[k].getMap());
+            assertTrue(payloads[k].fetchAValue() == payloads[k].getMap());
+        } else {
+            assertNull(payloads[k].getMap());
+        }
+
         switch(k) {
           case 0:
               // Nothing to test: payloads[0] is all empty: completely tested
@@ -181,6 +201,13 @@ public class TestPayload {
             assertTrue("foo".equals(sa[0]));
             assertTrue("bar".equals(sa[1]));
             assertTrue("baz".equals(sa[2]));
+            break;
+          case 7:
+            final Map<String,Object> ma = payloads[k].getMap();
+            assertNotNull(ma);
+            assertTrue(Double.compare(1.0D, (Double)(ma.get("a")))==0);
+            assertTrue(Arrays.equals(new Double[]{57.0D, -8.0D, 79.97D}, (Double[]) ma.get("b")));
+            assertTrue("somevals".equals(ma.get("c")));
             break;
           default:
             assertTrue(false);  // default case should never be reached.

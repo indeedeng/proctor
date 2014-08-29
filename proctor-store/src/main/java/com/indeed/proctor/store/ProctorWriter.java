@@ -16,9 +16,9 @@ public interface ProctorWriter {
     /**
      * This is the normal operation that I expect to happen
      */
-    void updateTestDefinition(String username, String password, long previousVersion, String testName, TestDefinition testDefinition, Map<String, String> metadata, String comment) throws StoreException.TestUpdateException;
+    void updateTestDefinition(String username, String password, String previousVersion, String testName, TestDefinition testDefinition, Map<String, String> metadata, String comment) throws StoreException.TestUpdateException;
 
-    void deleteTestDefinition(String username, String password, long previousVersion, String testName, TestDefinition testDefinition, String comment) throws StoreException.TestUpdateException;
+    void deleteTestDefinition(String username, String password, String previousVersion, String testName, TestDefinition testDefinition, String comment) throws StoreException.TestUpdateException;
 
     void addTestDefinition(String username, String password, String testName, TestDefinition testDefinition, Map<String, String> metadata, String comment) throws StoreException.TestUpdateException;
 }

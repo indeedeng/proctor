@@ -1,10 +1,13 @@
 package com.indeed.proctor.common.model;
 
+import com.google.common.collect.Maps;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import com.google.common.base.Joiner;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Arrays;
+import java.util.Map;
 
 /**
  * Models a payload value for a bucket in a test, generally meant to have one kind of value per bucket.
@@ -28,11 +31,31 @@ public class Payload {
     private String stringValue;
     @Nullable
     private String[] stringArray;
-
+    @Nullable
+    private Map<String,Object> map;
     // Used for returning something when we can't return a null.
     public static final Payload EMPTY_PAYLOAD = new Payload();
 
     public Payload() { /* intentionally empty */ }
+
+    public Payload(@Nonnull final Payload other) {
+        this.doubleValue = other.doubleValue;
+        if (other.doubleArray != null) {
+            this.doubleArray = Arrays.copyOf(other.doubleArray, other.doubleArray.length);
+        }
+        this.longValue = other.longValue;
+        if (other.longArray != null) {
+            this.longArray = Arrays.copyOf(other.longArray, other.longArray.length);
+        }
+        this.stringValue = other.stringValue;
+        if (other.stringArray != null) {
+            this.stringArray = Arrays.copyOf(other.stringArray, other.stringArray.length);
+        }
+        if (other.map != null) {
+            this.map = Maps.newHashMap(other.map);
+        }
+    }
+
 
     @Nullable
     public Double getDoubleValue() {
@@ -88,11 +111,20 @@ public class Payload {
         this.stringArray = stringArray;
     }
 
+    @Nullable
+    public Map<String,Object> getMap() {
+        return map;
+    }
+    public void setMap(@Nullable final Map<String, Object> map) {
+        precheckStateAllNull();
+        this.map = map;
+    }
     // Sanity check precondition for above setters
     private void precheckStateAllNull() throws IllegalStateException {
         if ((doubleValue != null) || (doubleArray != null)
             || (longValue != null) || (longArray != null)
-            || (stringValue != null) || (stringArray != null)) {
+            || (stringValue != null) || (stringArray != null)
+            || (map != null)) {
             throw new IllegalStateException("Expected all properties to be empty: " + this);
         }
     }
@@ -102,6 +134,13 @@ public class Payload {
     public String toString() {
         final StringBuilder s = new StringBuilder("{");
         // careful of the autoboxing...
+        if (map != null) {
+            s.append(" map : [");
+            for(Map.Entry<String,Object> Entry : map.entrySet()) {
+                s.append("(" + Entry.getKey() + "," + Entry.getValue() + ")");
+            }
+            s.append("]");
+        }
         if (doubleValue != null) {
             s.append(" doubleValue : ").append(doubleValue);
         }
@@ -158,6 +197,9 @@ public class Payload {
         if (stringArray != null) {
             return "stringArray";
         }
+        if (map != null) {
+            return "map";
+        }
         return "none";
     }
 
@@ -176,11 +218,15 @@ public class Payload {
                 && ((longValue == null) == (that.longValue == null))
                 && ((longArray == null) == (that.longArray == null))
                 && ((stringValue == null) == (that.stringValue == null))
-                && ((stringArray == null) == (that.stringArray == null)));
+                && ((stringArray == null) == (that.stringArray == null))
+                && ((map == null) == (that.map == null)));
     }
 
     public int numFieldsDefined() {
         int i = 0;
+        if (map != null) {
+            i++;
+        }
         if (doubleValue != null) {
             i++;
         }
@@ -230,6 +276,28 @@ public class Payload {
         if (stringArray != null) {
             return stringArray;
         }
+        if (map != null) {
+            return map;
+        }
         return null;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Payload payload = (Payload) o;
+
+        if (!Arrays.equals(doubleArray, payload.doubleArray)) return false;
+        if (doubleValue != null ? !doubleValue.equals(payload.doubleValue) : payload.doubleValue != null) return false;
+        if (!Arrays.equals(longArray, payload.longArray)) return false;
+        if (longValue != null ? !longValue.equals(payload.longValue) : payload.longValue != null) return false;
+        if (!Arrays.equals(stringArray, payload.stringArray)) return false;
+        if (stringValue != null ? !stringValue.equals(payload.stringValue) : payload.stringValue != null) return false;
+        if (map != null ? !map.equals(payload.map) : payload.map != null) return false;
+
+        return true;
     }
 }

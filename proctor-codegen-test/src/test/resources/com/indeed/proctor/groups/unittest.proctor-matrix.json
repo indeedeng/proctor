@@ -267,6 +267,102 @@
                     ]
                 }
             ]
+        },
+        "map_payload" : {
+            "version" : 2,
+            "salt" : "salt",
+            "testType" : "USER",
+            "description" : "This test has map payloads",
+            "buckets" : [
+                {
+                    "name" : "inactive",
+                    "value" : -1,
+                    "payload" : {
+                        "map" : {
+                            "astring":"lol",
+                            "adouble":2.1,
+                            "anarray":[1,2,3],
+                            "astringarr":["one","two","three"],
+                            "adarray":[1.1,2.1,3.1],
+                            "anextravalue":"no"
+                        }
+                    }
+                },
+                {
+                    "name" : "control",
+                    "value" : 0,
+                    "payload" : {
+                        "map" : {
+                            "astring":"str2",
+                            "adouble":3.1,
+                            "anarray":[1,2,3],
+                            "astringarr":["one","two","three"],
+                            "adarray":[1.1,2.1,3.1]
+                        }
+                    }
+                },
+                {
+                    "name" : "test",
+                    "value" : 1,
+                    "payload" : {
+                        "map" : {
+                            "astring":"l",
+                            "adouble":1.1,
+                            "anarray":[1,2,3],
+                            "astringarr":["one","two","three"],
+                            "adarray":[1.1,2.1,3.1]
+                        }
+                    }
+                }
+            ],
+            "allocations" : [
+                {
+                    "ranges" : [
+                        {"bucketValue": -1, "length": 0.8 },
+                        {"bucketValue":  0, "length": 0.1 },
+                        {"bucketValue":  1, "length": 0.1 }
+                    ]
+                }
+            ]
+        },
+
+        "payloaded_excluded" : {
+            "version" : 1,
+            "salt" : "in the cookies",
+            "testType" : "USER",
+            "description" : "This test has simple payloads on control and test",
+            "rule": "${false}",
+            "buckets" : [
+                {
+                    "name" : "inactive",
+                    "value" : -1,
+                    "payload" : {
+                        "stringArray" : [ "preexisting" ]
+                    }
+                },
+                {
+                    "name" : "control",
+                    "value" : 0,
+                    "payload" : {
+                        "stringArray" : ["just", "like", "normal"]
+                    }
+                },
+                {
+                    "name" : "test",
+                    "value" : 1,
+                    "payload" : {
+                        "stringArray" : ["nothing", "to", "see", "here"]
+                    }
+                }
+            ],
+            "allocations" : [
+                {
+                    "ranges" : [
+                        {"bucketValue":  0, "length": 0.5 },
+                        {"bucketValue":  1, "length": 0.5 }
+                    ]
+                }
+            ]
         }
     }
 }

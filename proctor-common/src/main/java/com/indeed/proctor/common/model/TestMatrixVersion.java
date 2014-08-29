@@ -13,7 +13,7 @@ public class TestMatrixVersion {
     private TestMatrixDefinition testMatrixDefinition;
     @Nullable
     private Date published;
-    private long version;
+    private String version;
     @Nullable
     private String description;
     @Nullable
@@ -37,11 +37,11 @@ public class TestMatrixVersion {
         this.published = published;
     }
 
-    public long getVersion() {
+    public String getVersion() {
         return version;
     }
 
-    public void setVersion(final long version) {
+    public void setVersion(final String version) {
         this.version = version;
     }
 

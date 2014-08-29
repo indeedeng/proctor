@@ -26,7 +26,7 @@ public class LocalProctorBuilderTask extends Task {
 
     // Artifact overrides
     private String author = null;
-    private long version = -1;
+    private String version = null;
 
     public String getDestdir() {
         return destdir;
@@ -60,11 +60,11 @@ public class LocalProctorBuilderTask extends Task {
         this.author = author;
     }
 
-    public long getVersion() {
+    public String getVersion() {
         return version;
     }
 
-    public void setVersion(long version) {
+    public void setVersion(String version) {
         this.version = version;
     }
 
