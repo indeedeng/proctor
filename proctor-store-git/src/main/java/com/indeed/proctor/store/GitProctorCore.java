@@ -82,7 +82,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
                         .call();
             }
         } catch (GitAPIException e) {
-            LOGGER.error("Unable to clone git repository at " + gitUrl);
+            LOGGER.error("Unable to clone git repository at " + gitUrl, e);
         }
 
         try {
@@ -91,7 +91,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
                     .setCredentialsProvider(user)
                     .call();
         } catch (GitAPIException e) {
-            LOGGER.error("Unable to fetch from " + gitUrl);
+            LOGGER.error("Unable to fetch from " + gitUrl, e);
         }
     }
 
