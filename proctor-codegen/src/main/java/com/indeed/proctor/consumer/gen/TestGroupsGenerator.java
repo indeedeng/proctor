@@ -203,33 +203,13 @@ public class TestGroupsGenerator extends FreeMarkerCodeGenerator {
             testDefs.add(testDef);
         }
 
-        rootMap.put("contextArguments", scrubProvidedContext(spec));
+        rootMap.put("contextArguments", spec.getProvidedContext());
         rootMap.put("mainClassName", className);
         rootMap.put("packageName", packageName);
         rootMap.put("testEnumName", "Test");
         rootMap.put("testDefs", testDefs);
 
         return rootMap;
-    }
-
-    /**
-     * Translate the binary class names used in the context specifications
-     *  to source class names for use in generated code. If you have used
-     *  dollar signs in your custom-built class names, this will fail you
-     *  badly.
-     *
-     * @param spec The specification as loaded from the json source
-     *
-     * @return
-     */
-    private static Map<String, String> scrubProvidedContext(final ProctorSpecification spec) {
-        return Maps.newLinkedHashMap(Maps.transformValues(spec.getProvidedContext(), new Function<String, String>() {
-            @Nullable
-            @Override
-            public String apply(@Nullable final String javaIdentifier) {
-                return null == javaIdentifier ? null : javaIdentifier.replace('$', '.');
-            }
-        }));
     }
 
     public static void main(final String[] args) throws CodeGenException {
