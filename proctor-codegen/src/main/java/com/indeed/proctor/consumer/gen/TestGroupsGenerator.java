@@ -1,7 +1,9 @@
 package com.indeed.proctor.consumer.gen;
 
 
-import com.google.common.base.Strings;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Function;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -13,13 +15,12 @@ import com.indeed.proctor.common.TestSpecification;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -103,6 +104,11 @@ public class TestGroupsGenerator extends FreeMarkerCodeGenerator {
         final File inputFile = new File(input);
         final ProctorSpecification spec = ProctorUtils.readSpecification(inputFile);
 
+        return populateRootMap(spec, baseContext, packageName, className);
+    }
+
+    @VisibleForTesting
+    static Map<String, Object> populateRootMap(final ProctorSpecification spec, final Map<String, Object> baseContext, final String packageName, final String className) {
         final Map<String, Object> rootMap = Maps.newHashMap(baseContext);
 
         final Map<String, TestSpecification> tests = spec.getTests();
@@ -197,13 +203,33 @@ public class TestGroupsGenerator extends FreeMarkerCodeGenerator {
             testDefs.add(testDef);
         }
 
-        rootMap.put("contextArguments", spec.getProvidedContext());
+        rootMap.put("contextArguments", scrubProvidedContext(spec));
         rootMap.put("mainClassName", className);
         rootMap.put("packageName", packageName);
         rootMap.put("testEnumName", "Test");
         rootMap.put("testDefs", testDefs);
 
         return rootMap;
+    }
+
+    /**
+     * Translate the binary class names used in the context specifications
+     *  to source class names for use in generated code. If you have used
+     *  dollar signs in your custom-built class names, this will fail you
+     *  badly.
+     *
+     * @param spec The specification as loaded from the json source
+     *
+     * @return
+     */
+    private static Map<String, String> scrubProvidedContext(final ProctorSpecification spec) {
+        return Maps.newLinkedHashMap(Maps.transformValues(spec.getProvidedContext(), new Function<String, String>() {
+            @Nullable
+            @Override
+            public String apply(@Nullable final String javaIdentifier) {
+                return null == javaIdentifier ? null : javaIdentifier.replace('$', '.');
+            }
+        }));
     }
 
     public static void main(final String[] args) throws CodeGenException {
