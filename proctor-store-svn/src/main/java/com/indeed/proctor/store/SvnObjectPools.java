@@ -1,0 +1,162 @@
+package com.indeed.proctor.store;
+
+import org.apache.commons.pool2.BasePooledObjectFactory;
+import org.apache.commons.pool2.ObjectPool;
+import org.apache.commons.pool2.PooledObject;
+import org.apache.commons.pool2.PooledObjectFactory;
+import org.apache.commons.pool2.impl.AbandonedConfig;
+import org.apache.commons.pool2.impl.DefaultPooledObject;
+import org.apache.commons.pool2.impl.GenericObjectPool;
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.tmatesoft.svn.core.SVNURL;
+import org.tmatesoft.svn.core.auth.BasicAuthenticationManager;
+import org.tmatesoft.svn.core.internal.io.dav.DAVRepositoryFactory;
+import org.tmatesoft.svn.core.internal.io.fs.FSRepositoryFactory;
+import org.tmatesoft.svn.core.io.ISVNSession;
+import org.tmatesoft.svn.core.io.SVNRepository;
+import org.tmatesoft.svn.core.io.SVNRepositoryFactory;
+import org.tmatesoft.svn.core.wc.SVNClientManager;
+
+import java.util.concurrent.TimeUnit;
+
+/** @author parker */
+final class SvnObjectPools {
+
+    private SvnObjectPools() {
+    }
+
+    private abstract static class SVNRepositoryObjectFactory extends BasePooledObjectFactory<SVNRepository> {
+
+        protected final SVNURL svnurl;
+
+        protected SVNRepositoryObjectFactory(final SVNURL svnurl) {
+            this.svnurl = svnurl;
+        }
+
+        @Override
+        public void destroyObject(final PooledObject<SVNRepository> p) throws Exception {
+            final SVNRepository repository = p.getObject();
+            repository.closeSession();
+        }
+
+        @Override
+        public void passivateObject(final PooledObject<SVNRepository> p) throws Exception {
+            final SVNRepository repository = p.getObject();
+            repository.closeSession();
+        }
+
+        @Override
+        public PooledObject<SVNRepository> wrap(final SVNRepository obj) {
+            return new DefaultPooledObject<SVNRepository>(obj);
+        }
+    }
+
+    private static class FSRepositoryObjectFactory extends SVNRepositoryObjectFactory {
+        private FSRepositoryObjectFactory(final SVNURL svnurl) {
+            super(svnurl);
+            FSRepositoryFactory.setup();
+        }
+
+        @Override
+        public SVNRepository create() throws Exception {
+            return FSRepositoryFactory.create(svnurl, ISVNSession.KEEP_ALIVE);
+        }
+    }
+
+    private static class DAVRepositoryObjectFactory extends SVNRepositoryObjectFactory {
+
+        private final String username;
+        private final String password;
+
+        private DAVRepositoryObjectFactory(final SVNURL svnurl,
+                                           final String username,
+                                           final String password) {
+            super(svnurl);
+            this.username = username;
+            this.password = password;
+            DAVRepositoryFactory.setup();
+        }
+
+        @Override
+        public SVNRepository create() throws Exception {
+            final BasicAuthenticationManager authManager = new BasicAuthenticationManager(username, password);
+            final SVNRepository repository = SVNRepositoryFactory.create(svnurl, ISVNSession.KEEP_ALIVE);
+            repository.setAuthenticationManager(authManager);
+            return repository;
+        }
+
+    }
+
+
+    private static class SVNClientManagerFactory extends BasePooledObjectFactory<SVNClientManager> {
+
+        final String username;
+        final String password;
+        private final boolean requiresAuthentication;
+
+        private SVNClientManagerFactory(final String username,
+                                        final String password) {
+            requiresAuthentication = true;
+            this.username = username;
+            this.password = password;
+        }
+
+        private SVNClientManagerFactory() {
+            requiresAuthentication = false;
+            username = null;
+            password = null;
+        }
+
+        @Override
+        public SVNClientManager create() throws Exception {
+            if (requiresAuthentication) {
+                final BasicAuthenticationManager authManager = new BasicAuthenticationManager(username, password);
+                return SVNClientManager.newInstance(null, authManager);
+            } else {
+                return SVNClientManager.newInstance();
+            }
+        }
+
+        @Override
+        public PooledObject<SVNClientManager> wrap(final SVNClientManager obj) {
+            return new DefaultPooledObject<SVNClientManager>(obj);
+        }
+
+        @Override
+        public void destroyObject(final PooledObject<SVNClientManager> p) throws Exception {
+            final SVNClientManager m = p.getObject();
+            m.dispose();
+        }
+        
+    }
+
+    public static ObjectPool<SVNRepository> svnRepositoryObjectPool(final SVNURL svnurl) {
+        return createObjectPool(new FSRepositoryObjectFactory(svnurl));
+    }
+
+    public static ObjectPool<SVNRepository> svnRepositoryObjectPoolWithAuth(final SVNURL svnurl, final String username, final String password) {
+        return createObjectPool(new DAVRepositoryObjectFactory(svnurl, username, password));
+    }
+
+    public static ObjectPool<SVNClientManager> clientManagerPool() {
+        return createObjectPool(new SVNClientManagerFactory());
+    }
+
+    public static ObjectPool<SVNClientManager> clientManagerPoolWithAuth(final String username, final String password) {
+        return createObjectPool(new SVNClientManagerFactory(username, password));
+    }
+
+    private static <T> ObjectPool<T> createObjectPool(final PooledObjectFactory<T> factory) {
+        final GenericObjectPoolConfig objectPoolConfig = new GenericObjectPoolConfig();
+        objectPoolConfig.setMinEvictableIdleTimeMillis(TimeUnit.HOURS.toMillis(1)); // arbitrary, but positive so objects do get evicted
+        objectPoolConfig.setTimeBetweenEvictionRunsMillis(TimeUnit.MINUTES.toMillis(10)); // arbitrary, but positive so objects do get evicted
+        objectPoolConfig.setJmxEnabled(false);
+        objectPoolConfig.setBlockWhenExhausted(false);
+        objectPoolConfig.setMaxTotal(-1); // uncapped number of objects in the pool
+        final AbandonedConfig abandonedConfig = new AbandonedConfig();
+        abandonedConfig.setRemoveAbandonedOnBorrow(true);
+        abandonedConfig.setRemoveAbandonedTimeout((int) TimeUnit.MINUTES.toSeconds(30));
+        return new GenericObjectPool<T>(factory, objectPoolConfig, abandonedConfig);
+    }
+
+}
