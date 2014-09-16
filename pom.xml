@@ -42,6 +42,6 @@
     </modules>
 
     <properties>
-        <apache-commons-pool2.version>2.0</apache-commons-pool2.version>
+        <apache-commons-pool2.version>2.2</apache-commons-pool2.version>
     </properties>
 </project>
