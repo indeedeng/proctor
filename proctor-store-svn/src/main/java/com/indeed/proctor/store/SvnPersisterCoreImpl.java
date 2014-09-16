@@ -91,7 +91,6 @@ public class SvnPersisterCoreImpl implements SvnPersisterCore, Closeable {
                 repoPool = SvnObjectPools.svnRepositoryObjectPool(url);
                 clientManagerPool = SvnObjectPools.clientManagerPool();
             } else {
-                DAVRepositoryFactory.setup();
                 repoPool = SvnObjectPools.svnRepositoryObjectPoolWithAuth(url, username, password);
                 clientManagerPool = SvnObjectPools.clientManagerPoolWithAuth(username, password);
             }
