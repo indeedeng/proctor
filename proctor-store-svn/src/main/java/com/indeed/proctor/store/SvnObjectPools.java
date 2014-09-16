@@ -8,13 +8,7 @@ import org.apache.commons.pool2.impl.AbandonedConfig;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.tmatesoft.svn.core.SVNURL;
 import org.tmatesoft.svn.core.auth.BasicAuthenticationManager;
-import org.tmatesoft.svn.core.internal.io.dav.DAVRepositoryFactory;
-import org.tmatesoft.svn.core.internal.io.fs.FSRepositoryFactory;
-import org.tmatesoft.svn.core.io.ISVNSession;
-import org.tmatesoft.svn.core.io.SVNRepository;
-import org.tmatesoft.svn.core.io.SVNRepositoryFactory;
 import org.tmatesoft.svn.core.wc.SVNClientManager;
 
 import java.util.concurrent.TimeUnit;
@@ -24,69 +18,6 @@ final class SvnObjectPools {
 
     private SvnObjectPools() {
     }
-
-    private abstract static class SVNRepositoryObjectFactory extends BasePooledObjectFactory<SVNRepository> {
-
-        protected final SVNURL svnurl;
-
-        protected SVNRepositoryObjectFactory(final SVNURL svnurl) {
-            this.svnurl = svnurl;
-        }
-
-        @Override
-        public void destroyObject(final PooledObject<SVNRepository> p) throws Exception {
-            final SVNRepository repository = p.getObject();
-            repository.closeSession();
-        }
-
-        @Override
-        public void passivateObject(final PooledObject<SVNRepository> p) throws Exception {
-            final SVNRepository repository = p.getObject();
-            repository.closeSession();
-        }
-
-        @Override
-        public PooledObject<SVNRepository> wrap(final SVNRepository obj) {
-            return new DefaultPooledObject<SVNRepository>(obj);
-        }
-    }
-
-    private static class FSRepositoryObjectFactory extends SVNRepositoryObjectFactory {
-        private FSRepositoryObjectFactory(final SVNURL svnurl) {
-            super(svnurl);
-            FSRepositoryFactory.setup();
-        }
-
-        @Override
-        public SVNRepository create() throws Exception {
-            return FSRepositoryFactory.create(svnurl, ISVNSession.KEEP_ALIVE);
-        }
-    }
-
-    private static class DAVRepositoryObjectFactory extends SVNRepositoryObjectFactory {
-
-        private final String username;
-        private final String password;
-
-        private DAVRepositoryObjectFactory(final SVNURL svnurl,
-                                           final String username,
-                                           final String password) {
-            super(svnurl);
-            this.username = username;
-            this.password = password;
-            DAVRepositoryFactory.setup();
-        }
-
-        @Override
-        public SVNRepository create() throws Exception {
-            final BasicAuthenticationManager authManager = new BasicAuthenticationManager(username, password);
-            final SVNRepository repository = SVNRepositoryFactory.create(svnurl, ISVNSession.KEEP_ALIVE);
-            repository.setAuthenticationManager(authManager);
-            return repository;
-        }
-
-    }
-
 
     private static class SVNClientManagerFactory extends BasePooledObjectFactory<SVNClientManager> {
 
@@ -127,15 +58,7 @@ final class SvnObjectPools {
             final SVNClientManager m = p.getObject();
             m.dispose();
         }
-        
-    }
 
-    public static ObjectPool<SVNRepository> svnRepositoryObjectPool(final SVNURL svnurl) {
-        return createObjectPool(new FSRepositoryObjectFactory(svnurl));
-    }
-
-    public static ObjectPool<SVNRepository> svnRepositoryObjectPoolWithAuth(final SVNURL svnurl, final String username, final String password) {
-        return createObjectPool(new DAVRepositoryObjectFactory(svnurl, username, password));
     }
 
     public static ObjectPool<SVNClientManager> clientManagerPool() {

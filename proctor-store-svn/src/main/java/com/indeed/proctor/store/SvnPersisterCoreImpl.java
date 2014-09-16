@@ -20,6 +20,7 @@ import org.tmatesoft.svn.core.SVNNodeKind;
 import org.tmatesoft.svn.core.SVNRevisionProperty;
 import org.tmatesoft.svn.core.SVNURL;
 import org.tmatesoft.svn.core.internal.io.dav.DAVRepositoryFactory;
+import org.tmatesoft.svn.core.internal.io.fs.FSRepositoryFactory;
 import org.tmatesoft.svn.core.io.SVNRepository;
 import org.tmatesoft.svn.core.wc.SVNClientManager;
 import org.tmatesoft.svn.core.wc.SVNLogClient;
@@ -48,7 +49,6 @@ public class SvnPersisterCoreImpl implements SvnPersisterCore, Closeable {
     private final SVNURL svnUrl;
 
     private final ObjectPool<SVNClientManager> clientManagerPool;
-    private final ObjectPool<SVNRepository> repoPool;
 
     // A flag indicating if the WorkspaceProvider is managed by this instance and should be shutdown
     private final boolean shutdownProvider;
@@ -88,10 +88,10 @@ public class SvnPersisterCoreImpl implements SvnPersisterCore, Closeable {
             final SVNURL url = SVNURL.parseURIDecoded(svnPath);
             this.svnUrl = url;
             if (isFileSystemRepo) {
-                repoPool = SvnObjectPools.svnRepositoryObjectPool(url);
+                FSRepositoryFactory.setup();
                 clientManagerPool = SvnObjectPools.clientManagerPool();
             } else {
-                repoPool = SvnObjectPools.svnRepositoryObjectPoolWithAuth(url, username, password);
+                DAVRepositoryFactory.setup();
                 clientManagerPool = SvnObjectPools.clientManagerPoolWithAuth(username, password);
             }
         } catch (final SVNException e) {
@@ -378,7 +378,6 @@ public class SvnPersisterCoreImpl implements SvnPersisterCore, Closeable {
                 workspaceProvider.close();
             }
             clientManagerPool.close();
-            repoPool.close();
         }
     }
 
@@ -412,32 +411,20 @@ public class SvnPersisterCoreImpl implements SvnPersisterCore, Closeable {
     @Override
     public <T> T doWithClientAndRepository(final SvnOperation<T> operation) throws StoreException {
         checkShutdownState();
-        SVNRepository repository = null;
         SVNClientManager clientManager = null;
         try {
-            // assignment is within try-block to handle Exception during acquisition of pooled object
-            repository = repoPool.borrowObject();
-            if (repository == null) {
-                throw new StoreException.ReadException("Failed to acquire SVNRepository");
-            }
-
             clientManager = clientManagerPool.borrowObject();
             if (clientManager == null) {
                 throw new StoreException.ReadException("Failed to acquire SVNClientManager");
             }
+            // do not explicitly close the session because mayReuse=true
+            final SVNRepository repository = clientManager.createRepository(svnUrl, true);
 
             return operation.execute(repository, clientManager);
         } catch (Exception e) {
             Throwables.propagateIfInstanceOf(e, StoreException.class);
             throw operation.handleException(e);
         } finally {
-            if (repository != null) {
-                try {
-                    repoPool.returnObject(repository);
-                } catch (Exception e) {
-                    LOGGER.fatal("Failed to return SVNRepository", e);
-                }
-            }
             if (clientManager != null) {
                 try {
                     clientManagerPool.returnObject(clientManager);
@@ -472,16 +459,5 @@ public class SvnPersisterCoreImpl implements SvnPersisterCore, Closeable {
     public int getClientPoolNumIdle() {
         return clientManagerPool.getNumIdle();
     }
-
-    @Export(name = "svn-repository-pool-active")
-    public int getRepositoryPoolNumActive() {
-        return repoPool.getNumActive();
-    }
-
-    @Export(name = "svn-repository-pool-idle")
-    public int getRepositoryPoolNumIdle() {
-        return repoPool.getNumIdle();
-    }
-
 
 }
