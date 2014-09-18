@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.indeed</groupId>
         <artifactId>oss-parent</artifactId>
-        <version>9</version>
+        <version>12</version>
     </parent>
 
     <artifactId>proctor-webapp-library</artifactId>
@@ -222,12 +222,12 @@
         <dependency>
             <groupId>com.indeed</groupId>
             <artifactId>util-varexport</artifactId>
-            <version>${indeed-util.version}</version>
+            <version>1.0.12</version>
         </dependency>
         <dependency>
             <groupId>com.indeed</groupId>
             <artifactId>util-core</artifactId>
-            <version>${indeed-util.version}</version>
+            <version>1.0.12</version>
         </dependency>
 
         <!--Spring Dependencies-->
