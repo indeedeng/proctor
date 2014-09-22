@@ -6,7 +6,7 @@ import com.google.common.collect.ImmutableMap;
 
 import com.google.common.collect.Maps;
 import com.google.common.io.CharStreams;
-import com.indeed.proctor.Config.Account;
+import com.indeed.proctor.SampleOuterClass.Account;
 import com.indeed.proctor.common.Identifiers;
 import com.indeed.proctor.common.Proctor;
 import com.indeed.proctor.common.ProctorResult;
@@ -24,7 +24,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import javax.annotation.Nullable;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;

@@ -3,7 +3,7 @@ package com.indeed.proctor;
 /**
  * @author matts
  */
-public class Config {
+public class SampleOuterClass {
     public static final class Account {
         public final int id;
 
