@@ -37,6 +37,7 @@ public class GitProctor extends FileBasedProctorStore {
     */
 
     private final Git git;
+    private String branchName;
 
     public GitProctor(final String gitPath,
                       final String username,
@@ -49,6 +50,7 @@ public class GitProctor extends FileBasedProctorStore {
                       final String password,
                       final String branch) {
         this(new GitProctorCore(gitPath, username, password, Files.createTempDir()));
+        this.branchName = branch;
         checkoutBranch(branch);
     }
 
@@ -60,6 +62,7 @@ public class GitProctor extends FileBasedProctorStore {
     public GitProctor(final GitProctorCore core, final String branchName) {
         super(core);
         this.git = core.getGit();
+        this.branchName = branchName;
         checkoutBranch(branchName);
     }
 
@@ -113,10 +116,10 @@ public class GitProctor extends FileBasedProctorStore {
 
     @Override
     public boolean cleanUserWorkspace(String username) {
-        //TODO: Currently deletes the temp directories which breaks the webapp
-        //      Not sure what the intent of this function is
-        //return getGitCore().cleanUserWorkspace(username);
-        return false;
+        boolean status = getGitCore().cleanUserWorkspace(username);
+        getGitCore().initializeRepository();
+        checkoutBranch(this.branchName);
+        return status;
     }
 
     @Override
