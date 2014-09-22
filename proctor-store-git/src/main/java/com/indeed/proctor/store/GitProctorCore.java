@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Constants;
@@ -31,6 +32,8 @@ import com.indeed.proctor.common.Serializers;
 
 public class GitProctorCore implements FileBasedPersisterCore {
     private static final Logger LOGGER = Logger.getLogger(GitProctorCore.class);
+    private final String username;
+    private final String password;
 
     private Git git;
     private final String gitUrl;
@@ -54,10 +57,17 @@ public class GitProctorCore implements FileBasedPersisterCore {
         this.refName = Constants.HEAD;
         this.workspaceProvider = Preconditions
                 .checkNotNull(workspaceProvider, "GitWorkspaceProvider should not be null");
+        this.username = username;
+        this.password = password;
 
+        initializeRepository();
+    }
+
+    void initializeRepository() {
         UsernamePasswordCredentialsProvider user = new UsernamePasswordCredentialsProvider(username, password);
         File workingDir = workspaceProvider.getRootDirectory();
         File gitDirectory = new File(workingDir, ".git");
+        LOGGER.info("working dir: " + workingDir.getAbsolutePath());
 
         try {
             if (gitDirectory.exists()) {
@@ -66,12 +76,12 @@ public class GitProctorCore implements FileBasedPersisterCore {
                     git.pull().setCredentialsProvider(user).call();
                 } catch (Exception e) {
                     workspaceProvider.cleanWorkingDirectory();
-                    git = Git.cloneRepository()
+                    CloneCommand gitCommand = Git.cloneRepository()
                             .setURI(gitUrl)
                             .setDirectory(workingDir)
                             .setProgressMonitor(new TextProgressMonitor())
-                            .setCredentialsProvider(user)
-                            .call();
+                            .setCredentialsProvider(user);
+                    git = gitCommand.call();
                 }
             } else {
                 git = Git.cloneRepository()
@@ -82,7 +92,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
                         .call();
             }
         } catch (GitAPIException e) {
-            LOGGER.error("Unable to clone git repository at " + gitUrl);
+            LOGGER.error("Unable to clone git repository at " + gitUrl, e);
         }
 
         try {
@@ -91,7 +101,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
                     .setCredentialsProvider(user)
                     .call();
         } catch (GitAPIException e) {
-            LOGGER.error("Unable to fetch from " + gitUrl);
+            LOGGER.error("Unable to fetch from " + gitUrl, e);
         }
     }
 
@@ -142,8 +152,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
     }
 
     public boolean cleanUserWorkspace(String user) {
-        workspaceProvider.deleteWorkspaceQuietly(user);
-        return false;
+        return workspaceProvider.deleteWorkspaceQuietly(user);
     }
 
     /**
