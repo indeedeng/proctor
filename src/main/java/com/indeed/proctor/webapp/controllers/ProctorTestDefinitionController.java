@@ -903,11 +903,41 @@ public class ProctorTestDefinitionController extends AbstractController {
                 return false;
             else if (existingAllocations.get(i).getRule() != null && !existingAllocations.get(i).getRule().equals(allocationsToUpdate.get(i).getRule()))
                 return false;
+            Map<Integer, Double> existingAllocRangeMap = new HashMap<Integer, Double>();
+            Map<Integer, Double> allocToUpdateRangeMap = new HashMap<Integer, Double>();
             for (int aIndex = 0; aIndex < existingAllocationRanges.size(); aIndex++) {
-                if (existingAllocationRanges.get(aIndex).getLength() == 0 && allocationToUpdateRanges.get(aIndex).getLength() != 0)
-                    return false;
-                if (existingAllocationRanges.get(aIndex).getLength() != 1 && allocationToUpdateRanges.get(aIndex).getLength() == 1)
-                    return false;
+                final int bucketVal = existingAllocationRanges.get(aIndex).getBucketValue();
+                double sum = 0;
+                if (existingAllocRangeMap.containsKey(bucketVal)) {
+                    sum+=existingAllocRangeMap.get(bucketVal);
+                }
+                sum+=existingAllocationRanges.get(aIndex).getLength();
+                existingAllocRangeMap.put(bucketVal, sum);
+            }
+            for (int aIndex = 0; aIndex < allocationToUpdateRanges.size(); aIndex++) {
+                final int bucketVal = allocationToUpdateRanges.get(aIndex).getBucketValue();
+                double sum = 0;
+                if (allocToUpdateRangeMap.containsKey(bucketVal)) {
+                    sum+=allocToUpdateRangeMap.get(bucketVal);
+                }
+                sum+=allocationToUpdateRanges.get(aIndex).getLength();
+                allocToUpdateRangeMap.put(bucketVal, sum);
+            }
+            if (!existingAllocRangeMap.keySet().equals(allocToUpdateRangeMap.keySet())) {
+                //An allocation was removed or added, do not autopromote
+                return false;
+            } else {
+                for (Map.Entry<Integer, Double> entry : existingAllocRangeMap.entrySet()) {
+                    final int bucketVal = entry.getKey();
+                    final double existingLength = entry.getValue();
+                    final double allocToUpdateLength = allocToUpdateRangeMap.get(bucketVal);
+                    if (existingLength == 0 && allocToUpdateLength != 0) {
+                        return false;
+                    }
+                    if (existingLength != 1 && allocToUpdateLength == 1) {
+                        return false;
+                    }
+                }
             }
         }
         return true;
