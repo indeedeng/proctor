@@ -903,26 +903,8 @@ public class ProctorTestDefinitionController extends AbstractController {
                 return false;
             else if (existingAllocations.get(i).getRule() != null && !existingAllocations.get(i).getRule().equals(allocationsToUpdate.get(i).getRule()))
                 return false;
-            Map<Integer, Double> existingAllocRangeMap = new HashMap<Integer, Double>();
-            Map<Integer, Double> allocToUpdateRangeMap = new HashMap<Integer, Double>();
-            for (int aIndex = 0; aIndex < existingAllocationRanges.size(); aIndex++) {
-                final int bucketVal = existingAllocationRanges.get(aIndex).getBucketValue();
-                double sum = 0;
-                if (existingAllocRangeMap.containsKey(bucketVal)) {
-                    sum+=existingAllocRangeMap.get(bucketVal);
-                }
-                sum+=existingAllocationRanges.get(aIndex).getLength();
-                existingAllocRangeMap.put(bucketVal, sum);
-            }
-            for (int aIndex = 0; aIndex < allocationToUpdateRanges.size(); aIndex++) {
-                final int bucketVal = allocationToUpdateRanges.get(aIndex).getBucketValue();
-                double sum = 0;
-                if (allocToUpdateRangeMap.containsKey(bucketVal)) {
-                    sum+=allocToUpdateRangeMap.get(bucketVal);
-                }
-                sum+=allocationToUpdateRanges.get(aIndex).getLength();
-                allocToUpdateRangeMap.put(bucketVal, sum);
-            }
+            Map<Integer, Double> existingAllocRangeMap = generateAllocationRangeMap(existingAllocationRanges);
+            Map<Integer, Double> allocToUpdateRangeMap = generateAllocationRangeMap(allocationToUpdateRanges);
             if (!existingAllocRangeMap.keySet().equals(allocToUpdateRangeMap.keySet())) {
                 //An allocation was removed or added, do not autopromote
                 return false;
@@ -941,6 +923,20 @@ public class ProctorTestDefinitionController extends AbstractController {
             }
         }
         return true;
+    }
+
+    private static Map<Integer, Double> generateAllocationRangeMap(List<Range> ranges) {
+        Map<Integer, Double> bucketToTotalAllocationMap = new HashMap<Integer, Double>();
+        for (int aIndex = 0; aIndex < ranges.size(); aIndex++) {
+            final int bucketVal = ranges.get(aIndex).getBucketValue();
+            double sum = 0;
+            if (bucketToTotalAllocationMap.containsKey(bucketVal)) {
+                sum+=bucketToTotalAllocationMap.get(bucketVal);
+            }
+            sum+=ranges.get(aIndex).getLength();
+            bucketToTotalAllocationMap.put(bucketVal, sum);
+        }
+        return bucketToTotalAllocationMap
     }
 
     private String formatFullComment(final String comment, final Map<String,String[]> requestParameterMap) {
