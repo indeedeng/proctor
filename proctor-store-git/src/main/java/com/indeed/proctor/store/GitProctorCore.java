@@ -205,7 +205,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
         try {
             thingsChanged = updater.doInWorkingDirectory(rcsClient, workingDir);
             if (thingsChanged) {
-                git.commit().setMessage(comment).call();
+                git.commit().setCommitter(username, username).setAuthor(username, username).setMessage(comment).call();
                 git.push().setCredentialsProvider(user).call();
             }
         } catch (final GitAPIException e) {
