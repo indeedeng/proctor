@@ -43,6 +43,7 @@
 
     <properties>
         <indeed-util.version>1.0.12</indeed-util.version>
+	    <apache-commons-pool2.version>2.2</apache-commons-pool2.version>
     </properties>
 
 </project>

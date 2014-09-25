@@ -35,5 +35,10 @@
             <groupId>org.tmatesoft.svnkit</groupId>
             <artifactId>svnkit</artifactId>
         </dependency>
+        <dependency>
+        	<groupId>org.apache.commons</groupId>
+        	<artifactId>commons-pool2</artifactId>
+        	<version>${apache-commons-pool2.version}</version>
+        </dependency>
     </dependencies>
 </project>
