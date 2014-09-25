@@ -280,13 +280,10 @@ indeed.proctor.editor.BucketsEditor.prototype.validPayloadStringForType_ =
         try {
             value = goog.json.parse(str);
         } catch (e) {
-            value = null;
-        }
-        // If we either parsed nothing or caught an error, we couldn't parse it at all.
-        if (goog.string.isEmptySafe(value)) {
             indeed.foundation.forms.addError(el_payload, 'Cannot parse payload.  Example: '+this.expectedExample_(payloadType));
             return false;
         }
+
         // Figure out if what we successfully parsed is of the right type for our current payloadType.
         var typeOf = goog.typeOf(value);
         if ('longValue' == payloadType && 'number' == typeOf && goog.math.isInt(value)) return true;
