@@ -98,6 +98,6 @@
     "providedContext": {
         "loggedIn" : "boolean",
         "country": "String",
-        "accountId": "int"
+        "account": "com.indeed.proctor.SampleOuterClass$Account"
     }
 }

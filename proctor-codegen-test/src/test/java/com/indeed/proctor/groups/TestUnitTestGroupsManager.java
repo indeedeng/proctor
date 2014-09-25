@@ -1,20 +1,27 @@
 package com.indeed.proctor.groups;
 
+import com.google.common.base.Predicate;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableMap;
 
+import com.google.common.collect.Maps;
 import com.google.common.io.CharStreams;
+import com.indeed.proctor.SampleOuterClass.Account;
 import com.indeed.proctor.common.Identifiers;
 import com.indeed.proctor.common.Proctor;
 import com.indeed.proctor.common.ProctorResult;
 import com.indeed.proctor.common.ProctorSpecification;
 import com.indeed.proctor.common.ProctorUtils;
+import com.indeed.proctor.common.ProvidedContext;
 import com.indeed.proctor.common.StringProctorLoader;
 import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.common.model.TestType;
 import com.indeed.proctor.groups.UnitTestGroups.Payloaded;
+import com.indeed.util.varexport.VarExporter;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.io.BufferedReader;
@@ -45,6 +52,11 @@ public class TestUnitTestGroupsManager {
     private UnitTestGroupsManager manager;
 
     public TestUnitTestGroupsManager() {
+    }
+
+    @BeforeClass
+    public static void quietLogs() {
+        Logger.getLogger(VarExporter.class).setLevel(Level.FATAL);
     }
 
     @Before()
@@ -94,7 +106,7 @@ public class TestUnitTestGroupsManager {
                                                             .put(TestType.PAGE, SPECIFICATION_MATRIX)
                                                             .build());
 
-            final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "FR", /* accountid */ 10);
+            final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "FR", /* account */ new Account(10));
             assertEquals("kluj:kloo2,map_payload:inactive-1,oop_poop:test1,payloaded:inactive-1,payloaded_verified:inactive-1,pimple:control0", calcBuckets(result));
         }
         {
@@ -105,7 +117,7 @@ public class TestUnitTestGroupsManager {
                                                                 .build();
             final Identifiers identifiers = new Identifiers(idMap, true);
 
-            final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "FR", /* accountid */ 10);
+            final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "FR", /* account */  new Account(10));
             assertEquals(result.getBuckets().get("pimple").getValue(), 0);
             assertNotNull(result.getBuckets().get("bubble").getValue());
             assertEquals(result.getBuckets().get("dubblez").getValue(), 2);
@@ -118,7 +130,7 @@ public class TestUnitTestGroupsManager {
 
         final int[] valuesFound = new int[4];
         for (int i = 0; i < 2000; i++) {
-            final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "FR", /* accountid */ 10);
+            final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "FR", /* account */  new Account(10));
             valuesFound[result.getBuckets().get("bubble").getValue()]++;
         }
         for (int i = 0; i < valuesFound.length; i++) {
@@ -131,7 +143,7 @@ public class TestUnitTestGroupsManager {
     public void testUserBuckets() {
         {
             final Identifiers identifiers = new Identifiers(TestType.ANONYMOUS_USER, "16s2o7s01001d9vj");
-            final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "FR", /* accountid */ 10);
+            final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "FR", /* account */  new Account(10));
             assertEquals("kluj:test1,map_payload:inactive-1,oop_poop:control0,payloaded:inactive-1,payloaded_verified:inactive-1", calcBuckets(result));
             // Check and make sure UnitTestGroups respects these groups and works as expected.
             final UnitTestGroups grps = new UnitTestGroups(result);
@@ -162,7 +174,7 @@ public class TestUnitTestGroupsManager {
         {
             // LoggedIn + MX maps to [0, 0.5, 0.5] ranges
             final Identifiers identifiers = new Identifiers(TestType.PAGE, uidString);
-            final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "FR", /* accountid */ 10);
+            final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "FR", /* account */  new Account(10));
             assertEquals("pimple:test1", calcBuckets(result));
             // Check and make sure UnitTestGroups respects these groups and works as expected.
             final UnitTestGroups grps = new UnitTestGroups(result);
@@ -182,7 +194,7 @@ public class TestUnitTestGroupsManager {
         {
             // LoggedIn + US maps to [1, 0, 0] range
             final Identifiers identifiers = new Identifiers(TestType.PAGE, uidString);
-            final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "US", /* accountid */ 10);
+            final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "US", /* account */  new Account(10));
             assertEquals("pimple:inactive-1", calcBuckets(result));
             // Check and make sure UnitTestGroups respects these groups and works as expected.
             final UnitTestGroups grps = new UnitTestGroups(result);
@@ -202,7 +214,7 @@ public class TestUnitTestGroupsManager {
         {
             // LoggedIn=false + MX maps to [1, 0, 0] range
             final Identifiers identifiers = new Identifiers(TestType.PAGE, uidString);
-            final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ false , /* country */ "FR", /* accountid */ 10);
+            final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ false , /* country */ "FR", /* account */  new Account(10));
             assertEquals("", calcBuckets(result));
             // Check and make sure UnitTestGroups respects these groups and works as expected.
             final UnitTestGroups grps = new UnitTestGroups(result);
@@ -224,7 +236,7 @@ public class TestUnitTestGroupsManager {
     @Test
     public void testCompanyBuckets() {
         final Identifiers identifiers = new Identifiers(TestType.COMPANY, "16s2o7s01001d9vj");
-        final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "US", /* accountid */ 10);
+        final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "US", /* account */  new Account(10));
         assertEquals("", calcBuckets(result));
         // Check and make sure UnitTestGroups respects these groups and works as expected.
         final UnitTestGroups grps = new UnitTestGroups(result);
@@ -247,7 +259,7 @@ public class TestUnitTestGroupsManager {
         final Identifiers identifiers = new Identifiers(ImmutableMap.<TestType, String>builder()
                 .put(TestType.ANONYMOUS_USER, SPECIFICATION_MATRIX)
                 .build());
-        final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "US", /* accountid */ 10);
+        final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "US", /* account */  new Account(10));
         assertEquals("kluj:kloo2,map_payload:inactive-1,oop_poop:test1,payloaded:inactive-1,payloaded_verified:inactive-1", calcBuckets(result));
         // Check and make sure UnitTestGroups respects these groups and works as expected.
         final UnitTestGroups grps = new UnitTestGroups(result);
@@ -278,7 +290,7 @@ public class TestUnitTestGroupsManager {
     @Test
     public void testTestDescriptions(){
         final Identifiers identifiers = new Identifiers(TestType.USER, "16s2o7s01001d9vj");
-        final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "FR", /* accountid */ 10);
+        final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "FR", /* account */  new Account(10));
         assertEquals("kluj:test1,map_payload:inactive-1,oop_poop:control0,payloaded:inactive-1,payloaded_verified:inactive-1", calcBuckets(result));
         // Check and make sure UnitTestGroups respects these groups and works as expected.
         final UnitTestGroups grps = new UnitTestGroups(result);
@@ -289,7 +301,7 @@ public class TestUnitTestGroupsManager {
     @Test
     public void testTestDescriptions_checkEscaping(){
         final Identifiers identifiers = new Identifiers(TestType.USER, "16s2o7s01001d9vj");
-        final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "FR", /* accountid */ 10);
+        final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "FR", /* account */  new Account(10));
         assertEquals("kluj:test1,map_payload:inactive-1,oop_poop:control0,payloaded:inactive-1,payloaded_verified:inactive-1", calcBuckets(result));
         // Check and make sure UnitTestGroups respects these groups and works as expected.
         final UnitTestGroups grps = new UnitTestGroups(result);
@@ -300,7 +312,7 @@ public class TestUnitTestGroupsManager {
     @Test
     public void testMapPayloadReturns(){
         final Identifiers identifiers = new Identifiers(TestType.USER, "16s2o7s01001d9vj");
-        final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "FR", /* accountid */ 10);
+        final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "FR", /* account */  new Account(10));
 
         final UnitTestGroups grps = new UnitTestGroups(result);
         assertEquals(grps.getMap_payloadPayload().getAstring(),"lol");
@@ -324,6 +336,27 @@ public class TestUnitTestGroupsManager {
         assertArrayEquals(unitTestGroupsPayloadControl.getAdarray(), new Double[]{1.1,2.1,3.1});
 
     }
+
+    @Test
+    public void testNestedClasses() throws Exception {
+        final Map<String, String> declaredContext = getProctorSpecification().getProvidedContext();
+        final Map<String, String> innerClassTypes = Maps.filterValues(declaredContext, new Predicate<String>() {
+            @Override
+            public boolean apply(final String subfrom) {
+                return subfrom.contains("$");
+            }
+        });
+        assertTrue(
+                "Sample groups need to contain at least one inner class type",
+                !innerClassTypes.isEmpty());
+
+        final ProvidedContext providedContext = ProctorUtils.convertContextToTestableMap(declaredContext);
+        assertTrue(
+                "Expected the provided context to be populated since no class-not-found-error should have been thrown",
+                !providedContext.getContext().isEmpty());
+    }
+
+
 
     private String calcBuckets(ProctorResult proctorResult) {
         final StringBuilder sb = new StringBuilder();
