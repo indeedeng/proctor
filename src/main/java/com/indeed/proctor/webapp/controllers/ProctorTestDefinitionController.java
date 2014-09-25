@@ -936,7 +936,7 @@ public class ProctorTestDefinitionController extends AbstractController {
             sum+=ranges.get(aIndex).getLength();
             bucketToTotalAllocationMap.put(bucketVal, sum);
         }
-        return bucketToTotalAllocationMap
+        return bucketToTotalAllocationMap;
     }
 
     private String formatFullComment(final String comment, final Map<String,String[]> requestParameterMap) {
