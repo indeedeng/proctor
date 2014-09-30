@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.indeed</groupId>
         <artifactId>proctor-parent</artifactId>
-        <version>1.0.23-SNAPSHOT</version>
+        <version>1.0.24-SNAPSHOT</version>
     </parent>
 
     <artifactId>proctor-store-svn</artifactId>
@@ -34,6 +34,11 @@
         <dependency>
             <groupId>org.tmatesoft.svnkit</groupId>
             <artifactId>svnkit</artifactId>
+        </dependency>
+        <dependency>
+        	<groupId>org.apache.commons</groupId>
+        	<artifactId>commons-pool2</artifactId>
+        	<version>${apache-commons-pool2.version}</version>
         </dependency>
     </dependencies>
 </project>
