@@ -31,7 +31,7 @@ public class GitDirectoryRefresher extends TimerTask {
         try {
             git.pull().setCredentialsProvider(user).call();
         } catch (GitAPIException e) {
-            LOGGER.error("Error when calling git pull");
+            LOGGER.error("Error when calling git pull", e);
         }
     }
 
