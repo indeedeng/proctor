@@ -1,6 +1,6 @@
 {% assign items = include.items | split: ' ' %}
 
-<ul>
+<ul style="list-style-type: none; padding: 0; margin-left: 0">
 {% for item in items %}
   {% assign item_url = item | prepend:'/docs/' | append: '/' %}
 
