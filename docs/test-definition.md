@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Test Defintion
+title: Test Definition
 permalink: /docs/test-definition/
 ---
 
@@ -17,7 +17,7 @@ The test definition describes a test's buckets, allocations, eligibility rules, 
 ## JSON Schema
 | JSON Property | Description |
 | ------------- | ----------- |
-| `testType` | The [Identifier]({{ site.baseurl }}/docs/terminology/#toc_10) to use for this test |
+| `testType` | The [Identifier]({{ site.baseurl }}/docs/terminology/#identifier) to use for this test |
 | `version` | the version for this test |
 | `salt` | A salt used in the hashing function used to map String identifiers to integer values. A good convention is to use the test name. Salts that start with "&" can allow you to align bucket assignments by using identical salts. |
 | `description` | description of the tests and the features impacted by this test |
@@ -32,7 +32,7 @@ The test definition describes a test's buckets, allocations, eligibility rules, 
 | `name` | human-readable name for this bucket. By convention, this is the same as the name in the application's specification. |
 | `value` | int value for this bucket. This bucket must map to a bucket value of an application's specification |
 | `description` | human-readable description for the behavior this bucket defines |
-| `payload.{payloadType}` | (optional) payload data. The `payloadType` must be consistent with the [payload.type]({{ site.baseurl }}/docs/specification/#toc_4) defined in the application's specification |
+| `payload.{payloadType}` | (optional) payload data. The `payloadType` must be consistent with the [payload.type]({{ site.baseurl }}/docs/specification/#payloads) defined in the application's specification |
 
 ## Allocation schema
 | JSON Property | Description |

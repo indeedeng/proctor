@@ -63,10 +63,10 @@ The proctor loader periodically refreshes the `test matrix` and performs the fol
   3. a test-definition must have valid payloads. If the application expects a test to have payloads, each bucket in the test-definition must have a payload of the correct type and pass the `payload-validator` expression. If an application doesn't expect a test to have payloads, no validation of their values is performed.
   4. a test-definition's allocations must each sum to 1.0
   5. a test-definition must have exactly one allocation with a null or empty rule. This allocation must be the last allocation in the `allocations` array.
-4. 
+
 5. Creates a new `Proctor` instance containing the data from the loaded `test matrix`. This instance is now considered the last successful test-matrix.
 
-See the [inspecting the loader][Inspecting] for more details on how to determine if it has recently refreshed successfully.
+See [Inspecting the loader](#inspecting) for more details on how to determine if it has recently refreshed successfully.
 
 ## Scheduling the loader
 The `AbstractProctorLoader` extends `java.util.TimerTask` and must be scheduled to run periodically.
@@ -105,7 +105,7 @@ In Spring xml
 </bean>
 ```
 
-## inspecting the loader state
+## <a name="inspecting"></a>Inspecting the loader state
 Depending on the outcome of the `load-verify loop`, the loader may be one of many states:
 
 `UNLOADED`: The loader has never successfully loaded the `test matrix`. This state can occur if the loader has yet to be run by the `ScheduledExecutorService` or the JSON file could not read or parsed.
@@ -155,8 +155,8 @@ private ProctorRefreshState determineState(final AbstractProctorLoader loader) {
 }
 ```
 
-## exporting the loader state
-The `AbstractProctorLoader` extends [com.indeed.util.core.DataLoadingTimerTask][GithubUtil] and utilizes [VarExport][GithubUtilVarexport] to make it's state available for debugging. The _com.indeed.util.varexport.servlet.ViewExportedVariablesServlet_, can be used to view the exported namespaces and variables ([example web.xml][proctor-demo-web.xml]). 
+## Exporting the loader state
+The `AbstractProctorLoader` extends [com.indeed.util.core.DataLoadingTimerTask][GithubUtil] and utilizes [VarExport][GithubUtilVarexport] to make its state available for debugging. The _com.indeed.util.varexport.servlet.ViewExportedVariablesServlet_, can be used to view the exported namespaces and variables ([example web.xml][proctor-demo-web.xml]). 
 
 | namespace and variable | description |
 | ---------------------- | ----------- |

@@ -71,9 +71,9 @@ See [code generator][Codegen] for how to use the maven and ant plugins to genera
 | `tests.$testName.buckets` | Collection of buckets for `$testName`. Maps `$bucketName => $bucketValue` |
 | `tests.$testName.buckets.$bucketName` | integer value specifying the value for `$bucketName` in the `$testName`
 | `tests.$testName.fallbackValue` | bucket value to be used if test-matrix cannot be loaded |
-| `tests.$testName.payload.type` | (optional) string value indicating the type of payload for this test. See [Payloads][Payload] section below. |
-| `tests.$testName.payload.validator` | (optional) string value indicating the [payload validator][PayloadValidator] for `$testName` |
-| `tests.providedContext` | (optional) Collection of the variables to use in definition rules. Maps `$variableName => $variableType`. See [Context][Context] section below |
+| `tests.$testName.payload.type` | (optional) string value indicating the type of payload for this test. See [Payloads](#payloads) section below. |
+| `tests.$testName.payload.validator` | (optional) string value indicating the [payload validator](#payload-validator) for `$testName` |
+| `tests.providedContext` | (optional) Collection of the variables to use in definition rules. Maps `$variableName => $variableType`. See [Context](#context) section below |
 
 With a split specification each file defines a test that would be a property of tests, as well as provided context being separately defined.
 
@@ -82,7 +82,7 @@ With a split specification each file defines a test that would be a property of 
 The above specification defines a single test `bgcolortst` with five buckets: `inactive, altcolor1, altcolor2, altcolor3, altcolor4`.
 
 
-## Context
+## <a name="context"></a>Context
 A specification's `providedContext` defines the collection of application-specific variables available in the test definition rules. The `providedContext` maps variable names to Java types and is used to auto-generate methods with these types. In a web application, these variables typically map directly to the properties of a request. e.g. `logged-in`, `country`, `language` and `user-agent`. When using non-primitive types, like the custom `UserAgent` interface below, use the fully-qualified name.
 
 If an application had the following four variables 
@@ -98,7 +98,7 @@ If an application had the following four variables
 
 {% gist parker/3bb0e94b9b238b48429f 2-UserAgent.java %}
 
-The test definition's `eligibility rules` and `allocation rules` can then reference these variables. The excerpt ([complete example](https://gist.github.com/parker/3bb0e94b9b238b48429f#file-2-definition-json)) below illustrates how a test-definition can reference the `country` and `ua` (UserAgent) variables to build targeted tests. See the [Test Definition]({{ site.baseurl }}/test-definition) section for a complete guide to the rule syntax.
+The test definition's `eligibility rules` and `allocation rules` can then reference these variables. The excerpt ([complete example](https://gist.github.com/parker/3bb0e94b9b238b48429f#file-2-definition-json)) below illustrates how a test-definition can reference the `country` and `ua` (UserAgent) variables to build targeted tests. See the [Test Definition](../test-definition) section for a complete guide to the rule syntax.
 
 ```javascript
 {
@@ -122,7 +122,7 @@ The test definition's `eligibility rules` and `allocation rules` can then refere
 }
 ```
 
-## Payloads
+## <a name="payloads"></a>Payloads
 Arbitrary data can be associated with each test bucket and delivered to your applications via the test-matrix. An application's specification can indicate if it expects a given test to have payloads by specifying the `payload.type` 
 
 {% gist parker/3bb0e94b9b238b48429f 1-ExampleGroups-payload.json %}
@@ -163,7 +163,7 @@ The values for each bucket's payload are specified in the test-defintion (view [
 }
 ```
 
-### payload validator (optional) 
+### <a name="payload-validator"></a>payload validator (optional) 
 An application can optionally define a `payload.validator` string in its specification. Similar to eligibility rules, this string is a boolean expression that should return `true` if a payload value is valid. During the test-matrix load-and-validate phase, each bucket's payload will be checked for compatibility using this expression. If no validator is provided, all payload values (of the correct type) will be considered valid.
 
 ```javascript
@@ -196,7 +196,7 @@ Multiple tests can be enumerated in an application's test specification by addin
 ```
 
 ## Split Specifications
-A split specification (as opposed to a single large specification) can be used as documented above and in [the Code Generation page]({{ site.baseurl }}/codegen). How to format these split specifications with a test similar to the **Multiple Tests** example would look like this:
+A split specification (as opposed to a single large specification) can be used as documented above and in [the Code Generation page](../codegen). How to format these split specifications with a test similar to the **Multiple Tests** example would look like this:
 
 
 `featureA.json`
@@ -231,7 +231,7 @@ A split specification (as opposed to a single large specification) can be used a
 
 
 ## A note on fallback values
-A test's `fallbackValue` corresponds to the bucket value that should be used if a test matrix is not valid with the application's specification. The `proctor-loader` section describes how a test-definition can be invalid. In this scenario, the a new definition will be used in place of the invalid matrix. This definition	will have type=RANDOM and will allocation 100% of users to the test bucket signified by `fallbackValue`. Note, if `Identifiers.randomEnabled` is set to `false` the invalid test will not be allocated. See `using groups interface` for how to properly handle this in your application's code.
+A test's `fallbackValue` corresponds to the bucket value that should be used if a test matrix is not valid with the application's specification. The `proctor-loader` section describes how a test-definition can be invalid. In this scenario, the a new definition will be used in place of the invalid matrix. This definition will have type=RANDOM and will allocation 100% of users to the test bucket signified by `fallbackValue`. Note, if `Identifiers.randomEnabled` is set to `false` the invalid test will not be allocated. See `using groups interface` for how to properly handle this in your application's code.
 
 [Context]: #toc_3
 [Payload]: #toc_4

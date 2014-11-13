@@ -4,7 +4,7 @@ title: Using Groups
 permalink: /docs/using-groups/
 ---
 
-At this point you should be familiar with the [test specification]({{ site.baseurl }}/docs/specification), [code generator]({{ site.baseurl }}/docs/) and [loader]({{ site.baseurl }}/docs/loader) concepts. This document expands on the [quick start guide]({{ site.baseurl }}/docs/quick-stire) and provides guidance on how to use each proctor component.
+At this point you should be familiar with the [test specification]({{ site.baseurl }}/docs/specification), [code generator](../codegen) and [loader]({{ site.baseurl }}/docs/loader) concepts. This document expands on the [quick start guide](../quick-start) and provides guidance on how to use each proctor component.
 
 
 ## setup
