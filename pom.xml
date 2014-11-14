@@ -9,7 +9,7 @@
 
     <groupId>com.indeed</groupId>
     <artifactId>proctor-parent</artifactId>
-    <version>1.0.25-SNAPSHOT</version>
+    <version>1.0.25</version>
     <packaging>pom</packaging>
 
     <licenses>
