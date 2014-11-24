@@ -11,7 +11,7 @@
     </parent>
 
     <properties>
-        <bitwalker.version>1.13</bitwalker.version>
+        <bitwalker.version>1.14</bitwalker.version>
     </properties>
 
     <repositories>
@@ -40,10 +40,10 @@
             <version>${spring.version}</version>
         </dependency>
         <dependency>
-           <groupId>bitwalker</groupId>
-           <artifactId>UserAgentUtils</artifactId>
-           <version>${bitwalker.version}</version>
-        </dependency>
+		   	<groupId>eu.bitwalker</groupId>
+		   	<artifactId>UserAgentUtils</artifactId>
+           	<version>${bitwalker.version}</version>
+		</dependency>
         <dependency>
             <groupId>org.codehaus.jackson</groupId>
             <artifactId>jackson-mapper-asl</artifactId>
