@@ -40,9 +40,9 @@
             <version>${spring.version}</version>
         </dependency>
         <dependency>
-               <groupId>eu.bitwalker</groupId>
-               <artifactId>UserAgentUtils</artifactId>
-               <version>${bitwalker.version}</version>
+            <groupId>eu.bitwalker</groupId>
+            <artifactId>UserAgentUtils</artifactId>
+            <version>${bitwalker.version}</version>
         </dependency>
         <dependency>
             <groupId>org.codehaus.jackson</groupId>
