@@ -29,7 +29,6 @@ public class CoreConfig {
             @Value("${proctor.test.matrix.path:}") final String testMatrixPath,
     		@Value("${proctor.test.matrix.url:}") final String testMatrixUrl,
             final ProctorSpecification specification) {
-		System.out.println("testMatrixSvnUrl: " + testMatrixUrl);
     	if (StringUtils.isNotBlank(testMatrixUrl)) {
     		try {
 	        	final UrlProctorLoader urlProctorLoader = new UrlProctorLoader(specification, testMatrixUrl);
