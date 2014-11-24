@@ -25,20 +25,20 @@ public class CoreConfig {
 
     @Bean
     @Autowired
-	public AbstractProctorLoader proctorLoader(
+    public AbstractProctorLoader proctorLoader(
             @Value("${proctor.test.matrix.path:}") final String testMatrixPath,
-    		@Value("${proctor.test.matrix.url:}") final String testMatrixUrl,
+            @Value("${proctor.test.matrix.url:}") final String testMatrixUrl,
             final ProctorSpecification specification) {
-    	if (StringUtils.isNotBlank(testMatrixUrl)) {
-    		try {
-	        	final UrlProctorLoader urlProctorLoader = new UrlProctorLoader(specification, testMatrixUrl);
-	        	urlProctorLoader.run(); // ensure ProctorLoader runs once
-	        	return urlProctorLoader;
-    		}
-    		catch(MalformedURLException mue) {
-    			System.err.println(mue.getMessage());
-    		}
-    	}
+        if (StringUtils.isNotBlank(testMatrixUrl)) {
+            try {
+                final UrlProctorLoader urlProctorLoader = new UrlProctorLoader(specification, testMatrixUrl);
+                urlProctorLoader.run(); // ensure ProctorLoader runs once
+                return urlProctorLoader;
+            }
+            catch(MalformedURLException mue) {
+                System.err.println(mue.getMessage());
+            }
+        }
         final JsonProctorLoaderFactory factory = new JsonProctorLoaderFactory();
         factory.setFilePath(testMatrixPath);
         factory.setSpecification(specification);
