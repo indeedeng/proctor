@@ -21,6 +21,7 @@ public class TestGroupsGeneratorTask extends Task {
     private String packageName;
     private String groupsClass;
     private String groupsManagerClass;
+    private String contextClass;
     private String specificationOutput;
     private static final Logger LOGGER = Logger.getLogger(TestGroupsGeneratorTask.class);
     public String getInput() {
@@ -62,6 +63,15 @@ public class TestGroupsGeneratorTask extends Task {
     public void setGroupsManagerClass(final String groupsManagerClass) {
         this.groupsManagerClass = groupsManagerClass;
     }
+
+    public String getContextClass() {
+        return contextClass;
+    }
+
+    public void setContextClass(final String contextClass) {
+        this.contextClass = contextClass;
+    }
+
     public String getSpecificationOutput() {
         return specificationOutput;
     }
@@ -83,7 +93,7 @@ public class TestGroupsGeneratorTask extends Task {
             (new File(specificationOutput.substring(0,specificationOutput.lastIndexOf(File.separator)))).mkdirs();
             final File specificationOutputFile = new File(specificationOutput);
             final File output = gen.makeTotalSpecification(dir, specificationOutputFile.getParent(), specificationOutputFile.getName());
-            gen.generate(output.getPath(),target,packageName,groupsClass,groupsManagerClass);
+            gen.generate(output.getPath(),target,packageName,groupsClass,groupsManagerClass,contextClass);
         } else {
             throw new CodeGenException("Incorrect amount of providedcontext.json in specified input folder");
         }
@@ -109,7 +119,7 @@ public class TestGroupsGeneratorTask extends Task {
             }
         } else {
             try {
-                gen.generate(input, target, packageName, groupsClass, groupsManagerClass);
+                gen.generate(input, target, packageName, groupsClass, groupsManagerClass, contextClass);
             } catch (final CodeGenException ex) {
                 throw new BuildException("Unable to generate code " + ex.toString(), ex);
             }
