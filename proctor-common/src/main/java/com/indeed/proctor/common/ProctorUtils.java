@@ -529,7 +529,7 @@ public abstract class ProctorUtils {
 
             final boolean noPayloads = (testSpec.getPayload() == null);
             final Set<Integer> bucketValues = Sets.newHashSet();
-            final List<TestBucket> buckets = Lists.newArrayList(testDefinition.getBuckets());
+            List<TestBucket> buckets = testDefinition.getBuckets();
             for (final TestBucket bucket : buckets) {
                 // Note bucket values that exist in matrix.
                 bucketValues.add(bucket.getValue());
@@ -543,13 +543,16 @@ public abstract class ProctorUtils {
             final Map<String, Integer> specBuckets = testSpec.getBuckets();
             for (final Entry<String, Integer> bucketSpec : specBuckets.entrySet()) {
                 if (!bucketValues.contains(bucketSpec.getValue())) {
+                    if (!replaceBuckets) {
+                        buckets = Lists.newArrayList(buckets);
+                        replaceBuckets = true;
+                    }
                     buckets.add(new TestBucket(bucketSpec.getKey(), bucketSpec.getValue(), null, null));
-                    replaceBuckets = true;
                 }
             }
 
             if (replaceBuckets) {
-                testDefinition.setBuckets(ImmutableList.copyOf(buckets));
+                testDefinition.setBuckets(buckets);
             }
         }
     }

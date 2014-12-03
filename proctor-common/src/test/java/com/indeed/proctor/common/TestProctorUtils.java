@@ -1369,7 +1369,9 @@ public class TestProctorUtils {
             assertEquals(1, matrix.getTests().size());
             final ConsumableTestDefinition replacement = matrix.getTests().values().iterator().next();
             assertEquals(TestType.RANDOM, replacement.getTestType());
-            assertEquals("Expected buckets to expand to include spec buckets", 3, replacement.getBuckets().size());
+            assertEquals("Expected buckets to expand to include all buckets from the specification",
+                         buckets.size(),
+                         replacement.getBuckets().size());
             assertEquals(-1, replacement.getBuckets().iterator().next().getValue());
         }
 
@@ -1386,7 +1388,9 @@ public class TestProctorUtils {
             assertEquals(1, matrix.getTests().size());
             final ConsumableTestDefinition stillOriginal = matrix.getTests().values().iterator().next();
             assertEquals(unrecognizedTestType, stillOriginal.getTestType());
-            assertEquals("Expected buckets to expand to include spec buckets", 3, stillOriginal.getBuckets().size());
+            assertEquals("Expected buckets to expand to include all buckets from the specification",
+                         buckets.size(),
+                         stillOriginal.getBuckets().size());
         }
     }
 
