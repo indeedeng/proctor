@@ -3,6 +3,7 @@ package com.indeed.proctor.consumer.gen;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -44,16 +45,16 @@ public class TestGroupsGenerator extends FreeMarkerCodeGenerator {
         baseContext.put("groupsClassName", groupsClass);
         baseContext.put("groupsManagerClassName", groupsManagerClass);
         baseContext.put("payloadClassName",groupsClass + "Payload");
-        if (groupsClass != null) {
+        if (!Strings.isNullOrEmpty(groupsClass)) {
             generate(input, target, baseContext, packageName, groupsClass, templatePath, groupsTemplateName);
         }
-        if (groupsManagerClass != null) {
+        if (!Strings.isNullOrEmpty(groupsManagerClass)) {
             generate(input, target, baseContext, packageName, groupsManagerClass, templatePath, groupsManagerTemplateName);
         }
-        if (groupsClass != null) {
+        if (!Strings.isNullOrEmpty(groupsClass)) {
             generate(input, target, baseContext, packageName, payloadClass, templatePath, payloadTemplateName);
         }
-        if (contextClass != null) {
+        if (!Strings.isNullOrEmpty(contextClass)) {
             generate(input, target, baseContext, packageName, contextClass, templatePath, contextTemplateName);
         }
 
