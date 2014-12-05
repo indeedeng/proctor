@@ -24,13 +24,15 @@ public class ${mainClassName} {
     private final ${contextArguments[contextArgumentName]?replace('$', '.')} ${contextArgumentName};
 </#list>
 
-    public ${mainClassName}(<#if !contextArguments?has_content>) {</#if><#list contextArguments?keys as contextArgumentName>final ${contextArguments[contextArgumentName]?replace('$', '.')} ${contextArgumentName}<#if contextArgumentName_has_next>, <#else>) {</#if></#list>
+<#if contextArguments?has_content>
+    public ${mainClassName}(<#list contextArguments?keys as contextArgumentName>final ${contextArguments[contextArgumentName]?replace('$', '.')} ${contextArgumentName}<#if contextArgumentName_has_next>, <#else>) {</#if></#list>
 <#list contextArguments?keys as contextArgumentName>
         this.${contextArgumentName} = ${contextArgumentName};
 </#list>
     }
+</#if>
 
-    private ${mainClassName}() {
+    public ${mainClassName}() {
 <#list contextArguments?keys as contextArgumentName>
         this.${contextArgumentName} = Defaults.defaultValue(${contextArguments[contextArgumentName]?replace('$', '.')}.class);
 </#list>
