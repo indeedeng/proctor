@@ -1,0 +1,352 @@
+{
+    "audit" : {
+        "version" : 1524,
+        "updated" : 1313525000000,
+        "updatedBy" : "ketan"
+    },
+
+    "tests" : {
+        "pimple" : {
+            "constants" : {
+                "ae_or_it_Countries" : ["AE", "IT"],
+                "fr_or_mx_Countries" : ["FR", "MX"]
+            },
+            "version" : 98,
+            "salt" : "of the earth",
+            "testType" : "PAGE",
+            "rule" : null,
+            "description" : "a pimple on your face makes a gross pop",
+            "buckets" : [
+                {
+                    "name" : "inactive",
+                    "value" : -1
+                },
+                {
+                    "name" : "control",
+                    "value" : 0
+                },
+                {
+                    "name" : "test",
+                    "value" : 1
+                }
+            ],
+            "allocations" : [
+                {
+                    "ranges" : [
+                        {"bucketValue": -1, "length": 0.8 },
+                        {"bucketValue":  0, "length": 0.1 },
+                        {"bucketValue":  1, "length": 0.1 }
+                    ]
+                }
+            ]
+        },
+
+        "kluj" : {
+            "version" : 11,
+            "salt" : "bilterm",
+            "testType" : "USER",
+            "description" : "kluj is a city in Romania; I have no idea how to pronounce it",
+            "buckets" : [
+                {
+                    "name" : "control",
+                    "value" : 0
+                },
+                {
+                    "name" : "test",
+                    "value" : 1
+                },
+                {
+                    "name" : "kloo",
+                    "value" : 2
+                },
+                {
+                    "name" : "loooj",
+                    "value" : 3
+                }
+            ],
+            "allocations" : [
+                {
+                    "ranges" : [
+                        {"bucketValue": 0, "length": 0.25 },
+                        {"bucketValue": 1, "length": 0.25 },
+                        {"bucketValue": 2, "length": 0.25 },
+                        {"bucketValue": 3, "length": 0.25 }
+                    ]
+                }
+            ]
+        },
+
+        "oop_poop" : {
+            "version" : 17,
+            "salt" : "do not want",
+            "testType" : "USER",
+            "description" : "oops there's poop",
+            "buckets" : [
+                {
+                    "name" : "control",
+                    "value" : 0
+                },
+                {
+                    "name" : "test",
+                    "value" : 1
+                },
+                {
+                    "name" : "oop",
+                    "value" : 2
+                },
+                {
+                    "name" : "poop",
+                    "value" : 3
+                }
+            ],
+            "allocations" : [
+                {
+                    "ranges" : [
+                        {"bucketValue": 0, "length": 0.25 },
+                        {"bucketValue": 1, "length": 0.25 },
+                        {"bucketValue": 2, "length": 0.25 },
+                        {"bucketValue": 3, "length": 0.25 }
+                    ]
+                }
+            ]
+        },
+
+        "bubble" : {
+            "version" : 4987,
+            "testType" : "RANDOM",
+            "description" : "it's different every time",
+            "buckets" : [
+                {
+                    "name" : "zero",
+                    "value" : 0
+                },
+                {
+                    "name" : "einz",
+                    "value" : 1
+                },
+                {
+                    "name" : "dos",
+                    "value" : 2
+                },
+                {
+                    "name" : "tres",
+                    "value" : 3
+                }
+            ],
+            "allocations" : [
+                {
+                    "ranges" : [
+                        {"bucketValue": 0, "length": 0.25 },
+                        {"bucketValue": 1, "length": 0.25 },
+                        {"bucketValue": 2, "length": 0.25 },
+                        {"bucketValue": 3, "length": 0.25 }
+                    ]
+                }
+            ]
+        },
+
+        "dubblez" : {
+            "version" : 70,
+            "salt" : "google bing",
+            "testType" : "EMAIL",
+            "description" : "not so user-centric",
+            "buckets" : [
+                {
+                    "name" : "alpha",
+                    "value" : 0
+                },
+                {
+                    "name" : "bee",
+                    "value" : 1
+                },
+                {
+                    "name" : "cee",
+                    "value" : 2
+                }
+            ],
+            "allocations" : [
+                {
+                    "ranges" : [
+                        {"bucketValue": 0, "length": 0.3333333333 },
+                        {"bucketValue": 1, "length": 0.3333333333 },
+                        {"bucketValue": 2, "length": 0.3333333333 }
+                    ]
+                }
+            ]
+        },
+
+        "payloaded" : {
+            "version" : 1,
+            "salt" : "in the cookies",
+            "testType" : "USER",
+            "description" : "This test has simple payloads on control and test",
+            "buckets" : [
+                {
+                    "name" : "inactive",
+                    "value" : -1,
+                    "payload" : {
+                        "stringArray" : [ ]
+                    }
+                },
+                {
+                    "name" : "control",
+                    "value" : 0,
+                    "payload" : {
+                        "stringArray" : ["just", "like", "normal"]
+                    }
+                },
+                {
+                    "name" : "test",
+                    "value" : 1,
+                    "payload" : {
+                        "stringArray" : ["nothing", "to", "see", "here"]
+                    }
+                }
+            ],
+            "allocations" : [
+                {
+                    "ranges" : [
+                        {"bucketValue": -1, "length": 0.8 },
+                        {"bucketValue":  0, "length": 0.1 },
+                        {"bucketValue":  1, "length": 0.1 }
+                    ]
+                }
+            ]
+        },
+
+        "payloaded_verified" : {
+            "version" : 2,
+            "salt" : "in the cookies",
+            "testType" : "USER",
+            "description" : "This test has payloads with verification in spec",
+            "buckets" : [
+                {
+                    "name" : "inactive",
+                    "value" : -1,
+                    "payload" : {
+                        "doubleValue" : 0
+                    }
+                },
+                {
+                    "name" : "control",
+                    "value" : 0,
+                    "payload" : {
+                        "doubleValue" : 5
+                    }
+                },
+                {
+                    "name" : "test",
+                    "value" : 1,
+                    "payload" : {
+                        "doubleValue" : 50
+                    }
+                }
+            ],
+            "allocations" : [
+                {
+                    "ranges" : [
+                        {"bucketValue": -1, "length": 0.8 },
+                        {"bucketValue":  0, "length": 0.1 },
+                        {"bucketValue":  1, "length": 0.1 }
+                    ]
+                }
+            ]
+        },
+        "map_payload" : {
+            "version" : 2,
+            "salt" : "salt",
+            "testType" : "USER",
+            "description" : "This test has map payloads",
+            "buckets" : [
+                {
+                    "name" : "inactive",
+                    "value" : -1,
+                    "payload" : {
+                        "map" : {
+                            "astring":"lol",
+                            "adouble":2.1,
+                            "anarray":[1,2,3],
+                            "astringarr":["one","two","three"],
+                            "adarray":[1.1,2.1,3.1],
+                            "anextravalue":"no"
+                        }
+                    }
+                },
+                {
+                    "name" : "control",
+                    "value" : 0,
+                    "payload" : {
+                        "map" : {
+                            "astring":"str2",
+                            "adouble":3.1,
+                            "anarray":[1,2,3],
+                            "astringarr":["one","two","three"],
+                            "adarray":[1.1,2.1,3.1]
+                        }
+                    }
+                },
+                {
+                    "name" : "test",
+                    "value" : 1,
+                    "payload" : {
+                        "map" : {
+                            "astring":"l",
+                            "adouble":1.1,
+                            "anarray":[1,2,3],
+                            "astringarr":["one","two","three"],
+                            "adarray":[1.1,2.1,3.1]
+                        }
+                    }
+                }
+            ],
+            "allocations" : [
+                {
+                    "ranges" : [
+                        {"bucketValue": -1, "length": 0.8 },
+                        {"bucketValue":  0, "length": 0.1 },
+                        {"bucketValue":  1, "length": 0.1 }
+                    ]
+                }
+            ]
+        },
+
+        "payloaded_excluded" : {
+            "version" : 1,
+            "salt" : "in the cookies",
+            "testType" : "USER",
+            "description" : "This test has simple payloads on control and test",
+            "rule": "${false}",
+            "buckets" : [
+                {
+                    "name" : "inactive",
+                    "value" : -1,
+                    "payload" : {
+                        "stringArray" : [ "preexisting" ]
+                    }
+                },
+                {
+                    "name" : "control",
+                    "value" : 0,
+                    "payload" : {
+                        "stringArray" : ["just", "like", "normal"]
+                    }
+                },
+                {
+                    "name" : "test",
+                    "value" : 1,
+                    "payload" : {
+                        "stringArray" : ["nothing", "to", "see", "here"]
+                    }
+                }
+            ],
+            "allocations" : [
+                {
+                    "ranges" : [
+                        {"bucketValue":  0, "length": 0.5 },
+                        {"bucketValue":  1, "length": 0.5 }
+                    ]
+                }
+            ]
+        }
+    }
+}

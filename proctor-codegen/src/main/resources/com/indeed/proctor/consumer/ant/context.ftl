@@ -24,19 +24,23 @@ public class ${mainClassName} {
     private final ${contextArguments[contextArgumentName]?replace('$', '.')} ${contextArgumentName};
 </#list>
 
+<#-- If there are context arguments, generate a fully-specified constructor and a private default constructor for the builder.
+     Otherwise, rely on the default public constructor. -->
 <#if contextArguments?has_content>
     public ${mainClassName}(<#list contextArguments?keys as contextArgumentName>final ${contextArguments[contextArgumentName]?replace('$', '.')} ${contextArgumentName}<#if contextArgumentName_has_next>, <#else>) {</#if></#list>
 <#list contextArguments?keys as contextArgumentName>
         this.${contextArgumentName} = ${contextArgumentName};
 </#list>
     }
-</#if>
 
-    public ${mainClassName}() {
-<#list contextArguments?keys as contextArgumentName>
+    // For builder use only
+    private ${mainClassName}() {
+        <#-- TODO: It would be nice to allow the proctor specification to set default values for the arguments -->
+        <#list contextArguments?keys as contextArgumentName>
         this.${contextArgumentName} = Defaults.defaultValue(${contextArguments[contextArgumentName]?replace('$', '.')}.class);
-</#list>
+        </#list>
     }
+</#if>
 
     private static final ${mainClassName} DEFAULT = new ${mainClassName}();
     public static ${mainClassName} getDefault() {
@@ -130,13 +134,14 @@ public class ${mainClassName} {
 
     public static class Builder {
 <#list contextArguments?keys as contextArgumentName>
+        <#-- TODO: It would be nice to allow the proctor specification to set default values for the arguments -->
         private ${contextArguments[contextArgumentName]?replace('$', '.')} ${contextArgumentName} = Defaults.defaultValue(${contextArguments[contextArgumentName]?replace('$', '.')}.class);
 </#list>
         private Builder() {}
 
 <#list contextArguments?keys as contextArgumentName>
         @Nonnull
-        public Builder set${contextArgumentName}(final ${contextArguments[contextArgumentName]?replace('$', '.')} value) {
+        public Builder set${contextArgumentName?cap_first}(final ${contextArguments[contextArgumentName]?replace('$', '.')} value) {
             this.${contextArgumentName} = ${contextArgumentName};
             return this;
         }
