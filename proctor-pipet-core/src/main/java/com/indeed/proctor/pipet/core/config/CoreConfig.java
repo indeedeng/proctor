@@ -5,12 +5,16 @@ import com.indeed.proctor.common.AbsentProctorSpecification;
 import com.indeed.proctor.common.AbstractProctorLoader;
 import com.indeed.proctor.common.JsonProctorLoaderFactory;
 import com.indeed.proctor.common.ProctorSpecification;
+import com.indeed.proctor.common.UrlProctorLoader;
 import com.indeed.proctor.pipet.core.var.VariableConfiguration;
+
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.net.MalformedURLException;
 import java.util.Map;
 
 /**
@@ -22,9 +26,19 @@ public class CoreConfig {
     @Bean
     @Autowired
     public AbstractProctorLoader proctorLoader(
-            @Value("${proctor.test.matrix.path}") final String testMatrixPath,
+            @Value("${proctor.test.matrix.path:}") final String testMatrixPath,
+            @Value("${proctor.test.matrix.url:}") final String testMatrixUrl,
             final ProctorSpecification specification) {
-
+        if (StringUtils.isNotBlank(testMatrixUrl)) {
+            try {
+                final UrlProctorLoader urlProctorLoader = new UrlProctorLoader(specification, testMatrixUrl);
+                urlProctorLoader.run(); // ensure ProctorLoader runs once
+                return urlProctorLoader;
+            }
+            catch(MalformedURLException mue) {
+                System.err.println(mue.getMessage());
+            }
+        }
         final JsonProctorLoaderFactory factory = new JsonProctorLoaderFactory();
         factory.setFilePath(testMatrixPath);
         factory.setSpecification(specification);
