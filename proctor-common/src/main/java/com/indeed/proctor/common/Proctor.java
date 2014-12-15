@@ -12,6 +12,7 @@ import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.common.model.TestMatrixArtifact;
 import com.indeed.proctor.common.model.TestType;
+import org.codehaus.jackson.JsonGenerator;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -255,6 +256,10 @@ public class Proctor {
 
     public void appendTestMatrix(final Writer writer) throws IOException {
         ProctorUtils.serializeArtifact(writer, this.matrix);
+    }
+
+    public void appendTestMatrix(final JsonGenerator generator) throws IOException {
+        generator.writeObject(this.matrix);
     }
 
     public void appendTestMatrixFiltered(final Writer writer, final Collection<String> testNameFilter) throws IOException {
