@@ -92,7 +92,7 @@ public abstract class ProctorUtils {
         serializeObject(writer, artifact);
     }
 
-    public static void serializeProctorArtifactToJson(final JsonGenerator jsonGenerator, final Proctor proctor) throws IOException {
+    public static void serializeArtifact(final JsonGenerator jsonGenerator, final Proctor proctor) throws IOException {
         jsonGenerator.writeObject(proctor.getArtifact());
     }
 
