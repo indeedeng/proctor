@@ -60,7 +60,7 @@ public class ProctorConsumerUtils {
         return parseForceGroupsList(forceGroupsList);
     }
 
-    @Nullable
+    @Nonnull
     public static String getForceGroupsStringFromRequest(@Nonnull final HttpServletRequest request) {
 
         final String param = request.getParameter(FORCE_GROUPS_PARAMETER);
@@ -70,17 +70,17 @@ public class ProctorConsumerUtils {
 
         final Cookie[] cookies = request.getCookies();
         if (cookies == null) {
-            return null;
+            return "";
         }
 
         for (int i = 0; i < cookies.length; i++) {
             if (FORCE_GROUPS_COOKIE_NAME.equals(cookies[i].getName())) {
                 final String cookieValue = cookies[i].getValue();
-                return cookieValue;
+                return Strings.nullToEmpty(cookieValue);
             }
         }
 
-        return null;
+        return "";
     }
 
     @Nonnull

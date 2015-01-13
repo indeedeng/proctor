@@ -78,7 +78,7 @@ public class TestProctorConsumerUtils {
         {
             final MockHttpServletRequest mockRequest = new MockHttpServletRequest();
             final String forceGroups = ProctorConsumerUtils.getForceGroupsStringFromRequest(mockRequest);
-            Assert.assertNull(forceGroups);
+            Assert.assertEquals("", forceGroups);
         }
         //Test empty param, some cookies
         {
@@ -87,7 +87,7 @@ public class TestProctorConsumerUtils {
             final Cookie anotherJunkCookie = new Cookie("what", "yeah");
             mockRequest.setCookies(junkCookie, anotherJunkCookie);
             final String forceGroups = ProctorConsumerUtils.getForceGroupsStringFromRequest(mockRequest);
-            Assert.assertNull(forceGroups);
+            Assert.assertEquals("", forceGroups);
         }
     }
 
