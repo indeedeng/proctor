@@ -57,11 +57,7 @@ public class ProctorConsumerUtils {
     @Nonnull
     public static Map<String, Integer> parseForcedGroups(@Nonnull final HttpServletRequest request) {
         final String forceGroupsList = getForceGroupsStringFromRequest(request);
-        if (forceGroupsList == null) {
-            return Collections.emptyMap();
-        } else {
-            return parseForceGroupsList(forceGroupsList);
-        }
+        return parseForceGroupsList(forceGroupsList);
     }
 
     @Nullable
@@ -88,8 +84,10 @@ public class ProctorConsumerUtils {
     }
 
     @Nonnull
-    @VisibleForTesting
-    public static Map<String, Integer> parseForceGroupsList(@Nonnull final String payload) {
+    public static Map<String, Integer> parseForceGroupsList(@Nullable final String payload) {
+        if (payload == null) {
+            return Collections.emptyMap();
+        }
         final String[] pieces = payload.split(",+");
         final Map<String, Integer> forcedGroups = Maps.newHashMap();
         for (int i = 0; i < pieces.length; i++) {
