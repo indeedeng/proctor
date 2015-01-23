@@ -142,7 +142,7 @@ public class ${mainClassName} {
 <#list contextArguments?keys as contextArgumentName>
         @Nonnull
         public Builder set${contextArgumentName?cap_first}(final ${contextArguments[contextArgumentName]?replace('$', '.')} value) {
-            this.${contextArgumentName} = ${contextArgumentName};
+            this.${contextArgumentName} = value;
             return this;
         }
 
