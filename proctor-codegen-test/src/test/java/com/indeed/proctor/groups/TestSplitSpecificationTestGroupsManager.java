@@ -80,6 +80,11 @@ public class TestSplitSpecificationTestGroupsManager {
 
     @Test
     public void testMultipleTypes() {
+        final SplitSpecificationTestGroupsContext testContext = SplitSpecificationTestGroupsContext.newBuilder()
+                .setLoggedIn(true)
+                .setCountry("FR")
+                .setAccountId(10)
+                .build();
         {
             final Identifiers identifiers = new Identifiers(ImmutableMap.<TestType, String>builder()
                     .put(TestType.ANONYMOUS_USER, SPECIFICATION_MATRIX)
@@ -87,7 +92,7 @@ public class TestSplitSpecificationTestGroupsManager {
                     .put(TestType.PAGE, SPECIFICATION_MATRIX)
                     .build());
 
-            final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "FR", /* accountid */ 10);
+            final ProctorResult result = testContext.getProctorResult(manager, identifiers);
             assertEquals("one:test32,three:inactive-1,two:test22", calcBuckets(result));
         }
         {
@@ -98,16 +103,21 @@ public class TestSplitSpecificationTestGroupsManager {
                     .build();
             final Identifiers identifiers = new Identifiers(idMap, true);
 
-            final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "FR", /* accountid */ 10);
+            final ProctorResult result = testContext.getProctorResult(manager, identifiers);
             assertEquals(result.getBuckets().get("one").getValue(),2);
         }
     }
 
     @Test
     public void testSomeBuckets() {
+        final SplitSpecificationTestGroupsContext testContext = SplitSpecificationTestGroupsContext.newBuilder()
+                .setLoggedIn(true)
+                .setCountry("FR")
+                .setAccountId(10)
+                .build();
         {
             final Identifiers identifiers = new Identifiers(TestType.ANONYMOUS_USER, "16s2o7s01001d9vj");
-            final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "FR", /* accountid */ 10);
+            final ProctorResult result = testContext.getProctorResult(manager, identifiers);
             assertEquals("three:inactive-1,two:test33", calcBuckets(result));
             // Check and make sure SpecificationCreationGroups respects these groups and works as expected.
             final SplitSpecificationTestGroups grps = new SplitSpecificationTestGroups(result);
@@ -131,10 +141,15 @@ public class TestSplitSpecificationTestGroupsManager {
 
     @Test
     public void testPayloads() {
+        final SplitSpecificationTestGroupsContext testContext = SplitSpecificationTestGroupsContext.newBuilder()
+                .setLoggedIn(true)
+                .setCountry("US")
+                .setAccountId(10)
+                .build();
         final Identifiers identifiers = new Identifiers(ImmutableMap.<TestType, String>builder()
                 .put(TestType.ANONYMOUS_USER, SPECIFICATION_MATRIX)
                 .build());
-        final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "US", /* accountid */ 10);
+        final ProctorResult result = testContext.getProctorResult(manager, identifiers);
         assertEquals("three:inactive-1,two:test22", calcBuckets(result));
         // Check and make sure SpecificationCreationGroups respects these groups and works as expected.
         final SplitSpecificationTestGroups grps = new SplitSpecificationTestGroups(result);
@@ -157,8 +172,13 @@ public class TestSplitSpecificationTestGroupsManager {
 
     @Test
     public void testTestDescriptions(){
+        final SplitSpecificationTestGroupsContext testContext = SplitSpecificationTestGroupsContext.newBuilder()
+                .setLoggedIn(true)
+                .setCountry("FR")
+                .setAccountId(10)
+                .build();
         final Identifiers identifiers = new Identifiers(TestType.USER, "16s2o7s01001d9vj");
-        final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "FR", /* accountid */ 10);
+        final ProctorResult result = testContext.getProctorResult(manager, identifiers);
         assertEquals("three:inactive-1,two:test33", calcBuckets(result));
         // Check and make sure SpecificationCreationGroups respects these groups and works as expected.
         final SplitSpecificationTestGroups grps = new SplitSpecificationTestGroups(result);

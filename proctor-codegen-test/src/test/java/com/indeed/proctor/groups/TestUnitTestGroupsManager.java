@@ -99,6 +99,11 @@ public class TestUnitTestGroupsManager {
 
     @Test
     public void testMultipleTypes() {
+        final UnitTestGroupsContext testContext = UnitTestGroupsContext.newBuilder()
+                .setLoggedIn(true)
+                .setCountry("FR")
+                .setAccount(new Account(10))
+                .build();
         {
             final Identifiers identifiers = new Identifiers(ImmutableMap.<TestType, String>builder()
                                                             .put(TestType.ANONYMOUS_USER, SPECIFICATION_MATRIX)
@@ -106,7 +111,7 @@ public class TestUnitTestGroupsManager {
                                                             .put(TestType.PAGE, SPECIFICATION_MATRIX)
                                                             .build());
 
-            final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "FR", /* account */ new Account(10));
+            final ProctorResult result = testContext.getProctorResult(manager, identifiers);
             assertEquals("kluj:kloo2,map_payload:inactive-1,oop_poop:test1,payloaded:inactive-1,payloaded_verified:inactive-1,pimple:control0", calcBuckets(result));
         }
         {
@@ -117,7 +122,7 @@ public class TestUnitTestGroupsManager {
                                                                 .build();
             final Identifiers identifiers = new Identifiers(idMap, true);
 
-            final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "FR", /* account */  new Account(10));
+            final ProctorResult result = testContext.getProctorResult(manager, identifiers);
             assertEquals(result.getBuckets().get("pimple").getValue(), 0);
             assertNotNull(result.getBuckets().get("bubble").getValue());
             assertEquals(result.getBuckets().get("dubblez").getValue(), 2);
@@ -126,11 +131,16 @@ public class TestUnitTestGroupsManager {
 
     @Test
     public void testRandom() {
+        final UnitTestGroupsContext testContext = UnitTestGroupsContext.newBuilder()
+                .setLoggedIn(true)
+                .setCountry("FR")
+                .setAccount(new Account(10))
+                .build();
         final Identifiers identifiers = new Identifiers(Collections.<TestType, String>emptyMap(), true);
 
         final int[] valuesFound = new int[4];
         for (int i = 0; i < 2000; i++) {
-            final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "FR", /* account */  new Account(10));
+            final ProctorResult result = testContext.getProctorResult(manager, identifiers);
             valuesFound[result.getBuckets().get("bubble").getValue()]++;
         }
         for (int i = 0; i < valuesFound.length; i++) {
@@ -142,8 +152,13 @@ public class TestUnitTestGroupsManager {
     @Test
     public void testUserBuckets() {
         {
+            final UnitTestGroupsContext testContext = UnitTestGroupsContext.newBuilder()
+                    .setLoggedIn(true)
+                    .setCountry("FR")
+                    .setAccount(new Account(10))
+                    .build();
             final Identifiers identifiers = new Identifiers(TestType.ANONYMOUS_USER, "16s2o7s01001d9vj");
-            final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "FR", /* account */  new Account(10));
+            final ProctorResult result = testContext.getProctorResult(manager, identifiers);
             assertEquals("kluj:test1,map_payload:inactive-1,oop_poop:control0,payloaded:inactive-1,payloaded_verified:inactive-1", calcBuckets(result));
             // Check and make sure UnitTestGroups respects these groups and works as expected.
             final UnitTestGroups grps = new UnitTestGroups(result);
@@ -172,9 +187,14 @@ public class TestUnitTestGroupsManager {
     public void testPageBuckets() {
         final String uidString = "16s2o7s01001d9vj";
         {
+            final UnitTestGroupsContext testContext = UnitTestGroupsContext.newBuilder()
+                    .setLoggedIn(true)
+                    .setCountry("FR")
+                    .setAccount(new Account(10))
+                    .build();
             // LoggedIn + MX maps to [0, 0.5, 0.5] ranges
             final Identifiers identifiers = new Identifiers(TestType.PAGE, uidString);
-            final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "FR", /* account */  new Account(10));
+            final ProctorResult result = testContext.getProctorResult(manager, identifiers);
             assertEquals("pimple:test1", calcBuckets(result));
             // Check and make sure UnitTestGroups respects these groups and works as expected.
             final UnitTestGroups grps = new UnitTestGroups(result);
@@ -192,9 +212,14 @@ public class TestUnitTestGroupsManager {
             assertEquals("pimple1", grps.toString());
         }
         {
+            final UnitTestGroupsContext testContext = UnitTestGroupsContext.newBuilder()
+                    .setLoggedIn(true)
+                    .setCountry("US")
+                    .setAccount(new Account(10))
+                    .build();
             // LoggedIn + US maps to [1, 0, 0] range
             final Identifiers identifiers = new Identifiers(TestType.PAGE, uidString);
-            final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "US", /* account */  new Account(10));
+            final ProctorResult result = testContext.getProctorResult(manager, identifiers);
             assertEquals("pimple:inactive-1", calcBuckets(result));
             // Check and make sure UnitTestGroups respects these groups and works as expected.
             final UnitTestGroups grps = new UnitTestGroups(result);
@@ -212,9 +237,14 @@ public class TestUnitTestGroupsManager {
             assertEquals("", grps.toString());
         }
         {
+            final UnitTestGroupsContext testContext = UnitTestGroupsContext.newBuilder()
+                    .setLoggedIn(false)
+                    .setCountry("FR")
+                    .setAccount(new Account(10))
+                    .build();
             // LoggedIn=false + MX maps to [1, 0, 0] range
             final Identifiers identifiers = new Identifiers(TestType.PAGE, uidString);
-            final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ false , /* country */ "FR", /* account */  new Account(10));
+            final ProctorResult result = testContext.getProctorResult(manager, identifiers);
             assertEquals("", calcBuckets(result));
             // Check and make sure UnitTestGroups respects these groups and works as expected.
             final UnitTestGroups grps = new UnitTestGroups(result);
@@ -235,8 +265,13 @@ public class TestUnitTestGroupsManager {
 
     @Test
     public void testCompanyBuckets() {
+        final UnitTestGroupsContext testContext = UnitTestGroupsContext.newBuilder()
+                .setLoggedIn(true)
+                .setCountry("US")
+                .setAccount(new Account(10))
+                .build();
         final Identifiers identifiers = new Identifiers(TestType.COMPANY, "16s2o7s01001d9vj");
-        final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "US", /* account */  new Account(10));
+        final ProctorResult result = testContext.getProctorResult(manager, identifiers);
         assertEquals("", calcBuckets(result));
         // Check and make sure UnitTestGroups respects these groups and works as expected.
         final UnitTestGroups grps = new UnitTestGroups(result);
@@ -256,10 +291,15 @@ public class TestUnitTestGroupsManager {
 
     @Test
     public void testPayloads() {
+        final UnitTestGroupsContext testContext = UnitTestGroupsContext.newBuilder()
+                .setLoggedIn(true)
+                .setCountry("US")
+                .setAccount(new Account(10))
+                .build();
         final Identifiers identifiers = new Identifiers(ImmutableMap.<TestType, String>builder()
                 .put(TestType.ANONYMOUS_USER, SPECIFICATION_MATRIX)
                 .build());
-        final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "US", /* account */  new Account(10));
+        final ProctorResult result = testContext.getProctorResult(manager, identifiers);
         assertEquals("kluj:kloo2,map_payload:inactive-1,oop_poop:test1,payloaded:inactive-1,payloaded_verified:inactive-1", calcBuckets(result));
         // Check and make sure UnitTestGroups respects these groups and works as expected.
         final UnitTestGroups grps = new UnitTestGroups(result);
@@ -289,8 +329,13 @@ public class TestUnitTestGroupsManager {
 
     @Test
     public void testTestDescriptions(){
+        final UnitTestGroupsContext testContext = UnitTestGroupsContext.newBuilder()
+                .setLoggedIn(true)
+                .setCountry("FR")
+                .setAccount(new Account(10))
+                .build();
         final Identifiers identifiers = new Identifiers(TestType.USER, "16s2o7s01001d9vj");
-        final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "FR", /* account */  new Account(10));
+        final ProctorResult result = testContext.getProctorResult(manager, identifiers);
         assertEquals("kluj:test1,map_payload:inactive-1,oop_poop:control0,payloaded:inactive-1,payloaded_verified:inactive-1", calcBuckets(result));
         // Check and make sure UnitTestGroups respects these groups and works as expected.
         final UnitTestGroups grps = new UnitTestGroups(result);
@@ -300,8 +345,13 @@ public class TestUnitTestGroupsManager {
 
     @Test
     public void testTestDescriptions_checkEscaping(){
+        final UnitTestGroupsContext testContext = UnitTestGroupsContext.newBuilder()
+                .setLoggedIn(true)
+                .setCountry("FR")
+                .setAccount(new Account(10))
+                .build();
         final Identifiers identifiers = new Identifiers(TestType.USER, "16s2o7s01001d9vj");
-        final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "FR", /* account */  new Account(10));
+        final ProctorResult result = testContext.getProctorResult(manager, identifiers);
         assertEquals("kluj:test1,map_payload:inactive-1,oop_poop:control0,payloaded:inactive-1,payloaded_verified:inactive-1", calcBuckets(result));
         // Check and make sure UnitTestGroups respects these groups and works as expected.
         final UnitTestGroups grps = new UnitTestGroups(result);
@@ -311,8 +361,13 @@ public class TestUnitTestGroupsManager {
 
     @Test
     public void testMapPayloadReturns(){
+        final UnitTestGroupsContext testContext = UnitTestGroupsContext.newBuilder()
+                .setLoggedIn(true)
+                .setCountry("FR")
+                .setAccount(new Account(10))
+                .build();
         final Identifiers identifiers = new Identifiers(TestType.USER, "16s2o7s01001d9vj");
-        final ProctorResult result = manager.determineBuckets(identifiers, /* loggedin */ true , /* country */ "FR", /* account */  new Account(10));
+        final ProctorResult result = testContext.getProctorResult(manager, identifiers);
 
         final UnitTestGroups grps = new UnitTestGroups(result);
         assertEquals(grps.getMap_payloadPayload().getAstring(),"lol");
