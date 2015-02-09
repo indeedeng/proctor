@@ -18,7 +18,7 @@
         <proctor:renderDefinitionDeletePageInjectionTemplates position="<%=DefinitionDeletePageRenderer.DefinitionDeletePagePosition.BOTTOM_FORM%>" testName="${testName}"/>
         <ui:grid-row>
             <ui:grid-columns width="three"><label class="right inline">Comment</label></ui:grid-columns>
-            <ui:grid-columns width="nine"><input placeholder="Description of change" type="text" name="comment" /></ui:grid-columns>
+            <ui:grid-columns width="nine"><input placeholder="(optional) description of change" type="text" name="comment" /></ui:grid-columns>
         </ui:grid-row>
         <div class="ui-form-buttons">
             <input type="submit" name="delete-button" class="button js-save-form" value="Delete">

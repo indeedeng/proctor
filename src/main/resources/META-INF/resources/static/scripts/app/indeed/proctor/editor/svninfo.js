@@ -66,10 +66,6 @@ indeed.proctor.editor.SvnInfoEditor.prototype.bind_ = function() {
   this.handler_.listen(this.username, goog.events.EventType.CHANGE, onChange);
   this.handler_.listen(this.password, goog.events.EventType.CHANGE, onChange);
 
-  if (this.comment) {
-    this.handler_.listen(this.comment, goog.events.EventType.CHANGE, onChange);
-  }
-
 
   if (this.isShouldHandleSave) {
     this.handler_.listen(this.form_, goog.events.EventType.SUBMIT,
@@ -99,9 +95,6 @@ indeed.proctor.editor.SvnInfoEditor.prototype.validate = function() {
   valid = indeed.proctor.forms.validateRequired(this.password) && valid;
   if (this.summary) {
     valid = indeed.proctor.forms.validateRequired(this.summary) && valid;
-  }
-  if (this.comment) {
-    valid = indeed.proctor.forms.validateRequired(this.comment) && valid;
   }
 
   return valid;

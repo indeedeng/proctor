@@ -245,7 +245,7 @@ public class ProctorTestDefinitionController extends AbstractController {
 
         @RequestParam(required = false) final String username,
         @RequestParam(required = false) final String password,
-        @RequestParam(required = false) final String comment,
+        @RequestParam(required = false, defaultValue = "") final String comment,
         final HttpServletRequest request,
         final Model model
     ) {
@@ -253,12 +253,13 @@ public class ProctorTestDefinitionController extends AbstractController {
 
         Map<String, String[]> requestParameterMap = new HashMap<String, String[]>();
         requestParameterMap.putAll(request.getParameterMap());
+        final String nonEmptyComment = formatDefaultDeleteComment(testName, comment);
         final BackgroundJob<Boolean> job = createDeleteBackgroundJob(testName,
                                                                      theEnvironment,
                                                                      srcRevision,
                                                                      username,
                                                                      password,
-                                                                     comment,
+                                                                     nonEmptyComment,
                                                                      requestParameterMap);
         jobManager.submit(job);
 
@@ -618,7 +619,7 @@ public class ProctorTestDefinitionController extends AbstractController {
         @RequestParam(required = false) final String username,
         @RequestParam(required = false) final String password,
         @RequestParam(required = false, defaultValue = "false") final boolean isCreate,
-        @RequestParam(required = false) final String comment,
+        @RequestParam(required = false, defaultValue = "") final String comment,
         @RequestParam(required = false) final String testDefinition, // testDefinition is JSON representation of test-definition
         @RequestParam(required = false, defaultValue = "") final String previousRevision,
         @RequestParam(required = false, defaultValue = "false") final boolean isAutopromote,
@@ -629,11 +630,17 @@ public class ProctorTestDefinitionController extends AbstractController {
 
         Map<String, String[]> requestParameterMap = new HashMap<String, String[]>();
         requestParameterMap.putAll(request.getParameterMap());
+        final String nonEmptyComment;
+        if (isCreate) {
+            nonEmptyComment = formatDefaultCreateComment(testName, comment);
+        } else {
+            nonEmptyComment = formatDefaultUpdateComment(testName, comment);
+        }
         final BackgroundJob job = doEditPost(testName,
                                              username,
                                              password,
                                              isCreate,
-                                             comment,
+                                             nonEmptyComment,
                                              testDefinition,
                                              previousRevision,
                                              isAutopromote,
@@ -938,6 +945,28 @@ public class ProctorTestDefinitionController extends AbstractController {
         }
         return bucketToTotalAllocationMap;
     }
+
+    private String formatDefaultDeleteComment(final String testName, final String comment) {
+        if (Strings.isNullOrEmpty(comment)) {
+            return String.format("Deleting A/B test %s", testName);
+        }
+        return comment;
+    }
+
+    private String formatDefaultUpdateComment(final String testName, final String comment) {
+        if (Strings.isNullOrEmpty(comment)) {
+            return String.format("Updating A/B test %s", testName);
+        }
+        return comment;
+    }
+
+    private String formatDefaultCreateComment(final String testName, final String comment) {
+        if (Strings.isNullOrEmpty(comment)) {
+            return String.format("Creating A/B test %s", testName);
+        }
+        return comment;
+    }
+
 
     private String formatFullComment(final String comment, final Map<String,String[]> requestParameterMap) {
         if (revisionCommitCommentFormatter != null) {
