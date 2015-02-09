@@ -523,21 +523,40 @@ public abstract class ProctorUtils {
 
         // Now go through definedTests: for each test, if the test spec
         // didn't ask for a payload, then remove any payload that is in
-        // the test matrix.
+        // the test matrix.  If buckets exist in the specification that
+        // do not in the matrix, add buckets with null payloads to allow
+        // forcing buckets that aren't in the matrix but are in the spec.
         for (Entry<String, ConsumableTestDefinition> next : definedTests.entrySet()) {
             final String testName = next.getKey();
             final ConsumableTestDefinition testDefinition = next.getValue();
             final TestSpecification testSpec = requiredTests.get(testName);
 
-            if (testSpec.getPayload() == null) {
-                // No payload was requested...
-                final List<TestBucket> buckets = testDefinition.getBuckets();
-                for (final TestBucket bucket : buckets) {
-                    if (bucket.getPayload() != null) {
-                        // ... so stomp the unexpected payloads.
-                        bucket.setPayload(null);
-                    }
+            final boolean noPayloads = (testSpec.getPayload() == null);
+            final Set<Integer> bucketValues = Sets.newHashSet();
+            List<TestBucket> buckets = testDefinition.getBuckets();
+            for (final TestBucket bucket : buckets) {
+                // Note bucket values that exist in matrix.
+                bucketValues.add(bucket.getValue());
+                if (noPayloads && (bucket.getPayload() != null)) {
+                    // stomp the unexpected payloads.
+                    bucket.setPayload(null);
                 }
+            }
+
+            boolean replaceBuckets = false;
+            final Map<String, Integer> specBuckets = testSpec.getBuckets();
+            for (final Entry<String, Integer> bucketSpec : specBuckets.entrySet()) {
+                if (!bucketValues.contains(bucketSpec.getValue())) {
+                    if (!replaceBuckets) {
+                        buckets = Lists.newArrayList(buckets);
+                        replaceBuckets = true;
+                    }
+                    buckets.add(new TestBucket(bucketSpec.getKey(), bucketSpec.getValue(), null, null));
+                }
+            }
+
+            if (replaceBuckets) {
+                testDefinition.setBuckets(buckets);
             }
         }
     }

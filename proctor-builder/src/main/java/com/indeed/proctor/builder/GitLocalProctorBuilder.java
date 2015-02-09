@@ -103,11 +103,15 @@ public class GitLocalProctorBuilder extends ProctorBuilder {
             if (arguments.getBranchName() != null && !arguments.getBranchName().isEmpty()) {
                 proctor.checkoutBranch(arguments.getBranchName());
             }
+            File outputDir = new File(arguments.getOutputdir());
+            outputDir.mkdirs();
+            File matrixFile = new File(outputDir, arguments.getFilename());
+            matrixFile.createNewFile();
             new GitLocalProctorBuilder(
                     proctor,
                     "-".equals(arguments.getOutputdir()) ?
                             new PrintWriter(System.out) :
-                            new FileWriter(new File(arguments.getOutputdir(), arguments.getFilename())),
+                            new FileWriter(matrixFile),
                     arguments.getAuthor(),
                     arguments.getVersion()).execute();
         } catch (Exception e) {

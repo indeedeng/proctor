@@ -14,6 +14,41 @@ import java.util.Map;
 public class TestProctorConsumerUtils {
 
     @Test
+    public void testParseForcedGroups() {
+        //empty request
+        {
+            final MockHttpServletRequest mockRequest = new MockHttpServletRequest();
+            final Map<String, Integer> forcedGroups = ProctorConsumerUtils.parseForcedGroups(mockRequest);
+            Assert.assertTrue(forcedGroups.isEmpty());
+        }
+        //Test that parameter works
+        {
+            final MockHttpServletRequest mockRequest = new MockHttpServletRequest();
+            mockRequest.addParameter(ProctorConsumerUtils.FORCE_GROUPS_PARAMETER, "testing2");
+            final Map<String, Integer> forcedGroups = ProctorConsumerUtils.parseForcedGroups(mockRequest);
+            Assert.assertEquals(1, forcedGroups.size());
+            Assert.assertEquals(2, (int) forcedGroups.get("testing"));
+        }
+        //Test that cookie works
+        {
+            final MockHttpServletRequest mockRequest = new MockHttpServletRequest();
+            final Cookie cookie = new Cookie(ProctorConsumerUtils.FORCE_GROUPS_COOKIE_NAME, "testing3");
+            mockRequest.setCookies(cookie);
+            final Map<String, Integer> forcedGroups = ProctorConsumerUtils.parseForcedGroups(mockRequest);
+            Assert.assertEquals(1, forcedGroups.size());
+            Assert.assertEquals(3, (int) forcedGroups.get("testing"));
+        }
+        //empty parameter
+        {
+            final MockHttpServletRequest mockRequest = new MockHttpServletRequest();
+            mockRequest.addParameter(ProctorConsumerUtils.FORCE_GROUPS_PARAMETER, "");
+            final Map<String, Integer> forcedGroups = ProctorConsumerUtils.parseForcedGroups(mockRequest);
+            Assert.assertTrue(forcedGroups.isEmpty());
+        }
+    }
+
+
+    @Test
     public void testGetForceGroupsStringFromRequest() {
         //Test that parameter works
         {
@@ -39,11 +74,11 @@ public class TestProctorConsumerUtils {
             final String forceGroups = ProctorConsumerUtils.getForceGroupsStringFromRequest(mockRequest);
             Assert.assertEquals("testing1", forceGroups);
         }
-        //Test empty param, empty cookie
+        //Test missing param, missing cookie
         {
             final MockHttpServletRequest mockRequest = new MockHttpServletRequest();
             final String forceGroups = ProctorConsumerUtils.getForceGroupsStringFromRequest(mockRequest);
-            Assert.assertNull(forceGroups);
+            Assert.assertEquals("", forceGroups);
         }
         //Test empty param, some cookies
         {
@@ -52,12 +87,17 @@ public class TestProctorConsumerUtils {
             final Cookie anotherJunkCookie = new Cookie("what", "yeah");
             mockRequest.setCookies(junkCookie, anotherJunkCookie);
             final String forceGroups = ProctorConsumerUtils.getForceGroupsStringFromRequest(mockRequest);
-            Assert.assertNull(forceGroups);
+            Assert.assertEquals("", forceGroups);
         }
     }
 
     @Test
     public void testParseForceGroupsList() {
+        //Test null string
+        {
+            final Map<String, Integer> forcedGroups = ProctorConsumerUtils.parseForceGroupsList(null);
+            Assert.assertTrue(forcedGroups.isEmpty());
+        }
         //Test empty string
         {
             final Map<String, Integer> forcedGroups = ProctorConsumerUtils.parseForceGroupsList("");
@@ -80,6 +120,14 @@ public class TestProctorConsumerUtils {
             Assert.assertEquals(0, (int) forcedGroups.get("someothertst"));
             Assert.assertEquals(2, (int) forcedGroups.get("notanothertst"));
         }
+        //Test multiple, duplicate groups, last one wins
+        {
+            final Map<String, Integer> forcedGroups = ProctorConsumerUtils.parseForceGroupsList("testA1, testA2, testB2");
+            Assert.assertEquals(2, forcedGroups.size());
+            Assert.assertEquals(2, (int) forcedGroups.get("testA"));
+            Assert.assertEquals(2, (int) forcedGroups.get("testB"));
+        }
+
         //Test multiple groups with some invalid stuff
         {
             final Map<String, Integer> forcedGroups = ProctorConsumerUtils.parseForceGroupsList("somerandomtst1, someothertst0, notanothertst2,asdf;alksdfjzvc");

@@ -2,10 +2,12 @@ package com.indeed.proctor.store;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
-import com.indeed.util.varexport.Export;
 import com.indeed.proctor.common.Serializers;
+import com.indeed.util.varexport.Export;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.pool2.ObjectPool;
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -17,12 +19,9 @@ import org.tmatesoft.svn.core.SVNLogEntry;
 import org.tmatesoft.svn.core.SVNNodeKind;
 import org.tmatesoft.svn.core.SVNRevisionProperty;
 import org.tmatesoft.svn.core.SVNURL;
-import org.tmatesoft.svn.core.auth.BasicAuthenticationManager;
 import org.tmatesoft.svn.core.internal.io.dav.DAVRepositoryFactory;
 import org.tmatesoft.svn.core.internal.io.fs.FSRepositoryFactory;
-import org.tmatesoft.svn.core.io.ISVNSession;
 import org.tmatesoft.svn.core.io.SVNRepository;
-import org.tmatesoft.svn.core.io.SVNRepositoryFactory;
 import org.tmatesoft.svn.core.wc.SVNClientManager;
 import org.tmatesoft.svn.core.wc.SVNLogClient;
 import org.tmatesoft.svn.core.wc.SVNRevision;
@@ -49,9 +48,7 @@ public class SvnPersisterCoreImpl implements SvnPersisterCore, Closeable {
 
     private final SVNURL svnUrl;
 
-    private final SVNClientManager clientManager;
-    private final SVNRepository repo;
-
+    private final ObjectPool<SVNClientManager> clientManagerPool;
 
     // A flag indicating if the WorkspaceProvider is managed by this instance and should be shutdown
     private final boolean shutdownProvider;
@@ -92,14 +89,10 @@ public class SvnPersisterCoreImpl implements SvnPersisterCore, Closeable {
             this.svnUrl = url;
             if (isFileSystemRepo) {
                 FSRepositoryFactory.setup();
-                repo = FSRepositoryFactory.create(url, ISVNSession.KEEP_ALIVE);
-                clientManager = SVNClientManager.newInstance();
+                clientManagerPool = SvnObjectPools.clientManagerPool();
             } else {
                 DAVRepositoryFactory.setup();
-                repo = SVNRepositoryFactory.create(url, ISVNSession.KEEP_ALIVE);
-                final BasicAuthenticationManager authManager = new BasicAuthenticationManager(username, password);
-                repo.setAuthenticationManager(authManager);
-                clientManager = SVNClientManager.newInstance(null, authManager);
+                clientManagerPool = SvnObjectPools.clientManagerPoolWithAuth(username, password);
             }
         } catch (final SVNException e) {
             throw new RuntimeException("Unable to connect to SVN repo at " + svnPath, e);
@@ -117,73 +110,79 @@ public class SvnPersisterCoreImpl implements SvnPersisterCore, Closeable {
     @Override
     public TestVersionResult determineVersions(final String fetchRevision) throws StoreException.ReadException {
         checkShutdownState();
-        try {
-            final String testDefPath = FileBasedProctorStore.TEST_DEFINITIONS_DIRECTORY;
-            /*
-            final SVNDirEntry info = repo.info(testDefPath, 2);
-            if (info == null) {
-                LOGGER.warn("No test matrix found in " + testDefPath + " under " + svnPath);
-                return null;
-            }
-            */
-            final Long revision = fetchRevision.length() > 0 ? parseRevisionOrDie(fetchRevision) : Long.valueOf(-1);
-            final SVNRevision svnRevision = revision.longValue() > 0 ? SVNRevision.create(revision.longValue()) : SVNRevision.HEAD;
-            final SVNLogClient logClient = clientManager.getLogClient();
-            final FilterableSVNDirEntryHandler handler = new FilterableSVNDirEntryHandler();
-            final SVNURL url = this.svnUrl.appendPath(testDefPath, false);
-            logClient.doList(url,
-                             svnRevision,
-                             svnRevision,
-                             /* fetchlocks */false,
-                             SVNDepth.IMMEDIATES,
-                             SVNDirEntry.DIRENT_KIND | SVNDirEntry.DIRENT_CREATED_REVISION,
-                             handler);
 
-
-            final SVNDirEntry logEntry = handler.getParent();
-
-            final List<TestVersionResult.Test> tests = Lists.newArrayListWithExpectedSize(handler.getChildren().size());
-            for (final SVNDirEntry testDefFile : handler.getChildren()) {
-                if (testDefFile.getKind() != SVNNodeKind.DIR) {
-                    LOGGER.warn(String.format("svn kind (%s) is not SVNNodeKind.DIR, skipping %s", testDefFile.getKind(), testDefFile.getURL()));
-                    continue;
-                }
-                final String testName = testDefFile.getName();
-                final long testRevision;
-
+        return doReadWithClientAndRepository(new SvnOperation<TestVersionResult>() {
+            @Override
+            public TestVersionResult execute(final SVNRepository repo, final SVNClientManager clientManager) throws Exception {
+                final String testDefPath = FileBasedProctorStore.TEST_DEFINITIONS_DIRECTORY;
                 /*
-                    When a svn directory gets copied using svn cp source-dir destination-dir, the revision
-                    returned by svn list --verbose directory is different from that of svn log directory/sub-dir
-                    The revision returned by svn list is the revision of the on the source-dir instead of the destination-dir
-                    The code below checks to see if the directory at the provided revision exists, if it does it will use this revision.
-                    If the directory does does not exist, try and identify the correct revision using svn log.
-                 */
-                final SVNLogEntry log = getMostRecentLogEntry(testDefPath + "/" + testDefFile.getRelativePath(), svnRevision);
-                if (log != null && log.getRevision() != testDefFile.getRevision()) {
-                    // The difference in the log.revision and the list.revision can occur during an ( svn cp )
-                    if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("svn log r" + log.getRevision() + " is different than svn list r" + testDefFile.getRevision() + " for " + testDefFile.getURL());
+                final SVNDirEntry info = repo.info(testDefPath, 2);
+                if (info == null) {
+                    LOGGER.warn("No test matrix found in " + testDefPath + " under " + svnPath);
+                    return null;
+                }
+                */
+                final Long revision = fetchRevision.length() > 0 ? parseRevisionOrDie(fetchRevision) : Long.valueOf(-1);
+                final SVNRevision svnRevision = revision.longValue() > 0 ? SVNRevision.create(revision.longValue()) : SVNRevision.HEAD;
+                final SVNLogClient logClient = clientManager.getLogClient();
+                final FilterableSVNDirEntryHandler handler = new FilterableSVNDirEntryHandler();
+                final SVNURL url = SvnPersisterCoreImpl.this.svnUrl.appendPath(testDefPath, false);
+                logClient.doList(url,
+                                 svnRevision,
+                                 svnRevision,
+                                 /* fetchlocks */false,
+                                 SVNDepth.IMMEDIATES,
+                                 SVNDirEntry.DIRENT_KIND | SVNDirEntry.DIRENT_CREATED_REVISION,
+                                 handler);
+
+
+                final SVNDirEntry logEntry = handler.getParent();
+
+                final List<TestVersionResult.Test> tests = Lists.newArrayListWithExpectedSize(handler.getChildren().size());
+                for (final SVNDirEntry testDefFile : handler.getChildren()) {
+                    if (testDefFile.getKind() != SVNNodeKind.DIR) {
+                        LOGGER.warn(String.format("svn kind (%s) is not SVNNodeKind.DIR, skipping %s", testDefFile.getKind(), testDefFile.getURL()));
+                        continue;
                     }
-                    testRevision = log.getRevision();
-                } else {
-                    testRevision = testDefFile.getRevision();
+                    final String testName = testDefFile.getName();
+                    final long testRevision;
+
+                    /*
+                        When a svn directory gets copied using svn cp source-dir destination-dir, the revision
+                        returned by svn list --verbose directory is different from that of svn log directory/sub-dir
+                        The revision returned by svn list is the revision of the on the source-dir instead of the destination-dir
+                        The code below checks to see if the directory at the provided revision exists, if it does it will use this revision.
+                        If the directory does does not exist, try and identify the correct revision using svn log.
+                     */
+                    final SVNLogEntry log = getMostRecentLogEntry(clientManager, testDefPath + "/" + testDefFile.getRelativePath(), svnRevision);
+                    if (log != null && log.getRevision() != testDefFile.getRevision()) {
+                        // The difference in the log.revision and the list.revision can occur during an ( svn cp )
+                        if (LOGGER.isDebugEnabled()) {
+                            LOGGER.debug("svn log r" + log.getRevision() + " is different than svn list r" + testDefFile.getRevision() + " for " + testDefFile.getURL());
+                        }
+                        testRevision = log.getRevision();
+                    } else {
+                        testRevision = testDefFile.getRevision();
+                    }
+
+                    tests.add(new TestVersionResult.Test(testName, String.valueOf(testRevision)));
                 }
 
-                tests.add(new TestVersionResult.Test(testName, String.valueOf(testRevision)));
+                final String matrixRevision = String.valueOf(logEntry.getRevision());
+                return new TestVersionResult(
+                    tests,
+                    logEntry.getDate(),
+                    logEntry.getAuthor(),
+                    matrixRevision,
+                    logEntry.getCommitMessage()
+                );
             }
 
-            final String matrixRevision = String.valueOf(logEntry.getRevision());
-            return new TestVersionResult(
-                tests,
-                logEntry.getDate(),
-                logEntry.getAuthor(),
-                matrixRevision,
-                logEntry.getCommitMessage()
-            );
-
-        } catch (final SVNException e) {
-            throw new StoreException.ReadException("Unable to read from SVN", e);
-        }
+            @Override
+            public StoreException handleException(final Exception e) throws StoreException {
+                throw new StoreException.ReadException("Unable to read from SVN", e);
+            }
+        });
     }
 
     /**
@@ -195,7 +194,7 @@ public class SvnPersisterCoreImpl implements SvnPersisterCore, Closeable {
      * @return
      * @throws SVNException
      */
-    private SVNLogEntry getMostRecentLogEntry(final String path, final SVNRevision startRevision) throws SVNException {
+    private SVNLogEntry getMostRecentLogEntry(final SVNClientManager clientManager, final String path, final SVNRevision startRevision) throws SVNException {
         final String[] targetPaths = {path};
 
         final SVNLogClient logClient = clientManager.getLogClient();
@@ -205,14 +204,14 @@ public class SvnPersisterCoreImpl implements SvnPersisterCore, Closeable {
         // In order to get history is "descending" order, the startRevision should be the one closer to HEAD
         // The path@head could be deleted - must use 'pegRevision' to get history at a deleted path
         logClient.doLog(svnUrl, targetPaths,
-                        /* pegRevision */ startRevision,
-                        /* startRevision */ startRevision,
-                        /* endRevision */ SVNRevision.create(1),
-                        /* stopOnCopy */ false,
-                        /* discoverChangedPaths */ false,
-                        /* includeMergedRevisions */ false,
-                        limit,
-                        new String[]{SVNRevisionProperty.AUTHOR}, handler);
+                    /* pegRevision */ startRevision,
+                    /* startRevision */ startRevision,
+                    /* endRevision */ SVNRevision.create(1),
+                    /* stopOnCopy */ false,
+                    /* discoverChangedPaths */ false,
+                    /* includeMergedRevisions */ false,
+                    limit,
+                    new String[]{SVNRevisionProperty.AUTHOR}, handler);
         if (handler.getLogEntries().isEmpty()) {
             return null;
         } else {
@@ -225,30 +224,35 @@ public class SvnPersisterCoreImpl implements SvnPersisterCore, Closeable {
     public <C> C getFileContents(final Class<C> c, final String[] path_parts, final C defaultValue, final String version) throws StoreException.ReadException, JsonProcessingException {
         checkShutdownState();
         final String path = Joiner.on("/").join(path_parts);
-        final Long revision = parseRevisionOrDie(version);
-        try {
-            // use raw repo to check if the path exists
-            final SVNNodeKind nodeType = repo.checkPath(path, revision);
-            if (SVNNodeKind.NONE.equals(nodeType)) {
-                LOGGER.warn(repo.getLocation() + "/" + path + " @r" + revision + " is SVNNodeKind.NONE returning " + defaultValue);
-                return defaultValue;
-            }
-            final SVNWCClient client = clientManager.getWCClient();
-            final SVNURL url = svnUrl.appendPath(path, true);
-            final SVNRevision svnRevision = SVNRevision.create(revision);
+        return doReadWithClientAndRepository(new SvnOperation<C>() {
+            @Override
+            public C execute(final SVNRepository repo, final SVNClientManager clientManager) throws Exception {
+                final Long revision = parseRevisionOrDie(version);
+                // use raw repo to check if the path exists
+                final SVNNodeKind nodeType = repo.checkPath(path, revision);
+                if (SVNNodeKind.NONE.equals(nodeType)) {
+                    LOGGER.warn(repo.getLocation() + "/" + path + " @r" + revision + " is SVNNodeKind.NONE returning " + defaultValue);
+                    return defaultValue;
+                }
 
-            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            client.doGetFileContents(url, svnRevision, svnRevision, /* expandKeywords */ false, baos);
-            final C testDefinition = objectMapper.readValue(baos.toByteArray(), c);
-            try {
-                baos.close();
-            } catch (IOException e) { /* ignore */ }
-            return testDefinition;
-        } catch (SVNException e) {
-            throw new StoreException.ReadException("Error reading " + path + " from svn", e);
-        } catch (IOException e) {
-            throw new StoreException.ReadException("Error reading " + path + " from svn", e);
-        }
+                final SVNWCClient client = clientManager.getWCClient();
+                final SVNURL url = svnUrl.appendPath(path, true);
+                final SVNRevision svnRevision = SVNRevision.create(revision);
+
+                final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                client.doGetFileContents(url, svnRevision, svnRevision, /* expandKeywords */ false, baos);
+                final C testDefinition = objectMapper.readValue(baos.toByteArray(), c);
+                try {
+                    baos.close();
+                } catch (IOException e) { /* ignore */ }
+                return testDefinition;
+            }
+
+            @Override
+            public StoreException handleException(final Exception e) throws StoreException {
+                throw new StoreException.ReadException("Error reading " + path + " from svn", e);
+            }
+        });
     }
 
     static class SvnRcsClient implements FileBasedProctorStore.RcsClient {
@@ -353,7 +357,7 @@ public class SvnPersisterCoreImpl implements SvnPersisterCore, Closeable {
      * @return
      */
     public SvnDirectoryRefresher createRefresherTask() {
-        return new SvnDirectoryRefresher(shutdown, templateSvnDir, svnUrl, clientManager);
+        return new SvnDirectoryRefresher(shutdown, templateSvnDir, svnUrl, this);
     }
 
     // backwards compatible with Terminable interface
@@ -373,6 +377,7 @@ public class SvnPersisterCoreImpl implements SvnPersisterCore, Closeable {
                 LOGGER.info("[close] workspaceProvider.close()");
                 workspaceProvider.close();
             }
+            clientManagerPool.close();
         }
     }
 
@@ -394,17 +399,40 @@ public class SvnPersisterCoreImpl implements SvnPersisterCore, Closeable {
         }
     }
 
-
-    @Override
-    public SVNRepository getRepo() {
-        checkShutdownState();
-        return repo;
+    private <T> T doReadWithClientAndRepository(final SvnOperation<T> operation) throws StoreException.ReadException {
+        try {
+            return doWithClientAndRepository(operation);
+        } catch (StoreException e) {
+            Throwables.propagateIfInstanceOf(e, StoreException.ReadException.class);
+            throw new StoreException.ReadException(e);
+        }
     }
 
     @Override
-    public SVNClientManager getClientManager() {
+    public <T> T doWithClientAndRepository(final SvnOperation<T> operation) throws StoreException {
         checkShutdownState();
-        return clientManager;
+        SVNClientManager clientManager = null;
+        try {
+            clientManager = clientManagerPool.borrowObject();
+            if (clientManager == null) {
+                throw new StoreException.ReadException("Failed to acquire SVNClientManager");
+            }
+            // do not explicitly close the session because mayReuse=true
+            final SVNRepository repository = clientManager.createRepository(svnUrl, true);
+
+            return operation.execute(repository, clientManager);
+        } catch (Exception e) {
+            Throwables.propagateIfInstanceOf(e, StoreException.class);
+            throw operation.handleException(e);
+        } finally {
+            if (clientManager != null) {
+                try {
+                    clientManagerPool.returnObject(clientManager);
+                } catch (Exception e) {
+                    LOGGER.fatal("Failed to return SVNClientManager", e);
+                }
+            }
+        }
     }
 
     @Override
@@ -421,4 +449,15 @@ public class SvnPersisterCoreImpl implements SvnPersisterCore, Closeable {
     public String getSvnPath() {
         return svnUrl.toString();
     }
+
+    @Export(name = "svn-client-pool-active")
+    public int getClientPoolNumActive() {
+        return clientManagerPool.getNumActive();
+    }
+
+    @Export(name = "svn-client-pool-idle")
+    public int getClientPoolNumIdle() {
+        return clientManagerPool.getNumIdle();
+    }
+
 }

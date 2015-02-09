@@ -1,5 +1,6 @@
 package com.indeed.proctor.common;
 
+import com.indeed.util.core.ReleaseVersion;
 import com.google.common.collect.Lists;
 import org.junit.Assert;
 import org.junit.Before;
@@ -110,5 +111,239 @@ public class TestRuleEvaluator {
         }
     }
 
+    @Test
+    public void testVersionLessThanWildCard() {
+        final String rule = "${version < proctor:version('1.2.x')}";
+        {
+            final Map<String, Object> values = Collections.<String, Object>singletonMap("version", ReleaseVersion.fromString("1.1.0.0"));
+            Assert.assertTrue("1.1 < 1.2.x", ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+        {
+            final Map<String, Object> values = Collections.<String, Object>singletonMap("version", ReleaseVersion.fromString("1.1.9.500"));
+            Assert.assertTrue("1.1.9.500 < 1.2.x", ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+        {
+            final Map<String, Object> values = Collections.<String, Object>singletonMap("version", ReleaseVersion.fromString("1.2.0.1"));
+            Assert.assertFalse("1.2.0.1 !< 1.2.x", ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+        {
+            final Map<String, Object> values = Collections.<String, Object>singletonMap("version", ReleaseVersion.fromString("1.3.0.0"));
+            Assert.assertFalse("1.3 !< 1.2.x", ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+        {
+            final Map<String, Object> values = Collections.<String, Object>singletonMap("version", ReleaseVersion.fromString("2.0.0.0"));
+            Assert.assertFalse("2.0 !< 1.2.x", ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+    }
+
+    @Test
+    public void testVersionLessThan() {
+        final String rule = "${version < proctor:version('1.2.0.0')}";
+        {
+            final Map<String, Object> values = Collections.<String, Object>singletonMap("version", ReleaseVersion.fromString("1.1.0.0"));
+            Assert.assertTrue("1.1 < 1.2", ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+        {
+            final Map<String, Object> values = Collections.<String, Object>singletonMap("version", ReleaseVersion.fromString("1.1.9.500"));
+            Assert.assertTrue("1.1.9.500 < 1.2", ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+        {
+            final Map<String, Object> values = Collections.<String, Object>singletonMap("version", ReleaseVersion.fromString("1.2.0.1"));
+            Assert.assertFalse("1.2.0.1 !< 1.2", ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+        {
+            final Map<String, Object> values = Collections.<String, Object>singletonMap("version", ReleaseVersion.fromString("1.3.0.0"));
+            Assert.assertFalse("1.3 !< 1.2", ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+        {
+            final Map<String, Object> values = Collections.<String, Object>singletonMap("version", ReleaseVersion.fromString("2.0.0.0"));
+            Assert.assertFalse("2.0 !< 1.2", ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+    }
+
+    @Test
+    public void testVersionLessThanEqualWildCard() {
+        final String rule = "${version <= proctor:version('1.2.x')}";
+        {
+            final Map<String, Object> values = Collections.<String, Object>singletonMap("version", ReleaseVersion.fromString("1.2.0.0"));
+            Assert.assertTrue("1.2.0.0 <= 1.2.x", ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+    }
+
+    @Test
+    public void testVersionLessThanEqual() {
+        final String rule = "${version <= proctor:version('1.2.0.0')}";
+        {
+            final Map<String, Object> values = Collections.<String, Object>singletonMap("version", ReleaseVersion.fromString("1.2.0.0"));
+            Assert.assertTrue("1.2.0.0 <= 1.2", ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+    }
+
+    @Test
+    public void testVersionEqualWildCard() {
+        final String rule = "${version == proctor:version('5.4.3.x')}";
+        {
+            final Map<String, Object> values = Collections.<String, Object>singletonMap("version", ReleaseVersion.fromString("5.4.3.0"));
+            Assert.assertTrue("5.4.3.0 == 5.4.3.x", ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+        {
+            final Map<String, Object> values = Collections.<String, Object>singletonMap("version", ReleaseVersion.fromString("5.4.3.200"));
+            Assert.assertTrue("5.4.3.200 == 5.4.3.x", ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+    }
+
+    @Test
+    public void testVersionEqual() {
+        final String rule = "${version == proctor:version('5.4.3.0')}";
+        {
+            final Map<String, Object> values = Collections.<String, Object>singletonMap("version", ReleaseVersion.fromString("5.4.3.0"));
+            Assert.assertTrue("5.4.3.0 == 5.4.3", ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+    }
+
+    @Test
+    public void testVersionGreaterThanWildCard() {
+        final String rule = "${version > proctor:version('1.2.x')}";
+        {
+            final Map<String, Object> values = Collections.<String, Object>singletonMap("version", ReleaseVersion.fromString("1.1.0.0"));
+            Assert.assertFalse("1.1 !> 1.2.x", ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+        {
+            final Map<String, Object> values = Collections.<String, Object>singletonMap("version", ReleaseVersion.fromString("1.1.9.500"));
+            Assert.assertFalse("1.1.9.500 !> 1.2.x", ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+        {
+            // THIS IS THE ONE INTERESTING DIFFERENCE TO NOTE FROM THE 1.2.0.0 COMPARISON
+            final Map<String, Object> values = Collections.<String, Object>singletonMap("version", ReleaseVersion.fromString("1.2.0.1"));
+            Assert.assertFalse("1.2.0.1 !> 1.2.x", ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+        {
+            final Map<String, Object> values = Collections.<String, Object>singletonMap("version", ReleaseVersion.fromString("1.3.0.0"));
+            Assert.assertTrue("1.3 > 1.2.x", ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+        {
+            final Map<String, Object> values = Collections.<String, Object>singletonMap("version", ReleaseVersion.fromString("2.0.0.0"));
+            Assert.assertTrue("2.0 > 1.2.x", ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+    }
+
+    @Test
+    public void testVersionGreaterThan() {
+        final String rule = "${version > proctor:version('1.2.0.0')}";
+        {
+            final Map<String, Object> values = Collections.<String, Object>singletonMap("version", ReleaseVersion.fromString("1.1.0.0"));
+            Assert.assertFalse("1.1 !> 1.2", ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+        {
+            final Map<String, Object> values = Collections.<String, Object>singletonMap("version", ReleaseVersion.fromString("1.1.9.500"));
+            Assert.assertFalse("1.1.9.500 !> 1.2", ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+        {
+            // THIS IS THE ONE INTERESTING DIFFERENCE TO NOTE FROM THE 1.2.+ COMPARISON
+            final Map<String, Object> values = Collections.<String, Object>singletonMap("version", ReleaseVersion.fromString("1.2.0.1"));
+            Assert.assertTrue("1.2.0.1 > 1.2", ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+        {
+            final Map<String, Object> values = Collections.<String, Object>singletonMap("version", ReleaseVersion.fromString("1.3.0.0"));
+            Assert.assertTrue("1.3 > 1.2", ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+        {
+            final Map<String, Object> values = Collections.<String, Object>singletonMap("version", ReleaseVersion.fromString("2.0.0.0"));
+            Assert.assertTrue("2.0 > 1.2", ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+    }
+
+    @Test
+    public void testVersionGreaterThanEqualWildCard() {
+        final String rule = "${version >= proctor:version('1.2.x')}";
+        {
+            final Map<String, Object> values = Collections.<String, Object>singletonMap("version", ReleaseVersion.fromString("1.2.0.0"));
+            Assert.assertTrue("1.2.0.0 >= 1.2.x", ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+        {
+            final Map<String, Object> values = Collections.<String, Object>singletonMap("version", ReleaseVersion.fromString("1.2.0.1"));
+            Assert.assertTrue("1.2.0.1 >= 1.2.x", ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+    }
+
+    @Test
+    public void testVersionGreaterThanEqual() {
+        final String rule = "${version >= proctor:version('1.2.0.0')}";
+        {
+            final Map<String, Object> values = Collections.<String, Object>singletonMap("version", ReleaseVersion.fromString("1.2.0.0"));
+            Assert.assertTrue("1.2.0.0 >= 1.2", ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+        {
+            final Map<String, Object> values = Collections.<String, Object>singletonMap("version", ReleaseVersion.fromString("1.2.0.1"));
+            Assert.assertTrue("1.2.0.1 >= 1.2", ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+    }
+
+    @Test
+    public void testVersionInRangeWildCard() {
+        final String rule = "${proctor:versionInRange(version, '1.2.x', '2.4.0.0')}";
+        {
+            final Map<String, Object> values = Collections.<String, Object>singletonMap("version", ReleaseVersion.fromString("1.2.0.0"));
+            Assert.assertTrue("1.2 in range", ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+        {
+            final Map<String, Object> values = Collections.<String, Object>singletonMap("version", ReleaseVersion.fromString("2.0.0.0"));
+            Assert.assertTrue("2.0 in range", ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+        {
+            final Map<String, Object> values = Collections.<String, Object>singletonMap("version", ReleaseVersion.fromString("2.3.9.1024"));
+            Assert.assertTrue("2.3.9.1024 in range", ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+        {
+            final Map<String, Object> values = Collections.<String, Object>singletonMap("version", ReleaseVersion.fromString("2.4.0.0"));
+            Assert.assertFalse("2.4 not in range", ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+        {
+            final Map<String, Object> values = Collections.<String, Object>singletonMap("version", ReleaseVersion.fromString("2.4.1.0"));
+            Assert.assertFalse("2.4.1 not in range", ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+        {
+            final Map<String, Object> values = Collections.<String, Object>singletonMap("version", ReleaseVersion.fromString("0.9.0.0"));
+            Assert.assertFalse("0.9 not in range", ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+
+        final String badRule = "${proctor:versionInRange(version, '1.2.x', '2.4.x')}";
+        try {
+            final Map<String, Object> values = Collections.<String, Object>singletonMap("version", ReleaseVersion.fromString("0.9.0.0"));
+            ruleEvaluator.evaluateBooleanRule(badRule, values);
+            Assert.fail("wild card should not be allowed as open upper bound");
+        } catch (Exception e) {
+            // expected
+        }
+    }
+
+    @Test
+    public void testVersionInRange() {
+        final String rule = "${proctor:versionInRange(version, '1.2.0.0', '2.4.0.0')}";
+        {
+            final Map<String, Object> values = Collections.<String, Object>singletonMap("version", ReleaseVersion.fromString("1.2.0.0"));
+            Assert.assertTrue("1.2 in range", ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+        {
+            final Map<String, Object> values = Collections.<String, Object>singletonMap("version", ReleaseVersion.fromString("2.0.0.0"));
+            Assert.assertTrue("2.0 in range", ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+        {
+            final Map<String, Object> values = Collections.<String, Object>singletonMap("version", ReleaseVersion.fromString("2.3.9.1024"));
+            Assert.assertTrue("2.3.9.1024 in range", ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+        {
+            final Map<String, Object> values = Collections.<String, Object>singletonMap("version", ReleaseVersion.fromString("2.4.0.0"));
+            Assert.assertFalse("2.4 not in range", ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+        {
+            final Map<String, Object> values = Collections.<String, Object>singletonMap("version", ReleaseVersion.fromString("2.4.1.0"));
+            Assert.assertFalse("2.4.1 not in range", ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+        {
+            final Map<String, Object> values = Collections.<String, Object>singletonMap("version", ReleaseVersion.fromString("0.9.0.0"));
+            Assert.assertFalse("0.9 not in range", ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+    }
 
 }

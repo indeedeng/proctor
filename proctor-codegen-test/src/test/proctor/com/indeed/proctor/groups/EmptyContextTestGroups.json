@@ -96,8 +96,5 @@
         }
     },
     "providedContext": {
-        "loggedIn" : "boolean",
-        "country": "String",
-        "account": "com.indeed.proctor.SampleOuterClass$Account"
     }
 }

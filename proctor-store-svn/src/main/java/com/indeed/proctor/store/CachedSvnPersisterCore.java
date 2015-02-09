@@ -10,8 +10,6 @@ import com.indeed.util.varexport.Export;
 import org.apache.log4j.Logger;
 import org.codehaus.jackson.JsonProcessingException;
 import org.tmatesoft.svn.core.SVNURL;
-import org.tmatesoft.svn.core.io.SVNRepository;
-import org.tmatesoft.svn.core.wc.SVNClientManager;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -51,13 +49,8 @@ public class CachedSvnPersisterCore implements SvnPersisterCore {
     }
 
     @Override
-    public SVNRepository getRepo() {
-        return core.getRepo();
-    }
-
-    @Override
-    public SVNClientManager getClientManager() {
-        return core.getClientManager();
+    public <T> T doWithClientAndRepository(final SvnOperation<T> operation) throws StoreException {
+        return core.doWithClientAndRepository(operation);
     }
 
     @Override

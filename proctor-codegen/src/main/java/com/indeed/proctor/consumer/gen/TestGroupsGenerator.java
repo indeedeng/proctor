@@ -1,7 +1,10 @@
 package com.indeed.proctor.consumer.gen;
 
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Function;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -13,13 +16,12 @@ import com.indeed.proctor.common.TestSpecification;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,24 +34,28 @@ import java.util.TreeSet;
 public class TestGroupsGenerator extends FreeMarkerCodeGenerator {
     private static final ObjectMapper OBJECT_MAPPER = Serializers.lenient();
 
-    public void generate(final String input, final String target, final String packageName, final String groupsClass, final String groupsManagerClass) throws CodeGenException {
+    public void generate(final String input, final String target, final String packageName, final String groupsClass, final String groupsManagerClass, final String contextClass) throws CodeGenException {
         final String templatePath = "/com/indeed/proctor/consumer/ant/";
         final String groupsTemplateName = "groups.ftl";
         final String groupsManagerTemplateName = "groups-manager.ftl";
         final String payloadTemplateName = "payload.ftl";
+        final String contextTemplateName = "context.ftl";
         final String payloadClass = groupsClass + "Payload";
         final Map<String, Object> baseContext = Maps.newHashMap();
         baseContext.put("groupsClassName", groupsClass);
         baseContext.put("groupsManagerClassName", groupsManagerClass);
         baseContext.put("payloadClassName",groupsClass + "Payload");
-        if (groupsClass != null) {
+        if (!Strings.isNullOrEmpty(groupsClass)) {
             generate(input, target, baseContext, packageName, groupsClass, templatePath, groupsTemplateName);
         }
-        if (groupsManagerClass != null) {
+        if (!Strings.isNullOrEmpty(groupsManagerClass)) {
             generate(input, target, baseContext, packageName, groupsManagerClass, templatePath, groupsManagerTemplateName);
         }
-        if (groupsClass != null) {
+        if (!Strings.isNullOrEmpty(groupsClass)) {
             generate(input, target, baseContext, packageName, payloadClass, templatePath, payloadTemplateName);
+        }
+        if (!Strings.isNullOrEmpty(contextClass)) {
+            generate(input, target, baseContext, packageName, contextClass, templatePath, contextTemplateName);
         }
 
     }
@@ -103,6 +109,11 @@ public class TestGroupsGenerator extends FreeMarkerCodeGenerator {
         final File inputFile = new File(input);
         final ProctorSpecification spec = ProctorUtils.readSpecification(inputFile);
 
+        return populateRootMap(spec, baseContext, packageName, className);
+    }
+
+    @VisibleForTesting
+    static Map<String, Object> populateRootMap(final ProctorSpecification spec, final Map<String, Object> baseContext, final String packageName, final String className) {
         final Map<String, Object> rootMap = Maps.newHashMap(baseContext);
 
         final Map<String, TestSpecification> tests = spec.getTests();
@@ -217,6 +228,7 @@ public class TestGroupsGenerator extends FreeMarkerCodeGenerator {
         final String packageName = args[2];
         final String groupsClass = args[3];
         final String groupsManagerClass = args[4];
-        generator.generate(input, target, packageName, groupsClass, groupsManagerClass);
+        final String contextClass = args[5];
+        generator.generate(input, target, packageName, groupsClass, groupsManagerClass, contextClass);
     }
 }

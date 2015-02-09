@@ -1,5 +1,6 @@
 package com.indeed.proctor.common.model;
 
+import com.google.common.collect.Maps;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import com.google.common.base.Joiner;
 
@@ -36,6 +37,25 @@ public class Payload {
     public static final Payload EMPTY_PAYLOAD = new Payload();
 
     public Payload() { /* intentionally empty */ }
+
+    public Payload(@Nonnull final Payload other) {
+        this.doubleValue = other.doubleValue;
+        if (other.doubleArray != null) {
+            this.doubleArray = Arrays.copyOf(other.doubleArray, other.doubleArray.length);
+        }
+        this.longValue = other.longValue;
+        if (other.longArray != null) {
+            this.longArray = Arrays.copyOf(other.longArray, other.longArray.length);
+        }
+        this.stringValue = other.stringValue;
+        if (other.stringArray != null) {
+            this.stringArray = Arrays.copyOf(other.stringArray, other.stringArray.length);
+        }
+        if (other.map != null) {
+            this.map = Maps.newHashMap(other.map);
+        }
+    }
+
 
     @Nullable
     public Double getDoubleValue() {
@@ -277,6 +297,7 @@ public class Payload {
         if (longValue != null ? !longValue.equals(payload.longValue) : payload.longValue != null) return false;
         if (!Arrays.equals(stringArray, payload.stringArray)) return false;
         if (stringValue != null ? !stringValue.equals(payload.stringValue) : payload.stringValue != null) return false;
+        if (map != null ? !map.equals(payload.map) : payload.map != null) return false;
 
         return true;
     }

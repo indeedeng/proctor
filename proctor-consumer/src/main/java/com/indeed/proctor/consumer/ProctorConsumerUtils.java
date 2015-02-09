@@ -57,14 +57,10 @@ public class ProctorConsumerUtils {
     @Nonnull
     public static Map<String, Integer> parseForcedGroups(@Nonnull final HttpServletRequest request) {
         final String forceGroupsList = getForceGroupsStringFromRequest(request);
-        if (forceGroupsList == null) {
-            return Collections.emptyMap();
-        } else {
-            return parseForceGroupsList(forceGroupsList);
-        }
+        return parseForceGroupsList(forceGroupsList);
     }
 
-    @Nullable
+    @Nonnull
     public static String getForceGroupsStringFromRequest(@Nonnull final HttpServletRequest request) {
 
         final String param = request.getParameter(FORCE_GROUPS_PARAMETER);
@@ -74,22 +70,24 @@ public class ProctorConsumerUtils {
 
         final Cookie[] cookies = request.getCookies();
         if (cookies == null) {
-            return null;
+            return "";
         }
 
         for (int i = 0; i < cookies.length; i++) {
             if (FORCE_GROUPS_COOKIE_NAME.equals(cookies[i].getName())) {
                 final String cookieValue = cookies[i].getValue();
-                return cookieValue;
+                return Strings.nullToEmpty(cookieValue);
             }
         }
 
-        return null;
+        return "";
     }
 
     @Nonnull
-    @VisibleForTesting
-    public static Map<String, Integer> parseForceGroupsList(@Nonnull final String payload) {
+    public static Map<String, Integer> parseForceGroupsList(@Nullable final String payload) {
+        if (payload == null) {
+            return Collections.emptyMap();
+        }
         final String[] pieces = payload.split(",+");
         final Map<String, Integer> forcedGroups = Maps.newHashMap();
         for (int i = 0; i < pieces.length; i++) {
@@ -135,6 +133,7 @@ public class ProctorConsumerUtils {
 
         //  be sure to quote cookies because they have characters that are not allowed raw
         final StringBuilder sb = new StringBuilder(10*forceGroups.size());
+        sb.append('"');
         for (final Iterator<Entry<String, Integer>> iterator = forceGroups.entrySet().iterator(); iterator.hasNext(); ) {
             final Entry<String, Integer> next = iterator.next();
             sb.append(next.getKey()).append(next.getValue());
@@ -142,6 +141,7 @@ public class ProctorConsumerUtils {
                 sb.append(',');
             }
         }
+        sb.append('"');
 
         final String contextPath = request.getContextPath();
         final String cookiePath;

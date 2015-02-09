@@ -21,7 +21,7 @@ public abstract class AbstractProctorMojo extends AbstractMojo {
     abstract File getSpecificationOutput();
     private void processFile(final File file, final String packageName, final String className) throws CodeGenException {
         getLog().info(String.format("Building resources for %s", packageName));
-        gen.generate(file.getPath(), getOutputDirectory().getPath(), packageName, className, className + "Manager");
+        gen.generate(file.getPath(), getOutputDirectory().getPath(), packageName, className, className + "Manager", className + "Context");
     }
     /*
      * traverse through main specification folder to find large proctor specifications (determined if they have the test

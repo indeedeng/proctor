@@ -1,6 +1,8 @@
 package com.indeed.proctor.consumer.spring;
 
+import com.google.common.base.Supplier;
 import com.indeed.proctor.common.AbstractProctorLoader;
+import com.indeed.proctor.common.Proctor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.HttpRequestHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,7 +33,7 @@ public abstract class AbstractShowTestGroupsController implements ShowGroupsHand
     private final ShowRandomGroupsHandler randomGroupsHandler;
     private final ShowTestMatrixHandler showTestMatrixHandler;
 
-    public AbstractShowTestGroupsController(final AbstractProctorLoader proctorSupplier) {
+    public AbstractShowTestGroupsController(final Supplier<Proctor> proctorSupplier) {
         this.showGroupsHandler = new ShowGroupsHandler(this);
         this.randomGroupsHandler = new ShowRandomGroupsHandler(proctorSupplier);
         this.showTestMatrixHandler = new ShowTestMatrixHandler(proctorSupplier);

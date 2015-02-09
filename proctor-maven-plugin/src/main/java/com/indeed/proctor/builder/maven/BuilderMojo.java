@@ -31,6 +31,9 @@ public class BuilderMojo extends AbstractMojo {
             return;
         }
         try {
+            // try to make sure path exists
+            outputFile.getParentFile().mkdirs();
+
             Writer w = new FileWriter(outputFile);
             new LocalProctorBuilder(topDirectory, w, "".equals(author) ? author : null, version).execute();
             w.close();

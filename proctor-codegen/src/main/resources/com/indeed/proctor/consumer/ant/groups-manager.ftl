@@ -41,7 +41,7 @@ public class ${mainClassName} extends AbstractGroupsManager {
      */
     public ProctorResult determineBuckets(final TestType testType, final String identifier<#if contextArguments?has_content>,<#else>) {</#if>
 <#list contextArguments?keys as contextArgumentName>
-                                    final ${contextArguments[contextArgumentName]} ${contextArgumentName}<#if contextArgumentName_has_next>,<#else>) {</#if>
+                                    final ${contextArguments[contextArgumentName]?replace('$', '.')} ${contextArgumentName}<#if contextArgumentName_has_next>,<#else>) {</#if>
 </#list>
         <#if contextArguments?has_content>
         final Map<String, Object> context = new HashMap<String, Object>();
@@ -61,7 +61,7 @@ public class ${mainClassName} extends AbstractGroupsManager {
      */
     public ProctorResult determineBuckets(final Identifiers identifiers<#if contextArguments?has_content>,<#else>) {</#if>
 <#list contextArguments?keys as contextArgumentName>
-                                    final ${contextArguments[contextArgumentName]} ${contextArgumentName}<#if contextArgumentName_has_next>,<#else>) {</#if>
+                                    final ${contextArguments[contextArgumentName]?replace('$', '.')} ${contextArgumentName}<#if contextArgumentName_has_next>,<#else>) {</#if>
 </#list>
         <#if contextArguments?has_content>
         final Map<String, Object> context = new HashMap<String, Object>();
@@ -82,7 +82,7 @@ public class ${mainClassName} extends AbstractGroupsManager {
     public ProctorResult determineBuckets(final Identifiers identifiers,
                                             final Map<String, Integer> forcedGroups<#if contextArguments?has_content>,<#else>) {</#if>
 <#list contextArguments?keys as contextArgumentName>
-                                    final ${contextArguments[contextArgumentName]} ${contextArgumentName}<#if contextArgumentName_has_next>,<#else>) {</#if>
+                                    final ${contextArguments[contextArgumentName]?replace('$', '.')} ${contextArgumentName}<#if contextArgumentName_has_next>,<#else>) {</#if>
 </#list>
         <#if contextArguments?has_content>
         final Map<String, Object> context = new HashMap<String, Object>();
@@ -101,7 +101,7 @@ public class ${mainClassName} extends AbstractGroupsManager {
     public ProctorResult determineBuckets(final HttpServletRequest request, final HttpServletResponse response,
                                             final TestType testType, final String identifier, final boolean allowForcedGroups<#if contextArguments?has_content>,<#else>) {</#if>
 <#list contextArguments?keys as contextArgumentName>
-                                            final ${contextArguments[contextArgumentName]} ${contextArgumentName}<#if contextArgumentName_has_next>,<#else>) {</#if>
+                                            final ${contextArguments[contextArgumentName]?replace('$', '.')} ${contextArgumentName}<#if contextArgumentName_has_next>,<#else>) {</#if>
 </#list>
         final Identifiers identifiers = new Identifiers(testType, identifier);
         return determineBuckets(request, response, identifiers, allowForcedGroups
@@ -114,7 +114,7 @@ public class ${mainClassName} extends AbstractGroupsManager {
     public ProctorResult determineBuckets(final HttpServletRequest request, final HttpServletResponse response,
                                             final Identifiers identifiers, final boolean allowForcedGroups<#if contextArguments?has_content>,<#else>) {</#if>
 <#list contextArguments?keys as contextArgumentName>
-                                            final ${contextArguments[contextArgumentName]} ${contextArgumentName}<#if contextArgumentName_has_next>,<#else>) {</#if>
+                                            final ${contextArguments[contextArgumentName]?replace('$', '.')} ${contextArgumentName}<#if contextArgumentName_has_next>,<#else>) {</#if>
 </#list>
         <#if contextArguments?has_content>
         final Map<String, Object> context = new HashMap<String, Object>();
