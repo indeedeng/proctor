@@ -776,21 +776,22 @@ public abstract class ProctorUtils {
      * Generates a usable test specification for a given test definition
      * Uses the first bucket as the fallback value
      */
-    public static TestSpecification generateSpecification(TestDefinition testDefinition) {
+    public static TestSpecification generateSpecification(@Nonnull final TestDefinition testDefinition) {
         final TestSpecification testSpecification = new TestSpecification();
         final Map<String,Integer> buckets = Maps.newHashMap();
         final List<TestBucket> testDefinitionBuckets = testDefinition.getBuckets();
+        int fallbackValue = -1;
         if(testDefinitionBuckets.size() > 0) {
             final TestBucket firstBucket = testDefinitionBuckets.get(0);
-            testSpecification.setFallbackValue(firstBucket.getValue());
+            fallbackValue = firstBucket.getValue();
 
             final PayloadSpecification payloadSpecification = new PayloadSpecification();
             if(firstBucket.getPayload() != null && !firstBucket.getPayload().equals(Payload.EMPTY_PAYLOAD)) {
-                final String payloadSpecificationType = firstBucket.getPayload().fetchType();
-                payloadSpecification.setType(payloadSpecificationType);
-                if ("map".equals(payloadSpecificationType)) {
+                final PayloadType payloadType = PayloadType.payloadTypeForName(firstBucket.getPayload().fetchType());
+                payloadSpecification.setType(payloadType.payloadTypeName);
+                if (payloadType == PayloadType.MAP) {
                     final Map<String, String> payloadSpecificationSchema = new HashMap<String, String>();
-                    for (Map.Entry<String, Object> entry : testDefinitionBuckets.get(0).getPayload().getMap().entrySet()) {
+                    for (Map.Entry<String, Object> entry : firstBucket.getPayload().getMap().entrySet()) {
                         payloadSpecificationSchema.put(entry.getKey(), PayloadType.payloadTypeForValue(entry.getValue()).payloadTypeName);
                     }
                     payloadSpecification.setSchema(payloadSpecificationSchema);
@@ -799,11 +800,14 @@ public abstract class ProctorUtils {
             }
 
             for (int i = 0; i < testDefinitionBuckets.size(); i++) {
-                buckets.put(testDefinitionBuckets.get(i).getName(), testDefinitionBuckets.get(i).getValue());
+                final TestBucket bucket = testDefinitionBuckets.get(i);
+                buckets.put(bucket.getName(), bucket.getValue());
+                fallbackValue = Math.min(fallbackValue, bucket.getValue()); // choose the smallest bucket value as the fallback value
             }
         }
         testSpecification.setBuckets(buckets);
         testSpecification.setDescription(testDefinition.getDescription());
+        testSpecification.setFallbackValue(fallbackValue);
         return testSpecification;
     }
 

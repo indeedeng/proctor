@@ -85,13 +85,14 @@ public enum PayloadType {
     }
 
     /**
-     * Flexible method for determining payload type from a value - helpful for determining map payload types
+     * Flexible method for determining payload type from a value - helpful for
+     * determining the schema of map payload types
      *
      */
     @Nonnull
-    public static PayloadType payloadTypeForValue(@Nonnull final Object payloadValue) throws IllegalArgumentException{
+    public static PayloadType payloadTypeForValue(@Nonnull final Object payloadValue) throws IllegalArgumentException {
         if(payloadValue instanceof List) {
-            if(((ArrayList)payloadValue).size() > 0) {
+            if(((List)payloadValue).size() > 0) {
                 final Object firstValue = ((List) payloadValue).get(0);
                 if (firstValue instanceof Long || firstValue instanceof Integer) {
                     return PayloadType.LONG_ARRAY;
@@ -100,8 +101,9 @@ public enum PayloadType {
                 } else if (firstValue instanceof String) {
                     return PayloadType.STRING_ARRAY;
                 }
+                throw new IllegalArgumentException("Cannot determine array-type from " + firstValue);
             } else {
-                throw new IllegalArgumentException("No items in payload ArrayList, cannot determine type");
+                throw new IllegalArgumentException("No items in payload List, cannot determine type");
             }
         } else if (payloadValue instanceof Long || payloadValue instanceof Integer) {
             return PayloadType.LONG_VALUE;
@@ -118,7 +120,7 @@ public enum PayloadType {
         } else if (payloadValue instanceof Map) {
             return PayloadType.MAP;
         }
-        throw new IllegalArgumentException("Payload value does not correspond to a payload type");
+        throw new IllegalArgumentException("Payload value " + payloadValue.getClass().getSimpleName() + " : " + payloadValue + "  does not correspond to a payload type");
     }
 
     /**

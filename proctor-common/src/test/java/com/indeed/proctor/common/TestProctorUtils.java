@@ -1394,6 +1394,136 @@ public class TestProctorUtils {
         }
     }
 
+    @Test
+    public void testGenerateSpecificationFromEmptyDefinition() {
+        final String description = "this is an empty test with no buckets";
+        final TestDefinition empty = new TestDefinition(
+            "empty",
+            "",
+            TestType.ANONYMOUS_USER,
+            "salty",
+            Collections.<TestBucket>emptyList(),
+            Collections.<Allocation>emptyList(),
+            Collections.<String, Object>emptyMap(),
+            Collections.<String, Object>emptyMap(),
+            description
+        );
+        final TestSpecification specification = ProctorUtils.generateSpecification(empty);
+        assertEquals(description, specification.getDescription());
+        assertEquals(0, specification.getBuckets().size());
+        assertEquals(-1, specification.getFallbackValue());
+        assertNull(specification.getPayload());
+    }
+
+    @Test
+    public void testGenerateSpecificationWithBuckets() {
+        final String description = "this test has 3 buckets";
+        final TestBucket inactiveBucket = new TestBucket("inactive", -3, "status quo");
+        final TestBucket control = new TestBucket("control", 0, "control bucket");
+        final TestBucket test = new TestBucket("test", 1, "test bucket");
+        final TestDefinition empty = new TestDefinition(
+            "buckets",
+            "",
+            TestType.ANONYMOUS_USER,
+            "salty",
+            Lists.newArrayList(inactiveBucket, control, test),
+            Collections.<Allocation>emptyList(),
+            Collections.<String, Object>emptyMap(),
+            Collections.<String, Object>emptyMap(),
+            description
+        );
+        final TestSpecification specification = ProctorUtils.generateSpecification(empty);
+        assertEquals(description, specification.getDescription());
+        assertEquals(3, specification.getBuckets().size());
+        assertEquals(inactiveBucket.getValue(), specification.getFallbackValue());
+        assertNull(specification.getPayload());
+        final Map<String, Integer> buckets = specification.getBuckets();
+        assertEquals(inactiveBucket.getValue(), (int) buckets.get(inactiveBucket.getName()));
+        assertEquals(control.getValue(), (int) buckets.get(control.getName()));
+        assertEquals(test.getValue(), (int) buckets.get(test.getName()));
+    }
+
+    @Test
+    public void testGenerateSpecificationPayload() {
+        final String description = "this test has a payload buckets";
+        final TestBucket inactiveBucket = new TestBucket("inactive", 0, "status quo");
+        final Payload inactivePayload = new Payload();
+        inactivePayload.setDoubleArray(new Double[] { 1.4d, 4.5d });
+        inactiveBucket.setPayload(inactivePayload);
+        final TestBucket control = new TestBucket("control", 0, "control bucket");
+        final Payload controlPayload = new Payload();
+        controlPayload.setDoubleArray(new Double[]{0.0, 2.4d});
+        control.setPayload(controlPayload);
+        final TestBucket test = new TestBucket("test", 1, "test bucket");
+        final Payload testPayload = new Payload();
+        testPayload.setDoubleArray(new Double[]{22.22, 33.33});
+        test.setPayload(controlPayload);
+        final TestDefinition empty = new TestDefinition(
+            "buckets",
+            "",
+            TestType.ANONYMOUS_USER,
+            "salty",
+            Lists.newArrayList(inactiveBucket, control, test),
+            Collections.<Allocation>emptyList(),
+            Collections.<String, Object>emptyMap(),
+            Collections.<String, Object>emptyMap(),
+            description
+        );
+        final TestSpecification specification = ProctorUtils.generateSpecification(empty);
+        assertEquals(description, specification.getDescription());
+        assertEquals(3, specification.getBuckets().size());
+        assertEquals(inactiveBucket.getValue(), specification.getFallbackValue());
+        final PayloadSpecification payload = specification.getPayload();
+        assertNotNull(payload);
+        assertEquals(PayloadType.DOUBLE_ARRAY.payloadTypeName, payload.getType());
+        assertNull(payload.getSchema());
+        assertNull(payload.getValidator());
+        final Map<String, Integer> buckets = specification.getBuckets();
+        assertEquals(inactiveBucket.getValue(), (int) buckets.get(inactiveBucket.getName()));
+        assertEquals(control.getValue(), (int) buckets.get(control.getName()));
+        assertEquals(test.getValue(), (int) buckets.get(test.getName()));
+    }
+
+    @Test
+    public void testGenerateSpecificationPayloadMapSchema() {
+        final String description = "this test has a payload buckets";
+        final TestBucket bucket = new TestBucket("inactive", -3, "status quo");
+        final Payload inactivePayload = new Payload();
+        inactivePayload.setMap(ImmutableMap.<String, Object>of(
+            "da", new Double[] { 1.4d, 4.5d },
+            "lv", 5L,
+            "sa", new String[] { "foo", "bar" }
+        ));
+        bucket.setPayload(inactivePayload);
+        final TestDefinition empty = new TestDefinition(
+            "buckets",
+            "",
+            TestType.ANONYMOUS_USER,
+            "salty",
+            Collections.singletonList(bucket),
+            Collections.<Allocation>emptyList(),
+            Collections.<String, Object>emptyMap(),
+            Collections.<String, Object>emptyMap(),
+            description
+        );
+        final TestSpecification specification = ProctorUtils.generateSpecification(empty);
+        assertEquals(description, specification.getDescription());
+        assertEquals(1, specification.getBuckets().size());
+        assertEquals(bucket.getValue(), specification.getFallbackValue());
+        final PayloadSpecification payload = specification.getPayload();
+        assertNotNull(payload);
+        assertEquals(PayloadType.MAP.payloadTypeName, payload.getType());
+        final Map<String, String> schema = payload.getSchema();
+        assertNotNull(schema);
+        assertEquals(3, schema.size());
+        assertEquals(PayloadType.DOUBLE_ARRAY.payloadTypeName, schema.get("da"));
+        assertEquals(PayloadType.STRING_ARRAY.payloadTypeName, schema.get("sa"));
+        assertEquals(PayloadType.LONG_VALUE.payloadTypeName, schema.get("lv"));
+        assertNull(payload.getValidator());
+
+        final Map<String, Integer> buckets = specification.getBuckets();
+        assertEquals(bucket.getValue(), (int) buckets.get(bucket.getName()));
+    }
 
 
     /* Test Helper Methods Below */
