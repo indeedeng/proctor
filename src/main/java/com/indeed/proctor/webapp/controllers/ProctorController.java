@@ -109,6 +109,14 @@ public class ProctorController extends AbstractController {
         model.addAttribute("emptyClients", specificationSource.loadAllSpecifications(determineEnvironmentFromParameter(branch)).keySet().isEmpty());
         return getArtifactForView(model, which, View.MATRIX_LIST);
     }
+    
+    @RequestMapping(value="/matrix/raw", method=RequestMethod.GET)
+    public JsonView viewRawTestMatrix(final String branch, final Model model) {
+        final Environment which = determineEnvironmentFromParameter(branch);
+        final TestMatrixVersion testMatrixVersion = getCurrentMatrix(which);
+        final TestMatrixArtifact testMatrixArtifact = ProctorUtils.convertToConsumableArtifact(testMatrixVersion);
+        return new JsonView(testMatrixArtifact);
+    }
 
     @RequestMapping(value="/usage", method=RequestMethod.GET)
     public String viewMatrixUsage(final Model model) {
