@@ -290,6 +290,7 @@ public class Payload {
 
         Payload payload = (Payload) o;
 
+        if (map != null ? !map.equals(payload.map) : payload.map != null) return false;
         if (!Arrays.equals(doubleArray, payload.doubleArray)) return false;
         if (doubleValue != null ? !doubleValue.equals(payload.doubleValue) : payload.doubleValue != null) return false;
         if (!Arrays.equals(longArray, payload.longArray)) return false;

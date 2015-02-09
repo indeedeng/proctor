@@ -85,6 +85,45 @@ public enum PayloadType {
     }
 
     /**
+     * Flexible method for determining payload type from a value - helpful for
+     * determining the schema of map payload types
+     *
+     */
+    @Nonnull
+    public static PayloadType payloadTypeForValue(@Nonnull final Object payloadValue) throws IllegalArgumentException {
+        if(payloadValue instanceof List) {
+            if(((List)payloadValue).size() > 0) {
+                final Object firstValue = ((List) payloadValue).get(0);
+                if (firstValue instanceof Long || firstValue instanceof Integer) {
+                    return PayloadType.LONG_ARRAY;
+                } else if (firstValue instanceof Double || firstValue instanceof Float) {
+                    return PayloadType.DOUBLE_ARRAY;
+                } else if (firstValue instanceof String) {
+                    return PayloadType.STRING_ARRAY;
+                }
+                throw new IllegalArgumentException("Cannot determine array-type from " + firstValue);
+            } else {
+                throw new IllegalArgumentException("No items in payload List, cannot determine type");
+            }
+        } else if (payloadValue instanceof Long || payloadValue instanceof Integer) {
+            return PayloadType.LONG_VALUE;
+        } else if (payloadValue instanceof Double || payloadValue instanceof Float) {
+            return PayloadType.DOUBLE_VALUE;
+        } else if (payloadValue instanceof String) {
+            return PayloadType.STRING_VALUE;
+        } else if (payloadValue instanceof String[]) {
+            return PayloadType.STRING_ARRAY;
+        } else if (payloadValue instanceof Long[] || payloadValue instanceof Integer[]) {
+            return PayloadType.LONG_ARRAY;
+        } else if (payloadValue instanceof Double[] || payloadValue instanceof Float[]) {
+            return PayloadType.DOUBLE_ARRAY;
+        } else if (payloadValue instanceof Map) {
+            return PayloadType.MAP;
+        }
+        throw new IllegalArgumentException("Payload value " + payloadValue.getClass().getSimpleName() + " : " + payloadValue + "  does not correspond to a payload type");
+    }
+
+    /**
      * For printing useful error messages, the proctor webapp, and for testing.
      */
     @Nonnull

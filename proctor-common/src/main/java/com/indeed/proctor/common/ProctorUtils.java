@@ -103,6 +103,10 @@ public abstract class ProctorUtils {
         return rootNode;
     }
 
+    public static void serializeTestSpecification(Writer writer, final TestSpecification specification) throws IOException {
+        serializeObject(writer, specification);
+    }
+
     private static <T> void serializeObject(Writer writer, final T artifact) throws IOException {
         OBJECT_MAPPER.defaultPrettyPrintingWriter().writeValue(writer, artifact);
     }
@@ -767,6 +771,46 @@ public abstract class ProctorUtils {
         }
         return CharMatcher.WHITESPACE.matchesAllOf(s);
     }
+
+    /**
+     * Generates a usable test specification for a given test definition
+     * Uses the first bucket as the fallback value
+     */
+    public static TestSpecification generateSpecification(@Nonnull final TestDefinition testDefinition) {
+        final TestSpecification testSpecification = new TestSpecification();
+        final Map<String,Integer> buckets = Maps.newHashMap();
+        final List<TestBucket> testDefinitionBuckets = testDefinition.getBuckets();
+        int fallbackValue = -1;
+        if(testDefinitionBuckets.size() > 0) {
+            final TestBucket firstBucket = testDefinitionBuckets.get(0);
+            fallbackValue = firstBucket.getValue();
+
+            final PayloadSpecification payloadSpecification = new PayloadSpecification();
+            if(firstBucket.getPayload() != null && !firstBucket.getPayload().equals(Payload.EMPTY_PAYLOAD)) {
+                final PayloadType payloadType = PayloadType.payloadTypeForName(firstBucket.getPayload().fetchType());
+                payloadSpecification.setType(payloadType.payloadTypeName);
+                if (payloadType == PayloadType.MAP) {
+                    final Map<String, String> payloadSpecificationSchema = new HashMap<String, String>();
+                    for (Map.Entry<String, Object> entry : firstBucket.getPayload().getMap().entrySet()) {
+                        payloadSpecificationSchema.put(entry.getKey(), PayloadType.payloadTypeForValue(entry.getValue()).payloadTypeName);
+                    }
+                    payloadSpecification.setSchema(payloadSpecificationSchema);
+                }
+                testSpecification.setPayload(payloadSpecification);
+            }
+
+            for (int i = 0; i < testDefinitionBuckets.size(); i++) {
+                final TestBucket bucket = testDefinitionBuckets.get(i);
+                buckets.put(bucket.getName(), bucket.getValue());
+                fallbackValue = Math.min(fallbackValue, bucket.getValue()); // choose the smallest bucket value as the fallback value
+            }
+        }
+        testSpecification.setBuckets(buckets);
+        testSpecification.setDescription(testDefinition.getDescription());
+        testSpecification.setFallbackValue(fallbackValue);
+        return testSpecification;
+    }
+
 
     /**
      * Removes the expression braces "${ ... }" surrounding the rule.

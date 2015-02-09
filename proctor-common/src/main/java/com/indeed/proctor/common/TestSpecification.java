@@ -1,12 +1,14 @@
 package com.indeed.proctor.common;
 
 import com.google.common.base.Preconditions;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.Map;
 
+@JsonSerialize(include= JsonSerialize.Inclusion.NON_NULL)
 public class TestSpecification {
     private int fallbackValue = -1;
     @Nonnull

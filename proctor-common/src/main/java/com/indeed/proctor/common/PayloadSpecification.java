@@ -1,5 +1,7 @@
 package com.indeed.proctor.common;
 
+import org.codehaus.jackson.map.annotate.JsonSerialize;
+
 import javax.annotation.Nullable;
 import java.util.Map;
 
@@ -8,6 +10,7 @@ import java.util.Map;
  *
  * @author pwp
  */
+@JsonSerialize(include= JsonSerialize.Inclusion.NON_NULL)
 public class PayloadSpecification {
     @Nullable
     private String type;

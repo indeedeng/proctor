@@ -5,6 +5,7 @@ import com.indeed.proctor.common.model.Payload;
 import com.indeed.proctor.common.PayloadType;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -57,6 +58,58 @@ public class TestPayloadType {
                                   PayloadType.LONG_VALUE, PayloadType.LONG_ARRAY,
                                   PayloadType.STRING_VALUE, PayloadType.STRING_ARRAY,
                                   PayloadType.MAP};
+    }
+
+    @Test
+    public void testPayloadTypeForValueRetrieval_DoubleArrayType() {
+        assertEquals(PayloadType.DOUBLE_ARRAY,PayloadType.payloadTypeForValue(new ArrayList<Double>(){{add(1.1D);}}));
+        assertFalse(PayloadType.DOUBLE_ARRAY.equals(PayloadType.payloadTypeForValue(new ArrayList<Long>(){{add(100L);}})));
+        assertEquals(PayloadType.DOUBLE_ARRAY,PayloadType.payloadTypeForValue(new ArrayList<Float>(){{add(1.2F);}}));
+        assertEquals(PayloadType.DOUBLE_ARRAY,PayloadType.payloadTypeForValue(new Double[]{1.0D, 2.0D}));
+        assertEquals(PayloadType.DOUBLE_ARRAY,PayloadType.payloadTypeForValue(new Float[]{1.0F, 2.0F}));
+        assertFalse(PayloadType.DOUBLE_ARRAY.equals(PayloadType.payloadTypeForValue(new Long[]{100L, 200L})));
+    }
+
+    @Test
+    public void testPayloadTypeForValueRetrieval_LongArrayType() {
+        assertEquals(PayloadType.LONG_ARRAY,PayloadType.payloadTypeForValue(new ArrayList<Long>(){{add(11L);}}));
+        assertEquals(PayloadType.LONG_ARRAY,PayloadType.payloadTypeForValue(new ArrayList<Integer>(){{add(11);}}));
+        assertFalse(PayloadType.LONG_ARRAY.equals(PayloadType.payloadTypeForValue(new ArrayList<Double>(){{add(1.1D);}})));
+        assertEquals(PayloadType.LONG_ARRAY,PayloadType.payloadTypeForValue(new Long[]{100L, 200L}));
+        assertEquals(PayloadType.LONG_ARRAY,PayloadType.payloadTypeForValue(new Integer[]{10, 20}));
+        assertFalse(PayloadType.LONG_ARRAY.equals(PayloadType.payloadTypeForValue(new Double[]{1.0D, 2.0D})));
+    }
+
+    @Test
+    public void testPayloadTypeForValueRetrieval_StringArrayType() {
+        assertEquals(PayloadType.STRING_ARRAY,PayloadType.payloadTypeForValue(new ArrayList<String>(){{add("Ya");}}));
+        assertFalse(PayloadType.STRING_ARRAY.equals(PayloadType.payloadTypeForValue(new ArrayList<Integer>(){{add(100);}})));
+        assertEquals(PayloadType.STRING_ARRAY,PayloadType.payloadTypeForValue(new String[]{"yea", "Ya"}));
+        assertFalse(PayloadType.STRING_ARRAY.equals(PayloadType.payloadTypeForValue(new Float[]{1.0F, 2.0F})));
+    }
+
+    @Test
+    public void testPayloadTypeForValueRetrieval_NonArrayTypes() {
+        assertEquals(PayloadType.MAP,PayloadType.payloadTypeForValue(ImmutableMap.of("string","string")));
+        assertEquals(PayloadType.LONG_VALUE,PayloadType.payloadTypeForValue(100));
+        assertEquals(PayloadType.LONG_VALUE,PayloadType.payloadTypeForValue(100L));
+        assertEquals(PayloadType.DOUBLE_VALUE,PayloadType.payloadTypeForValue(1.1D));
+        assertEquals(PayloadType.DOUBLE_VALUE,PayloadType.payloadTypeForValue(2.1F));
+        assertEquals(PayloadType.STRING_VALUE,PayloadType.payloadTypeForValue("yes"));
+    }
+
+    @Test
+    public void testUnknownPayloadTypeForValue() {
+        try {
+            PayloadType.payloadTypeForValue(new ArrayList());
+        } catch(IllegalArgumentException e) {
+            //expected
+        }
+        try {
+            PayloadType.payloadTypeForValue(PayloadType.DOUBLE_VALUE);
+        } catch(IllegalArgumentException e) {
+            //expected
+        }
     }
 
     @Test
