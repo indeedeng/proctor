@@ -8,6 +8,7 @@
 <%--@elvariable id="testName" type="java.lang.String"--%>
 <%--@elvariable id="testDefinition" type="com.indeed.proctor.common.model.TestDefinition"--%>
 <%--@elvariable id="testDefinitionJson" type="java.lang.String"--%>
+<%--@elvariable id="testSpecificationJson" type="java.lang.String"--%>
 <%--@elvariable id="testDefinitionVersion" type="com.indeed.proctor.store.Revision"--%>
 <%--@elvariable id="testDefinitionHistory" type="java.util.List<com.indeed.proctor.store.Revision>"--%>
 <%--@elvariable id="branch" type="com.indeed.proctor.webapp.db.Environment"--%>
@@ -26,7 +27,8 @@
         <dl class="tabs contained">
           <dd class="active"><a href="#tab-details">Details</a></dd>
           <dd><a href="#tab-history">History</a></dd>
-          <dd><a href="#tab-json">JSON</a></dd>
+          <dd><a href="#tab-definition">Definition</a></dd>
+          <dd><a href="#tab-spec">Specification</a></dd>
           <dd><a href="#tab-usage">Usage</a></dd>
           <dd><a href="#tab-delete">Delete</a></dd>
         </dl>
@@ -38,9 +40,13 @@
             <li id="tab-history">
               <ui:definition-history branch="${branch}" testName="${testName}" testDefinitionHistory="${testDefinitionHistory}" version="${version}"/>
           </li>
-          <li id="tab-json">
+          <li id="tab-definition">
               <!-- TODO use prettified JSON library for code display -->
               <pre class="prettify code json"><c:out value="${testDefinitionJson}" /></pre>
+          </li>
+          <li id="tab-spec">
+              <!-- TODO use prettified JSON library for code display -->
+              <pre class="prettify code json"><c:out value="${testSpecificationJson}" /></pre>
           </li>
           <li id="tab-usage">
             <ui:definition-usage testName="${testName}" devApplications="${devApplications}" qaApplications="${qaApplications}" productionApplications="${productionApplications}"/>

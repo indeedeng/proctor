@@ -979,7 +979,35 @@ public class ProctorTestDefinitionController extends AbstractController {
         }
     }
 
+    @RequestMapping(value= "/{testName}/specification")
+    @ResponseBody
+    public String doSpecificationGet(
+            @PathVariable String testName,
+            @RequestParam(required = false) final String branch
+    ) {
+        final Environment theEnvironment = determineEnvironmentFromParameter(branch);
+        final ProctorStore store = determineStoreFromEnvironment(theEnvironment);
 
+        final TestDefinition definition = getTestDefinition(store, testName);
+        if (definition == null) {
+            LOGGER.info("Unknown test definition : " + testName);
+            // unknown testdefinition
+            throw new NullPointerException("Unknown test definition");
+        }
+        final StringWriter specificationWriter = new StringWriter();
+        try {
+            ProctorUtils.serializeTestSpecification(specificationWriter, ProctorUtils.generateSpecification(definition));
+        } catch (IllegalArgumentException e) {
+            LOGGER.error("Could not generate Test Specification", e);
+        } catch (JsonGenerationException e) {
+            LOGGER.error("Could not generate JSON", e);
+        } catch (JsonMappingException e) {
+            LOGGER.error("Could not generate JSON", e);
+        } catch (IOException e) {
+            LOGGER.error("Could not generate JSON", e);
+        }
+        return specificationWriter.toString();
+    }
 
 
     private CheckMatrixResult checkMatrix(final Environment checkAgainst,
@@ -1220,6 +1248,20 @@ public class ProctorTestDefinitionController extends AbstractController {
             final StringWriter sw = new StringWriter();
             ProctorUtils.serializeTestDefinition(sw, definition);
             model.addAttribute("testDefinitionJson", sw.toString());
+        } catch (JsonGenerationException e) {
+            LOGGER.error("Could not generate JSON", e);
+        } catch (JsonMappingException e) {
+            LOGGER.error("Could not generate JSON", e);
+        } catch (IOException e) {
+            LOGGER.error("Could not generate JSON", e);
+        }
+
+        try {
+            final StringWriter swSpecification = new StringWriter();
+            ProctorUtils.serializeTestSpecification(swSpecification, ProctorUtils.generateSpecification(definition));
+            model.addAttribute("testSpecificationJson", swSpecification.toString());
+        } catch (IllegalArgumentException e) {
+            LOGGER.error("Could not generate Test Specification", e);
         } catch (JsonGenerationException e) {
             LOGGER.error("Could not generate JSON", e);
         } catch (JsonMappingException e) {
