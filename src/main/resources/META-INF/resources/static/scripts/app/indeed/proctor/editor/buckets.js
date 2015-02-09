@@ -286,22 +286,32 @@ indeed.proctor.editor.BucketsEditor.prototype.validPayloadStringForType_ =
 
         // Figure out if what we successfully parsed is of the right type for our current payloadType.
         var typeOf = goog.typeOf(value);
-        if ('longValue' == payloadType && 'number' == typeOf && goog.math.isInt(value)) return true;
-        if ('doubleValue' == payloadType && 'number' == typeOf && goog.math.isFiniteNumber(value)) return true;
-        if ('stringValue' == payloadType && 'string' == typeOf) return true;
-        if ('map' == payloadType && 'object' == typeOf) return true;
-        if ('array' == typeOf) {
-            var valid = true;
+        var valid = false;
+        if ('longValue' == payloadType) {
+            valid = 'number' == typeOf && goog.math.isInt(value);
+        }
+        if ('doubleValue' == payloadType) {
+            valid = 'number' == typeOf && goog.math.isFiniteNumber(value);
+        }
+        if ('stringValue' == payloadType) {
+            valid = 'string' == typeOf;
+        }
+        if ('map' == payloadType ) {
+            valid = 'object' == typeOf;
+        }
+        if ('longArray' == payloadType || 'doubleArray' == payloadType || 'stringArray' == payloadType) {
+            valid = true;
             for (var i = 0; i < value.length; i++) {
                 var elemTypeOf = goog.typeOf(value[i]);
                 valid &= (('longArray' == payloadType && 'number' == elemTypeOf && goog.math.isInt(value[i]))
                         || ('doubleArray' == payloadType && 'number' == elemTypeOf && goog.math.isFiniteNumber(value[i]))
                         || ('stringArray' == payloadType && 'string' == elemTypeOf));
             }
-            if (valid) return true;
         }
-        indeed.foundation.forms.addError(el_payload, 'Payload of the wrong type.  Example: '+this.expectedExample_(payloadType));
-        return false;
+        if (!valid) {
+          indeed.foundation.forms.addError(el_payload, 'Payload of the wrong type.  Example: '+this.expectedExample_(payloadType));
+        }
+        return valid;
     };
 
 /**
