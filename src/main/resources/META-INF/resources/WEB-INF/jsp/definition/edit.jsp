@@ -168,7 +168,7 @@
                 </ui:grid-row>
                 <ui:grid-row>
                     <ui:grid-columns width="three"><label class="right inline">Comment</label></ui:grid-columns>
-                    <ui:grid-columns width="nine"><input placeholder="Description of change" type="text" name="comment" /></ui:grid-columns>
+                    <ui:grid-columns width="nine"><input placeholder="(optional) description of change" type="text" name="comment" /></ui:grid-columns>
                 </ui:grid-row>
                 <proctor:renderEditPageInjectionTemplates position="<%=EditPageRenderer.EditPagePosition.BOTTOM_FORM%>" testName="${testName}" testDefinitionJson="${testDefinitionJson}" isCreate="${isCreate}"/>
                 <div class="ui-form-buttons">
