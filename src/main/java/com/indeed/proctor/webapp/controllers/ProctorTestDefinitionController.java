@@ -1009,8 +1009,7 @@ public class ProctorTestDefinitionController extends AbstractController {
     }
 
     @RequestMapping(value= "/{testName}/specification")
-    @ResponseBody
-    public String doSpecificationGet(
+    public View doSpecificationGet(
             @PathVariable String testName,
             @RequestParam(required = false) final String branch
     ) {
@@ -1023,19 +1022,16 @@ public class ProctorTestDefinitionController extends AbstractController {
             // unknown testdefinition
             throw new NullPointerException("Unknown test definition");
         }
-        final StringWriter specificationWriter = new StringWriter();
+
+        JsonView view;
         try {
-            ProctorUtils.serializeTestSpecification(specificationWriter, ProctorUtils.generateSpecification(definition));
+            final TestSpecification specification = ProctorUtils.generateSpecification(definition);
+            view = new JsonView(specification);
         } catch (IllegalArgumentException e) {
             LOGGER.error("Could not generate Test Specification", e);
-        } catch (JsonGenerationException e) {
-            LOGGER.error("Could not generate JSON", e);
-        } catch (JsonMappingException e) {
-            LOGGER.error("Could not generate JSON", e);
-        } catch (IOException e) {
-            LOGGER.error("Could not generate JSON", e);
+            view = new JsonView(new JsonResponse(e.getMessage(), false, "Could not generate Test Specification"));
         }
-        return specificationWriter.toString();
+        return view;
     }
 
 
