@@ -31,32 +31,19 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 
-public class TestGroupsGenerator extends FreeMarkerCodeGenerator {
+public class TestGroupsJavascriptGenerator extends FreeMarkerCodeGenerator {
     private static final ObjectMapper OBJECT_MAPPER = Serializers.lenient();
 
-    public void generate(final String input, final String target, final String packageName, final String groupsClass, final String groupsManagerClass, final String contextClass) throws CodeGenException {
+    public void generate(final String input, final String target, final String packageName, final String groupsClass, final boolean useClosure) throws CodeGenException {
         final String templatePath = "/com/indeed/proctor/consumer/ant/";
-        final String groupsTemplateName = "groups.ftl";
-        final String groupsManagerTemplateName = "groups-manager.ftl";
-        final String payloadTemplateName = "payload.ftl";
-        final String contextTemplateName = "context.ftl";
-        final String payloadClass = groupsClass + "Payload";
-        final String fileExtension = ".java";
+        final String jsTemplateName = "js-groups.ftl";
+        final String fileExtension = ".js";
         final Map<String, Object> baseContext = Maps.newHashMap();
         baseContext.put("groupsClassName", groupsClass);
-        baseContext.put("groupsManagerClassName", groupsManagerClass);
         baseContext.put("payloadClassName",groupsClass + "Payload");
-        if (!Strings.isNullOrEmpty(groupsClass)) {
-            generate(input, target, baseContext, packageName, groupsClass, templatePath, groupsTemplateName, fileExtension);
-        }
-        if (!Strings.isNullOrEmpty(groupsManagerClass)) {
-            generate(input, target, baseContext, packageName, groupsManagerClass, templatePath, groupsManagerTemplateName, fileExtension);
-        }
-        if (!Strings.isNullOrEmpty(groupsClass)) {
-            generate(input, target, baseContext, packageName, payloadClass, templatePath, payloadTemplateName, fileExtension);
-        }
-        if (!Strings.isNullOrEmpty(contextClass)) {
-            generate(input, target, baseContext, packageName, contextClass, templatePath, contextTemplateName, fileExtension);
+        baseContext.put("useClosure", useClosure);
+        if (!Strings.isNullOrEmpty(packageName)) {
+            generate(input, target, baseContext, packageName, groupsClass, templatePath, jsTemplateName, fileExtension);
         }
 
     }
@@ -64,6 +51,9 @@ public class TestGroupsGenerator extends FreeMarkerCodeGenerator {
      * If a folder of split jsons defining a proctor specification is provided, this method iterates over the folder
      * contents, using the individual TestDefinition jsons and a providedcontext.json to create one large
      * temporary ProctorSpecification json to be used for code generation
+     *
+     * andrewk: I'm not sure if this will work, I don't know what projects use multiple contexts, I haven't tried
+     * to do this.
      */
     public static File makeTotalSpecification(File dir, String targetDir) throws CodeGenException {
         //If no name is provided use the name of the containing folder

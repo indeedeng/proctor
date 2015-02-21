@@ -80,11 +80,11 @@ public abstract class FreeMarkerCodeGenerator {
         return config;
     }
 
-    protected void generate(final String input, final String target, final Map<String, Object> baseContext, final String packageName, final String className, final String templatePath, final String templateName) throws CodeGenException {
+    protected void generate(final String input, final String target, final Map<String, Object> baseContext, final String packageName, final String className, final String templatePath, final String templateName, final String fileExtension) throws CodeGenException {
         final Configuration config = getFreemarkerConfiguration(templatePath);
 
         final Template template = loadTemplate(templateName, templatePath, config);
-        final File fullPath = new File(target + File.separator + packageToPath(packageName) + File.separator + className + ".java");
+        final File fullPath = new File(target + File.separator + packageToPath(packageName) + File.separator + className + fileExtension);
         try {
             fullPath.getParentFile().mkdirs();
             final PrintWriter out = new PrintWriter(fullPath);
