@@ -9,39 +9,40 @@ import org.apache.maven.project.MavenProject;
 
 import java.io.File;
 
-@Mojo(name = "generate-test", defaultPhase = LifecyclePhase.GENERATE_TEST_SOURCES)
-public class ProctorTestMojo extends AbstractProctorMojo {
+@Mojo(name = "generate-js", defaultPhase = LifecyclePhase.GENERATE_SOURCES)
+public class JavascriptProctorMojo extends AbstractJavaProctorMojo {
 
     @Parameter(property = "project", defaultValue = "${project}", required = true)
     private MavenProject project;
 
-    @Parameter(property = "topDirectory", defaultValue = "${basedir}/src/test/proctor", required = true)
+    @Parameter(property = "topDirectory", defaultValue = "${basedir}/src/main/proctor", required = true)
     private File topDirectory;
 
     File getTopDirectory() {
         return topDirectory;
     }
 
-    @Parameter(property = "outputDirectory", defaultValue = "${project.build.directory}/generated-test-sources/proctor", required = true)
-    protected File outputDirectory;
+    @Parameter(property = "outputDirectory", defaultValue = "js/generated-sources/proctor", required = true)
+    private File outputDirectory;
 
     File getOutputDirectory() {
         return outputDirectory;
     }
 
-    @Parameter(property = "specificationOutput", defaultValue = "${project.build.directory}/generated-test-resources/proctor", required = true)
+    @Parameter(property = "specificationOutput", defaultValue = "${project.build.directory}/generated-resources/proctor", required = true)
     private File specificationOutput;
 
     File getSpecificationOutput() {
         return specificationOutput;
     }
 
+    @Override
     public void execute() throws MojoExecutionException {
-        project.addTestCompileSourceRoot(getOutputDirectory().getPath());
-        super.createTotalSpecifications(getTopDirectory(),null);
+        project.addCompileSourceRoot(getOutputDirectory().getPath());
+        super.createTotalSpecifications(getTopDirectory(), null);
         final Resource[] resources = getResources();
         for(final Resource resource : resources) {
-            project.addTestResource(resource);
+            project.addResource(resource);
         }
         super.execute();
     }

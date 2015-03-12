@@ -2,28 +2,26 @@ package com.indeed.proctor.consumer.gen.ant;
 
 import com.google.common.base.Strings;
 import com.indeed.proctor.consumer.gen.CodeGenException;
-import com.indeed.proctor.consumer.gen.TestGroupsGenerator;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.log4j.Logger;
-import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
+import org.apache.tools.ant.BuildException;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
+/**
+ * Ant task for generating Proctor test groups files.
+ *
+ * @author andrewk
+ */
+public abstract class TestGroupsGeneratorTask extends Task {
+    protected static final Logger LOGGER = Logger.getLogger(TestGroupsGeneratorTask.class);
+    protected String input;
+    protected String target;
+    protected String packageName;
+    protected String groupsClass;
+    protected String specificationOutput;
 
-public class TestGroupsGeneratorTask extends Task {
-    private final TestGroupsGenerator gen = new TestGroupsGenerator();
-
-    private String input;
-    private String target;
-    private String packageName;
-    private String groupsClass;
-    private String groupsManagerClass;
-    private String contextClass;
-    private String specificationOutput;
-    private static final Logger LOGGER = Logger.getLogger(TestGroupsGeneratorTask.class);
     public String getInput() {
         return input;
     }
@@ -56,22 +54,6 @@ public class TestGroupsGeneratorTask extends Task {
         this.groupsClass = groupsClass;
     }
 
-    public String getGroupsManagerClass() {
-        return groupsManagerClass;
-    }
-
-    public void setGroupsManagerClass(final String groupsManagerClass) {
-        this.groupsManagerClass = groupsManagerClass;
-    }
-
-    public String getContextClass() {
-        return contextClass;
-    }
-
-    public void setContextClass(final String contextClass) {
-        this.contextClass = contextClass;
-    }
-
     public String getSpecificationOutput() {
         return specificationOutput;
     }
@@ -83,7 +65,7 @@ public class TestGroupsGeneratorTask extends Task {
     /*
      * Generates total specifications from any partial specifications found
      */
-    private void totalSpecificationGenerator(final File dir) throws CodeGenException {
+    protected void totalSpecificationGenerator(final File dir) throws CodeGenException {
         if (dir.equals(null)) {
             throw new CodeGenException("input directory creates null file");
         }
@@ -92,14 +74,14 @@ public class TestGroupsGeneratorTask extends Task {
             //make directory if it doesn't exist
             (new File(specificationOutput.substring(0,specificationOutput.lastIndexOf(File.separator)))).mkdirs();
             final File specificationOutputFile = new File(specificationOutput);
-            final File output = gen.makeTotalSpecification(dir, specificationOutputFile.getParent(), specificationOutputFile.getName());
-            gen.generate(output.getPath(),target,packageName,groupsClass,groupsManagerClass,contextClass);
+            generateTotalSpecification(dir, specificationOutputFile);
         } else {
             throw new CodeGenException("Incorrect amount of providedcontext.json in specified input folder");
         }
     }
 
-    @Override
+    protected abstract void generateTotalSpecification(final File dir, final File specificationOutputFile) throws CodeGenException;
+
     public void execute() throws BuildException {
         //  TODO: validate
         final File inputFile = new File(input);
@@ -119,10 +101,12 @@ public class TestGroupsGeneratorTask extends Task {
             }
         } else {
             try {
-                gen.generate(input, target, packageName, groupsClass, groupsManagerClass, contextClass);
+                generateFile();
             } catch (final CodeGenException ex) {
                 throw new BuildException("Unable to generate code " + ex.toString(), ex);
             }
         }
     }
+
+    protected abstract void generateFile() throws CodeGenException;
 }

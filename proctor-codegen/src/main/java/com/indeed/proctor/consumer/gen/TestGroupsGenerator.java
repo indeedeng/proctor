@@ -1,22 +1,17 @@
 package com.indeed.proctor.consumer.gen;
 
-
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Function;
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.indeed.proctor.common.PayloadType;
 import com.indeed.proctor.common.ProctorSpecification;
 import com.indeed.proctor.common.ProctorUtils;
 import com.indeed.proctor.common.Serializers;
 import com.indeed.proctor.common.TestSpecification;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 
-import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -25,50 +20,32 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-
-public class TestGroupsGenerator extends FreeMarkerCodeGenerator {
+/**
+ * Handles combining multiple proctor specs into one and building a root map for generating a
+ * Proctor test groups file.
+ *
+ * Note: heavily based off of the original TestGroupsJavaGenerator. populateRootMap
+ * may still have some code only needed for Java.
+ *
+ * @author andrewk
+ */
+public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
     private static final ObjectMapper OBJECT_MAPPER = Serializers.lenient();
 
-    public void generate(final String input, final String target, final String packageName, final String groupsClass, final String groupsManagerClass, final String contextClass) throws CodeGenException {
-        final String templatePath = "/com/indeed/proctor/consumer/ant/";
-        final String groupsTemplateName = "groups.ftl";
-        final String groupsManagerTemplateName = "groups-manager.ftl";
-        final String payloadTemplateName = "payload.ftl";
-        final String contextTemplateName = "context.ftl";
-        final String payloadClass = groupsClass + "Payload";
-        final String fileExtension = ".java";
-        final Map<String, Object> baseContext = Maps.newHashMap();
-        baseContext.put("groupsClassName", groupsClass);
-        baseContext.put("groupsManagerClassName", groupsManagerClass);
-        baseContext.put("payloadClassName",groupsClass + "Payload");
-        if (!Strings.isNullOrEmpty(groupsClass)) {
-            generate(input, target, baseContext, packageName, groupsClass, templatePath, groupsTemplateName, fileExtension);
-        }
-        if (!Strings.isNullOrEmpty(groupsManagerClass)) {
-            generate(input, target, baseContext, packageName, groupsManagerClass, templatePath, groupsManagerTemplateName, fileExtension);
-        }
-        if (!Strings.isNullOrEmpty(groupsClass)) {
-            generate(input, target, baseContext, packageName, payloadClass, templatePath, payloadTemplateName, fileExtension);
-        }
-        if (!Strings.isNullOrEmpty(contextClass)) {
-            generate(input, target, baseContext, packageName, contextClass, templatePath, contextTemplateName, fileExtension);
-        }
-
-    }
     /*
-     * If a folder of split jsons defining a proctor specification is provided, this method iterates over the folder
-     * contents, using the individual TestDefinition jsons and a providedcontext.json to create one large
-     * temporary ProctorSpecification json to be used for code generation
-     */
+         * If a folder of split jsons defining a proctor specification is provided, this method iterates over the folder
+         * contents, using the individual TestDefinition jsons and a providedcontext.json to create one large
+         * temporary ProctorSpecification json to be used for code generation
+         */
     public static File makeTotalSpecification(File dir, String targetDir) throws CodeGenException {
         //If no name is provided use the name of the containing folder
         return makeTotalSpecification(dir,targetDir,dir.getPath().substring(dir.getPath().lastIndexOf(File.separator) + 1) + "Groups.json");
     }
+
     public static File makeTotalSpecification(File dir, String targetDir, String name) throws CodeGenException {
         final File[] dirFiles = dir.listFiles();
         Map<String,TestSpecification> testSpec = new LinkedHashMap<String, TestSpecification>();
@@ -114,7 +91,7 @@ public class TestGroupsGenerator extends FreeMarkerCodeGenerator {
     }
 
     @VisibleForTesting
-    static Map<String, Object> populateRootMap(final ProctorSpecification spec, final Map<String, Object> baseContext, final String packageName, final String className) {
+    Map<String, Object> populateRootMap(final ProctorSpecification spec, final Map<String, Object> baseContext, final String packageName, final String className) {
         final Map<String, Object> rootMap = Maps.newHashMap(baseContext);
 
         final Map<String, TestSpecification> tests = spec.getTests();
@@ -127,11 +104,11 @@ public class TestGroupsGenerator extends FreeMarkerCodeGenerator {
             final Set<Map<String, ?>> buckets = Sets.newLinkedHashSet();
 
             final TestSpecification testSpecification = tests.get(testName);
-            final Entry<String, Integer>[] sortedBuckets = testSpecification.getBuckets().entrySet().toArray(new Map.Entry[testSpecification.getBuckets().size()]);
+            final Map.Entry<String, Integer>[] sortedBuckets = testSpecification.getBuckets().entrySet().toArray(new Map.Entry[testSpecification.getBuckets().size()]);
 
-            Arrays.sort(sortedBuckets, new Comparator<Entry<String, Integer>>() {
-                public int compare(final Entry<String, Integer> e0, final Entry<String, Integer> e1) {
-                    if(e0.getValue().intValue() < e1.getValue().intValue()) {
+            Arrays.sort(sortedBuckets, new Comparator<Map.Entry<String, Integer>>() {
+                public int compare(final Map.Entry<String, Integer> e0, final Map.Entry<String, Integer> e1) {
+                    if (e0.getValue().intValue() < e1.getValue().intValue()) {
                         return -1;
                     }
                     return e0.getValue() == e1.getValue() ? 0 : 1;
@@ -139,7 +116,7 @@ public class TestGroupsGenerator extends FreeMarkerCodeGenerator {
             });
 
             boolean foundFallbackValue = false;
-            for (final Entry<String, Integer> bucket : sortedBuckets) {
+            for (final Map.Entry<String, Integer> bucket : sortedBuckets) {
                 final String bucketName = bucket.getKey();
                 final String enumName = toEnumName(bucketName);
 
@@ -197,8 +174,7 @@ public class TestGroupsGenerator extends FreeMarkerCodeGenerator {
                         }
                     }
                 }
-                testDef.put("payloadJavaClass", specifiedPayloadType.javaClassName);
-                testDef.put("payloadAccessorName", specifiedPayloadType.javaAccessorName);
+                addPayloadToTestDef(testDef, specifiedPayloadType);
             }
 
             if (testSpecification.getDescription() != null) {
@@ -218,18 +194,5 @@ public class TestGroupsGenerator extends FreeMarkerCodeGenerator {
         return rootMap;
     }
 
-    public static void main(final String[] args) throws CodeGenException {
-        if (args.length != 5) {
-            System.err.println("java " + TestGroupsGenerator.class.getCanonicalName() + " input.json outputDirectory packageName groupsClassName");
-            System.exit(-4);
-        }
-        final TestGroupsGenerator generator = new TestGroupsGenerator();
-        final String input = args[0];
-        final String target = args[1];
-        final String packageName = args[2];
-        final String groupsClass = args[3];
-        final String groupsManagerClass = args[4];
-        final String contextClass = args[5];
-        generator.generate(input, target, packageName, groupsClass, groupsManagerClass, contextClass);
-    }
+    abstract void addPayloadToTestDef(final Map<String, Object> testDef, final PayloadType specifiedPayloadType);
 }
