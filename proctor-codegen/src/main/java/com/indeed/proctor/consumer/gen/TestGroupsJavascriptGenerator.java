@@ -4,6 +4,7 @@ package com.indeed.proctor.consumer.gen;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.indeed.proctor.common.PayloadType;
+import com.indeed.proctor.common.model.Payload;
 
 import java.util.Map;
 
@@ -29,6 +30,7 @@ public class TestGroupsJavascriptGenerator extends TestGroupsGenerator {
 
     protected void addPayloadToTestDef(final Map<String, Object> testDef, final PayloadType specifiedPayloadType) {
         testDef.put("payloadJavascriptType", specifiedPayloadType.javascriptTypeName);
+        testDef.put("defaultPayloadValue", specifiedPayloadType.getDefaultJavascriptValue());
     }
 
     public static void main(final String[] args) throws CodeGenException {

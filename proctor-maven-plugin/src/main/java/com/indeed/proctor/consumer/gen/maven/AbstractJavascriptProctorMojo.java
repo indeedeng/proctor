@@ -6,6 +6,11 @@ import org.apache.maven.plugins.annotations.Parameter;
 
 import java.io.File;
 
+/**
+ * A Mojo that can combine multiple Proctor specifications and generate a Javascript file.
+ *
+ * @author andrewk
+ */
 public abstract class AbstractJavascriptProctorMojo extends AbstractProctorMojo {
 
     private final TestGroupsJavascriptGenerator gen = new TestGroupsJavascriptGenerator();

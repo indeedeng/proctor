@@ -73,6 +73,24 @@ public enum PayloadType {
         }
     }
 
+    public String getDefaultJavascriptValue() {
+        switch (this) {
+            case DOUBLE_VALUE:
+            case LONG_VALUE:
+                return "-1";
+            case STRING_VALUE:
+                return "''";
+            case DOUBLE_ARRAY:
+            case LONG_ARRAY:
+            case STRING_ARRAY:
+                return "[]";
+            case MAP:
+                return "{}";
+            default:
+                throw new IllegalStateException("Unknown payload type: " + this);
+        }
+    }
+
     /**
      * Given a Payload field name, return its corresponding PayloadType.
      * Return null if it isn't an existing field name.

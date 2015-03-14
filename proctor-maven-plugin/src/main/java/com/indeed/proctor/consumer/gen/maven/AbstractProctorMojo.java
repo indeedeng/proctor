@@ -12,7 +12,9 @@ import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 
 /**
- * Created by andrewk on 3/12/15.
+ * A Mojo that can combine multiple Proctor specifications and generate some type of file.
+ *
+ * @author andrewk
  */
 public abstract class AbstractProctorMojo extends AbstractMojo {
     abstract File getOutputDirectory();

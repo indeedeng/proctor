@@ -5,6 +5,11 @@ import com.indeed.proctor.consumer.gen.TestGroupsJavaGenerator;
 
 import java.io.File;
 
+/**
+ * A Mojo that can combine multiple Proctor specifications and generate a Java file.
+ *
+ * @author andrewk
+ */
 public abstract class AbstractJavaProctorMojo extends AbstractProctorMojo {
 
     private final TestGroupsJavaGenerator gen = new TestGroupsJavaGenerator();
