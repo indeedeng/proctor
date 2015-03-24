@@ -3,7 +3,7 @@ layout: default
 title: Test Rules
 permalink: /docs/test-rules/
 ---
-A test may contain two types of rules: [eligibility rules](/docs/terminology/#eligibility-rule) and [allocation rules](/docs/terminology/#allocation-rule).
+A test may contain two types of rules: [eligibility rules]({{ site.baseurl }}/docs/terminology/#eligibility-rule) and [allocation rules]({{ site.baseurl }}/docs/terminology/#allocation-rule).
 
 
 ## Rule Format
@@ -13,7 +13,7 @@ Test rules that are set to `"${false}"` or `"${FALSE}"`will evaluate to `false`.
 
 
 ## Variables
-Test rules can use any variables in the specification's [providedContext](/docs/terminology/#context), [test constants](/docs/terminology/#test-constants), or [special constants](/docs/terminology/#special-constants).
+Test rules can use any variables in the specification's [providedContext]({{ site.baseurl }}/docs/terminology/#context), [test constants]({{ site.baseurl }}/docs/terminology/#test-constants), or [special constants]({{ site.baseurl }}/docs/terminology/#special-constants).
 Special constants set in a test defintion can modify a test rule in the test-matrix. For example, if `__COUNTRIES` is set in `specialConstants`, the test-matrix will add `proctor:contains(__COUNTRIES, country)` to the rule for that test.
 The following two JSON files show the change made from the test definition to the test-matrix.
 
