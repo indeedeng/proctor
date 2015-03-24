@@ -32,4 +32,4 @@ assign groups starting at the "beginning" of your allocation ranges increase all
 * **kill switch**
 * **dark deploy**
 * **feature toggle**
-* **reduce deploy dependencices dependencies**
+* **reduce deploy dependencies**
