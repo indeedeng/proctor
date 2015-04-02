@@ -22,6 +22,7 @@ import com.indeed.proctor.common.model.TestMatrixVersion;
 import com.indeed.proctor.common.model.TestType;
 import org.apache.el.ExpressionFactoryImpl;
 import org.apache.log4j.Logger;
+import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
@@ -89,6 +90,10 @@ public abstract class ProctorUtils {
 
     public static void serializeArtifact(Writer writer, final TestMatrixArtifact artifact) throws IOException {
         serializeObject(writer, artifact);
+    }
+
+    public static void serializeArtifact(final JsonGenerator jsonGenerator, final Proctor proctor) throws IOException {
+        jsonGenerator.writeObject(proctor.getArtifact());
     }
 
     @SuppressWarnings("UnusedDeclaration") // TODO Remove?

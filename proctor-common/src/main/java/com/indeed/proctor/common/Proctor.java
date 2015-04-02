@@ -202,6 +202,10 @@ public class Proctor {
         return new ProctorResult(audit.getVersion(), testGroups, testDefinitions);
     }
 
+    TestMatrixArtifact getArtifact() {
+        return matrix;
+    }
+
     @SuppressWarnings("UnusedDeclaration") // TODO Needed?
     public ConsumableTestDefinition getTestDefinition(final String name) {
         return matrix.getTests().get(name);
