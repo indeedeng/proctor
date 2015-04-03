@@ -22,7 +22,7 @@ public class JavascriptProctorTestMojo extends AbstractJavascriptProctorMojo {
         return topDirectory;
     }
 
-    @Parameter(property = "outputDirectory", defaultValue = "js/generated-test-sources/proctor", required = true)
+    @Parameter(property = "outputDirectory", defaultValue = "${project.build.directory}/generated-js-test-sources/proctor", required = true)
     protected File outputDirectory;
 
     File getOutputDirectory() {
