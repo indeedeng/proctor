@@ -97,7 +97,7 @@ define('${packageName}', [], function() {
   * @type {${groupsClassName}_}
   * @private
   */
-  var groups_ = new ${groupsClassName}_();
+  var groups_ = null;
 
   return {
 
@@ -121,6 +121,9 @@ define('${packageName}', [], function() {
     * @return {${groupsClassName}_}
     */
     getGroups: function() {
+      if (groups_ == null) {
+        groups_ = new ${groupsClassName}_();
+      }
       return groups_;
     }
 
