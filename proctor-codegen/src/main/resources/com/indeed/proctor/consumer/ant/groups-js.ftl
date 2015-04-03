@@ -28,10 +28,9 @@ define('${packageName}', [], function() {
    */
   var ${groupsClassName}_ = function(opt_values) {
     if (opt_values) {
-      var i = 0;
       var testDef;
       <#list testDefs as testDef>
-      testDef = opt_values[i++];
+      testDef = opt_values[${testDef_index}];
       this.${testDef.normalizedName}Value_ = testDef[0];
       <#if (testDef.payloadJavascriptType)??>
       this.${testDef.normalizedName}PayloadValue_ = testDef[1];
@@ -41,7 +40,7 @@ define('${packageName}', [], function() {
       <#list testDefs as testDef>
       this.${testDef.normalizedName}Value_ = ${testDef.defaultValue};
       <#if (testDef.payloadJavascriptType)??>
-      this.${testDef.normalizedName}PayloadValue_ = ${testDef.defaultPayloadValue};
+      this.${testDef.normalizedName}PayloadValue_ = ${testDef.payloadDefaultValue};
       </#if>
       </#list>
     }
@@ -85,7 +84,7 @@ define('${packageName}', [], function() {
    * @return {boolean}
    */
   ${groupsClassName}_.prototype.is${testDef.javaClassName}${bucket.javaClassName} = function() {
-    return this.${testDef.normalizedName}Value_ == ${bucket.value};
+    return this.${testDef.normalizedName}Value_ === ${bucket.value};
   };
 
 

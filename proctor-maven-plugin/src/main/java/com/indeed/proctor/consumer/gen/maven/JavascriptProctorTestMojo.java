@@ -10,7 +10,7 @@ import org.apache.maven.project.MavenProject;
 import java.io.File;
 
 @Mojo(name = "generate-test-js", defaultPhase = LifecyclePhase.GENERATE_TEST_SOURCES)
-public class JavascriptProctorTestMojo extends AbstractJavaProctorMojo {
+public class JavascriptProctorTestMojo extends AbstractJavascriptProctorMojo {
 
     @Parameter(property = "project", defaultValue = "${project}", required = true)
     private MavenProject project;
