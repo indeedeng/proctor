@@ -1,30 +1,21 @@
 package com.indeed.proctor.consumer.spring;
 
-import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
+import com.google.common.base.Throwables;
 import com.indeed.proctor.common.AbstractProctorLoader;
 import com.indeed.proctor.common.Identifiers;
-import com.indeed.proctor.common.Proctor;
-import com.indeed.proctor.common.model.ConsumableTestDefinition;
-import com.indeed.proctor.common.model.TestBucket;
-import com.indeed.proctor.common.model.TestType;
 import com.indeed.proctor.consumer.AbstractGroups;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.beans.PropertyDescriptor;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Random;
-import java.util.Set;
+import java.io.StringWriter;
 
 /**
  * Take a random sampling of group determinations for a test or set of tests.
@@ -35,152 +26,40 @@ import java.util.Set;
  *
  * The ProctorContext class should be a bean that has all of the fields you need to run groups determination - usually
  * all of the fields in the specification's providedContext. Any field with a bean-style setter can be set using URL
- * parameters.
+ * parameters. The default implementation using reflection to populate the {@link ProctorContext} object.
+ *
+ * Override  {@link #resolveContext(HttpServletRequest request)} and {@link #printProctorContext(ProctorContext context)}
+ * to provide an implementation of context resolving that doesn't use reflection.
  *
  * The page will be mapped at /sampleRandomGroups under wherever the controller is mapped.
  *
  * @author jsgroth
  */
-public abstract class AbstractSampleRandomGroupsController<ProctorContext> {
-    private static final int DEFAULT_SAMPLES = 1000;
+public abstract class AbstractSampleRandomGroupsController<ProctorContext>  implements SampleRandomGroupsHttpHandler.ContextSupplier<ProctorContext> {
 
-    private final AbstractProctorLoader proctorLoader;
     private final Class<ProctorContext> contextClass;
+    private final SampleRandomGroupsHttpHandler handler;
 
-    private final Random random;
-
-    protected AbstractSampleRandomGroupsController(final AbstractProctorLoader proctorLoader, final Class<ProctorContext> contextClass) {
-        this.proctorLoader = proctorLoader;
+    protected AbstractSampleRandomGroupsController(final AbstractProctorLoader proctorLoader,
+                                                   final Class<ProctorContext> contextClass) {
+        this.handler = new SampleRandomGroupsHttpHandler(proctorLoader, this);
         this.contextClass = contextClass;
-
-        this.random = new Random();
     }
 
     @RequestMapping(value = "/sampleRandomGroups", method = RequestMethod.GET)
-    public void handleSampleRandomGroups(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
-        response.setContentType("text/plain");
-        response.setCharacterEncoding("UTF-8");
+    public void handleSampleRandomGroups(final HttpServletRequest request, final HttpServletResponse response) throws IOException, ServletException {
+        handler.handleRequest(request, response);
+    }
 
+    @Override
+    public ProctorContext resolveContext(final HttpServletRequest request) {
         try {
-            handleSampleRandomGroupsInner(request, response);
-        } catch (Throwable t) {
-            t.printStackTrace(response.getWriter());
-            response.flushBuffer();
+            return getProctorContext(request);
+        } catch (IllegalAccessException e) {
+            throw Throwables.propagate(e);
+        } catch (InstantiationException e) {
+            throw Throwables.propagate(e);
         }
-    }
-
-    private void handleSampleRandomGroupsInner(final HttpServletRequest request, final HttpServletResponse response) throws IOException, InstantiationException, IllegalAccessException {
-        final String targetTestGroupsString = request.getParameter("test");
-        if (targetTestGroupsString == null) {
-            printUsage(request, response);
-            return;
-        }
-
-        final ProctorContext proctorContext = getProctorContext(request);
-        final Set<String> targetTestNames = Sets.newTreeSet(Splitter.on(',').omitEmptyStrings().split(targetTestGroupsString));
-        if (targetTestNames.isEmpty()) {
-            printUsage(request, response);
-            return;
-        }
-
-        final TestType testType = getTestType(targetTestNames);
-        final Identifiers identifiers = new Identifiers(testType, Long.toString(random.nextLong()));
-
-        final String samplesString = request.getParameter("samples");
-        final int samples;
-        if (!Strings.isNullOrEmpty(samplesString)) {
-            samples = Integer.parseInt(samplesString);
-        } else {
-            samples = DEFAULT_SAMPLES;
-        }
-
-        final Map<String, Integer> testGroupToOccurrences = runSampling(proctorContext, targetTestNames, identifiers, samples);
-
-        final PrintWriter writer = response.getWriter();
-        printResults(writer, testGroupToOccurrences, testType, samples);
-        writer.println(Strings.repeat("-", 100));
-        printProctorContext(writer, proctorContext);
-        response.flushBuffer();
-    }
-
-    private static void printResults(
-            final PrintWriter writer,
-            final Map<String, Integer> testGroupToOccurrences,
-            final TestType testType,
-            final int determinationsRun
-    ) throws IOException {
-        for (final String testGroup : testGroupToOccurrences.keySet()) {
-            final int occurrences = testGroupToOccurrences.get(testGroup);
-            writer.println("Found '" + testGroup + "' for " + occurrences + " out of " + determinationsRun + " random group samples for test type " + testType);
-        }
-    }
-
-    // Given the list of target test names, determine the test type that should be used.
-    // Throws IllegalArgumentException if there are tests in the list with different test types.
-    private TestType getTestType(final Set<String> targetTestNames) {
-        final Proctor proctor = getProctorNotNull();
-
-        TestType testType = null;
-        for (final String testName : targetTestNames) {
-            final ConsumableTestDefinition testDefinition = proctor.getTestDefinition(testName);
-            if (testDefinition == null) {
-                throw new IllegalArgumentException("Unrecognized test name: '" + testName + "'");
-            }
-            if (testType == null) {
-                testType = testDefinition.getTestType();
-            } else if (testDefinition.getTestType() != testType) {
-                throw new IllegalArgumentException("Target test group list contains tests of multiple test types: " +
-                        testType + " and " + testDefinition.getTestType());
-            }
-        }
-        assert testType != null;
-        return testType;
-    }
-
-    // Run random group determination.
-    // This will run the specified number of group determinations and will record, for each group in each target
-    // test, how many times the group was present in the list of groups.
-    private Map<String, Integer> runSampling(
-            final ProctorContext proctorContext,
-            final Set<String> targetTestNames,
-            final Identifiers identifiers,
-            final int determinationsToRun
-    ) {
-        final Set<String> targetTestGroups = getTargetTestGroups(targetTestNames);
-        final Map<String, Integer> testGroupToOccurrences = Maps.newTreeMap();
-        for (final String testGroup : targetTestGroups) {
-            testGroupToOccurrences.put(testGroup, 0);
-        }
-
-        for (int i = 0; i < determinationsToRun; ++i) {
-            final AbstractGroups groups = getRandomGroups(proctorContext, identifiers);
-            for (final Entry<String, TestBucket> e : groups.getProctorResult().getBuckets().entrySet()) {
-                final String testName = e.getKey();
-                if (targetTestNames.contains(testName)) {
-                    final int group = e.getValue().getValue();
-                    final String testGroup = testName + group;
-                    testGroupToOccurrences.put(testGroup, testGroupToOccurrences.get(testGroup) + 1);
-                }
-            }
-        }
-
-        return testGroupToOccurrences;
-    }
-
-    // Get all test group strings for the given set of test names
-    private Set<String> getTargetTestGroups(final Set<String> targetTestNames) {
-        final Proctor proctor = getProctorNotNull();
-
-        final Set<String> testGroups = Sets.newTreeSet();
-        for (final String testName : targetTestNames) {
-            final ConsumableTestDefinition testDefinition = proctor.getTestDefinition(testName);
-            for (final TestBucket bucket : testDefinition.getBuckets()) {
-                final String testGroup = testName + bucket.getValue();
-                testGroups.add(testGroup);
-            }
-        }
-
-        return testGroups;
     }
 
     // Do some magic to turn request parameters into a context object
@@ -199,37 +78,18 @@ public abstract class AbstractSampleRandomGroupsController<ProctorContext> {
         return proctorContext;
     }
 
-    /**
-     * Determine groups for the given context and identifiers.
-     */
-    protected abstract AbstractGroups getRandomGroups(ProctorContext proctorContext, Identifiers identifiers);
-
-    private void printProctorContext(PrintWriter writer, ProctorContext proctorContext) throws IOException {
+    @Override
+    public String printProctorContext(ProctorContext proctorContext)  {
+        final StringBuilder sb = new StringBuilder();
         final BeanWrapper beanWrapper = new BeanWrapperImpl(proctorContext);
         for (final PropertyDescriptor descriptor : beanWrapper.getPropertyDescriptors()) {
             final String propertyName = descriptor.getName();
             if (!"class".equals(propertyName)) { // ignore class property which every object has
                 final Object propertyValue = beanWrapper.getPropertyValue(propertyName);
-                writer.println(propertyName + ": '" + propertyValue + "'");
+                sb.append(propertyName).append(": '").append(propertyValue).append("'").append("\n");
             }
         }
+        return sb.toString();
     }
 
-    private static void printUsage(final HttpServletRequest request, final HttpServletResponse response) throws IOException {
-        final PrintWriter writer = response.getWriter();
-
-        writer.println("To use this page, add a 'test' parameter with the name of the test you want to sample distributions for.");
-        writer.println("For example: " + request.getContextPath() + request.getServletPath() + "?test=example_test");
-
-        response.flushBuffer();
-    }
-
-    // return currently-loaded Proctor instance, throwing IllegalStateException if not loaded
-    private Proctor getProctorNotNull() {
-        final Proctor proctor = proctorLoader.get();
-        if (proctor == null) {
-            throw new IllegalStateException("Proctor specification and/or text matrix has not been loaded");
-        }
-        return proctor;
-    }
 }
