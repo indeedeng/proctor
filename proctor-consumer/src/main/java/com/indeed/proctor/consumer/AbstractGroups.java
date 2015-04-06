@@ -10,6 +10,7 @@ import com.indeed.proctor.common.model.TestBucket;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -236,6 +237,38 @@ public abstract class AbstractGroups {
                 continue;
             }
             groups.put(testName, testBucket.getValue());
+        }
+        return groups;
+    }
+
+    /**
+     * Generates a list of [bucketValue, payloadValue]'s for each test defined in the client app's proctor spec.
+     *
+     * To be used with generated javascript files from 'ant generate-proctor-js' by serializing the list
+     * to a string and passing it to {packageName}.init();
+     *
+     * @param tests an alphabetical list of Test enums from your generated proctor java subclass of {@link com.indeed.proctor.consumer.AbstractGroups}.
+     * @param <E>
+     * @return a list of 2-element lists that hold the bucketValue and payloadValue for each test in alphabetical order
+     */
+    public <E extends Enum> List<List<Object>> getJavaScriptConfig(final E[] tests) {
+        final Map<String, TestBucket> buckets = getProctorResult().getBuckets();
+        final List<List<Object>> groups = new ArrayList<List<Object>>(tests.length);
+        for (final E test : tests) {
+            final String testName = test.toString().toLowerCase();
+            final Object bucketValue = getValue(testName, -1);
+            final Object payloadValue;
+            final TestBucket testBucket = buckets.get(testName);
+            if (testBucket != null && testBucket.getPayload() != null) {
+                final Payload payload = testBucket.getPayload();
+                payloadValue = payload.fetchAValue();
+            } else {
+                payloadValue = null;
+            }
+            final List<Object> definition = new ArrayList<Object>();
+            definition.add(bucketValue);
+            definition.add(payloadValue);
+            groups.add(definition);
         }
         return groups;
     }
