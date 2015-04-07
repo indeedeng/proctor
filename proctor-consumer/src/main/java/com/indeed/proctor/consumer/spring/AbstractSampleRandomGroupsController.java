@@ -2,8 +2,6 @@ package com.indeed.proctor.consumer.spring;
 
 import com.google.common.base.Throwables;
 import com.indeed.proctor.common.AbstractProctorLoader;
-import com.indeed.proctor.common.Identifiers;
-import com.indeed.proctor.consumer.AbstractGroups;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -42,7 +40,7 @@ public abstract class AbstractSampleRandomGroupsController<ProctorContext>  impl
 
     protected AbstractSampleRandomGroupsController(final AbstractProctorLoader proctorLoader,
                                                    final Class<ProctorContext> contextClass) {
-        this.handler = new SampleRandomGroupsHttpHandler(proctorLoader, this);
+        this.handler = new SampleRandomGroupsHttpHandler<ProctorContext>(proctorLoader, this);
         this.contextClass = contextClass;
     }
 
@@ -79,7 +77,7 @@ public abstract class AbstractSampleRandomGroupsController<ProctorContext>  impl
     }
 
     @Override
-    public String printProctorContext(ProctorContext proctorContext)  {
+    public String printProctorContext(final ProctorContext proctorContext)  {
         final StringBuilder sb = new StringBuilder();
         final BeanWrapper beanWrapper = new BeanWrapperImpl(proctorContext);
         for (final PropertyDescriptor descriptor : beanWrapper.getPropertyDescriptors()) {
