@@ -1,7 +1,6 @@
 package com.indeed.proctor.consumer;
 
 import com.google.common.base.Objects;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import com.indeed.proctor.common.ProctorResult;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
@@ -251,12 +250,12 @@ public abstract class AbstractGroups {
      * @param <E>
      * @return a list of 2-element lists that hold the bucketValue and payloadValue for each test in alphabetical order
      */
-    public <E extends Enum> List<List<Object>> getJavaScriptConfig(final E[] tests) {
+    public <E extends Test> List<List<Object>> getJavaScriptConfig(final E[] tests) {
         final Map<String, TestBucket> buckets = getProctorResult().getBuckets();
         final List<List<Object>> groups = new ArrayList<List<Object>>(tests.length);
         for (final E test : tests) {
-            final String testName = test.toString().toLowerCase();
-            final Object bucketValue = getValue(testName, -1);
+            final String testName = test.getName();
+            final Integer bucketValue = getValue(testName, test.getFallbackValue());
             final Object payloadValue;
             final TestBucket testBucket = buckets.get(testName);
             if (testBucket != null && testBucket.getPayload() != null) {
