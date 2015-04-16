@@ -220,9 +220,6 @@ public abstract class AbstractGroups {
      * indeed.proctor.groups.init and
      * indeed.proctor.groups.inGroup(tstName, bucketValue)
      *
-     * When we create a generated JavaScript representation of indeed.proctor.AbstractGroups,
-     * this config can be updated for use in it's constructor.
-     *
      * @return
      */
     public Map<String, Integer> getJavaScriptConfig() {
