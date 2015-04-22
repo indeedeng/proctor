@@ -10,7 +10,7 @@ import org.apache.maven.project.MavenProject;
 import java.io.File;
 
 @Mojo(name = "generate", defaultPhase = LifecyclePhase.GENERATE_SOURCES)
-public class ProctorMojo extends AbstractProctorMojo {
+public class JavaProctorMojo extends AbstractJavaProctorMojo {
 
     @Parameter(property = "project", defaultValue = "${project}", required = true)
     private MavenProject project;

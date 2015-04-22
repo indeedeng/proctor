@@ -1,5 +1,8 @@
 package com.indeed.proctor.consumer.gen.maven;
 
+import java.io.File;
+import java.io.IOException;
+
 import com.indeed.proctor.common.ProctorUtils;
 import com.indeed.proctor.consumer.gen.CodeGenException;
 import com.indeed.proctor.consumer.gen.TestGroupsGenerator;
@@ -8,25 +11,24 @@ import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
+/**
+ * A Mojo that can combine multiple Proctor specifications and generate some type of file.
+ *
+ * @author andrewk
+ */
 public abstract class AbstractProctorMojo extends AbstractMojo {
-
-    private final TestGroupsGenerator gen = new TestGroupsGenerator();
     abstract File getOutputDirectory();
+
     abstract File getTopDirectory();
+
     abstract File getSpecificationOutput();
-    private void processFile(final File file, final String packageName, final String className) throws CodeGenException {
-        getLog().info(String.format("Building resources for %s", packageName));
-        gen.generate(file.getPath(), getOutputDirectory().getPath(), packageName, className, className + "Manager", className + "Context");
-    }
+
+    protected abstract void processFile(File file, String packageName, String className) throws CodeGenException;
+
     /*
-     * traverse through main specification folder to find large proctor specifications (determined if they have the test
-     * attribute)
-     */
+         * traverse through main specification folder to find large proctor specifications (determined if they have the test
+         * attribute)
+         */
     private void recursiveSpecificationsFinder(final File dir, final String packageNamePrefix) throws CodeGenException {
         if (dir.equals(null)) {
             throw new CodeGenException("recursiveSpecificationsFinder called with null pointer");
@@ -53,8 +55,8 @@ public abstract class AbstractProctorMojo extends AbstractMojo {
     }
 
     /*
-     * Adds any non partial specifications to resources
-     */
+         * Adds any non partial specifications to resources
+         */
     private void addNonPartialsToResources(final File dir, final Resource resource) throws CodeGenException {
         if (dir.equals(null)) {
             throw new CodeGenException("Could not read from directory " + dir.getPath());
@@ -77,10 +79,9 @@ public abstract class AbstractProctorMojo extends AbstractMojo {
         }
     }
 
-
     /*
-     * Finds any partial specifications and creates a generated specification
-     */
+         * Finds any partial specifications and creates a generated specification
+         */
     void createTotalSpecifications(final File dir, final String packageDirectory) throws MojoExecutionException {
 
         if (dir.equals(null)) {
@@ -96,7 +97,7 @@ public abstract class AbstractProctorMojo extends AbstractMojo {
             final File outputDir = new File(getSpecificationOutput() + File.separator + packageDirectory.substring(0,packageDirectory.lastIndexOf(File.separator)));
             outputDir.mkdirs();
             try {
-                gen.makeTotalSpecification(parent, outputDir.getPath());
+                generateTotalSpecification(parent, outputDir);
             } catch (final CodeGenException e) {
                 throw new MojoExecutionException("Couldn't create total specification",e);
             }
@@ -107,6 +108,8 @@ public abstract class AbstractProctorMojo extends AbstractMojo {
             }
         }
     }
+
+    abstract void generateTotalSpecification(final File parent, final File outputDir) throws CodeGenException;
 
     Resource[] getResources() throws MojoExecutionException {
         final Resource resourceNonGenerated = new Resource();
@@ -128,7 +131,6 @@ public abstract class AbstractProctorMojo extends AbstractMojo {
 
     }
 
-    @Override
     public void execute() throws MojoExecutionException {
         File topDirectory = getTopDirectory();
         if(topDirectory == null) {
