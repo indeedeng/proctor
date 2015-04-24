@@ -6,8 +6,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
+import com.google.common.primitives.Ints;
 import com.indeed.proctor.common.el.MulticontextReadOnlyVariableMapper;
 import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.Audit;
@@ -47,6 +49,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -783,12 +786,18 @@ public abstract class ProctorUtils {
      */
     public static TestSpecification generateSpecification(@Nonnull final TestDefinition testDefinition) {
         final TestSpecification testSpecification = new TestSpecification();
-        final Map<String,Integer> buckets = Maps.newHashMap();
-        final List<TestBucket> testDefinitionBuckets = testDefinition.getBuckets();
+        // Sort buckets by value ascending
+        final Map<String,Integer> buckets = Maps.newLinkedHashMap();
+        final List<TestBucket> testDefinitionBuckets = Ordering.from(new Comparator<TestBucket>() {
+            @Override
+            public int compare(final TestBucket lhs, final TestBucket rhs) {
+                return Ints.compare(lhs.getValue(), rhs.getValue());
+            }
+        }).immutableSortedCopy(testDefinition.getBuckets());
         int fallbackValue = -1;
         if(testDefinitionBuckets.size() > 0) {
             final TestBucket firstBucket = testDefinitionBuckets.get(0);
-            fallbackValue = firstBucket.getValue();
+            fallbackValue = firstBucket.getValue(); // buckets are sorted, choose smallest value as the fallback value
 
             final PayloadSpecification payloadSpecification = new PayloadSpecification();
             if(firstBucket.getPayload() != null && !firstBucket.getPayload().equals(Payload.EMPTY_PAYLOAD)) {
@@ -807,7 +816,6 @@ public abstract class ProctorUtils {
             for (int i = 0; i < testDefinitionBuckets.size(); i++) {
                 final TestBucket bucket = testDefinitionBuckets.get(i);
                 buckets.put(bucket.getName(), bucket.getValue());
-                fallbackValue = Math.min(fallbackValue, bucket.getValue()); // choose the smallest bucket value as the fallback value
             }
         }
         testSpecification.setBuckets(buckets);

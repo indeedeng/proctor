@@ -1418,15 +1418,15 @@ public class TestProctorUtils {
     @Test
     public void testGenerateSpecificationWithBuckets() {
         final String description = "this test has 3 buckets";
-        final TestBucket inactiveBucket = new TestBucket("inactive", -3, "status quo");
         final TestBucket control = new TestBucket("control", 0, "control bucket");
+        final TestBucket inactiveBucket = new TestBucket("inactive", -3, "status quo");
         final TestBucket test = new TestBucket("test", 1, "test bucket");
         final TestDefinition empty = new TestDefinition(
             "buckets",
             "",
             TestType.ANONYMOUS_USER,
             "salty",
-            Lists.newArrayList(inactiveBucket, control, test),
+            Lists.newArrayList(control, inactiveBucket, test),
             Collections.<Allocation>emptyList(),
             Collections.<String, Object>emptyMap(),
             Collections.<String, Object>emptyMap(),
@@ -1441,6 +1441,13 @@ public class TestProctorUtils {
         assertEquals(inactiveBucket.getValue(), (int) buckets.get(inactiveBucket.getName()));
         assertEquals(control.getValue(), (int) buckets.get(control.getName()));
         assertEquals(test.getValue(), (int) buckets.get(test.getName()));
+        // buckets should be ordered by value ascending
+        final List<Integer> values = Lists.newArrayList(buckets.values());
+        assertEquals(inactiveBucket.getValue(), values.get(0).intValue());
+        assertEquals(control.getValue(), values.get(1).intValue());
+        assertEquals(test.getValue(), values.get(2).intValue());
+
+
     }
 
     @Test
