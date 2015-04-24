@@ -20,12 +20,12 @@ A codegenerator that can be used to generate an application's `AbstractGroups` a
 {% include maven_dependency.md artifact="proctor-codegen" %}
 
 ## proctor-maven-plugin
-A maven plugin that invokes the java code generator from `proctor-codegen`
+A maven plugin that invokes the java and javascript code generators from `proctor-codegen`
 
 {% include maven_dependency.md artifact="proctor-maven-plugin" %}
 
 ## proctor-ant-plugin
-An ant task that invokes the java code generator from `proctor-codegen`
+An ant task that invokes the java and javascript code generators from `proctor-codegen`
 
 {% include maven_dependency.md artifact="proctor-ant-plugin" %}
 
