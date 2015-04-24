@@ -1,7 +1,7 @@
 package com.indeed.proctor.common.model;
 
 import com.google.common.collect.Maps;
-import org.codehaus.jackson.map.annotate.JsonSerialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Joiner;
 
 import javax.annotation.Nonnull;

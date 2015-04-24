@@ -22,11 +22,11 @@ import com.indeed.proctor.common.model.TestMatrixVersion;
 import com.indeed.proctor.common.model.TestType;
 import org.apache.el.ExpressionFactoryImpl;
 import org.apache.log4j.Logger;
-import org.codehaus.jackson.JsonGenerator;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -113,7 +113,7 @@ public abstract class ProctorUtils {
     }
 
     private static <T> void serializeObject(Writer writer, final T artifact) throws IOException {
-        OBJECT_MAPPER.defaultPrettyPrintingWriter().writeValue(writer, artifact);
+        OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValue(writer, artifact);
     }
 
     @Nonnull

@@ -1,6 +1,6 @@
 package com.indeed.proctor.store;
 
-import org.codehaus.jackson.JsonProcessingException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 import java.io.Closeable;
 

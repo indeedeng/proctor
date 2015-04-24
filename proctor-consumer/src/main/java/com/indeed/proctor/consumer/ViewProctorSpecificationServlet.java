@@ -18,7 +18,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ViewProctorSpecificationServlet extends HttpServlet {
     private static final Logger LOGGER = Logger.getLogger(ViewProctorSpecificationServlet.class);
@@ -73,6 +73,6 @@ public class ViewProctorSpecificationServlet extends HttpServlet {
 
         final PrintWriter writer = resp.getWriter();
 
-        OBJECT_MAPPER.defaultPrettyPrintingWriter().writeValue(writer, results);
+        OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValue(writer, results);
     }
 }

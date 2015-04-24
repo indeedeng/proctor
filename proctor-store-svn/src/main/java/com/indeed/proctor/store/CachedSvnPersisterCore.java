@@ -8,7 +8,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.indeed.util.varexport.Export;
 import org.apache.log4j.Logger;
-import org.codehaus.jackson.JsonProcessingException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.tmatesoft.svn.core.SVNURL;
 
 import java.io.IOException;
