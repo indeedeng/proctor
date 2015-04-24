@@ -9,8 +9,8 @@ import org.apache.maven.project.MavenProject;
 
 import java.io.File;
 
-@Mojo(name = "generate-test", defaultPhase = LifecyclePhase.GENERATE_TEST_SOURCES)
-public class ProctorTestMojo extends AbstractProctorMojo {
+@Mojo(name = "generate-test-js", defaultPhase = LifecyclePhase.GENERATE_TEST_SOURCES)
+public class JavascriptProctorTestMojo extends AbstractJavascriptProctorMojo {
 
     @Parameter(property = "project", defaultValue = "${project}", required = true)
     private MavenProject project;
@@ -22,7 +22,7 @@ public class ProctorTestMojo extends AbstractProctorMojo {
         return topDirectory;
     }
 
-    @Parameter(property = "outputDirectory", defaultValue = "${project.build.directory}/generated-test-sources/proctor", required = true)
+    @Parameter(property = "outputDirectory", defaultValue = "${project.build.directory}/generated-js-test-sources/proctor", required = true)
     protected File outputDirectory;
 
     File getOutputDirectory() {

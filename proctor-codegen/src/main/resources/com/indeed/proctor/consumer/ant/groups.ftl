@@ -6,7 +6,9 @@ import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.consumer.*;
 import javax.annotation.Nullable;
 import javax.annotation.Nonnull;
+import java.lang.Override;
 import java.util.Map;
+
 /*
  * GENERATED source; do not edit directly
  * (but you can extend me.  you'll want to override {@link #toString()}, using {@link #buildTestGroupString()} or {@link #appendTestGroups(StringBuilder)} instead)
@@ -29,19 +31,27 @@ public class ${mainClassName} extends AbstractGroups {
         return null;
     }
 
-    public enum ${testEnumName} {
+    public enum ${testEnumName} implements com.indeed.proctor.consumer.Test {
         <#list testDefs as testDef>
-        ${testDef.enumName}("${testDef.normalizedName}")<#if testDef_has_next>,<#else>;</#if>
+        ${testDef.enumName}("${testDef.normalizedName}", ${testDef.defaultValue})<#if testDef_has_next>,<#else>;</#if>
         </#list>
         ; // fix compilation if no tests
 
         private final String name;
-        private ${testEnumName}(final String name) {
+        private final int fallbackValue;
+
+        private ${testEnumName}(final String name, final int fallbackValue) {
             this.name = name;
+            this.fallbackValue = fallbackValue;
         }
 
+        @Override
         public String getName() {
             return name;
+        }
+        @Override
+        public int getFallbackValue() {
+            return fallbackValue;
         }
     }
 
@@ -113,7 +123,7 @@ public class ${mainClassName} extends AbstractGroups {
     }
 
     public int get${testDef.javaClassName}Value() {
-        return getValue(${testEnumName}.${testDef.enumName}.getName(), ${testDef.defaultValue});
+        return getValue(${testEnumName}.${testDef.enumName}.getName(), ${testEnumName}.${testDef.enumName}.getFallbackValue());
     }
 
     <#if (testDef.payloadJavaClass)??>
