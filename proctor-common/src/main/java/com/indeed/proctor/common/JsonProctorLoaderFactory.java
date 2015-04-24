@@ -2,9 +2,9 @@ package com.indeed.proctor.common;
 
 
 import com.google.common.base.Preconditions;
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.core.io.Resource;
 
 import javax.annotation.Nonnull;
@@ -16,7 +16,7 @@ import java.io.InputStream;
 
 
 public class JsonProctorLoaderFactory {
-    // Lenient parser used by consumer apps to prevent deployment order depenencies
+    // Lenient parser used by consumer apps to prevent deployment order dependencies
     private static final ObjectMapper OBJECT_MAPPER = Serializers.lenient();
 
     @Nullable

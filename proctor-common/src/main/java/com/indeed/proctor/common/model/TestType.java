@@ -3,10 +3,10 @@ package com.indeed.proctor.common.model;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
-import org.codehaus.jackson.JsonGenerator;
-import org.codehaus.jackson.map.JsonSerializableWithType;
-import org.codehaus.jackson.map.SerializerProvider;
-import org.codehaus.jackson.map.TypeSerializer;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.JsonSerializable;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentMap;
  * Value class that captures most of the enum flavor while allowing
  *  library users to extend the supported types of test.
  */
-public final class TestType implements JsonSerializableWithType {
+public final class TestType implements JsonSerializable {
     private static final ConcurrentMap<String, TestType> TYPES = Maps.newConcurrentMap();
     @Nonnull
     private final String name;

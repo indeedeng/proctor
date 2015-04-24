@@ -14,7 +14,7 @@ import com.indeed.proctor.common.ProctorUtils;
 import com.indeed.proctor.common.Serializers;
 import com.indeed.proctor.common.TestSpecification;
 import org.apache.commons.lang.StringEscapeUtils;
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.annotation.Nullable;
 import java.io.File;
@@ -97,7 +97,7 @@ public class TestGroupsGenerator extends FreeMarkerCodeGenerator {
 
         final File output =  new File(targetDir, name);
         try {
-            OBJECT_MAPPER.defaultPrettyPrintingWriter().writeValue(output, proctorSpecification);
+            OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValue(output, proctorSpecification);
         } catch (IOException e) {
             throw new CodeGenException("Could not write to temp file " + output.getAbsolutePath(),e);
         }

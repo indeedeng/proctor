@@ -1,6 +1,6 @@
 package com.indeed.proctor.common;
 
-import org.codehaus.jackson.map.annotate.JsonSerialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import javax.annotation.Nullable;
 import java.util.Map;

@@ -7,8 +7,8 @@ import com.indeed.proctor.common.model.Audit;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.TestMatrixArtifact;
 import com.indeed.proctor.common.model.TestType;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -65,12 +65,12 @@ public class TestProctor {
         assertEquals(3, auditNode.size());
 
         assertTrue(auditNode.has("version"));
-        assertEquals("10", auditNode.get("version").getTextValue());
+        assertEquals("10", auditNode.get("version").textValue());
         assertTrue(auditNode.has("updated"));
-        assertEquals(1000, auditNode.get("updated").getIntValue());
+        assertEquals(1000, auditNode.get("updated").intValue());
         assertTrue(auditNode.has("updatedBy"));
         assertTrue(auditNode.get("updatedBy").isTextual());
-        assertEquals("nobody", auditNode.get("updatedBy").getTextValue());
+        assertEquals("nobody", auditNode.get("updatedBy").textValue());
     }
 
     @Test
