@@ -1,5 +1,6 @@
 package com.indeed.proctor.webapp.controllers;
 
+import com.fasterxml.jackson.core.JsonGenerationException;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
@@ -52,8 +53,7 @@ import com.indeed.proctor.webapp.tags.UtilityFunctions;
 import com.indeed.proctor.webapp.util.threads.LogOnUncaughtExceptionHandler;
 import com.indeed.proctor.webapp.views.JsonView;
 import org.apache.log4j.Logger;
-import org.codehaus.jackson.JsonGenerationException;
-import org.codehaus.jackson.map.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;

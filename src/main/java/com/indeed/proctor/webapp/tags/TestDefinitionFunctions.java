@@ -1,5 +1,6 @@
 package com.indeed.proctor.webapp.tags;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Strings;
 import com.indeed.proctor.common.EnvironmentVersion;
@@ -10,9 +11,8 @@ import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.common.model.TestDefinition;
 import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.webapp.db.Environment;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 
 import java.io.IOException;
