@@ -1,5 +1,6 @@
 package com.indeed.proctor.webapp.controllers;
 
+import com.fasterxml.jackson.core.JsonGenerationException;
 import com.google.common.base.Charsets;
 import com.google.common.base.Functions;
 import com.google.common.base.Joiner;
@@ -30,9 +31,8 @@ import com.indeed.proctor.webapp.model.WebappConfiguration;
 import com.indeed.proctor.webapp.util.threads.LogOnUncaughtExceptionHandler;
 import com.indeed.proctor.webapp.views.JsonView;
 import org.apache.log4j.Logger;
-import org.codehaus.jackson.JsonGenerationException;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -357,7 +357,7 @@ public class ProctorController extends AbstractController {
         model.addAttribute("testMatrixVersion", testMatrix);
         final String errorMessage = "Apparently not impossible exception generating JSON";
         try {
-            final String testMatrixJson = objectMapper.defaultPrettyPrintingWriter().writeValueAsString(testMatrixDefinition);
+            final String testMatrixJson = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(testMatrixDefinition);
             model.addAttribute("testMatrixDefinition", testMatrixJson);
 
             final Map<String, Map<String, String>> colors = Maps.newHashMap();

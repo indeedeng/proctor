@@ -1,11 +1,11 @@
 package com.indeed.proctor.webapp.tags;
 
+import com.fasterxml.jackson.core.JsonGenerationException;
 import com.indeed.proctor.common.PayloadType;
 import com.indeed.proctor.common.Serializers;
 import com.indeed.proctor.common.model.Payload;
-import org.codehaus.jackson.JsonGenerationException;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 
@@ -23,9 +23,9 @@ public class PayloadFunctions {
     public static String prettyPrintJSONPayloadContents(Object o) throws IOException, JsonGenerationException, JsonMappingException {
         if (o != null && o instanceof Payload) {
             Payload p = (Payload) o;
-            return OBJECT_MAPPER.defaultPrettyPrintingWriter().writeValueAsString(p.fetchAValue());
+            return OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(p.fetchAValue());
         } else {
-            return OBJECT_MAPPER.defaultPrettyPrintingWriter().writeValueAsString(o);
+            return OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(o);
         }
     }
 

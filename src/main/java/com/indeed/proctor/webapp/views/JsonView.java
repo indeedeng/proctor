@@ -1,7 +1,7 @@
 package com.indeed.proctor.webapp.views;
 
 import com.indeed.proctor.common.Serializers;
-import org.codehaus.jackson.map.ObjectWriter;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import org.springframework.web.servlet.View;
 
 import java.util.Map;
@@ -15,7 +15,7 @@ public class JsonView implements View {
 
     private static final String CONTENT_TYPE = "application/json;charset=utf-8";
 
-    private static final ObjectWriter JSON_WRITER = Serializers.strict().defaultPrettyPrintingWriter();
+    private static final ObjectWriter JSON_WRITER = Serializers.strict().writerWithDefaultPrettyPrinter();
     private final Object data;
 
     public JsonView(Object data) {
