@@ -49,10 +49,10 @@
           "length" : 0.0,
           "bucketValue" : 0
         }, {
-          "length" : 1.0,
+          "length" : 0.0,
           "bucketValue" : -1
         }, {
-          "length" : 0.0,
+          "length" : 1.0,
           "bucketValue" : 2
         } ]
       } ],
