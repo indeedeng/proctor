@@ -46,14 +46,14 @@
       "allocations" : [ {
         "rule" : null,
         "ranges" : [ {
-          "length" : 0.01,
+          "length" : 0.25,
           "bucketValue" : 0
         }, {
-          "length" : 0.0,
+          "length" : 0.5,
           "bucketValue" : -1
         }, {
-          "length" : 0.99,
-          "bucketValue" : 3
+          "length" : 0.25,
+          "bucketValue" : 2
         } ]
       } ],
       "testType" : "USER"
@@ -62,6 +62,6 @@
   "audit" : {
         "version" : 1,
         "updatedBy" : "jack",
-        "updated" : 1479048400000
+        "updated" : 1379048400000
   }
 }
