@@ -1,0 +1,67 @@
+{
+    "tests" : {
+    "bgcolortst" : {
+      "version" : 1,
+      "description" : "background color test",
+      "constants" : {
+      },
+      "rule" : null,
+      "salt" : "bgcolortst",
+      "buckets" : [ {
+        "name" : "inactive",
+        "value" : -1,
+        "description" : "",
+        "payload" : {
+            "stringValue" : ""
+        }
+      }, {
+        "name" : "altColor1",
+        "value" : 0,
+        "description" : "indeed orange",
+        "payload" : {
+            "stringValue" : "#ff6600"
+        }
+      }, {
+        "name" : "altColor2",
+        "value" : 1,
+        "description" : "magenta",
+        "payload" : {
+            "stringValue" : "#CD29C0"
+        }
+      }, {
+        "name" : "altColor3",
+        "value" : 2,
+        "description" : "indeed blue",
+        "payload" : {
+            "stringValue" : "#2164f3"
+        }
+      }, {
+        "name" : "altColor4",
+        "value" : 3,
+        "description" : "green",
+        "payload" : {
+            "stringValue" : "#008040"
+        }
+      }],
+      "allocations" : [ {
+        "rule" : null,
+        "ranges" : [ {
+          "length" : 0.25,
+          "bucketValue" : 0
+        }, {
+          "length" : 0.5,
+          "bucketValue" : -1
+        }, {
+          "length" : 0.25,
+          "bucketValue" : 2
+        } ]
+      } ],
+      "testType" : "USER"
+    }
+  },
+  "audit" : {
+        "version" : 1,
+        "updatedBy" : "jack",
+        "updated" : 1379048400000
+  }
+}
