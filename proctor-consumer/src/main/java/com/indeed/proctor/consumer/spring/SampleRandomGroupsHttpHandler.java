@@ -110,7 +110,7 @@ public class SampleRandomGroupsHttpHandler<ProctorContext> implements HttpReques
         for (final String testGroup : testGroupToOccurrences.keySet()) {
             final int occurrences = testGroupToOccurrences.get(testGroup);
             final float percentage = ((float) occurrences * 100) / determinationsRun;
-            writer.printf("Found '%s' for %d out of %d (%.2f%) random group samples for test type %s", testGroup, occurrences, determinationsRun, percentage, testType);
+            writer.printf("Found '%s' for %d out of %d (%.2f%%) random group samples for test type %s%n", testGroup, occurrences, determinationsRun, percentage, testType);
         }
     }
 
