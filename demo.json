@@ -46,14 +46,20 @@
       "allocations" : [ {
         "rule" : null,
         "ranges" : [ {
-          "length" : 0.5,
+          "length" : 0.25,
           "bucketValue" : 1
+        }, {
+          "length" : 0.25,
+          "bucketValue" : 2
+        }, {
+=          "length" : 0.25,
+          "bucketValue" : 3
         }, {
           "length" : 0.0,
           "bucketValue" : -1
         }, {
-          "length" : 0.5,
-          "bucketValue" : 3
+          "length" : 0.25,
+          "bucketValue" : 4
         } ]
       } ],
       "testType" : "USER"
