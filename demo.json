@@ -47,13 +47,13 @@
         "rule" : null,
         "ranges" : [ {
           "length" : 0.5,
-          "bucketValue" : 0
+          "bucketValue" : 1
         }, {
           "length" : 0.0,
           "bucketValue" : -1
         }, {
           "length" : 0.5,
-          "bucketValue" : 2
+          "bucketValue" : 3
         } ]
       } ],
       "testType" : "USER"
@@ -65,4 +65,3 @@
         "updated" : 1379048400000
   }
 }
-
