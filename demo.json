@@ -50,10 +50,10 @@
           "bucketValue" : 0
         }, {
           "length" : 0.5,
-          "bucketValue" : 1
+          "bucketValue" : -1
         }, {
           "length" : 0.25,
-          "bucketValue" : 0
+          "bucketValue" : 2
         } ]
       } ],
       "testType" : "USER"
@@ -65,11 +65,3 @@
         "updated" : 1379048400000
   }
 }
-
-
-
-
-
-
-
-
