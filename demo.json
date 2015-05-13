@@ -57,7 +57,7 @@
         }, {
           "length" : 0.05,
           "bucketValue" : -1
-        }, {
+        },  {
           "length" : 0.2,
           "bucketValue" : 4
         } ]
