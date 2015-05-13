@@ -1,7 +1,7 @@
 {
     "tests" : {
     "bgcolortst" : {
-      "version" : 1,
+      "version" : 2,
       "description" : "background color test",
       "constants" : {
       },
@@ -46,14 +46,14 @@
       "allocations" : [ {
         "rule" : null,
         "ranges" : [ {
-          "length" : 0.5,
+          "length" : 0.25,
           "bucketValue" : 0
         }, {
-          "length" : 0.0,
-          "bucketValue" : -1
-        },  {
           "length" : 0.5,
-          "bucketValue" : 1
+          "bucketValue" : -1
+        }, {
+          "length" : 0.25,
+          "bucketValue" : 2
         } ]
       } ],
       "testType" : "USER"
@@ -65,5 +65,3 @@
         "updated" : 1379048400000
   }
 }
-
-  
