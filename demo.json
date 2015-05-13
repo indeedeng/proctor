@@ -1,7 +1,7 @@
 {
     "tests" : {
     "bgcolortst" : {
-      "version" : 1,
+      "version" : 2,
       "description" : "background color test",
       "constants" : {
       },
@@ -46,24 +46,22 @@
       "allocations" : [ {
         "rule" : null,
         "ranges" : [ {
-          "length" : 0.0,
-          "bucketValue" : 0
-        }, {
-          "length" : 0.0,
-          "bucketValue" : -1
-        }, {
-          "length" : 1.0,
+          "length" : 0.25,
           "bucketValue" : 2
+        }, {
+          "length" : 0.5,
+          "bucketValue" : 2
+        }, {
+          "length" : 0.25,
+          "bucketValue" : 3
         } ]
       } ],
       "testType" : "USER"
     }
   },
   "audit" : {
-        "version" : 2,
+        "version" : 1,
         "updatedBy" : "jack",
-        "updated" : 1379048400001
+        "updated" : 1379048400000
   }
 }
-
-
