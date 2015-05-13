@@ -1,7 +1,7 @@
 {
     "tests" : {
     "bgcolortst" : {
-      "version" : 1,
+      "version" : 2,
       "description" : "background color test",
       "constants" : {
       },
@@ -17,61 +17,43 @@
       }, {
         "name" : "altColor1",
         "value" : 0,
-        "description" : "indeed orange for android",
+        "description" : "indeed orange",
         "payload" : {
             "stringValue" : "#ff6600"
         }
       }, {
         "name" : "altColor2",
         "value" : 1,
-        "description" : "magenta for android >= 5",
+        "description" : "magenta",
         "payload" : {
             "stringValue" : "#CD29C0"
         }
       }, {
         "name" : "altColor3",
         "value" : 2,
-        "description" : "indeed blue for iOS",
+        "description" : "indeed blue",
         "payload" : {
             "stringValue" : "#2164f3"
         }
       }, {
         "name" : "altColor4",
         "value" : 3,
-        "description" : "green for iOS >= 8",
+        "description" : "green",
         "payload" : {
             "stringValue" : "#008040"
         }
       }],
       "allocations" : [ {
-        "rule" : "${userAgent.android && userAgent.OS.majorVersion >= 5}",
-        "ranges" : [ {
-          "length" : 1.0,
-          "bucketValue" : 1
-        } ]
-      }, {
-        "rule" : "${userAgent.android}",
-        "ranges" : [ {
-          "length" : 1.0,
-          "bucketValue" : 0
-        } ]
-      }, {
-        "rule" : "${userAgent.IOS && userAgent.OS.majorVersion >= 8}",
-        "ranges" : [ {
-          "length" : 1.0,
-          "bucketValue" : 3
-        } ]
-      }, {
-        "rule" : "${userAgent.IOS}",
-        "ranges" : [ {
-          "length" : 1.0,
-          "bucketValue" : 2
-        } ]
-      }, {
         "rule" : null,
         "ranges" : [ {
-          "length" : 1.0,
+          "length" : 0.25,
+          "bucketValue" : 0
+        }, {
+          "length" : 0.5,
           "bucketValue" : -1
+        }, {
+          "length" : 0.25,
+          "bucketValue" : 2
         } ]
       } ],
       "testType" : "USER"
