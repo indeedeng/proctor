@@ -27,9 +27,9 @@ Two configuration files need to be provided to run Proctor-Webapp properly. The 
 1. **${config.dir}/proctor-config.properties**
 
     ```bash
-    svn.path=https://YOURSVN.com/svn/repos/proctor-data/
-    svn.login=REPLACE_WITH_USER
-    svn.password=REPLACE_WITH_PASS
+    scm.path=https://YOURSVN.com/svn/repos/proctor-data/
+    scm.login=REPLACE_WITH_USER
+    scm.password=REPLACE_WITH_PASS
     ```
 
 2. **${config.dir}/proctor-webapp.xml**
