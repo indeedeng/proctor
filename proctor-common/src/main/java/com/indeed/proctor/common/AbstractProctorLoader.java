@@ -60,6 +60,12 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
 
         if (newProctor == null) {
             // This should only happen if the versions of the matrix files are the same.
+
+            if (!dataLoadTimer.isLoadedDataSuccessfullyRecently()) {
+                // Clear healthcheck dependency status if the last load attempt failed but version has not changed.
+                dataLoadTimer.loadComplete();
+            }
+
             return false;
         }
         this.current = newProctor;
