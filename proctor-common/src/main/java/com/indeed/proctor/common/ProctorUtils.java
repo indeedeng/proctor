@@ -380,26 +380,30 @@ public abstract class ProctorUtils {
                     testName, declaredType));
         }
         verifyInternallyConsistentDefinition(testName, matrixSource, testDefinition, functionMapper, providedContext);
-            /*
-             * test the matrix for adherence to this application's requirements
-             */
-        final Set<Integer> unknownBuckets = Sets.newHashSet();
 
-        for (final Allocation allocation : allocations) {
-            final List<Range> ranges = allocation.getRanges();
-            //  ensure that each range refers to a known bucket
-            for (final Range range : ranges) {
-                // Externally consistent (application's requirements)
-                if (! knownBuckets.containsKey(range.getBucketValue())) {
-                    // If the bucket has a positive allocation, add it to the list of unknownBuckets
-                    if(range.getLength() > 0) {
-                        unknownBuckets.add(range.getBucketValue());
+        if (!testSpecification.isPayloadOnly()) {
+                /*
+                 * test the matrix for adherence to this application's requirements
+                 */
+            final Set<Integer> unknownBuckets = Sets.newHashSet();
+
+            for (final Allocation allocation : allocations) {
+                final List<Range> ranges = allocation.getRanges();
+                //  ensure that each range refers to a known bucket
+                for (final Range range : ranges) {
+                    // Externally consistent (application's requirements)
+                    if (!knownBuckets.containsKey(range.getBucketValue())) {
+                        // If the bucket has a positive allocation, add it to the list of unknownBuckets
+                        if (range.getLength() > 0) {
+                            unknownBuckets.add(range.getBucketValue());
+                        }
                     }
                 }
             }
-        }
-        if(unknownBuckets.size() > 0) {
-            throw new IncompatibleTestMatrixException("Allocation range in " + testName + " from " + matrixSource + " refers to unknown bucket value(s) " + unknownBuckets + " with length > 0");
+
+            if (unknownBuckets.size() > 0) {
+                throw new IncompatibleTestMatrixException("Allocation range in " + testName + " from " + matrixSource + " refers to unknown bucket value(s) " + unknownBuckets + " with length > 0");
+            }
         }
 
         // TODO(pwp): add some test constants?
