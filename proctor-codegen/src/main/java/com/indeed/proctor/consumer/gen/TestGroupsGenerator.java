@@ -133,8 +133,14 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
                 foundFallbackValue = foundFallbackValue || (bucket.getValue() == testSpecification.getFallbackValue());
             }
 
-            if (! foundFallbackValue) {
-                throw new IllegalArgumentException("Specified fallback value " + testSpecification.getFallbackValue() + " for test " + testName + " is not in the list of standard values: " + Arrays.toString(sortedBuckets));
+            if (testSpecification.isPayloadOnly()) {
+                if (!buckets.isEmpty()) {
+                    throw new IllegalArgumentException("Buckets cannot be specified for a payloadOnly test: " + testName);
+                }
+            } else {
+                if (!foundFallbackValue) {
+                    throw new IllegalArgumentException("Specified fallback value " + testSpecification.getFallbackValue() + " for test " + testName + " is not in the list of standard values: " + Arrays.toString(sortedBuckets));
+                }
             }
 
             final String name = toJavaIdentifier(testName);
@@ -146,6 +152,7 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
             testDef.put("enumName", enumName);
 
             testDef.put("javaClassName", uppercaseFirstChar(name));
+            testDef.put("payloadOnly", testSpecification.isPayloadOnly());
             testDef.put("buckets", buckets);
             testDef.put("defaultValue", testSpecification.getFallbackValue());
             final List<Map<String, String>> nestedPayloadsList = new ArrayList<Map<String,String>>();

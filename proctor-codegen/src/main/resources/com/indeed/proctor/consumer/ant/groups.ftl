@@ -24,8 +24,10 @@ public class ${mainClassName} extends AbstractGroups {
     public static Bucket<${testEnumName}>[] getBuckets(final ${testEnumName} test) {
         switch (test) {
             <#list testDefs as testDef>
+            <#if !testDef.payloadOnly>
             case ${testDef.enumName}:
                 return ${testDef.javaClassName}.values();
+            </#if>
             </#list>
         }
         return null;
@@ -56,6 +58,7 @@ public class ${mainClassName} extends AbstractGroups {
     }
 
 <#list testDefs as testDef>
+    <#if !testDef.payloadOnly>
     public enum ${testDef.javaClassName} implements Bucket<${testEnumName}> {
         <#list testDef.buckets as bucket>
         ${bucket.enumName}(${bucket.value}, "${bucket.normalizedName}")<#if bucket_has_next>,<#else>;</#if>
@@ -98,9 +101,11 @@ public class ${mainClassName} extends AbstractGroups {
         </#if>
     </#list>
     }
+    </#if>
 
 </#list>
 <#list testDefs as testDef>
+    <#if !testDef.payloadOnly>
     @Nonnull
     public ${testDef.javaClassName} get${testDef.javaClassName}() {
         for (final ${testDef.javaClassName} bucket : ${testDef.javaClassName}.values()) {
@@ -114,6 +119,7 @@ public class ${mainClassName} extends AbstractGroups {
         //  is a valid bucket in the test.
         throw new NullPointerException("No fallback bucket found for '${testDef.name}'");
     }
+    </#if>
 
     /**
       * @deprecated Use {@link #get${testDef.javaClassName}Value()} instead
@@ -129,13 +135,14 @@ public class ${mainClassName} extends AbstractGroups {
     <#if (testDef.payloadJavaClass)??>
     <#if (testDef.isMap)??>
     public @Nullable ${mainClassName}Payload.${testDef.name?cap_first} get${testDef.javaClassName}Payload() {
-        final @Nullable TestBucket bucket = getTestBucketForBucket(${testEnumName}.${testDef.enumName}.getName(), ${testDef.javaClassName}.getFallback());
+        final @Nullable TestBucket bucket = getTestBucketForBucket(${testEnumName}.${testDef.enumName}.getName()<#if !testDef.payloadOnly>, ${testDef.javaClassName}.getFallback()</#if>);
         if (bucket == null) {
             return null;
         }
         return new ${mainClassName}Payload.${testDef.name?cap_first}(bucket);
     }
 
+    <#if !testDef.payloadOnly>
     public @Nullable ${mainClassName}Payload.${testDef.name?cap_first} get${testDef.javaClassName}PayloadForBucket(final ${testDef.javaClassName} targetBucket) {
         final @Nullable TestBucket bucket = getTestBucketForBucket(${testEnumName}.${testDef.enumName}.getName(), targetBucket);
         if (bucket == null) {
@@ -143,12 +150,14 @@ public class ${mainClassName} extends AbstractGroups {
         }
         return new ${mainClassName}Payload.${testDef.name?cap_first}(bucket);
     }
+    </#if>
     <#else>
     public @Nullable ${testDef.payloadJavaClass} get${testDef.javaClassName}Payload() {
-        final Payload payload = getPayload(${testEnumName}.${testDef.enumName}.getName(), ${testDef.javaClassName}.getFallback());
+        final Payload payload = getPayload(${testEnumName}.${testDef.enumName}.getName()<#if !testDef.payloadOnly>, ${testDef.javaClassName}.getFallback()</#if>);
         return payload.${testDef.payloadAccessorName}();
     }
 
+    <#if !testDef.payloadOnly>
     public @Nullable ${testDef.payloadJavaClass} get${testDef.javaClassName}PayloadForBucket(final ${testDef.javaClassName} targetBucket) {
         final @Nullable TestBucket bucket = getTestBucketForBucket(${testEnumName}.${testDef.enumName}.getName(), targetBucket);
         if (bucket == null) {
@@ -160,6 +169,7 @@ public class ${mainClassName} extends AbstractGroups {
         }
         return payload.${testDef.payloadAccessorName}();
     }
+    </#if>
     </#if>
     </#if>
 
