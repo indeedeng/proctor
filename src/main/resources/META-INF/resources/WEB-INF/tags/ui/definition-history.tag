@@ -26,8 +26,6 @@
 
 
         <div>
-            <div>ats</div>
-
             <ui:expand-collapse more="Show allocations" less="Hide allocations" isMoreExpanded="false" >
                             <ui:allocations definition="${revisionDefinition.definition}"/>
             </ui:expand-collapse>
