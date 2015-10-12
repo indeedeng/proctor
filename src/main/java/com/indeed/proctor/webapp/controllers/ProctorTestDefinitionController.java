@@ -45,6 +45,7 @@ import com.indeed.proctor.webapp.extensions.PreDefinitionPromoteChange;
 import com.indeed.proctor.webapp.extensions.PostDefinitionPromoteChange;
 import com.indeed.proctor.webapp.extensions.RevisionCommitCommentFormatter;
 import com.indeed.proctor.webapp.model.AppVersion;
+import com.indeed.proctor.webapp.model.RevisionDefinition;
 import com.indeed.proctor.webapp.model.ProctorClientApplication;
 import com.indeed.proctor.webapp.model.SessionViewModel;
 import com.indeed.proctor.webapp.model.WebappConfiguration;
@@ -188,7 +189,7 @@ public class ProctorTestDefinitionController extends AbstractController {
         );
         final List<Revision> history = Collections.emptyList();
         final EnvironmentVersion version = null;
-        return doView(Environment.WORKING, Views.CREATE, "", definition, history, version, model);
+        return doView(Environment.WORKING, Views.CREATE, "", definition, history, null, version, model);
     }
 
     @RequestMapping(value = "/{testName}", method = RequestMethod.GET)
@@ -214,8 +215,20 @@ public class ProctorTestDefinitionController extends AbstractController {
             return "404";
         }
         final List<Revision> history = getTestHistory(store, testName);
+        final List<RevisionDefinition> revisionDefinitions = makeRevisionDefinitionList(store, testName, history);
+
         final EnvironmentVersion version = promoter.getEnvironmentVersion(testName);
-        return doView(theEnvironment, Views.DETAILS, testName, definition, history, version, model);
+        return doView(theEnvironment, Views.DETAILS, testName, definition, history, revisionDefinitions, version, model);
+    }
+
+    private List<RevisionDefinition> makeRevisionDefinitionList(ProctorStore store, String testName, List<Revision> history) {
+        final List<RevisionDefinition> revisionDefinitions = new ArrayList<RevisionDefinition>();
+        for(Revision revision: history) {
+            final String revisionName = revision.getRevision();
+            final TestDefinition definition = getTestDefinition(store, testName, revisionName);
+            revisionDefinitions.add(new RevisionDefinition(r, definition));
+        }
+        return revisionDefinitions;
     }
 
     @RequestMapping(value = "/{testName}/edit", method = RequestMethod.GET)
@@ -234,7 +247,9 @@ public class ProctorTestDefinitionController extends AbstractController {
         }
         final List<Revision> history = getTestHistory(store, testName);
         final EnvironmentVersion version = promoter.getEnvironmentVersion(testName);
-        return doView(theEnvironment, Views.EDIT, testName, definition, history, version, model);
+
+
+        return doView(theEnvironment, Views.EDIT, testName, definition, history, null, version, model);
     }
 
     @RequestMapping(value = "/{testName}/delete", method = RequestMethod.POST)
@@ -1236,6 +1251,7 @@ public class ProctorTestDefinitionController extends AbstractController {
                           // TODO (parker) 7/27/12 - add Revisioned (that has Revision + testName)
                           final TestDefinition definition,
                           final List<Revision> history,
+                          final List<RevisionDefinition> revisionDefinitions,
                           final EnvironmentVersion version,
                           Model model) {
         model.addAttribute("testName", testName);
@@ -1243,6 +1259,7 @@ public class ProctorTestDefinitionController extends AbstractController {
         model.addAttribute("isCreate", view == Views.CREATE);
         model.addAttribute("branch", b);
         model.addAttribute("version", version);
+        model.addAttribute("revisionDefinitions", revisionDefinitions);
 
         final Map<String, Object> specialConstants;
         if (definition.getSpecialConstants() != null) {
