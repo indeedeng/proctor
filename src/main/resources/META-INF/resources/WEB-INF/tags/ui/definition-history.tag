@@ -4,10 +4,9 @@
 <%@ tag language="java" pageEncoding="UTF-8" description="Popup view of a definition" body-content="scriptless" %>
 <%@ attribute name="testName" type="java.lang.String" description="Test Name" %>
 <%@ attribute name="branch" type="com.indeed.proctor.webapp.db.Environment" description="Branch" %>
-<%@ attribute name="testDefinitionHistory" type="java.util.List" description="java.util.List<com.indeed.proctor.store.Revision>" %>
-<%@ attribute name="revisionDefinitions" type="java.util.List<com.indeed.proctor.webapp.model.RevisionDefinition>" description="revision to definition map" %>
+<%@ attribute name="testDefinitionHistory" type="java.util.List<com.indeed.proctor.webapp.model.RevisionDefinition>" description="revision to definition map" %>
 <%@ attribute name="version" type="com.indeed.proctor.common.EnvironmentVersion" description="Versions across different branches" %>
-<c:forEach items="${revisionDefinitions}" var="revisionDefinition">
+<c:forEach items="${testDefinitionHistory}" var="revisionDefinition">
     <c:set var="testDefinitionVersion" value="${revisionDefinition.revision}" />
 
     <c:set var="isTrunkRevision" value="${proctor:isCurrentVersionOnTrunk(branch, testDefinitionVersion, version)}" />
@@ -27,6 +26,11 @@
 
 
         <div>
+            <div>ats</div>
+
+            <ui:expand-collapse more="Show allocations" less="Hide allocations" isMoreExpanded="false" >
+                            <ui:allocations definition="${revisionDefinition.definition}"/>
+            </ui:expand-collapse>
             <ui:expand-collapse more="Show buckets" less="Hide buckets" isMoreExpanded="false" >
                 <div class="media">
                         <div class="bd">
@@ -34,12 +38,6 @@
                         </div>
                 </div>
             </ui:expand-collapse>
-
-
-            <ui:expand-collapse more="Show allocations" less="Hide allocations" isMoreExpanded="false" >
-                            <ui:allocations definition="${revisionDefinition.definition}"/>
-            </ui:expand-collapse>
-
             <c:if test="${!isQaRevision && branch.name == 'trunk'}">
             <ui:expand-collapse more="Promote r${testDefinitionVersion.revision} to QA" less="Cancel" isMoreExpanded="false" >
                 <%-- TODO: parker 2012-09-04 Depending on the current branch (eg displaying history of QA, you cannot promote to QA) --%>

@@ -6,6 +6,7 @@ import com.indeed.proctor.store.Revision;
 public class RevisionDefinition {
 
     private Revision revision;
+    private TestDefinition definition;
 
     public TestDefinition getDefinition() {
         return definition;
@@ -14,9 +15,6 @@ public class RevisionDefinition {
     public Revision getRevision() {
         return revision;
     }
-
-    private TestDefinition definition;
-
 
     public RevisionDefinition(Revision revision, TestDefinition definition) {
         this.revision = revision;

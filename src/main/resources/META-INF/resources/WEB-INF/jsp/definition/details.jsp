@@ -10,7 +10,7 @@
 <%--@elvariable id="testDefinitionJson" type="java.lang.String"--%>
 <%--@elvariable id="testSpecificationJson" type="java.lang.String"--%>
 <%--@elvariable id="testDefinitionVersion" type="com.indeed.proctor.store.Revision"--%>
-<%--@elvariable id="testDefinitionHistory" type="java.util.List<com.indeed.proctor.store.Revision>"--%>
+<%--@elvariable id="testDefinitionHistory" type="java.util.List<com.indeed.proctor.webapp.model.RevisionDefinition>"--%>
 <%--@elvariable id="branch" type="com.indeed.proctor.webapp.db.Environment"--%>
 <%--@elvariable id="version" type="com.indeed.proctor.common.EnvironmentVersion"--%>
 <%--@elvariable id="devApplications" type="java.util.Set<com.indeed.proctor.webapp.model.AppVersion>"--%>

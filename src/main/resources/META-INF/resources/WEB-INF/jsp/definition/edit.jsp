@@ -10,7 +10,7 @@
 <%--@elvariable id="testDefinition" type="com.indeed.proctor.common.model.TestDefinition"--%>
 <%--@elvariable id="testDefinitionJson" type="java.lang.String"--%>
 <%--@elvariable id="testDefinitionVersion" type="com.indeed.proctor.store.Revision"--%>
-<%--@elvariable id="testDefinitionHistory" type="java.util.List<com.indeed.proctor.store.Revision>"--%>
+<%--@elvariable id="testDefinitionHistory" type="java.util.List<com.indeed.proctor.webapp.model.RevisionDefinition>"--%>
 <%--@elvariable id="testTypes" type="java.util.List<com.indeed.proctor.common.model.TestType>"--%>
 <%--@elvariable id="isCreate" type="java.lang.Boolean"--%>
 <%--@elvariable id="branch" type="com.indeed.proctor.webapp.db.Environment"--%>
@@ -223,7 +223,7 @@
         indeed.proctor.app.editor.start('${testName}', ${testDefinitionJson},
                 <c:choose>
                     <c:when test="${fn:length(testDefinitionHistory) > 0}">
-                        "${testDefinitionHistory[0].revision}"
+                        "${testDefinitionHistory[0].revision.revision}"
                     </c:when>
                     <c:otherwise>"-1"</c:otherwise>
                 </c:choose>
