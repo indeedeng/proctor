@@ -26,16 +26,18 @@
 
 
         <div>
-            <ui:expand-collapse more="Show allocations" less="Hide allocations" isMoreExpanded="false" >
-                            <ui:allocations definition="${revisionDefinition.definition}"/>
-            </ui:expand-collapse>
-            <ui:expand-collapse more="Show buckets" less="Hide buckets" isMoreExpanded="false" >
-                <div class="media">
-                        <div class="bd">
-                            <ui:buckets definition="${revisionDefinition.definition}"/>
-                        </div>
-                </div>
-            </ui:expand-collapse>
+            <c:if test="${revisionDefinition.definition != null}">
+                <ui:expand-collapse more="Show allocations" less="Hide allocations" isMoreExpanded="false" >
+                                <ui:allocations definition="${revisionDefinition.definition}"/>
+                </ui:expand-collapse>
+                <ui:expand-collapse more="Show buckets" less="Hide buckets" isMoreExpanded="false" >
+                    <div class="media">
+                            <div class="bd">
+                                <ui:buckets definition="${revisionDefinition.definition}"/>
+                            </div>
+                    </div>
+                </ui:expand-collapse>
+            </c:if>
             <c:if test="${!isQaRevision && branch.name == 'trunk'}">
             <ui:expand-collapse more="Promote r${testDefinitionVersion.revision} to QA" less="Cancel" isMoreExpanded="false" >
                 <%-- TODO: parker 2012-09-04 Depending on the current branch (eg displaying history of QA, you cannot promote to QA) --%>
