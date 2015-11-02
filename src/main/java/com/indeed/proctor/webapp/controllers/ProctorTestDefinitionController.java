@@ -45,6 +45,7 @@ import com.indeed.proctor.webapp.extensions.PreDefinitionPromoteChange;
 import com.indeed.proctor.webapp.extensions.PostDefinitionPromoteChange;
 import com.indeed.proctor.webapp.extensions.RevisionCommitCommentFormatter;
 import com.indeed.proctor.webapp.model.AppVersion;
+import com.indeed.proctor.webapp.model.RevisionDefinition;
 import com.indeed.proctor.webapp.model.ProctorClientApplication;
 import com.indeed.proctor.webapp.model.SessionViewModel;
 import com.indeed.proctor.webapp.model.WebappConfiguration;
@@ -63,6 +64,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.view.RedirectView;
 
@@ -80,6 +82,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Cookie;
 
 /**
  * @author parker
@@ -186,16 +190,19 @@ public class ProctorTestDefinitionController extends AbstractController {
             Collections.<String, Object>emptyMap(),
             "" /* description */
         );
-        final List<Revision> history = Collections.emptyList();
+        final List<RevisionDefinition> history = Collections.emptyList();
         final EnvironmentVersion version = null;
         return doView(Environment.WORKING, Views.CREATE, "", definition, history, version, model);
     }
 
     @RequestMapping(value = "/{testName}", method = RequestMethod.GET)
     public String show(
+        HttpServletResponse response,
         @PathVariable final String testName,
         @RequestParam(required = false) final String branch,
         @RequestParam(required = false, defaultValue = "", value = "r") final String revision,
+        @RequestParam(required = false, value = "alloc_hist") final String loadAllocHistParam,
+        @CookieValue(value="loadAllocationHistory", defaultValue = "") String loadAllocHistCookie,
         final Model model
     ) {
         final Environment theEnvironment = determineEnvironmentFromParameter(branch);
@@ -213,9 +220,49 @@ public class ProctorTestDefinitionController extends AbstractController {
             // unknown testdefinition
             return "404";
         }
-        final List<Revision> history = getTestHistory(store, testName);
+        final boolean loadAllocHistory = shouldLoadAllocationHistory(loadAllocHistParam, loadAllocHistCookie, response);
+        final List<RevisionDefinition> history = makeRevisionDefinitionList(store, testName, loadAllocHistory);
         final EnvironmentVersion version = promoter.getEnvironmentVersion(testName);
         return doView(theEnvironment, Views.DETAILS, testName, definition, history, version, model);
+    }
+
+    private List<RevisionDefinition> makeRevisionDefinitionList(ProctorStore store, String testName, boolean useDefinitions) {
+        final List<Revision> history = getTestHistory(store, testName);
+        final List<RevisionDefinition> revisionDefinitions = new ArrayList<RevisionDefinition>();
+        if(useDefinitions) {
+            for (Revision revision : history) {
+                final String revisionName = revision.getRevision();
+                final TestDefinition definition = getTestDefinition(store, testName, revisionName);
+                revisionDefinitions.add(new RevisionDefinition(revision, definition));
+            }
+        }
+        else {
+            for (Revision revision : history) {
+                revisionDefinitions.add(new RevisionDefinition(revision, null));
+            }
+        }
+        return revisionDefinitions;
+    }
+
+    private boolean shouldLoadAllocationHistory(String loadAllocHistParam, String loadAllocHistCookie, HttpServletResponse response) {
+        if (loadAllocHistParam != null) {
+            if (loadAllocHistParam.equals("true") || loadAllocHistParam.equals("1")) {
+                final Cookie lahCookie = new Cookie("loadAllocationHistory", "true");
+                lahCookie.setPath("/");
+                response.addCookie(lahCookie);
+                return true;
+            } else {
+                final Cookie deletionCookie = new Cookie("loadAllocationHistory", "");
+                deletionCookie.setMaxAge(0);
+                deletionCookie.setPath("/");
+                response.addCookie(deletionCookie);
+                return false;
+            }
+        } else if (loadAllocHistCookie.equals("true") || loadAllocHistCookie.equals("false")) {
+            return Boolean.parseBoolean(loadAllocHistCookie);
+        } else {
+            return false;
+        }
     }
 
     @RequestMapping(value = "/{testName}/edit", method = RequestMethod.GET)
@@ -232,8 +279,10 @@ public class ProctorTestDefinitionController extends AbstractController {
             // unknown testdefinition
             return "404";
         }
-        final List<Revision> history = getTestHistory(store, testName);
+        final List<RevisionDefinition> history = makeRevisionDefinitionList(store, testName, false);
         final EnvironmentVersion version = promoter.getEnvironmentVersion(testName);
+
+
         return doView(theEnvironment, Views.EDIT, testName, definition, history, version, model);
     }
 
@@ -1235,7 +1284,7 @@ public class ProctorTestDefinitionController extends AbstractController {
                           final String testName,
                           // TODO (parker) 7/27/12 - add Revisioned (that has Revision + testName)
                           final TestDefinition definition,
-                          final List<Revision> history,
+                          final List<RevisionDefinition> history,
                           final EnvironmentVersion version,
                           Model model) {
         model.addAttribute("testName", testName);
