@@ -13,7 +13,7 @@ goog.provide('${packageName}');
 ${packageName} = (function() {
 <#else>
 (function(root, factory) {
-  if (typeof define === 'function' ${"\a\a"} define.amd) {
+  if (typeof define === 'function' ${r"&&"} define.amd) {
     define('${packageName}', [], factory);
   } else if (typeof exports === 'object') {
     module.exports = factory();
