@@ -12,7 +12,15 @@ goog.provide('${packageName}');
  */
 ${packageName} = (function() {
 <#else>
-define('${packageName}', [], function() {
+(function(root, factory) {
+  if (typeof define === 'function' ${r"&&"} define.amd) {
+    define('${groupsClassName}', [], factory);
+  } else if (typeof exports === 'object') {
+    module.exports = factory();
+  } else {
+    root.${groupsClassName} = factory();
+  }
+}(this, function() {
 </#if>
 
   /**
@@ -131,5 +139,5 @@ define('${packageName}', [], function() {
 <#if useClosure>
 }());
 <#else>
-});
+}));
 </#if>
