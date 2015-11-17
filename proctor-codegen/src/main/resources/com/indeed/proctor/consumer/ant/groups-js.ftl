@@ -14,7 +14,7 @@ ${packageName} = (function() {
 <#else>
 (function(root, factory) {
   if (typeof define === 'function' ${r"&&"} define.amd) {
-    define('${packageName}', [], factory);
+    define('${groupsClassName}', [], factory);
   } else if (typeof exports === 'object') {
     module.exports = factory();
   } else {
