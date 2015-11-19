@@ -10,8 +10,7 @@
 <div class="js-allocation-editor">
     <div class="panel">
         <c:set var="isDefault" value="${empty allocation.rule && allocationIndex == fn:length(definition.allocations) - 1}"/>
-        <c:if test="${isDefault}"><input type="hidden" class="json js-input-rule" name="allocations[${allocationIndex}].rule" value=""/></c:if>
-        <c:if test="${!isDefault}">
+        <div class="js-rule-container <c:if test="${isDefault}">hide</c:if>">
             <ui:grid-row>
                 <ui:grid-columns width="two">
                     <label class="inline">Rule</label>
@@ -20,7 +19,7 @@
                     <input type="text" class="json js-input-rule" name="allocations[${allocationIndex}].rule" value="${fn:escapeXml(allocation.rule)}" />
                 </ui:grid-columns>
             </ui:grid-row>
-        </c:if>
+        </div>
         <div class="js-allocations">
             <c:forEach items="${allocation.ranges}" var="range" varStatus="status">
             <ui:grid-row extraCssClass="js-ratio-row">
@@ -63,5 +62,9 @@
                 <ui:grid-columns width="two"><a class="js-add-ratio small button secondary radius" href="#">Add Ratio</a></ui:grid-columns>
             </ui:grid-row>
         </div>
+        <ui:grid-row>
+            <ui:grid-columns width="three" ><a class="js-delete-allocation small button secondary radius <c:if test="${isDefault}">hide</c:if>" href="#">Delete Allocation</a></ui:grid-columns>
+            <ui:grid-columns width="two" ><a class="js-add-allocation small button secondary radius" href="#">Add Allocation</a></ui:grid-columns>
+        </ui:grid-row>
     </div>
 </div>

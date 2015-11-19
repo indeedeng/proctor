@@ -37,6 +37,8 @@ indeed.proctor.editor.AllocationsEditor =
   /** @type {Array.<indeed.proctor.editor.AllocationEditor>} @private */
   this.allocationEditors_ = [];
 
+  this.handler_ = new goog.events.EventHandler(this);
+
   this.bind_();
 };
 goog.inherits(indeed.proctor.editor.AllocationsEditor, goog.events.EventTarget);
@@ -51,9 +53,13 @@ indeed.proctor.editor.AllocationsEditor.prototype.bind_ = function() {
       'js-allocation-editor', this.container);
   for (var i = 0, len = editors.length; i < len; i++) {
     // assert i < this.allocations.length
-    this.allocationEditors_.push(
-        new indeed.proctor.editor.AllocationEditor(editors[i], i,
-        this.buckets, this.allocations[i], i == editors.length - 1));
+
+    var allocationEditor = new indeed.proctor.editor.AllocationEditor(editors[i], i,
+        this.buckets, this.allocations[i], i == editors.length - 1);
+    this.handler_.listen(allocationEditor, "deleteAllocation", this.onDeleteAllocationClick_);
+    this.handler_.listen(allocationEditor, "addAllocation", this.onAddAllocationClick_);
+
+    this.allocationEditors_.push(allocationEditor);
   }
 };
 
@@ -97,6 +103,107 @@ indeed.proctor.editor.AllocationsEditor.prototype.validate = function() {
   return isValid;
 };
 
+
+/**
+ * @param {goog.events.BrowserEvent} e delete allocation event with an AllocationEditor as target.
+ * @private
+ */
+indeed.proctor.editor.AllocationsEditor.prototype.onDeleteAllocationClick_ = function(e) {
+  var referenceAllocationEditor = e.target;
+  this.handler_.unlisten(referenceAllocationEditor, ["deleteAllocation", "addAllocation"]);
+
+  this.container.removeChild(referenceAllocationEditor.container);
+  goog.array.removeAt(this.allocationEditors_, referenceAllocationEditor.index);
+  this.updateAllocationEditorIndices_();
+};
+
+
+/**
+ * @param {goog.events.BrowserEvent} e add allocation event with an AllocationEditor as target.
+ * @private
+ */
+indeed.proctor.editor.AllocationsEditor.prototype.onAddAllocationClick_ = function(e) {
+  var referenceAllocationEditor = e.target;
+  var allocationEditor = this.makeEmptyAllocationEditor_(referenceAllocationEditor);
+  this.handler_.listen(allocationEditor, "deleteAllocation", this.onDeleteAllocationClick_);
+  this.handler_.listen(allocationEditor, "addAllocation", this.onAddAllocationClick_);
+
+  this.container.insertBefore(allocationEditor.container, referenceAllocationEditor.container);
+  goog.array.insertAt(this.allocationEditors_, allocationEditor, referenceAllocationEditor.index);
+  this.updateAllocationEditorIndices_();
+};
+
+
+/**
+ *
+ * @param {indeed.proctor.editor.AllocationEditor} referenceAllocationEditor used as a reference to create a new one.
+ * @return {indeed.proctor.editor.AllocationEditor} a new, non-default AllocationEditor with no allocations.
+ * @private
+ */
+indeed.proctor.editor.AllocationsEditor.prototype.makeEmptyAllocationEditor_ = function(referenceAllocationEditor) {
+  var emptyContainer = referenceAllocationEditor.container.cloneNode(true);
+
+  // Show rule and delete allocation button
+  goog.dom.classes.remove(goog.dom.getElementByClass('js-rule-container', emptyContainer), 'hide');
+  goog.dom.classes.remove(goog.dom.getElementByClass('js-delete-allocation', emptyContainer), 'hide');
+
+  // Clear existing allocations and error messages
+  goog.dom.removeChildren(goog.dom.getElementByClass('js-allocations', emptyContainer));
+  goog.dom.removeChildren(goog.dom.getElementByClass('allocations-msg-container', emptyContainer));
+
+  // Clear existing allocation bars
+  var allocationBars = goog.dom.getElementsByClass('ui-allocation-bar', emptyContainer);
+  for (var i = 0; i < allocationBars.length; i++) {
+    goog.dom.removeChildren(allocationBars[i]);
+  }
+
+  // Clear input fields
+  var inputs = goog.dom.getElementsByTagNameAndClass(goog.dom.TagName.INPUT, null, emptyContainer);
+  for (var i = 0; i < inputs.length; i++) {
+    if (inputs[i].getAttribute('name') == 'add-bucket.length') {
+      inputs[i].value = '0.0';
+    } else {
+      inputs[i].value = '';
+    }
+    indeed.foundation.forms.removeError(inputs[i]);
+  }
+
+  // Clear select fields
+  var selects = goog.dom.getElementsByTagNameAndClass(goog.dom.TagName.SELECT, null, emptyContainer);
+  for (var i = 0; i < selects.length; i++) {
+    selects[i].selectedIndex = 0;
+    indeed.foundation.forms.removeError(selects[i]);
+  }
+
+  return new indeed.proctor.editor.AllocationEditor(emptyContainer, referenceAllocationEditor.index,
+      this.buckets, {'rule': null, 'ranges': []}, false)
+};
+
+
+/**
+ * Updates the indices of the allocation editors according to their actual position.
+ * @private
+ */
+indeed.proctor.editor.AllocationsEditor.prototype.updateAllocationEditorIndices_ = function() {
+  for (var i = 0; i < this.allocationEditors_.length; i++) {
+    var allocationEditor = this.allocationEditors_[i];
+    this.allocationEditors_[i].index = i;
+
+    var allocationContainer = allocationEditor.container;
+    var inputs = goog.dom.getElementsByTagNameAndClass(goog.dom.TagName.INPUT, null, allocationContainer);
+    var selects = goog.dom.getElementsByTagNameAndClass(goog.dom.TagName.SELECT, null, allocationContainer);
+    var elements = goog.array.concat(goog.array.toArray(inputs), goog.array.toArray(selects));
+
+    var nameRegex = new RegExp('allocations\[[0-9]+\]', 'g');
+    var replacement = 'allocations[' + allocationEditor.index + ']';
+
+    goog.array.forEach(elements, function(element) {
+      var inputName = element.getAttribute('name');
+      var newName = inputName.replace(nameRegex, replacement);
+      element.setAttribute('name', newName);
+    });
+  }
+};
 
 
 /**
@@ -149,6 +256,20 @@ indeed.proctor.editor.AllocationEditor.prototype.bind_ = function() {
     this.handler_.listen(addRatio[i], goog.events.EventType.CLICK,
                          this.onAddRatioClick_);
   }
+
+  var deleteAllocation = this.dom_.getElementByClass('js-delete-allocation', this.container);
+  this.handler_.listen(deleteAllocation, goog.events.EventType.CLICK,
+      function(e) {
+        e.preventDefault();
+        this.dispatchEvent({'type': 'deleteAllocation'});
+      });
+
+  var addAllocation = this.dom_.getElementByClass('js-add-allocation', this.container);
+  this.handler_.listen(addAllocation, goog.events.EventType.CLICK,
+      function(e) {
+        e.preventDefault();
+        this.dispatchEvent({'type': 'addAllocation'});
+      });
 
   this.handler_.listen(this, ['ratioChange', 'ratioAdded', 'ratioDeleted'],
                        this.onDataChange_);
