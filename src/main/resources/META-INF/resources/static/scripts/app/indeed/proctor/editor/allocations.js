@@ -115,6 +115,7 @@ indeed.proctor.editor.AllocationsEditor.prototype.onDeleteAllocationClick_ = fun
 
   this.container.removeChild(referenceAllocationEditor.container);
   goog.array.removeAt(this.allocationEditors_, referenceAllocationEditor.index);
+  referenceAllocationEditor.dispose();
   this.updateAllocationEditorIndices_();
 };
 
@@ -231,7 +232,10 @@ indeed.proctor.editor.AllocationEditor =
   this.ranges = goog.array.clone(allocation['ranges']);
 
   this.isDefault = isDefault;
+
+  /** @type {goog.events.EventHandler} @private */
   this.handler_ = new goog.events.EventHandler(this);
+  this.registerDisposable(this.handler_);
 
   this.bind_();
 };
