@@ -5,6 +5,8 @@ div.ui-panel-buttons { background-color: #FFF; border-color: #2BA6CB }
 
 div.alert-box.warning { background-color: #FF6C3C; border-color: #FF4609; color: #FFF; }
 
+.button.hide { display:none; }
+
 .nav-bar { overflow: hidden; }
 .nav-bar > li.nav-bar-right { float: right; padding: 0 20px; }
 .nav-bar > li.nav-bar-right:hover { background-color: inherit;}
