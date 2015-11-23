@@ -468,7 +468,6 @@ p.vevent abbr { cursor: default; text-decoration: none; font-weight: bold; borde
 .button:hover { color: white; background-color: #2284a1; }
 .button:active { -webkit-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2) inset; -moz-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2) inset; box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2) inset; }
 .button:focus { -webkit-box-shadow: 0 0 4px #2ba6cb, 0 1px 0 rgba(255, 255, 255, 0.5) inset; -moz-box-shadow: 0 0 4px #2ba6cb, 0 1px 0 rgba(255, 255, 255, 0.5) inset; box-shadow: 0 0 4px #2ba6cb, 0 1px 0 rgba(255, 255, 255, 0.5) inset; color: white; }
-.button.hide { display:none; }
 .button.large { font-size: 17px; padding: 15px 30px 16px; }
 .button.medium { font-size: 14px; }
 .button.small { font-size: 11px; padding: 7px 14px 8px; }

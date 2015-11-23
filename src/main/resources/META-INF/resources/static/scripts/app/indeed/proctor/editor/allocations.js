@@ -37,6 +37,7 @@ indeed.proctor.editor.AllocationsEditor =
   /** @type {Array.<indeed.proctor.editor.AllocationEditor>} @private */
   this.allocationEditors_ = [];
 
+  /** @type {goog.events.EventHandler} @private */
   this.handler_ = new goog.events.EventHandler(this);
 
   this.bind_();
@@ -56,8 +57,8 @@ indeed.proctor.editor.AllocationsEditor.prototype.bind_ = function() {
 
     var allocationEditor = new indeed.proctor.editor.AllocationEditor(editors[i], i,
         this.buckets, this.allocations[i], i == editors.length - 1);
-    this.handler_.listen(allocationEditor, "deleteAllocation", this.onDeleteAllocationClick_);
-    this.handler_.listen(allocationEditor, "addAllocation", this.onAddAllocationClick_);
+    this.handler_.listen(allocationEditor, 'deleteAllocation', this.onDeleteAllocationClick_);
+    this.handler_.listen(allocationEditor, 'addAllocation', this.onAddAllocationClick_);
 
     this.allocationEditors_.push(allocationEditor);
   }
@@ -105,12 +106,12 @@ indeed.proctor.editor.AllocationsEditor.prototype.validate = function() {
 
 
 /**
- * @param {goog.events.BrowserEvent} e delete allocation event with an AllocationEditor as target.
+ * @param {goog.events.Event} e delete allocation event with an AllocationEditor as target.
  * @private
  */
 indeed.proctor.editor.AllocationsEditor.prototype.onDeleteAllocationClick_ = function(e) {
   var referenceAllocationEditor = e.target;
-  this.handler_.unlisten(referenceAllocationEditor, ["deleteAllocation", "addAllocation"]);
+  this.handler_.unlisten(referenceAllocationEditor, ['deleteAllocation', 'addAllocation']);
 
   this.container.removeChild(referenceAllocationEditor.container);
   goog.array.removeAt(this.allocationEditors_, referenceAllocationEditor.index);
@@ -119,14 +120,14 @@ indeed.proctor.editor.AllocationsEditor.prototype.onDeleteAllocationClick_ = fun
 
 
 /**
- * @param {goog.events.BrowserEvent} e add allocation event with an AllocationEditor as target.
+ * @param {goog.events.Event} e add allocation event with an AllocationEditor as target.
  * @private
  */
 indeed.proctor.editor.AllocationsEditor.prototype.onAddAllocationClick_ = function(e) {
   var referenceAllocationEditor = e.target;
   var allocationEditor = this.makeEmptyAllocationEditor_(referenceAllocationEditor);
-  this.handler_.listen(allocationEditor, "deleteAllocation", this.onDeleteAllocationClick_);
-  this.handler_.listen(allocationEditor, "addAllocation", this.onAddAllocationClick_);
+  this.handler_.listen(allocationEditor, 'deleteAllocation', this.onDeleteAllocationClick_);
+  this.handler_.listen(allocationEditor, 'addAllocation', this.onAddAllocationClick_);
 
   this.container.insertBefore(allocationEditor.container, referenceAllocationEditor.container);
   goog.array.insertAt(this.allocationEditors_, allocationEditor, referenceAllocationEditor.index);
@@ -187,7 +188,7 @@ indeed.proctor.editor.AllocationsEditor.prototype.makeEmptyAllocationEditor_ = f
 indeed.proctor.editor.AllocationsEditor.prototype.updateAllocationEditorIndices_ = function() {
   for (var i = 0; i < this.allocationEditors_.length; i++) {
     var allocationEditor = this.allocationEditors_[i];
-    this.allocationEditors_[i].index = i;
+    allocationEditor.index = i;
 
     var allocationContainer = allocationEditor.container;
     var inputs = goog.dom.getElementsByTagNameAndClass(goog.dom.TagName.INPUT, null, allocationContainer);
