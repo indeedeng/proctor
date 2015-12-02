@@ -7,15 +7,12 @@
 <%@ attribute name="testDefinitionHistory" type="java.util.List<com.indeed.proctor.webapp.model.RevisionDefinition>" description="revision to definition map" %>
 <%@ attribute name="version" type="com.indeed.proctor.common.EnvironmentVersion" description="Versions across different branches" %>
 
-<c:set var="branchParam" value="branch=trunk"/>
-<c:if test="${param.branch eq 'qa'}"><c:set var="branchParam" value="branch=qa"/></c:if>
-<c:if test="${param.branch eq 'production'}"><c:set var="branchParam" value="branch=production"/></c:if>
 <c:choose>
     <c:when test="${testDefinitionHistory != null && testDefinitionHistory.size() > 0 && testDefinitionHistory.get(0).definition != null}">
-        <a class="round label secondary mbl" href="/proctor/definition/${testName}?${branchParam}&alloc_hist=#tab-history">Do not load allocation history</a>
+        <a class="round label secondary mbl" href="/proctor/definition/${testName}?branch=${branch.name}&alloc_hist=#tab-history">Hide allocation history</a>
     </c:when>
     <c:otherwise>
-        <a class="round label secondary mbl" href="/proctor/definition/${testName}?${branchParam}&alloc_hist=1#tab-history">Load allocation history</a>
+        <a class="round label secondary mbl" href="/proctor/definition/${testName}?branch=${branch.name}&alloc_hist=1#tab-history">Load allocation history</a>
     </c:otherwise>
 </c:choose>
 
