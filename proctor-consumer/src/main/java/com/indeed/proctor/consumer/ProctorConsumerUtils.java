@@ -30,6 +30,7 @@ public class ProctorConsumerUtils {
      */
     public static final String FORCE_GROUPS_PARAMETER = "prforceGroups";
     public static final String FORCE_GROUPS_COOKIE_NAME = "prforceGroups";
+    public static final String FORCE_GROUPS_HEADER = "X-PRFORCEGROUPS";
 
     public static ProctorResult determineBuckets(final HttpServletRequest request, final HttpServletResponse response, final Proctor proctor,
                                                     final String identifier, final TestType testType, final Map<String, Object> context, final boolean allowForcedGroups) {
@@ -66,6 +67,11 @@ public class ProctorConsumerUtils {
         final String param = request.getParameter(FORCE_GROUPS_PARAMETER);
         if (param != null) {
             return param;
+        }
+
+        final String header = request.getHeader(FORCE_GROUPS_HEADER);
+        if (header != null) {
+            return header;
         }
 
         final Cookie[] cookies = request.getCookies();
