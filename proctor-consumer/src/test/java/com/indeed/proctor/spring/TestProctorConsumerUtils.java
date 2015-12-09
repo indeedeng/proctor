@@ -38,6 +38,14 @@ public class TestProctorConsumerUtils {
             Assert.assertEquals(1, forcedGroups.size());
             Assert.assertEquals(3, (int) forcedGroups.get("testing"));
         }
+        //Test that header works
+        {
+            final MockHttpServletRequest mockRequest = new MockHttpServletRequest();
+            mockRequest.addHeader(ProctorConsumerUtils.FORCE_GROUPS_HEADER, "testing4");
+            final Map<String, Integer> forcedGroups = ProctorConsumerUtils.parseForcedGroups(mockRequest);
+            Assert.assertEquals(1, forcedGroups.size());
+            Assert.assertEquals(4, (int) forcedGroups.get("testing"));
+        }
         //empty parameter
         {
             final MockHttpServletRequest mockRequest = new MockHttpServletRequest();
