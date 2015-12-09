@@ -226,7 +226,8 @@ http://www.example.com/path?prforceGroups=bgcolortst1
 ```
 
 - When forcing groups, a test's `eligibility rules` and `allocation rules` are ignored.
-- Groups that were not forced will continue to be allocated
+- Groups that were not forced will continue to be allocated.
+- An _X-PRFORCEGROUPS_ request header can be used instead of the url parameter.
 - a cookie set on the fully-qualified domain, path="/" will be set containing your forced groups. manually delete this cookie or reset it with another _prforceGroups_ parameter.
 
 ## viewing the proctor state
