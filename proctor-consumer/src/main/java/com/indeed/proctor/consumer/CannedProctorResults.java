@@ -21,7 +21,7 @@ public class CannedProctorResults {
             Bucket<?>... results
     ) {
         Map<String, TestBucket> buckets = Maps.newHashMapWithExpectedSize(results.length);
-        Map<String, ConsumableTestDefinition> testVersions = Collections.emptyMap();
+        Map<String, ConsumableTestDefinition> testVersions = Maps.newHashMap();
 
         for (final Bucket<?> result: results) {
             final String testName = result.getClass().getSimpleName().toLowerCase();
@@ -31,6 +31,9 @@ public class CannedProctorResults {
 
             Preconditions.checkState(!buckets.containsKey(testName), "Attempted to provide two values for dummy test bucket %s", testName);
             buckets.put(testName, testBucket);
+            ConsumableTestDefinition testDefinition = addTestDefinition(testName, testVersions);
+
+            testDefinition.getBuckets().add(testBucket);
         }
 
         return (new ProctorResult(Audit.EMPTY_VERSION, buckets, testVersions));
@@ -55,24 +58,31 @@ public class CannedProctorResults {
             buckets.put(testName, testBucket);
 
             // add a minimal test definition for each test
-            ConsumableTestDefinition testDefinition = testVersions.get(testName);
-            if (null == testDefinition) {
-                testDefinition = new ConsumableTestDefinition(
-                        "",
-                        null, // no rule
-                        TestType.RANDOM,
-                        null, // no salt
-                        Lists.<TestBucket>newArrayList(),
-                        Lists.<Allocation>newArrayListWithCapacity(1),
-                        Collections.<String, Object>emptyMap(),
-                        null);
-
-                testVersions.put(testName, testDefinition);
-            }
+            ConsumableTestDefinition testDefinition = addTestDefinition(testName, testVersions);
 
             testDefinition.getBuckets().add(testBucket);
         }
 
         return (new ProctorResult(Audit.EMPTY_VERSION, buckets, testVersions));
+    }
+
+
+    private static ConsumableTestDefinition addTestDefinition(final String testName, final Map<String, ConsumableTestDefinition> testVersions) {
+        // add a minimal test definition for each test
+        ConsumableTestDefinition testDefinition = testVersions.get(testName);
+        if (null == testDefinition) {
+            testDefinition = new ConsumableTestDefinition(
+                    "",
+                    null, // no rule
+                    TestType.RANDOM,
+                    null, // no salt
+                    Lists.<TestBucket>newArrayList(),
+                    Lists.<Allocation>newArrayListWithCapacity(1),
+                    Collections.<String, Object>emptyMap(),
+                    null);
+
+            testVersions.put(testName, testDefinition);
+        }
+        return testDefinition;
     }
 }
