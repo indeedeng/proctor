@@ -38,6 +38,14 @@ public class TestProctorConsumerUtils {
             Assert.assertEquals(1, forcedGroups.size());
             Assert.assertEquals(3, (int) forcedGroups.get("testing"));
         }
+        //Test that header works
+        {
+            final MockHttpServletRequest mockRequest = new MockHttpServletRequest();
+            mockRequest.addHeader(ProctorConsumerUtils.FORCE_GROUPS_HEADER, "testing4");
+            final Map<String, Integer> forcedGroups = ProctorConsumerUtils.parseForcedGroups(mockRequest);
+            Assert.assertEquals(1, forcedGroups.size());
+            Assert.assertEquals(4, (int) forcedGroups.get("testing"));
+        }
         //empty parameter
         {
             final MockHttpServletRequest mockRequest = new MockHttpServletRequest();
@@ -54,6 +62,13 @@ public class TestProctorConsumerUtils {
         {
             final MockHttpServletRequest mockRequest = new MockHttpServletRequest();
             mockRequest.addParameter(ProctorConsumerUtils.FORCE_GROUPS_PARAMETER, "testing1");
+            final String forceGroups = ProctorConsumerUtils.getForceGroupsStringFromRequest(mockRequest);
+            Assert.assertEquals("testing1", forceGroups);
+        }
+        //Test that header works
+        {
+            final MockHttpServletRequest mockRequest = new MockHttpServletRequest();
+            mockRequest.addHeader(ProctorConsumerUtils.FORCE_GROUPS_HEADER, "testing1");
             final String forceGroups = ProctorConsumerUtils.getForceGroupsStringFromRequest(mockRequest);
             Assert.assertEquals("testing1", forceGroups);
         }
@@ -74,7 +89,34 @@ public class TestProctorConsumerUtils {
             final String forceGroups = ProctorConsumerUtils.getForceGroupsStringFromRequest(mockRequest);
             Assert.assertEquals("testing1", forceGroups);
         }
-        //Test missing param, missing cookie
+        //Test that parameter beats header
+        {
+            final MockHttpServletRequest mockRequest = new MockHttpServletRequest();
+            mockRequest.addParameter(ProctorConsumerUtils.FORCE_GROUPS_PARAMETER, "testing1");
+            mockRequest.addHeader(ProctorConsumerUtils.FORCE_GROUPS_HEADER, "testing2");
+            final String forceGroups = ProctorConsumerUtils.getForceGroupsStringFromRequest(mockRequest);
+            Assert.assertEquals("testing1", forceGroups);
+        }
+        //Test that parameter beats header and cookie
+        {
+            final MockHttpServletRequest mockRequest = new MockHttpServletRequest();
+            mockRequest.addParameter(ProctorConsumerUtils.FORCE_GROUPS_PARAMETER, "testing1");
+            mockRequest.addHeader(ProctorConsumerUtils.FORCE_GROUPS_HEADER, "testing2");
+            final Cookie cookie = new Cookie(ProctorConsumerUtils.FORCE_GROUPS_COOKIE_NAME, "testing3");
+            mockRequest.setCookies(cookie);
+            final String forceGroups = ProctorConsumerUtils.getForceGroupsStringFromRequest(mockRequest);
+            Assert.assertEquals("testing1", forceGroups);
+        }
+        //Test that header beats cookie
+        {
+            final MockHttpServletRequest mockRequest = new MockHttpServletRequest();
+            mockRequest.addHeader(ProctorConsumerUtils.FORCE_GROUPS_HEADER, "testing1");
+            final Cookie cookie = new Cookie(ProctorConsumerUtils.FORCE_GROUPS_COOKIE_NAME, "testing2");
+            mockRequest.setCookies(cookie);
+            final String forceGroups = ProctorConsumerUtils.getForceGroupsStringFromRequest(mockRequest);
+            Assert.assertEquals("testing1", forceGroups);
+        }
+        //Test missing param, missing header, missing cookie
         {
             final MockHttpServletRequest mockRequest = new MockHttpServletRequest();
             final String forceGroups = ProctorConsumerUtils.getForceGroupsStringFromRequest(mockRequest);
