@@ -248,6 +248,8 @@ public class ProctorTestDefinitionController extends AbstractController {
         if (loadAllocHistParam != null) {
             if (loadAllocHistParam.equals("true") || loadAllocHistParam.equals("1")) {
                 final Cookie lahCookie = new Cookie("loadAllocationHistory", "true");
+                final int thirtyMinutes = 60 * 30;
+                lahCookie.setMaxAge(thirtyMinutes);
                 lahCookie.setPath("/");
                 response.addCookie(lahCookie);
                 return true;
