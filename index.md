@@ -16,7 +16,7 @@ For more details, check out the following blog posts:
 
 Source: https://github.com/indeedeng/proctor
 
-# Features:
+# Features
 - consistent tests across multiple applications, services and tools
 - group adjustments without code deploys
 - rule-based group assignment for segmenting users:
@@ -31,6 +31,9 @@ See the [Quick Start]({{ site.baseurl }}/docs/quick-start) guide to start runnin
 
 # Example
 https://github.com/indeedeng/proctor-demo
+
+# Discussion
+Ask and answer questions in our Q&A forum for Proctor: [indeedeng-proctor-users](https://groups.google.com/forum/#!categories/indeedeng-proctor-users) 
 
 # License
 
