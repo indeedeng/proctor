@@ -1,7 +1,7 @@
 name: Proctor - A/B Testing Framework by Indeed
 # http://stackoverflow.com/questions/10759577/underscore-issues-jekyll-redcarpet-github-flavored-markdown
 markdown: redcarpet
-pygments: true
+highlighter: pygments
 # jekyll serve --watch --baseurl=
 baseurl: "http://indeedeng.github.io/proctor"
 # permalinks are relative to their parent folder
