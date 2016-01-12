@@ -67,7 +67,7 @@ public class TestProctorTestDefinitionController {
             final double[] rangeTwo = {1, 0};
             final TestDefinition testDefinitionOne = createTestDefinition("testbuck:0,control:2", rangeOne);
             final TestDefinition testDefinitionTwo = createTestDefinition("testbuck:0,control:2", rangeTwo);
-            Assert.assertFalse(ProctorTestDefinitionController.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
+            Assert.assertTrue(ProctorTestDefinitionController.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
         }
         { //testing different salts
             final double[] rangeOne = {.7, .3};

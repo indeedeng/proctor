@@ -974,9 +974,6 @@ public class ProctorTestDefinitionController extends AbstractController {
                     if (existingLength == 0 && allocToUpdateLength != 0) {
                         return false;
                     }
-                    if (existingLength != 1 && allocToUpdateLength == 1) {
-                        return false;
-                    }
                 }
             }
         }
