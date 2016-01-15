@@ -12,6 +12,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.indeed.proctor.common.ProctorLoadResult;
 import com.indeed.proctor.common.model.Payload;
 import com.indeed.proctor.webapp.controllers.BackgroundJob.ResultUrl;
 import com.indeed.proctor.common.EnvironmentVersion;
@@ -306,12 +307,12 @@ public class ProctorTestDefinitionController extends AbstractController {
         requestParameterMap.putAll(request.getParameterMap());
         final String nonEmptyComment = formatDefaultDeleteComment(testName, comment);
         final BackgroundJob<Boolean> job = createDeleteBackgroundJob(testName,
-                                                                     theEnvironment,
-                                                                     srcRevision,
-                                                                     username,
-                                                                     password,
-                                                                     nonEmptyComment,
-                                                                     requestParameterMap);
+            theEnvironment,
+            srcRevision,
+            username,
+            password,
+            nonEmptyComment,
+            requestParameterMap);
         jobManager.submit(job);
 
         if (isAJAXRequest(request)) {
@@ -369,6 +370,10 @@ public class ProctorTestDefinitionController extends AbstractController {
 
                     final String fullComment = formatFullComment(comment, requestParameterMap);
 
+                    final CheckMatrixResult checkMatrixResult = checkMatrix(source, testName, null);
+                    if (!checkMatrixResult.getErrors().isEmpty()) {
+                        throw new IllegalArgumentException("New test matrix is not compatible: " + checkMatrixResult.getErrors().get(0));
+                    }
 
                     //PreDefinitionDeleteChanges
                     log("Executing pre delete extension tasks.");
@@ -1095,15 +1100,16 @@ public class ProctorTestDefinitionController extends AbstractController {
         tmv.setDescription("fake matrix for validation of " + testName);
         tmv.setPublished(new Date());
 
-        final TestMatrixDefinition tmd = new TestMatrixDefinition(ImmutableMap.<String, TestDefinition>of(testName, potential));
+        final TestMatrixDefinition tmd = new TestMatrixDefinition();
+        // The potential test definition will be null for test deletions
+        if (potential != null) {
+            tmd.setTests(ImmutableMap.<String, TestDefinition>of(testName, potential));
+        }
         tmv.setTestMatrixDefinition(tmd);
 
         final TestMatrixArtifact artifact = ProctorUtils.convertToConsumableArtifact(tmv);
         // Verify
-        final Map<AppVersion, IncompatibleTestMatrixException> matrixErrors = Maps.newLinkedHashMap();
-        final Map<AppVersion, Throwable> exceptions = Maps.newLinkedHashMap();
-        final Map<AppVersion, Future<AppVersion>> futures = Maps.newLinkedHashMap();
-        final Set<AppVersion> appVersionsToCheck = Sets.newLinkedHashSet();
+        final Map<AppVersion, Future<ProctorLoadResult>> futures = Maps.newLinkedHashMap();
 
         final Set<String> limitToTests = Collections.singleton(testName);
 
@@ -1111,79 +1117,97 @@ public class ProctorTestDefinitionController extends AbstractController {
         for (Map.Entry<AppVersion, ProctorSpecification> entry : toVerify.entrySet()) {
             final AppVersion appVersion = entry.getKey();
             final ProctorSpecification specification = entry.getValue();
-            futures.put(appVersion, verifierExecutor.submit(new Callable<AppVersion>() {
+            futures.put(appVersion, verifierExecutor.submit(new Callable<ProctorLoadResult>() {
                 @Override
-                public AppVersion call() throws Exception {
+                public ProctorLoadResult call() throws Exception {
                     LOGGER.info("Verifying artifact against : cached " + appVersion);
-                    verify(specification, artifact, limitToTests, appVersion.toString());
-                    return appVersion;
+                    return verify(specification, artifact, limitToTests, appVersion.toString());
                 }
             }));
 
         }
 
+        final ImmutableList.Builder<String> errorsBuilder = ImmutableList.builder();
         while (!futures.isEmpty()) {
             try {
                 Thread.sleep(10);
             } catch (final InterruptedException e) {
                 LOGGER.error("Oh heavens", e);
             }
-            for (final Iterator<Map.Entry<AppVersion, Future<AppVersion>>> iterator = futures.entrySet().iterator(); iterator.hasNext(); ) {
-                final Map.Entry<AppVersion, Future<AppVersion>> entry = iterator.next();
+            for (final Iterator<Map.Entry<AppVersion, Future<ProctorLoadResult>>> iterator = futures.entrySet().iterator(); iterator.hasNext(); ) {
+                final Map.Entry<AppVersion, Future<ProctorLoadResult>> entry = iterator.next();
                 final AppVersion version = entry.getKey();
-                final Future<AppVersion> future = entry.getValue();
+                final Future<ProctorLoadResult> future = entry.getValue();
                 if (future.isDone()) {
                     iterator.remove();
                     try {
-                        final AppVersion appVersion = future.get();
-                        appVersionsToCheck.remove(appVersion);
+                        final ProctorLoadResult proctorLoadResult = future.get();
+                        if (proctorLoadResult.hasInvalidTests()) {
+                            errorsBuilder.add(getErrorMessage(version, proctorLoadResult));
+                        }
                     } catch (final InterruptedException e) {
+                        errorsBuilder.add(version.toString() + " failed. " + e.getMessage());
                         LOGGER.error("Interrupted getting " + version, e);
                     } catch (final ExecutionException e) {
                         final Throwable cause = e.getCause();
-                        if (cause instanceof IncompatibleTestMatrixException) {
-                            matrixErrors.put(version, (IncompatibleTestMatrixException) cause);
-                        } else {
-                            exceptions.put(version, cause);
-                            LOGGER.error("Unable to verify " + version, cause);
-                        }
+                        errorsBuilder.add(version.toString() + " failed. " + cause.getMessage());
+                        LOGGER.error("Unable to verify " + version, cause);
                     }
                 }
             }
         }
 
-        final boolean greatSuccess = matrixErrors.isEmpty() && appVersionsToCheck.isEmpty();
-        final ImmutableList.Builder<String> errors = ImmutableList.builder();
-        for (Map.Entry<AppVersion, Throwable> entry : exceptions.entrySet()) {
-            final AppVersion appVersion = entry.getKey();
-            errors.add(appVersion.toString() + " failed. " + entry.getValue().getMessage());
-        }
-        for (Map.Entry<AppVersion, IncompatibleTestMatrixException> entry : matrixErrors.entrySet()) {
-            final AppVersion client = entry.getKey();
-            errors.add(client.toString() + " failed. " + entry.getValue().getMessage());
-        }
+        final ImmutableList<String> errors = errorsBuilder.build();
+        final boolean greatSuccess = errors.isEmpty();
 
-        return new CheckMatrixResult(greatSuccess, errors.build());
+        return new CheckMatrixResult(greatSuccess, errors);
     }
 
-    private void verify(final ProctorSpecification spec,
-                        final TestMatrixArtifact testMatrix,
-                        final Set<String> retrictToTests,
-                        final String matrixSource) throws IncompatibleTestMatrixException {
+    private static String getErrorMessage(final AppVersion appVersion, final ProctorLoadResult proctorLoadResult) {
+        final Map<String, String> testsWithErrors = proctorLoadResult.getTestErrorMap();
+        final Set<String> missingTests = proctorLoadResult.getMissingTests();
+
+        // We expect at most one test to have a problem because we limited the verification to a single test
+        if (testsWithErrors.size() > 0) {
+            return testsWithErrors.values().iterator().next();
+        } else if (missingTests.size() > 0) {
+            return String.format("%s is missing test '%s'", appVersion, missingTests.iterator().next());
+        } else {
+            return "";
+        }
+    }
+
+    private ProctorLoadResult verify(final ProctorSpecification spec,
+                                     final TestMatrixArtifact testMatrix,
+                                     final Set<String> restrictToTests,
+                                     final String matrixSource) {
         final Map<String, TestSpecification> requiredTests;
-        if (retrictToTests.isEmpty()) {
+        if (restrictToTests.isEmpty()) {
             requiredTests = spec.getTests();
         } else {
-            requiredTests = Maps.newHashMapWithExpectedSize(retrictToTests.size());
-            for (String test : retrictToTests) {
+            requiredTests = Maps.newHashMapWithExpectedSize(restrictToTests.size());
+
+            // Tests which are still being used should not be deleted
+            final Set<String> missingTests = getMissingTests(spec, testMatrix, restrictToTests);
+            if (missingTests.size() > 0) {
+                return ProctorLoadResult.newBuilder().recordAllMissing(missingTests).build();
+            }
+
+            for (final String test : restrictToTests) {
                 if (spec.getTests().containsKey(test)) {
                     requiredTests.put(test, spec.getTests().get(test));
                 }
             }
         }
-        ProctorUtils.verify(testMatrix, matrixSource, requiredTests);
+        return ProctorUtils.verify(testMatrix, matrixSource, requiredTests);
     }
 
+    private static Set<String> getMissingTests(final ProctorSpecification spec,
+                                               final TestMatrixArtifact testMatrix,
+                                               final Set<String> restrictToTests) {
+        final Set<String> deletedTests = Sets.difference(restrictToTests, testMatrix.getTests().keySet());
+        return Sets.intersection(deletedTests, spec.getTests().keySet());
+    }
 
     private static void validateUsernamePassword(String username, String password) throws IllegalArgumentException {
         if (CharMatcher.WHITESPACE.matchesAllOf(Strings.nullToEmpty(username)) || CharMatcher.WHITESPACE.matchesAllOf(Strings.nullToEmpty(password))) {
