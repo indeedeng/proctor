@@ -371,7 +371,7 @@ public class ProctorTestDefinitionController extends AbstractController {
                     final String fullComment = formatFullComment(comment, requestParameterMap);
 
                     final CheckMatrixResult checkMatrixResult = checkMatrix(source, testName, null);
-                    if (!checkMatrixResult.getErrors().isEmpty()) {
+                    if (!checkMatrixResult.isValid()) {
                         throw new IllegalArgumentException("New test matrix is not compatible: " + checkMatrixResult.getErrors().get(0));
                     }
 
@@ -1111,8 +1111,6 @@ public class ProctorTestDefinitionController extends AbstractController {
         // Verify
         final Map<AppVersion, Future<ProctorLoadResult>> futures = Maps.newLinkedHashMap();
 
-        final Set<String> limitToTests = Collections.singleton(testName);
-
         final Map<AppVersion, ProctorSpecification> toVerify = specificationSource.loadAllSuccessfulSpecifications(checkAgainst);
         for (Map.Entry<AppVersion, ProctorSpecification> entry : toVerify.entrySet()) {
             final AppVersion appVersion = entry.getKey();
@@ -1121,7 +1119,7 @@ public class ProctorTestDefinitionController extends AbstractController {
                 @Override
                 public ProctorLoadResult call() throws Exception {
                     LOGGER.info("Verifying artifact against : cached " + appVersion);
-                    return verify(specification, artifact, limitToTests, appVersion.toString());
+                    return verify(specification, artifact, testName, appVersion.toString());
                 }
             }));
 
@@ -1171,7 +1169,7 @@ public class ProctorTestDefinitionController extends AbstractController {
         if (testsWithErrors.size() > 0) {
             return testsWithErrors.values().iterator().next();
         } else if (missingTests.size() > 0) {
-            return String.format("%s is missing test '%s'", appVersion, missingTests.iterator().next());
+            return String.format("%s requires test '%s'", appVersion, missingTests.iterator().next());
         } else {
             return "";
         }
@@ -1179,34 +1177,20 @@ public class ProctorTestDefinitionController extends AbstractController {
 
     private ProctorLoadResult verify(final ProctorSpecification spec,
                                      final TestMatrixArtifact testMatrix,
-                                     final Set<String> restrictToTests,
+                                     final String testName,
                                      final String matrixSource) {
+        // Tests which are still being used should not be deleted
+        if (!testMatrix.getTests().containsKey(testName) && spec.getTests().containsKey(testName)) {
+            return ProctorLoadResult.newBuilder().recordMissing(testName).build();
+        }
+
         final Map<String, TestSpecification> requiredTests;
-        if (restrictToTests.isEmpty()) {
-            requiredTests = spec.getTests();
+        if (spec.getTests().containsKey(testName)) {
+            requiredTests = ImmutableMap.of(testName, spec.getTests().get(testName));
         } else {
-            requiredTests = Maps.newHashMapWithExpectedSize(restrictToTests.size());
-
-            // Tests which are still being used should not be deleted
-            final Set<String> missingTests = getMissingTests(spec, testMatrix, restrictToTests);
-            if (missingTests.size() > 0) {
-                return ProctorLoadResult.newBuilder().recordAllMissing(missingTests).build();
-            }
-
-            for (final String test : restrictToTests) {
-                if (spec.getTests().containsKey(test)) {
-                    requiredTests.put(test, spec.getTests().get(test));
-                }
-            }
+            requiredTests = Collections.emptyMap();
         }
         return ProctorUtils.verify(testMatrix, matrixSource, requiredTests);
-    }
-
-    private static Set<String> getMissingTests(final ProctorSpecification spec,
-                                               final TestMatrixArtifact testMatrix,
-                                               final Set<String> restrictToTests) {
-        final Set<String> deletedTests = Sets.difference(restrictToTests, testMatrix.getTests().keySet());
-        return Sets.intersection(deletedTests, spec.getTests().keySet());
     }
 
     private static void validateUsernamePassword(String username, String password) throws IllegalArgumentException {
