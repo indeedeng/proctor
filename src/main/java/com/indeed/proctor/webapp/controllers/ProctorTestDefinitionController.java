@@ -10,7 +10,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.indeed.proctor.common.ProctorLoadResult;
 import com.indeed.proctor.common.model.Payload;
@@ -1179,11 +1178,6 @@ public class ProctorTestDefinitionController extends AbstractController {
                                      final TestMatrixArtifact testMatrix,
                                      final String testName,
                                      final String matrixSource) {
-        // Tests which are still being used should not be deleted
-        if (!testMatrix.getTests().containsKey(testName) && spec.getTests().containsKey(testName)) {
-            return ProctorLoadResult.newBuilder().recordMissing(testName).build();
-        }
-
         final Map<String, TestSpecification> requiredTests;
         if (spec.getTests().containsKey(testName)) {
             requiredTests = ImmutableMap.of(testName, spec.getTests().get(testName));
