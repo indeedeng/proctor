@@ -25,9 +25,7 @@ public class ProctorLoadResult {
             @Nonnull final Set<String> testsWithErrors,
             @Nonnull Set<String> missingTests
     ) {
-        this.testErrorMap = makeTestErrorMap(testsWithErrors);
-        this.missingTests = missingTests;
-        this.verifiedRules = false;
+        this(testsWithErrors, missingTests, false);
     }
 
     public ProctorLoadResult(
@@ -35,9 +33,7 @@ public class ProctorLoadResult {
             @Nonnull Set<String> missingTests,
             final boolean verifiedRules
     ) {
-        this.testErrorMap = makeTestErrorMap(testsWithErrors);
-        this.missingTests = missingTests;
-        this.verifiedRules = verifiedRules;
+        this(makeTestErrorMap(testsWithErrors), missingTests, verifiedRules);
     }
 
     public ProctorLoadResult(
