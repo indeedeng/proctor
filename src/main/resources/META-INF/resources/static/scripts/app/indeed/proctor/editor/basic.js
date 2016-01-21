@@ -55,16 +55,24 @@ indeed.proctor.editor.BasicEditor = function(container, definition, isCreate) {
   var onChange = function(ev) {
     indeed.proctor.forms.validateRequired(ev.currentTarget);
   };
+
+  var updateSaltToTestName = function() {
+    var name = goog.dom.forms.getValue(this.name);
+    if (goog.string.isEmptySafe(name)) {
+      goog.dom.forms.setValue(this.salt, '');
+    } else {
+      goog.dom.forms.setValue(this.salt, '&' + name);
+    }
+    indeed.proctor.forms.validateRequired(this.salt);
+  };
+
   if (this.name) {
-    this.handler_.listen(this.name,
-        goog.events.EventType.CHANGE, onChange);
+    this.handler_.listen(this.name, goog.events.EventType.CHANGE, onChange);
+    this.handler_.listen(this.name, goog.events.EventType.CHANGE, updateSaltToTestName);
   }
   this.handler_.listen(this.description,
                        goog.events.EventType.CHANGE, onChange);
   this.handler_.listen(this.salt, goog.events.EventType.CHANGE, onChange);
-  if (this.name) {
-    this.handler_.listen(this.name, goog.events.EventType.CHANGE, onChange);
-  }
 
 };
 goog.inherits(indeed.proctor.editor.BasicEditor, goog.events.EventTarget);
