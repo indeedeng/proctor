@@ -285,7 +285,7 @@ public abstract class ProctorUtils {
                 verifyInternallyConsistentDefinition(testName, matrixSource, testDefinition, functionMapper, providedContext);
             } catch (IncompatibleTestMatrixException e) {
                 LOGGER.error(String.format("Unable to load test matrix for %s", testName), e);
-                resultBuilder.recordError(testName);
+                resultBuilder.recordError(testName, e.getMessage());
             }
         }
         return resultBuilder.build();
@@ -337,7 +337,7 @@ public abstract class ProctorUtils {
 
             } catch (IncompatibleTestMatrixException e) {
                 LOGGER.error(String.format("Unable to load test matrix for %s", testName), e);
-                resultBuilder.recordError(testName);
+                resultBuilder.recordError(testName, e.getMessage());
             }
         }
 
