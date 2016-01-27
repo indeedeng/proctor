@@ -89,3 +89,5 @@ table.tright td, table.tleft th { text-align: right }
 }
 .ui-job-monitor-popup-ft { text-align: center; }
 .ui-job-monitor-log { height: 200px; }
+
+.ui-allocation-bar-container { min-width: 200px; }
