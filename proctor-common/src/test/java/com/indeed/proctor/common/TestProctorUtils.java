@@ -550,9 +550,16 @@ public class TestProctorUtils {
         {
             final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
             tests.put(TEST_A, constructDefinition(buckets,
-                                                      fromCompactAllocationFormat("ruleA|-1:0.0,0:0.0,1:1.0", "|-1:0.5,0:0.5,1:0.0")));
+                fromCompactAllocationFormat("ruleA|-1:0.0,0:0.0,1:1.0", "|-1:0.5,0:0.5,1:0.0")));
 
             assertValid("allocation with '' rule is valid for final last allocation", constructArtifact(tests), requiredTests);
+        }
+        {
+            final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
+            tests.put(TEST_A, constructDefinition(buckets,
+                fromCompactAllocationFormat("ruleA|-1:0.0,0:0.0,1:1.0", "ruleB|-1:0.5,0:0.5,1:0.0")));
+
+            assertValid("allocation with non-empty rule is valid for final last allocation", constructArtifact(tests), requiredTests);
         }
         // NOTE: the two test below illustrate current behavior.
         // The "${}" rule is treated as non-empty for validation.
