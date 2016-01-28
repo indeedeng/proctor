@@ -9,8 +9,8 @@
 <%@ attribute name="allocationIndex" required="true" type="java.lang.Integer" %>
 <div class="js-allocation-editor">
     <div class="panel">
-        <c:set var="isDefault" value="${empty allocation.rule && allocationIndex == fn:length(definition.allocations) - 1}"/>
-        <div class="js-rule-container <c:if test="${isDefault}">hide</c:if>">
+        <c:set var="isDefault" value="${allocationIndex == fn:length(definition.allocations) - 1}"/>
+        <div class="js-rule-container">
             <ui:grid-row>
                 <ui:grid-columns width="two">
                     <label class="inline">Rule</label>
