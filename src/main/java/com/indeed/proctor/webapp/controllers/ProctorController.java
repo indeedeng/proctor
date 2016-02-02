@@ -273,7 +273,7 @@ public class ProctorController extends AbstractController {
                 final String error;
                 if (remoteResult.isSkipped()) {
                     continue;
-                } else if(remoteResult.isSuccess()) {
+                } else if (remoteResult.isSuccess()) {
                     // use all the required tests from the specification
                     final String matrixSource = artifactEnvironment.getName() + " r" + artifact.getAudit().getVersion();
                     final ProctorLoadResult plr = ProctorUtils.verify(artifact, matrixSource, remoteResult.getSpecificationResult().getSpecification().getTests());

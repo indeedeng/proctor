@@ -219,8 +219,7 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
                         if (result.isSkipped()) {
                             skippedAppVersions.add(result.getVersion());
                             appVersionsToCheck.remove(result.getVersion());
-                        }
-                        if (result.isSuccess()) {
+                        } else if (result.isSuccess()) {
                             appVersionsToCheck.remove(result.getVersion());
                         }
                     } catch (final InterruptedException e) {
