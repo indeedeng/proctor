@@ -119,8 +119,9 @@ indeed.proctor.JobMonitor.prototype.onJobFinished_ = function(ev) {
     goog.dom.removeNode(cancel);
   }
 
+  ul = goog.dom.createDom(goog.dom.TagName.UL, 'link-list');
+  var navBtnAdded = false;
   if (goog.isArray(urls)) {
-    ul = goog.dom.createDom(goog.dom.TagName.UL, 'link-list');
     goog.array.forEach(urls, function(url) {
       var li = goog.dom.createDom(goog.dom.TagName.LI);
       var link = goog.dom.createDom(goog.dom.TagName.A, {
@@ -130,9 +131,14 @@ indeed.proctor.JobMonitor.prototype.onJobFinished_ = function(ev) {
                            }, url['text']);
       goog.dom.appendChild(li, link);
       goog.dom.appendChild(ul, li);
+      navBtnAdded = true;
     });
-    goog.dom.insertSiblingAfter(ul, status);
   }
+  if (!navBtnAdded) {
+    var li = goog.dom.createDom(goog.dom.TagName.LI, undefined, 'This test does not exist in any environment any more.');
+    goog.dom.appendChild(ul, li);
+  }
+  goog.dom.insertSiblingAfter(ul, status);
 };
 
 
