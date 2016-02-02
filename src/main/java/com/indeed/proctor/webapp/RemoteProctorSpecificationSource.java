@@ -177,6 +177,7 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
 
         final ImmutableMap.Builder<AppVersion, RemoteSpecificationResult> allResults = ImmutableMap.builder();
         final Set<AppVersion> appVersionsToCheck = Sets.newLinkedHashSet();
+        final Set<AppVersion> skippedAppVersions = Sets.newLinkedHashSet();
 
         // Accumulate all clients that have equivalent AppVersion (APPLICATION_COMPARATOR)
         final ImmutableListMultimap.Builder<AppVersion, ProctorClientApplication> builder = ImmutableListMultimap.builder();
@@ -215,6 +216,10 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
                     try {
                         final RemoteSpecificationResult result = future.get();
                         allResults.put(appVersion, result);
+                        if (result.isSkipped()) {
+                            skippedAppVersions.add(result.getVersion());
+                            appVersionsToCheck.remove(result.getVersion());
+                        }
                         if (result.isSuccess()) {
                             appVersionsToCheck.remove(result.getVersion());
                         }
@@ -237,6 +242,11 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
         if(!appVersionsToCheck.isEmpty()) {
             LOGGER.warn("Failed to load any specification for the following AppVersions: " + Joiner.on(",").join(appVersionsToCheck));
         }
+
+        if (!skippedAppVersions.isEmpty()) {
+            LOGGER.info("Skipped checking specification for the following AppVersions (/private/proctor/specification returned 404): " + Joiner.on(",").join(skippedAppVersions));
+        }
+
         return appVersionsToCheck.isEmpty();
     }
 
@@ -254,6 +264,12 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
             // really stupid method of pinging 1 of the applications.
             final SpecificationResult result = internalGet(client, timeout);
             if(result.getSpecification() == null) {
+                if (shouldSkipSpecificationCheck(result)) {
+                    LOGGER.info("Client " + client.getBaseApplicationUrl() + " /private/proctor/specification returned 404 - skipping");
+                    results.skipped(client, result);
+                    break;
+                }
+
                 // Don't yell too load, the error is handled
                 LOGGER.warn("Failed to read specification from: " + client.getBaseApplicationUrl() + " : " + result.getError() + "\n" + result.getException());
                 results.failed(client, result);
@@ -302,6 +318,11 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
 
     private static boolean containsTest(final ProctorSpecification specification, final String testName) {
         return specification.getTests().containsKey(testName);
+    }
+
+    private static boolean shouldSkipSpecificationCheck(final SpecificationResult result) {
+        // Skip if there is a a 404 response from /private/proctor/specification (causes a FileNotFoundException)
+        return result.getException() != null && result.getException().startsWith("java.io.FileNotFoundException");
     }
 
     /**
