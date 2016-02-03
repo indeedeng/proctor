@@ -135,7 +135,7 @@ indeed.proctor.JobMonitor.prototype.onJobFinished_ = function(ev) {
     });
   }
   if (!navBtnAdded) {
-    var li = goog.dom.createDom(goog.dom.TagName.LI, undefined, 'This test does not exist in any environment any more.');
+    var li = goog.dom.createDom(goog.dom.TagName.LI, undefined, 'This test no longer exists in any environment.');
     goog.dom.appendChild(ul, li);
   }
   goog.dom.insertSiblingAfter(ul, status);
