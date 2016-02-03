@@ -113,6 +113,7 @@ indeed.proctor.JobMonitor.prototype.onJobFinished_ = function(ev) {
                                           this.boundingBox_),
       job = ev.job_status,
       urls = job['urls'],
+      testDeletedInAllEnvironments = job['testDeletedInAllEnvironments'];
       ul;
   if (cancel) {
     goog.events.removeAll(cancel);
@@ -120,7 +121,10 @@ indeed.proctor.JobMonitor.prototype.onJobFinished_ = function(ev) {
   }
 
   ul = goog.dom.createDom(goog.dom.TagName.UL, 'link-list');
-  var navBtnAdded = false;
+  if (testDeletedInAllEnvironments) {
+    var li = goog.dom.createDom(goog.dom.TagName.LI, undefined, 'This test no longer exists in any environment.');
+    goog.dom.appendChild(ul, li);
+  }
   if (goog.isArray(urls)) {
     goog.array.forEach(urls, function(url) {
       var li = goog.dom.createDom(goog.dom.TagName.LI);
@@ -131,14 +135,11 @@ indeed.proctor.JobMonitor.prototype.onJobFinished_ = function(ev) {
                            }, url['text']);
       goog.dom.appendChild(li, link);
       goog.dom.appendChild(ul, li);
-      navBtnAdded = true;
     });
   }
-  if (!navBtnAdded) {
-    var li = goog.dom.createDom(goog.dom.TagName.LI, undefined, 'This test no longer exists in any environment.');
-    goog.dom.appendChild(ul, li);
+  if (ul.hasChildNodes()) {
+    goog.dom.insertSiblingAfter(ul, status);
   }
-  goog.dom.insertSiblingAfter(ul, status);
 };
 
 
