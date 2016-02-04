@@ -19,6 +19,7 @@ import com.indeed.proctor.webapp.model.ProctorClientApplication;
 import com.indeed.proctor.webapp.model.RemoteSpecificationResult;
 import com.indeed.proctor.webapp.util.threads.LogOnUncaughtExceptionHandler;
 import com.indeed.util.core.DataLoadingTimerTask;
+import com.indeed.util.core.Pair;
 import org.apache.log4j.Logger;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -261,19 +262,21 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
         while(remaining.peek() != null) {
             final ProctorClientApplication client = remaining.poll();
             // really stupid method of pinging 1 of the applications.
-            final SpecificationResult result = internalGet(client, timeout);
-            if(result.getSpecification() == null) {
-                if (shouldSkipSpecificationCheck(result)) {
+            final Pair<Integer, SpecificationResult> result = internalGet(client, timeout);
+            final int statusCode = result.getFirst();
+            final SpecificationResult specificationResult = result.getSecond();
+            if(specificationResult.getSpecification() == null) {
+                if (statusCode == HttpURLConnection.HTTP_NOT_FOUND) {
                     LOGGER.info("Client " + client.getBaseApplicationUrl() + " /private/proctor/specification returned 404 - skipping");
-                    results.skipped(client, result);
+                    results.skipped(client, specificationResult);
                     break;
                 }
 
                 // Don't yell too load, the error is handled
-                LOGGER.warn("Failed to read specification from: " + client.getBaseApplicationUrl() + " : " + result.getError() + "\n" + result.getException());
-                results.failed(client, result);
+                LOGGER.warn("Failed to read specification from: " + client.getBaseApplicationUrl() + " : " + specificationResult.getError() + "\n" + specificationResult.getException());
+                results.failed(client, specificationResult);
             } else {
-                results.success(client, result);
+                results.success(client, specificationResult);
                 break;
             }
         }
@@ -281,8 +284,9 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
     }
 
     // @Nonnull
-    private static SpecificationResult internalGet(final ProctorClientApplication client, final int timeout) {
+    private static Pair<Integer, SpecificationResult> internalGet(final ProctorClientApplication client, final int timeout) {
         URL url = null;
+        int statusCode = -1;
         InputStream inputStream = null;
         try {
             url = getSpecificationUrl(client);
@@ -291,10 +295,11 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
             urlConnection.setReadTimeout(timeout);
             urlConnection.setConnectTimeout(timeout);
 
+            statusCode = urlConnection.getResponseCode();
             inputStream = urlConnection.getInputStream();
             //  map from testName => list of bucket names
             final SpecificationResult result = OBJECT_MAPPER.readValue(inputStream, SpecificationResult.class);
-            return result;
+            return new Pair<Integer, SpecificationResult>(statusCode, result);
         } catch (Throwable t) {
             final SpecificationResult result = new SpecificationResult();
             final StringWriter sw = new StringWriter();
@@ -303,7 +308,7 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
 
             result.setError(t.getMessage());
             result.setException(sw.toString());
-            return result;
+            return new Pair<Integer, SpecificationResult>(statusCode, result);
         } finally {
             try {
                 if (inputStream != null) {
@@ -317,11 +322,6 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
 
     private static boolean containsTest(final ProctorSpecification specification, final String testName) {
         return specification.getTests().containsKey(testName);
-    }
-
-    private static boolean shouldSkipSpecificationCheck(final SpecificationResult result) {
-        // Skip if there is a a 404 response from /private/proctor/specification (causes a FileNotFoundException)
-        return result.getException() != null && result.getException().startsWith("java.io.FileNotFoundException");
     }
 
     /**
