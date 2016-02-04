@@ -18,7 +18,7 @@ public abstract class BackgroundJob<T> implements Callable<T> {
     // URL to direct users to upon completion
     private List<ResultUrl> urls = Lists.newArrayList();
 
-    private Boolean testDeletedInAllEnvironments = Boolean.FALSE;
+    private String endMessage = "";
 
     public void log(String message) {
         logBuilder.append(message).append("\n");
@@ -75,12 +75,12 @@ public abstract class BackgroundJob<T> implements Callable<T> {
         this.urls.add(url);
     }
 
-    public Boolean getTestDeletedInAllEnvironments() {
-        return testDeletedInAllEnvironments;
+    public String getEndMessage() {
+        return endMessage;
     }
 
-    public void setTestDeletedInAllEnvironments(final Boolean testDeletedInAllEnvironments) {
-        this.testDeletedInAllEnvironments = testDeletedInAllEnvironments;
+    public void setEndMessage(final String endMessage) {
+        this.endMessage = endMessage;
     }
 
     public String toString() {

@@ -113,7 +113,7 @@ indeed.proctor.JobMonitor.prototype.onJobFinished_ = function(ev) {
                                           this.boundingBox_),
       job = ev.job_status,
       urls = job['urls'],
-      testDeletedInAllEnvironments = job['testDeletedInAllEnvironments'];
+      endMessage = job['endMessage'];
       ul;
   if (cancel) {
     goog.events.removeAll(cancel);
@@ -121,8 +121,8 @@ indeed.proctor.JobMonitor.prototype.onJobFinished_ = function(ev) {
   }
 
   ul = goog.dom.createDom(goog.dom.TagName.UL, 'link-list');
-  if (testDeletedInAllEnvironments) {
-    var li = goog.dom.createDom(goog.dom.TagName.LI, undefined, 'This test no longer exists in any environment.');
+  if (endMessage) {
+    var li = goog.dom.createDom(goog.dom.TagName.LI, undefined, endMessage);
     goog.dom.appendChild(ul, li);
   }
   if (goog.isArray(urls)) {

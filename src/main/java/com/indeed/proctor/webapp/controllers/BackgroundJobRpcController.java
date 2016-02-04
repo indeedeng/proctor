@@ -153,7 +153,7 @@ public class BackgroundJobRpcController {
             builder.put("outcome", outcome);
         }
         builder.put("urls", job.getUrls());
-        builder.put("testDeletedInAllEnvironments", job.getTestDeletedInAllEnvironments());
+        builder.put("endMessage", job.getEndMessage());
         return builder.build();
     }
 }

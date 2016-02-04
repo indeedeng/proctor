@@ -396,7 +396,7 @@ public class ProctorTestDefinitionController extends AbstractController {
                         }
                     }
                     if (!testExistsInOtherEnvironments) {
-                        setTestDeletedInAllEnvironments(Boolean.TRUE);
+                        setEndMessage("This test no longer exists in any environment.");
                     }
 
                     //PostDefinitionDeleteChanges
