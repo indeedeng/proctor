@@ -21,6 +21,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 /**
  * @author rboyer
@@ -45,26 +46,27 @@ public class TestStandardTestChooser {
             new Range(1, 1.0)
     );
 
+    private static final List<TestBucket> INACTIVE_CONTROL_TEST_BUCKETS = ImmutableList.of(
+        new TestBucket("inactive", -1, "zoot", null),
+        new TestBucket("control", 0, "zoot", null),
+        new TestBucket("test", 1, "zoot", null)
+    );
+
     @Before
     public void setupMocks() throws Exception {
         expressionFactory = new ExpressionFactoryImpl();
         functionMapper = RuleEvaluator.FUNCTION_MAPPER;
         testName = "testName";
-        final List<TestBucket> buckets = ImmutableList.of(
-                new TestBucket("inactive", -1, "zoot", null),
-                new TestBucket("control", 0, "zoot", null),
-                new TestBucket("test", 1, "zoot", null)
-        );
         testDefinition = new ConsumableTestDefinition();
         testDefinition.setConstants(Collections.<String, Object>emptyMap());
         testDefinition.setTestType(TestType.AUTHENTICATED_USER);
         // most tests just set the salt to be the same as the test name
         testDefinition.setSalt(testName);
-        testDefinition.setBuckets(buckets);
+        testDefinition.setBuckets(INACTIVE_CONTROL_TEST_BUCKETS);
 
         updateAllocations(RANGES_50_50);
 
-        final int effBuckets = buckets.size() - 1;
+        final int effBuckets = INACTIVE_CONTROL_TEST_BUCKETS.size() - 1;
         counts = new int[effBuckets];
         hashes = new int[effBuckets];
     }
@@ -193,6 +195,69 @@ public class TestStandardTestChooser {
         EasyMock.verify(ruleEvaluator);
     }
 
+    @Test
+    public void testDefaultAllocationWithNonEmptyRule_fallback() {
+        final String testName = "test";
+
+        final ConsumableTestDefinition testDefinition = new ConsumableTestDefinition();
+        testDefinition.setConstants(Collections.<String, Object>emptyMap());
+        testDefinition.setTestType(TestType.ANONYMOUS_USER);
+        testDefinition.setSalt(testName);
+
+        testDefinition.setBuckets(INACTIVE_CONTROL_TEST_BUCKETS);
+
+        final List<Allocation> allocations = Lists.newArrayList();
+        allocations.add(new Allocation("${country == 'US'}", RANGES_100_0));
+        allocations.add(new Allocation("${country == 'GB'}", RANGES_100_0));
+        testDefinition.setAllocations(allocations);
+
+        final RuleEvaluator ruleEvaluator = newRuleEvaluator(false);
+        final TestRangeSelector selector = new TestRangeSelector(
+            ruleEvaluator,
+            testName,
+            testDefinition
+        );
+
+        final TestBucket bucket = new StandardTestChooser(selector)
+            .choose("identifier", Collections.<String, Object>emptyMap());
+
+        assertNull("Expected no bucket to be found", bucket);
+
+        EasyMock.verify(ruleEvaluator);
+    }
+
+    @Test
+    public void testDefaultAllocationWithNonEmptyRule_match() {
+        final String testName = "test";
+
+        final ConsumableTestDefinition testDefinition = new ConsumableTestDefinition();
+        testDefinition.setConstants(Collections.<String, Object>emptyMap());
+        testDefinition.setRule("${lang == 'en'}");
+
+        testDefinition.setTestType(TestType.ANONYMOUS_USER);
+        testDefinition.setSalt(testName);
+
+        testDefinition.setBuckets(INACTIVE_CONTROL_TEST_BUCKETS);
+
+        final List<Allocation> allocations = Lists.newArrayList();
+        allocations.add(new Allocation("${country == 'GB'}", RANGES_100_0));
+        testDefinition.setAllocations(allocations);
+
+        final RuleEvaluator ruleEvaluator = newRuleEvaluator(true);
+        final TestRangeSelector selector = new TestRangeSelector(
+            ruleEvaluator,
+            testName,
+            testDefinition
+        );
+
+        final TestBucket bucket = new StandardTestChooser(selector)
+            .choose("identifier", Collections.<String, Object>emptyMap());
+
+        assertEquals("Test bucket with value 1 expected", 1, bucket.getValue());
+
+        EasyMock.verify(ruleEvaluator);
+    }
+
     private StandardTestChooser newChooser() {
         return new StandardTestChooser(
                 expressionFactory,
@@ -200,6 +265,18 @@ public class TestStandardTestChooser {
                 testName,
                 testDefinition
         );
+    }
+
+    private RuleEvaluator newRuleEvaluator(final boolean result) {
+        final RuleEvaluator ruleEvaluator = EasyMock.createMock(RuleEvaluator.class);
+        EasyMock.expect(ruleEvaluator.evaluateBooleanRule(
+            EasyMock.<String>anyObject(),
+            EasyMock.<Map<String,Object>>anyObject()
+        ))
+            .andReturn(result)
+            .anyTimes();
+        EasyMock.replay(ruleEvaluator);
+        return ruleEvaluator;
     }
 
     private void exerciseChooser(final StandardTestChooser rtc) {
