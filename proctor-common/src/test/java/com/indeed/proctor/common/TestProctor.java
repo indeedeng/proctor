@@ -51,7 +51,7 @@ public class TestProctor {
 
         final Audit audit = new Audit();
         audit.setVersion("10");
-        audit.setUpdated(1000);
+        audit.setUpdated(1454432430000L);
         audit.setUpdatedBy("nobody");
         matrix.setAudit(audit);
 
@@ -62,12 +62,14 @@ public class TestProctor {
         final JsonNode root = new ObjectMapper().readTree(writer.toString());
         assertTrue(root.has("audit"));
         final JsonNode auditNode = root.get("audit");
-        assertEquals(3, auditNode.size());
+        assertEquals(4, auditNode.size());
 
         assertTrue(auditNode.has("version"));
         assertEquals("10", auditNode.get("version").textValue());
         assertTrue(auditNode.has("updated"));
-        assertEquals(1000, auditNode.get("updated").intValue());
+        assertEquals(1454432430000L, auditNode.get("updated").longValue());
+        assertTrue(auditNode.has("updatedDate"));
+        assertEquals("2016-02-02T11:00-0600", auditNode.get("updatedDate").textValue());
         assertTrue(auditNode.has("updatedBy"));
         assertTrue(auditNode.get("updatedBy").isTextual());
         assertEquals("nobody", auditNode.get("updatedBy").textValue());
