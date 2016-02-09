@@ -716,14 +716,8 @@ public abstract class ProctorUtils {
             final String rule = allocation.getRule();
             final boolean lastAllocation = i == allocations.size() - 1;
             final String bareRule = removeElExpressionBraces(rule);
-            if(lastAllocation) {
-                if (!isEmptyWhitespace(bareRule)) {
-                    throw new IncompatibleTestMatrixException("Allocation[" + i + "] for test " + testName + " from " + matrixSource + " has non-empty rule: " + allocation.getRule());
-                }
-            } else {
-                if (isEmptyWhitespace(bareRule)) {
-                    throw new IncompatibleTestMatrixException("Allocation[" + i + "] for test " + testName + " from " + matrixSource + " has empty rule: " + allocation.getRule());
-                }
+            if(!lastAllocation && isEmptyWhitespace(bareRule)) {
+                throw new IncompatibleTestMatrixException("Allocation[" + i + "] for test " + testName + " from " + matrixSource + " has empty rule: " + allocation.getRule());
             }
             //verify allocation rules are valid EL
             if(!isEmptyWhitespace(bareRule)){
