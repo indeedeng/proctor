@@ -13,17 +13,20 @@ import java.util.Map;
 public class RemoteSpecificationResult {
     final AppVersion version;
     final Map<ProctorClientApplication, SpecificationResult> failures;
+    final ProctorClientApplication skipped;
     final List<ProctorClientApplication> remaining;
     final ProctorClientApplication clientApplication;
     final SpecificationResult specificationResult;
 
     public RemoteSpecificationResult(final AppVersion version,
                                      final Map<ProctorClientApplication, SpecificationResult> failures,
+                                     final ProctorClientApplication skipped,
                                      final List<ProctorClientApplication> remaining,
                                      final ProctorClientApplication _clientApplication,
                                      final SpecificationResult specificationResult) {
         this.version = version;
         this.failures = failures;
+        this.skipped = skipped;
         this.remaining = remaining;
         this.clientApplication = _clientApplication;
         this.specificationResult = specificationResult;
@@ -31,6 +34,10 @@ public class RemoteSpecificationResult {
 
     public boolean isSuccess() {
         return specificationResult != null && specificationResult.getSpecification() != null;
+    }
+
+    public boolean isSkipped() {
+        return skipped != null;
     }
 
     public AppVersion getVersion() {
@@ -60,6 +67,7 @@ public class RemoteSpecificationResult {
     public static class Builder {
         final AppVersion version;
         final ImmutableMap.Builder<ProctorClientApplication, SpecificationResult> failures = ImmutableMap.builder();
+        ProctorClientApplication skipped;
         ProctorClientApplication success;
         SpecificationResult result;
 
@@ -68,7 +76,13 @@ public class RemoteSpecificationResult {
         }
 
         public RemoteSpecificationResult build(List<ProctorClientApplication> remaining) {
-            return new RemoteSpecificationResult(version, failures.build(), Lists.<ProctorClientApplication>newArrayList(remaining), success, result);
+            return new RemoteSpecificationResult(version, failures.build(), skipped, Lists.<ProctorClientApplication>newArrayList(remaining), success, result);
+        }
+
+        public Builder skipped(final ProctorClientApplication app, final SpecificationResult result) {
+            this.skipped = app;
+            this.result = result;
+            return this;
         }
 
         public Builder failed(final ProctorClientApplication app, final SpecificationResult result) {

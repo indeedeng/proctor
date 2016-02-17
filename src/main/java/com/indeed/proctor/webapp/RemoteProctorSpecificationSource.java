@@ -19,6 +19,7 @@ import com.indeed.proctor.webapp.model.ProctorClientApplication;
 import com.indeed.proctor.webapp.model.RemoteSpecificationResult;
 import com.indeed.proctor.webapp.util.threads.LogOnUncaughtExceptionHandler;
 import com.indeed.util.core.DataLoadingTimerTask;
+import com.indeed.util.core.Pair;
 import org.apache.log4j.Logger;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -177,6 +178,7 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
 
         final ImmutableMap.Builder<AppVersion, RemoteSpecificationResult> allResults = ImmutableMap.builder();
         final Set<AppVersion> appVersionsToCheck = Sets.newLinkedHashSet();
+        final Set<AppVersion> skippedAppVersions = Sets.newLinkedHashSet();
 
         // Accumulate all clients that have equivalent AppVersion (APPLICATION_COMPARATOR)
         final ImmutableListMultimap.Builder<AppVersion, ProctorClientApplication> builder = ImmutableListMultimap.builder();
@@ -215,7 +217,10 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
                     try {
                         final RemoteSpecificationResult result = future.get();
                         allResults.put(appVersion, result);
-                        if (result.isSuccess()) {
+                        if (result.isSkipped()) {
+                            skippedAppVersions.add(result.getVersion());
+                            appVersionsToCheck.remove(result.getVersion());
+                        } else if (result.isSuccess()) {
                             appVersionsToCheck.remove(result.getVersion());
                         }
                     } catch (final InterruptedException e) {
@@ -237,6 +242,11 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
         if(!appVersionsToCheck.isEmpty()) {
             LOGGER.warn("Failed to load any specification for the following AppVersions: " + Joiner.on(",").join(appVersionsToCheck));
         }
+
+        if (!skippedAppVersions.isEmpty()) {
+            LOGGER.info("Skipped checking specification for the following AppVersions (/private/proctor/specification returned 404): " + Joiner.on(",").join(skippedAppVersions));
+        }
+
         return appVersionsToCheck.isEmpty();
     }
 
@@ -252,13 +262,21 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
         while(remaining.peek() != null) {
             final ProctorClientApplication client = remaining.poll();
             // really stupid method of pinging 1 of the applications.
-            final SpecificationResult result = internalGet(client, timeout);
-            if(result.getSpecification() == null) {
+            final Pair<Integer, SpecificationResult> result = internalGet(client, timeout);
+            final int statusCode = result.getFirst();
+            final SpecificationResult specificationResult = result.getSecond();
+            if(specificationResult.getSpecification() == null) {
+                if (statusCode == HttpURLConnection.HTTP_NOT_FOUND) {
+                    LOGGER.info("Client " + client.getBaseApplicationUrl() + " /private/proctor/specification returned 404 - skipping");
+                    results.skipped(client, specificationResult);
+                    break;
+                }
+
                 // Don't yell too load, the error is handled
-                LOGGER.warn("Failed to read specification from: " + client.getBaseApplicationUrl() + " : " + result.getError() + "\n" + result.getException());
-                results.failed(client, result);
+                LOGGER.warn("Failed to read specification from: " + client.getBaseApplicationUrl() + " : " + specificationResult.getError() + "\n" + specificationResult.getException());
+                results.failed(client, specificationResult);
             } else {
-                results.success(client, result);
+                results.success(client, specificationResult);
                 break;
             }
         }
@@ -266,8 +284,9 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
     }
 
     // @Nonnull
-    private static SpecificationResult internalGet(final ProctorClientApplication client, final int timeout) {
+    private static Pair<Integer, SpecificationResult> internalGet(final ProctorClientApplication client, final int timeout) {
         URL url = null;
+        int statusCode = -1;
         InputStream inputStream = null;
         try {
             url = getSpecificationUrl(client);
@@ -276,10 +295,11 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
             urlConnection.setReadTimeout(timeout);
             urlConnection.setConnectTimeout(timeout);
 
+            statusCode = urlConnection.getResponseCode();
             inputStream = urlConnection.getInputStream();
             //  map from testName => list of bucket names
             final SpecificationResult result = OBJECT_MAPPER.readValue(inputStream, SpecificationResult.class);
-            return result;
+            return new Pair<Integer, SpecificationResult>(statusCode, result);
         } catch (Throwable t) {
             final SpecificationResult result = new SpecificationResult();
             final StringWriter sw = new StringWriter();
@@ -288,7 +308,7 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
 
             result.setError(t.getMessage());
             result.setException(sw.toString());
-            return result;
+            return new Pair<Integer, SpecificationResult>(statusCode, result);
         } finally {
             try {
                 if (inputStream != null) {
