@@ -383,7 +383,21 @@ public class ProctorTestDefinitionController extends AbstractController {
 
                     log("(svn) delete " + testName);
                     store.deleteTestDefinition(username, password, srcRevision, testName, definition, fullComment);
-                    addUrl("/proctor?branch=" + source.getName(), "View Result");
+
+                    boolean testExistsInOtherEnvironments = false;
+                    for (final Environment otherEnvironment : Environment.values()) {
+                        if (otherEnvironment != source) {
+                            final ProctorStore otherStore = determineStoreFromEnvironment(otherEnvironment);
+                            final TestDefinition otherDefinition = getTestDefinition(otherStore, testName);
+                            if (otherDefinition != null) {
+                                testExistsInOtherEnvironments = true;
+                                addUrl("/proctor/definition/" + UtilityFunctions.urlEncode(testName) + "?branch=" + otherEnvironment.getName(), "view " + testName + " on " + otherEnvironment.getName());
+                            }
+                        }
+                    }
+                    if (!testExistsInOtherEnvironments) {
+                        setEndMessage("This test no longer exists in any environment.");
+                    }
 
                     //PostDefinitionDeleteChanges
                     log("Executing post delete extension tasks.");

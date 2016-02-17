@@ -18,6 +18,8 @@ public abstract class BackgroundJob<T> implements Callable<T> {
     // URL to direct users to upon completion
     private List<ResultUrl> urls = Lists.newArrayList();
 
+    private String endMessage = "";
+
     public void log(String message) {
         logBuilder.append(message).append("\n");
     }
@@ -71,6 +73,14 @@ public abstract class BackgroundJob<T> implements Callable<T> {
 
     public void addUrl(final ResultUrl url) {
         this.urls.add(url);
+    }
+
+    public String getEndMessage() {
+        return endMessage;
+    }
+
+    public void setEndMessage(final String endMessage) {
+        this.endMessage = endMessage;
     }
 
     public String toString() {

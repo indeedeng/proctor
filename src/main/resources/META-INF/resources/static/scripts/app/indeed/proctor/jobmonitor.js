@@ -113,14 +113,19 @@ indeed.proctor.JobMonitor.prototype.onJobFinished_ = function(ev) {
                                           this.boundingBox_),
       job = ev.job_status,
       urls = job['urls'],
+      endMessage = job['endMessage'];
       ul;
   if (cancel) {
     goog.events.removeAll(cancel);
     goog.dom.removeNode(cancel);
   }
 
+  ul = goog.dom.createDom(goog.dom.TagName.UL, 'link-list');
+  if (endMessage) {
+    var li = goog.dom.createDom(goog.dom.TagName.LI, undefined, endMessage);
+    goog.dom.appendChild(ul, li);
+  }
   if (goog.isArray(urls)) {
-    ul = goog.dom.createDom(goog.dom.TagName.UL, 'link-list');
     goog.array.forEach(urls, function(url) {
       var li = goog.dom.createDom(goog.dom.TagName.LI);
       var link = goog.dom.createDom(goog.dom.TagName.A, {
@@ -131,6 +136,8 @@ indeed.proctor.JobMonitor.prototype.onJobFinished_ = function(ev) {
       goog.dom.appendChild(li, link);
       goog.dom.appendChild(ul, li);
     });
+  }
+  if (ul.hasChildNodes()) {
     goog.dom.insertSiblingAfter(ul, status);
   }
 };
