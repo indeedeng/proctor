@@ -9,9 +9,10 @@
     <c:if test="${status.count > 1 || !empty allocation.rule}">
     <span class="img field-label pas"><c:if test="${empty allocation.rule}">[Default]</c:if><c:if test="${!empty allocation.rule}">${fn:escapeXml(allocation.rule)}</c:if></span>
     </c:if>
-    <div class="bd pas">
+    <div class="bd pas ui-allocation-bar-container">
         <ui:allocation-bar allocation="${allocation}" definition="${definition}" />
-    </div></div>
+    </div>
+</div>
 </c:forEach>
 <ui:expand-collapse more="show legend" less="hide" isMoreExpanded="false">
 <ui:bucket-index definition="${definition}" />
