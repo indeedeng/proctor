@@ -39,7 +39,7 @@ public class ScheduledTasks implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        scheduledExecutorService.scheduleWithFixedDelay(promoter, 1, 1, TimeUnit.MINUTES);
+        scheduledExecutorService.scheduleWithFixedDelay(promoter, 60, 5, TimeUnit.SECONDS);
         scheduledExecutorService.scheduleWithFixedDelay(proctorSpecificationSource, 1, 10, TimeUnit.MINUTES);
 
         if(scheduledExecutorService instanceof ThreadPoolExecutor) {
