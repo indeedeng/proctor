@@ -12,6 +12,42 @@
 <c:set var="testMatrix" value="${testMatrixVersion.testMatrixDefinition}"/>
 <layout:base title="Proctor - current test matrix" session="${session}">
         <h2>${branch.name} test matrix</h2>
+        <div id="filter-container">
+            <ui:grid-row>
+                <ui:grid-columns width="two">
+                    <label class="inline">
+                        <select class="js-filter-type" style="padding: 6px;">
+                            <option value="all" selected="selected">Any field</option>
+                            <option value="testName">Test name</option>
+                            <option value="description">Description</option>
+                            <option value="rule">Rule</option>
+                            <option value="bucket">Bucket name</option>
+                            <option value="bucketDescription">Bucket description</option>
+                        </select>
+                    </label>
+                </ui:grid-columns>
+                <ui:grid-columns width="ten">
+                    <label>
+                        <input type="text" name="test name" class="js-filter-text" placeholder="Filter">
+                    </label>
+                </ui:grid-columns>
+            </ui:grid-row>
+            <div class="js-filter-active" style="padding-left: 5px;">
+                <label>
+                    <input type="radio" name="filterActive" value="all" checked>
+                    All
+                </label>
+                <label>
+                    <input type="radio" name="filterActive" value="active">
+                    <span>Active: Some allocations are occupied by multiple buckets</span>
+                </label>
+                <label>
+                    <input type="radio" name="filterActive" value="inactive">
+                    <span>Inactive: All allocations are occupied by 100% buckets</span>
+                </label>
+            </div>
+            <p>Showing <span class="js-num-matched" style="font-weight: bold;">0</span> / <span class="js-num-all" style="font-weight: bold;">0</span> tests</p>
+        </div>
         <c:forEach items="${testMatrix.tests}" var="test">
             <c:set var="testDefinition" value="${test.value}" />
             <div class="panel radius">
@@ -45,7 +81,4 @@
         indeed.proctor.app.matrix.list.start(${testMatrixDefinition});
         //]]>
     </script>
-<!--
-<c:out value="${testMatrixDefinition}" />
--->
 </layout:base>
