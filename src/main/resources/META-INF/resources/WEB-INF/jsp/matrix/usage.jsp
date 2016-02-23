@@ -14,7 +14,9 @@
         <thead>
             <tr>
                 <th><h6>Name</h6></th>
-                <th>DEV (webapp)</th>
+                 <c:if test="${proctor:containsAnyDev(tests.values())}">
+                    <th>DEV (webapp)</th>
+                 </c:if>
                 <th>QA (webapp)</th>
                 <th>PRODUCTION (webapp)</th>
             </tr>
@@ -29,15 +31,17 @@
                 <td>
                     <a href="/proctor/definition/${proctor:urlencode(testName)}"><h6>${fn:escapeXml(testName)}</h6></a>
                 </td>
-                <td>
-                    <ul class="nice">
-                        <c:if test="${inDevMatrix}"><li><a class="label" href="/proctor/definition/${proctor:urlencode(testName)}">TRUNK MATRIX</a></li></c:if>
-                        <c:if test="${empty row.dev}"><li>[no webapps]</li></c:if>
-                        <c:forEach items="${row.dev}" var="version">
-                            <li><ui:compatible-result version="${version}" branch="trunk" /></li>
-                        </c:forEach>
-                    </ul>
-                </td>
+                <c:if test="${proctor:containsAnyDev(tests.values())}">
+                    <td>
+                        <ul class="nice">
+                            <c:if test="${inDevMatrix}"><li><a class="label" href="/proctor/definition/${proctor:urlencode(testName)}">TRUNK MATRIX</a></li></c:if>
+                            <c:if test="${empty row.dev}"><li>[no webapps]</li></c:if>
+                            <c:forEach items="${row.dev}" var="version">
+                                <li><ui:compatible-result version="${version}" branch="trunk" /></li>
+                            </c:forEach>
+                        </ul>
+                    </td>
+                </c:if>
                 <td>
                     <ul class="nice">
                         <c:if test="${inQaMatrix}"><li><a class="label" href="/proctor/definition/${proctor:urlencode(testName)}?branch=qa">QA MATRIX</a></li></c:if>

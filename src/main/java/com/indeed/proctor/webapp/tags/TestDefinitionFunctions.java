@@ -10,12 +10,15 @@ import com.indeed.proctor.common.model.Range;
 import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.common.model.TestDefinition;
 import com.indeed.proctor.store.Revision;
+import com.indeed.proctor.webapp.controllers.ProctorController;
 import com.indeed.proctor.webapp.db.Environment;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -129,6 +132,15 @@ public final class TestDefinitionFunctions {
     // Annoyingly there isn't a way to check map.contains via jsp, you cannot even access the keys Collection directly
     public static boolean containsKey(Map m, Object key) {
         return m.containsKey(key);
+    }
+
+    public static boolean containsAnyDev(Collection<ProctorController.CompatibilityRow> rows) {
+        for (final ProctorController.CompatibilityRow row : rows) {
+            if (row.getDev().size() != 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static TestDefinition parseTestDefinition(final String testDefinition) throws IOException, JsonParseException, JsonMappingException {

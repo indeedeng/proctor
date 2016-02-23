@@ -63,6 +63,6 @@ public class AppVersion implements Comparable<AppVersion> {
 
     @Override
     public String toString() {
-        return app + '@' + version;
+        return app + '@' + version.substring(0, 7);
     }
 }
