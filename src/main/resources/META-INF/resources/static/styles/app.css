@@ -91,3 +91,14 @@ table.tright td, table.tleft th { text-align: right }
 .ui-job-monitor-log { height: 200px; }
 
 .ui-allocation-bar-container { min-width: 200px; }
+
+/* Filter */
+.js-filter-type {
+    padding: 6px;
+}
+.js-filter-active {
+    padding-left: 5px;
+}
+.js-filter-num-matched, .js-filter-num-all {
+    font-weight: bold;
+}

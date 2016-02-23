@@ -16,7 +16,7 @@
             <ui:grid-row>
                 <ui:grid-columns width="two">
                     <label class="inline">
-                        <select class="js-filter-type" style="padding: 6px;">
+                        <select class="js-filter-type">
                             <option value="all" selected="selected">Any field</option>
                             <option value="testName">Test name</option>
                             <option value="description">Description</option>
@@ -32,7 +32,7 @@
                     </label>
                 </ui:grid-columns>
             </ui:grid-row>
-            <div class="js-filter-active" style="padding-left: 5px;">
+            <div class="js-filter-active">
                 <label>
                     <input type="radio" name="filterActive" value="all" checked>
                     All
@@ -46,7 +46,7 @@
                     <span>Inactive: All allocations are occupied by 100% buckets</span>
                 </label>
             </div>
-            <p>Showing <span class="js-num-matched" style="font-weight: bold;">0</span> / <span class="js-num-all" style="font-weight: bold;">0</span> tests</p>
+            <p>Showing <span class="js-filter-num-matched">0</span> / <span class="js-filter-num-all">0</span> tests</p>
         </div>
         <c:forEach items="${testMatrix.tests}" var="test">
             <c:set var="testDefinition" value="${test.value}" />

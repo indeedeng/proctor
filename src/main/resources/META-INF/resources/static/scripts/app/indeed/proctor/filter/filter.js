@@ -1,19 +1,25 @@
 goog.provide('indeed.proctor.filter');
 
+/**
+ * Filter controller for detecting form changes and filtering DOM
+ * @param matrix testMatrixDefinition object
+ * @param container container for filter form
+ * @constructor
+ */
 indeed.proctor.filter.Filter = function (matrix, container) {
     this.textNode = container.querySelector(".js-filter-text");
     this.filterTypeNode = container.querySelector(".js-filter-type");
     this.filterActiveNode = container.querySelector(".js-filter-active");
-    this.numMatchedNode = container.querySelector(".js-num-matched");
-    this.numAllNode = container.querySelector(".js-num-all");
+    this.numMatchedNode = container.querySelector(".js-filter-num-matched");
+    this.numAllNode = container.querySelector(".js-filter-num-all");
     this.models = this.createModels(matrix);
-    goog.events.listen(this.filterTypeNode, "change", this.refreshFilter.bind(this));
-    goog.events.listen(this.filterActiveNode, "change", this.refreshFilter.bind(this));
+    goog.events.listen(this.filterTypeNode, goog.events.EventType.CHANGE, this.refreshFilter.bind(this));
+    goog.events.listen(this.filterActiveNode, goog.events.EventType.CHANGE, this.refreshFilter.bind(this));
 
     this.textNode.focus();
 
     var timer;
-    goog.events.listen(this.textNode, "input", function (e) {
+    goog.events.listen(this.textNode, goog.events.EventType.INPUT, function (e) {
         if (timer) {
             clearTimeout(timer);
         }
