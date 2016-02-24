@@ -132,9 +132,9 @@ public final class TestDefinitionFunctions {
         return m.containsKey(key);
     }
 
-    public static boolean containsAnyDev(final Collection<ProctorController.CompatibilityRow> rows) {
+    public static boolean hasDevInstances(final Collection<ProctorController.CompatibilityRow> rows) {
         for (final ProctorController.CompatibilityRow row : rows) {
-            if (row.getDev().size() != 0) {
+            if (!row.getDev().isEmpty()) {
                 return true;
             }
         }

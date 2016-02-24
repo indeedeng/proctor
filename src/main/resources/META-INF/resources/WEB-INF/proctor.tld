@@ -229,7 +229,7 @@
     <function>
         <name>containsAnyDev</name>
         <function-class>com.indeed.proctor.webapp.tags.TestDefinitionFunctions</function-class>
-        <function-signature>boolean containsAnyDev(java.util.Collection)</function-signature>
+        <function-signature>boolean hasDevInstances(java.util.Collection)</function-signature>
     </function>
     <function>
         <description>URL Encodes a String</description>

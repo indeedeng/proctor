@@ -10,15 +10,15 @@
 <%--@elvariable id="qaMatrix" type="com.indeed.proctor.webapp.TestMatrixVersion"--%>
 <%--@elvariable id="productionMatrix" type="com.indeed.proctor.webapp.TestMatrixVersion"--%>
 <layout:base title="Proctor - current test matrix" session="${session}">
-    <table class="w100">
+    <table class="w100 fixed">
         <thead>
             <tr>
-                <th><h6>Name</h6></th>
+                <th style="width:25%;"><h6>Name</h6></th>
                  <c:if test="${proctor:containsAnyDev(tests.values())}">
-                    <th>DEV (webapp)</th>
+                    <th style="width:25%;">DEV (webapp)</th>
                  </c:if>
-                <th>QA (webapp)</th>
-                <th>PRODUCTION (webapp)</th>
+                <th style="width:25%;">QA (webapp)</th>
+                <th style="width:25%;">PRODUCTION (webapp)</th>
             </tr>
         </thead>
         <c:forEach items="${tests}" var="entry">
