@@ -369,9 +369,20 @@ public class ProctorTestDefinitionController extends AbstractController {
 
                     final String fullComment = formatFullComment(comment, requestParameterMap);
 
-                    final CheckMatrixResult checkMatrixResult = checkMatrix(source, testName, null);
-                    if (!checkMatrixResult.isValid()) {
-                        throw new IllegalArgumentException("New test matrix is not compatible: " + checkMatrixResult.getErrors().get(0));
+                    if (source.equals(Environment.WORKING) || source.equals(Environment.QA)) {
+                        final CheckMatrixResult checkMatrixResultInQa = checkMatrix(Environment.QA, testName, null);
+                        if (!checkMatrixResultInQa.isValid) {
+                            throw new IllegalArgumentException("There are still clients in QA using " + testName + " " + checkMatrixResultInQa.getErrors().get(0));
+                        }
+                        final CheckMatrixResult checkMatrixResultInProd = checkMatrix(Environment.PRODUCTION, testName, null);
+                        if (!checkMatrixResultInProd.isValid) {
+                            throw new IllegalArgumentException("There are still clients in prod using " + testName + " " + checkMatrixResultInProd.getErrors().get(0));
+                        }
+                    } else {
+                        final CheckMatrixResult checkMatrixResult = checkMatrix(source, testName, null);
+                        if (!checkMatrixResult.isValid()) {
+                            throw new IllegalArgumentException("There are still clients in prod using " + testName + " " + checkMatrixResult.getErrors().get(0));
+                        }
                     }
 
                     //PreDefinitionDeleteChanges
