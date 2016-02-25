@@ -22,7 +22,7 @@ public class CachedSvnPersisterCore implements SvnPersisterCore {
     private static final Logger LOGGER = Logger.getLogger(CachedSvnPersisterCore.class);
 
     private final Cache<FileContentsKey, Object> cache = CacheBuilder.newBuilder()
-        .maximumSize(1024)
+        .maximumSize(2048)
         .expireAfterAccess(60, TimeUnit.MINUTES)
         .softValues()
         .build();
