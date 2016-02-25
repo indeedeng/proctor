@@ -1,5 +1,7 @@
 goog.provide('indeed.proctor.filter');
 
+goog.require('goog.async.Delay');
+
 /**
  * Filter controller for detecting form changes and filtering DOM
  * @param matrix testMatrixDefinition object
@@ -13,18 +15,17 @@ indeed.proctor.filter.Filter = function (matrix, container) {
     this.numMatchedNode = container.querySelector(".js-filter-num-matched");
     this.numAllNode = container.querySelector(".js-filter-num-all");
     this.models = this.createModels(matrix);
-    goog.events.listen(this.filterTypeNode, goog.events.EventType.CHANGE, this.refreshFilter.bind(this));
-    goog.events.listen(this.filterActiveNode, goog.events.EventType.CHANGE, this.refreshFilter.bind(this));
 
+    goog.dom.setTextContent(this.numMatchedNode, this.models.length);
+    goog.dom.setTextContent(this.numAllNode, this.models.length);
     this.textNode.focus();
 
-    var timer;
-    goog.events.listen(this.textNode, goog.events.EventType.INPUT, function (e) {
-        if (timer) {
-            clearTimeout(timer);
-        }
-        setTimeout(this.refreshFilter.bind(this), 400);
-    }.bind(this));
+    var delay = new goog.async.Delay(goog.bind(this.refreshFilter, this), 400);
+    goog.events.listen(this.textNode, goog.events.EventType.INPUT, function(){
+        delay.start();
+    });
+    goog.events.listen(this.filterTypeNode, goog.events.EventType.CHANGE, goog.bind(this.refreshFilter, this));
+    goog.events.listen(this.filterActiveNode, goog.events.EventType.CHANGE, goog.bind(this.refreshFilter, this));
 };
 indeed.proctor.filter.Filter.prototype.refreshFilter = function () {
     var radios = this.filterActiveNode.querySelectorAll("input");
@@ -41,20 +42,20 @@ indeed.proctor.filter.Filter.prototype.filter = function (text, key, active) {
     var texts = text.toLowerCase().split(" ");
     var numMatched = 0;
 
-    this.models.forEach(function (model) {
-        var matched = texts.every(function (text) {
+    goog.array.forEach(this.models, function (model) {
+        var matched = goog.array.every(texts, function (text) {
             return model.texts[key].indexOf(text) >= 0;
         });
         if (matched) {
             if (active == "active") {
-                matched = model.definition.allocations.some(function (allocation) {
-                    return allocation.ranges.every(function (range) {
+                matched = goog.array.some(model.definition.allocations, function (allocation) {
+                    return goog.array.every(allocation.ranges, function (range) {
                         return range.length < 1;
                     });
                 });
             } else if (active == "inactive") {
-                matched = model.definition.allocations.every(function (allocation) {
-                    return allocation.ranges.some(function (range) {
+                matched = goog.array.every(model.definition.allocations, function (allocation) {
+                    return goog.array.some(allocation.ranges, function (range) {
                         return range.length == 1;
                     });
                 });
@@ -67,7 +68,7 @@ indeed.proctor.filter.Filter.prototype.filter = function (text, key, active) {
             model.dom.style.display = "none";
         }
     });
-    this.numMatchedNode.textContent = numMatched;
+    goog.dom.setTextContent(this.numMatchedNode, numMatched);
 };
 
 indeed.proctor.filter.Filter.prototype.createModels = function (matrix) {
@@ -75,7 +76,7 @@ indeed.proctor.filter.Filter.prototype.createModels = function (matrix) {
     var divs = document.querySelectorAll("div.ui-test-definition");
     for (var i = 0; i < divs.length; i++) {
         var div = divs[i];
-        var testName = div.querySelector(".mtn").textContent;
+        var testName = goog.dom.getTextContent(div.querySelector(".mtn"));
         var definition = matrix.tests[testName];
         var model = {
             definition: definition,
@@ -83,27 +84,22 @@ indeed.proctor.filter.Filter.prototype.createModels = function (matrix) {
             texts: {
                 testName: normalize(testName),
                 description: normalize(definition.description || ""),
-                rule: normalize((definition.rule || "") + definition.allocations.map(function (allocation) {
+                rule: normalize((definition.rule || "") + goog.array.map(definition.allocations, function (allocation) {
                         return allocation.rule || "";
                     }).join(" ")),
-                bucket: normalize(definition.buckets.map(function (bucket) {
+                bucket: normalize(goog.array.map(definition.buckets, function (bucket) {
                     return bucket.name;
                 }).join(" ")),
-                bucketDescription: normalize(definition.buckets.map(function (bucket) {
+                bucketDescription: normalize(goog.array.map(definition.buckets, function (bucket) {
                     return bucket.description;
                 }).join(" ")),
                 testType: normalize(definition.testType),
                 salt: normalize(definition.salt)
             }
         };
-        var all = [];
-        for (var j in model.texts) {
-            all.push(model.texts[j]);
-        }
-        model.texts.all = all.join(" ");
+        model.texts.all = goog.object.getValues(model.texts).join(" ");
         models.push(model);
     }
-    this.numMatchedNode.textContent = this.numAllNode.textContent = models.length;
     return models;
 
     function normalize(text) {
