@@ -17,7 +17,7 @@
             <div class="panel radius">
             <ui:grid-row extraCssClass="ui-test-definition">
                 <ui:grid-columns width="three">
-                    <h6 class="mtn"><a class="" href="/proctor/definition/${proctor:urlencode(test.key)}?branch=${proctor:urlencode(branch.name)}">${fn:escapeXml(test.key)}</a></h6>
+                    <h6 class="mtn"><a class="breakAll" href="/proctor/definition/${proctor:urlencode(test.key)}?branch=${proctor:urlencode(branch.name)}">${fn:escapeXml(test.key)}</a></h6>
                     <ul class="button-group radius">
                         <li><a class="tiny button secondary radius" href="/proctor/definition/${proctor:urlencode(test.key)}/edit?branch=${proctor:urlencode(branch.name)}">edit</a></li>
                         <%--<li><a class="tiny button secondary radius" href="/proctor/definition/${test.key}/history">history</a></li>--%>
