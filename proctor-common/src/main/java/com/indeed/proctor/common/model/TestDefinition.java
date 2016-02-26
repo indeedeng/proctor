@@ -189,4 +189,57 @@ public class TestDefinition {
     public String getDescription() {
         return description;
     }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        final TestDefinition that = (TestDefinition) o;
+
+        if (version != null ? !version.equals(that.version) : that.version != null) {
+            return false;
+        }
+        if (!constants.equals(that.constants)) {
+            return false;
+        }
+        if (!specialConstants.equals(that.specialConstants)) {
+            return false;
+        }
+        if (!salt.equals(that.salt)) {
+            return false;
+        }
+        if (rule != null ? !rule.equals(that.rule) : that.rule != null) {
+            return false;
+        }
+        if (!buckets.equals(that.buckets)) {
+            return false;
+        }
+        if (!allocations.equals(that.allocations)) {
+            return false;
+        }
+        if (!testType.equals(that.testType)) {
+            return false;
+        }
+        return !(description != null ? !description.equals(that.description) : that.description != null);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = version != null ? version.hashCode() : 0;
+        result = 31 * result + constants.hashCode();
+        result = 31 * result + specialConstants.hashCode();
+        result = 31 * result + salt.hashCode();
+        result = 31 * result + (rule != null ? rule.hashCode() : 0);
+        result = 31 * result + buckets.hashCode();
+        result = 31 * result + allocations.hashCode();
+        result = 31 * result + testType.hashCode();
+        result = 31 * result + (description != null ? description.hashCode() : 0);
+        return result;
+    }
 }
