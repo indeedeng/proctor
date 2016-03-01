@@ -41,6 +41,8 @@
 </c:if>
 <form class="js-edit-definition-form" action="${action}" method="POST">
 
+    <proctor:renderEditPageInjectionTemplates position="<%=EditPageRenderer.EditPagePosition.TOP_FORM%>" testName="${testName}" testDefinitionJson="${testDefinitionJson}" isCreate="${isCreate}"/>
+
     <ui:grid-row >
         <ui:grid-columns width="two"><h4>Basic</h4></ui:grid-columns>
         <ui:grid-columns width="ten">
