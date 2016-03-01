@@ -16,7 +16,9 @@
         <thead>
             <tr>
                 <th style="width:25%;">Matrix</th>
-                <th style="width:25%;">DEV (webapp)</th>
+                <c:if test="${!empty row.dev}">
+                    <th style="width:25%;">DEV (webapp)</th>
+                </c:if>
                 <th style="width:25%;">QA (webapp)</th>
                 <th style="width:25%;">PRODUCTION (webapp)</th>
             </tr>
@@ -24,16 +26,15 @@
         <tbody>
             <tr>
                 <td><h6>${environment.name}</h6></td>
-                <td>
-                    <c:if test="${empty row.dev}">[NONE]</c:if>
-                    <c:if test="${!empty row.dev}">
+                <c:if test="${!empty row.dev}">
+                    <td>
                         <ul class="nice">
                             <c:forEach items="${row.dev}" var="version">
                                 <li><ui:compatible-result version="${version}" branch="trunk" /></li>
                             </c:forEach>
                         </ul>
-                    </c:if>
-                </td>
+                    </td>
+                </c:if>
                 <td>
                     <c:if test="${empty row.qa}">[NONE]</c:if>
                     <c:if test="${!empty row.qa}">

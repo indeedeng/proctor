@@ -3,11 +3,12 @@ package com.indeed.proctor.webapp.model;
 import com.google.common.collect.ComparisonChain;
 
 /**
-* @author parker
-*/
+ * @author parker
+ */
 public class AppVersion implements Comparable<AppVersion> {
     private final String app;
     private final String version;
+
     public AppVersion(final String app,
                       final String version) {
         this.app = app;
@@ -48,9 +49,9 @@ public class AppVersion implements Comparable<AppVersion> {
             return 0;
         }
         return ComparisonChain.start()
-            .compare(app, that.app)
-            .compare(version, that.version)
-            .result();
+                .compare(app, that.app)
+                .compare(version, that.version)
+                .result();
     }
 
     public String getApp() {
@@ -64,5 +65,10 @@ public class AppVersion implements Comparable<AppVersion> {
     @Override
     public String toString() {
         return app + '@' + version;
+    }
+
+    public String toShortString() {
+        final String shortVersionName = version.length() > 7 ? version.substring(0, 7) : version;
+        return app + '@' + shortVersionName;
     }
 }

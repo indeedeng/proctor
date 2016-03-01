@@ -443,6 +443,10 @@ public class ProctorController extends AbstractController {
         public String toString() {
             return appVersion.toString();
         }
+
+        public String toShortString() {
+            return appVersion.toShortString();
+        }
     }
 
 }
