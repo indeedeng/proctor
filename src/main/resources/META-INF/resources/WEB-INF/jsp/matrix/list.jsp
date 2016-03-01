@@ -46,7 +46,7 @@
                     <span>Inactive: All allocations are occupied by 100% buckets</span>
                 </label>
             </div>
-            <p>Showing <span class="js-filter-num-matched">0</span> / <span class="js-filter-num-all">0</span> tests</p>
+            <p>Showing <span class="js-filter-num-matched">-</span> / <span class="js-filter-num-all">-</span> tests</p>
         </div>
         <c:forEach items="${testMatrix.tests}" var="test">
             <c:set var="testDefinition" value="${test.value}" />

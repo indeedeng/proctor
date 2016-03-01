@@ -20,12 +20,16 @@ indeed.proctor.filter.Filter = function (matrix, container) {
     goog.dom.setTextContent(this.numAllNode, this.models.length);
     this.textNode.focus();
 
-    var delay = new goog.async.Delay(goog.bind(this.refreshFilter, this), 400);
+    var delay = new goog.async.Delay(goog.bind(this.refreshFilter, this));
     goog.events.listen(this.textNode, goog.events.EventType.INPUT, function(){
-        delay.start();
+        delay.start(400);
     });
-    goog.events.listen(this.filterTypeNode, goog.events.EventType.CHANGE, goog.bind(this.refreshFilter, this));
-    goog.events.listen(this.filterActiveNode, goog.events.EventType.CHANGE, goog.bind(this.refreshFilter, this));
+    goog.events.listen(this.filterTypeNode, goog.events.EventType.CHANGE, function(){
+        delay.start(100);
+    });
+    goog.events.listen(this.filterActiveNode, goog.events.EventType.CHANGE, function(){
+        delay.start(100);
+    });
 };
 indeed.proctor.filter.Filter.prototype.refreshFilter = function () {
     var radios = this.filterActiveNode.querySelectorAll("input");
