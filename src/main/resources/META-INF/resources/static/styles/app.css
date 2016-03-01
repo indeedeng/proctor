@@ -36,7 +36,7 @@ table.fixed { table-layout: fixed; }
 table.tleft td, table.tleft th { text-align: left }
 table.tright td, table.tleft th { text-align: right }
 
-
+.ui-test-name { word-break: break-all;}
 
 .ui-test-definition .hd .field-label { margin-right: 5px }
 .ui-test-definition .hd .media .field-label { min-width: 200px }
