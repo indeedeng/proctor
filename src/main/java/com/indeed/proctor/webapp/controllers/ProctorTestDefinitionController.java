@@ -804,6 +804,9 @@ public class ProctorTestDefinitionController extends AbstractController {
                     }
                     else if (existingTestDefinition != null) {
                         testDefinitionToUpdate.setVersion(existingTestDefinition.getVersion());
+                        if (existingTestDefinition.equals(testDefinitionToUpdate)) {
+                            throw new IllegalArgumentException("Nothing has been changed!");
+                        }
                     }
                     log("verifying test definition and buckets");
                     validateBasicInformation(testDefinitionToUpdate, this);
