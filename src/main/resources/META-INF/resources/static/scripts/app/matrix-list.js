@@ -13,12 +13,13 @@ goog.require('indeed.foundation.Tabs');
 goog.require('indeed.proctor.JobMonitor');
 goog.require('indeed.proctor.editor.AllocationsEditor');
 goog.require('indeed.proctor.editor.CleanWorkspace');
+goog.require('indeed.proctor.filter');
 
 
 /**
  * entry point for the matrix.list
  */
-indeed.proctor.app.matrix.list.start = function() {
+indeed.proctor.app.matrix.list.start = function(matrix) {
   goog.events.listen(window, 'load', function() {
 
     indeed.expandcollapse.ExpandCollapse.detect(document.body);
@@ -28,6 +29,7 @@ indeed.proctor.app.matrix.list.start = function() {
     goog.array.forEach(tabs, function(tab) {
       var uiTab = new indeed.foundation.Tabs(tab);
     });
+    new indeed.proctor.filter.Filter(matrix, goog.dom.getElement("filter-container"));
   });
 };
 
