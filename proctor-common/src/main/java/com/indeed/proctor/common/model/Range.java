@@ -37,32 +37,4 @@ public class Range {
     public void setLength(final double length) {
         this.length = length;
     }
-
-    @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-
-        final Range range = (Range) o;
-
-        if (bucketValue != range.bucketValue) {
-            return false;
-        }
-        return Double.compare(range.length, length) == 0;
-
-    }
-
-    @Override
-    public int hashCode() {
-        int result;
-        long temp;
-        result = bucketValue;
-        temp = Double.doubleToLongBits(length);
-        result = 31 * result + (int) (temp ^ (temp >>> 32));
-        return result;
-    }
 }
