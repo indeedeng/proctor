@@ -25,7 +25,7 @@ public class SvnProctor extends FileBasedProctorStore {
 
     /* Storage Schema:
         ${svnPath}/
-            test-definitions/
+            ${testDefinitionsDirectory}/
                 test-name-one/
                     definition.json
                     metadata.json
@@ -39,11 +39,22 @@ public class SvnProctor extends FileBasedProctorStore {
     public SvnProctor(final String svnPath,
                       final String username,
                       final String password) throws IOException {
-        this(new SvnPersisterCoreImpl(svnPath, username, password, Files.createTempDir()));
+        this(svnPath, username, password, DEFAULT_TEST_DEFINITIONS_DIRECTORY);
+    }
+
+    public SvnProctor(final String svnPath,
+                      final String username,
+                      final String password,
+                      final String testDefinitionsDirectory) throws IOException {
+        this(new SvnPersisterCoreImpl(svnPath, username, password, testDefinitionsDirectory, Files.createTempDir()), testDefinitionsDirectory);
     }
 
     public SvnProctor(final SvnPersisterCore core) {
-        super(core);
+        this(core, DEFAULT_TEST_DEFINITIONS_DIRECTORY);
+    }
+
+    public SvnProctor(final SvnPersisterCore core, final String testDefinitionsDirectory) {
+        super(core, testDefinitionsDirectory);
         this.svnUrl = core.getSvnUrl();
     }
 
@@ -74,7 +85,7 @@ public class SvnProctor extends FileBasedProctorStore {
             @Override
             public List<Revision> execute(final SVNRepository repo, final SVNClientManager clientManager) throws Exception {
                 // check path before executing svn log
-                final String testPath = TEST_DEFINITIONS_DIRECTORY + "/" + test;
+                final String testPath = getTestDefinitionsDirectory() + "/" + test;
                 final SVNNodeKind kind = repo.checkPath(testPath, revision);
                 if (kind == SVNNodeKind.NONE) {
                     return Collections.emptyList();
@@ -210,17 +221,18 @@ public class SvnProctor extends FileBasedProctorStore {
         final String password = new String(System.console().readPassword("password: "));
         final boolean usecache = "y".equals(System.console().readLine("cache (y/n): "));
         final int num_revisions = Integer.parseInt(System.console().readLine("number of histories: "));
+        final String testDefinitionsDirectory = System.console().readLine("test definitions directory: ");
 
         final File tempDir = Files.createTempDir();
         try {
-            final SvnPersisterCoreImpl core = new SvnPersisterCoreImpl(svnpath, svnuser, password, tempDir);
+            final SvnPersisterCoreImpl core = new SvnPersisterCoreImpl(svnpath, svnuser, password, testDefinitionsDirectory, tempDir);
             final SvnPersisterCore core1;
             if (usecache) {
                 core1 = new CachedSvnPersisterCore(core);
             } else {
                 core1 = core;
             }
-            final SvnProctor client = new SvnProctor(core1);
+            final SvnProctor client = new SvnProctor(core1, testDefinitionsDirectory);
 
             System.out.println("Running load matrix for last " + num_revisions + " revisions");
             final long start = System.currentTimeMillis();

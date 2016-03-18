@@ -58,6 +58,8 @@ public class SvnPersisterCoreImpl implements SvnPersisterCore, Closeable {
 
     private final AtomicBoolean shutdown = new AtomicBoolean(false);
 
+    private final String testDefinitionsDirectory;
+
     /* Storage Schema:
         ${svnPath}/
             test-definitions/
@@ -69,20 +71,29 @@ public class SvnPersisterCoreImpl implements SvnPersisterCore, Closeable {
                     metadata.json
     */
 
-    public SvnPersisterCoreImpl(final String svnPath, final String username, final String password, final File tempDir) {
-        this(svnPath, username, password, new SvnWorkspaceProviderImpl(tempDir, TimeUnit.DAYS.toMillis(1)), true);
+    public SvnPersisterCoreImpl(final String svnPath,
+                                final String username,
+                                final String password,
+                                final String testDefinitionsDirectory,
+                                final File tempDir) {
+        this(svnPath, username, password, testDefinitionsDirectory, new SvnWorkspaceProviderImpl(tempDir, TimeUnit.DAYS.toMillis(1)), true);
     }
 
     /**
      * @param svnPath
      * @param username
      * @param password
+     * @param testDefinitionsDirectory
      * @param workspaceProvider
      * @param shutdownProvider
      * @param
      */
-    public SvnPersisterCoreImpl(final String svnPath, final String username, final String password,
-                                final SvnWorkspaceProvider workspaceProvider, boolean shutdownProvider) {
+    public SvnPersisterCoreImpl(final String svnPath,
+                                final String username,
+                                final String password,
+                                final String testDefinitionsDirectory,
+                                final SvnWorkspaceProvider workspaceProvider,
+                                final boolean shutdownProvider) {
         try {
             final boolean isFileSystemRepo = svnPath.startsWith("file://");
             final SVNURL url = SVNURL.parseURIDecoded(svnPath);
@@ -100,6 +111,7 @@ public class SvnPersisterCoreImpl implements SvnPersisterCore, Closeable {
 
         this.workspaceProvider = Preconditions.checkNotNull(workspaceProvider, "SvnWorkspaceProvider should not be null");
         this.shutdownProvider = shutdownProvider;
+        this.testDefinitionsDirectory = testDefinitionsDirectory;
         try {
             this.templateSvnDir = workspaceProvider.createWorkspace(TEMPLATE_DIR_SUFFIX, true);
         } catch (IOException e) {
@@ -114,7 +126,7 @@ public class SvnPersisterCoreImpl implements SvnPersisterCore, Closeable {
         return doReadWithClientAndRepository(new SvnOperation<TestVersionResult>() {
             @Override
             public TestVersionResult execute(final SVNRepository repo, final SVNClientManager clientManager) throws Exception {
-                final String testDefPath = FileBasedProctorStore.TEST_DEFINITIONS_DIRECTORY;
+                final String testDefPath = testDefinitionsDirectory;
                 /*
                 final SVNDirEntry info = repo.info(testDefPath, 2);
                 if (info == null) {
