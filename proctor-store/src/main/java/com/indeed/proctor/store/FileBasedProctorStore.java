@@ -25,15 +25,23 @@ import java.util.Map;
 public abstract class FileBasedProctorStore implements ProctorStore {
     private static final Logger LOGGER = Logger.getLogger(FileBasedProctorStore.class);
     private static final String SUFFIX = ".json";
-    static final String TEST_DEFINITIONS_DIRECTORY = "test-definitions";
     static final String TEST_METADATA_FILENAME = "metadata" + SUFFIX;
     static final String TEST_DEFINITION_FILENAME = "definition" + SUFFIX;
     final ObjectMapper objectMapper = Serializers.strict();
 
+    static final String DEFAULT_TEST_DEFINITIONS_DIRECTORY = "test-definitions";
+    private final String testDefinitionsDirectory;
+
     protected final FileBasedPersisterCore core;
 
-    protected FileBasedProctorStore(FileBasedPersisterCore core) {
+    protected FileBasedProctorStore(final FileBasedPersisterCore core, final String testDefinitionsDirectory) {
         this.core = core;
+        this.testDefinitionsDirectory = testDefinitionsDirectory;
+    }
+
+    protected FileBasedProctorStore(final FileBasedPersisterCore core) {
+        this.core = core;
+        this.testDefinitionsDirectory = DEFAULT_TEST_DEFINITIONS_DIRECTORY;
     }
 
     /**
@@ -70,8 +78,12 @@ public abstract class FileBasedProctorStore implements ProctorStore {
         }
     }
 
-    static File getTestDefinitionDirectory(final String testName, File workingDir) {
-        return new File(workingDir + File.separator + TEST_DEFINITIONS_DIRECTORY + File.separator + testName);
+    File getTestDefinitionDirectoryForTest(final String testName, File workingDir) {
+        return new File(workingDir + File.separator + getTestDefinitionsDirectory() + File.separator + testName);
+    }
+
+    String getTestDefinitionsDirectory() {
+        return testDefinitionsDirectory;
     }
 
     @Override
@@ -147,7 +159,7 @@ public abstract class FileBasedProctorStore implements ProctorStore {
     @Override
     public TestDefinition getTestDefinition(final String testName, String fetchRevision) throws StoreException {
         try {
-            return getFileContents(TestDefinition.class, new String[] { TEST_DEFINITIONS_DIRECTORY, testName, TEST_DEFINITION_FILENAME }, null, fetchRevision);
+            return getFileContents(TestDefinition.class, new String[] { getTestDefinitionsDirectory(), testName, TEST_DEFINITION_FILENAME }, null, fetchRevision);
         } catch (final JsonProcessingException e) {
             throw new StoreException(String.format("Unable to deserialize JSON for %s r%s", testName, fetchRevision), e);
         } catch (final StoreException.ReadException e) {
@@ -187,7 +199,7 @@ public abstract class FileBasedProctorStore implements ProctorStore {
         core.doInWorkingDirectory(username, password, comment, previousVersion, new ProctorUpdater() {
             @Override
             public boolean doInWorkingDirectory(final RcsClient rcsClient, final File workingDir) throws Exception {
-                final File testDefinitionDirectory = getTestDefinitionDirectory(testName, workingDir);
+                final File testDefinitionDirectory = getTestDefinitionDirectoryForTest(testName, workingDir);
                 final File testDefinitionFile = new File(testDefinitionDirectory + File.separator + TEST_DEFINITION_FILENAME);
                 final File metaDataFile = new File(testDefinitionDirectory + File.separator + TEST_METADATA_FILENAME);
                 if (!testDefinitionFile.exists()) {
@@ -208,7 +220,7 @@ public abstract class FileBasedProctorStore implements ProctorStore {
         core.doInWorkingDirectory(username, password, comment, core.getAddTestRevision(), new ProctorUpdater() {
             @Override
             public boolean doInWorkingDirectory(final RcsClient rcsClient, final File workingDir) throws Exception {
-                final File testDefinitionDirectory = getTestDefinitionDirectory(testName, workingDir);
+                final File testDefinitionDirectory = getTestDefinitionDirectoryForTest(testName, workingDir);
                 final File testDefinitionFile = new File(testDefinitionDirectory + File.separator + TEST_DEFINITION_FILENAME);
                 final File metaDataFile = new File(testDefinitionDirectory + File.separator + TEST_METADATA_FILENAME);
 
@@ -236,7 +248,7 @@ public abstract class FileBasedProctorStore implements ProctorStore {
         core.doInWorkingDirectory(username, password, comment, previousVersion, new ProctorUpdater() {
             @Override
             public boolean doInWorkingDirectory(final RcsClient rcsClient, final File workingDir) throws Exception {
-                final File testDefinitionDirectory = getTestDefinitionDirectory(testName, workingDir);
+                final File testDefinitionDirectory = getTestDefinitionDirectoryForTest(testName, workingDir);
 
                 if (!testDefinitionDirectory.exists()) {
                     throw new StoreException.TestUpdateException("Unable to delete non-existent test " + testName);

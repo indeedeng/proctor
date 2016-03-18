@@ -95,7 +95,7 @@ public class LocalDirectoryCore implements FileBasedPersisterCore {
 
     @Override
     public TestVersionResult determineVersions(String fetchRevision) throws StoreException.ReadException {
-        final File testDir = new File(baseDir + File.separator + FileBasedProctorStore.TEST_DEFINITIONS_DIRECTORY);
+        final File testDir = new File(baseDir + File.separator + FileBasedProctorStore.DEFAULT_TEST_DEFINITIONS_DIRECTORY);
         // List all of the directories, excluding the directories created by svn (implementation is ignoring directories named '.svn'
         final File[] testDefFiles = testDir.listFiles( (FileFilter) FileFilterUtils.makeSVNAware(FileFilterUtils.directoryFileFilter()) );
         final List<TestVersionResult.Test> tests = Lists.newArrayListWithExpectedSize(testDefFiles.length);

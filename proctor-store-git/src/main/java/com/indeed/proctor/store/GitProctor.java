@@ -27,7 +27,7 @@ public class GitProctor extends FileBasedProctorStore {
 
     /* Storage Schema:
         ${gitPath}/
-            test-definitions/
+            ${testDefinitionsDirectory}/
                 test-name-one/
                     definition.json
                     metadata.json
@@ -41,26 +41,28 @@ public class GitProctor extends FileBasedProctorStore {
 
     public GitProctor(final String gitPath,
                       final String username,
-                      final String password) {
-        this(new GitProctorCore(gitPath, username, password, Files.createTempDir()));
+                      final String password,
+                      final String testDefinitionsDirectory) {
+        this(new GitProctorCore(gitPath, username, password, testDefinitionsDirectory, Files.createTempDir()), testDefinitionsDirectory);
     }
 
     public GitProctor(final String gitPath,
                       final String username,
-                      final String password,
-                      final String branch) {
-        this(new GitProctorCore(gitPath, username, password, Files.createTempDir()));
-        this.branchName = branch;
-        checkoutBranch(branch);
+                      final String password) {
+        this(gitPath, username, password, DEFAULT_TEST_DEFINITIONS_DIRECTORY);
     }
 
     public GitProctor(final GitProctorCore core) {
-        super(core);
+        this(core, DEFAULT_TEST_DEFINITIONS_DIRECTORY);
+    }
+
+    public GitProctor(final GitProctorCore core, final String testDefinitionsDirectory) {
+        super(core, testDefinitionsDirectory);
         this.git = core.getGit();
     }
 
-    public GitProctor(final GitProctorCore core, final String branchName) {
-        super(core);
+    public GitProctor(final GitProctorCore core, final String testDefinitionsDirectory, final String branchName) {
+        super(core, testDefinitionsDirectory);
         this.git = core.getGit();
         this.branchName = branchName;
         checkoutBranch(branchName);
@@ -71,10 +73,11 @@ public class GitProctor extends FileBasedProctorStore {
         final String gituser = System.console().readLine("user: ");
         final String password = new String(System.console().readPassword("password: "));
         final int num_revisions = Integer.parseInt(System.console().readLine("number of histories: "));
-        
+        final String testDefinitionDirectory = System.console().readLine("test definitions directory: ");
+
         final File tempDir = Files.createTempDir();
         try {
-            final GitProctor client = new GitProctor(gitUrl, gituser, password);
+            final GitProctor client = new GitProctor(gitUrl, gituser, password, testDefinitionDirectory);
 
             System.out.println("Running load matrix for last " + num_revisions + " revisions");
             final long start = System.currentTimeMillis();
@@ -116,10 +119,10 @@ public class GitProctor extends FileBasedProctorStore {
 
     @Override
     public boolean cleanUserWorkspace(String username) {
-        boolean status = getGitCore().cleanUserWorkspace(username);
+        getGitCore().undoLocalChanges();
         getGitCore().initializeRepository();
         checkoutBranch(this.branchName);
-        return status;
+        return true;
     }
 
     @Override
@@ -170,7 +173,7 @@ public class GitProctor extends FileBasedProctorStore {
             final ObjectId commitId = ObjectId.fromString(revision);
             final LogCommand logCommand = git.log()
                 // TODO: create path to definition.json file, sanitize test name for invalid / relative characters
-                .addPath("test-definitions/" + test + "/definition.json")
+                .addPath(getTestDefinitionsDirectory()  + File.separator + test + File.separator + FileBasedProctorStore.TEST_DEFINITION_FILENAME)
                 .add(commitId)
                 .setSkip(start)
                 .setMaxCount(limit);
