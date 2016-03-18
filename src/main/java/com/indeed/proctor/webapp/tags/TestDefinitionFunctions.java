@@ -11,9 +11,11 @@ import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.Range;
 import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.common.model.TestDefinition;
+import com.indeed.proctor.store.GitProctorUtils;
 import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.webapp.controllers.ProctorController;
 import com.indeed.proctor.webapp.db.Environment;
+import org.apache.commons.lang.StringUtils;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -51,8 +53,8 @@ public final class TestDefinitionFunctions {
             case QA:
             case PRODUCTION:
                 // When viewing QA/TRUNK, look for (trunk r{Revision})
-                return isPromotedRevision(history, Environment.WORKING, version.getTrunkRevision()) ||
-                       isCharmedRevision(history, version.getTrunkRevision());
+                return isPromotedRevision(history, Environment.WORKING, version.getTrunkVersion()) ||
+                       isCharmedRevision(history, version.getTrunkVersion());
             case WORKING:
             default:
                 return history.getRevision().equals(version.getTrunkRevision());
@@ -66,7 +68,7 @@ public final class TestDefinitionFunctions {
         switch (viewing) {
             case WORKING:
                 // trunk.revision gets set to qa.version during promotion
-                return history.getRevision().equals(version.getQaVersion());
+                return GitProctorUtils.getEffectiveRevision(history, viewing.getName()).equals(version.getQaVersion());
             case PRODUCTION:
                 // viewing production history:
                 // (qa r{qa.revision}) - this was a promotion from QA
@@ -87,7 +89,7 @@ public final class TestDefinitionFunctions {
         switch (viewing) {
             case WORKING:
                 // trunk.revision gets set to production.version during promotion
-                return history.getRevision().equals(version.getProductionVersion());
+                return GitProctorUtils.getEffectiveRevision(history, viewing.getName()).equals(version.getProductionVersion());
             case QA:
                 // viewing qa history:
                 // (trunk r{qa.version}) - the same trunk revision was promoted to production, either by QA->PROD or TRUNK->PROD
@@ -155,5 +157,11 @@ public final class TestDefinitionFunctions {
         return td;
     }
 
+    /**
+     * Formats a revision for display, truncating it to the first 7 characters.
+     */
+    public static String formatRevision(final String revision) {
+        return StringUtils.substring(revision, 0, 7);
+    }
 
 }

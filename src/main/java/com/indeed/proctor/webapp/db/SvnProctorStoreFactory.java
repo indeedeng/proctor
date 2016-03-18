@@ -25,6 +25,7 @@ public class SvnProctorStoreFactory implements StoreFactory {
     private String svnPath;
     private String svnUsername;
     private String svnPassword;
+    private String testDefinitionsDirectory;
 
     /* The root directory into which we should put the "qa-matrices" or "trunk-matrices"
      * If not set - a the temp directory will be used
@@ -37,17 +38,24 @@ public class SvnProctorStoreFactory implements StoreFactory {
     private long tempDirCleanupAgeMillis = TimeUnit.DAYS.toMillis(1);
 
     // The period to use when scheduling a refresh of the svn directory
-    private long svnRefreshMillis = TimeUnit.MINUTES.toMillis(5);
+    private long svnRefreshMillis = TimeUnit.SECONDS.toMillis(300);
 
-    public SvnProctorStoreFactory(final ScheduledExecutorService executor, final boolean cache, final long tempDirCleanupAgeMinutes,
-                                  final long svnRefreshMinutes, final String svnPath, final String svnUsername, final String svnPassword) throws IOException, ConfigurationException {
+    public SvnProctorStoreFactory(final ScheduledExecutorService executor,
+                                  final boolean cache,
+                                  final long tempDirCleanupAgeMinutes,
+                                  final long svnRefreshSeconds,
+                                  final String svnPath,
+                                  final String svnUsername,
+                                  final String svnPassword,
+                                  final String testDefinitionsDirectory) throws IOException, ConfigurationException {
         this.executor = executor;
         this.cache = cache;
         this.tempDirCleanupAgeMillis = TimeUnit.MINUTES.toMillis(tempDirCleanupAgeMinutes);
-        this.svnRefreshMillis= TimeUnit.MINUTES.toMillis(svnRefreshMinutes);
+        this.svnRefreshMillis = TimeUnit.SECONDS.toMillis(svnRefreshSeconds);
         this.svnPath = svnPath;
         this.svnUsername = svnUsername;
         this.svnPassword = svnPassword;
+        this.testDefinitionsDirectory = testDefinitionsDirectory;
         this.implicitTempRoot = identifyImplicitTempRoot();
     }
 
@@ -72,7 +80,7 @@ public class SvnProctorStoreFactory implements StoreFactory {
         final String fullPath = svnPath + relativePath;
 
         final SvnWorkspaceProviderImpl provider = new SvnWorkspaceProviderImpl(tempDirectory, tempDirCleanupAgeMillis);
-        final SvnPersisterCoreImpl svncore = new SvnPersisterCoreImpl(fullPath, svnUsername, svnPassword, provider, true /* shutdown provider */);
+        final SvnPersisterCoreImpl svncore = new SvnPersisterCoreImpl(fullPath, svnUsername, svnPassword, testDefinitionsDirectory, provider, true /* shutdown provider */);
 
         // actively clean up directories every hour: (not relying on cache eviction)
         final long cleanupScheduleMillis = Math.min(TimeUnit.HOURS.toMillis(1), tempDirCleanupAgeMillis);
@@ -85,7 +93,7 @@ public class SvnProctorStoreFactory implements StoreFactory {
             executor.scheduleWithFixedDelay(refresher, svnRefreshMillis, svnRefreshMillis, TimeUnit.MILLISECONDS);
         }
 
-        final SvnProctor store = new SvnProctor(cache ? new CachedSvnPersisterCore(svncore) : svncore);
+        final SvnProctor store = new SvnProctor(cache ? new CachedSvnPersisterCore(svncore) : svncore, testDefinitionsDirectory);
         final VarExporter exporter = VarExporter.forNamespace(SvnProctor.class.getSimpleName()).includeInGlobal();
         final String prefix = relativePath.substring(1).replace('/', '-');
         exporter.export(store, prefix + "-");

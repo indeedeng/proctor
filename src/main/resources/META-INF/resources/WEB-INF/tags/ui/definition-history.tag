@@ -26,9 +26,9 @@
     <div class="ui-def-hist-commit pbm mbm <c:if test="${isTrunkRevision}">ui-def-hist-trunk </c:if><c:if test="${isQaRevision}">ui-def-hist-qa </c:if><c:if test="${isProductionRevision}">ui-def-hist-production </c:if>">
         <c:if test="${isTrunkRevision || isQaRevision || isProductionRevision}">
             <div class="ui-tagbar ui-tagbar-right">
-                <c:if test="${isTrunkRevision}"><a class="mlm radius label" href="/proctor/definition/${testName}">TRUNK r${version.trunkVersion}</a></c:if>
-                <c:if test="${isQaRevision}"><a class="mlm radius label" href="/proctor/definition/${testName}?branch=qa">QA r${version.qaVersion}</a></c:if>
-                <c:if test="${isProductionRevision}"><a class="mlm radius label" href="/proctor/definition/${testName}?branch=production">PRODUCTION r${version.productionVersion}</a></c:if>
+                <c:if test="${isTrunkRevision}"><a class="mlm radius label" href="/proctor/definition/${testName}">TRUNK@${proctor:formatRevision(version.trunkVersion)}</a></c:if>
+                <c:if test="${isQaRevision}"><a class="mlm radius label" href="/proctor/definition/${testName}?branch=qa">QA@${proctor:formatRevision(version.qaVersion)}</a></c:if>
+                <c:if test="${isProductionRevision}"><a class="mlm radius label" href="/proctor/definition/${testName}?branch=production">PRODUCTION@${proctor:formatRevision(version.productionVersion)}</a></c:if>
             </div>
         </c:if>
         <span><proctor:formatRevisionDisplay revision="${testDefinitionVersion}"/></span>
@@ -48,26 +48,26 @@
                 </ui:expand-collapse>
             </c:if>
             <c:if test="${!isQaRevision && branch.name == 'trunk'}">
-            <ui:expand-collapse more="Promote r${testDefinitionVersion.revision} to QA" less="Cancel" isMoreExpanded="false" >
+            <ui:expand-collapse more="Promote ${proctor:formatRevision(testDefinitionVersion.revision)} to QA" less="Cancel" isMoreExpanded="false" >
                 <%-- TODO: parker 2012-09-04 Depending on the current branch (eg displaying history of QA, you cannot promote to QA) --%>
                 <ui:promote-definition-form testName="${testName}"
                                             src="${branch.name}"
                                             srcRevision="${testDefinitionVersion.revision}"
                                             dest="qa"
                                             destRevision="${version.qaRevision}"
-                                            promoteText="Promote r${testDefinitionVersion.revision} to QA"
+                                            promoteText="Promote ${proctor:formatRevision(testDefinitionVersion.revision)} to QA"
                                             testDefinitionVersion="${testDefinitionVersion}"
                 />
             </ui:expand-collapse>
             </c:if>
             <c:if test="${!isProductionRevision && (branch.name == 'trunk' || branch.name == 'qa')}">
-            <ui:expand-collapse more="Promote r${testDefinitionVersion.revision} to Production" less="Cancel" isMoreExpanded="false">
+            <ui:expand-collapse more="Promote ${proctor:formatRevision(testDefinitionVersion.revision)} to Production" less="Cancel" isMoreExpanded="false">
                 <ui:promote-definition-form testName="${testName}"
                                             src="${branch.name}"
                                             srcRevision="${testDefinitionVersion.revision}"
                                             dest="production"
                                             destRevision="${version.productionRevision}"
-                                            promoteText="Promote r${testDefinitionVersion.revision} to Production"
+                                            promoteText="Promote ${proctor:formatRevision(testDefinitionVersion.revision)} to Production"
                                             testDefinitionVersion="${testDefinitionVersion}"
                 />
             </ui:expand-collapse>

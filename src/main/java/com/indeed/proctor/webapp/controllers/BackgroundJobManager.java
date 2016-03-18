@@ -13,7 +13,7 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -29,7 +29,7 @@ public class BackgroundJobManager {
     private final AtomicLong lastId = new AtomicLong(0);
 
     public BackgroundJobManager() {
-        this(initThreadPool(10, 60));
+        this(initThreadPool());
     }
 
     public BackgroundJobManager(final ThreadPoolExecutor executor) {
@@ -39,13 +39,13 @@ public class BackgroundJobManager {
         this.service = executor;
     }
 
-    private static ThreadPoolExecutor initThreadPool(final int coreThreads, final int maxThreads) {
+    private static ThreadPoolExecutor initThreadPool() {
         final ThreadFactory threadFactory = new ThreadFactoryBuilder()
                 .setNameFormat(BackgroundJobManager.class.getSimpleName() + "-Thread-%d")
                 .setUncaughtExceptionHandler(new LogOnUncaughtExceptionHandler())
                 .build();
-        /* prefer new thread creation instead of queueing */
-        return new ThreadPoolExecutor(coreThreads, maxThreads, 60, TimeUnit.SECONDS, new SynchronousQueue<Runnable>(), threadFactory );
+        // Use a single worker thread to avoid problems with concurrent modifications to the workspace
+        return new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(), threadFactory);
     }
 
     public <T> void submit(BackgroundJob<T> job) {

@@ -209,6 +209,12 @@
             isCurrentVersionOnProduction(com.indeed.proctor.webapp.db.Environment,com.indeed.proctor.store.Revision,com.indeed.proctor.common.EnvironmentVersion)</function-signature>
     </function>
     <function>
+        <name>formatRevision</name>
+        <function-class>com.indeed.proctor.webapp.tags.TestDefinitionFunctions
+        </function-class>
+        <function-signature>java.lang.String formatRevision(java.lang.String)</function-signature>
+    </function>
+    <function>
         <name>prettyPrintJSON</name>
         <function-class>com.indeed.proctor.webapp.tags.JSONFunctions
         </function-class>

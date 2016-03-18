@@ -8,6 +8,7 @@ public class SvnProctorFactory implements FactoryBean<ProctorStore> {
     private String svnPath;
     private String username;
     private String password;
+    private String testDefinitionsDirectory;
 
     public void setSvnPath(final String svnPath) {
         this.svnPath = svnPath;
@@ -21,9 +22,13 @@ public class SvnProctorFactory implements FactoryBean<ProctorStore> {
         this.password = password;
     }
 
+    public void setTestDefinitionsDirectory(final String testDefinitionsDirectory) {
+        this.testDefinitionsDirectory = testDefinitionsDirectory;
+    }
+
     @Override
     public ProctorStore getObject() throws Exception {
-        return new SvnProctor(svnPath, username, password);
+        return new SvnProctor(svnPath, username, password, testDefinitionsDirectory);
     }
 
     @Override

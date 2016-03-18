@@ -14,6 +14,7 @@ public class EnvironmentVersion {
 
     // @Nullable - The last commit on the trunk branch
     private final Revision trunk;
+    private final String trunkEffectiveRevision; // "effective" revision, used to bridge between different Proctor stores. This will be an SVN revision if the commit was copied from SVN.
     // @Nullable - The last commit on the qa branch
     private final Revision qa;
     private final String qaEffectiveRevision; // "effective" revision, aka the 'version' number from the TestDefinition on the Production Branch. This should refer to a revision on the TRUNK branch
@@ -24,16 +25,33 @@ public class EnvironmentVersion {
 
     public EnvironmentVersion(final String testName,
                               final Revision trunk,
+                              final String trunkEffectiveRevision,
                               final Revision qa,
                               final String qaEffectiveRevision,
                               final Revision production,
                               final String productionEffectiveRevision) {
         this.testName = testName;
         this.trunk = trunk;
+        this.trunkEffectiveRevision = trunkEffectiveRevision;
         this.qa = qa;
         this.qaEffectiveRevision = qaEffectiveRevision;
         this.production = production;
         this.productionEffectiveRevision = productionEffectiveRevision;
+    }
+
+    public EnvironmentVersion(final String testName,
+                              final Revision trunk,
+                              final Revision qa,
+                              final String qaEffectiveRevision,
+                              final Revision production,
+                              final String productionEffectiveRevision) {
+        this(testName,
+            trunk,
+            trunk.getRevision(),
+            qa,
+            qaEffectiveRevision,
+            production,
+            productionEffectiveRevision);
     }
 
     /**
@@ -48,6 +66,7 @@ public class EnvironmentVersion {
     public EnvironmentVersion update(final Environment branch, final Revision version, final String effectiveRevision ) {
         return new EnvironmentVersion(testName ,
                                       Environment.WORKING == branch ? version : this.trunk,
+                                      Environment.WORKING == branch ? effectiveRevision : this.trunkEffectiveRevision,
                                       Environment.QA == branch ? version : this.qa,
                                       Environment.QA == branch ? effectiveRevision : this.qaEffectiveRevision,
                                       Environment.PRODUCTION == branch ? version : this.production,
@@ -69,7 +88,7 @@ public class EnvironmentVersion {
     }
 
     public String getTrunkVersion() {
-        return getTrunkRevision();
+        return trunkEffectiveRevision;
     }
 
     // @Nullable

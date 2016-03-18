@@ -8,6 +8,7 @@ public class GitProctorFactory implements FactoryBean<ProctorStore> {
     private String gitUrl;
     private String username;
     private String password;
+    private String testDefinitionsDirectory;
 
     public void setGitUrl(final String gitUrl) {
         this.gitUrl = gitUrl;
@@ -21,9 +22,13 @@ public class GitProctorFactory implements FactoryBean<ProctorStore> {
         this.password = password;
     }
 
+    public void setTestDefinitionsDirectory(final String testDefinitionsDirectory) {
+        this.testDefinitionsDirectory = testDefinitionsDirectory;
+    }
+
     @Override
     public ProctorStore getObject() throws Exception {
-        return new GitProctor(gitUrl, username, password);
+        return new GitProctor(gitUrl, username, password, testDefinitionsDirectory);
     }
 
     @Override

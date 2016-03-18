@@ -25,8 +25,10 @@ import java.util.concurrent.TimeUnit;
 public class ScheduledTasks implements InitializingBean {
 
     private final ScheduledExecutorService scheduledExecutorService;
-    private final ProctorPromoter promoter;
     private final RemoteProctorSpecificationSource proctorSpecificationSource;
+
+    // No longer used - only included to force valid dependency ordering
+    private final ProctorPromoter promoter;
 
     @Autowired
     public ScheduledTasks(final ScheduledExecutorService scheduledExecutorService,
@@ -39,7 +41,6 @@ public class ScheduledTasks implements InitializingBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        scheduledExecutorService.scheduleWithFixedDelay(promoter, 60, 5, TimeUnit.SECONDS);
         scheduledExecutorService.scheduleWithFixedDelay(proctorSpecificationSource, 1, 10, TimeUnit.MINUTES);
 
         if(scheduledExecutorService instanceof ThreadPoolExecutor) {

@@ -356,12 +356,12 @@ public class ProctorTestDefinitionController extends AbstractController {
                     validateUsernamePassword(username, password);
 
                     final Revision prevVersion;
-                    log("(svn) getting svn history for '" + testName + "'");
+                    log("(scm) getting history for '" + testName + "'");
                     final List<Revision> history = getTestHistory(store, testName, 1);
                     if (history.size() > 0) {
                         prevVersion = history.get(0);
                         if (!prevVersion.getRevision().equals(srcRevision)) {
-                            throw new IllegalArgumentException("Test has been updated since r" + srcRevision + " currently at r" + prevVersion.getRevision());
+                            throw new IllegalArgumentException("Test has been updated since " + srcRevision + " currently at " + prevVersion.getRevision());
                         }
                     } else {
                         throw new IllegalArgumentException("Could not get any history for " + testName);
@@ -475,7 +475,7 @@ public class ProctorTestDefinitionController extends AbstractController {
         return new BackgroundJob<Void>() {
             @Override
             public String getTitle() {
-                return String.format("(%s) promoting %s %s r%s to %s", username, testName, source, srcRevision, destination);
+                return String.format("(%s) promoting %s %s %1.7s to %s", username, testName, source, srcRevision, destination);
             }
 
             @Override
@@ -554,7 +554,7 @@ public class ProctorTestDefinitionController extends AbstractController {
             }
 
 
-            job.log(String.format("Promoted %s from %s (r%s) to %s (r%s)", testName, source.getName(), srcRevision, destination.getName(), destRevision));
+            job.log(String.format("Promoted %s from %s (%1.7s) to %s (%1.7s)", testName, source.getName(), srcRevision, destination.getName(), destRevision));
             job.addUrl("/proctor/definition/" + UtilityFunctions.urlEncode(testName) + "?branch=" + destination.getName(), "view " + testName + " on " + destination.getName());
             return success;
         }
@@ -651,7 +651,7 @@ public class ProctorTestDefinitionController extends AbstractController {
                          final String password,
                          final Map<String, String> metadata)
                 throws ProctorPromoter.TestPromotionException, StoreException {
-            job.log(String.format("(svn) promote %sr%s (trunk to qa)", testName, srcRevision));
+            job.log(String.format("(scm) promote %s %1.7s (trunk to qa)", testName, srcRevision));
             promoter.promoteTrunkToQa(testName, srcRevision, destRevision, username, password, metadata);
         }
     };
@@ -667,7 +667,7 @@ public class ProctorTestDefinitionController extends AbstractController {
                          final String password,
                          final Map<String, String> metadata)
                 throws ProctorPromoter.TestPromotionException, StoreException {
-            job.log(String.format("(svn) promote %sr%s (trunk to production)", testName, srcRevision));
+            job.log(String.format("(scm) promote %s %1.7s (trunk to production)", testName, srcRevision));
             promoter.promoteTrunkToProduction(testName, srcRevision, destRevision, username, password, metadata);
         }
     };
@@ -682,7 +682,7 @@ public class ProctorTestDefinitionController extends AbstractController {
                          final String username,
                          final String password,
                          final Map<String, String> metadata) throws ProctorPromoter.TestPromotionException, StoreException {
-            job.log(String.format("(svn) promote %sr%s (qa to production)", testName, srcRevision));
+            job.log(String.format("(scm) promote %s %1.7s (qa to production)", testName, srcRevision));
             promoter.promoteQaToProduction(testName, srcRevision, destRevision, username, password, metadata);
         }
     };
@@ -770,12 +770,12 @@ public class ProctorTestDefinitionController extends AbstractController {
 
                     final Revision prevVersion;
                     if (previousRevision.length() > 0) {
-                        log("(svn) getting svn history for '" + testName + "'");
+                        log("(scm) getting history for '" + testName + "'");
                         final List<Revision> history = getTestHistory(store, testName, 1);
                         if (history.size() > 0) {
                             prevVersion = history.get(0);
                             if (! prevVersion.getRevision().equals(previousRevision)) {
-                                throw new IllegalArgumentException("Test has been updated since r" + previousRevision + " currently at r" + prevVersion.getRevision());
+                                throw new IllegalArgumentException("Test has been updated since " + previousRevision + " currently at " + prevVersion.getRevision());
                             }
                         } else {
                             prevVersion = null;
@@ -800,7 +800,7 @@ public class ProctorTestDefinitionController extends AbstractController {
                     final boolean allowInstanceFailure = true;
 
                     final ProctorStore trunkStore = determineStoreFromEnvironment(Environment.WORKING);
-                    log("(svn) loading existing test definition for '" + testName + "'");
+                    log("(scm) loading existing test definition for '" + testName + "'");
                     // Getting the TestDefinition via currentTestMatrix instead of trunkStore.getTestDefinition because the test
                     final TestDefinition existingTestDefinition = trunkStore.getCurrentTestMatrix().getTestMatrixDefinition().getTests().get(testName);
                     if (previousRevision.length() <= 0 && existingTestDefinition != null) {
@@ -845,11 +845,11 @@ public class ProctorTestDefinitionController extends AbstractController {
                     //Change definition
                     final Map<String, String> metadata = Collections.emptyMap();
                     if (existingTestDefinition == null) {
-                        log("(svn) adding test definition");
+                        log("(scm) adding test definition");
                         trunkStore.addTestDefinition(username, password, testName, testDefinitionToUpdate, metadata, fullComment);
                         promoter.refreshWorkingVersion(testName);
                     } else {
-                        log("(svn) updating test definition");
+                        log("(scm) updating test definition");
                         trunkStore.updateTestDefinition(username, password, previousRevision, testName, testDefinitionToUpdate, metadata, fullComment);
                         promoter.refreshWorkingVersion(testName);
                     }

@@ -21,6 +21,7 @@ public class GitProctorStoreFactory implements StoreFactory {
     private String gitUrl;
     private String gitUsername;
     private String gitPassword;
+    private String testDefinitionsDirectory;
 
     /* The root directory into which we should put the "qa-matrices" or "trunk-matrices"
      * If not set - a the temp directory will be used
@@ -32,15 +33,21 @@ public class GitProctorStoreFactory implements StoreFactory {
     // The age (in milliseconds) to use when identifying temp directories that can be cleaned up
     private long tempDirCleanupAgeMillis = TimeUnit.DAYS.toMillis(1);
 
-    // The period to use when scheduling a refresh of the svn directory
-    private long gitRefreshMillis = TimeUnit.MINUTES.toMillis(5);
+    // The period to use when scheduling a refresh of the git directory
+    private long gitRefreshMillis = TimeUnit.SECONDS.toMillis(300);
 
-    public GitProctorStoreFactory(final ScheduledExecutorService executor, final long gitRefreshMinutes, final String gitUrl, final String gitUsername, final String gitPassword) throws IOException, ConfigurationException {
+    public GitProctorStoreFactory(final ScheduledExecutorService executor,
+                                  final long gitRefreshSeconds,
+                                  final String gitUrl,
+                                  final String gitUsername,
+                                  final String gitPassword,
+                                  final String testDefinitionsDirectory) throws IOException, ConfigurationException {
         this.executor = executor;
         this.gitUrl = gitUrl;
         this.gitUsername = gitUsername;
         this.gitPassword = gitPassword;
-        this.gitRefreshMillis= TimeUnit.MINUTES.toMillis(gitRefreshMinutes);
+        this.testDefinitionsDirectory = testDefinitionsDirectory;
+        this.gitRefreshMillis = TimeUnit.SECONDS.toMillis(gitRefreshSeconds);
         this.implicitTempRoot = identifyImplicitTempRoot();
     }
 
@@ -63,13 +70,7 @@ public class GitProctorStoreFactory implements StoreFactory {
         Preconditions.checkArgument(!CharMatcher.WHITESPACE.matchesAllOf(Strings.nullToEmpty(gitUrl)), "scm.path property cannot be empty");
 
         final GitWorkspaceProviderImpl provider = new GitWorkspaceProviderImpl(tempDirectory, tempDirCleanupAgeMillis);
-        final GitProctorCore gitCore = new GitProctorCore(gitUrl, gitUsername, gitPassword, provider);
-        
-        // actively clean up directories every hour: (not relying on cache eviction)
-        final long cleanupScheduleMillis = Math.min(TimeUnit.HOURS.toMillis(1), tempDirCleanupAgeMillis);
-        LOGGER.info("Scheduling GitWorkspaceProvider every " + cleanupScheduleMillis + " milliseconds for dir: " +
-                tempDirectory + " with age millis " + tempDirCleanupAgeMillis);
-        executor.scheduleWithFixedDelay(provider, cleanupScheduleMillis, cleanupScheduleMillis, TimeUnit.MILLISECONDS);
+        final GitProctorCore gitCore = new CachedGitProctorCore(gitUrl, gitUsername, gitPassword, testDefinitionsDirectory, provider);
 
         if(gitRefreshMillis > 0) {
             final GitDirectoryRefresher refresher = gitCore.createRefresherTask
@@ -79,7 +80,7 @@ public class GitProctorStoreFactory implements StoreFactory {
         }
 
         final String branchName = relativePath.substring(relativePath.lastIndexOf("/")+1);
-        final GitProctor store = new GitProctor(gitCore, branchName);
+        final GitProctor store = new GitProctor(gitCore, testDefinitionsDirectory, branchName);
         final String prefix = relativePath.replace('/', '-');
         final VarExporter exporter = VarExporter.forNamespace(GitProctor.class.getSimpleName()).includeInGlobal();
         exporter.export(store, prefix + "-");

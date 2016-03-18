@@ -1,43 +1,44 @@
 package com.indeed.proctor.common;
 
 import com.google.common.base.CharMatcher;
-import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.indeed.proctor.common.model.TestDefinition;
 import com.indeed.proctor.common.model.TestMatrixDefinition;
-import com.indeed.proctor.common.model.TestMatrixVersion;
+import com.indeed.proctor.store.GitProctorUtils;
 import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.webapp.db.Environment;
 import com.indeed.proctor.store.ProctorStore;
-import com.indeed.util.core.DataLoadingTimerTask;
 import org.apache.log4j.Logger;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
  * @author parker
  */
-public class ProctorPromoter extends DataLoadingTimerTask {
+public class ProctorPromoter {
     private static final Logger LOGGER = Logger.getLogger(ProctorPromoter.class);
     private static final String UNKNOWN_VERSION = EnvironmentVersion.UNKNOWN_VERSION;
 
     final ProctorStore trunk;
     final ProctorStore qa;
     final ProctorStore production;
-    private volatile ConcurrentMap<String, EnvironmentVersion>  environmentVersions;
+
+    private final Cache<String, EnvironmentVersion> environmentVersions = CacheBuilder.newBuilder()
+        .maximumSize(2048)
+        .expireAfterWrite(30, TimeUnit.SECONDS)
+        .softValues()
+        .build();
 
     public ProctorPromoter(final ProctorStore trunk,
                            final ProctorStore qa,
                            final ProctorStore production) {
-        super(ProctorPromoter.class.getSimpleName());
         this.trunk = trunk;
         this.qa = qa;
         this.production = production;
@@ -59,39 +60,32 @@ public class ProctorPromoter extends DataLoadingTimerTask {
     }
 
     public void refreshWorkingVersion(final String testName) throws StoreException {
-        final ConcurrentMap<String, EnvironmentVersion> versions = this.environmentVersions;
-        if(versions != null) {
-            final Environment branch = Environment.WORKING;
-            final ProctorStore store = getStoreFromBranch(branch);
-            // After a promotion update the current version
-            final EnvironmentVersion current = getEnvironmentVersion(testName);
-            final List<Revision> history = getMostRecentHistory(store, testName);
-            final Revision trunkVersion = history.get(0);
-            final EnvironmentVersion updated;
-            if(current == null) {
-                updated = new EnvironmentVersion(testName, trunkVersion, null, UNKNOWN_VERSION, null, UNKNOWN_VERSION);
-            } else {
-                updated = current.update(branch, trunkVersion, trunkVersion.getRevision().toString());
-            }
-            versions.replace(testName, updated);
+        final Environment branch = Environment.WORKING;
+        final ProctorStore store = getStoreFromBranch(branch);
+        // After a promotion update the current version
+        final EnvironmentVersion current = getEnvironmentVersion(testName);
+        final List<Revision> history = getMostRecentHistory(store, testName);
+        final Revision trunkVersion = history.get(0);
+        final EnvironmentVersion updated;
+        if(current == null) {
+            updated = new EnvironmentVersion(testName, trunkVersion, null, UNKNOWN_VERSION, null, UNKNOWN_VERSION);
+        } else {
+            updated = current.update(branch, trunkVersion, trunkVersion.getRevision().toString());
         }
+        environmentVersions.put(testName, updated);
     }
 
     private void updateTestVersion(final String testName,
                                    final Environment branch,
                                    final String effectiveVersion) throws StoreException {
-        final ConcurrentMap<String, EnvironmentVersion> versions = this.environmentVersions;
-        if(versions != null) {
-            final ProctorStore store = getStoreFromBranch(branch);
-            // After a promotion update the current version
-            final EnvironmentVersion current = getEnvironmentVersion(testName);
-            final List<Revision> history = getMostRecentHistory(store, testName);
-            final Revision destVersion = history.get(0);
-            final EnvironmentVersion updated = current.update(branch, destVersion, effectiveVersion);
-            versions.replace(testName, updated);
-        }
+        final ProctorStore store = getStoreFromBranch(branch);
+        // After a promotion update the current version
+        final EnvironmentVersion current = getEnvironmentVersion(testName);
+        final List<Revision> history = getMostRecentHistory(store, testName);
+        final Revision destVersion = history.get(0);
+        final EnvironmentVersion updated = current.update(branch, destVersion, effectiveVersion);
+        environmentVersions.put(testName, updated);
     }
-
 
     @SuppressWarnings({"MethodWithTooManyParameters"})
     private void promote(final String testName, final Environment srcBranch, final String srcRevision, final Environment destBranch, String destRevision,
@@ -115,17 +109,19 @@ public class ProctorPromoter extends DataLoadingTimerTask {
             throw new TestPromotionException("Non-Positive revision r" + destRevision + " given for destination ( " + destBranch + " ) but '" + testName + "' exists.");
         }
 
-        // Update the Test Definition Version to the svn-revision of the source
-        if(isSrcTrunk) {
-            // If source is trunk, we want to set the version of the test-matrix to be the revision on trunk
-            d.setVersion(srcRevision);
-        }
-
         final List<Revision> srcHistory = getHistoryFromRevision(src, testName, srcRevision);
         if(srcHistory.isEmpty()) {
             throw new TestPromotionException("Could not find history for " + testName + " at revision " + srcRevision);
         }
         final Revision srcVersion = srcHistory.get(0);
+
+        // Update the Test Definition Version to the svn-revision of the source (if it is a migrated commit)
+        final String effectiveRevision = GitProctorUtils.getEffectiveRevision(srcVersion, Environment.WORKING.getName());
+
+        if(isSrcTrunk) {
+            // If source is trunk, we want to set the version of the test-matrix to be the revision on trunk
+            d.setVersion(effectiveRevision);
+        }
 
         if(!knownDestRevision.equals(EnvironmentVersion.UNKNOWN_REVISION) && knownDestRevision.length() > 0) {
             // This test exists in the destination branch. Get its most recent test-history in the event that EnvironmentVersion is stale.
@@ -137,12 +133,12 @@ public class ProctorPromoter extends DataLoadingTimerTask {
             if(!destVersion.getRevision().equals(destRevision)) {
                 throw new TestPromotionException("Test '" + testName + "' updated since " + destRevision + ". Currently at " + history.get(0).getRevision());
             }
-            final String commitMessage = formatCommitMessage(testName , srcBranch, srcRevision, destBranch, srcVersion.getMessage());
+            final String commitMessage = formatCommitMessage(testName , srcBranch, effectiveRevision, destBranch, srcVersion.getMessage());
             LOGGER.info(String.format("%s : Committing %s from %s r%s to %s r%s", username, testName, srcBranch,
                     srcRevision, destBranch, destRevision));
             dest.updateTestDefinition(username, password, destRevision, testName, d, metadata, commitMessage);
         } else {
-            final String commitMessage = formatCommitMessage(testName , srcBranch, srcRevision, destBranch, srcVersion.getMessage());
+            final String commitMessage = formatCommitMessage(testName , srcBranch, effectiveRevision, destBranch, srcVersion.getMessage());
             dest.addTestDefinition(username, password, testName, d, metadata, commitMessage);
         }
 
@@ -172,90 +168,53 @@ public class ProctorPromoter extends DataLoadingTimerTask {
         return sb.toString();
     }
 
-    // cached
     public EnvironmentVersion getEnvironmentVersion(final String testName) {
-        final ConcurrentMap<String, EnvironmentVersion> versions = environmentVersions;
-        if(versions != null) {
-            return versions.get(testName);
+        final EnvironmentVersion environmentVersion = environmentVersions.getIfPresent(testName);
+        if (environmentVersion != null) {
+         return environmentVersion;
         } else {
-            return null;
+            final List<Revision> trunkHistory, qaHistory, productionHistory;
+            try {
+                trunkHistory = getMostRecentHistory(trunk, testName);
+                qaHistory = getMostRecentHistory(qa, testName);
+                productionHistory = getMostRecentHistory(production, testName);
+            } catch (StoreException e) {
+                LOGGER.error("Unable to retrieve latest version for trunk or qa or production", e);
+                return null;
+            }
+
+            final Revision trunkRevision = trunkHistory.isEmpty() ? null : trunkHistory.get(0);
+            final Revision qaRevision = qaHistory.isEmpty() ? null : qaHistory.get(0);
+            final Revision productionRevision = productionHistory.isEmpty() ? null : productionHistory.get(0);
+
+            final String trunkVersion = GitProctorUtils.getEffectiveRevision(trunkRevision, Environment.WORKING.getName());
+
+            final TestMatrixDefinition qaTestMatrixDefinition, prodTestMatrixDefinition;
+
+            try {
+                qaTestMatrixDefinition = qa.getCurrentTestMatrix().getTestMatrixDefinition();
+                prodTestMatrixDefinition = production.getCurrentTestMatrix().getTestMatrixDefinition();
+            } catch (StoreException e) {
+                LOGGER.error("Unable to retrieve test matrix for qa or production", e);
+                return null;
+            }
+
+            if (qaTestMatrixDefinition == null || prodTestMatrixDefinition == null) {
+                LOGGER.error("null test matrix returned for qa or production");
+                return null;
+            }
+
+            final String qaVersion = identifyEffectiveRevision(qaTestMatrixDefinition.getTests().get(testName), qaRevision);
+            final String prodVersion = identifyEffectiveRevision(prodTestMatrixDefinition.getTests().get(testName), productionRevision);
+
+            final EnvironmentVersion newEnvironmentVersion = new EnvironmentVersion(
+                testName,
+                trunkRevision, trunkVersion,
+                qaRevision, qaVersion,
+                productionRevision, prodVersion);
+            environmentVersions.put(testName, newEnvironmentVersion);
+            return newEnvironmentVersion;
         }
-    }
-
-    @Override
-    public boolean load() {
-        final String trunkMatrixVersion;
-        final String qaMatrixVersion;
-        final String prodMatrixVersion;
-        try {
-            trunkMatrixVersion = trunk.getLatestVersion();
-            qaMatrixVersion = qa.getLatestVersion();
-            prodMatrixVersion = production.getLatestVersion();
-        } catch (StoreException e) {
-            LOGGER.error("Unable to retrieve latest version for trunk or qa or production", e);
-            return false;
-        }
-
-
-        // Compute version as "trunk=@Version,qa=@Version,production=@Version"
-        final String version = String.format("trunk=%s,qa=%s,production=%s",
-                                             trunkMatrixVersion,
-                                             qaMatrixVersion,
-                                             prodMatrixVersion);
-
-        if(version.equals(this.getDataVersion())) {
-            LOGGER.info("Skipping branch definition reload, versions are equal: " + version);
-            return false;
-        }
-
-        final TestMatrixVersion trunkMatrix;
-        final TestMatrixVersion qaMatrix;
-        final TestMatrixVersion prodMatrix;
-        try {
-            trunkMatrix = trunk.getTestMatrix(trunkMatrixVersion);
-            qaMatrix = qa.getTestMatrix(qaMatrixVersion);
-            prodMatrix = production.getTestMatrix(prodMatrixVersion);
-        } catch (StoreException e) {
-            LOGGER.error("Unable to retrieve test matrix for trunk or qa or production", e);
-            return false;
-        }
-        if(trunkMatrix == null || qaMatrix == null || prodMatrix == null) {
-            LOGGER.error("NULL Test Matrix returned for trunk or qa or production");
-            return false;
-        }
-
-        final ImmutableMap.Builder<String, Revision> trunkVersionBuilder = ImmutableMap.builder();
-        final ImmutableMap.Builder<String, Revision> qaVersionBuilder = ImmutableMap.builder();
-        final ImmutableMap.Builder<String, Revision> productionVersionBuilder = ImmutableMap.builder();
-
-        populateVersionMap(trunk, trunkVersionBuilder, trunkMatrix);
-        populateVersionMap(qa, qaVersionBuilder, qaMatrix);
-        populateVersionMap(production, productionVersionBuilder, prodMatrix);
-
-        final Map<String, Revision> trunkVersions = trunkVersionBuilder.build();
-        final Map<String, Revision> qaVersions = qaVersionBuilder.build();
-        final Map<String, Revision> productionVersions= productionVersionBuilder.build();
-
-        final ImmutableSet<String> tests = ImmutableSet.<String>builder().addAll(trunkVersions.keySet()).addAll(qaVersions.keySet()).addAll(productionVersions.keySet()).build();
-
-        final ConcurrentMap<String, EnvironmentVersion> versions = Maps.newConcurrentMap();
-        // Join all of the Maps together
-        for(String testName : tests) {
-            final Revision trunkVersion = trunkVersions.get(testName);
-
-            final Revision qaRevision = qaVersions.get(testName);
-            final TestDefinition qaDefinition = getTestDefinition(qaMatrix, testName);
-            final Revision productionRevision = productionVersions.get(testName);
-            final TestDefinition productionDefinition = getTestDefinition(prodMatrix, testName);
-
-            versions.put(testName, new EnvironmentVersion(testName, trunkVersion,
-                                                     qaRevision, identifyEffectiveRevision(qaDefinition, qaRevision),
-                                                     productionRevision, identifyEffectiveRevision(productionDefinition, productionRevision)));
-        }
-
-        this.environmentVersions = versions;
-        this.setDataVersion(version);
-        return true;
     }
 
     private final Pattern CHARM_MERGE_REVISION = Pattern.compile("^merged r([\\d]+):", Pattern.MULTILINE);
@@ -275,39 +234,6 @@ public class ProctorPromoter extends DataLoadingTimerTask {
         return branchDefinition.getVersion();
     }
 
-    /**
-     *  Populates the collector with the most recent Revision for all the tests in the matrix.
-     *  Additional calls to the ProctorStore are necessary because the TestDefinition does not have a
-     *  SVN revision value associated with it.
-     * @param store
-     * @param collector
-     * @param matrix
-     */
-    private static void populateVersionMap(final ProctorStore store,
-                                           final ImmutableMap.Builder<String, Revision> collector,
-                                           final TestMatrixVersion matrix) {
-        Preconditions.checkNotNull(store, "Store cannot be null");
-        Preconditions.checkNotNull(collector, "Collector cannot be null");
-        if(matrix == null) {
-            LOGGER.info("Matrix is null, cannot populate version map");
-            return;
-        }
-
-        for(Map.Entry<String, TestDefinition> test : matrix.getTestMatrixDefinition().getTests().entrySet()) {
-            final String testName = test.getKey();
-            try {
-                final List<Revision> history = getMostRecentHistory(store, testName);
-                if(history.size() > 0) {
-                    final Revision version = history.get(0);
-                    collector.put(testName, version);
-                }
-            } catch (StoreException exp) {
-                // store.getHistory throws RuntimeException if test does not exist
-                LOGGER.info("Failed to read history for : " + testName, exp);
-            }
-        }
-    }
-
     // @Nonnull
     private static List<Revision> getMostRecentHistory(final ProctorStore store, final String testName) throws StoreException {
         final List<Revision> history = store.getHistory(testName, 0, 1);
@@ -323,23 +249,9 @@ public class ProctorPromoter extends DataLoadingTimerTask {
         return src.getHistory(testName, srcRevision, 0, 1);
     }
 
-
-    private static TestDefinition getCurrentTestDefinition(final ProctorStore store, final String testName) throws StoreException {
-        return store.getCurrentTestDefinition(testName);
-    }
-
     // @Nullable
     private static TestDefinition getTestDefinition(final ProctorStore store, final String testName, String version) throws StoreException {
         return store.getTestDefinition(testName, version);
-    }
-
-    // @Nullable
-    private static TestDefinition getTestDefinition(/* @Nullable */ final TestMatrixVersion matrix, final String testName) {
-        if(matrix == null) {
-            return null;
-        }
-        final TestMatrixDefinition def = matrix.getTestMatrixDefinition();
-        return def.getTests().get(testName);
     }
 
     public static class TestPromotionException extends Exception {

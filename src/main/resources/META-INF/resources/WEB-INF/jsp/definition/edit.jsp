@@ -175,7 +175,7 @@
         <ui:grid-columns width="ten">
             <div class="panel js-save-info">
                 <ui:grid-row>
-                    <ui:grid-columns width="three"><label class="right inline">SVN</label></ui:grid-columns>
+                    <ui:grid-columns width="three"><label class="right inline">SCM</label></ui:grid-columns>
                     <ui:grid-columns width="four"><input placeholder="Username" type="text" name="username" /></ui:grid-columns>
                     <ui:grid-columns width="five"><input placeholder="Password" type="password" name="password" /></ui:grid-columns>
                 </ui:grid-row>
