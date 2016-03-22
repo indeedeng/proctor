@@ -1,5 +1,6 @@
 package com.indeed.proctor.webapp.db;
 
+import com.indeed.proctor.store.FileBasedProctorStore;
 import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.store.GitProctor;
 import org.springframework.beans.factory.FactoryBean;
@@ -8,7 +9,7 @@ public class GitProctorFactory implements FactoryBean<ProctorStore> {
     private String gitUrl;
     private String username;
     private String password;
-    private String testDefinitionsDirectory;
+    private String testDefinitionsDirectory = FileBasedProctorStore.DEFAULT_TEST_DEFINITIONS_DIRECTORY;
 
     public void setGitUrl(final String gitUrl) {
         this.gitUrl = gitUrl;

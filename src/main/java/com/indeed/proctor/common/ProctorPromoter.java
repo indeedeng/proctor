@@ -116,7 +116,7 @@ public class ProctorPromoter {
         final Revision srcVersion = srcHistory.get(0);
 
         // Update the Test Definition Version to the svn-revision of the source (if it is a migrated commit)
-        final String effectiveRevision = GitProctorUtils.getEffectiveRevision(srcVersion, Environment.WORKING.getName());
+        final String effectiveRevision = GitProctorUtils.resolveSvnMigratedRevision(srcVersion, Environment.WORKING.getName());
 
         if(isSrcTrunk) {
             // If source is trunk, we want to set the version of the test-matrix to be the revision on trunk
@@ -187,7 +187,7 @@ public class ProctorPromoter {
             final Revision qaRevision = qaHistory.isEmpty() ? null : qaHistory.get(0);
             final Revision productionRevision = productionHistory.isEmpty() ? null : productionHistory.get(0);
 
-            final String trunkVersion = GitProctorUtils.getEffectiveRevision(trunkRevision, Environment.WORKING.getName());
+            final String trunkVersion = GitProctorUtils.resolveSvnMigratedRevision(trunkRevision, Environment.WORKING.getName());
 
             final TestMatrixDefinition qaTestMatrixDefinition, prodTestMatrixDefinition;
 

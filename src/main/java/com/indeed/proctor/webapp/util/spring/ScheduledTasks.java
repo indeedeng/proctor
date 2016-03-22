@@ -27,7 +27,7 @@ public class ScheduledTasks implements InitializingBean {
     private final ScheduledExecutorService scheduledExecutorService;
     private final RemoteProctorSpecificationSource proctorSpecificationSource;
 
-    // No longer used - only included to force valid dependency ordering
+    // No longer used - only included to force instantiation of ProctorStores required for ProctorDependencyManager
     private final ProctorPromoter promoter;
 
     @Autowired

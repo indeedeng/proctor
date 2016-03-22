@@ -21,7 +21,7 @@ public class GitProctorStoreFactory implements StoreFactory {
     private String gitUrl;
     private String gitUsername;
     private String gitPassword;
-    private String testDefinitionsDirectory;
+    private String testDefinitionsDirectory = FileBasedProctorStore.DEFAULT_TEST_DEFINITIONS_DIRECTORY;
 
     /* The root directory into which we should put the "qa-matrices" or "trunk-matrices"
      * If not set - a the temp directory will be used

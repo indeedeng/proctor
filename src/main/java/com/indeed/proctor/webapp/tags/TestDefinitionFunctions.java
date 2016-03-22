@@ -68,7 +68,7 @@ public final class TestDefinitionFunctions {
         switch (viewing) {
             case WORKING:
                 // trunk.revision gets set to qa.version during promotion
-                return GitProctorUtils.getEffectiveRevision(history, viewing.getName()).equals(version.getQaVersion());
+                return GitProctorUtils.resolveSvnMigratedRevision(history, viewing.getName()).equals(version.getQaVersion());
             case PRODUCTION:
                 // viewing production history:
                 // (qa r{qa.revision}) - this was a promotion from QA
@@ -89,7 +89,7 @@ public final class TestDefinitionFunctions {
         switch (viewing) {
             case WORKING:
                 // trunk.revision gets set to production.version during promotion
-                return GitProctorUtils.getEffectiveRevision(history, viewing.getName()).equals(version.getProductionVersion());
+                return GitProctorUtils.resolveSvnMigratedRevision(history, viewing.getName()).equals(version.getProductionVersion());
             case QA:
                 // viewing qa history:
                 // (trunk r{qa.version}) - the same trunk revision was promoted to production, either by QA->PROD or TRUNK->PROD

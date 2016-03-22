@@ -25,7 +25,7 @@ public class SvnProctorStoreFactory implements StoreFactory {
     private String svnPath;
     private String svnUsername;
     private String svnPassword;
-    private String testDefinitionsDirectory;
+    private String testDefinitionsDirectory = FileBasedProctorStore.DEFAULT_TEST_DEFINITIONS_DIRECTORY;
 
     /* The root directory into which we should put the "qa-matrices" or "trunk-matrices"
      * If not set - a the temp directory will be used
