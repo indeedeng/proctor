@@ -29,7 +29,7 @@ public abstract class FileBasedProctorStore implements ProctorStore {
     static final String TEST_DEFINITION_FILENAME = "definition" + SUFFIX;
     final ObjectMapper objectMapper = Serializers.strict();
 
-    static final String DEFAULT_TEST_DEFINITIONS_DIRECTORY = "test-definitions";
+    public static final String DEFAULT_TEST_DEFINITIONS_DIRECTORY = "test-definitions";
     private final String testDefinitionsDirectory;
 
     protected final FileBasedPersisterCore core;

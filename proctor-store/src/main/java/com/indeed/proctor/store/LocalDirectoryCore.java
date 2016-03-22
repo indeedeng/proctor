@@ -21,12 +21,14 @@ import java.util.List;
  */
 public class LocalDirectoryCore implements FileBasedPersisterCore {
     private static final Logger LOGGER = Logger.getLogger(LocalDirectoryCore.class);
-    final ObjectMapper objectMapper = Serializers.strict();
+    private final ObjectMapper objectMapper = Serializers.strict();
 
-    final File baseDir;
+    private final File baseDir;
+    private final String testDefinitionsDirectory;
 
-    public LocalDirectoryCore(File baseDir) {
+    public LocalDirectoryCore(final File baseDir, String testDefinitionsDirectory) {
         this.baseDir = baseDir;
+        this.testDefinitionsDirectory = testDefinitionsDirectory;
     }
 
     @Override
@@ -95,7 +97,7 @@ public class LocalDirectoryCore implements FileBasedPersisterCore {
 
     @Override
     public TestVersionResult determineVersions(String fetchRevision) throws StoreException.ReadException {
-        final File testDir = new File(baseDir + File.separator + FileBasedProctorStore.DEFAULT_TEST_DEFINITIONS_DIRECTORY);
+        final File testDir = new File(baseDir + File.separator + testDefinitionsDirectory);
         // List all of the directories, excluding the directories created by svn (implementation is ignoring directories named '.svn'
         final File[] testDefFiles = testDir.listFiles( (FileFilter) FileFilterUtils.makeSVNAware(FileFilterUtils.directoryFileFilter()) );
         final List<TestVersionResult.Test> tests = Lists.newArrayListWithExpectedSize(testDefFiles.length);

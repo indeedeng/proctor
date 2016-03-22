@@ -6,11 +6,11 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
 
+import com.indeed.proctor.store.FileBasedProctorStore;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.OptionBuilder;
 import org.apache.log4j.Logger;
 
-import com.google.common.io.Files;
 import com.indeed.proctor.common.IncompatibleTestMatrixException;
 import com.indeed.proctor.store.GitProctor;
 import com.indeed.proctor.store.ProctorReader;
@@ -20,15 +20,24 @@ public class GitLocalProctorBuilder extends ProctorBuilder {
 
     private static final Logger LOGGER = Logger.getLogger(GitLocalProctorBuilder.class);
 
-    public GitLocalProctorBuilder(ProctorReader proctorReader, Writer outputSink) {
+    public GitLocalProctorBuilder(final ProctorReader proctorReader,
+                                  final String testDefinitionsDirectory,
+                                  final Writer outputSink) {
         super(proctorReader, outputSink);
     }
 
-    public GitLocalProctorBuilder(ProctorReader proctorReader, Writer outputSink, String author) {
+    public GitLocalProctorBuilder(final ProctorReader proctorReader,
+                                  final String testDefinitionsDirectory,
+                                  final Writer outputSink,
+                                  String author) {
         super(proctorReader, outputSink, author);
     }
 
-    public GitLocalProctorBuilder(ProctorReader proctorReader, Writer outputSink, String author, String version) {
+    public GitLocalProctorBuilder(final ProctorReader proctorReader,
+                                  final String testDefinitionsDirectory,
+                                  final Writer outputSink,
+                                  final String author,
+                                  final String version) {
         super(proctorReader, outputSink, author, version);
     }
 
@@ -37,29 +46,35 @@ public class GitLocalProctorBuilder extends ProctorBuilder {
         private String branchName;
         private String username = "";
         private String password = "";
+        private String testDefinitionsDirectory = FileBasedProctorStore.DEFAULT_TEST_DEFINITIONS_DIRECTORY;
 
         private GitLocalProctorBuilderArgs() {
             options.addOption(OptionBuilder.hasArg(true)
-                    .isRequired()
-                    .withLongOpt("input")
-                    .withArgName("input git url")
-                    .withDescription("The git url to read from.")
-                    .create("i"));
+                .isRequired()
+                .withLongOpt("input")
+                .withArgName("input git url")
+                .withDescription("The git url to read from.")
+                .create("i"));
             options.addOption(OptionBuilder.hasArg(true)
-                    .withLongOpt("branch")
-                    .withArgName("git branch")
-                    .withDescription("The git branch to checkout.")
-                    .create("b"));
+                    .withLongOpt("test-definitions-directory")
+                    .withArgName("test-definitions directory")
+                    .withDescription("test-definitions directory, relative to the base directory.")
+                    .create("d"));
             options.addOption(OptionBuilder.hasArg(true)
-                    .withLongOpt("username")
-                    .withArgName("git username")
-                    .withDescription("The git username.")
-                    .create("u"));
+                .withLongOpt("branch")
+                .withArgName("git branch")
+                .withDescription("The git branch to checkout.")
+                .create("b"));
             options.addOption(OptionBuilder.hasArg(true)
-                    .withLongOpt("password")
-                    .withArgName("git password")
-                    .withDescription("The git password.")
-                    .create("p"));
+                .withLongOpt("username")
+                .withArgName("git username")
+                .withDescription("The git username.")
+                .create("u"));
+            options.addOption(OptionBuilder.hasArg(true)
+                .withLongOpt("password")
+                .withArgName("git password")
+                .withDescription("The git password.")
+                .create("p"));
         }
 
         @Override
@@ -74,6 +89,9 @@ public class GitLocalProctorBuilder extends ProctorBuilder {
             }
             if (results.hasOption("password")) {
                 this.password = results.getOptionValue("password");
+            }
+            if (results.hasOption("test-definitions-directory")) {
+                this.testDefinitionsDirectory = results.getOptionValue("test-definitions-directory");
             }
         }
 
@@ -92,6 +110,10 @@ public class GitLocalProctorBuilder extends ProctorBuilder {
         public String getPassword() {
             return password;
         }
+
+        public String getTestDefinitionsDirectory() {
+            return testDefinitionsDirectory;
+        }
     }
 
     public static void main(final String[] args) throws IOException, StoreException, IncompatibleTestMatrixException {
@@ -109,6 +131,7 @@ public class GitLocalProctorBuilder extends ProctorBuilder {
             matrixFile.createNewFile();
             new GitLocalProctorBuilder(
                     proctor,
+                    arguments.getTestDefinitionsDirectory(),
                     "-".equals(arguments.getOutputdir()) ?
                             new PrintWriter(System.out) :
                             new FileWriter(matrixFile),

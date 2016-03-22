@@ -20,7 +20,7 @@ public class GitProctorUtils {
      * @param branch the name of the branch it came from
      * @return the original SVN revision if it was a migrated commit from the branch specified, otherwise the git revision
      */
-    public static String getEffectiveRevision(final Revision revision, final String branch) {
+    public static String resolveSvnMigratedRevision(final Revision revision, final String branch) {
         if (revision == null) {
             return null;
         }
