@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -231,7 +232,13 @@ public class GitProctorCore implements FileBasedPersisterCore {
                             case REJECTED_NONFASTFORWARD:
                                 throw new IllegalStateException("Non-fast-forward push - there have likely been other commits made since starting. Confirm the latest state and try again.");
                             default:
-                                throw new IllegalStateException("Non-success push status: " + remoteRefUpdate.getStatus());
+                                final String message;
+                                if (StringUtils.isNotEmpty(remoteRefUpdate.getMessage())) {
+                                    message = remoteRefUpdate.getMessage();
+                                } else {
+                                    message = "Non-success push status: " + remoteRefUpdate.getStatus().toString();
+                                }
+                                throw new IllegalStateException(message);
                         }
                     }
                 }
