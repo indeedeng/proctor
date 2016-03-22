@@ -5,10 +5,10 @@ import java.util.List;
 
 public class LocalDirectoryStore extends FileBasedProctorStore {
 
-    final File baseDir;
+    private final File baseDir;
 
-    public LocalDirectoryStore(File baseDir) {
-        super(new LocalDirectoryCore(baseDir));
+    public LocalDirectoryStore(final File baseDir, final String testDefinitionsDirectory) {
+        super(new LocalDirectoryCore(baseDir, testDefinitionsDirectory));
         if(!baseDir.isDirectory()) {
             throw new IllegalArgumentException("Base dir " + baseDir + " is not a directory");
         }
