@@ -2,8 +2,10 @@ package com.indeed.proctor.webapp.model;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.indeed.proctor.common.SpecificationResult;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -66,7 +68,8 @@ public class RemoteSpecificationResult {
 
     public static class Builder {
         final AppVersion version;
-        final ImmutableMap.Builder<ProctorClientApplication, SpecificationResult> failures = ImmutableMap.builder();
+        // ImmutableMap does not handle duplicate keys - use a HashMap for building instead
+        final Map<ProctorClientApplication, SpecificationResult> failures = Maps.newHashMap();
         ProctorClientApplication skipped;
         ProctorClientApplication success;
         SpecificationResult result;
@@ -76,7 +79,14 @@ public class RemoteSpecificationResult {
         }
 
         public RemoteSpecificationResult build(List<ProctorClientApplication> remaining) {
-            return new RemoteSpecificationResult(version, failures.build(), skipped, Lists.<ProctorClientApplication>newArrayList(remaining), success, result);
+            return new RemoteSpecificationResult(
+                version,
+                ImmutableMap.copyOf(failures),
+                skipped,
+                Lists.<ProctorClientApplication>newArrayList(remaining),
+                success,
+                result
+            );
         }
 
         public Builder skipped(final ProctorClientApplication app, final SpecificationResult result) {
