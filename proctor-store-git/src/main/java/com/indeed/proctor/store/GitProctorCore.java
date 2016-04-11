@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.jgit.api.CloneCommand;
+import org.eclipse.jgit.api.CreateBranchCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ResetCommand.ResetType;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -82,30 +83,32 @@ public class GitProctorCore implements FileBasedPersisterCore {
         final File gitDirectory = new File(workingDir, ".git");
         LOGGER.info("working dir: " + workingDir.getAbsolutePath());
 
-        try {
-            if (gitDirectory.exists()) {
-                try {
-                    git = Git.open(workingDir);
-                    git.pull().setRebase(true).setCredentialsProvider(user).call();
-                } catch (Exception e) {
-                    workspaceProvider.cleanWorkingDirectory();
-                    CloneCommand gitCommand = Git.cloneRepository()
+        synchronized (workspaceProvider.getRootDirectory()) {
+            try {
+                if (gitDirectory.exists()) {
+                    try {
+                        git = Git.open(workingDir);
+                        git.pull().setRebase(true).setCredentialsProvider(user).call();
+                    } catch (Exception e) {
+                        workspaceProvider.cleanWorkingDirectory();
+                        CloneCommand gitCommand = Git.cloneRepository()
+                                .setURI(gitUrl)
+                                .setDirectory(workingDir)
+                                .setProgressMonitor(new TextProgressMonitor())
+                                .setCredentialsProvider(user);
+                        git = gitCommand.call();
+                    }
+                } else {
+                    git = Git.cloneRepository()
                             .setURI(gitUrl)
                             .setDirectory(workingDir)
                             .setProgressMonitor(new TextProgressMonitor())
-                            .setCredentialsProvider(user);
-                    git = gitCommand.call();
+                            .setCredentialsProvider(user)
+                            .call();
                 }
-            } else {
-                git = Git.cloneRepository()
-                        .setURI(gitUrl)
-                        .setDirectory(workingDir)
-                        .setProgressMonitor(new TextProgressMonitor())
-                        .setCredentialsProvider(user)
-                        .call();
+            } catch (GitAPIException e) {
+                LOGGER.error("Unable to clone git repository at " + gitUrl, e);
             }
-        } catch (GitAPIException e) {
-            LOGGER.error("Unable to clone git repository at " + gitUrl, e);
         }
 
         try {
@@ -214,8 +217,8 @@ public class GitProctorCore implements FileBasedPersisterCore {
                                      FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException {
         final UsernamePasswordCredentialsProvider user = new UsernamePasswordCredentialsProvider(username, password);
         final File workingDir = workspaceProvider.getRootDirectory();
-        try {
-            synchronized (workspaceProvider.getRootDirectory()) {
+        synchronized (workspaceProvider.getRootDirectory()) {
+            try {
                 git = Git.open(workingDir);
                 git.pull().setRebase(true).setCredentialsProvider(user).call();
                 final FileBasedProctorStore.RcsClient rcsClient = new GitProctorCore.GitRcsClient(git, testDefinitionsDirectory);
@@ -244,15 +247,15 @@ public class GitProctorCore implements FileBasedPersisterCore {
                         }
                     }
                 }
+            } catch (final GitAPIException e) {
+                undoLocalChanges();
+                throw new StoreException.TestUpdateException("Unable to commit/push changes", e);
+            } catch (final IllegalStateException e) {
+                undoLocalChanges();
+                throw new StoreException.TestUpdateException("Unable to push changes", e);
+            } catch (final Exception e) {
+                throw new StoreException.TestUpdateException("Unable to perform operation", e);
             }
-        } catch (final GitAPIException e) {
-            undoLocalChanges();
-            throw new StoreException.TestUpdateException("Unable to commit/push changes", e);
-        } catch (final IllegalStateException e) {
-            undoLocalChanges();
-            throw new StoreException.TestUpdateException("Unable to push changes", e);
-        } catch (final Exception e) {
-            throw new StoreException.TestUpdateException("Unable to perform operation", e);
         }
     }
 
@@ -260,12 +263,14 @@ public class GitProctorCore implements FileBasedPersisterCore {
      * Performs git reset --hard and git clean -fd to undo local changes.
      */
     void undoLocalChanges() {
-        try {
-            final String remoteBranch = Constants.R_REMOTES + Constants.DEFAULT_REMOTE_NAME + '/' + git.getRepository().getBranch();
-            git.reset().setMode(ResetType.HARD).setRef(remoteBranch).call();
-            git.clean().setCleanDirectories(true).call();
-        } catch (Exception e) {
-            LOGGER.error("Unable to undo changes", e);
+        synchronized (workspaceProvider.getRootDirectory()) {
+            try {
+                final String remoteBranch = Constants.R_REMOTES + Constants.DEFAULT_REMOTE_NAME + '/' + git.getRepository().getBranch();
+                git.reset().setMode(ResetType.HARD).setRef(remoteBranch).call();
+                git.clean().setCleanDirectories(true).call();
+            } catch (Exception e) {
+                LOGGER.error("Unable to undo changes", e);
+            }
         }
     }
 
@@ -310,6 +315,22 @@ public class GitProctorCore implements FileBasedPersisterCore {
             );
         } catch (IOException e) {
             throw new StoreException.ReadException(e);
+        }
+    }
+
+    public void checkoutBranch(String branchName) {
+        synchronized (workspaceProvider.getRootDirectory()) {
+            try {
+                git.branchCreate()
+                        .setName(branchName)
+                        .setUpstreamMode(CreateBranchCommand.SetupUpstreamMode.SET_UPSTREAM)
+                        .setStartPoint("origin/" + branchName)
+                        .setForce(true)
+                        .call();
+                git.checkout().setName(branchName).call();
+            } catch (GitAPIException e) {
+                LOGGER.error("Unable to create/checkout branch " + branchName, e);
+            }
         }
     }
 
