@@ -44,8 +44,7 @@ public class BackgroundJobManager {
                 .setNameFormat(BackgroundJobManager.class.getSimpleName() + "-Thread-%d")
                 .setUncaughtExceptionHandler(new LogOnUncaughtExceptionHandler())
                 .build();
-        // Use a single worker thread to avoid problems with concurrent modifications to the workspace
-        return new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(), threadFactory);
+        return new ThreadPoolExecutor(3, 3, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(), threadFactory);
     }
 
     public <T> void submit(BackgroundJob<T> job) {
