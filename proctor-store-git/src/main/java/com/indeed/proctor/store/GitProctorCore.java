@@ -215,30 +215,32 @@ public class GitProctorCore implements FileBasedPersisterCore {
         final UsernamePasswordCredentialsProvider user = new UsernamePasswordCredentialsProvider(username, password);
         final File workingDir = workspaceProvider.getRootDirectory();
         try {
-            git = Git.open(workingDir);
-            git.pull().setRebase(true).setCredentialsProvider(user).call();
-            final FileBasedProctorStore.RcsClient rcsClient = new GitProctorCore.GitRcsClient(git, testDefinitionsDirectory);
-            final boolean thingsChanged;
-            thingsChanged = updater.doInWorkingDirectory(rcsClient, workingDir);
-            if (thingsChanged) {
-                git.commit().setCommitter(username, username).setAuthor(username, username).setMessage(comment).call();
-                final Iterable<PushResult> pushResults = git.push().setCredentialsProvider(user).call();
-                // jgit doesn't throw an exception for certain kinds of push failures - explicitly check the result
-                for (final PushResult pushResult : pushResults) {
-                    for (final RemoteRefUpdate remoteRefUpdate : pushResult.getRemoteUpdates()) {
-                        switch (remoteRefUpdate.getStatus()) {
-                            case OK:
-                                continue;
-                            case REJECTED_NONFASTFORWARD:
-                                throw new IllegalStateException("Non-fast-forward push - there have likely been other commits made since starting. Confirm the latest state and try again.");
-                            default:
-                                final String message;
-                                if (StringUtils.isNotEmpty(remoteRefUpdate.getMessage())) {
-                                    message = remoteRefUpdate.getMessage();
-                                } else {
-                                    message = "Non-success push status: " + remoteRefUpdate.getStatus().toString();
-                                }
-                                throw new IllegalStateException(message);
+            synchronized (workspaceProvider.getRootDirectory()) {
+                git = Git.open(workingDir);
+                git.pull().setRebase(true).setCredentialsProvider(user).call();
+                final FileBasedProctorStore.RcsClient rcsClient = new GitProctorCore.GitRcsClient(git, testDefinitionsDirectory);
+                final boolean thingsChanged;
+                thingsChanged = updater.doInWorkingDirectory(rcsClient, workingDir);
+                if (thingsChanged) {
+                    git.commit().setCommitter(username, username).setAuthor(username, username).setMessage(comment).call();
+                    final Iterable<PushResult> pushResults = git.push().setCredentialsProvider(user).call();
+                    // jgit doesn't throw an exception for certain kinds of push failures - explicitly check the result
+                    for (final PushResult pushResult : pushResults) {
+                        for (final RemoteRefUpdate remoteRefUpdate : pushResult.getRemoteUpdates()) {
+                            switch (remoteRefUpdate.getStatus()) {
+                                case OK:
+                                    continue;
+                                case REJECTED_NONFASTFORWARD:
+                                    throw new IllegalStateException("Non-fast-forward push - there have likely been other commits made since starting. Confirm the latest state and try again.");
+                                default:
+                                    final String message;
+                                    if (StringUtils.isNotEmpty(remoteRefUpdate.getMessage())) {
+                                        message = remoteRefUpdate.getMessage();
+                                    } else {
+                                        message = "Non-success push status: " + remoteRefUpdate.getStatus().toString();
+                                    }
+                                    throw new IllegalStateException(message);
+                            }
                         }
                     }
                 }
