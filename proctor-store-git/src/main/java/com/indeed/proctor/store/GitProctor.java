@@ -6,7 +6,6 @@ import com.indeed.proctor.common.model.TestMatrixVersion;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
-import org.eclipse.jgit.api.CreateBranchCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.LogCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -204,16 +203,6 @@ public class GitProctor extends FileBasedProctorStore {
     }
 
     public void checkoutBranch(String branchName) {
-        try {
-            git.branchCreate()
-                    .setName(branchName)
-                    .setUpstreamMode(CreateBranchCommand.SetupUpstreamMode.SET_UPSTREAM)
-                    .setStartPoint("origin/" + branchName)
-                    .setForce(true)
-                    .call();
-            git.checkout().setName(branchName).call();
-        } catch (GitAPIException e) {
-            LOGGER.error("Unable to create/checkout branch " + branchName, e);
-        }
+        getGitCore().checkoutBranch(branchName);
     }
 }
