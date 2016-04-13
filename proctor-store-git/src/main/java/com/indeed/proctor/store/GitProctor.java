@@ -117,7 +117,7 @@ public class GitProctor extends FileBasedProctorStore {
     }
 
     @Override
-    public boolean cleanUserWorkspace(String username) {
+    public boolean cleanUserWorkspace(final String username) {
         getGitCore().undoLocalChanges();
         getGitCore().initializeRepository();
         checkoutBranch(this.branchName);
@@ -136,7 +136,7 @@ public class GitProctor extends FileBasedProctorStore {
 
     @Override
     public List<Revision> getMatrixHistory(final int start,
-                                                   final int limit) throws StoreException {
+                                           final int limit) throws StoreException {
         final LogCommand logCommand;
         try {
             final ObjectId branchHead = git.getRepository().resolve(getGitCore().getRefName());
@@ -158,16 +158,16 @@ public class GitProctor extends FileBasedProctorStore {
 
     @Override
     public List<Revision> getHistory(final String test,
-                                             final int start,
-                                             final int limit) throws StoreException {
+                                     final int start,
+                                     final int limit) throws StoreException {
         return getHistory(test, getLatestVersion(), start, limit);
     }
 
     @Override
     public List<Revision> getHistory(final String test,
-                                             final String revision,
-                                             final int start,
-                                             final int limit) throws StoreException {
+                                     final String revision,
+                                     final int start,
+                                     final int limit) throws StoreException {
         try {
             final ObjectId commitId = ObjectId.fromString(revision);
             final LogCommand logCommand = git.log()

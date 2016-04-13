@@ -21,10 +21,21 @@ public class LocalProctorBuilder extends ProctorBuilder {
     }
 
     public LocalProctorBuilder(final File inputDir,
+                               final Writer outputSink) {
+        this(inputDir, FileBasedProctorStore.DEFAULT_TEST_DEFINITIONS_DIRECTORY, outputSink);
+    }
+
+    public LocalProctorBuilder(final File inputDir,
                                final String testDefinitionsDirectory,
                                final Writer outputSink,
                                final String author) {
         super(new LocalDirectoryStore(inputDir, testDefinitionsDirectory), outputSink, author);
+    }
+
+    public LocalProctorBuilder(final File inputDir,
+                               final Writer outputSink,
+                               final String author) {
+        this(inputDir, FileBasedProctorStore.DEFAULT_TEST_DEFINITIONS_DIRECTORY, outputSink, author);
     }
 
     public LocalProctorBuilder(final File inputDir,
@@ -33,6 +44,13 @@ public class LocalProctorBuilder extends ProctorBuilder {
                                final String author,
                                final String version) {
         super(new LocalDirectoryStore(inputDir, testDefinitionsDirectory), outputSink, author, version);
+    }
+
+    public LocalProctorBuilder(final File inputDir,
+                               final Writer outputSink,
+                               final String author,
+                               final String version) {
+        this(inputDir, FileBasedProctorStore.DEFAULT_TEST_DEFINITIONS_DIRECTORY, outputSink, author, version);
     }
 
     private static class LocalProctorBuilderArgs extends ProctorBuilderArgs {

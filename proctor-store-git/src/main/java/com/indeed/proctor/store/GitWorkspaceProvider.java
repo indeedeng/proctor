@@ -8,16 +8,8 @@ public interface GitWorkspaceProvider {
      * @return A flag whose value indicates if the directory cleanup was
      * successful
      */
-    public boolean cleanWorkingDirectory();
+    boolean cleanWorkingDirectory();
 
-    /**
-     * Delete the workspace directory.
-     * @param user
-     * @return A flag whose value indicates if the directory removal was
-     * successful
-     */
-    public boolean deleteWorkspaceQuietly(String user);
-
-    public File getRootDirectory();
+    File getRootDirectory();
 
 }
