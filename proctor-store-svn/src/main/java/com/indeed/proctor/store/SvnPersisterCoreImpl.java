@@ -74,6 +74,13 @@ public class SvnPersisterCoreImpl implements SvnPersisterCore, Closeable {
     public SvnPersisterCoreImpl(final String svnPath,
                                 final String username,
                                 final String password,
+                                final File tempDir) {
+        this(svnPath, username, password, FileBasedProctorStore.DEFAULT_TEST_DEFINITIONS_DIRECTORY, tempDir);
+    }
+
+    public SvnPersisterCoreImpl(final String svnPath,
+                                final String username,
+                                final String password,
                                 final String testDefinitionsDirectory,
                                 final File tempDir) {
         this(svnPath, username, password, testDefinitionsDirectory, new SvnWorkspaceProviderImpl(tempDir, TimeUnit.DAYS.toMillis(1)), true);
@@ -86,7 +93,6 @@ public class SvnPersisterCoreImpl implements SvnPersisterCore, Closeable {
      * @param testDefinitionsDirectory
      * @param workspaceProvider
      * @param shutdownProvider
-     * @param
      */
     public SvnPersisterCoreImpl(final String svnPath,
                                 final String username,

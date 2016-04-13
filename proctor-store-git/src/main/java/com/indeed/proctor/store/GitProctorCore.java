@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -51,7 +50,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
                           final String password,
                           final String testDefinitionsDirectory,
                           final File tempDir) {
-        this(gitUrl, username, password, testDefinitionsDirectory, new GitWorkspaceProviderImpl(tempDir, TimeUnit.DAYS.toMillis(1)));
+        this(gitUrl, username, password, testDefinitionsDirectory, new GitWorkspaceProviderImpl(tempDir));
     }
 
     /**
@@ -167,8 +166,8 @@ public class GitProctorCore implements FileBasedPersisterCore {
         return mapper.readValue(loader.getBytes(), c);
     }
 
-    public boolean cleanUserWorkspace(String user) {
-        return workspaceProvider.deleteWorkspaceQuietly(user);
+    public boolean cleanWorkingDirectory() {
+        return workspaceProvider.cleanWorkingDirectory();
     }
 
     /**
