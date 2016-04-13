@@ -30,9 +30,6 @@ public class GitProctorStoreFactory implements StoreFactory {
 
     private final File implicitTempRoot;
 
-    // The age (in milliseconds) to use when identifying temp directories that can be cleaned up
-    private long tempDirCleanupAgeMillis = TimeUnit.DAYS.toMillis(1);
-
     // The period to use when scheduling a refresh of the git directory
     private long gitRefreshMillis = TimeUnit.SECONDS.toMillis(300);
 
@@ -69,7 +66,7 @@ public class GitProctorStoreFactory implements StoreFactory {
 
         Preconditions.checkArgument(!CharMatcher.WHITESPACE.matchesAllOf(Strings.nullToEmpty(gitUrl)), "scm.path property cannot be empty");
 
-        final GitWorkspaceProviderImpl provider = new GitWorkspaceProviderImpl(tempDirectory, tempDirCleanupAgeMillis);
+        final GitWorkspaceProviderImpl provider = new GitWorkspaceProviderImpl(tempDirectory);
         final GitProctorCore gitCore = new CachedGitProctorCore(gitUrl, gitUsername, gitPassword, testDefinitionsDirectory, provider);
 
         if(gitRefreshMillis > 0) {
