@@ -208,11 +208,13 @@ public class ProctorTestDefinitionController extends AbstractController {
         final Environment theEnvironment = determineEnvironmentFromParameter(branch);
         final ProctorStore store = determineStoreFromEnvironment(theEnvironment);
 
+        final EnvironmentVersion version = promoter.getEnvironmentVersion(testName);
+
         final TestDefinition definition;
         if (revision.length() > 0) {
             definition = getTestDefinition(store, testName, revision);
         } else {
-            definition = getTestDefinition(store, testName);
+            definition = getTestDefinition(store, testName, version.getRevision(theEnvironment));
         }
 
         if (definition == null) {
@@ -222,7 +224,7 @@ public class ProctorTestDefinitionController extends AbstractController {
         }
         final boolean loadAllocHistory = shouldLoadAllocationHistory(loadAllocHistParam, loadAllocHistCookie, response);
         final List<RevisionDefinition> history = makeRevisionDefinitionList(store, testName, loadAllocHistory);
-        final EnvironmentVersion version = promoter.getEnvironmentVersion(testName);
+
         return doView(theEnvironment, Views.DETAILS, testName, definition, history, version, model);
     }
 
