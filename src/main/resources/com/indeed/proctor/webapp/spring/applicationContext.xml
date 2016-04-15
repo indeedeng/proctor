@@ -45,6 +45,7 @@
         <constructor-arg name="trunk" ref="trunkStore" />
         <constructor-arg name="qa" ref="qaStore" />
         <constructor-arg name="production" ref="prodStore" />
+        <constructor-arg name="executor" ref="proctorPromoterExecutorService" />
     </bean>
 
     <bean id="backgroundJobManager" class="com.indeed.proctor.webapp.controllers.BackgroundJobManager"/>
@@ -52,6 +53,16 @@
     <bean id="proctorSpecificationSource" class="com.indeed.proctor.webapp.RemoteProctorSpecificationSource" destroy-method="shutdown">
         <constructor-arg name="httpTimeout" value="${verify.http.timeout:1000}"/>
         <constructor-arg name="executorThreads" value="${verify.executor.threads:10}"/>
+    </bean>
+
+    <bean id="proctorPromoterExecutorService" class="org.springframework.scheduling.concurrent.ThreadPoolExecutorFactoryBean" lazy-init="false">
+        <property name="corePoolSize" value="10"/>
+        <property name="maxPoolSize" value="10"/>
+        <property name="threadFactory">
+            <bean class="com.indeed.proctor.webapp.util.spring.ThreadFactoryBean">
+                <property name="nameFormat" value="ProctorPromoter-Thread-%d"/>
+            </bean>
+        </property>
     </bean>
 
     <bean id="scheduledExecutorService" class="org.springframework.scheduling.concurrent.ScheduledExecutorFactoryBean" lazy-init="false">

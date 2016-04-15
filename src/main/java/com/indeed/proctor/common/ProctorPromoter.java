@@ -11,10 +11,17 @@ import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.webapp.db.Environment;
 import com.indeed.proctor.store.ProctorStore;
+import com.indeed.proctor.webapp.util.ThreadPoolExecutorVarExports;
+import com.indeed.util.varexport.VarExporter;
 import org.apache.log4j.Logger;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -29,6 +36,7 @@ public class ProctorPromoter {
     final ProctorStore trunk;
     final ProctorStore qa;
     final ProctorStore production;
+    private ExecutorService executor;
 
     private final Cache<String, EnvironmentVersion> environmentVersions = CacheBuilder.newBuilder()
         .maximumSize(2048)
@@ -38,10 +46,17 @@ public class ProctorPromoter {
 
     public ProctorPromoter(final ProctorStore trunk,
                            final ProctorStore qa,
-                           final ProctorStore production) {
+                           final ProctorStore production,
+                           final ExecutorService executor) {
         this.trunk = trunk;
         this.qa = qa;
         this.production = production;
+
+        if (executor instanceof ThreadPoolExecutor) {
+            final VarExporter exporter = VarExporter.forNamespace(getClass().getSimpleName());
+            exporter.export(new ThreadPoolExecutorVarExports((ThreadPoolExecutor) executor), "ProctorPromoter-pool-");
+        }
+        this.executor = executor;
     }
 
     public void promoteTrunkToQa(final String testName, String trunkRevision, String qaRevision,
@@ -174,11 +189,19 @@ public class ProctorPromoter {
          return environmentVersion;
         } else {
             final List<Revision> trunkHistory, qaHistory, productionHistory;
+
+            // Fetch versions in parallel
+            final Future<List<Revision>> trunkFuture = executor.submit(new GetEnvironmentVersionTask(trunk, testName));
+            final Future<List<Revision>> qaFuture = executor.submit(new GetEnvironmentVersionTask(qa, testName));
+            final Future<List<Revision>> productionFuture = executor.submit(new GetEnvironmentVersionTask(production, testName));
             try {
-                trunkHistory = getMostRecentHistory(trunk, testName);
-                qaHistory = getMostRecentHistory(qa, testName);
-                productionHistory = getMostRecentHistory(production, testName);
-            } catch (StoreException e) {
+                trunkHistory = trunkFuture.get();
+                qaHistory = qaFuture.get();
+                productionHistory = productionFuture.get();
+            } catch (InterruptedException e) {
+                LOGGER.error("Unable to retrieve latest version for trunk or qa or production", e);
+                return null;
+            } catch (ExecutionException e) {
                 LOGGER.error("Unable to retrieve latest version for trunk or qa or production", e);
                 return null;
             }
@@ -214,6 +237,21 @@ public class ProctorPromoter {
                 productionRevision, prodVersion);
             environmentVersions.put(testName, newEnvironmentVersion);
             return newEnvironmentVersion;
+        }
+    }
+
+    private static class GetEnvironmentVersionTask implements Callable<List<Revision>> {
+        final ProctorStore store;
+        final String testName;
+
+        GetEnvironmentVersionTask(final ProctorStore store, final String testName) {
+            this.store = store;
+            this.testName = testName;
+        }
+
+        @Override
+        public List<Revision> call() throws Exception {
+            return getMostRecentHistory(store, testName);
         }
     }
 
