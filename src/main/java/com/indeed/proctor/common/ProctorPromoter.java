@@ -23,6 +23,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -195,14 +196,17 @@ public class ProctorPromoter {
             final Future<List<Revision>> qaFuture = executor.submit(new GetEnvironmentVersionTask(qa, testName));
             final Future<List<Revision>> productionFuture = executor.submit(new GetEnvironmentVersionTask(production, testName));
             try {
-                trunkHistory = trunkFuture.get();
-                qaHistory = qaFuture.get();
-                productionHistory = productionFuture.get();
+                trunkHistory = trunkFuture.get(30, TimeUnit.SECONDS);
+                qaHistory = qaFuture.get(30, TimeUnit.SECONDS);
+                productionHistory = productionFuture.get(30, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 LOGGER.error("Unable to retrieve latest version for trunk or qa or production", e);
                 return null;
             } catch (ExecutionException e) {
                 LOGGER.error("Unable to retrieve latest version for trunk or qa or production", e);
+                return null;
+            } catch (TimeoutException e) {
+                LOGGER.error("Timed out when retrieving latest version for trunk or qa or production", e);
                 return null;
             }
 
