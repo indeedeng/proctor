@@ -207,6 +207,9 @@ public class ProctorPromoter {
                 return null;
             } catch (TimeoutException e) {
                 LOGGER.error("Timed out when retrieving latest version for trunk or qa or production", e);
+                trunkFuture.cancel(true);
+                qaFuture.cancel(true);
+                productionFuture.cancel(true);
                 return null;
             }
 
