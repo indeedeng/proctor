@@ -223,13 +223,16 @@ public class ProctorTestDefinitionController extends AbstractController {
             return "404";
         }
         final boolean loadAllocHistory = shouldLoadAllocationHistory(loadAllocHistParam, loadAllocHistCookie, response);
-        final List<RevisionDefinition> history = makeRevisionDefinitionList(store, testName, loadAllocHistory);
+        final List<RevisionDefinition> history = makeRevisionDefinitionList(store, testName, version.getRevision(theEnvironment), loadAllocHistory);
 
         return doView(theEnvironment, Views.DETAILS, testName, definition, history, version, model);
     }
 
-    private List<RevisionDefinition> makeRevisionDefinitionList(ProctorStore store, String testName, boolean useDefinitions) {
-        final List<Revision> history = getTestHistory(store, testName);
+    private List<RevisionDefinition> makeRevisionDefinitionList(final ProctorStore store,
+                                                                final String testName,
+                                                                final String startRevision,
+                                                                final boolean useDefinitions) {
+        final List<Revision> history = getTestHistory(store, testName, startRevision);
         final List<RevisionDefinition> revisionDefinitions = new ArrayList<RevisionDefinition>();
         if(useDefinitions) {
             for (Revision revision : history) {
@@ -276,16 +279,15 @@ public class ProctorTestDefinitionController extends AbstractController {
     ) {
         final Environment theEnvironment = Environment.WORKING; // only allow editing of TRUNK!
         final ProctorStore store = determineStoreFromEnvironment(theEnvironment);
+        final EnvironmentVersion version = promoter.getEnvironmentVersion(testName);
 
-        final TestDefinition definition = getTestDefinition(store, testName);
+        final TestDefinition definition = getTestDefinition(store, testName, version.getTrunkRevision());
         if (definition == null) {
             LOGGER.info("Unknown test definition : " + testName);
             // unknown testdefinition
             return "404";
         }
-        final List<RevisionDefinition> history = makeRevisionDefinitionList(store, testName, false);
-        final EnvironmentVersion version = promoter.getEnvironmentVersion(testName);
-
+        final List<RevisionDefinition> history = makeRevisionDefinitionList(store, testName, version.getTrunkRevision(), false);
 
         return doView(theEnvironment, Views.EDIT, testName, definition, history, version, model);
     }
@@ -1430,15 +1432,30 @@ public class ProctorTestDefinitionController extends AbstractController {
         }
     }
 
-    private static List<Revision> getTestHistory(final ProctorStore store, final String testName) {
-        return getTestHistory(store, testName, Integer.MAX_VALUE);
+    private static List<Revision> getTestHistory(final ProctorStore store, final String testName, final int limit) {
+        return getTestHistory(store, testName, null, limit);
+    }
+
+    private static List<Revision> getTestHistory(final ProctorStore store, final String testName, final String startRevision) {
+        return getTestHistory(store, testName, startRevision, Integer.MAX_VALUE);
     }
 
     // @Nonnull
-    private static List<Revision> getTestHistory(final ProctorStore store, final String testName, final int limit) {
+    private static List<Revision> getTestHistory(final ProctorStore store,
+                                                 final String testName,
+                                                 final String startRevision,
+                                                 final int limit) {
         final List<Revision> history;
         try {
-            history = store.getHistory(testName, 0, limit);
+            // Git performance suffers when there are many concurrent operations
+            // Only request full test history for one test at a time
+            synchronized (store) {
+                if (startRevision == null) {
+                    history = store.getHistory(testName, 0, limit);
+                } else {
+                    history = store.getHistory(testName, startRevision, 0, limit);
+                }
+            }
             if (history.size() == 0) {
                 LOGGER.info("No version history for [" + testName + "]");
             }

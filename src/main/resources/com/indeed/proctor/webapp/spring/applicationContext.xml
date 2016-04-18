@@ -56,8 +56,8 @@
     </bean>
 
     <bean id="proctorPromoterExecutorService" class="org.springframework.scheduling.concurrent.ThreadPoolExecutorFactoryBean" lazy-init="false">
-        <property name="corePoolSize" value="6"/>
-        <property name="maxPoolSize" value="6"/>
+        <property name="corePoolSize" value="3"/>
+        <property name="maxPoolSize" value="3"/>
         <property name="threadFactory">
             <bean class="com.indeed.proctor.webapp.util.spring.ThreadFactoryBean">
                 <property name="nameFormat" value="ProctorPromoter-Thread-%d"/>
