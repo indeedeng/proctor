@@ -73,7 +73,7 @@ public class GitProctorStoreFactory implements StoreFactory {
             final GitDirectoryRefresher refresher = gitCore.createRefresherTask
                     (gitUsername, gitPassword);
             LOGGER.info("Scheduling GitDirectoryRefresher every " + gitRefreshMillis + " milliseconds for dir: " + refresher.getDirectoryPath());
-            executor.scheduleWithFixedDelay(refresher, gitRefreshMillis, gitRefreshMillis, TimeUnit.MILLISECONDS);
+            executor.scheduleWithFixedDelay(refresher, TimeUnit.SECONDS.toMillis(60), gitRefreshMillis, TimeUnit.MILLISECONDS);
         }
 
         final String branchName = relativePath.substring(relativePath.lastIndexOf("/")+1);
