@@ -16,7 +16,6 @@ public class CachedGitProctorCore extends GitProctorCore {
     private final Cache<FileContentsKey, Object> cache = CacheBuilder.newBuilder()
         .maximumSize(2048)
         .expireAfterAccess(6, TimeUnit.HOURS) // We use revision/hash as part of the key so we don't need to worry about cache entry becoming invalid
-        .softValues()
         .build();
 
     public CachedGitProctorCore(final String gitUrl,

@@ -23,8 +23,7 @@ public class CachedSvnPersisterCore implements SvnPersisterCore {
 
     private final Cache<FileContentsKey, Object> cache = CacheBuilder.newBuilder()
         .maximumSize(2048)
-        .expireAfterAccess(60, TimeUnit.MINUTES)
-        .softValues()
+        .expireAfterAccess(6, TimeUnit.HOURS)
         .build();
 
     private final LoadingCache<Long, TestVersionResult> versionCache = CacheBuilder.newBuilder()
