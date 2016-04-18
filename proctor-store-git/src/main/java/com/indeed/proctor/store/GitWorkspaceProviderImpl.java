@@ -29,7 +29,9 @@ public class GitWorkspaceProviderImpl implements GitWorkspaceProvider {
 
     public boolean cleanWorkingDirectory() {
         try {
-            FileUtils.cleanDirectory(rootDirectory);
+            synchronized (rootDirectory) {
+                FileUtils.cleanDirectory(rootDirectory);
+            }
         } catch (IOException e) {
             LOGGER.error("Unable to clean working directory", e);
             return false;
