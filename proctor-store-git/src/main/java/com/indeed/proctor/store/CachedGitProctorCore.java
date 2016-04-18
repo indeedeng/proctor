@@ -13,10 +13,15 @@ import java.util.concurrent.TimeUnit;
  * @author atran
  */
 public class CachedGitProctorCore extends GitProctorCore {
-    private final Cache<FileContentsKey, Object> cache = CacheBuilder.newBuilder()
-        .maximumSize(2048)
-        .expireAfterAccess(6, TimeUnit.HOURS) // We use revision/hash as part of the key so we don't need to worry about cache entry becoming invalid
-        .build();
+    private final Cache<FileContentsKey, Object> testDefinitionCache = CacheBuilder.newBuilder()
+            .maximumSize(2048)
+            .expireAfterAccess(6, TimeUnit.HOURS)
+            .build();
+
+    private final Cache<String, TestVersionResult> versionCache = CacheBuilder.newBuilder()
+            .maximumSize(3)
+            .expireAfterAccess(6, TimeUnit.HOURS)
+            .build();
 
     public CachedGitProctorCore(final String gitUrl,
                                 final String username,
@@ -32,11 +37,11 @@ public class CachedGitProctorCore extends GitProctorCore {
                                  final C defaultValue,
                                  final String revision) throws ReadException, JsonProcessingException {
         final FileContentsKey key = new FileContentsKey(c, path, revision);
-        final Object obj = cache.getIfPresent(key);
+        final Object obj = testDefinitionCache.getIfPresent(key);
         if (obj == null) {
             final C newObj = super.getFileContents(c, path, defaultValue, revision);
             if (newObj != defaultValue) {
-                cache.put(key, newObj);
+                testDefinitionCache.put(key, newObj);
             }
             return newObj;
         } else {
@@ -49,8 +54,14 @@ public class CachedGitProctorCore extends GitProctorCore {
 
     @Override
     public TestVersionResult determineVersions(final String fetchRevision) throws ReadException {
-        // Extremely fast in git - no caching required
-        return super.determineVersions(fetchRevision);
+        final TestVersionResult testVersionResult = versionCache.getIfPresent(fetchRevision);
+        if (testVersionResult == null) {
+            final TestVersionResult newTestVersionResult = super.determineVersions(fetchRevision);
+            versionCache.put(fetchRevision, newTestVersionResult);
+            return newTestVersionResult;
+        } else {
+            return testVersionResult;
+        }
     }
 
     private static class FileContentsKey {

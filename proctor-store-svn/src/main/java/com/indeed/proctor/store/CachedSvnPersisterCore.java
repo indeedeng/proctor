@@ -1,11 +1,8 @@
 package com.indeed.proctor.store;
 
 import com.google.common.base.Joiner;
-import com.google.common.base.Throwables;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import com.indeed.util.varexport.Export;
 import org.apache.log4j.Logger;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -21,25 +18,15 @@ import java.util.concurrent.TimeUnit;
 public class CachedSvnPersisterCore implements SvnPersisterCore {
     private static final Logger LOGGER = Logger.getLogger(CachedSvnPersisterCore.class);
 
-    private final Cache<FileContentsKey, Object> cache = CacheBuilder.newBuilder()
+    private final Cache<FileContentsKey, Object> testDefinitionCache = CacheBuilder.newBuilder()
         .maximumSize(2048)
         .expireAfterAccess(6, TimeUnit.HOURS)
         .build();
 
-    private final LoadingCache<Long, TestVersionResult> versionCache = CacheBuilder.newBuilder()
-        .maximumSize(50)
-        .expireAfterAccess(60, TimeUnit.MINUTES)
-        .softValues()
-        .build(new CacheLoader<Long, TestVersionResult>() {
-            @Override
-            public TestVersionResult load(Long revision) {
-                try {
-                    return core.determineVersions(String.valueOf(revision.longValue()));
-                } catch (StoreException.ReadException e) {
-                    throw Throwables.propagate(e);
-                }
-            }
-        });
+    private final Cache<Long, TestVersionResult> versionCache = CacheBuilder.newBuilder()
+            .maximumSize(3)
+            .expireAfterAccess(6, TimeUnit.HOURS)
+            .build();
 
     final SvnPersisterCoreImpl core;
 
@@ -74,11 +61,11 @@ public class CachedSvnPersisterCore implements SvnPersisterCore {
                                  final C defaultValue,
                                  final String revision) throws StoreException.ReadException, JsonProcessingException {
         final FileContentsKey key = new FileContentsKey(c, path, core.parseRevisionOrDie(revision));
-        final Object obj = cache.getIfPresent(key);
+        final Object obj = testDefinitionCache.getIfPresent(key);
         if (obj == null) {
             final C x = core.getFileContents(c, path, defaultValue, revision);
             if (x != defaultValue) {
-                cache.put(key, x);
+                testDefinitionCache.put(key, x);
             }
             return x;
         } else {
@@ -96,8 +83,15 @@ public class CachedSvnPersisterCore implements SvnPersisterCore {
 
     @Override
     public TestVersionResult determineVersions(final String fetchRevision) throws StoreException.ReadException {
-        // return core.determineVersions(fetchRevision);
-        return versionCache.getUnchecked(core.parseRevisionOrDie(fetchRevision));
+        final Long parsedRevision = SvnPersisterCoreImpl.parseRevisionOrDie(fetchRevision);
+        final TestVersionResult testVersionResult = versionCache.getIfPresent(parsedRevision);
+        if (testVersionResult == null) {
+            final TestVersionResult newTestVersionResult = core.determineVersions(String.valueOf(parsedRevision));
+            versionCache.put(parsedRevision, newTestVersionResult);
+            return newTestVersionResult;
+        } else {
+            return testVersionResult;
+        }
     }
 
     @Override
