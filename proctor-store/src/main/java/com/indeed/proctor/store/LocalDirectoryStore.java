@@ -7,6 +7,10 @@ public class LocalDirectoryStore extends FileBasedProctorStore {
 
     private final File baseDir;
 
+    public LocalDirectoryStore(final File baseDir) {
+        this(baseDir, FileBasedProctorStore.DEFAULT_TEST_DEFINITIONS_DIRECTORY);
+    }
+
     public LocalDirectoryStore(final File baseDir, final String testDefinitionsDirectory) {
         super(new LocalDirectoryCore(baseDir, testDefinitionsDirectory));
         if(!baseDir.isDirectory()) {
