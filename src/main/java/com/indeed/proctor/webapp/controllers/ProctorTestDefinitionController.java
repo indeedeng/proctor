@@ -208,22 +208,28 @@ public class ProctorTestDefinitionController extends AbstractController {
         final Environment theEnvironment = determineEnvironmentFromParameter(branch);
         final ProctorStore store = determineStoreFromEnvironment(theEnvironment);
 
-        final EnvironmentVersion version = promoter.getEnvironmentVersion(testName);
-
+        // Git performance suffers when there are many concurrent operations
+        // Only request full test history for one test at a time
+        final EnvironmentVersion version;
+        final List<RevisionDefinition> history;
         final TestDefinition definition;
-        if (revision.length() > 0) {
-            definition = getTestDefinition(store, testName, revision);
-        } else {
-            definition = getTestDefinition(store, testName, version.getRevision(theEnvironment));
-        }
+        synchronized (this) {
+            version = promoter.getEnvironmentVersion(testName);
 
-        if (definition == null) {
-            LOGGER.info("Unknown test definition : " + testName + " revision " + revision);
-            // unknown testdefinition
-            return "404";
+            if (revision.length() > 0) {
+                definition = getTestDefinition(store, testName, revision);
+            } else {
+                definition = getTestDefinition(store, testName, version.getRevision(theEnvironment));
+            }
+
+            if (definition == null) {
+                LOGGER.info("Unknown test definition : " + testName + " revision " + revision);
+                // unknown testdefinition
+                return "404";
+            }
+            final boolean loadAllocHistory = shouldLoadAllocationHistory(loadAllocHistParam, loadAllocHistCookie, response);
+            history = makeRevisionDefinitionList(store, testName, version.getRevision(theEnvironment), loadAllocHistory);
         }
-        final boolean loadAllocHistory = shouldLoadAllocationHistory(loadAllocHistParam, loadAllocHistCookie, response);
-        final List<RevisionDefinition> history = makeRevisionDefinitionList(store, testName, version.getRevision(theEnvironment), loadAllocHistory);
 
         return doView(theEnvironment, Views.DETAILS, testName, definition, history, version, model);
     }
@@ -287,9 +293,8 @@ public class ProctorTestDefinitionController extends AbstractController {
             // unknown testdefinition
             return "404";
         }
-        final List<RevisionDefinition> history = makeRevisionDefinitionList(store, testName, version.getTrunkRevision(), false);
 
-        return doView(theEnvironment, Views.EDIT, testName, definition, history, version, model);
+        return doView(theEnvironment, Views.EDIT, testName, definition, Collections.<RevisionDefinition>emptyList(), version, model);
     }
 
     @RequestMapping(value = "/{testName}/delete", method = RequestMethod.POST)
@@ -1379,7 +1384,7 @@ public class ProctorTestDefinitionController extends AbstractController {
         }
 
         model.addAttribute("testDefinitionHistory", history);
-        final Revision testDefinitionVersion = history.size() > 0 && history.get(0) != null ? history.get(0).getRevision() : UNKNOWN_VERSION;
+        final Revision testDefinitionVersion = version.getTrunk();
         model.addAttribute("testDefinitionVersion", testDefinitionVersion);
 
         // TODO (parker) 8/9/12 - Add common model for TestTypes and other Drop Downs
@@ -1445,16 +1450,12 @@ public class ProctorTestDefinitionController extends AbstractController {
                                                  final String testName,
                                                  final String startRevision,
                                                  final int limit) {
-        final List<Revision> history;
         try {
-            // Git performance suffers when there are many concurrent operations
-            // Only request full test history for one test at a time
-            synchronized (store) {
-                if (startRevision == null) {
-                    history = store.getHistory(testName, 0, limit);
-                } else {
-                    history = store.getHistory(testName, startRevision, 0, limit);
-                }
+            final List<Revision> history;
+            if (startRevision == null) {
+                history = store.getHistory(testName, 0, limit);
+            } else {
+                history = store.getHistory(testName, startRevision, 0, limit);
             }
             if (history.size() == 0) {
                 LOGGER.info("No version history for [" + testName + "]");

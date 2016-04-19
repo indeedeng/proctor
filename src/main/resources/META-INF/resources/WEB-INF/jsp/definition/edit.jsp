@@ -233,14 +233,12 @@
             nonCompiledJavascriptSrc="/static/scripts/app/editor.js"/>
     <script type="text/javascript">
         //<![CDATA[
-        indeed.proctor.app.editor.start('${testName}', ${testDefinitionJson},
-                <c:choose>
-                    <c:when test="${fn:length(testDefinitionHistory) > 0}">
-                        "${testDefinitionHistory[0].revision.revision}"
-                    </c:when>
-                    <c:otherwise>"-1"</c:otherwise>
-                </c:choose>
-                , ${isCreate});
+        indeed.proctor.app.editor.start(
+                '${testName}',
+                ${testDefinitionJson},
+                "${version.trunkRevision}",
+                ${isCreate}
+        );
 
         function enableTestTypeField()
         {
