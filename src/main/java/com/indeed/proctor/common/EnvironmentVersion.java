@@ -3,12 +3,15 @@ package com.indeed.proctor.common;
 import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.webapp.db.Environment;
 
+import java.util.Date;
+
 /**
 * @author parker
 */
 public class EnvironmentVersion {
     public static final String UNKNOWN_REVISION = "-1";
     public static final String UNKNOWN_VERSION = "-1";
+    public static final Revision FULL_UNKNOWN_REVISION = new Revision(UNKNOWN_REVISION, "[unknown]", new Date(0), "History unknown");
 
     private final String testName;
 
@@ -118,6 +121,11 @@ public class EnvironmentVersion {
         return productionEffectiveRevision;
     }
 
+    /**
+     * Returns a String representing the revision associated with the branch.
+     * @param branch
+     * @return
+     */
     public String getRevision(final Environment branch) {
         switch (branch) {
             case WORKING:
@@ -128,6 +136,24 @@ public class EnvironmentVersion {
                 return getProductionRevision();
             default:
                 return UNKNOWN_REVISION;
+        }
+    }
+
+    /**
+     * Returns a {@link com.indeed.proctor.store.Revision} object associated with the branch.
+     * @param branch
+     * @return
+     */
+    public Revision getFullRevision(final Environment branch) {
+        switch (branch) {
+            case WORKING:
+                return trunk;
+            case QA:
+                return qa;
+            case PRODUCTION:
+                return production;
+            default:
+                return FULL_UNKNOWN_REVISION;
         }
     }
 

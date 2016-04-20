@@ -92,7 +92,6 @@ import javax.servlet.http.Cookie;
 @RequestMapping({"/definition", "/proctor/definition"})
 public class ProctorTestDefinitionController extends AbstractController {
     private static final Logger LOGGER = Logger.getLogger(ProctorTestDefinitionController.class);
-    private static final Revision UNKNOWN_VERSION = new Revision("", "[unknown]", new Date(0), "History unknown");
 
     private static final Pattern ALPHA_NUMERIC_PATTERN = Pattern.compile("^[a-z0-9_]+$", Pattern.CASE_INSENSITIVE);
     private static final Pattern VALID_TEST_NAME_PATTERN = ALPHA_NUMERIC_PATTERN;
@@ -1384,7 +1383,7 @@ public class ProctorTestDefinitionController extends AbstractController {
         }
 
         model.addAttribute("testDefinitionHistory", history);
-        final Revision testDefinitionVersion = version == null ? UNKNOWN_VERSION : version.getTrunk();
+        final Revision testDefinitionVersion = version == null ? EnvironmentVersion.FULL_UNKNOWN_REVISION : version.getFullRevision(b);
         model.addAttribute("testDefinitionVersion", testDefinitionVersion);
 
         // TODO (parker) 8/9/12 - Add common model for TestTypes and other Drop Downs
