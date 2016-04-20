@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -36,6 +37,8 @@ import com.indeed.proctor.common.Serializers;
 
 public class GitProctorCore implements FileBasedPersisterCore {
     private static final Logger LOGGER = Logger.getLogger(GitProctorCore.class);
+    private static final TextProgressMonitor PROGRESS_MONITOR = new TextProgressMonitor(new LoggerPrintWriter(LOGGER, Level.DEBUG));
+
     private final String username;
     private final String password;
     private final String testDefinitionsDirectory;
@@ -80,28 +83,31 @@ public class GitProctorCore implements FileBasedPersisterCore {
         final UsernamePasswordCredentialsProvider user = new UsernamePasswordCredentialsProvider(username, password);
         final File workingDir = workspaceProvider.getRootDirectory();
         final File gitDirectory = new File(workingDir, ".git");
-        LOGGER.info("working dir: " + workingDir.getAbsolutePath());
+        LOGGER.info("Initializing repository " + gitUrl + " in working dir " + workingDir.getAbsolutePath());
 
         synchronized (workspaceProvider.getRootDirectory()) {
             try {
                 if (gitDirectory.exists()) {
+                    LOGGER.info("Existing local repository found, pulling latest changes...");
                     try {
                         git = Git.open(workingDir);
-                        git.pull().setRebase(true).setCredentialsProvider(user).call();
-                    } catch (Exception e) {
+                        git.pull().setProgressMonitor(PROGRESS_MONITOR).setRebase(true).setCredentialsProvider(user).call();
+                    } catch (final Exception e) {
+                        LOGGER.error("Could not update existing local repository, creating a new clone...", e);
                         workspaceProvider.cleanWorkingDirectory();
                         CloneCommand gitCommand = Git.cloneRepository()
                                 .setURI(gitUrl)
                                 .setDirectory(workingDir)
-                                .setProgressMonitor(new TextProgressMonitor())
+                                .setProgressMonitor(PROGRESS_MONITOR)
                                 .setCredentialsProvider(user);
                         git = gitCommand.call();
                     }
                 } else {
+                    LOGGER.info("Local repository not found, creating a new clone...");
                     git = Git.cloneRepository()
                             .setURI(gitUrl)
                             .setDirectory(workingDir)
-                            .setProgressMonitor(new TextProgressMonitor())
+                            .setProgressMonitor(PROGRESS_MONITOR)
                             .setCredentialsProvider(user)
                             .call();
                 }
@@ -112,7 +118,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
 
         try {
             git.fetch()
-                    .setProgressMonitor(new TextProgressMonitor())
+                    .setProgressMonitor(PROGRESS_MONITOR)
                     .setCredentialsProvider(user)
                     .call();
         } catch (GitAPIException e) {
@@ -219,13 +225,13 @@ public class GitProctorCore implements FileBasedPersisterCore {
         synchronized (workspaceProvider.getRootDirectory()) {
             try {
                 git = Git.open(workingDir);
-                git.pull().setRebase(true).setCredentialsProvider(user).call();
+                git.pull().setProgressMonitor(PROGRESS_MONITOR).setRebase(true).setCredentialsProvider(user).call();
                 final FileBasedProctorStore.RcsClient rcsClient = new GitProctorCore.GitRcsClient(git, testDefinitionsDirectory);
                 final boolean thingsChanged;
                 thingsChanged = updater.doInWorkingDirectory(rcsClient, workingDir);
                 if (thingsChanged) {
                     git.commit().setCommitter(username, username).setAuthor(username, username).setMessage(comment).call();
-                    final Iterable<PushResult> pushResults = git.push().setCredentialsProvider(user).call();
+                    final Iterable<PushResult> pushResults = git.push().setProgressMonitor(PROGRESS_MONITOR).setCredentialsProvider(user).call();
                     // jgit doesn't throw an exception for certain kinds of push failures - explicitly check the result
                     for (final PushResult pushResult : pushResults) {
                         for (final RemoteRefUpdate remoteRefUpdate : pushResult.getRemoteUpdates()) {
