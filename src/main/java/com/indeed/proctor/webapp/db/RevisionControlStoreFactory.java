@@ -128,7 +128,7 @@ public class RevisionControlStoreFactory implements FactoryBean<StoreFactory> {
         this.testDefinitionsDirectory = testDefinitionsDirectory;
     }
 
-    @Value("${temp.root.directory}")
+    @Value("${temp.root.directory:}")
     public void setTempRootDirectory(final String tempRootDirectory) {
         this.tempRootDirectory = tempRootDirectory;
     }
