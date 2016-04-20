@@ -6,6 +6,7 @@ import com.google.common.base.Strings;
 import com.indeed.util.varexport.VarExporter;
 import com.indeed.proctor.store.*;
 import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -26,9 +27,7 @@ public class GitProctorStoreFactory implements StoreFactory {
     /* The root directory into which we should put the "qa-matrices" or "trunk-matrices"
      * If not set - a the temp directory will be used
      * */
-    File tempRoot;
-
-    private final File implicitTempRoot;
+    private final File tempRoot;
 
     // The period to use when scheduling a refresh of the git directory
     private long gitRefreshMillis = TimeUnit.SECONDS.toMillis(300);
@@ -38,14 +37,20 @@ public class GitProctorStoreFactory implements StoreFactory {
                                   final String gitUrl,
                                   final String gitUsername,
                                   final String gitPassword,
-                                  final String testDefinitionsDirectory) throws IOException, ConfigurationException {
+                                  final String testDefinitionsDirectory,
+                                  final String tempRootDirectory) throws IOException, ConfigurationException {
         this.executor = executor;
         this.gitUrl = gitUrl;
         this.gitUsername = gitUsername;
         this.gitPassword = gitPassword;
         this.testDefinitionsDirectory = testDefinitionsDirectory;
         this.gitRefreshMillis = TimeUnit.SECONDS.toMillis(gitRefreshSeconds);
-        this.implicitTempRoot = identifyImplicitTempRoot();
+
+        if (StringUtils.isEmpty(tempRootDirectory)) {
+            tempRoot = identifyImplicitTempRoot();
+        } else {
+            tempRoot = new File(tempRootDirectory);
+        }
     }
 
     public ProctorStore getTrunkStore() {
@@ -88,14 +93,13 @@ public class GitProctorStoreFactory implements StoreFactory {
     private File createTempDirectoryForPath(final String relativePath) {
         // replace "/" with "-" omit first "/" but omitEmptyStrings
         final String dirName = CharMatcher.is(File.separatorChar).trimAndCollapseFrom(relativePath, '-');
-        final File parent = tempRoot != null ? tempRoot : implicitTempRoot;
-        final File temp = new File(parent, dirName);
+        final File temp = new File(tempRoot, dirName);
         if(temp.exists()) {
            if(!temp.isDirectory()) {
                throw new IllegalStateException(temp + " exists but is not a directory");
            }
         } else {
-            if(!temp.mkdir()) {
+            if(!temp.mkdirs()) {
                 throw new IllegalStateException("Could not create directory : " + temp);
             }
         }
@@ -111,13 +115,5 @@ public class GitProctorStoreFactory implements StoreFactory {
 
         tempFile.delete();
         return tempFile.getParentFile();
-    }
-
-    public File getTempRoot() {
-        return tempRoot;
-    }
-
-    public void setTempRoot(File tempRoot) {
-        this.tempRoot = tempRoot;
     }
 }

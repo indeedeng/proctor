@@ -25,6 +25,7 @@ public class RevisionControlStoreFactory implements FactoryBean<StoreFactory> {
     private String scmUsername;
     private String scmPassword;
     private String testDefinitionsDirectory;
+    private String tempRootDirectory;
 
 
     @Override
@@ -50,7 +51,8 @@ public class RevisionControlStoreFactory implements FactoryBean<StoreFactory> {
                 scmPath,
                 scmUsername,
                 scmPassword,
-                testDefinitionsDirectory);
+                testDefinitionsDirectory,
+                tempRootDirectory);
         }
         return null;
     }
@@ -124,5 +126,10 @@ public class RevisionControlStoreFactory implements FactoryBean<StoreFactory> {
     @Value("${test.definitions.directory:test-definitions}")
     public void setTestDefinitionsDirectory(final String testDefinitionsDirectory) {
         this.testDefinitionsDirectory = testDefinitionsDirectory;
+    }
+
+    @Value("${temp.root.directory}")
+    public void setTempRootDirectory(final String tempRootDirectory) {
+        this.tempRootDirectory = tempRootDirectory;
     }
 }
