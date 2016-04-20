@@ -1384,7 +1384,7 @@ public class ProctorTestDefinitionController extends AbstractController {
         }
 
         model.addAttribute("testDefinitionHistory", history);
-        final Revision testDefinitionVersion = version.getTrunk();
+        final Revision testDefinitionVersion = version == null ? UNKNOWN_VERSION : version.getTrunk();
         model.addAttribute("testDefinitionVersion", testDefinitionVersion);
 
         // TODO (parker) 8/9/12 - Add common model for TestTypes and other Drop Downs
