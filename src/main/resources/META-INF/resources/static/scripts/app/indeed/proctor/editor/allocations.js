@@ -337,20 +337,26 @@ indeed.proctor.editor.AllocationEditor.prototype.onRatioChange_ =
   input.value = this.normalizeRatio_(input.value);
   nValue = goog.string.toNumber(input.value);
   if (nValue >= 0 && nValue <= 1) {
-    var span = this.dom_.getElementsByTagNameAndClass(goog.dom.TagName.SPAN,
-                                                      'ui-allocation-percent',
-                                                      row)[0];
-    goog.dom.replaceNode(this.buildBucketRangeSpan_(rangeIndex, nValue),
-                         span);
-    // TODO get selected value from the <select> input element
-    // selectedIndex / selected, <select>.value isn't cross-browser compatible
+    if (0 < nValue && nValue < 1E-4) {
+      indeed.foundation.forms.addError(input, 'Should be at least 0.01%');
+    } else {
+      var span = this.dom_.getElementsByTagNameAndClass(goog.dom.TagName.SPAN,
+          'ui-allocation-percent',
+          row)[0];
+      goog.dom.replaceNode(this.buildBucketRangeSpan_(rangeIndex, nValue),
+          span);
+      // TODO get selected value from the <select> input element
+      // selectedIndex / selected, <select>.value isn't cross-browser compatible
 
-    // convert to number via +trick
-    this.ranges[rangeIndex]['length'] = goog.string.toNumber(input.value);
-    this.ranges[rangeIndex]['bucketValue'] = goog.string.toNumber(select.value);
+      // convert to number via +trick
+      this.ranges[rangeIndex]['length'] = goog.string.toNumber(input.value);
+      this.ranges[rangeIndex]['bucketValue'] = goog.string.toNumber(select.value);
 
-    this.dispatchEvent({'type': 'ratioChange', rangeIndex: rangeIndex,
-      bucketValue: select.value, length: input.value});
+      this.dispatchEvent({
+        'type': 'ratioChange', rangeIndex: rangeIndex,
+        bucketValue: select.value, length: input.value
+      });
+    }
   } else {
     indeed.foundation.forms.addError(input, 'values in [0, 1.0]');
   }
@@ -911,6 +917,10 @@ indeed.proctor.editor.AllocationEditor.prototype.validate = function() {
     length = goog.string.toNumber(ranges[i]['length']);
     if (length >= 0) {
       sum += length;
+      if (0 < length && length < 1E-4) {
+        this.displayError_('Positive bucket length must be at least 0.01%');
+        return false;
+      }
     } else {
       bucketValue = goog.string.toNumber(ranges[i]['bucketValue']);
       bucket = this.getBucketByValue_(bucketValue, this.buckets);

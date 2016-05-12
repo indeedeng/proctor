@@ -26,7 +26,8 @@
                 <ui:grid-columns width="six">
                     <span class="inline"><ui:bucket-select extraCssClass="json" definition="${definition}" selectedBucketValue="${range.bucketValue}" inputName="allocations[${allocationIndex}].ranges[${status.index}].bucketValue"/></span>
                 </ui:grid-columns>
-                <ui:grid-columns width="two"><input class="json" type="text" name="allocations[${allocationIndex}].ranges[${status.index}].length" value="${range.length}" /></ui:grid-columns>
+                <fmt:formatNumber value="${range.length}" type="number" pattern="0.0" maxFractionDigits="10" var="formattedLength" />
+                <ui:grid-columns width="two"><input class="json" type="text" name="allocations[${allocationIndex}].ranges[${status.index}].length" value="${formattedLength}" /></ui:grid-columns>
                 <ui:grid-columns width="two"><span class="inline ui-allocation-percent"><fmt:formatNumber value="${range.length}" type="PERCENT" maxFractionDigits="2"/></span></ui:grid-columns>
                 <ui:grid-columns width="one"><a class="js-delete-range tiny button secondary radius" href="#">delete</a></ui:grid-columns>
                 <ui:grid-columns width="one"><a class="js-split-range tiny button secondary radius" href="#">split</a></ui:grid-columns>
