@@ -3,7 +3,11 @@ package com.indeed.proctor.common;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser.Feature;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 
 import javax.annotation.Nonnull;
@@ -11,7 +15,10 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 
 public class Serializers {
-    // Customized serializer class for suppressing scientific notation
+    /**
+     * Customized serializer class for suppressing scientific notation.
+     * @author yosukey
+     */
     private static class PlainNumericSerializer extends JsonSerializer<Double> {
         private final DecimalFormat decimalFormat;
 

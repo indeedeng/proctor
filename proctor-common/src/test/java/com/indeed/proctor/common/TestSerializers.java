@@ -68,8 +68,16 @@ public class TestSerializers {
     }
 
     @Test
-    public void testPlainNumericSerializer() throws Exception {
-        final ObjectMapper mapper = Serializers.lenient();
+    public void testPlainNumericSerializerLenient() throws Exception {
+        doTestPlainNumericSerializer(Serializers.lenient());
+    }
+
+    @Test
+    public void testPlainNumericSerializerStrict() throws Exception {
+        doTestPlainNumericSerializer(Serializers.strict());
+    }
+
+    private void doTestPlainNumericSerializer(final ObjectMapper mapper) throws Exception {
         Assert.assertEquals("0.0", mapper.writeValueAsString(0.0));
         Assert.assertEquals("1.0", mapper.writeValueAsString(1.0));
         Assert.assertEquals("0.1", mapper.writeValueAsString(0.1));
