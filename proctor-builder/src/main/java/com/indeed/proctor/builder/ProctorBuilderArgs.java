@@ -67,14 +67,14 @@ class ProctorBuilderArgs {
 
 
     protected void extract(final CommandLine results) {
-        this.outputdir = results.getOptionValue("output", "-");
-        this.filename = results.getOptionValue("filename", "proctor-tests-matrix.json");
+        this.outputdir = results.getOptionValue("o", "-");
+        this.filename = results.getOptionValue("f", "proctor-tests-matrix.json");
 
-        if (results.hasOption("author")) {
-            this.author = results.getOptionValue("author");
+        if (results.hasOption("a")) {
+            this.author = results.getOptionValue("a");
         }
-        if (results.hasOption("version")) {
-            final String v = results.getOptionValue("version");
+        if (results.hasOption("v")) {
+            final String v = results.getOptionValue("v");
             if (v.length() > 0 && v.charAt(0) == 'r') { // support "svn-like" revisions like 'r149569'
                 this.version = v.substring(1);
             } else {
