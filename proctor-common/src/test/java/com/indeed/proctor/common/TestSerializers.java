@@ -67,6 +67,23 @@ public class TestSerializers {
         Assert.assertEquals(1400693905572L, audit.getUpdated());
     }
 
+    @Test
+    public void testPlainNumericSerializerLenient() throws Exception {
+        doTestPlainNumericSerializer(Serializers.lenient());
+    }
+
+    @Test
+    public void testPlainNumericSerializerStrict() throws Exception {
+        doTestPlainNumericSerializer(Serializers.strict());
+    }
+
+    private void doTestPlainNumericSerializer(final ObjectMapper mapper) throws Exception {
+        Assert.assertEquals("0.0", mapper.writeValueAsString(0.0));
+        Assert.assertEquals("1.0", mapper.writeValueAsString(1.0));
+        Assert.assertEquals("0.1", mapper.writeValueAsString(0.1));
+        Assert.assertEquals("0.00001", mapper.writeValueAsString(0.00001));
+        Assert.assertEquals("100000.0", mapper.writeValueAsString(100000.0));
+    }
 
     private void doAssertTestDefintion(final String resourceName, final ObjectMapper mapper) throws IOException {
         final InputStream input = getClass().getResourceAsStream(resourceName);
