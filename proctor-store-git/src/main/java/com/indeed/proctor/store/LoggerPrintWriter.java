@@ -8,7 +8,7 @@ import java.io.PrintWriter;
 import java.io.Writer;
 
 /**
- * java.io.PrintWriter adapter foor org.apache.log4j.Logger.
+ * java.io.PrintWriter adapter for org.apache.log4j.Logger.
  */
 class LoggerPrintWriter extends PrintWriter {
     public LoggerPrintWriter(final Logger logger, final Level level) {
@@ -27,12 +27,14 @@ class LoggerPrintWriter extends PrintWriter {
 
         @Override
         public void write(char[] cbuf, int off, int len) throws IOException {
-            // Remove leading carriage returns inserted by jgit
-            if (cbuf[off] == '\r') {
-                off++;
-                len--;
+            if (logger.isEnabledFor(level)) {
+                // Remove leading carriage returns inserted by jgit
+                if (cbuf[off] == '\r') {
+                    off++;
+                    len--;
+                }
+                logger.log(level, String.copyValueOf(cbuf, off, len));
             }
-            logger.log(level, String.copyValueOf(cbuf, off, len));
         }
 
         @Override
