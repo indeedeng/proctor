@@ -945,7 +945,7 @@ indeed.proctor.editor.AllocationEditor.prototype.validate = function() {
  * @return {string} Formatting error string.
  */
 indeed.proctor.editor.AllocationEditor.formatSumError = function(sum) {
-  return 'Allocation sum is greater than 1.0 : sum = ' +
+  return 'Allocation sum must exactly be 1.0 : sum = ' +
       indeed.proctor.editor.AllocationEditor.FormatPercent(sum) +
       ' difference = ' +
       indeed.proctor.editor.AllocationEditor.FormatPercent(1.0 - sum);
