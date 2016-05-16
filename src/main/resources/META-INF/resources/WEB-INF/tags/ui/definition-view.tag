@@ -10,7 +10,7 @@
     <div class="inner">
         <div class="hd">
             <div class="media">
-                <div><span class="field-label">Description:</span>${fn:escapeXml(definition.description)}</div>
+                <div><span class="field-label">Description:</span><proctor:formatCommitMessageDisplay commitMessage="${definition.description}"/></div>
                 <div><span class="field-label">Type:</span>${fn:escapeXml(definition.testType)}</div>
                 <div><span class="field-label">version:</span>${definition.version}</div>
                 <div><span class="field-label">rule:</span>${fn:escapeXml(definition.rule)}</div>
