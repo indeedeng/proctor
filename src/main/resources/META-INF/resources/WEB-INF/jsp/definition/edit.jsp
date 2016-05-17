@@ -1,4 +1,5 @@
 <%@ page import="com.indeed.proctor.webapp.extensions.renderer.EditPageRenderer" %>
+<%@ page import="com.indeed.proctor.webapp.tags.RenderHelpButtonTagHandler" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="ui" tagdir="/WEB-INF/tags/ui" %>
@@ -72,7 +73,7 @@
                         <label class="right inline">Test Type</label>
                     </ui:grid-columns>
                     <c:if test="${!isCreate}">
-                        <ui:grid-columns width="nine">
+                        <ui:grid-columns width="eight">
                             <span class="inline">
                               <select class="json" name="testType" class="two" disabled="disabled">
                                   <c:forEach items="${testTypes}" var="testType">
@@ -86,7 +87,7 @@
                         </ui:grid-columns>
                     </c:if>
                     <c:if test="${isCreate}">
-                        <ui:grid-columns width="ten">
+                        <ui:grid-columns width="nine">
                             <span class="inline">
                               <select class="json" name="testType" class="two">
                                   <c:forEach items="${testTypes}" var="testType">
@@ -96,6 +97,11 @@
                             </span>
                         </ui:grid-columns>
                     </c:if>
+                    <ui:grid-columns width="one">
+                        <div class="text-center">
+                            <span class="inline"><proctor:renderHelpButton manualType="<%=RenderHelpButtonTagHandler.ManualType.TEST_TYPE%>" /></span>
+                        </div>
+                    </ui:grid-columns>
                 </ui:grid-row>
                 <ui:grid-row>
                     <ui:grid-columns width="two">
@@ -109,12 +115,17 @@
                     <ui:grid-columns width="two">
                         <label class="right inline">Rule</label>
                     </ui:grid-columns>
-                    <ui:grid-columns width="ten">
+                    <ui:grid-columns width="nine">
                         <div class="row collapse">
                             <c:set var="pfix" value="${"/>
                             <div class="one columns"><span class="prefix">${pfix}</span></div>
                             <div class="ten columns"><input class="json" name="rule" type="text" value="${fn:escapeXml(testDefinition.rule)}"/></div>
                             <div class="one columns"><span class="postfix">}</span></div>
+                        </div>
+                    </ui:grid-columns>
+                    <ui:grid-columns width="one">
+                        <div class="text-center">
+                            <span class="inline"><proctor:renderHelpButton manualType="<%=RenderHelpButtonTagHandler.ManualType.RULE%>" /></span>
                         </div>
                     </ui:grid-columns>
                 </ui:grid-row>
