@@ -67,6 +67,6 @@
             <ui:grid-columns width="two"><a class="js-add-bucket small button secondary radius" href="#">Add Bucket</a></ui:grid-columns>
         </ui:grid-row>
         </div>
-
+        <div style="display:none;" class="bucket-msg-container alert-box warning"></div>
     </div>
 </div>
