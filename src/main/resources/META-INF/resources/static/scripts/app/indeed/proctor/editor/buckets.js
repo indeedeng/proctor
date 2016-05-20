@@ -106,9 +106,9 @@ indeed.proctor.editor.BucketsEditor.prototype.onAddBucketClick_ = function(e) {
   if (!this.bucketsRemoved) {  //add if any original bucket was not removed
     if (this.addBucket(bucket['value'], bucket['name'], bucket['description'], bucket['payload'])) {
       this.bucketsAdded = true;
-      indeed.foundation.forms.addError(
-              this.dom_.getElementByClass('js-buckets', this.container),
-              'You added a new bucket and can no longer delete any original bucket.');
+      if (this.originalBucketLength !== 0) {
+        this.displayMessage_('You added a new bucket and can no longer delete any original bucket.');
+      }
       this.render_();
     }
   }
@@ -642,16 +642,13 @@ indeed.proctor.editor.BucketsEditor.prototype.onDeleteBucket_ =
 
     if (bucketIndex < this.originalBucketLength) {
       this.bucketsRemoved = true;
-      indeed.foundation.forms.addError(
-          this.dom_.getElementByClass('ui-panel-buttons', this.container),
-          'You deleted an original bucket and can no longer add a new bucket.');
+      this.displayMessage_('You deleted an original bucket and can no longer add a new bucket.');
     }
 
     //if we deleted all the buckets we added
     if (this.buckets.length == this.originalBucketLength) {
       this.bucketsAdded = false;
-      indeed.foundation.forms.removeError(
-          this.dom_.getElementByClass('ui-panel-buttons', this.container));
+      this.hideMessage_();
     }
 
     this.dispatchEvent({'type': 'bucketDeleted', buckets: this.buckets,
@@ -778,4 +775,26 @@ indeed.proctor.editor.BucketsEditor.prototype.onPayloadTypeChange_ =
             bucketPayload: bucket['payload']});
       }
     }
+};
+
+/**
+ * @private
+ */
+indeed.proctor.editor.BucketsEditor.prototype.hideMessage_ = function() {
+  var container = goog.dom.getElementByClass('bucket-msg-container',
+    this.container);
+  if (container) {
+    goog.style.showElement(container, false);
+  }
+};
+
+/**
+ *
+ * @param {string} message Message to display.
+ * @private
+ */
+indeed.proctor.editor.BucketsEditor.prototype.displayMessage_ = function(message) {
+  var container = goog.dom.getElementByClass('bucket-msg-container', this.container);
+  container.innerHTML = goog.string.htmlEscape(message, false);
+  goog.style.showElement(container, true);
 };
