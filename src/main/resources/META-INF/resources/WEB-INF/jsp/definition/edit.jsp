@@ -99,7 +99,7 @@
                     </c:if>
                     <ui:grid-columns width="one">
                         <div class="text-center">
-                            <span class="inline"><proctor:renderHelpButton manualType="<%=RenderHelpButtonTagHandler.ManualType.TEST_TYPE%>" /></span>
+                            <span class="inline"><proctor:renderHelpButton helpType="<%=RenderHelpButtonTagHandler.HelpType.TEST_TYPE%>" /></span>
                         </div>
                     </ui:grid-columns>
                 </ui:grid-row>
@@ -125,7 +125,7 @@
                     </ui:grid-columns>
                     <ui:grid-columns width="one">
                         <div class="text-center">
-                            <span class="inline"><proctor:renderHelpButton manualType="<%=RenderHelpButtonTagHandler.ManualType.RULE%>" /></span>
+                            <span class="inline"><proctor:renderHelpButton helpType="<%=RenderHelpButtonTagHandler.HelpType.RULE%>" /></span>
                         </div>
                     </ui:grid-columns>
                 </ui:grid-row>

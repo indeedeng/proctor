@@ -67,7 +67,7 @@
         <tag-class>com.indeed.proctor.webapp.tags.RenderHelpButtonTagHandler</tag-class>
         <body-content>empty</body-content>
         <attribute>
-            <name>manualType</name>
+            <name>helpType</name>
             <required>true</required>
             <rtexprvalue>true</rtexprvalue>
         </attribute>

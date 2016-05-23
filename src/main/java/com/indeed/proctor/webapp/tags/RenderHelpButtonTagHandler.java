@@ -1,6 +1,6 @@
 package com.indeed.proctor.webapp.tags;
 
-import com.indeed.proctor.webapp.extensions.ManualURLInformation;
+import com.indeed.proctor.webapp.extensions.HelpURLInformation;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.web.context.WebApplicationContext;
@@ -15,7 +15,7 @@ import java.util.Map;
  * @author yosukey
  */
 public class RenderHelpButtonTagHandler extends TagSupport {
-    public enum ManualType {
+    public enum HelpType {
         TEST_TYPE,
         RULE
     }
@@ -23,45 +23,45 @@ public class RenderHelpButtonTagHandler extends TagSupport {
     private static final String TEST_TYPE_DEFAULT_URL = "http://opensource.indeedeng.io/proctor/docs/terminology/#test-type";
     private static final String RULE_DEFAULT_URL = "http://opensource.indeedeng.io/proctor/docs/test-rules/";
     private static final Logger LOGGER = Logger.getLogger(RenderHelpButtonTagHandler.class);
-    private ManualType manualType;
+    private HelpType helpType;
 
-    public void setManualType(ManualType manualType) { this.manualType = manualType; }
+    public void setHelpType(HelpType helpType) { this.helpType = helpType; }
 
     public int doStartTag() {
         try {
-            pageContext.getOut().print(helpButton(manualType));
+            pageContext.getOut().print(helpButton(helpType));
         } catch (IOException e) {
             LOGGER.error("Failed to write help button to page context", e);
         }
         return SKIP_BODY;
     }
 
-    public String helpButton(final ManualType manualType) {
-        return String.format("<a class=\"ui-help-button\" target=\"_blank\" href=\"%s\">?</a>", getManualURL(manualType));
+    public String helpButton(final HelpType helpType) {
+        return String.format("<a class=\"ui-help-button\" target=\"_blank\" href=\"%s\">?</a>", getHelpURL(helpType));
     }
 
-    public String getManualURL(final ManualType manualType) {
+    public String getHelpURL(final HelpType helpType) {
         final ServletContext servletContext = pageContext.getServletContext();
         final WebApplicationContext context = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
-        final Map<String, ManualURLInformation> formatterBeans = BeanFactoryUtils.beansOfTypeIncludingAncestors(context, ManualURLInformation.class);
+        final Map<String, HelpURLInformation> formatterBeans = BeanFactoryUtils.beansOfTypeIncludingAncestors(context, HelpURLInformation.class);
         if (formatterBeans.size() == 1) {
-            ManualURLInformation manualURLInformation = (ManualURLInformation) formatterBeans.values().toArray()[0];
-            switch (manualType) {
+            HelpURLInformation helpURLInformation = (HelpURLInformation) formatterBeans.values().toArray()[0];
+            switch (helpType) {
                 case TEST_TYPE:
-                    return manualURLInformation.getTestTypeManualURL();
+                    return helpURLInformation.getTestTypeHelpURL();
                 case RULE:
-                    return manualURLInformation.getRuleManualURL();
+                    return helpURLInformation.getRuleHelpURL();
                 default:
                     return "";
             }
         } else if (formatterBeans.size() > 1) {
-            LOGGER.warn("Multiple beans of type " + ManualURLInformation.class.getSimpleName() + " found, expected 0 or 1.");
+            LOGGER.warn("Multiple beans of type " + HelpURLInformation.class.getSimpleName() + " found, expected 0 or 1.");
         }
-        return getDefaultManualURL(manualType);
+        return getDefaultHelpURL(helpType);
     }
 
-    private String getDefaultManualURL(final ManualType manualType) {
-        switch (manualType) {
+    private String getDefaultHelpURL(final HelpType helpType) {
+        switch (helpType) {
             case TEST_TYPE:
                 return TEST_TYPE_DEFAULT_URL;
             case RULE:
