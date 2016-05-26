@@ -22,7 +22,6 @@ import com.indeed.proctor.common.model.TestMatrixArtifact;
 import com.indeed.proctor.common.model.TestMatrixDefinition;
 import com.indeed.proctor.common.model.TestMatrixVersion;
 import com.indeed.proctor.common.model.TestType;
-import org.apache.el.ExpressionFactoryImpl;
 import org.apache.log4j.Logger;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -596,7 +595,7 @@ public abstract class ProctorUtils {
     }
 
     public static ProvidedContext convertContextToTestableMap(Map<String,String> providedContext) {
-        final ExpressionFactory expressionFactory = new ExpressionFactoryImpl();
+        final ExpressionFactory expressionFactory = ExpressionFactory.newInstance();
         boolean methodNotFoundException = false;
         Map<String, Object> primitiveVals = new HashMap<String, Object>();
         primitiveVals.put("int", 0);
@@ -655,7 +654,7 @@ public abstract class ProctorUtils {
 
     public static void verifyInternallyConsistentDefinition(final String testName, final String matrixSource, @Nonnull final ConsumableTestDefinition testDefinition, final FunctionMapper functionMapper, final ProvidedContext providedContext) throws IncompatibleTestMatrixException {
         final List<Allocation> allocations = testDefinition.getAllocations();
-        ExpressionFactory expressionFactory = new ExpressionFactoryImpl();
+        ExpressionFactory expressionFactory = ExpressionFactory.newInstance();
         //verify test rule is valid EL
         final String testRule = testDefinition.getRule();
 

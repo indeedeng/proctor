@@ -1,10 +1,7 @@
 package com.indeed.proctor.common;
 
-import com.google.common.base.CharMatcher;
-import com.google.common.base.Strings;
 import com.indeed.proctor.common.el.LibraryFunctionMapperBuilder;
 import com.indeed.proctor.common.el.MulticontextReadOnlyVariableMapper;
-import org.apache.el.ExpressionFactoryImpl;
 import org.apache.log4j.Logger;
 import org.apache.taglibs.standard.functions.Functions;
 
@@ -34,7 +31,7 @@ public class RuleEvaluator {
 
     static final FunctionMapper FUNCTION_MAPPER = defaultFunctionMapperBuilder().build();
 
-    static final ExpressionFactory EXPRESSION_FACTORY = new ExpressionFactoryImpl();
+    static final ExpressionFactory EXPRESSION_FACTORY = ExpressionFactory.newInstance();
 
     @Nonnull
     final ExpressionFactory expressionFactory;

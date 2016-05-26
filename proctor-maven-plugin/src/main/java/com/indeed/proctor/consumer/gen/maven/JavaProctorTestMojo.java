@@ -18,6 +18,7 @@ public class JavaProctorTestMojo extends AbstractJavaProctorMojo {
     @Parameter(property = "topDirectory", defaultValue = "${basedir}/src/test/proctor", required = true)
     private File topDirectory;
 
+    @Override
     File getTopDirectory() {
         return topDirectory;
     }
@@ -25,6 +26,7 @@ public class JavaProctorTestMojo extends AbstractJavaProctorMojo {
     @Parameter(property = "outputDirectory", defaultValue = "${project.build.directory}/generated-test-sources/proctor", required = true)
     protected File outputDirectory;
 
+    @Override
     File getOutputDirectory() {
         return outputDirectory;
     }
@@ -32,6 +34,7 @@ public class JavaProctorTestMojo extends AbstractJavaProctorMojo {
     @Parameter(property = "specificationOutput", defaultValue = "${project.build.directory}/generated-test-resources/proctor", required = true)
     private File specificationOutput;
 
+    @Override
     File getSpecificationOutput() {
         return specificationOutput;
     }

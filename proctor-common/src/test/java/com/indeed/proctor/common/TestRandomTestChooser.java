@@ -16,7 +16,6 @@ import java.util.Map;
 import javax.el.ExpressionFactory;
 import javax.el.FunctionMapper;
 
-import org.apache.el.ExpressionFactoryImpl;
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
@@ -82,7 +81,7 @@ public class TestRandomTestChooser {
     }
 
     static RandomTestChooser initializeRandomTestChooser(final List<Range> ranges, final List<TestBucket> buckets) {
-        final ExpressionFactory expressionFactory = new ExpressionFactoryImpl();
+        final ExpressionFactory expressionFactory = ExpressionFactory.newInstance();
 
         final FunctionMapper functionMapper = RuleEvaluator.FUNCTION_MAPPER;
 
