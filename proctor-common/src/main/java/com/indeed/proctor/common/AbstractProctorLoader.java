@@ -28,6 +28,10 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
     @Nonnull
     private final FunctionMapper functionMapper;
     private final ProvidedContext providedContext;
+
+    @Nullable
+    private AbstractProctorDiffReporter diffReporter = null;
+
     public AbstractProctorLoader(@Nonnull final Class<?> cls, @Nonnull final ProctorSpecification specification, @Nonnull final FunctionMapper functionMapper) {
         super(cls.getSimpleName());
         this.requiredTests = specification.getTests();
@@ -67,6 +71,10 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
             }
 
             return false;
+        }
+
+        if (this.diffReporter != null) {
+            this.diffReporter.reportProctorDiff(this.current, newProctor);
         }
         this.current = newProctor;
 
@@ -130,5 +138,11 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
     @SuppressWarnings({"UnusedDeclaration"})
     public boolean isLoadedDataSuccessfullyRecently() {
         return dataLoadTimer.isLoadedDataSuccessfullyRecently();
+    }
+
+    // this is used to provide custom reporting of changes in the tests, e.g. reporting to datadog
+    @SuppressWarnings({"UnusedDeclaration"})
+    public void setDiffReporter(@Nullable final AbstractProctorDiffReporter diffReporter) {
+        this.diffReporter = diffReporter;
     }
 }
