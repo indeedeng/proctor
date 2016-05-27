@@ -73,8 +73,10 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
             return false;
         }
 
-        if (this.diffReporter != null) {
-            this.diffReporter.reportProctorDiff(this.current, newProctor);
+        if (this.diffReporter != null &&
+                this.current != null &&
+                newProctor != null) {
+            this.diffReporter.reportProctorDiff(this.current.getArtifact(), newProctor.getArtifact());
         }
         this.current = newProctor;
 
