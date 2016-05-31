@@ -30,7 +30,7 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
     private final ProvidedContext providedContext;
 
     @Nullable
-    private AbstractProctorDiffReporter diffReporter = null;
+    private AbstractProctorDiffReporter diffReporter = new AbstractProctorDiffReporter();
 
     public AbstractProctorLoader(@Nonnull final Class<?> cls, @Nonnull final ProctorSpecification specification, @Nonnull final FunctionMapper functionMapper) {
         super(cls.getSimpleName());
@@ -73,11 +73,10 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
             return false;
         }
 
-        if (this.diffReporter != null &&
-                this.current != null &&
-                newProctor != null) {
+        if (this.current != null && newProctor != null) {
             this.diffReporter.reportProctorDiff(this.current.getArtifact(), newProctor.getArtifact());
         }
+
         this.current = newProctor;
 
         final Audit lastAudit = Preconditions.checkNotNull(this.lastAudit, "Missing last audit");
@@ -144,7 +143,12 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
 
     // this is used to provide custom reporting of changes in the tests, e.g. reporting to datadog
     @SuppressWarnings({"UnusedDeclaration"})
-    public void setDiffReporter(@Nullable final AbstractProctorDiffReporter diffReporter) {
+    public void setDiffReporter(@Nonnull final AbstractProctorDiffReporter diffReporter) {
+
+        if (diffReporter == null) {
+            throw new UnsupportedOperationException("diffReporter can't be null, use AbstractProctorDiffReporter for nop implementation");
+        }
+
         this.diffReporter = diffReporter;
     }
 }
