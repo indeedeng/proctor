@@ -1,17 +1,20 @@
 package com.indeed.proctor.webapp.controllers;
 
 import com.google.common.collect.ImmutableMap;
+import com.indeed.proctor.common.model.TestDefinition;
 import com.indeed.proctor.common.model.TestMatrixVersion;
 import com.indeed.proctor.store.ProctorStore;
+import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.webapp.db.Environment;
-import com.indeed.proctor.webapp.ProctorClientSource;
 import com.indeed.proctor.webapp.model.WebappConfiguration;
 
+import javax.annotation.Nullable;
+import javax.servlet.http.HttpServletRequest;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.List;
 import java.util.Map;
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author parker
@@ -72,6 +75,84 @@ public class AbstractController {
             return determineStoreFromEnvironment(branch).getCurrentTestMatrix();
         } catch (StoreException e) {
             return null;
+        }
+    }
+
+    protected List<Revision> queryMatrixHistory(final Environment branch, final int start, final int limit) throws StoreException {
+        return determineStoreFromEnvironment(branch).getMatrixHistory(start, limit);
+    }
+
+    protected TestMatrixVersion queryMatrixFromBranchOrRevision(final String branchOrRevision) throws StoreException {
+        final BranchOrRevision bor = new BranchOrRevision(branchOrRevision);
+        return bor.queryTestMatrixVersion();
+    }
+
+    protected TestDefinition queryTestDefinition(final String branchOrRevision, final String testName) throws StoreException {
+        final BranchOrRevision bor = new BranchOrRevision(branchOrRevision);
+        return bor.queryTestDefinition(testName);
+    }
+
+    protected List<Revision> queryTestDefiniionHistory(final String branchOrRevision, final String testName, final int start, final int limit) throws StoreException {
+        final BranchOrRevision bor = new BranchOrRevision(branchOrRevision);
+        return bor.queryTestDefinitionHistory(testName, start, limit);
+    }
+
+    @Nullable
+    private ProctorStore determineStoreFromRevision(final String revision) throws StoreException {
+        for (final ProctorStore store : stores.values()) {
+            if (store.getTestMatrix(revision) != null) {
+                return store;
+            }
+        }
+        return null;
+    }
+
+    private class BranchOrRevision {
+        final String stringValue;
+        @Nullable
+        final Environment branch;
+        final ProctorStore store;
+
+        private BranchOrRevision(final String stringValue) throws StoreException {
+            this.stringValue = stringValue;
+            branch = Environment.fromName(stringValue);
+            if (isBranch()) {
+                store = determineStoreFromEnvironment(branch);
+            } else {
+                store = determineStoreFromRevision(stringValue);
+            }
+
+            if (store == null) {
+                throw new StoreException("Invalid branch or revision name "+stringValue);
+            }
+        }
+
+        private boolean isBranch() {
+            return null != branch;
+        }
+
+        private TestMatrixVersion queryTestMatrixVersion() throws StoreException {
+            if (isBranch()) {
+                return store.getCurrentTestMatrix();
+            } else {
+                return store.getTestMatrix(stringValue);
+            }
+        }
+
+        private TestDefinition queryTestDefinition(final String testName) throws StoreException {
+            if (isBranch()) {
+                return store.getCurrentTestDefinition(testName);
+            } else {
+                return store.getTestDefinition(testName, stringValue);
+            }
+        }
+
+        private List<Revision> queryTestDefinitionHistory(final String testName, final int start, final int limit) throws StoreException {
+            if (isBranch()) {
+                return store.getHistory(testName, start, limit);
+            } else {
+                return store.getHistory(testName, stringValue, start, limit);
+            }
         }
     }
 }
