@@ -3,6 +3,7 @@ package com.indeed.proctor.store;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.io.Files;
+import com.indeed.proctor.common.model.TestMatrixDefinition;
 import com.indeed.proctor.common.model.TestMatrixVersion;
 
 import org.apache.commons.io.FileUtils;
@@ -20,16 +21,22 @@ import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.RawTextComparator;
+import org.eclipse.jgit.treewalk.filter.AndTreeFilter;
+import org.eclipse.jgit.treewalk.filter.PathFilter;
+import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
+import org.eclipse.jgit.treewalk.filter.TreeFilter;
 import org.eclipse.jgit.util.io.DisabledOutputStream;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Repository;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -204,8 +211,14 @@ public class GitProctor extends FileBasedProctorStore {
         }
     }
 
-    public Map<String, List<Revision>> getAllHistories()
-                                     throws StoreException {
+    @Override
+    public Map<String, List<Revision>> getAllHistories() throws StoreException {
+        final TestMatrixDefinition testMatrixDefinition = getCurrentTestMatrix().getTestMatrixDefinition();
+        if (testMatrixDefinition == null) {
+            return Collections.emptyMap();
+        }
+        final Set<String> activeTests = testMatrixDefinition.getTests().keySet();
+
         final Map<String, List<Revision>> histories = Maps.newHashMap();
         final Repository repository = git.getRepository();
         try {
@@ -220,7 +233,6 @@ public class GitProctor extends FileBasedProctorStore {
             df.setDiffComparator(RawTextComparator.DEFAULT);
             df.setDetectRenames(true);
 
-
             RevCommit commit = revWalkIter.next();
             while(revWalkIter.hasNext()) {
                 RevCommit parent = revWalkIter.next();
@@ -232,18 +244,20 @@ public class GitProctor extends FileBasedProctorStore {
 
                     if (testNameMatcher.matches()) {
                         final String testName = testNameMatcher.group(1);
-                        List<Revision> history = histories.get(testName);
-                        if (history == null) {
-                            history = Lists.newArrayList();
-                            histories.put(testName, history);
-                        }
+                        if (activeTests.contains(testName)) {
+                            List<Revision> history = histories.get(testName);
+                            if (history == null) {
+                                history = Lists.newArrayList();
+                                histories.put(testName, history);
+                            }
 
-                        history.add(new Revision(
-                                commit.getName(),
-                                commit.getAuthorIdent().toExternalString(),
-                                new Date(Long.valueOf(commit.getCommitTime()) * 1000 /* convert seconds to milliseconds */),
-                                commit.getFullMessage()
-                        ));
+                            history.add(new Revision(
+                                    commit.getName(),
+                                    commit.getAuthorIdent().toExternalString(),
+                                    new Date(Long.valueOf(commit.getCommitTime()) * 1000 /* convert seconds to milliseconds */),
+                                    commit.getFullMessage()
+                            ));
+                        }
                     }
                 }
 

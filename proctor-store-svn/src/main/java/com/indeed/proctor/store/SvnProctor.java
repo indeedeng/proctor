@@ -1,7 +1,9 @@
 package com.indeed.proctor.store;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.io.Files;
+import com.indeed.proctor.common.model.TestMatrixDefinition;
 import com.indeed.proctor.common.model.TestMatrixVersion;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
@@ -19,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public class SvnProctor extends FileBasedProctorStore {
     private static final Logger LOGGER = Logger.getLogger(SvnProctor.class);
@@ -103,6 +106,20 @@ public class SvnProctor extends FileBasedProctorStore {
                 throw new StoreException.ReadException("Unable to get older revisions for " + test + " r" + revision, e);
             }
         });
+    }
+
+    @Override
+    public Map<String, List<Revision>> getAllHistories() throws StoreException {
+        final TestMatrixDefinition testMatrixDefinition = getCurrentTestMatrix().getTestMatrixDefinition();
+        if (testMatrixDefinition == null) {
+            return Collections.emptyMap();
+        }
+
+        final Map<String, List<Revision>> histories = Maps.newHashMap();
+        for (final String test : testMatrixDefinition.getTests().keySet()) {
+            histories.put(test, getHistory(test, 0, Integer.MAX_VALUE));
+        }
+        return histories;
     }
 
     @Override
