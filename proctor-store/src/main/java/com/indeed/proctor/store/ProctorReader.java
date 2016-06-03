@@ -4,6 +4,7 @@ import com.indeed.proctor.common.model.TestDefinition;
 import com.indeed.proctor.common.model.TestMatrixVersion;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author parker
@@ -28,4 +29,7 @@ public interface ProctorReader {
     List<Revision> getHistory(String test, int start, int limit) throws StoreException;
 
     List<Revision> getHistory(String test, String revision, int start, int limit) throws StoreException;
+
+    Map<String, List<Revision>> getAllHistories() throws StoreException;
+
 }
