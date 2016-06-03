@@ -1,6 +1,7 @@
 package com.indeed.proctor.store;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.io.Files;
 import com.indeed.proctor.common.model.TestMatrixVersion;
 
@@ -15,11 +16,22 @@ import org.eclipse.jgit.errors.MissingObjectException;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevWalk;
+import org.eclipse.jgit.diff.DiffFormatter;
+import org.eclipse.jgit.diff.DiffEntry;
+import org.eclipse.jgit.diff.RawTextComparator;
+import org.eclipse.jgit.util.io.DisabledOutputStream;
+import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.Repository;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class GitProctor extends FileBasedProctorStore {
     private static final Logger LOGGER = Logger.getLogger(GitProctor.class);
@@ -189,6 +201,58 @@ public class GitProctor extends FileBasedProctorStore {
 
         } catch (IOException e) {
             throw new StoreException("Could not get history for " + test + " starting at " + getGitCore().getRefName(), e);
+        }
+    }
+
+    public Map<String, List<Revision>> getAllHistories()
+                                     throws StoreException {
+        final Map<String, List<Revision>> histories = Maps.newHashMap();
+        final Repository repository = git.getRepository();
+        try {
+            final ObjectId head = repository.resolve(Constants.HEAD);
+            final RevWalk revWalk  = new RevWalk(repository);
+            revWalk.markStart(revWalk.parseCommit(head));
+
+            final Iterator<RevCommit> revWalkIter = revWalk.iterator();
+            final Pattern testNamePattern = Pattern.compile(".*?/(\\w+)/definition\\.json");
+            final DiffFormatter df = new DiffFormatter(DisabledOutputStream.INSTANCE);
+            df.setRepository(git.getRepository());
+            df.setDiffComparator(RawTextComparator.DEFAULT);
+            df.setDetectRenames(true);
+
+
+            RevCommit commit = revWalkIter.next();
+            while(revWalkIter.hasNext()) {
+                RevCommit parent = revWalkIter.next();
+
+                final List<DiffEntry> diffs = df.scan(parent.getTree(), commit.getTree());
+                for (DiffEntry diff : diffs) {
+                    final String changePath = diff.getNewPath();
+                    final Matcher testNameMatcher = testNamePattern.matcher(changePath);
+
+                    if (testNameMatcher.matches()) {
+                        final String testName = testNameMatcher.group(1);
+                        List<Revision> history = histories.get(testName);
+                        if (history == null) {
+                            history = Lists.newArrayList();
+                            histories.put(testName, history);
+                        }
+
+                        history.add(new Revision(
+                                commit.getName(),
+                                commit.getAuthorIdent().toExternalString(),
+                                new Date(Long.valueOf(commit.getCommitTime()) * 1000 /* convert seconds to milliseconds */),
+                                commit.getFullMessage()
+                        ));
+                    }
+                }
+
+                commit = parent;
+            }
+
+            return histories;
+        } catch (IOException e) {
+            throw new StoreException("Could not get history " + getGitCore().getRefName(), e);
         }
     }
 
