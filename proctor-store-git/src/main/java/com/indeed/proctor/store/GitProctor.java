@@ -28,6 +28,7 @@ import org.eclipse.jgit.treewalk.filter.TreeFilter;
 import org.eclipse.jgit.util.io.DisabledOutputStream;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.diff.DiffEntry.ChangeType;
 
 import java.io.File;
 import java.io.IOException;
@@ -224,22 +225,17 @@ public class GitProctor extends FileBasedProctorStore {
         try {
             final ObjectId head = repository.resolve(Constants.HEAD);
             final RevWalk revWalk  = new RevWalk(repository);
-            revWalk.markStart(revWalk.parseCommit(head));
-
-            final Iterator<RevCommit> revWalkIter = revWalk.iterator();
-            final Pattern testNamePattern = Pattern.compile(".*?/(\\w+)/definition\\.json");
+            RevCommit commit = revWalk.parseCommit(head);
+            final Pattern testNamePattern = Pattern.compile(getTestDefinitionsDirectory() + "/(\\w+)/definition\\.json");
             final DiffFormatter df = new DiffFormatter(DisabledOutputStream.INSTANCE);
             df.setRepository(git.getRepository());
             df.setDiffComparator(RawTextComparator.DEFAULT);
-            df.setDetectRenames(true);
 
-            RevCommit commit = revWalkIter.next();
-            while(revWalkIter.hasNext()) {
-                RevCommit parent = revWalkIter.next();
-
+            while(commit.getParents().length > 0) {
+                final RevCommit parent = chooseParent(commit.getParents(), revWalk);
                 final List<DiffEntry> diffs = df.scan(parent.getTree(), commit.getTree());
                 for (DiffEntry diff : diffs) {
-                    final String changePath = diff.getNewPath();
+                    final String changePath = diff.getChangeType().equals(ChangeType.DELETE) ? diff.getOldPath() : diff.getNewPath();
                     final Matcher testNameMatcher = testNamePattern.matcher(changePath);
 
                     if (testNameMatcher.matches()) {
@@ -268,6 +264,18 @@ public class GitProctor extends FileBasedProctorStore {
         } catch (IOException e) {
             throw new StoreException("Could not get history " + getGitCore().getRefName(), e);
         }
+    }
+
+    // a commit should only have one parent, accept for the merge commit on 9-14-2012
+    private RevCommit chooseParent(RevCommit[] parents, RevWalk revWalk) throws IOException {
+        if (parents.length > 1) {
+            for(RevCommit p: parents) {
+                if ("513b8180f7e20f83fa78e1193b2011b80124e7d5".equals(p.getName())) {
+                    return revWalk.parseCommit(p.getId());
+                }
+            }
+        }
+        return revWalk.parseCommit(parents[0].getId());
     }
 
     private List<Revision> getHistoryFromLogCommand(final LogCommand command) throws StoreException {
