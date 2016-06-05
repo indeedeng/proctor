@@ -226,13 +226,15 @@ public class GitProctor extends FileBasedProctorStore {
             final ObjectId head = repository.resolve(Constants.HEAD);
             final RevWalk revWalk  = new RevWalk(repository);
             RevCommit commit = revWalk.parseCommit(head);
-            final Pattern testNamePattern = Pattern.compile(getTestDefinitionsDirectory() + "/(\\w+)/definition\\.json");
+            final Pattern testNamePattern = Pattern.compile(getTestDefinitionsDirectory()  +
+                    File.separator + "(\\w+)" + File.separator + FileBasedProctorStore.TEST_DEFINITION_FILENAME);
             final DiffFormatter df = new DiffFormatter(DisabledOutputStream.INSTANCE);
             df.setRepository(git.getRepository());
             df.setDiffComparator(RawTextComparator.DEFAULT);
 
-            while(commit.getParents().length > 0) {
-                final RevCommit parent = chooseParent(commit.getParents(), revWalk);
+            // if there is a merge commit the returned histories will not contain commits before the merge
+            while(commit.getParents().length == 1) {
+                final RevCommit parent = revWalk.parseCommit(commit.getParents()[0].getId());
                 final List<DiffEntry> diffs = df.scan(parent.getTree(), commit.getTree());
                 for (DiffEntry diff : diffs) {
                     final String changePath = diff.getChangeType().equals(ChangeType.DELETE) ? diff.getOldPath() : diff.getNewPath();
@@ -264,18 +266,6 @@ public class GitProctor extends FileBasedProctorStore {
         } catch (IOException e) {
             throw new StoreException("Could not get history " + getGitCore().getRefName(), e);
         }
-    }
-
-    // a commit should only have one parent, accept for the merge commit on 9-14-2012
-    private RevCommit chooseParent(RevCommit[] parents, RevWalk revWalk) throws IOException {
-        if (parents.length > 1) {
-            for(RevCommit p: parents) {
-                if ("513b8180f7e20f83fa78e1193b2011b80124e7d5".equals(p.getName())) {
-                    return revWalk.parseCommit(p.getId());
-                }
-            }
-        }
-        return revWalk.parseCommit(parents[0].getId());
     }
 
     private List<Revision> getHistoryFromLogCommand(final LogCommand command) throws StoreException {
