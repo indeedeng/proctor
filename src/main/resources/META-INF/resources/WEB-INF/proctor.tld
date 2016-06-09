@@ -62,6 +62,18 @@
     </tag>
 
     <tag>
+        <description>Renders a help button.</description>
+        <name>renderHelpButton</name>
+        <tag-class>com.indeed.proctor.webapp.tags.RenderHelpButtonTagHandler</tag-class>
+        <body-content>empty</body-content>
+        <attribute>
+            <name>helpType</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+    </tag>
+
+    <tag>
         <description>Renders all matrix list page injection templates of correct location and injects HTML on page.</description>
         <name>renderMatrixListPageInjectionTemplates</name>
         <tag-class>com.indeed.proctor.webapp.tags.RenderMatrixListPageInjectionTemplatesHandler</tag-class>

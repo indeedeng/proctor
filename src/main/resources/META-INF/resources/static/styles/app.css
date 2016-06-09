@@ -92,6 +92,22 @@ table.tright td, table.tleft th { text-align: right }
 
 .ui-allocation-bar-container { min-width: 200px; }
 
+.ui-help-button {
+    display: inline-block;
+    height: 24px;
+    width: 24px;
+    border-radius: 12px;
+    line-height: 24px;
+    color: #fff;
+    background-color: #2ba6cb;
+    text-align: center;
+    font-weight: bold;
+}
+
+.ui-help-button:hover, .ui-help-button:focus {
+    color: #fff;
+}
+
 /* Filter */
 .js-filter-active {
     padding-left: 5px;
