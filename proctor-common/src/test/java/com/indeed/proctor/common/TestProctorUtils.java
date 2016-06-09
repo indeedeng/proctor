@@ -1,5 +1,6 @@
 package com.indeed.proctor.common;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -13,29 +14,10 @@ import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.common.model.TestDefinition;
 import com.indeed.proctor.common.model.TestMatrixArtifact;
 import com.indeed.proctor.common.model.TestType;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 
-import javax.el.ValueExpression;
 import java.io.IOException;
 import java.io.InputStream;
-import com.google.common.base.CharMatcher;
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.indeed.proctor.common.model.Allocation;
-import com.indeed.proctor.common.model.Audit;
-import com.indeed.proctor.common.model.ConsumableTestDefinition;
-import com.indeed.proctor.common.model.Payload;
-import com.indeed.proctor.common.model.Range;
-import com.indeed.proctor.common.model.TestBucket;
-import com.indeed.proctor.common.model.TestDefinition;
-import com.indeed.proctor.common.model.TestMatrixArtifact;
-import com.indeed.proctor.common.model.TestType;
-import org.junit.Test;
-
-import javax.el.ELException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -430,15 +412,28 @@ public class TestProctorUtils {
             final Map<String, String> providedContextBadClass = new HashMap<String, String>();
             providedContextBadClass.put("time", "com.indeed.proctor.common.TestRulesCla");
             final ProvidedContext providedContext = ProctorUtils.convertContextToTestableMap(providedContextBadClass);
-            assertFalse(providedContext.isEvaluable());
+            assertTrue(providedContext.isEvaluable());
             //false due to bad classname
         }
-        { //verify missing constructors are verified correctly
+        { //Rule verification failure is ignored when missing constructors
+            final ConsumableTestDefinition testDef = constructDefinition(buckets,
+                    fromCompactAllocationFormat("${time.yes eq 'SP'}|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25"));
             final Map<String, String> providedContextNoConstructor = new HashMap<String, String>();
             providedContextNoConstructor.put("time", "com.indeed.proctor.common.AbstractProctorLoader");
             final ProvidedContext providedContext = ProctorUtils.convertContextToTestableMap(providedContextNoConstructor);
-            assertFalse(providedContext.isEvaluable());
-            //false due to no default constructor
+            assertTrue(providedContext.isEvaluable());
+            ProctorUtils.verifyInternallyConsistentDefinition("testProvidedContextConversion", "test Provided Context Conversion Class", testDef, RuleEvaluator.FUNCTION_MAPPER, providedContext);
+            /* Should ignore checking failure because time was not instantiated */
+        }
+        { // Verify rule when class not found
+            final ConsumableTestDefinition testDef = constructDefinition(buckets,
+                    fromCompactAllocationFormat("${time.yes eq 'SP'}|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25"));
+            final Map<String, String> providedContextNoClass = new HashMap<String, String>();
+            providedContextNoClass.put("time", "com.indeed.proctor.common.NotFoundClass");
+            final ProvidedContext providedContext = ProctorUtils.convertContextToTestableMap(providedContextNoClass);
+            assertTrue(providedContext.isEvaluable());
+            ProctorUtils.verifyInternallyConsistentDefinition("testProvidedContextConversion", "test Provided Context Conversion Class", testDef, RuleEvaluator.FUNCTION_MAPPER, providedContext);
+            /* Should ignore checking failure because time was not instantiated */
         }
     }
 

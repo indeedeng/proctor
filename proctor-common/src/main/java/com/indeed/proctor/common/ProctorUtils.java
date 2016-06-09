@@ -1,5 +1,10 @@
 package com.indeed.proctor.common;
 
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -24,19 +29,14 @@ import com.indeed.proctor.common.model.TestMatrixVersion;
 import com.indeed.proctor.common.model.TestType;
 import org.apache.el.ExpressionFactoryImpl;
 import org.apache.log4j.Logger;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.el.ELContext;
+import javax.el.ELException;
 import javax.el.ExpressionFactory;
 import javax.el.FunctionMapper;
 import javax.el.ValueExpression;
-import javax.el.ELContext;
-import javax.el.ELException;
 import javax.el.VariableMapper;
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -597,7 +597,6 @@ public abstract class ProctorUtils {
 
     public static ProvidedContext convertContextToTestableMap(Map<String,String> providedContext) {
         final ExpressionFactory expressionFactory = new ExpressionFactoryImpl();
-        boolean methodNotFoundException = false;
         Map<String, Object> primitiveVals = new HashMap<String, Object>();
         primitiveVals.put("int", 0);
         primitiveVals.put("integer", 0);
@@ -613,6 +612,7 @@ public abstract class ProctorUtils {
 
         if (providedContext != null) {
             Map<String, Object> newProvidedContext = new HashMap<String, Object>();
+            final Set<String> uninstantiatedIdentifiers = Sets.newHashSet();
             for(Entry<String,String> entry : providedContext.entrySet()) {
                 final String iobjName = entry.getValue();
                 String objName = iobjName;
@@ -628,25 +628,29 @@ public abstract class ProctorUtils {
                             toAdd = clazz.newInstance();
                         }
                     } catch (final IllegalAccessException e) {
-                        methodNotFoundException = true;
+                        uninstantiatedIdentifiers.add(entry.getKey());
                         LOGGER.debug("Couldn't access default constructor of " + iobjName + " in providedContext");
                     } catch (final InstantiationException e) {
-                        methodNotFoundException = true;
+                        uninstantiatedIdentifiers.add(entry.getKey());
                         //if a default constructor is not defined, use this flag to not set context and not evaluate rules
                         LOGGER.debug("Couldn't find default constructor for " + iobjName + " in providedContext");
                     } catch (final ClassNotFoundException e) {
+                        uninstantiatedIdentifiers.add(entry.getKey());
                         LOGGER.error("Class not found for " + iobjName + " in providedContext");
-                        return new ProvidedContext(ProvidedContext.EMPTY_CONTEXT,false);
+                        //return new ProvidedContext(ProvidedContext.EMPTY_CONTEXT,false);
                     }
 
                 }
-                newProvidedContext.put(entry.getKey(),toAdd);
+
+                newProvidedContext.put(entry.getKey(), toAdd);
             }
-            if (!methodNotFoundException) { //defaultConstructor method does not exist, can't evaluate rules without instantiation of user defined class
-                return new ProvidedContext(ProctorUtils.convertToValueExpressionMap(expressionFactory, newProvidedContext),true);
-            }
+            /** evaluate the rule even if defaultConstructor method does not exist, */
+            return new ProvidedContext(ProctorUtils.convertToValueExpressionMap(expressionFactory, newProvidedContext),
+                    true,
+                    uninstantiatedIdentifiers);
+
         }
-        return new ProvidedContext(ProvidedContext.EMPTY_CONTEXT,false);
+        return new ProvidedContext(ProvidedContext.EMPTY_CONTEXT, false);
     }
 
     public static void verifyInternallyConsistentDefinition(final String testName, final String matrixSource, @Nonnull final ConsumableTestDefinition testDefinition) throws IncompatibleTestMatrixException {
@@ -663,20 +667,12 @@ public abstract class ProctorUtils {
         final VariableMapper variableMapper = new MulticontextReadOnlyVariableMapper(testConstants, providedContext.getContext());
         final RuleEvaluator ruleEvaluator = new RuleEvaluator(expressionFactory, functionMapper, testDefinition.getConstants());
         final ELContext elContext = ruleEvaluator.createELContext(variableMapper);
-        if(!isEmptyWhitespace(testRule)){
-            try {
-                final ValueExpression valueExpression = expressionFactory.createValueExpression(elContext, testRule, Boolean.class);
-                if (providedContext.isEvaluable()) { /*
-                                                       * must have a context to test against, even if it's "Collections.emptyMap()", how to
-                                                       * tell if this method is used for ProctorBuilder or during load of the testMatrix.
-                                                       * also used to check to make sure any classes included in the EL have a
-                                                       * default constructor for evaluation (unless they are an enum)
-                                                       */
-                    valueExpression.getValue(elContext);
-                }
-            } catch (final ELException e) {
-                throw new IncompatibleTestMatrixException("Unable to evaluate rule ${" + testRule + "} in " + testName);
-            }
+
+        try {
+            RuleVerifyUtils.verifyRule(testRule, providedContext.isEvaluable(), expressionFactory, elContext, providedContext.getUninstantiatedIdentifiers());
+        } catch (final ELException e) {
+            LOGGER.error(e);
+            throw new IncompatibleTestMatrixException("Unable to evaluate rule ${" + testRule + "} in " + testName);
         }
 
         if (allocations.isEmpty()) {
@@ -719,21 +715,13 @@ public abstract class ProctorUtils {
             if(!lastAllocation && isEmptyWhitespace(bareRule)) {
                 throw new IncompatibleTestMatrixException("Allocation[" + i + "] for test " + testName + " from " + matrixSource + " has empty rule: " + allocation.getRule());
             }
-            //verify allocation rules are valid EL
-            if(!isEmptyWhitespace(bareRule)){
-                try {
-                    final ValueExpression valueExpression = expressionFactory.createValueExpression(elContext, rule, Boolean.class);
-                    if (providedContext.isEvaluable()) { /*
-                                                           * must have a context to test against, even if it's "Collections.emptyMap()", how to
-                                                           * tell if this method is used for ProctorBuilder or during load of the testMatrix.
-                                                           * also used to check to make sure any classes included in the EL have a
-                                                           * default constructor for evaluation (unless they are an enum)
-                                                           */
-                        valueExpression.getValue(elContext);
-                    }
-                } catch (final ELException e) {
-                    throw new IncompatibleTestMatrixException("Unable to evaluate rule ${" + rule + "} in allocations of " + testName);
-                }
+
+
+            try {
+                RuleVerifyUtils.verifyRule(rule, providedContext.isEvaluable(), expressionFactory, elContext, providedContext.getUninstantiatedIdentifiers());
+            }  catch (final ELException e) {
+                LOGGER.error(e);
+                throw new IncompatibleTestMatrixException("Unable to evaluate rule ${" + rule + "} in allocations of " + testName);
             }
 
         }
