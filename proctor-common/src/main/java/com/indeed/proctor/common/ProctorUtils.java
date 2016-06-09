@@ -637,7 +637,6 @@ public abstract class ProctorUtils {
                     } catch (final ClassNotFoundException e) {
                         uninstantiatedIdentifiers.add(entry.getKey());
                         LOGGER.error("Class not found for " + iobjName + " in providedContext");
-                        //return new ProvidedContext(ProvidedContext.EMPTY_CONTEXT,false);
                     }
 
                 }
