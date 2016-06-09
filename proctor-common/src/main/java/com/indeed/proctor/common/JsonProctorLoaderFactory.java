@@ -28,6 +28,8 @@ public class JsonProctorLoaderFactory {
 
     private FunctionMapper functionMapper = RuleEvaluator.FUNCTION_MAPPER;
 
+    private AbstractProctorDiffReporter diffReporter = new AbstractProctorDiffReporter();
+
     @SuppressWarnings("UnusedDeclaration")
     public void setClassResourcePath(@Nullable final String classResourcePath) {
         this.classResourcePath = classResourcePath;
@@ -99,6 +101,19 @@ public class JsonProctorLoaderFactory {
         if (classResourcePath != null) {
             return new ClasspathProctorLoader(specification, classResourcePath, functionMapper);
         }
-        return new FileProctorLoader(specification, filePath, functionMapper);
+
+        final AbstractJsonProctorLoader loader = new FileProctorLoader(specification, filePath, functionMapper);
+        loader.setDiffReporter(this.diffReporter);
+
+        return loader;
+    }
+
+    public void setDiffReporter(final AbstractProctorDiffReporter diffReporter) {
+
+        if (diffReporter == null) {
+            throw new UnsupportedOperationException("diff reporter can't be null use AbstractProctorDiffReporter for nop implementation");
+        }
+
+        this.diffReporter = diffReporter;
     }
 }
