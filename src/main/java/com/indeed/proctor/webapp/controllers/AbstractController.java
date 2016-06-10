@@ -92,7 +92,7 @@ public class AbstractController {
         return bor.queryTestDefinition(testName);
     }
 
-    protected List<Revision> queryTestDefiniionHistory(final String branchOrRevision, final String testName, final int start, final int limit) throws StoreException {
+    protected List<Revision> queryTestDefinitionHistory(final String branchOrRevision, final String testName, final int start, final int limit) throws StoreException {
         final BranchOrRevision bor = new BranchOrRevision(branchOrRevision);
         return bor.queryTestDefinitionHistory(testName, start, limit);
     }
@@ -113,8 +113,8 @@ public class AbstractController {
         final Environment branch;
         final ProctorStore store;
 
-        private BranchOrRevision(final String stringValue) throws StoreException {
-            this.stringValue = stringValue;
+        private BranchOrRevision(final String branchOrRevision) throws StoreException {
+            stringValue = branchOrRevision;
             branch = Environment.fromName(stringValue);
             if (isBranch()) {
                 store = determineStoreFromEnvironment(branch);

@@ -13,14 +13,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.servlet.View;
 
 import java.util.List;
-import java.util.Map;
 
 @Controller
-@RequestMapping({"/api", "/proctor/api"})
+@RequestMapping({"/api/v1", "/proctor/api/v1"})
 public class TestMatrixApiController extends AbstractController {
 
     private static final Logger LOGGER = Logger.getLogger(TestMatrixApiController.class);
@@ -32,12 +36,6 @@ public class TestMatrixApiController extends AbstractController {
                                    @Qualifier("qa") final ProctorStore qaStore,
                                    @Qualifier("production") final ProctorStore productionStore) {
         super(configuration, trunkStore, qaStore, productionStore);
-    }
-
-    @RequestMapping(value = "/hello", method = RequestMethod.GET)
-    public View helloWorld() {
-        final Map<String, String> result = ImmutableMap.of("hello", "world");
-        return new JsonView(result);
     }
 
     @RequestMapping(value = "/{branchOrRevision}/matrix", method = RequestMethod.GET)
@@ -74,7 +72,7 @@ public class TestMatrixApiController extends AbstractController {
             @RequestParam(required = false, value = "start", defaultValue = "0") final int start,
             @RequestParam(required = false, value = "limit", defaultValue = "32") final int limit
     ) throws StoreException {
-        final List<Revision> revisions = queryTestDefiniionHistory(branchOrRevision, testName, start, limit);
+        final List<Revision> revisions = queryTestDefinitionHistory(branchOrRevision, testName, start, limit);
         return new JsonView(revisions);
     }
 
