@@ -594,8 +594,10 @@ public abstract class ProctorUtils {
                 Collections.<String, Object>emptyMap(),
                 testName);
     }
-
-    public static ProvidedContext convertContextToTestableMap(Map<String,String> providedContext) {
+    public static ProvidedContext convertContextToTestableMap(final Map<String,String> providedContext) {
+        return convertContextToTestableMap(providedContext, Collections.<String, Object>emptyMap());
+    }
+    public static ProvidedContext convertContextToTestableMap(final Map<String,String> providedContext, final Map<String, Object> providedInstances) {
         final ExpressionFactory expressionFactory = new ExpressionFactoryImpl();
         Map<String, Object> primitiveVals = new HashMap<String, Object>();
         primitiveVals.put("int", 0);
@@ -614,34 +616,41 @@ public abstract class ProctorUtils {
             Map<String, Object> newProvidedContext = new HashMap<String, Object>();
             final Set<String> uninstantiatedIdentifiers = Sets.newHashSet();
             for(Entry<String,String> entry : providedContext.entrySet()) {
-                final String iobjName = entry.getValue();
-                String objName = iobjName;
+                final String identifier = entry.getKey();
                 Object toAdd = null;
-                if (primitiveVals.get(objName.toLowerCase()) != null) {
-                    toAdd = primitiveVals.get(objName.toLowerCase());
+                if (providedInstances.containsKey(identifier)){
+                    LOGGER.debug(String.format("Use instance for identifier {%s} provided by userm, %s", identifier, providedInstances));
+                    toAdd = providedInstances.get(identifier);
                 } else {
-                    try {
-                        final Class clazz = Class.forName(objName);
-                        if (clazz.isEnum()) { //If it is a user defined enum
-                            toAdd = clazz.getEnumConstants()[0];
-                        } else { //If it is a user defined non enum class
-                            toAdd = clazz.newInstance();
+                    final String iobjName = entry.getValue();
+                    String objName = iobjName;
+
+                    if (primitiveVals.get(objName.toLowerCase()) != null) {
+                        toAdd = primitiveVals.get(objName.toLowerCase());
+                    } else {
+                        try {
+                            final Class clazz = Class.forName(objName);
+                            if (clazz.isEnum()) { //If it is a user defined enum
+                                toAdd = clazz.getEnumConstants()[0];
+                            } else { //If it is a user defined non enum class
+                                toAdd = clazz.newInstance();
+                            }
+                        } catch (final IllegalAccessException e) {
+                            uninstantiatedIdentifiers.add(identifier);
+                            LOGGER.debug("Couldn't access default constructor of " + iobjName + " in providedContext");
+                        } catch (final InstantiationException e) {
+                            uninstantiatedIdentifiers.add(identifier);
+                            //if a default constructor is not defined, use this flag to not set context and not evaluate rules
+                            LOGGER.debug("Couldn't find default constructor for " + iobjName + " in providedContext");
+                        } catch (final ClassNotFoundException e) {
+                            uninstantiatedIdentifiers.add(identifier);
+                            LOGGER.error("Class not found for " + iobjName + " in providedContext");
                         }
-                    } catch (final IllegalAccessException e) {
-                        uninstantiatedIdentifiers.add(entry.getKey());
-                        LOGGER.debug("Couldn't access default constructor of " + iobjName + " in providedContext");
-                    } catch (final InstantiationException e) {
-                        uninstantiatedIdentifiers.add(entry.getKey());
-                        //if a default constructor is not defined, use this flag to not set context and not evaluate rules
-                        LOGGER.debug("Couldn't find default constructor for " + iobjName + " in providedContext");
-                    } catch (final ClassNotFoundException e) {
-                        uninstantiatedIdentifiers.add(entry.getKey());
-                        LOGGER.error("Class not found for " + iobjName + " in providedContext");
                     }
 
                 }
 
-                newProvidedContext.put(entry.getKey(), toAdd);
+                newProvidedContext.put(identifier, toAdd);
             }
             /** evaluate the rule even if defaultConstructor method does not exist, */
             return new ProvidedContext(ProctorUtils.convertToValueExpressionMap(expressionFactory, newProvidedContext),

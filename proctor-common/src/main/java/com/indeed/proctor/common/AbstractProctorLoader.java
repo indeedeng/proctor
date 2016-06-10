@@ -2,16 +2,17 @@ package com.indeed.proctor.common;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
-import com.indeed.util.core.DataLoadingTimerTask;
-import com.indeed.util.varexport.Export;
 import com.indeed.proctor.common.model.Audit;
 import com.indeed.proctor.common.model.TestMatrixArtifact;
+import com.indeed.util.core.DataLoadingTimerTask;
+import com.indeed.util.varexport.Export;
 import org.apache.log4j.Logger;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.el.FunctionMapper;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Map;
 
 public abstract class AbstractProctorLoader extends DataLoadingTimerTask implements Supplier<Proctor> {
@@ -42,8 +43,12 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
         this.functionMapper = functionMapper;
     }
 
+    protected Map<String, Object> getPreInstantiatedIdentifiers(){
+        return Collections.<String, Object>emptyMap();
+    }
+
     protected ProvidedContext createProvidedContext(final ProctorSpecification specification) {
-        return ProctorUtils.convertContextToTestableMap(specification.getProvidedContext());
+        return ProctorUtils.convertContextToTestableMap(specification.getProvidedContext(), getPreInstantiatedIdentifiers());
     }
 
     @Nullable
