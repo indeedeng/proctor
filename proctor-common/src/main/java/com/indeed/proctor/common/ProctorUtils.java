@@ -594,10 +594,12 @@ public abstract class ProctorUtils {
                 Collections.<String, Object>emptyMap(),
                 testName);
     }
-    public static ProvidedContext convertContextToTestableMap(final Map<String,String> providedContext) {
+
+    public static ProvidedContext convertContextToTestableMap(final Map<String, String> providedContext) {
         return convertContextToTestableMap(providedContext, Collections.<String, Object>emptyMap());
     }
-    public static ProvidedContext convertContextToTestableMap(final Map<String,String> providedContext, final Map<String, Object> providedInstances) {
+
+    public static ProvidedContext convertContextToTestableMap(final Map<String, String> providedContext, final Map<String, Object> ruleVerificationContext) {
         final ExpressionFactory expressionFactory = new ExpressionFactoryImpl();
         Map<String, Object> primitiveVals = new HashMap<String, Object>();
         primitiveVals.put("int", 0);
@@ -618,10 +620,11 @@ public abstract class ProctorUtils {
             for(Entry<String,String> entry : providedContext.entrySet()) {
                 final String identifier = entry.getKey();
                 Object toAdd = null;
-                if (providedInstances.containsKey(identifier)){
-                    LOGGER.debug(String.format("Use instance for identifier {%s} provided by userm, %s", identifier, providedInstances));
-                    toAdd = providedInstances.get(identifier);
+                if (ruleVerificationContext.containsKey(identifier)) {
+                    toAdd = ruleVerificationContext.get(identifier);
+                    LOGGER.debug(String.format("Use instance for identifier {%s} provided by user %s", identifier, toAdd));
                 } else {
+                    LOGGER.debug(String.format("Identifier {%s} is not provided, instantiate it via default constructor", identifier));
                     final String iobjName = entry.getValue();
                     String objName = iobjName;
 
@@ -649,7 +652,6 @@ public abstract class ProctorUtils {
                     }
 
                 }
-
                 newProvidedContext.put(identifier, toAdd);
             }
             /** evaluate the rule even if defaultConstructor method does not exist, */

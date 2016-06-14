@@ -43,12 +43,13 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
         this.functionMapper = functionMapper;
     }
 
-    protected Map<String, Object> getPreInstantiatedIdentifiers(){
+    /** user can override this function to provide a context for rule verification **/
+    protected Map<String, Object> getRuleVerificationContext() {
         return Collections.<String, Object>emptyMap();
     }
 
     protected ProvidedContext createProvidedContext(final ProctorSpecification specification) {
-        return ProctorUtils.convertContextToTestableMap(specification.getProvidedContext(), getPreInstantiatedIdentifiers());
+        return ProctorUtils.convertContextToTestableMap(specification.getProvidedContext(), getRuleVerificationContext());
     }
 
     @Nullable

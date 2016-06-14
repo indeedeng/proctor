@@ -25,18 +25,21 @@ public class RuleVerifyUtils {
     private RuleVerifyUtils() {
     }
 
-    public static void verifyRule(final String testRule, final boolean unableToInstantiate, final ExpressionFactory expressionFactory, final ELContext elContext, final Set<String> absentIdentifiers) throws IncompatibleTestMatrixException {
-
+    public static void verifyRule(final String testRule,
+                                  final boolean unableToInstantiate,
+                                  final ExpressionFactory expressionFactory,
+                                  final ELContext elContext,
+                                  final Set<String> absentIdentifiers) throws IncompatibleTestMatrixException {
         final String bareRule = removeElExpressionBraces(testRule);
         if (!isEmptyWhitespace(bareRule)) {
             final ValueExpression valueExpression = expressionFactory.createValueExpression(elContext, testRule, Boolean.class);
             if (unableToInstantiate) {
-                 /**
-                  * must have a context to test against, even if it's "Collections.emptyMap()", how to
-                  * tell if this method is used for ProctorBuilder or during load of the testMatrix.
-                  * also used to check to make sure any classes included in the EL can be found.
-                  * Class
-                  */
+                /**
+                 * must have a context to test against, even if it's "Collections.emptyMap()", how to
+                 * tell if this method is used for ProctorBuilder or during load of the testMatrix.
+                 * also used to check to make sure any classes included in the EL can be found.
+                 * Class
+                 */
 
                 try {
                     valueExpression.getValue(elContext);
@@ -78,6 +81,5 @@ public class RuleVerifyUtils {
         } else {
             res.add(node);
         }
-
     }
 }
