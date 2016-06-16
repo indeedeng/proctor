@@ -182,7 +182,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
      * @return
      */
     public GitDirectoryRefresher createRefresherTask(String username, String password) {
-        return new GitDirectoryRefresher(workspaceProvider.getRootDirectory(), git, username, password);
+        return new GitDirectoryRefresher(workspaceProvider.getRootDirectory(), this, username, password);
     }
 
     static class GitRcsClient implements FileBasedProctorStore.RcsClient {
