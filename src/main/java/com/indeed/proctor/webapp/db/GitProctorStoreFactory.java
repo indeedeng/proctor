@@ -3,6 +3,7 @@ package com.indeed.proctor.webapp.db;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import com.indeed.proctor.store.cache.ProctorStoreCaching;
 import com.indeed.util.varexport.VarExporter;
 import com.indeed.proctor.store.*;
 import org.apache.commons.configuration.ConfigurationException;
@@ -17,6 +18,10 @@ import java.util.concurrent.TimeUnit;
 public class GitProctorStoreFactory implements StoreFactory {
     private static final Logger LOGGER = Logger.getLogger(GitProctorStoreFactory.class);
 
+    /**
+     * @deprecated Executor is no longer required. Now refreshing function is integrated in caching.
+     */
+    @Deprecated
     final ScheduledExecutorService executor;
 
     private String gitUrl;
@@ -72,22 +77,14 @@ public class GitProctorStoreFactory implements StoreFactory {
         Preconditions.checkArgument(!CharMatcher.WHITESPACE.matchesAllOf(Strings.nullToEmpty(gitUrl)), "scm.path property cannot be empty");
 
         final GitWorkspaceProviderImpl provider = new GitWorkspaceProviderImpl(tempDirectory);
-        final GitProctorCore gitCore = new CachedGitProctorCore(gitUrl, gitUsername, gitPassword, testDefinitionsDirectory, provider);
-
-        if(gitRefreshMillis > 0) {
-            final GitDirectoryRefresher refresher = gitCore.createRefresherTask
-                    (gitUsername, gitPassword);
-            LOGGER.info("Scheduling GitDirectoryRefresher every " + gitRefreshMillis + " milliseconds for dir: " + refresher.getDirectoryPath());
-            executor.scheduleWithFixedDelay(refresher, TimeUnit.SECONDS.toMillis(60), gitRefreshMillis, TimeUnit.MILLISECONDS);
-        }
+        final GitProctorCore gitCore = new GitProctorCore(gitUrl, gitUsername, gitPassword, testDefinitionsDirectory, provider);
 
         final String branchName = relativePath.substring(relativePath.lastIndexOf("/")+1);
         final GitProctor store = new GitProctor(gitCore, testDefinitionsDirectory, branchName);
         final String prefix = relativePath.replace('/', '-');
         final VarExporter exporter = VarExporter.forNamespace(GitProctor.class.getSimpleName()).includeInGlobal();
         exporter.export(store, prefix + "-");
-
-        return store;
+        return new ProctorStoreCaching(store);
     }
 
     private File createTempDirectoryForPath(final String relativePath) {
