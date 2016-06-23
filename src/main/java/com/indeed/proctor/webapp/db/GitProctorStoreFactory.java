@@ -3,9 +3,13 @@ package com.indeed.proctor.webapp.db;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import com.indeed.proctor.store.FileBasedProctorStore;
+import com.indeed.proctor.store.GitProctor;
+import com.indeed.proctor.store.GitProctorCore;
+import com.indeed.proctor.store.GitWorkspaceProviderImpl;
+import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.store.cache.ProctorStoreCaching;
 import com.indeed.util.varexport.VarExporter;
-import com.indeed.proctor.store.*;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -34,9 +38,19 @@ public class GitProctorStoreFactory implements StoreFactory {
      * */
     private final File tempRoot;
 
-    // The period to use when scheduling a refresh of the git directory
+    /**
+     * The period to use when scheduling a refresh of the git directory
+     *
+     * @deprecated Executor is no longer required. Now refreshing function is integrated in caching.
+     */
+    @Deprecated
     private long gitRefreshMillis = TimeUnit.SECONDS.toMillis(300);
 
+
+    /**
+     * @deprecated executor and gitRefreshSecond are no longer required. Use other constructors instead.
+     */
+    @Deprecated
     public GitProctorStoreFactory(final ScheduledExecutorService executor,
                                   final long gitRefreshSeconds,
                                   final String gitUrl,
@@ -58,6 +72,24 @@ public class GitProctorStoreFactory implements StoreFactory {
         }
     }
 
+    public GitProctorStoreFactory(final String gitUrl,
+                                  final String gitUsername,
+                                  final String gitPassword,
+                                  final String testDefinitionsDirectory,
+                                  final String tempRootDirectory) throws IOException, ConfigurationException {
+        this.executor = null; /* dummy */
+        this.gitUrl = gitUrl;
+        this.gitUsername = gitUsername;
+        this.gitPassword = gitPassword;
+        this.testDefinitionsDirectory = testDefinitionsDirectory;
+
+        if (StringUtils.isEmpty(tempRootDirectory)) {
+            tempRoot = identifyImplicitTempRoot();
+        } else {
+            tempRoot = new File(tempRootDirectory);
+        }
+    }
+
     public ProctorStore getTrunkStore() {
         return createStore("proctor/git/trunk");
     }
@@ -69,7 +101,7 @@ public class GitProctorStoreFactory implements StoreFactory {
     public ProctorStore getProductionStore() {
         return createStore("proctor/git/production");
     }
-    
+
     public ProctorStore createStore(final String relativePath) {
 
         final File tempDirectory = createTempDirectoryForPath(relativePath);
