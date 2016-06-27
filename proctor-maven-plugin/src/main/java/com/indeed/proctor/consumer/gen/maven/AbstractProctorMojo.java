@@ -5,7 +5,6 @@ import java.io.IOException;
 
 import com.indeed.proctor.common.ProctorUtils;
 import com.indeed.proctor.consumer.gen.CodeGenException;
-import com.indeed.proctor.consumer.gen.TestGroupsGenerator;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.AbstractMojo;
@@ -30,7 +29,7 @@ public abstract class AbstractProctorMojo extends AbstractMojo {
          * attribute)
          */
     private void recursiveSpecificationsFinder(final File dir, final String packageNamePrefix) throws CodeGenException {
-        if (dir.equals(null)) {
+        if (dir == null) {
             throw new CodeGenException("recursiveSpecificationsFinder called with null pointer");
         }
         final File[] files = dir.listFiles();
@@ -58,8 +57,8 @@ public abstract class AbstractProctorMojo extends AbstractMojo {
          * Adds any non partial specifications to resources
          */
     private void addNonPartialsToResources(final File dir, final Resource resource) throws CodeGenException {
-        if (dir.equals(null)) {
-            throw new CodeGenException("Could not read from directory " + dir.getPath());
+        if (dir == null) {
+            throw new CodeGenException("Could not read from directory");
         }
         final File[] files = dir.listFiles();
         if (files == null) {
@@ -84,8 +83,8 @@ public abstract class AbstractProctorMojo extends AbstractMojo {
          */
     void createTotalSpecifications(final File dir, final String packageDirectory) throws MojoExecutionException {
 
-        if (dir.equals(null)) {
-            throw new MojoExecutionException("Could not read from directory " + dir.getPath());
+        if (dir == null) {
+            throw new MojoExecutionException("Could not read from directory");
         }
         final File[] files = dir.listFiles();
         if (files == null) {
@@ -95,16 +94,21 @@ public abstract class AbstractProctorMojo extends AbstractMojo {
         if (providedContextFiles.length == 1) {
             final File parent = providedContextFiles[0].getParentFile();
             final File outputDir = new File(getSpecificationOutput() + File.separator + packageDirectory.substring(0,packageDirectory.lastIndexOf(File.separator)));
-            outputDir.mkdirs();
+            if (!outputDir.exists() && !outputDir.mkdirs()) {
+                throw new MojoExecutionException("Couldn't create directory: " + outputDir.getPath());
+            }
             try {
                 generateTotalSpecification(parent, outputDir);
             } catch (final CodeGenException e) {
                 throw new MojoExecutionException("Couldn't create total specification",e);
             }
         }
-        for (File entry : dir.listFiles()) {
-            if (entry.isDirectory()) {
-                createTotalSpecifications(entry, (packageDirectory == null) ? entry.getName() : packageDirectory + File.separator + entry.getName());
+        final File[] entries = dir.listFiles();
+        if (entries != null) {
+            for (File entry : entries) {
+                if (entry.isDirectory()) {
+                    createTotalSpecifications(entry, (packageDirectory == null) ? entry.getName() : packageDirectory + File.separator + entry.getName());
+                }
             }
         }
     }
@@ -126,11 +130,11 @@ public abstract class AbstractProctorMojo extends AbstractMojo {
         final File specificationOutputDir = getSpecificationOutput();
         resourceGenerated.setDirectory(specificationOutputDir.getPath());
         resourceGenerated.addInclude("**/*.json");
-        final Resource[] resources = {resourceNonGenerated,resourceGenerated};
-        return resources;
+        return new Resource[]{resourceNonGenerated,resourceGenerated};
 
     }
 
+    @Override
     public void execute() throws MojoExecutionException {
         File topDirectory = getTopDirectory();
         if(topDirectory == null) {

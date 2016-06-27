@@ -66,14 +66,17 @@ public abstract class TestGroupsGeneratorTask extends Task {
      * Generates total specifications from any partial specifications found
      */
     protected void totalSpecificationGenerator(final File dir) throws CodeGenException {
-        if (dir.equals(null)) {
+        if (dir == null) {
             throw new CodeGenException("input directory creates null file");
         }
         final File[] providedContextFiles = dir.listFiles((java.io.FileFilter) FileFilterUtils.andFileFilter(FileFilterUtils.fileFileFilter(), FileFilterUtils.nameFileFilter("providedcontext.json")));
         if (providedContextFiles.length == 1) {
             //make directory if it doesn't exist
-            (new File(specificationOutput.substring(0,specificationOutput.lastIndexOf(File.separator)))).mkdirs();
             final File specificationOutputFile = new File(specificationOutput);
+            final File parent = specificationOutputFile.getParentFile();
+            if (!parent.isDirectory() && !parent.mkdirs()) {
+                throw new CodeGenException("Unable to create directory: " + parent.getPath());
+            }
             generateTotalSpecification(dir, specificationOutputFile);
         } else {
             throw new CodeGenException("Incorrect amount of providedcontext.json in specified input folder");
@@ -85,10 +88,6 @@ public abstract class TestGroupsGeneratorTask extends Task {
     public void execute() throws BuildException {
         //  TODO: validate
         final File inputFile = new File(input);
-        if (inputFile == null) {
-            LOGGER.error("input not substituted with configured value");
-            return;
-        }
         if (inputFile.isDirectory()) {
             if(!Strings.isNullOrEmpty(getSpecificationOutput())) {
                 try {

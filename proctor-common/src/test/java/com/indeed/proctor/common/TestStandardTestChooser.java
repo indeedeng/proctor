@@ -7,7 +7,6 @@ import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.Range;
 import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.common.model.TestType;
-import org.apache.el.ExpressionFactoryImpl;
 import org.easymock.classextension.EasyMock;
 import org.junit.Assert;
 import org.junit.Before;
@@ -54,7 +53,7 @@ public class TestStandardTestChooser {
 
     @Before
     public void setupMocks() throws Exception {
-        expressionFactory = new ExpressionFactoryImpl();
+        expressionFactory = ExpressionFactory.newInstance();
         functionMapper = RuleEvaluator.FUNCTION_MAPPER;
         testName = "testName";
         testDefinition = new ConsumableTestDefinition();

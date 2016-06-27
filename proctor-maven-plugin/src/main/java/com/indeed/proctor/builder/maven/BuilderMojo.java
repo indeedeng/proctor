@@ -8,6 +8,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.Writer;
 
 @Mojo(name = "generate-matrix")
@@ -32,7 +33,10 @@ public class BuilderMojo extends AbstractMojo {
         }
         try {
             // try to make sure path exists
-            outputFile.getParentFile().mkdirs();
+            final File parent = outputFile.getParentFile();
+            if (!parent.exists() && !parent.mkdirs()) {
+                throw new IOException("Failed to create parent path: " + parent.getPath());
+            }
 
             Writer w = new FileWriter(outputFile);
             new LocalProctorBuilder(topDirectory, w, "".equals(author) ? author : null, version).execute();

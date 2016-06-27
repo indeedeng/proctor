@@ -7,7 +7,6 @@ import com.indeed.proctor.consumer.*;
 import javax.annotation.Nullable;
 import javax.annotation.Nonnull;
 import java.lang.Override;
-import java.util.Map;
 
 /*
  * GENERATED source; do not edit directly

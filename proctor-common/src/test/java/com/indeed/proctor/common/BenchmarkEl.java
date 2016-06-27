@@ -17,8 +17,6 @@ import javax.el.MapELResolver;
 import javax.el.ValueExpression;
 import javax.el.VariableMapper;
 
-import org.apache.el.ExpressionFactoryImpl;
-
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
@@ -26,7 +24,7 @@ public class BenchmarkEl {
     public static void main(final String[] args) {
         final FunctionMapper functionMapper = new LibraryFunctionMapperBuilder().add("proctor", ProctorRuleFunctions.class).build();
 
-        final ExpressionFactory expressionFactory = new ExpressionFactoryImpl();
+        final ExpressionFactory expressionFactory = ExpressionFactory.newInstance();
 
         final CompositeELResolver elResolver = new CompositeELResolver();
         elResolver.add(new ArrayELResolver());
