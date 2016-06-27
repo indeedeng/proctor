@@ -376,7 +376,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
                 try {
                     LOGGER.info("Start running `git gc` command to clean up git garbage");
                     getGit().gc().call();
-                } catch (final GitAPIException e) {
+                } catch (final Exception e) {
                     LOGGER.error("Failed to run `git gc` command.", e);
                 }
             }
