@@ -2,7 +2,6 @@ package com.indeed.proctor.store;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.TextProgressMonitor;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 
@@ -34,10 +33,10 @@ public class GitDirectoryRefresher extends TimerTask {
             synchronized (directory) {
                 gitProctorCore.getGit().fetch().setProgressMonitor(PROGRESS_MONITOR).setCredentialsProvider(user).call();
                 gitProctorCore.undoLocalChanges();
-                gitProctorCore.getGit().gc().setProgressMonitor(PROGRESS_MONITOR).call(); /** clean garbage **/
+                gitProctorCore.getGit().gc().call(); /** clean garbage **/
             }
-        } catch (GitAPIException e) {
-            LOGGER.error("Error when calling git pull", e);
+        } catch (final Exception e) {
+            LOGGER.error("Error when refreshing git directory " + directory, e);
         }
     }
 
