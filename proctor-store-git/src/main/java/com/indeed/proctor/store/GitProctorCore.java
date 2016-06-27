@@ -1,15 +1,14 @@
 package com.indeed.proctor.store;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Date;
-import java.util.List;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Joiner;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
+import com.indeed.proctor.common.Serializers;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.CreateBranchCommand;
 import org.eclipse.jgit.api.Git;
@@ -30,14 +29,18 @@ import org.eclipse.jgit.treewalk.filter.AndTreeFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.treewalk.filter.PathSuffixFilter;
 
-import com.google.common.base.Joiner;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.Lists;
-import com.indeed.proctor.common.Serializers;
+import java.io.File;
+import java.io.IOException;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class GitProctorCore implements FileBasedPersisterCore {
     private static final Logger LOGGER = Logger.getLogger(GitProctorCore.class);
     private static final TextProgressMonitor PROGRESS_MONITOR = new TextProgressMonitor(new LoggerPrintWriter(LOGGER, Level.DEBUG));
+    private static final long GC_INTERVAL_IN_DAY = 1;
 
     private final String username;
     private final String password;
@@ -47,6 +50,8 @@ public class GitProctorCore implements FileBasedPersisterCore {
     private final String gitUrl;
     private final String refName;
     private final GitWorkspaceProvider workspaceProvider;
+    private final ScheduledExecutorService gcExecutor;
+
 
     public GitProctorCore(final String gitUrl,
                           final String username,
@@ -75,7 +80,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
         this.username = username;
         this.password = password;
         this.testDefinitionsDirectory = testDefinitionsDirectory;
-
+        gcExecutor = Executors.newSingleThreadScheduledExecutor();
         initializeRepository();
     }
 
@@ -124,6 +129,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
         } catch (GitAPIException e) {
             LOGGER.error("Unable to fetch from " + gitUrl, e);
         }
+        gcExecutor.scheduleAtFixedRate(new GitGcTask(), GC_INTERVAL_IN_DAY, GC_INTERVAL_IN_DAY, TimeUnit.DAYS);
     }
 
     @Override
@@ -360,5 +366,20 @@ public class GitProctorCore implements FileBasedPersisterCore {
     @Override
     public String getAddTestRevision() {
         return ObjectId.zeroId().name();
+    }
+
+    public class GitGcTask implements Runnable {
+
+        @Override
+        public void run() {
+            synchronized (workspaceProvider.getRootDirectory()) {
+                try {
+                    LOGGER.info("Start running `git gc` command to clean up git garbage");
+                    getGit().gc().call();
+                } catch (final Exception e) {
+                    LOGGER.error("Failed to run `git gc` command.", e);
+                }
+            }
+        }
     }
 }

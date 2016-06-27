@@ -2,6 +2,7 @@ package com.indeed.proctor.store;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.lib.TextProgressMonitor;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 
@@ -31,9 +32,12 @@ public class GitDirectoryRefresher extends TimerTask {
     public void run() {
         try {
             synchronized (directory) {
-                gitProctorCore.getGit().fetch().setProgressMonitor(PROGRESS_MONITOR).setCredentialsProvider(user).call();
-                gitProctorCore.undoLocalChanges();
-                gitProctorCore.getGit().gc().call(); /** clean garbage **/
+                /** git pull is preferable since it's more efficient **/
+                final PullResult result = gitProctorCore.getGit().pull().setProgressMonitor(PROGRESS_MONITOR).setRebase(true).setCredentialsProvider(user).call();
+                if (!result.isSuccessful()) {
+                    /** if git pull failed, use git reset **/
+                    gitProctorCore.undoLocalChanges();
+                }
             }
         } catch (final Exception e) {
             LOGGER.error("Error when refreshing git directory " + directory, e);
