@@ -34,7 +34,7 @@ public class GitDirectoryRefresher extends TimerTask {
             synchronized (directory) {
                 gitProctorCore.getGit().fetch().setProgressMonitor(PROGRESS_MONITOR).setCredentialsProvider(user).call();
                 gitProctorCore.undoLocalChanges();
-                gitProctorCore.getGit().gc().call(); /** clean garbage **/
+                gitProctorCore.getGit().gc().setProgressMonitor(PROGRESS_MONITOR).call(); /** clean garbage **/
             }
         } catch (GitAPIException e) {
             LOGGER.error("Error when calling git pull", e);
