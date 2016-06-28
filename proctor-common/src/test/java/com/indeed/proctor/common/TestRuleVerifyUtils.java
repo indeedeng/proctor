@@ -7,7 +7,6 @@ import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.TestBucket;
 import org.apache.el.ExpressionFactoryImpl;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 import javax.el.ELContext;
@@ -27,18 +26,12 @@ import static org.junit.Assert.assertTrue;
 public class TestRuleVerifyUtils {
 
     private String testRule = "${browser != 'IE9'}";
-    private ExpressionFactory expressionFactory;
-
-    @Before
-    public void setUp() {
-        expressionFactory = new ExpressionFactoryImpl();
-        testRule = "${browser != 'IE9'}";
-    }
+    private ExpressionFactory expressionFactory = new ExpressionFactoryImpl();
 
     private ELContext setUpElContextWithContext(final Map<String, Object> context) {
         final List<TestBucket> buckets = TestProctorUtils.fromCompactBucketFormat("inactive:-1,control:0,test:1");
         final ConsumableTestDefinition testDefVal1 = TestProctorUtils.constructDefinition(buckets,
-                TestProctorUtils.fromCompactAllocationFormat(String.format("%d|-1:0.5,0:0.5,1:0.0", testRule), "-1:0.25,0:0.5,1:0.25"));
+                TestProctorUtils.fromCompactAllocationFormat(String.format("%s|-1:0.5,0:0.5,1:0.0", testRule), "-1:0.25,0:0.5,1:0.25"));
         final Map<String, ValueExpression> testConstants = ProctorUtils.convertToValueExpressionMap(expressionFactory, testDefVal1.getConstants());
 
         final ProvidedContext providedContext = new ProvidedContext(ProctorUtils.convertToValueExpressionMap(expressionFactory, context), true);
