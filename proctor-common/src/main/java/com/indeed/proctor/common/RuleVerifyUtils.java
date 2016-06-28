@@ -26,14 +26,14 @@ public class RuleVerifyUtils {
     }
 
     public static void verifyRule(final String testRule,
-                                  final boolean unableToInstantiate,
+                                  final boolean shouldEvaluate,
                                   final ExpressionFactory expressionFactory,
                                   final ELContext elContext,
                                   final Set<String> absentIdentifiers) throws IncompatibleTestMatrixException {
         final String bareRule = removeElExpressionBraces(testRule);
         if (!isEmptyWhitespace(bareRule)) {
             final ValueExpression valueExpression = expressionFactory.createValueExpression(elContext, testRule, Boolean.class);
-            if (unableToInstantiate) {
+            if (shouldEvaluate) {
                 /**
                  * must have a context to test against, even if it's "Collections.emptyMap()", how to
                  * tell if this method is used for ProctorBuilder or during load of the testMatrix.

@@ -344,7 +344,7 @@ public abstract class ProctorUtils {
         // TODO mjs - is this check additive?
         resultBuilder.recordAllMissing(allTestsKnownBuckets.keySet());
 
-        resultBuilder.recordVerifiedRules(providedContext.isEvaluable());
+        resultBuilder.recordVerifiedRules(providedContext.shouldEvaluate());
 
         final ProctorLoadResult loadResult = resultBuilder.build();
 
@@ -679,7 +679,7 @@ public abstract class ProctorUtils {
         final ELContext elContext = ruleEvaluator.createELContext(variableMapper);
 
         try {
-            RuleVerifyUtils.verifyRule(testRule, providedContext.isEvaluable(), expressionFactory, elContext, providedContext.getUninstantiatedIdentifiers());
+            RuleVerifyUtils.verifyRule(testRule, providedContext.shouldEvaluate(), expressionFactory, elContext, providedContext.getUninstantiatedIdentifiers());
         } catch (final ELException e) {
             LOGGER.error(e);
             throw new IncompatibleTestMatrixException("Unable to evaluate rule ${" + testRule + "} in " + testName);
@@ -728,7 +728,7 @@ public abstract class ProctorUtils {
 
 
             try {
-                RuleVerifyUtils.verifyRule(rule, providedContext.isEvaluable(), expressionFactory, elContext, providedContext.getUninstantiatedIdentifiers());
+                RuleVerifyUtils.verifyRule(rule, providedContext.shouldEvaluate(), expressionFactory, elContext, providedContext.getUninstantiatedIdentifiers());
             }  catch (final ELException e) {
                 LOGGER.error(e);
                 throw new IncompatibleTestMatrixException("Unable to evaluate rule ${" + rule + "} in allocations of " + testName);

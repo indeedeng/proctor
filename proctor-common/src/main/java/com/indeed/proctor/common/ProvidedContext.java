@@ -13,12 +13,12 @@ public class ProvidedContext {
     public static final Map<String,ValueExpression> EMPTY_CONTEXT = Collections.emptyMap();
     private final Map<String,ValueExpression> context;
     private final Set<String> uninstantiatedIdentifiers;
-    private final boolean evaluable;
+    private final boolean shouldEvaluate;
     public ProvidedContext(final Map<String, ValueExpression> context,
-                           final boolean evaluable,
+                           final boolean shouldEvaluate,
                            final Set<String> uninstantiatedIdentifiers) {
         this.context = context;
-        this.evaluable = evaluable;
+        this.shouldEvaluate = shouldEvaluate;
         this.uninstantiatedIdentifiers = uninstantiatedIdentifiers;
     }
 
@@ -34,7 +34,7 @@ public class ProvidedContext {
         return uninstantiatedIdentifiers;
     }
 
-    public boolean isEvaluable() {
-        return evaluable;
+    public boolean shouldEvaluate() {
+        return shouldEvaluate;
     }
 }

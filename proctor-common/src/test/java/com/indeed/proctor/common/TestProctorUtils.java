@@ -5,6 +5,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.Audit;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
@@ -412,16 +413,17 @@ public class TestProctorUtils {
             final Map<String, String> providedContextBadClass = new HashMap<String, String>();
             providedContextBadClass.put("time", "com.indeed.proctor.common.TestRulesCla");
             final ProvidedContext providedContext = ProctorUtils.convertContextToTestableMap(providedContextBadClass);
-            assertTrue(providedContext.isEvaluable());
-            //false due to bad classname
+            assertTrue(providedContext.shouldEvaluate());
+            assertEquals(Sets.newHashSet("time"), providedContext.getUninstantiatedIdentifiers());
+            /* Class was not found, add 'time' to uninstantiated identifiers */
         }
-        { //Rule verification failure is ignored when missing constructors
+        { // Verify rule when unable to instantiate class
             final ConsumableTestDefinition testDef = constructDefinition(buckets,
                     fromCompactAllocationFormat("${time.yes eq 'SP'}|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25"));
             final Map<String, String> providedContextNoConstructor = new HashMap<String, String>();
             providedContextNoConstructor.put("time", "com.indeed.proctor.common.AbstractProctorLoader");
             final ProvidedContext providedContext = ProctorUtils.convertContextToTestableMap(providedContextNoConstructor);
-            assertTrue(providedContext.isEvaluable());
+            assertTrue(providedContext.shouldEvaluate());
             ProctorUtils.verifyInternallyConsistentDefinition("testProvidedContextConversion", "test Provided Context Conversion Class", testDef, RuleEvaluator.FUNCTION_MAPPER, providedContext);
             /* Should ignore checking failure because time was not instantiated */
         }
@@ -431,7 +433,7 @@ public class TestProctorUtils {
             final Map<String, String> providedContextNoClass = new HashMap<String, String>();
             providedContextNoClass.put("time", "com.indeed.proctor.common.NotFoundClass");
             final ProvidedContext providedContext = ProctorUtils.convertContextToTestableMap(providedContextNoClass);
-            assertTrue(providedContext.isEvaluable());
+            assertTrue(providedContext.shouldEvaluate());
             ProctorUtils.verifyInternallyConsistentDefinition("testProvidedContextConversion", "test Provided Context Conversion Class", testDef, RuleEvaluator.FUNCTION_MAPPER, providedContext);
             /* Should ignore checking failure because time was not instantiated */
         }
@@ -1574,7 +1576,7 @@ public class TestProctorUtils {
         return audit;
     }
 
-    private ConsumableTestDefinition constructDefinition(List<TestBucket> buckets,
+    public static ConsumableTestDefinition constructDefinition(List<TestBucket> buckets,
                                                          List<Allocation> allocations) {
 
         final ConsumableTestDefinition test = new ConsumableTestDefinition();
@@ -1594,14 +1596,14 @@ public class TestProctorUtils {
         allocations and bucket values than to use string JSON
      *  ********************************************************************* */
 
-    private List<Allocation> fromCompactAllocationFormat(String ... allocations) {
+    public static List<Allocation> fromCompactAllocationFormat(String ... allocations) {
         final List<String> allocationList = Lists.newArrayListWithExpectedSize(allocations.length);
         for(String s : allocations) {
             allocationList.add(s);
         }
         return fromCompactAllocationFormat(allocationList);
     }
-    private List<Allocation> fromCompactAllocationFormat(List<String> allocations) {
+    public static List<Allocation> fromCompactAllocationFormat(List<String> allocations) {
         final List<Allocation> allocationList = Lists.newArrayListWithExpectedSize(allocations.size());
         // rule|0:0,0:.0.1,0:.2
         for(String allocation : allocations) {
@@ -1630,7 +1632,7 @@ public class TestProctorUtils {
         return allocationList;
     }
 
-    private List<TestBucket> fromCompactBucketFormat(String sBuckets){
+    public static List<TestBucket> fromCompactBucketFormat(String sBuckets){
         String[] bucketParts = sBuckets.split(",");
         List<TestBucket> buckets = Lists.newArrayListWithCapacity(bucketParts.length);
         for(int i = 0; i < bucketParts.length; i++) {

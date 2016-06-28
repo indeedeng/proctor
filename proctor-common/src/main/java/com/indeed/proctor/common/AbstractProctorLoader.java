@@ -37,7 +37,7 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
         super(cls.getSimpleName());
         this.requiredTests = specification.getTests();
         this.providedContext = createProvidedContext(specification);
-        if (!this.providedContext.isEvaluable()) {
+        if (!this.providedContext.shouldEvaluate()) {
             LOGGER.debug("providedContext Objects missing necessary functions for validation, rules will not be tested.");
         }
         this.functionMapper = functionMapper;
