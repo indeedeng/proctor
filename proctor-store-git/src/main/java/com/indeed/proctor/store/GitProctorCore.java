@@ -12,12 +12,16 @@ import org.apache.log4j.Logger;
 import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.CreateBranchCommand;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.PullResult;
+import org.eclipse.jgit.api.RebaseCommand;
+import org.eclipse.jgit.api.RebaseResult;
 import org.eclipse.jgit.api.ResetCommand.ResetType;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectLoader;
 import org.eclipse.jgit.lib.TextProgressMonitor;
+import org.eclipse.jgit.merge.MergeStrategy;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevTree;
 import org.eclipse.jgit.revwalk.RevWalk;
@@ -231,7 +235,10 @@ public class GitProctorCore implements FileBasedPersisterCore {
         synchronized (workspaceProvider.getRootDirectory()) {
             try {
                 git = Git.open(workingDir);
-                git.pull().setProgressMonitor(PROGRESS_MONITOR).setRebase(true).setCredentialsProvider(user).call();
+                final PullResult pullResult = git.pull().setProgressMonitor(PROGRESS_MONITOR).setRebase(true).setCredentialsProvider(user).call();
+                if (!pullResult.isSuccessful()) {
+                    undoLocalChanges();
+                }
                 final FileBasedProctorStore.RcsClient rcsClient = new GitProctorCore.GitRcsClient(git, testDefinitionsDirectory);
                 final boolean thingsChanged;
                 thingsChanged = updater.doInWorkingDirectory(rcsClient, workingDir);
@@ -276,6 +283,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
     void undoLocalChanges() {
         synchronized (workspaceProvider.getRootDirectory()) {
             try {
+                git.rebase().setOperation(RebaseCommand.Operation.ABORT).call();
                 final String remoteBranch = Constants.R_REMOTES + Constants.DEFAULT_REMOTE_NAME + '/' + git.getRepository().getBranch();
                 git.reset().setMode(ResetType.HARD).setRef(remoteBranch).call();
                 git.clean().setCleanDirectories(true).call();
