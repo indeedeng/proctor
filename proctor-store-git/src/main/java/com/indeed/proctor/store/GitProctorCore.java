@@ -17,9 +17,11 @@ import org.eclipse.jgit.api.RebaseCommand;
 import org.eclipse.jgit.api.RebaseResult;
 import org.eclipse.jgit.api.ResetCommand.ResetType;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.WrongRepositoryStateException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectLoader;
+import org.eclipse.jgit.lib.RepositoryState;
 import org.eclipse.jgit.lib.TextProgressMonitor;
 import org.eclipse.jgit.merge.MergeStrategy;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -283,7 +285,11 @@ public class GitProctorCore implements FileBasedPersisterCore {
     void undoLocalChanges() {
         synchronized (workspaceProvider.getRootDirectory()) {
             try {
-                git.rebase().setOperation(RebaseCommand.Operation.ABORT).call();
+                try {
+                    git.rebase().setOperation(RebaseCommand.Operation.ABORT).call();
+                } catch (WrongRepositoryStateException e) {
+                    // ignore rebasing exception when in wrong state
+                }
                 final String remoteBranch = Constants.R_REMOTES + Constants.DEFAULT_REMOTE_NAME + '/' + git.getRepository().getBranch();
                 git.reset().setMode(ResetType.HARD).setRef(remoteBranch).call();
                 git.clean().setCleanDirectories(true).call();
