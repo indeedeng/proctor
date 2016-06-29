@@ -218,7 +218,6 @@ public class GitProctor extends FileBasedProctorStore {
         }
         final Set<String> activeTests = testMatrixDefinition.getTests().keySet();
 
-        final Map<String, List<Revision>> histories = Maps.newHashMap();
         final Repository repository = git.getRepository();
         try {
             final ObjectId head = repository.resolve(Constants.HEAD);
@@ -260,7 +259,7 @@ public class GitProctor extends FileBasedProctorStore {
         getGitCore().checkoutBranch(branchName);
     }
 
-    public class HistoryParser {
+    public static class HistoryParser {
         final RevWalk revWalk;
         final DiffFormatter df;
         final Pattern testNamePattern;
@@ -281,18 +280,19 @@ public class GitProctor extends FileBasedProctorStore {
             final Set<ObjectId> visited = Sets.newHashSet();
             final Queue<RevCommit> queue = new LinkedList<RevCommit>();
             queue.add(revWalk.parseCommit(head));
-            while(!queue.isEmpty()){
+            while (!queue.isEmpty()) {
                 parseCommit(queue.poll(), histories, visited, queue);
             }
 
-            final long start =  System.currentTimeMillis();
-            for(final List<Revision> revisions : histories.values()) {
-                Collections.sort(revisions, new Comparator<Revision>() {
-                    @Override
-                    public int compare(final Revision o1, final Revision o2) {
-                        return o2.getDate().compareTo(o1.getDate());
-                    }
-                });
+            final long start = System.currentTimeMillis();
+            final Comparator<Revision> comparator = new Comparator<Revision>() {
+                @Override
+                public int compare(final Revision o1, final Revision o2) {
+                    return o2.getDate().compareTo(o1.getDate());
+                }
+            };
+            for (final List<Revision> revisions : histories.values()) {
+                Collections.sort(revisions, comparator);
             }
             final long end = System.currentTimeMillis();
             LOGGER.info(String.format("Took %d ms to sort revisions in chronological order", end - start));
@@ -338,11 +338,10 @@ public class GitProctor extends FileBasedProctorStore {
                 queue.add(parent);
             } else if (parents.length == 2) {
                 /** this is a merge commit, should be skipped **/
-              for (final RevCommit parent : parents) {
+                for (final RevCommit parent : parents) {
                     queue.add(revWalk.parseCommit(parent.getId()));
-              }
+                }
             }
         }
     }
-
 }
