@@ -46,7 +46,7 @@ public class RuleVerifyUtils {
                 } catch (final ELException e) {
                     final Node node = ExpressionBuilder.createNode(testRule);
                     if (isIgnorable(node, absentIdentifiers)) {
-                        LOGGER.info(String.format("Rule %s contains uninstantiated identifier(s) in %s, ignore the failure", testRule, absentIdentifiers), e);
+                        LOGGER.debug(String.format("Rule %s contains uninstantiated identifier(s) in %s, ignore the failure", testRule, absentIdentifiers), e);
                     } else {
                         throw e;
                     }
