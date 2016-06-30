@@ -1,5 +1,6 @@
 package com.indeed.proctor.store;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -222,13 +223,11 @@ public class GitProctor extends FileBasedProctorStore {
         try {
             final ObjectId head = repository.resolve(Constants.HEAD);
             final RevWalk revWalk = new RevWalk(repository);
-            final Pattern testNamePattern = Pattern.compile(getTestDefinitionsDirectory() +
-                    File.separator + "(\\w+)" + File.separator + FileBasedProctorStore.TEST_DEFINITION_FILENAME);
             final DiffFormatter df = new DiffFormatter(DisabledOutputStream.INSTANCE);
             df.setRepository(git.getRepository());
             df.setDiffComparator(RawTextComparator.DEFAULT);
 
-            final HistoryParser historyParser = new HistoryParser(revWalk, df, testNamePattern, activeTests);
+            final HistoryParser historyParser = new HistoryParser(revWalk, df, getTestDefinitionsDirectory(), activeTests);
             return historyParser.parseFromHead(head);
 
         } catch (final IOException e) {
@@ -267,11 +266,11 @@ public class GitProctor extends FileBasedProctorStore {
 
         public HistoryParser(final RevWalk revWalk,
                              final DiffFormatter df,
-                             final Pattern testNamePattern,
+                             final String definitionDirectory,
                              final Set<String> activeTests) {
             this.revWalk = revWalk;
             this.df = df;
-            this.testNamePattern = testNamePattern;
+            testNamePattern = compileTestNamePattern(definitionDirectory);
             this.activeTests = activeTests;
         }
 
@@ -285,15 +284,7 @@ public class GitProctor extends FileBasedProctorStore {
             }
 
             final long start = System.currentTimeMillis();
-            final Comparator<Revision> comparator = new Comparator<Revision>() {
-                @Override
-                public int compare(final Revision o1, final Revision o2) {
-                    return o2.getDate().compareTo(o1.getDate());
-                }
-            };
-            for (final List<Revision> revisions : histories.values()) {
-                Collections.sort(revisions, comparator);
-            }
+            sortByDate(histories);
             final long end = System.currentTimeMillis();
             LOGGER.info(String.format("Took %d ms to sort revisions in chronological order", end - start));
             return histories;
@@ -342,6 +333,26 @@ public class GitProctor extends FileBasedProctorStore {
                     queue.add(revWalk.parseCommit(parent.getId()));
                 }
             }
+        }
+
+        @VisibleForTesting
+        static void sortByDate(final Map<String, List<Revision>> histories) {
+            final Comparator<Revision> comparator = new Comparator<Revision>() {
+                @Override
+                public int compare(final Revision o1, final Revision o2) {
+                    return o2.getDate().compareTo(o1.getDate());
+                }
+            };
+            for (final List<Revision> revisions : histories.values()) {
+                Collections.sort(revisions, comparator);
+            }
+        }
+
+
+        @VisibleForTesting
+        public static Pattern compileTestNamePattern(final String definitionDirectory) {
+            return Pattern.compile(definitionDirectory +
+                    File.separator + "(\\w+)" + File.separator + FileBasedProctorStore.TEST_DEFINITION_FILENAME);
         }
     }
 }
