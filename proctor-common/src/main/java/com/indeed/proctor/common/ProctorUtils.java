@@ -640,11 +640,11 @@ public abstract class ProctorUtils {
                             }
                         } catch (final IllegalAccessException e) {
                             uninstantiatedIdentifiers.add(identifier);
-                            LOGGER.debug("Couldn't access default constructor of " + iobjName + " in providedContext");
+                            LOGGER.debug("Couldn't access default constructor of " + iobjName + " in providedContext. Rule verification will skip this identifier - " + identifier);
                         } catch (final InstantiationException e) {
                             uninstantiatedIdentifiers.add(identifier);
                             //if a default constructor is not defined, use this flag to not set context and not evaluate rules
-                            LOGGER.debug("Couldn't find default constructor for " + iobjName + " in providedContext");
+                            LOGGER.debug("Couldn't find default constructor for " + iobjName + " in providedContext. Rule verification will skip this identifier - " + identifier);
                         } catch (final ClassNotFoundException e) {
                             uninstantiatedIdentifiers.add(identifier);
                             LOGGER.error("Class not found for " + iobjName + " in providedContext");
