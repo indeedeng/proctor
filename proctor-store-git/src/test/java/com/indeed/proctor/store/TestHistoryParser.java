@@ -15,9 +15,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-/**
- *
- */
 public class TestHistoryParser {
 
     private static int revisionCount = 1;
@@ -55,7 +52,6 @@ public class TestHistoryParser {
 
         matcher = pattern.matcher("matrices/test-definitions/testname/definition");
         assertFalse(matcher.matches());
-
     }
 
     private Revision makeRandomRevision(final long date) {
