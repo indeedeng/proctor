@@ -54,7 +54,7 @@ public class TestHistoryParser {
         assertFalse(matcher.matches());
     }
 
-    private Revision makeRandomRevision(final long date) {
+    private static Revision makeRandomRevision(final long date) {
         final Revision result = new Revision(UUID.randomUUID().toString(), "author", new Date(date), String.valueOf(revisionCount));
         revisionCount++;
         return result;
