@@ -36,5 +36,10 @@
             <artifactId>org.eclipse.jgit</artifactId>
             <version>3.4.1.201406201815-r</version>
         </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>
