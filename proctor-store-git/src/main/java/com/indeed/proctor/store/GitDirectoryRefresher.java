@@ -11,7 +11,9 @@ import java.util.concurrent.Callable;
 
 /**
  * Timer task used to periodically run git fetch/reset in a git directory
+ * We don't need refresher task anymore. Call {@link ProctorStore#refresh()} to pull the change.
  */
+@Deprecated
 public class GitDirectoryRefresher extends TimerTask {
     private static final Logger LOGGER = Logger.getLogger(GitDirectoryRefresher.class);
     private static final TextProgressMonitor PROGRESS_MONITOR = new TextProgressMonitor(new LoggerPrintWriter(LOGGER, Level.DEBUG));

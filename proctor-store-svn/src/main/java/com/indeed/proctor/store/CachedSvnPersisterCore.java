@@ -14,7 +14,9 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * @author parker
+ * @deprecated we consolidated different levels of cache into {@link com.indeed.proctor.store.cache.ProctorStoreCaching}
  */
+@Deprecated
 public class CachedSvnPersisterCore implements SvnPersisterCore {
     private static final Logger LOGGER = Logger.getLogger(CachedSvnPersisterCore.class);
 

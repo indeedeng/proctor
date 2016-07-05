@@ -56,7 +56,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
     private final String refName;
     private final GitWorkspaceProvider workspaceProvider;
     private final ScheduledExecutorService gcExecutor;
-
+    private final UsernamePasswordCredentialsProvider user;
 
     public GitProctorCore(final String gitUrl,
                           final String username,
@@ -84,13 +84,13 @@ public class GitProctorCore implements FileBasedPersisterCore {
                 .checkNotNull(workspaceProvider, "GitWorkspaceProvider should not be null");
         this.username = username;
         this.password = password;
+        user = new UsernamePasswordCredentialsProvider(username, password);
         this.testDefinitionsDirectory = testDefinitionsDirectory;
         gcExecutor = Executors.newSingleThreadScheduledExecutor();
         initializeRepository();
     }
 
     void initializeRepository() {
-        final UsernamePasswordCredentialsProvider user = new UsernamePasswordCredentialsProvider(username, password);
         final File workingDir = workspaceProvider.getRootDirectory();
         final File gitDirectory = new File(workingDir, ".git");
         LOGGER.info("Initializing repository " + gitUrl + " in working dir " + workingDir.getAbsolutePath());
@@ -200,11 +200,20 @@ public class GitProctorCore implements FileBasedPersisterCore {
     }
 
     /**
+     * @deprecated We don't need to specify username/password.
+     * Replaced by {@link #createRefresherTask()}
+     */
+    @Deprecated
+    public GitDirectoryRefresher createRefresherTask(String username, String password) {
+        return new GitDirectoryRefresher(workspaceProvider, this, username, password);
+    }
+
+    /**
      * Creates a background task that can be scheduled to refresh a template directory used to
      * seed each user workspace during a commit.
      * @return
      */
-    public GitDirectoryRefresher createRefresherTask(String username, String password) {
+    public GitDirectoryRefresher createRefresherTask() {
         return new GitDirectoryRefresher(workspaceProvider, this, username, password);
     }
 
@@ -433,6 +442,21 @@ public class GitProctorCore implements FileBasedPersisterCore {
                     return null;
                 }
             });
+        }
+    }
+
+    public void refresh() {
+        try {
+            synchronized (workspaceProvider.getRootDirectory()) {
+                /** git pull is preferable since it's more efficient **/
+                final PullResult result = getGit().pull().setProgressMonitor(PROGRESS_MONITOR).setRebase(true).setCredentialsProvider(user).call();
+                if (!result.isSuccessful()) {
+                    /** if git pull failed, use git reset **/
+                    undoLocalChanges();
+                }
+            }
+        } catch (final Exception e) {
+            LOGGER.error("Error when refreshing git directory " + workspaceProvider.getRootDirectory(), e);
         }
     }
 }

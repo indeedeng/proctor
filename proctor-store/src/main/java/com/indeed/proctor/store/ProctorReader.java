@@ -32,4 +32,6 @@ public interface ProctorReader {
 
     Map<String, List<Revision>> getAllHistories() throws StoreException;
 
+    void refresh() throws StoreException;
+
 }
