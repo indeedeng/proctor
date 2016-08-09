@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.indeed</groupId>
         <artifactId>oss-parent</artifactId>
-        <version>16</version>
+        <version>14</version>
     </parent>
 
     <groupId>com.indeed</groupId>
