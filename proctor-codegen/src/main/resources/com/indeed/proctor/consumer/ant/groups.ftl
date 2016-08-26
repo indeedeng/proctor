@@ -35,7 +35,7 @@ public class ${mainClassName} extends AbstractGroups {
 
     public enum ${testEnumName} implements com.indeed.proctor.consumer.Test {
         <#list testDefs as testDef>
-        ${testDef.enumName}("${testDef.normalizedName}", ${testDef.defaultValue})<#if testDef_has_next>,<#else>;</#if>
+        ${testDef.enumName}("${testDef.name}", ${testDef.defaultValue})<#if testDef_has_next>,<#else>;</#if>
         </#list>
         ; // fix compilation if no tests
 
@@ -61,7 +61,7 @@ public class ${mainClassName} extends AbstractGroups {
     <#if !testDef.payloadOnly>
     public enum ${testDef.javaClassName} implements Bucket<${testEnumName}> {
         <#list testDef.buckets as bucket>
-        ${bucket.enumName}(${bucket.value}, "${bucket.normalizedName}")<#if bucket_has_next>,<#else>;</#if>
+        ${bucket.enumName}(${bucket.value}, "${bucket.name}")<#if bucket_has_next>,<#else>;</#if>
         </#list>
 
         private final int value;
