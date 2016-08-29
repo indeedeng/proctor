@@ -1,0 +1,14 @@
+{
+    "tests": {
+        "Uppercase_first_character_test": {
+            "buckets": {
+                "inactive": -1,
+                "control": 0,
+                "test": 1
+            },
+            "fallbackValue": -1
+        }
+    },
+    "providedContext": {
+    }
+}
