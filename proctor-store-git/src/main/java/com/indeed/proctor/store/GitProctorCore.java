@@ -36,6 +36,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -409,7 +410,8 @@ public class GitProctorCore implements FileBasedPersisterCore {
                 public Void call() {
                     try {
                         LOGGER.info("Start running `git gc` command to clean up git garbage");
-                        getGit().gc().call();
+                        final Properties call = getGit().gc().call();
+                        LOGGER.info("`git gc` has been completed " + call.toString());
                     } catch (final Exception e) {
                         LOGGER.error("Failed to run `git gc` command.", e);
                     }
