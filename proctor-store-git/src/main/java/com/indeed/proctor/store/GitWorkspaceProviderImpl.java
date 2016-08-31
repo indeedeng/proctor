@@ -14,7 +14,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class GitWorkspaceProviderImpl implements GitWorkspaceProvider {
     private static final Logger LOGGER = Logger.getLogger(GitWorkspaceProviderImpl.class);
-
+    private static final int LOCK_TIMEOUT_SECONDS = 90;
     /**
      * The root directory into which all workspaces are created
      */
@@ -36,7 +36,7 @@ public class GitWorkspaceProviderImpl implements GitWorkspaceProvider {
     @Override
     public <T> T synchronizedOperation(final Callable<T> callable) {
         try {
-            if (directoryLock.tryLock(1, TimeUnit.MINUTES)) {
+            if (directoryLock.tryLock(LOCK_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
                 try {
                     return callable.call();
                 } catch (final Exception e) {
@@ -45,11 +45,10 @@ public class GitWorkspaceProviderImpl implements GitWorkspaceProvider {
                     directoryLock.unlock();
                 }
             } else {
-                Throwables.propagate(new StoreException("Attempt to acquire lock on working directory timeout. Maybe due to dead lock"));
+                Throwables.propagate(new StoreException("Attempt to acquire lock on working directory was timeout: " + LOCK_TIMEOUT_SECONDS + "s. Maybe due to dead lock"));
             }
         } catch (final InterruptedException e) {
             Throwables.propagate(e);
-
         }
         return null;
     }
