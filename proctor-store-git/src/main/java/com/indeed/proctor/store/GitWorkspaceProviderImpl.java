@@ -40,15 +40,15 @@ public class GitWorkspaceProviderImpl implements GitWorkspaceProvider {
                 try {
                     return callable.call();
                 } catch (final Exception e) {
-                    Throwables.propagate(e);
+                    throw Throwables.propagate(e);
                 } finally {
                     directoryLock.unlock();
                 }
             } else {
-                Throwables.propagate(new StoreException("Attempt to acquire lock on working directory was timeout: " + LOCK_TIMEOUT_SECONDS + "s. Maybe due to dead lock"));
+                throw Throwables.propagate(new StoreException("Attempt to acquire lock on working directory was timeout: " + LOCK_TIMEOUT_SECONDS + "s. Maybe due to dead lock"));
             }
         } catch (final InterruptedException e) {
-            Throwables.propagate(e);
+            LOGGER.error("Thread interrupted. ", e);
         }
         return null;
     }
