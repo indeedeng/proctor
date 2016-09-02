@@ -35,7 +35,13 @@ public class GitDirectoryRefresher extends TimerTask {
             public Void call() {
                 try {
 
-                    final PullResult result = gitProctorCore.getGit().pull().setProgressMonitor(PROGRESS_MONITOR).setRebase(true).setCredentialsProvider(user).call();
+                    final PullResult result = gitProctorCore.getGit()
+                            .pull()
+                            .setProgressMonitor(PROGRESS_MONITOR)
+                            .setRebase(true)
+                            .setCredentialsProvider(user)
+                            .setTimeout(GitProctorUtils.GIT_CONNECTION_TIMEOUT_IN_SECOND)
+                            .call();
                     if (!result.isSuccessful()) {
                         /** if git pull failed, use git reset **/
                         gitProctorCore.undoLocalChanges();
