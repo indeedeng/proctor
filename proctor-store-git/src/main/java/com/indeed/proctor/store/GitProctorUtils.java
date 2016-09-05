@@ -8,6 +8,9 @@ import java.util.regex.Pattern;
  */
 public class GitProctorUtils {
 
+    public static int GIT_PULL_PUSH_TIMEOUT = 45;
+    public static int GIT_CLONE_TIMEOUT = 180;
+
     private GitProctorUtils() {
         // util class - not meant to be instantiated
     }
