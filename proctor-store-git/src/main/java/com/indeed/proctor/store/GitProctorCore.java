@@ -107,7 +107,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
                                     .setProgressMonitor(PROGRESS_MONITOR)
                                     .setRebase(true)
                                     .setCredentialsProvider(user)
-                                    .setTimeout(GitProctorUtils.GIT_CONNECTION_TIMEOUT_IN_SECOND)
+                                    .setTimeout(GitProctorUtils.GIT_PULL_PUSH_TIMEOUT)
                                     .call();
                         } catch (final Exception e) {
                             LOGGER.error("Could not update existing local repository, creating a new clone...", e);
@@ -117,7 +117,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
                                     .setDirectory(workingDir)
                                     .setProgressMonitor(PROGRESS_MONITOR)
                                     .setCredentialsProvider(user)
-                                    .setTimeout(GitProctorUtils.GIT_CONNECTION_TIMEOUT_IN_SECOND);
+                                    .setTimeout(GitProctorUtils.GIT_CLONE_TIMEOUT);
                             git = gitCommand.call();
                         }
                     } else {
@@ -127,7 +127,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
                                 .setDirectory(workingDir)
                                 .setProgressMonitor(PROGRESS_MONITOR)
                                 .setCredentialsProvider(user)
-                                .setTimeout(GitProctorUtils.GIT_CONNECTION_TIMEOUT_IN_SECOND)
+                                .setTimeout(GitProctorUtils.GIT_PULL_PUSH_TIMEOUT)
                                 .call();
                     }
                 } catch (final GitAPIException e) {
@@ -141,7 +141,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
             git.fetch()
                     .setProgressMonitor(PROGRESS_MONITOR)
                     .setCredentialsProvider(user)
-                    .setTimeout(GitProctorUtils.GIT_CONNECTION_TIMEOUT_IN_SECOND)
+                    .setTimeout(GitProctorUtils.GIT_PULL_PUSH_TIMEOUT)
                     .call();
         } catch (GitAPIException e) {
             LOGGER.error("Unable to fetch from " + gitUrl, e);
@@ -255,7 +255,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
                             .setProgressMonitor(PROGRESS_MONITOR)
                             .setRebase(true)
                             .setCredentialsProvider(user)
-                            .setTimeout(GitProctorUtils.GIT_CONNECTION_TIMEOUT_IN_SECOND)
+                            .setTimeout(GitProctorUtils.GIT_PULL_PUSH_TIMEOUT)
                             .call();
                     if (!pullResult.isSuccessful()) {
                         undoLocalChanges();
@@ -266,7 +266,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
                     if (thingsChanged) {
                         git.commit().setCommitter(username, username).setAuthor(username, username).setMessage(comment).call();
                         final Iterable<PushResult> pushResults = git.push().setProgressMonitor(PROGRESS_MONITOR).setCredentialsProvider(user)
-                                .setTimeout(GitProctorUtils.GIT_CONNECTION_TIMEOUT_IN_SECOND)
+                                .setTimeout(GitProctorUtils.GIT_PULL_PUSH_TIMEOUT)
                                 .call();
                         // jgit doesn't throw an exception for certain kinds of push failures - explicitly check the result
                         for (final PushResult pushResult : pushResults) {
