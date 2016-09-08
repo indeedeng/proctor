@@ -147,7 +147,7 @@ public class ProctorPromoter {
             }
             final Revision destVersion = history.get(0);
             if(!destVersion.getRevision().equals(destRevision)) {
-                throw new TestPromotionException("Test '" + testName + "' updated since " + destRevision + ". Currently at " + history.get(0).getRevision());
+                throw new IllegalArgumentException("Test '" + testName + "' updated since " + destRevision + ". Currently at " + history.get(0).getRevision());
             }
             final String commitMessage = formatCommitMessage(testName , srcBranch, effectiveRevision, destBranch, srcVersion.getMessage());
             LOGGER.info(String.format("%s : Committing %s from %s r%s to %s r%s", username, testName, srcBranch,
