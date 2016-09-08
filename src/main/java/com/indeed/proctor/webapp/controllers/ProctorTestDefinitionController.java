@@ -1,7 +1,6 @@
 package com.indeed.proctor.webapp.controllers;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
@@ -12,16 +11,17 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.indeed.proctor.common.ProctorLoadResult;
+import com.indeed.proctor.common.model.Payload;
+import com.indeed.proctor.webapp.controllers.BackgroundJob.ResultUrl;
 import com.indeed.proctor.common.EnvironmentVersion;
 import com.indeed.proctor.common.IncompatibleTestMatrixException;
-import com.indeed.proctor.common.ProctorLoadResult;
 import com.indeed.proctor.common.ProctorPromoter;
 import com.indeed.proctor.common.ProctorSpecification;
 import com.indeed.proctor.common.ProctorUtils;
 import com.indeed.proctor.common.TestSpecification;
 import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
-import com.indeed.proctor.common.model.Payload;
 import com.indeed.proctor.common.model.Range;
 import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.common.model.TestDefinition;
@@ -29,25 +29,24 @@ import com.indeed.proctor.common.model.TestMatrixArtifact;
 import com.indeed.proctor.common.model.TestMatrixDefinition;
 import com.indeed.proctor.common.model.TestMatrixVersion;
 import com.indeed.proctor.common.model.TestType;
-import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.store.StoreException;
-import com.indeed.proctor.webapp.ProctorSpecificationSource;
-import com.indeed.proctor.webapp.controllers.BackgroundJob.ResultUrl;
 import com.indeed.proctor.webapp.db.Environment;
+import com.indeed.proctor.webapp.ProctorSpecificationSource;
+import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.webapp.extensions.DefinitionChangeLog;
-import com.indeed.proctor.webapp.extensions.PostDefinitionCreateChange;
-import com.indeed.proctor.webapp.extensions.PostDefinitionDeleteChange;
 import com.indeed.proctor.webapp.extensions.PostDefinitionEditChange;
-import com.indeed.proctor.webapp.extensions.PostDefinitionPromoteChange;
 import com.indeed.proctor.webapp.extensions.PreDefinitionCreateChange;
-import com.indeed.proctor.webapp.extensions.PreDefinitionDeleteChange;
+import com.indeed.proctor.webapp.extensions.PostDefinitionCreateChange;
 import com.indeed.proctor.webapp.extensions.PreDefinitionEditChange;
+import com.indeed.proctor.webapp.extensions.PreDefinitionDeleteChange;
+import com.indeed.proctor.webapp.extensions.PostDefinitionDeleteChange;
 import com.indeed.proctor.webapp.extensions.PreDefinitionPromoteChange;
+import com.indeed.proctor.webapp.extensions.PostDefinitionPromoteChange;
 import com.indeed.proctor.webapp.extensions.RevisionCommitCommentFormatter;
 import com.indeed.proctor.webapp.model.AppVersion;
-import com.indeed.proctor.webapp.model.ProctorClientApplication;
 import com.indeed.proctor.webapp.model.RevisionDefinition;
+import com.indeed.proctor.webapp.model.ProctorClientApplication;
 import com.indeed.proctor.webapp.model.SessionViewModel;
 import com.indeed.proctor.webapp.model.WebappConfiguration;
 import com.indeed.proctor.webapp.tags.TestDefinitionFunctions;
@@ -55,35 +54,25 @@ import com.indeed.proctor.webapp.tags.UtilityFunctions;
 import com.indeed.proctor.webapp.util.threads.LogOnUncaughtExceptionHandler;
 import com.indeed.proctor.webapp.views.JsonView;
 import org.apache.log4j.Logger;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.view.RedirectView;
 
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -92,6 +81,9 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Cookie;
 
 /**
  * @author parker
@@ -439,7 +431,7 @@ public class ProctorTestDefinitionController extends AbstractController {
                     LOGGER.error("Deletion Failed: " + getTitle(), exp);
                 } catch (IllegalArgumentException exp) {
                     logFailedJob(this, exp);
-                    LOGGER.info("Deletion Failed: " + getTitle(), exp);
+                    LOGGER.error("Deletion Failed: " + getTitle(), exp);
                 } catch (Exception e) {
                     logFailedJob(this, e);
                     LOGGER.error("Deletion Failed: " + getTitle(), e);
@@ -512,7 +504,7 @@ public class ProctorTestDefinitionController extends AbstractController {
                     LOGGER.error("Promotion Failed: " + getTitle(), exp);
                 } catch (IllegalArgumentException exp) {
                     logFailedJob(this, exp);
-                    LOGGER.info("Promotion Failed: " + getTitle(), exp);
+                    LOGGER.error("Promotion Failed: " + getTitle(), exp);
                 } catch (Exception exp) {
                     logFailedJob(this, exp);
                     LOGGER.error("Promotion Failed: " + getTitle(), exp);
@@ -927,7 +919,7 @@ public class ProctorTestDefinitionController extends AbstractController {
                     LOGGER.error("Edit Failed: " + getTitle(), exp);
                 } catch (IllegalArgumentException exp) {
                     logFailedJob(this, exp);
-                    LOGGER.info("Edit Failed: " + getTitle(), exp);
+                    LOGGER.error("Edit Failed: " + getTitle(), exp);
                 } catch (Exception exp) {
                     logFailedJob(this, exp);
                     LOGGER.error("Edit Failed: " + getTitle(), exp);
@@ -1437,10 +1429,6 @@ public class ProctorTestDefinitionController extends AbstractController {
     // @Nullable
     private static TestDefinition getTestDefinition(final ProctorStore store, final String testName, final String revision) {
         try {
-            if ("-1".equals(revision)){
-                LOGGER.info("Ignore revision id -1");
-                return null;
-            }
             return store.getTestDefinition(testName, revision);
         } catch (StoreException e) {
             LOGGER.error("Failed to get current test definition for: " + testName, e);
