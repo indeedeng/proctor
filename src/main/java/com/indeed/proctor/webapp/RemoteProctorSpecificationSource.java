@@ -1,5 +1,6 @@
 package com.indeed.proctor.webapp;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
@@ -21,9 +22,9 @@ import com.indeed.proctor.webapp.util.threads.LogOnUncaughtExceptionHandler;
 import com.indeed.util.core.DataLoadingTimerTask;
 import com.indeed.util.core.Pair;
 import org.apache.log4j.Logger;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -44,7 +45,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
-import javax.annotation.Nullable;
 
 /**
  * @author parker
@@ -273,7 +273,7 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
                 }
 
                 // Don't yell too load, the error is handled
-                LOGGER.warn("Failed to read specification from: " + client.getBaseApplicationUrl() + " : " + specificationResult.getError() + "\n" + specificationResult.getException());
+                LOGGER.info("Failed to read specification from: " + client.getBaseApplicationUrl() + " : " + specificationResult.getError());
                 results.failed(client, specificationResult);
             } else {
                 results.success(client, specificationResult);
