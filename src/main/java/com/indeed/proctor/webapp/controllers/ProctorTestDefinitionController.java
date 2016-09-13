@@ -593,7 +593,7 @@ public class ProctorTestDefinitionController extends AbstractController {
             }
 
             if (definitionChangeLog.isErrorsFound()) {
-                throw new RuntimeException(changeName + " failed with the following errors: " + definitionChangeLog.getErrors());
+                throw new IllegalArgumentException(changeName + " failed with the following errors: " + definitionChangeLog.getErrors());
             }
         }
     }
@@ -924,7 +924,7 @@ public class ProctorTestDefinitionController extends AbstractController {
                     LOGGER.error("Edit Failed: " + getTitle(), exp);
                 } catch (IncompatibleTestMatrixException exp) {
                     logFailedJob(this, exp);
-                    LOGGER.error("Edit Failed: " + getTitle(), exp);
+                    LOGGER.info("Edit Failed: " + getTitle(), exp);
                 } catch (IllegalArgumentException exp) {
                     logFailedJob(this, exp);
                     LOGGER.info("Edit Failed: " + getTitle(), exp);
@@ -1429,7 +1429,7 @@ public class ProctorTestDefinitionController extends AbstractController {
         try {
             return store.getCurrentTestDefinition(testName);
         } catch (StoreException e) {
-            LOGGER.error("Failed to get current test definition for: " + testName, e);
+            LOGGER.info("Failed to get current test definition for: " + testName, e);
             return null;
         }
     }
@@ -1443,7 +1443,7 @@ public class ProctorTestDefinitionController extends AbstractController {
             }
             return store.getTestDefinition(testName, revision);
         } catch (StoreException e) {
-            LOGGER.error("Failed to get current test definition for: " + testName, e);
+            LOGGER.info("Failed to get current test definition for: " + testName, e);
             return null;
         }
     }
@@ -1473,7 +1473,7 @@ public class ProctorTestDefinitionController extends AbstractController {
             }
             return history;
         } catch (StoreException e) {
-            LOGGER.error("Failed to get current test history for: " + testName, e);
+            LOGGER.info("Failed to get current test history for: " + testName, e);
             return null;
         }
     }
