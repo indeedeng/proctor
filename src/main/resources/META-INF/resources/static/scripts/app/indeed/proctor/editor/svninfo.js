@@ -5,7 +5,7 @@ goog.require('goog.dom.forms');
 goog.require('goog.events');
 goog.require('goog.events.EventHandler');
 goog.require('goog.events.EventTarget');
-goog.require('goog.net.XhrLite');
+goog.require('goog.net.XhrIo');
 goog.require('goog.string');
 goog.require('indeed.foundation.alerts');
 goog.require('indeed.foundation.forms');
@@ -114,7 +114,7 @@ indeed.proctor.editor.SvnInfoEditor.prototype.save_ = function() {
 
   this.displayProgress_('Saving ...');
 
-  goog.net.XhrLite.send(
+  goog.net.XhrIo.send(
       this.form_.action,
       goog.bind(this.onSaveCallback_, this),
       this.form_.method,
@@ -131,7 +131,8 @@ indeed.proctor.editor.SvnInfoEditor.prototype.save_ = function() {
  * @private
  */
 indeed.proctor.editor.SvnInfoEditor.prototype.onSaveCallback_ = function(e) {
-  var xhr = /** @type {goog.net.XhrIo} */ e.target, job;
+  /** @type {goog.net.XhrIo} */
+  var xhr = e.target, job;
   if (xhr.isSuccess()) {
     var json = xhr.getResponseJson();
     if (json['success']) {

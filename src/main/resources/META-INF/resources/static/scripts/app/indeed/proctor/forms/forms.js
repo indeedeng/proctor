@@ -105,7 +105,7 @@ indeed.proctor.forms.addToObject_ = function(path, value, obj) {
 
     // eg a.b[0].c[0]
     // will set head = a.b[0] = {}
-    head = /** @type {Object} */
+    head = /** Object */
         indeed.proctor.forms.addToObjectFromFieldInfo_(head,
             field_info.name,
             field_info.index,

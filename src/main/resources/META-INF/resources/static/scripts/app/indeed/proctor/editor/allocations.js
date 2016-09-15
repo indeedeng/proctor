@@ -440,9 +440,10 @@ indeed.proctor.editor.AllocationEditor.prototype.onAddRatioClick_ =
       goog.dom.TagName.SELECT, undefined, this.addRatioRow)[0];
   var bucketLength = this.dom_.getElementsByTagNameAndClass(
       goog.dom.TagName.INPUT, undefined, this.addRatioRow)[0];
-
-  var value = /** @type {string} */goog.dom.forms.getValue(bucketSelect);
-  var length = /** @type {string} */goog.dom.forms.getValue(bucketLength);
+  /** @type {string} */
+  var value = goog.dom.forms.getValue(bucketSelect);
+  /** @type {string} */
+  var length = goog.dom.forms.getValue(bucketLength);
   this.addRatio(value, length);
 };
 
@@ -557,6 +558,7 @@ indeed.proctor.editor.AllocationEditor.prototype.buildBucketSelector_ =
  */
 indeed.proctor.editor.AllocationEditor.prototype.buildBucketOptions_ =
     function(value) {
+  /** @type {Element} */
   var df = document.createDocumentFragment();
   for (var i = 0; i < this.buckets.length; i++) {
     var bucket = this.buckets[i];
@@ -569,7 +571,7 @@ indeed.proctor.editor.AllocationEditor.prototype.buildBucketOptions_ =
     option.text = bucket['name']; // escape inner html
     goog.dom.appendChild(df, option);
   }
-  return /** @type {Element} */ df;
+  return /** @type {Element} */ (df);
 };
 
 
@@ -824,7 +826,8 @@ indeed.proctor.editor.AllocationEditor.prototype.bucketsUpdated =
       undefined, this.dom_.getElementByClass('js-allocations', this.container));
   for (var i = 0; i < selectors.length; i++) {
     var selector = selectors[i];
-    var oldvalue = /** @type {string} */ goog.dom.forms.getValue(selector);
+    /** @type {string} */
+    var oldvalue = goog.dom.forms.getValue(selector);
     var oldbucket = this.getBucketByValue_(oldvalue, oldbuckets) ||
                     {'value': -9999, 'name': 'Unknown'},
         newbucket = this.getBucketByValueOrName_(oldbucket['value'],

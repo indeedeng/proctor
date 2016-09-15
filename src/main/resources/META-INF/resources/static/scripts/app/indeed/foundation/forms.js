@@ -15,7 +15,8 @@ indeed.foundation.forms.addError = function(el, errormessage, opt_label) {
   if (opt_label) {
     goog.dom.classes.add(opt_label, 'error');
   }
-  var parent = /** @type {Element} */ el.parentNode;
+  /** @type {Element} */
+  var parent = el.parentNode;
   var small = goog.dom.getElementsByTagNameAndClass(goog.dom.TagName.SMALL,
                                                     'error', parent);
   if (small.length == 0) {
@@ -35,7 +36,8 @@ indeed.foundation.forms.addError = function(el, errormessage, opt_label) {
  * @param {Element=} opt_label Optional label element to remove the error.
  */
 indeed.foundation.forms.removeError = function(el, opt_label) {
-  var parent = /** @type {Element} */ el.parentNode;
+  /** @type {Element} */
+  var parent = el.parentNode;
   var small = goog.dom.getElementsByTagNameAndClass(goog.dom.TagName.SMALL,
                                                     'error',
                                                     parent);

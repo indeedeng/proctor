@@ -121,5 +121,5 @@ indeed.proctor.editor.BasicEditor.prototype.validate = function() {
  * @return {string} Returns the current test name.
  */
 indeed.proctor.editor.BasicEditor.prototype.getTestName = function() {
-  return /** @type {string} */ goog.dom.forms.getValue(this.name);
+  return /** @type {string} */ (goog.dom.forms.getValue(this.name));
 };

@@ -72,10 +72,10 @@ indeed.foundation.Tabs.prototype.onTabHeaderClick = function(e) {
   if (!goog.History.HAS_ONHASHCHANGE) {
     e.preventDefault();
   }
-  var dd = /** @type {Element} */ e.currentTarget;
+  /** @type {Element} */
+  var dd = e.currentTarget;
   if (dd.tagName.toUpperCase() !== goog.dom.TagName.DD) {
-    dd = /** @type {Element} */ goog.dom.getAncestorByTagNameAndClass(dd,
-        goog.dom.TagName.DD);
+    /** Element */ dd = goog.dom.getAncestorByTagNameAndClass(dd, goog.dom.TagName.DD);
   }
   var a = goog.dom.getElementsByTagNameAndClass(goog.dom.TagName.A,
                                                 null, dd)[0];

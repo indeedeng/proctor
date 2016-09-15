@@ -714,14 +714,17 @@ indeed.proctor.editor.BucketsEditor.prototype.validate = function() {
         el_name = this.dom_.getElementByClass('js-bucket-name', row),
         el_description = this.dom_.getElementByClass('js-bucket-description', row),
         el_payload = this.dom_.getElementByClass('js-bucket-payload', row);
-    var value = /** @type {string} */ goog.dom.forms.getValue(el_value);
+    /** @type {string} */
+    var value = goog.dom.forms.getValue(el_value);
     if (!goog.string.isEmptySafe(value)) {
       value = goog.string.toNumber(value); //coerce to number
     }
-    var name = /** @type {string} */ goog.dom.forms.getValue(el_name);
-    var description =
-        /** @type {string} */ goog.dom.forms.getValue(el_description);
-    var payload = /** @type {string} */ goog.dom.forms.getValue(el_payload);
+    /** @type {string} */
+    var name = goog.dom.forms.getValue(el_name);
+    /** @type {string} */
+    var description = goog.dom.forms.getValue(el_description);
+    /** @type {string} */
+    var payload = goog.dom.forms.getValue(el_payload);
     var rowValid = this.validateBucket_(value,
         name, description, payload, this.payloadType, i,
         el_value, el_name, el_description, el_payload);
