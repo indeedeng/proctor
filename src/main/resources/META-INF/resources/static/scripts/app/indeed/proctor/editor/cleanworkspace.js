@@ -1,7 +1,7 @@
 goog.provide('indeed.proctor.editor.CleanWorkspace');
 
 goog.require('goog.json');
-goog.require('goog.net.XhrLite');
+goog.require('goog.net.XhrIo');
 goog.require('goog.array');
 goog.require('goog.dom');
 goog.require('goog.events');
@@ -42,7 +42,7 @@ indeed.proctor.editor.CleanWorkspace.onWorkspaceClick_ = function(ev) {
     if(indeed.proctor.forms.validateRequired(usernameInput)) {
       username = goog.dom.forms.getValue(usernameInput);
 
-      goog.net.XhrLite.send(
+      goog.net.XhrIo.send(
             '/proctor/rpc/svn/clean-working-directory',
             indeed.proctor.editor.CleanWorkspace.onCleanCallback_,
             'POST',

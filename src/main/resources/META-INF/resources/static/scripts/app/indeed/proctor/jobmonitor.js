@@ -113,7 +113,7 @@ indeed.proctor.JobMonitor.prototype.onJobFinished_ = function(ev) {
                                           this.boundingBox_),
       job = ev.job_status,
       urls = job['urls'],
-      endMessage = job['endMessage'];
+      endMessage = job['endMessage'],
       ul;
   if (cancel) {
     goog.events.removeAll(cancel);
@@ -240,7 +240,8 @@ indeed.proctor.JobMonitor.prototype.onAjaxSuccess_ = function(ev) {
  * @private
  */
 indeed.proctor.JobMonitor.prototype.onAjaxError_ = function(ev) {
-  var xhr = /** @type {goog.net.XhrIo} */ ev.target;
+  /** @type {goog.net.XhrIo} */
+  var xhr = ev.target;
   var msg = xhr.getLastErrorCode() + ': ' + xhr.getLastError();
   this.update(msg,
       'ERROR',

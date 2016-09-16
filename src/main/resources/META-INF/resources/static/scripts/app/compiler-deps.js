@@ -4,5 +4,5 @@ goog.addDependency('',
      'goog.debug.ErrorHandler'], []);
 
 goog.addDependency('',
-    ['goog.net.XhrLite',
+    ['goog.net.XhrIo',
      'goog.Uri'], []);

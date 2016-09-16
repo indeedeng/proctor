@@ -6,7 +6,7 @@ goog.require('goog.events');
 goog.require('goog.events.EventHandler');
 goog.require('goog.events.EventTarget');
 goog.require('goog.json');
-goog.require('goog.net.XhrLite');
+goog.require('goog.net.XhrIo');
 goog.require('goog.style');
 goog.require('goog.uri.utils');
 goog.require('indeed.expandcollapse.ExpandCollapse');
@@ -220,7 +220,7 @@ indeed.proctor.app.editor.DefinitionEditor.prototype.save_ = function() {
     url = url.replace(encodeURIComponent('{testName}'),
                       this.basicEditor_.getTestName());
   }
-  goog.net.XhrLite.send(
+  goog.net.XhrIo.send(
       url,
       goog.bind(this.onSaveCallback_, this),
       'POST',

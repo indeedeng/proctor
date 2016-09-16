@@ -333,13 +333,13 @@
     <properties>
         <proctor.version>1.1.21</proctor.version>
         <indeed-util.version>1.0.12</indeed-util.version>
-        <closure-library.version>0.0-20130212-95c19e7f0f5f</closure-library.version>
-        <closure-library-zip>closure-library-20130212-95c19e7f0f5f.zip</closure-library-zip>
-        <closure-library-url>https://closure-library.googlecode.com/files/${closure-library-zip}</closure-library-url>
-        <closure-library-dir>${basedir}/target/closure-library</closure-library-dir>
-        <closure-compiler.version>r1459</closure-compiler.version>
-        <closure-compiler-zip>compiler-20111003.zip</closure-compiler-zip>
-        <closure-compiler-url>https://closure-compiler.googlecode.com/files/${closure-compiler-zip}</closure-compiler-url>
+        <closure-library.version>20160106</closure-library.version>
+        <closure-library-zip>v${closure-library.version}.zip</closure-library-zip>
+        <closure-library-url>https://github.com/google/closure-library/archive/${closure-library-zip}</closure-library-url>
+        <closure-library-dir>${basedir}/target/closure-library/closure-library-${closure-library.version}</closure-library-dir>
+        <closure-compiler.version>20160315</closure-compiler.version>
+        <closure-compiler-zip>compiler-${closure-compiler.version}.zip</closure-compiler-zip>
+        <closure-compiler-url>http://dl.google.com/closure-compiler/${closure-compiler-zip}</closure-compiler-url>
     </properties>
 
 </project>
