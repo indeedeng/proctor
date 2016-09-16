@@ -24,7 +24,7 @@ goog.require('indeed.proctor.CenterWindowPosition');
  * @extends {goog.events.EventTarget}
  */
 indeed.proctor.JobMonitor = function(container, jobid) {
-
+  goog.base(this);
   /** @type {number} */
   this.jobid = jobid;
   /** @type {number} */
