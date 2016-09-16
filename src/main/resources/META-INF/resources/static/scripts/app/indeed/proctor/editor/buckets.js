@@ -6,6 +6,7 @@ goog.require('goog.events.EventHandler');
 goog.require('goog.events.EventTarget');
 goog.require('goog.math');
 goog.require('goog.string');
+goog.require('goog.string.StringBuffer');
 goog.require('indeed.proctor.forms');
 
 
