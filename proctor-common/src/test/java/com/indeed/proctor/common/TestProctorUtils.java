@@ -640,6 +640,26 @@ public class TestProctorUtils {
     }
 
     @Test
+    public void noBucketsSpecified() throws IncompatibleTestMatrixException {
+        // The test-matrix has 3 buckets
+        List<TestBucket> buckets = fromCompactBucketFormat("zero:0,one:1,two:2");
+        // The proctor-specification does not specify any buckets
+        final TestSpecification testSpecification = transformTestBuckets(Collections.<TestBucket>emptyList());
+        Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, testSpecification);
+
+        {
+            final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
+            // Allocation of bucketValue=2 is > 0
+            final ConsumableTestDefinition testDefinition = constructDefinition(buckets, fromCompactAllocationFormat("0:0,1:0,2:1.0"));
+            tests.put(TEST_A, testDefinition);
+
+            final TestMatrixArtifact matrix = constructArtifact(tests);
+
+            assertValid("allocation for externally unknown bucket (two) > 0 when no buckets are specified", matrix, requiredTests);
+        }
+    }
+
+    @Test
     public void internallyUnknownBucketWithAllocationGreaterThanZero() throws IncompatibleTestMatrixException {
          // The test-matrix has 3 buckets
         List<TestBucket> buckets = fromCompactBucketFormat("zero:0,one:1,two:2");

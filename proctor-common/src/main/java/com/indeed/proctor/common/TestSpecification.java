@@ -18,8 +18,6 @@ public class TestSpecification {
 
     private String description;
 
-    private boolean payloadOnly;
-
     public int getFallbackValue() {
         return fallbackValue;
     }
@@ -53,14 +51,5 @@ public class TestSpecification {
 
     public void setPayload(@Nullable final PayloadSpecification payload) {
         this.payload = payload;
-    }
-
-    public boolean isPayloadOnly() {
-        return payloadOnly;
-    }
-
-    public TestSpecification setPayloadOnly(boolean payloadOnly) {
-        this.payloadOnly = payloadOnly;
-        return this;
     }
 }

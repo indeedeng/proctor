@@ -363,6 +363,35 @@
                     ]
                 }
             ]
+        },
+
+        "no_buckets_specified" : {
+            "version" : 1,
+            "salt" : "no_buckets_specified",
+            "testType" : "USER",
+            "description" : "This test is used to verify not listing buckets in the specification",
+            "buckets" : [
+                {
+                    "name" : "inactive",
+                    "value" : -1
+                },
+                {
+                    "name" : "control",
+                    "value" : 0
+                },
+                {
+                    "name" : "test",
+                    "value" : 1
+                }
+            ],
+            "allocations" : [
+                {
+                    "ranges" : [
+                        {"bucketValue":  0, "length": 0.0 },
+                        {"bucketValue":  1, "length": 1.0 }
+                    ]
+                }
+            ]
         }
     }
 }
