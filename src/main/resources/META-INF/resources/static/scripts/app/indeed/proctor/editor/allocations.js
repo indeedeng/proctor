@@ -803,9 +803,6 @@ indeed.proctor.editor.AllocationEditor.prototype.toJSON = function() {
       );
   var definition = indeed.proctor.forms.toJSON(els);
   var allocation = definition['allocations'][this.index];
-  if (this.isDefault) {
-    allocation['rule'] = null;
-  }
   if (!goog.isDef(allocation['ranges'])) {
     allocation['ranges'] = [];
   }
@@ -886,17 +883,7 @@ indeed.proctor.editor.AllocationEditor.prototype.render_ = function() {
 indeed.proctor.editor.AllocationEditor.prototype.validate = function() {
   var json = this.toJSON();
   var isValid = true;
-  if (this.isDefault) {
-    if (!goog.string.isEmptySafe(json['rule'])) {
-      indeed.foundation.forms.addError(
-          goog.dom.getElementByClass('js-input-rule', this.container),
-          'Rule should be empty');
-      isValid = false;
-    } else {
-      indeed.foundation.forms.removeError(
-          goog.dom.getElementByClass('js-input-rule', this.container));
-    }
-  } else {
+  if (!this.isDefault) {
     if (goog.string.isEmptySafe(json['rule'])) {
       indeed.foundation.forms.addError(
           goog.dom.getElementByClass('js-input-rule', this.container),
