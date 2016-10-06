@@ -93,6 +93,9 @@
             "payload" : {
                 "type" : "stringArray"
             }
+        },
+        "no_buckets_specified" : {
+            "fallbackValue": -1
         }
     },
     "providedContext": {

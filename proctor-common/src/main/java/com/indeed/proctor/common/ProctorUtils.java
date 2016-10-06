@@ -381,9 +381,9 @@ public abstract class ProctorUtils {
         }
         verifyInternallyConsistentDefinition(testName, matrixSource, testDefinition, functionMapper, providedContext);
 
-        if (!testSpecification.isPayloadOnly()) {
+        if (!testSpecification.getBuckets().isEmpty()) {
                 /*
-                 * test the matrix for adherence to this application's requirements
+                 * test the matrix for adherence to this application's requirements, if buckets were specified
                  */
             final Set<Integer> unknownBuckets = Sets.newHashSet();
 

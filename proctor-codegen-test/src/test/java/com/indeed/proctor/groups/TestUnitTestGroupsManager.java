@@ -112,7 +112,7 @@ public class TestUnitTestGroupsManager {
                                                             .build());
 
             final ProctorResult result = testContext.getProctorResult(manager, identifiers);
-            assertEquals("kluj:kloo2,map_payload:inactive-1,oop_poop:test1,payloaded:inactive-1,payloaded_verified:inactive-1,pimple:control0", calcBuckets(result));
+            assertEquals("kluj:kloo2,map_payload:inactive-1,no_buckets_specified:test1,oop_poop:test1,payloaded:inactive-1,payloaded_verified:inactive-1,pimple:control0", calcBuckets(result));
         }
         {
             final ImmutableMap<TestType, String> idMap = ImmutableMap.<TestType, String>builder()
@@ -159,7 +159,7 @@ public class TestUnitTestGroupsManager {
                     .build();
             final Identifiers identifiers = new Identifiers(TestType.ANONYMOUS_USER, "16s2o7s01001d9vj");
             final ProctorResult result = testContext.getProctorResult(manager, identifiers);
-            assertEquals("kluj:test1,map_payload:inactive-1,oop_poop:control0,payloaded:inactive-1,payloaded_verified:inactive-1", calcBuckets(result));
+            assertEquals("kluj:test1,map_payload:inactive-1,no_buckets_specified:test1,oop_poop:control0,payloaded:inactive-1,payloaded_verified:inactive-1", calcBuckets(result));
             // Check and make sure UnitTestGroups respects these groups and works as expected.
             final UnitTestGroups grps = new UnitTestGroups(result);
 
@@ -179,7 +179,7 @@ public class TestUnitTestGroupsManager {
             assertTrue(grps.isKlujTest());
             assertFalse(grps.isKlujKloo());
             assertFalse(grps.isKlujLoooj());
-            assertEquals("kluj1,oop_poop0", grps.toString());
+            assertEquals("kluj1,no_buckets_specified1,oop_poop0", grps.toString());
         }
     }
 
@@ -300,7 +300,7 @@ public class TestUnitTestGroupsManager {
                 .put(TestType.ANONYMOUS_USER, SPECIFICATION_MATRIX)
                 .build());
         final ProctorResult result = testContext.getProctorResult(manager, identifiers);
-        assertEquals("kluj:kloo2,map_payload:inactive-1,oop_poop:test1,payloaded:inactive-1,payloaded_verified:inactive-1", calcBuckets(result));
+        assertEquals("kluj:kloo2,map_payload:inactive-1,no_buckets_specified:test1,oop_poop:test1,payloaded:inactive-1,payloaded_verified:inactive-1", calcBuckets(result));
         // Check and make sure UnitTestGroups respects these groups and works as expected.
         final UnitTestGroups grps = new UnitTestGroups(result);
         assertNotNull(grps.getPayloaded_verified());
@@ -316,7 +316,7 @@ public class TestUnitTestGroupsManager {
         assertEquals(5, grps.getPayloaded_verifiedPayloadForBucket(UnitTestGroups.Payloaded_verified.CONTROL), 0.001);
         assertEquals(50, grps.getPayloaded_verifiedPayloadForBucket(UnitTestGroups.Payloaded_verified.TEST), 0.001);
 
-        assertEquals("kluj2,oop_poop1", grps.toString());
+        assertEquals("kluj2,no_buckets_specified1,oop_poop1", grps.toString());
 
         assertNotNull(grps.getPayloaded_excluded());
         assertEquals(
@@ -336,7 +336,7 @@ public class TestUnitTestGroupsManager {
                 .build();
         final Identifiers identifiers = new Identifiers(TestType.USER, "16s2o7s01001d9vj");
         final ProctorResult result = testContext.getProctorResult(manager, identifiers);
-        assertEquals("kluj:test1,map_payload:inactive-1,oop_poop:control0,payloaded:inactive-1,payloaded_verified:inactive-1", calcBuckets(result));
+        assertEquals("kluj:test1,map_payload:inactive-1,no_buckets_specified:test1,oop_poop:control0,payloaded:inactive-1,payloaded_verified:inactive-1", calcBuckets(result));
         // Check and make sure UnitTestGroups respects these groups and works as expected.
         final UnitTestGroups grps = new UnitTestGroups(result);
         //make sure getDescription method exists and returns the correct description
@@ -352,7 +352,7 @@ public class TestUnitTestGroupsManager {
                 .build();
         final Identifiers identifiers = new Identifiers(TestType.USER, "16s2o7s01001d9vj");
         final ProctorResult result = testContext.getProctorResult(manager, identifiers);
-        assertEquals("kluj:test1,map_payload:inactive-1,oop_poop:control0,payloaded:inactive-1,payloaded_verified:inactive-1", calcBuckets(result));
+        assertEquals("kluj:test1,map_payload:inactive-1,no_buckets_specified:test1,oop_poop:control0,payloaded:inactive-1,payloaded_verified:inactive-1", calcBuckets(result));
         // Check and make sure UnitTestGroups respects these groups and works as expected.
         final UnitTestGroups grps = new UnitTestGroups(result);
         //make sure getDescription method exists and returns the correct description with escaping

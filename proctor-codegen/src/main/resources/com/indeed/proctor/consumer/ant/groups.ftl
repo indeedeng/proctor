@@ -24,7 +24,7 @@ public class ${mainClassName} extends AbstractGroups {
     public static Bucket<${testEnumName}>[] getBuckets(final ${testEnumName} test) {
         switch (test) {
             <#list testDefs as testDef>
-            <#if !testDef.payloadOnly>
+            <#if testDef.buckets?has_content>
             case ${testDef.enumName}:
                 return ${testDef.javaClassName}.values();
             </#if>
@@ -58,7 +58,7 @@ public class ${mainClassName} extends AbstractGroups {
     }
 
 <#list testDefs as testDef>
-    <#if !testDef.payloadOnly>
+    <#if testDef.buckets?has_content>
     public enum ${testDef.javaClassName} implements Bucket<${testEnumName}> {
         <#list testDef.buckets as bucket>
         ${bucket.enumName}(${bucket.value}, "${bucket.name}")<#if bucket_has_next>,<#else>;</#if>
@@ -105,7 +105,7 @@ public class ${mainClassName} extends AbstractGroups {
 
 </#list>
 <#list testDefs as testDef>
-    <#if !testDef.payloadOnly>
+    <#if testDef.buckets?has_content>
     @Nonnull
     public ${testDef.javaClassName} get${testDef.javaClassName}() {
         for (final ${testDef.javaClassName} bucket : ${testDef.javaClassName}.values()) {
@@ -135,14 +135,14 @@ public class ${mainClassName} extends AbstractGroups {
     <#if (testDef.payloadJavaClass)??>
     <#if (testDef.isMap)??>
     public @Nullable ${mainClassName}Payload.${testDef.name?cap_first} get${testDef.javaClassName}Payload() {
-        final @Nullable TestBucket bucket = getTestBucketForBucket(${testEnumName}.${testDef.enumName}.getName()<#if !testDef.payloadOnly>, ${testDef.javaClassName}.getFallback()</#if>);
+        final @Nullable TestBucket bucket = getTestBucketForBucket(${testEnumName}.${testDef.enumName}.getName()<#if testDef.buckets?has_content>, ${testDef.javaClassName}.getFallback()</#if>);
         if (bucket == null) {
             return null;
         }
         return new ${mainClassName}Payload.${testDef.name?cap_first}(bucket);
     }
 
-    <#if !testDef.payloadOnly>
+    <#if testDef.buckets?has_content>
     public @Nullable ${mainClassName}Payload.${testDef.name?cap_first} get${testDef.javaClassName}PayloadForBucket(final ${testDef.javaClassName} targetBucket) {
         final @Nullable TestBucket bucket = getTestBucketForBucket(${testEnumName}.${testDef.enumName}.getName(), targetBucket);
         if (bucket == null) {
@@ -153,11 +153,11 @@ public class ${mainClassName} extends AbstractGroups {
     </#if>
     <#else>
     public @Nullable ${testDef.payloadJavaClass} get${testDef.javaClassName}Payload() {
-        final Payload payload = getPayload(${testEnumName}.${testDef.enumName}.getName()<#if !testDef.payloadOnly>, ${testDef.javaClassName}.getFallback()</#if>);
+        final Payload payload = getPayload(${testEnumName}.${testDef.enumName}.getName()<#if testDef.buckets?has_content>, ${testDef.javaClassName}.getFallback()</#if>);
         return payload.${testDef.payloadAccessorName}();
     }
 
-    <#if !testDef.payloadOnly>
+    <#if testDef.buckets?has_content>
     public @Nullable ${testDef.payloadJavaClass} get${testDef.javaClassName}PayloadForBucket(final ${testDef.javaClassName} targetBucket) {
         final @Nullable TestBucket bucket = getTestBucketForBucket(${testEnumName}.${testDef.enumName}.getName(), targetBucket);
         if (bucket == null) {
