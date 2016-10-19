@@ -86,7 +86,6 @@ public class CachingProctorStore implements ProctorStore {
 
     @Override
     public TestDefinition getTestDefinition(final String test, final String fetchRevision) throws StoreException {
-
         if (!cacheHolder.getCachedHistory().containsKey(test)) {
             LOGGER.info(String.format("Test {%s} doesn't exist", test));
             return null;
