@@ -17,16 +17,9 @@ import org.apache.log4j.Logger;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 public class GitProctorStoreFactory implements StoreFactory {
     private static final Logger LOGGER = Logger.getLogger(GitProctorStoreFactory.class);
-
-    /**
-     * @deprecated Executor is no longer required. Now refreshing function is integrated in caching.
-     */
-    @Deprecated
-    final ScheduledExecutorService executor;
 
     private String gitUrl;
     private String gitUsername;
@@ -39,15 +32,6 @@ public class GitProctorStoreFactory implements StoreFactory {
     private final File tempRoot;
 
     /**
-     * The period to use when scheduling a refresh of the git directory
-     *
-     * @deprecated Executor is no longer required. Now refreshing function is integrated in caching.
-     */
-    @Deprecated
-    private long gitRefreshMillis = TimeUnit.SECONDS.toMillis(300);
-
-
-    /**
      * @deprecated executor and gitRefreshSecond are no longer required. Use other constructors instead.
      */
     @Deprecated
@@ -58,12 +42,10 @@ public class GitProctorStoreFactory implements StoreFactory {
                                   final String gitPassword,
                                   final String testDefinitionsDirectory,
                                   final String tempRootDirectory) throws IOException, ConfigurationException {
-        this.executor = executor;
         this.gitUrl = gitUrl;
         this.gitUsername = gitUsername;
         this.gitPassword = gitPassword;
         this.testDefinitionsDirectory = testDefinitionsDirectory;
-        this.gitRefreshMillis = TimeUnit.SECONDS.toMillis(gitRefreshSeconds);
 
         if (StringUtils.isEmpty(tempRootDirectory)) {
             tempRoot = identifyImplicitTempRoot();
@@ -77,7 +59,6 @@ public class GitProctorStoreFactory implements StoreFactory {
                                   final String gitPassword,
                                   final String testDefinitionsDirectory,
                                   final String tempRootDirectory) throws IOException, ConfigurationException {
-        this.executor = null; /* dummy */
         this.gitUrl = gitUrl;
         this.gitUsername = gitUsername;
         this.gitPassword = gitPassword;
