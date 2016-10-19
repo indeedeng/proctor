@@ -276,6 +276,6 @@ public class SvnProctor extends FileBasedProctorStore {
 
     @Override
     public String getName() {
-        return "";
+        return "SvnProctor";
     }
 }

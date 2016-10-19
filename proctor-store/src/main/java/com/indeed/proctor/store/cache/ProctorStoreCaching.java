@@ -21,12 +21,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
- * Caching test histories
+ * @author yiqing
  */
 public class ProctorStoreCaching implements ProctorStore {
 
@@ -47,7 +46,7 @@ public class ProctorStoreCaching implements ProctorStore {
             cacheHolder.start();
         } catch (final StoreException e) {
             LOGGER.error("Failed to initialize ProctorStoreCaching", e);
-            Throwables.propagate(e);
+            throw Throwables.propagate(e);
         }
     }
 
@@ -142,7 +141,7 @@ public class ProctorStoreCaching implements ProctorStore {
 
     @Override
     public void refresh() throws StoreException {
-        delegate.refresh();
+        cacheHolder.refreshAll();
     }
 
     public static <T> List<T> selectHistorySet(final List<T> histories, final int start, final int limit) {
@@ -172,7 +171,7 @@ public class ProctorStoreCaching implements ProctorStore {
                                      final Map<String, String> metadata,
                                      final String comment) throws StoreException.TestUpdateException {
         delegate.updateTestDefinition(username, password, previousVersion, testName, testDefinition, metadata, comment);
-        cacheHolder.reschedule();
+        cacheHolder.startRefreshCacheTask();
     }
 
     @Override
@@ -183,7 +182,7 @@ public class ProctorStoreCaching implements ProctorStore {
                                      final TestDefinition testDefinition,
                                      final String comment) throws StoreException.TestUpdateException {
         delegate.deleteTestDefinition(username, password, previousVersion, testName, testDefinition, comment);
-        cacheHolder.reschedule();
+        cacheHolder.startRefreshCacheTask();
     }
 
     @Override
@@ -194,7 +193,7 @@ public class ProctorStoreCaching implements ProctorStore {
                                   final Map<String, String> metadata,
                                   final String comment) throws StoreException.TestUpdateException {
         delegate.addTestDefinition(username, password, testName, testDefinition, metadata, comment);
-        cacheHolder.reschedule();
+        cacheHolder.startRefreshCacheTask();
     }
 
     @Override
@@ -202,32 +201,34 @@ public class ProctorStoreCaching implements ProctorStore {
         return delegate.getName();
     }
 
+    /**
+     * This class provides thread-safe read/write operations to the cached data including
+     * the latest version, revision histories of all ProTest and maximum 5 versions of test Matrix.
+     */
     class CacheHolder {
-
-        private final AtomicReference<Map<String, List<Revision>>> historyCache = new AtomicReference<Map<String, List<Revision>>>();
         private final ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
         private final Lock readLock = readWriteLock.readLock();
         private final Lock writeLock = readWriteLock.writeLock();
 
-        private final AtomicReference<String> cachedLatestVersion = new AtomicReference<String>();
-        /* version information would changed so we don't expire */
+        private String cachedLatestVersion;
+        private Map<String, List<Revision>> historyCache;
+
+        /* version information won't change so we don't expire */
         private final Cache<String, TestMatrixVersion> versionCache = CacheBuilder.newBuilder()
                 .maximumSize(5)
                 .build();
 
         private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
         private ScheduledFuture<?> scheduledFuture;
-        //private final ProctorStore proctorStore;
 
-        /*public CacheHolder(final ProctorStore proctorStore) {
-            delegate = proctorStore;
-        }*/
-
-        final Runnable updateCacheTask = new Runnable() {
+        /**
+         * background task to refresh cache
+         */
+        final Runnable refreshCacheTask = new Runnable() {
             @Override
             public void run() {
                 try {
-                    tryUpdateCache();
+                    refreshAll();
                 } catch (final StoreException e) {
                     LOGGER.error("Failed to update cache", e);
                 }
@@ -239,7 +240,7 @@ public class ProctorStoreCaching implements ProctorStore {
             return synchronizedCacheRead(new Callable<Map<String, List<Revision>>>() {
                 @Override
                 public Map<String, List<Revision>> call() {
-                    return historyCache.get();
+                    return historyCache;
                 }
             });
         }
@@ -249,7 +250,7 @@ public class ProctorStoreCaching implements ProctorStore {
             return synchronizedCacheRead(new Callable<String>() {
                 @Override
                 public String call() {
-                    return cachedLatestVersion.get();
+                    return cachedLatestVersion;
                 }
             });
         }
@@ -283,17 +284,26 @@ public class ProctorStoreCaching implements ProctorStore {
             return !newVersion.equals(getCachedLatestVersion());
         }
 
-        protected void tryUpdateCache() throws StoreException {
+        /**
+         * This method refreshes ProctorStore delegate and determines whether to refresh cache data.
+         * @throws StoreException
+         */
+        public void refreshAll() throws StoreException {
             delegate.refresh();
             if (hasNewVersion()) {
-                lockAndUpdateCache();
+                lockAndRefreshCache();
             } else {
-                LOGGER.info(String.format("[%s] Latest version not changed, no need to update cache", delegate.getName()));
+                LOGGER.info(String.format("[%s] Latest version is not changed. Do not refresh cache", delegate.getName()));
             }
         }
 
-        private void lockAndUpdateCache() throws StoreException {
-            LOGGER.debug(String.format("[%s] Cache reload started", delegate.getName()));
+        /**
+         * This method refreshes cache data.
+         * Other read/write operations are blocked
+         * @throws StoreException
+         */
+        private void lockAndRefreshCache() throws StoreException {
+            LOGGER.debug(String.format("[%s] Refreshing cache data started", delegate.getName()));
             synchronizedCacheWrite(new Callable<Void>() {
                 @Override
                 public Void call() throws StoreException {
@@ -301,69 +311,96 @@ public class ProctorStoreCaching implements ProctorStore {
                     final String newVersion = currentTestMatrix.getVersion();
                     final Map<String, List<Revision>> allHistories = delegate.getAllHistories();
                     versionCache.put(newVersion, currentTestMatrix);
-                    cachedLatestVersion.set(newVersion);
-                    historyCache.set(allHistories);
+                    cachedLatestVersion = newVersion;
+                    historyCache = allHistories;
                     return null;
                 }
             });
-            LOGGER.debug(String.format("[%s] Cache reload finished", delegate.getName()));
+            LOGGER.debug(String.format("[%s] Refreshing cache data finished", delegate.getName()));
         }
 
+        /**
+         * This method initialize CacheHolder.
+         * It loads data to cache and starts background task to refresh cache periodically
+         * @throws StoreException
+         */
         public void start() throws StoreException {
-            LOGGER.info(String.format("[%s] Starting CacheHolder for branch ", delegate.getName()));
-            lockAndUpdateCache();
+            LOGGER.info(String.format("[%s] Starting Caching for ProctorStore ", delegate.getName()));
+            lockAndRefreshCache();
             scheduledFuture = scheduledExecutorService
-                    .scheduleWithFixedDelay(updateCacheTask, REFRESH_RATE_IN_SECOND, REFRESH_RATE_IN_SECOND, TimeUnit.SECONDS);
+                    .scheduleWithFixedDelay(refreshCacheTask, REFRESH_RATE_IN_SECOND, REFRESH_RATE_IN_SECOND, TimeUnit.SECONDS);
         }
 
-        public void reschedule() {
+        /**
+         * This method refreshes cache at once.
+         * Cache is invalidated until the method completes. Read operations are blocked in this method.
+         */
+        public void startRefreshCacheTask() {
+            LOGGER.info(String.format("[%s] Rescheduling UpdateCacheTask due to new updates.", delegate.getName()));
             /**
              * cancel scheduled task, executing task is allowed to finish;
              */
-            LOGGER.info(String.format("[%s] Rescheduling UpdateCacheTask due to new updates.", delegate.getName()));
             scheduledFuture.cancel(false);
             try {
-                lockAndUpdateCache();
+                lockAndRefreshCache();
             } catch (final StoreException e) {
                 LOGGER.error("failed to update the cache");
             }
 
             scheduledFuture = scheduledExecutorService
-                    .scheduleWithFixedDelay(updateCacheTask, REFRESH_RATE_IN_SECOND, REFRESH_RATE_IN_SECOND, TimeUnit.SECONDS);
+                    .scheduleWithFixedDelay(refreshCacheTask, REFRESH_RATE_IN_SECOND, REFRESH_RATE_IN_SECOND, TimeUnit.SECONDS);
         }
 
+        /**
+         * This method provides an interface to perform thread-safe <b>read</b> operation.
+         * It only blocks other write operations.
+         * @param callable
+         * @param <T>
+         * @return
+         * @throws StoreException
+         */
         private <T> T synchronizedCacheRead(final Callable<T> callable) throws StoreException {
             try {
                 if (readLock.tryLock(READ_TIMEOUT_IN_SECOND, TimeUnit.SECONDS)) {
                     try {
                         return callable.call();
                     } catch (final Exception e) {
-                        throw new StoreException("Failed perform read operation to read. ", e);
+                        throw new StoreException("Failed to perform read operation to cache. ", e);
                     } finally {
                         readLock.unlock();
                     }
                 } else {
-                    throw new StoreException("Cached is locked. Failed to acquire the lock. timeout. " + READ_TIMEOUT_IN_SECOND);
+                    throw new StoreException("Failed to acquire the lock. Timeout after " + READ_TIMEOUT_IN_SECOND);
                 }
             } catch (final InterruptedException e) {
+                Thread.currentThread().interrupt();
                 throw new StoreException("Read operation to cache was interrupted", e);
             }
         }
 
+        /**
+         * This method provides an interface to perform thread-safe <b>write</b> operation.
+         * It blocks other read/write operations.
+         * @param callable
+         * @param <T>
+         * @return
+         * @throws StoreException
+         */
         private <T> T synchronizedCacheWrite(final Callable<T> callable) throws StoreException {
             try {
                 if (writeLock.tryLock(WRITE_TIMEOUT_IN_SECOND, TimeUnit.SECONDS)) {
                     try {
                         return callable.call();
                     } catch (final Exception e) {
-                        throw new StoreException.TestUpdateException("Failed perform write operation to cache. ", e);
+                        throw new StoreException.TestUpdateException("Failed to perform write operation to cache. ", e);
                     } finally {
                         writeLock.unlock();
                     }
                 } else {
-                    throw new StoreException.TestUpdateException("Failed to acquire the lock " + WRITE_TIMEOUT_IN_SECOND);
+                    throw new StoreException.TestUpdateException("Failed to acquire the lock. Timeout after " + WRITE_TIMEOUT_IN_SECOND);
                 }
             } catch (final InterruptedException e) {
+                Thread.currentThread().interrupt();
                 throw new StoreException.TestUpdateException("Write operation to cache was interrupted", e);
             }
         }

@@ -265,7 +265,7 @@ public class GitProctor extends FileBasedProctorStore {
 
     @Override
     public String getName() {
-        return branchName;
+        return "GitProctor-" + branchName;
     }
 
     public static class HistoryParser {
