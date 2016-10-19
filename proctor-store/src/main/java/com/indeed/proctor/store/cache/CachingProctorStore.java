@@ -26,6 +26,9 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
+ * A decorator class for ProctorStore.
+ * This class caches result of read methods and invalidates cache on add/update/delete methods
+ *
  * @author yiqing
  */
 public class CachingProctorStore implements ProctorStore {
@@ -165,7 +168,7 @@ public class CachingProctorStore implements ProctorStore {
     }
 
     /**
-     * Following methods will make side-effect and it would trigger cache updating at once
+     * Following three methods make side-effect and it would trigger cache refreshing at once
      */
 
     @Override
