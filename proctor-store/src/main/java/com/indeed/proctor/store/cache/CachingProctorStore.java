@@ -28,16 +28,16 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 /**
  * @author yiqing
  */
-public class ProctorStoreCaching implements ProctorStore {
+public class CachingProctorStore implements ProctorStore {
 
-    private static final Logger LOGGER = Logger.getLogger(ProctorStoreCaching.class);
+    private static final Logger LOGGER = Logger.getLogger(CachingProctorStore.class);
     private static final long REFRESH_RATE_IN_SECOND = 10;
     private static final long READ_TIMEOUT_IN_SECOND = 30;
     private static final long WRITE_TIMEOUT_IN_SECOND = 180;
     private final ProctorStore delegate;
     private final CacheHolder cacheHolder;
 
-    public ProctorStoreCaching(final ProctorStore delegate) {
+    public CachingProctorStore(final ProctorStore delegate) {
         this.delegate = delegate;
         cacheHolder = new CacheHolder();
         try {
@@ -46,7 +46,7 @@ public class ProctorStoreCaching implements ProctorStore {
              */
             cacheHolder.start();
         } catch (final StoreException e) {
-            LOGGER.error("Failed to initialize ProctorStoreCaching", e);
+            LOGGER.error("Failed to initialize CachingProctorStore", e);
             throw Throwables.propagate(e);
         }
     }

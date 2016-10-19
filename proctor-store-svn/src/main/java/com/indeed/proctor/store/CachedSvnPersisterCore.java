@@ -3,6 +3,7 @@ package com.indeed.proctor.store;
 import com.google.common.base.Joiner;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.indeed.proctor.store.cache.CachingProctorStore;
 import com.indeed.util.varexport.Export;
 import org.apache.log4j.Logger;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -14,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * @author parker
- * @deprecated we consolidated different levels of cache into {@link com.indeed.proctor.store.cache.ProctorStoreCaching}
+ * @deprecated we consolidated different levels of cache into {@link CachingProctorStore}
  */
 @Deprecated
 public class CachedSvnPersisterCore implements SvnPersisterCore {

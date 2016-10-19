@@ -10,7 +10,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
-public class ProctorStoreCachingTest {
+public class CachingProctorStoreTest {
 
     private static final List<Integer> DUMMY_HISTORY = Lists.newArrayList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
     private static final List<Revision> REVISION_HISTORY = Lists.newArrayList(
@@ -23,49 +23,49 @@ public class ProctorStoreCachingTest {
 
     @Test
     public void testSelectHistorySet() {
-        final List<Integer> result = ProctorStoreCaching.selectHistorySet(DUMMY_HISTORY, 0, 1);
+        final List<Integer> result = CachingProctorStore.selectHistorySet(DUMMY_HISTORY, 0, 1);
         assertEquals(Lists.newArrayList(1), result);
     }
 
     @Test
     public void testSelectHistorySetWithNegativeStart() {
-        final List<Integer> result = ProctorStoreCaching.selectHistorySet(DUMMY_HISTORY, -1, 1);
+        final List<Integer> result = CachingProctorStore.selectHistorySet(DUMMY_HISTORY, -1, 1);
         assertEquals(Lists.newArrayList(1), result);
     }
 
     @Test
     public void testSelectHistorySetWithNonPositiveLimit() {
-        final List<Integer> result = ProctorStoreCaching.selectHistorySet(DUMMY_HISTORY, 2, -1);
+        final List<Integer> result = CachingProctorStore.selectHistorySet(DUMMY_HISTORY, 2, -1);
         assertEquals(Collections.<Integer>emptyList(), result);
     }
 
     @Test
     public void testSelectHistorySetNotOverflow() {
-        List<Integer> result = ProctorStoreCaching.selectHistorySet(DUMMY_HISTORY, 0, Integer.MAX_VALUE);
+        List<Integer> result = CachingProctorStore.selectHistorySet(DUMMY_HISTORY, 0, Integer.MAX_VALUE);
         assertEquals(DUMMY_HISTORY, result);
 
-        result = ProctorStoreCaching.selectHistorySet(DUMMY_HISTORY, 0, Integer.MIN_VALUE);
+        result = CachingProctorStore.selectHistorySet(DUMMY_HISTORY, 0, Integer.MIN_VALUE);
         assertEquals(Collections.<Integer>emptyList(), result);
 
-        result = ProctorStoreCaching.selectHistorySet(DUMMY_HISTORY, Integer.MIN_VALUE, Integer.MAX_VALUE);
+        result = CachingProctorStore.selectHistorySet(DUMMY_HISTORY, Integer.MIN_VALUE, Integer.MAX_VALUE);
         assertEquals(DUMMY_HISTORY, result);
     }
 
     @Test
     public void testSelectRevisionHistorySetFrom() {
-        final List<Revision> result = ProctorStoreCaching.selectRevisionHistorySetFrom(REVISION_HISTORY, "2", 0, 3);
+        final List<Revision> result = CachingProctorStore.selectRevisionHistorySetFrom(REVISION_HISTORY, "2", 0, 3);
         assertEquals(REVISION_HISTORY.subList(1, 4), result);
     }
 
     @Test
     public void testSelectRevisionHistorySetFromReturnEmtpy() {
-        final List<Revision> result = ProctorStoreCaching.selectRevisionHistorySetFrom(REVISION_HISTORY, "5", 1, 3);
+        final List<Revision> result = CachingProctorStore.selectRevisionHistorySetFrom(REVISION_HISTORY, "5", 1, 3);
         assertEquals(Collections.emptyList(), result);
     }
 
     @Test
     public void testSelectRevisionHistorySetFromNonexistence() {
-        final List<Revision> result = ProctorStoreCaching.selectRevisionHistorySetFrom(REVISION_HISTORY, "hello", 0, 3);
+        final List<Revision> result = CachingProctorStore.selectRevisionHistorySetFrom(REVISION_HISTORY, "hello", 0, 3);
         assertEquals(Collections.emptyList(), result);
     }
 
