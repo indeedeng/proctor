@@ -1,5 +1,6 @@
 package com.indeed.proctor.store.cache;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -123,15 +124,7 @@ public class ProctorStoreCaching implements ProctorStore {
 
     @Override
     public List<Revision> getHistory(final String test, final String revision, final int start, final int limit) throws StoreException {
-        final List<Revision> revisions = cacheHolder.getCachedHistory().get(test);
-        int i = 0;
-        for (final Revision rev : revisions) {
-            if (rev.getRevision().equals(revision)) {
-                break;
-            }
-            i++;
-        }
-        return selectHistorySet(revisions, start + i, limit);
+        return selectRevisionHistorySetFrom(cacheHolder.getCachedHistory().get(test), revision, start, limit);
     }
 
     @Override
@@ -144,13 +137,26 @@ public class ProctorStoreCaching implements ProctorStore {
         cacheHolder.refreshAll();
     }
 
-    public static <T> List<T> selectHistorySet(final List<T> histories, final int start, final int limit) {
+    @VisibleForTesting
+    static <T> List<T> selectHistorySet(final List<T> histories, final int start, final int limit) {
         if ((histories == null) || (start >= histories.size()) || (limit < 1)) {
             return Collections.emptyList();
         }
         final int s = Math.max(start, 0);
         final int l = Math.min(limit, histories.size() - s); /** to avoid overflow**/
         return histories.subList(s, s + l);
+    }
+
+    @VisibleForTesting
+    static List<Revision> selectRevisionHistorySetFrom(final List<Revision> history, final String from, final int start, final int limit) {
+        int i = 0;
+        for (final Revision rev : history) {
+            if (rev.getRevision().equals(from)) {
+                break;
+            }
+            i++;
+        }
+        return selectHistorySet(history, start + i, limit);
     }
 
     @Override
@@ -286,6 +292,7 @@ public class ProctorStoreCaching implements ProctorStore {
 
         /**
          * This method refreshes ProctorStore delegate and determines whether to refresh cache data.
+         *
          * @throws StoreException
          */
         public void refreshAll() throws StoreException {
@@ -300,6 +307,7 @@ public class ProctorStoreCaching implements ProctorStore {
         /**
          * This method refreshes cache data.
          * Other read/write operations are blocked
+         *
          * @throws StoreException
          */
         private void lockAndRefreshCache() throws StoreException {
@@ -322,6 +330,7 @@ public class ProctorStoreCaching implements ProctorStore {
         /**
          * This method initialize CacheHolder.
          * It loads data to cache and starts background task to refresh cache periodically
+         *
          * @throws StoreException
          */
         public void start() throws StoreException {
@@ -354,6 +363,7 @@ public class ProctorStoreCaching implements ProctorStore {
         /**
          * This method provides an interface to perform thread-safe <b>read</b> operation.
          * It only blocks other write operations.
+         *
          * @param callable
          * @param <T>
          * @return
@@ -381,6 +391,7 @@ public class ProctorStoreCaching implements ProctorStore {
         /**
          * This method provides an interface to perform thread-safe <b>write</b> operation.
          * It blocks other read/write operations.
+         *
          * @param callable
          * @param <T>
          * @return
