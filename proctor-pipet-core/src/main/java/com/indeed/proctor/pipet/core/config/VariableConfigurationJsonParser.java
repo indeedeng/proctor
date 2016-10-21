@@ -1,5 +1,6 @@
 package com.indeed.proctor.pipet.core.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
@@ -15,7 +16,6 @@ import com.indeed.proctor.pipet.core.var.Identifier;
 import com.indeed.proctor.pipet.core.var.ValueConverter;
 import com.indeed.proctor.pipet.core.var.ValueConverters;
 import com.indeed.proctor.pipet.core.var.VariableConfiguration;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.core.io.Resource;
 
 import java.io.IOException;

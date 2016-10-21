@@ -10,7 +10,7 @@
     </parent>
 
     <properties>
-        <proctor.version>1.0.17</proctor.version>
+        <proctor.version>1.1.22</proctor.version>
         <util.version>1.0.0</util.version>
     </properties>
 
@@ -27,14 +27,9 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.codehaus.jackson</groupId>
-            <artifactId>jackson-core-asl</artifactId>
-            <version>1.8.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.codehaus.jackson</groupId>
-            <artifactId>jackson-mapper-asl</artifactId>
-            <version>1.8.0</version>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.5.2</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
