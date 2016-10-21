@@ -1,6 +1,6 @@
 package com.indeed.proctor.pipet.core.config;
 
-import org.codehaus.jackson.map.annotate.JsonSerialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
  * Context variable configuration, which also requires type conversion.

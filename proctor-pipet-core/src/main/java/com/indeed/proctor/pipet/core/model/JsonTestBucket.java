@@ -1,8 +1,8 @@
 package com.indeed.proctor.pipet.core.model;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.indeed.proctor.common.model.Payload;
 import com.indeed.proctor.common.model.TestBucket;
-import org.codehaus.jackson.map.annotate.JsonSerialize;
 
 /**
  * Representation of TestBucket intended for serialization into JSON.

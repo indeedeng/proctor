@@ -1,6 +1,5 @@
 package com.indeed.proctor.pipet.core.model;
-
-import org.codehaus.jackson.map.annotate.JsonSerialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 public class JsonMeta {
     // HTTP Response Code
