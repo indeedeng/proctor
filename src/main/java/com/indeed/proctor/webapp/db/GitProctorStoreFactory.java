@@ -8,7 +8,7 @@ import com.indeed.proctor.store.GitProctor;
 import com.indeed.proctor.store.GitProctorCore;
 import com.indeed.proctor.store.GitWorkspaceProviderImpl;
 import com.indeed.proctor.store.ProctorStore;
-import com.indeed.proctor.store.cache.ProctorStoreCaching;
+import com.indeed.proctor.store.cache.CachingProctorStore;
 import com.indeed.util.varexport.VarExporter;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.lang.StringUtils;
@@ -97,7 +97,7 @@ public class GitProctorStoreFactory implements StoreFactory {
         final String prefix = relativePath.replace('/', '-');
         final VarExporter exporter = VarExporter.forNamespace(GitProctor.class.getSimpleName()).includeInGlobal();
         exporter.export(store, prefix + "-");
-        return new ProctorStoreCaching(store);
+        return new CachingProctorStore(store);
     }
 
     private File createTempDirectoryForPath(final String relativePath) {
