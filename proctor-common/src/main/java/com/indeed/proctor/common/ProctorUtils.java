@@ -272,9 +272,7 @@ public abstract class ProctorUtils {
      * and thus no required tests or provided context.
      */
     public static ProctorLoadResult verifyWithoutSpecification(@Nonnull final TestMatrixArtifact testMatrix,
-                                                               final String matrixSource,
-                                                               @Nonnull final FunctionMapper functionMapper,
-                                                               @Nonnull final ProvidedContext providedContext) {
+                                                               final String matrixSource) {
         final ProctorLoadResult.Builder resultBuilder = ProctorLoadResult.newBuilder();
 
         for (final Entry<String, ConsumableTestDefinition> entry : testMatrix.getTests().entrySet()) {
@@ -282,7 +280,7 @@ public abstract class ProctorUtils {
             final ConsumableTestDefinition testDefinition = entry.getValue();
 
             try {
-                verifyInternallyConsistentDefinition(testName, matrixSource, testDefinition, functionMapper, providedContext);
+                verifyInternallyConsistentDefinition(testName, matrixSource, testDefinition);
             } catch (IncompatibleTestMatrixException e) {
                 LOGGER.error(String.format("Unable to load test matrix for %s", testName), e);
                 resultBuilder.recordError(testName, e.getMessage());

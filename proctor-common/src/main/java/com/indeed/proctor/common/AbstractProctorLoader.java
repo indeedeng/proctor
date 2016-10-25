@@ -101,7 +101,7 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
         final ProctorLoadResult loadResult;
         if (requiredTests == null) {
             // Probably an absent specification.
-            loadResult = ProctorUtils.verifyWithoutSpecification(testMatrix, getSource(), functionMapper, providedContext);
+            loadResult = ProctorUtils.verifyWithoutSpecification(testMatrix, getSource());
         } else {
             loadResult = ProctorUtils.verifyAndConsolidate(testMatrix, getSource(), requiredTests, functionMapper, providedContext);
         }
