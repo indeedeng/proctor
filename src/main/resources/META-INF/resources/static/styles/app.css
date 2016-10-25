@@ -35,6 +35,7 @@ table.w100 { width: 100%; }
 table.fixed { table-layout: fixed; }
 table.tleft td, table.tleft th { text-align: left }
 table.tright td, table.tleft th { text-align: right }
+table.line-wrap td { word-wrap: break-word; }
 
 .ui-test-name { word-break: break-all;}
 

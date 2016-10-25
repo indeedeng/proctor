@@ -4,7 +4,7 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ attribute name="definition" required="true" type="com.indeed.proctor.common.model.TestDefinition" %>
 <c:set var="hasPayload" value="${!empty definition.buckets && !empty definition.buckets[0].payload}"/>
-<table class="w100 fixed">
+<table class="w100 fixed line-wrap">
     <thead>
     <tr>
         <th class="one">Value</th>
