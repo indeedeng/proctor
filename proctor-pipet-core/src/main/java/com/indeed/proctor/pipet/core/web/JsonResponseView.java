@@ -1,6 +1,6 @@
 package com.indeed.proctor.pipet.core.web;
 
-import org.springframework.web.servlet.view.json.MappingJacksonJsonView;
+import org.springframework.web.servlet.view.json.MappingJackson2JsonView;
 
 /**
  * View for converting to JSON with Jackson 1.
@@ -11,7 +11,7 @@ import org.springframework.web.servlet.view.json.MappingJacksonJsonView;
  *
  * This is guaranteed to use Jackson 1, which fixes a few problems related to JSON annotations.
  */
-public class JsonResponseView extends MappingJacksonJsonView {
+public class JsonResponseView extends MappingJackson2JsonView {
     public JsonResponseView() {
         super();
         setExtractValueFromSingleKeyModel(true);
