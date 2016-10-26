@@ -101,8 +101,9 @@ import java.util.regex.Pattern;
 public class ProctorTestDefinitionController extends AbstractController {
     private static final Logger LOGGER = Logger.getLogger(ProctorTestDefinitionController.class);
 
-    private static final Pattern ALPHA_NUMERIC_PATTERN = Pattern.compile("^[a-z0-9_]+$", Pattern.CASE_INSENSITIVE);
-    private static final Pattern VALID_TEST_NAME_PATTERN = ALPHA_NUMERIC_PATTERN;
+    private static final Pattern ALPHA_NUMERIC_JAVA_IDENTIFIER_PATTERN = Pattern.compile("^[a-z_][a-z0-9_]*$", Pattern.CASE_INSENSITIVE);
+    private static final Pattern VALID_TEST_NAME_PATTERN = ALPHA_NUMERIC_JAVA_IDENTIFIER_PATTERN;
+    private static final Pattern VALID_BUCKET_NAME_PATTERN = ALPHA_NUMERIC_JAVA_IDENTIFIER_PATTERN;
 
     private final ProctorPromoter promoter;
 
@@ -802,7 +803,7 @@ public class ProctorTestDefinitionController extends AbstractController {
                         // check that the test name is valid
                         final Matcher m = VALID_TEST_NAME_PATTERN.matcher(testName);
                         if (!m.matches()) {
-                            throw new IllegalArgumentException("Test Name must be alpha-numeric underscore, found: '" + testName + "'");
+                            throw new IllegalArgumentException("Test Name must be alpha-numeric underscore and not start with a number, found: '" + testName + "'");
                         }
                     }
 
@@ -1315,6 +1316,14 @@ public class ProctorTestDefinitionController extends AbstractController {
         for (TestBucket bucket : definition.getBuckets()) {
             if (testType == TestType.PAGE && bucket.getValue() < 0) {
                 throw new IllegalArgumentException("PAGE tests cannot contain negative buckets.");
+            }
+        }
+
+        for (TestBucket bucket : definition.getBuckets()) {
+            final String name = bucket.getName();
+            final Matcher m = VALID_BUCKET_NAME_PATTERN.matcher(name);
+            if (!m.matches()) {
+                throw new IllegalArgumentException("Bucket name must be alpha-numeric underscore and not start with a number, found: '" + name + "'");
             }
         }
     }

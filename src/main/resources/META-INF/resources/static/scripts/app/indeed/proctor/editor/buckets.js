@@ -225,7 +225,7 @@ indeed.proctor.editor.BucketsEditor.prototype.validateBucket_ =
   }
   if (!this.validBucketNameCharacters_(name)) {
     indeed.foundation.forms.addError(el_name,
-                                     'Bucket name should be alpha-numeric');
+                                     'Bucket name should be alpha-numeric and not start with a number');
     return false;
   }
   if ('none' != payload_type) {
@@ -264,7 +264,7 @@ indeed.proctor.editor.BucketsEditor.prototype.validateBucket_ =
  */
 indeed.proctor.editor.BucketsEditor.prototype.validBucketNameCharacters_ =
     function(str) {
-  return !/[^a-zA-Z0-9_]/.test(str);
+  return /^[a-zA-Z_][a-zA-Z0-9_]*$/.test(str);
 };
 
 /**
