@@ -1,6 +1,7 @@
 package com.indeed.proctor.store.cache;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -32,12 +33,17 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * @author yiqing
  */
 public class CachingProctorStore implements ProctorStore {
-
     private static final Logger LOGGER = Logger.getLogger(CachingProctorStore.class);
     private static final long REFRESH_RATE_IN_SECOND = 10;
     private static final long READ_TIMEOUT_IN_SECOND = 30;
     private static final long WRITE_TIMEOUT_IN_SECOND = 180;
+
+    /**
+     * ProctorStore delegate.
+     * We assume all the methods of delegate is thread-safe.
+     */
     private final ProctorStore delegate;
+
     private final CacheHolder cacheHolder;
 
     public CachingProctorStore(final ProctorStore delegate) {
@@ -66,7 +72,9 @@ public class CachingProctorStore implements ProctorStore {
 
     @Override
     public TestDefinition getCurrentTestDefinition(final String test) throws StoreException {
-        return delegate.getCurrentTestDefinition(test);
+        final TestMatrixDefinition testMatrixDefinition = cacheHolder.getCachedCurrentTestMatrix().getTestMatrixDefinition();
+        Preconditions.checkNotNull(testMatrixDefinition, "TestMatrix should contain non null TestMatrixDefinition");
+        return testMatrixDefinition.getTests().get(test);
     }
 
     @Override
@@ -93,19 +101,19 @@ public class CachingProctorStore implements ProctorStore {
 
         final TestMatrixVersion version = cacheHolder.getCachedTestMatrix(fetchRevision);
         if (version == null) {
-            LOGGER.info(String.format("Fetch version {%s} doesn't exists", fetchRevision));
+            LOGGER.info(String.format("Fetch revision {%s} doesn't exists", fetchRevision));
             return null;
         }
 
         final TestMatrixDefinition testMatrixDefinition = version.getTestMatrixDefinition();
         if (testMatrixDefinition == null) {
-            LOGGER.info(String.format("Fetch version {%s} doesn't contain any test", fetchRevision));
+            LOGGER.info(String.format("Fetch revision {%s} doesn't contain any test", fetchRevision));
             return null;
         }
 
         final TestDefinition testDefinition = testMatrixDefinition.getTests().get(test);
         if (testDefinition == null) {
-            LOGGER.info(String.format("Fetch version {%s} doesn't contain test {%s}", fetchRevision, test));
+            LOGGER.info(String.format("Fetch revision {%s} doesn't contain test {%s}", fetchRevision, test));
         }
 
         return testDefinition;
@@ -140,7 +148,7 @@ public class CachingProctorStore implements ProctorStore {
     }
 
     @VisibleForTesting
-    static <T> List<T> selectHistorySet(final List<T> histories, final int start, final int limit) {
+    public static <T> List<T> selectHistorySet(final List<T> histories, final int start, final int limit) {
         if ((histories == null) || (start >= histories.size()) || (limit < 1)) {
             return Collections.emptyList();
         }
@@ -150,7 +158,7 @@ public class CachingProctorStore implements ProctorStore {
     }
 
     @VisibleForTesting
-    static List<Revision> selectRevisionHistorySetFrom(final List<Revision> history, final String from, final int start, final int limit) {
+    public static List<Revision> selectRevisionHistorySetFrom(final List<Revision> history, final String from, final int start, final int limit) {
         int i = 0;
         for (final Revision rev : history) {
             if (rev.getRevision().equals(from)) {
@@ -209,6 +217,11 @@ public class CachingProctorStore implements ProctorStore {
         return delegate.getName();
     }
 
+    @VisibleForTesting
+    ScheduledFuture<?> getRefreshTaskFuture() {
+        return cacheHolder.scheduledFuture;
+    }
+
     /**
      * This class provides thread-safe read/write operations to the cached data including
      * the latest version, revision histories of all ProTest and maximum 5 versions of test Matrix.
@@ -218,11 +231,11 @@ public class CachingProctorStore implements ProctorStore {
         private final Lock readLock = readWriteLock.readLock();
         private final Lock writeLock = readWriteLock.writeLock();
 
-        private String cachedLatestVersion;
+        private TestMatrixVersion cachedLatestTestMatrixVersion;
         private Map<String, List<Revision>> historyCache;
 
         /* version information won't change so we don't expire */
-        private final Cache<String, TestMatrixVersion> versionCache = CacheBuilder.newBuilder()
+        private final Cache<String, TestMatrixVersion> revisionCache = CacheBuilder.newBuilder()
                 .maximumSize(5)
                 .build();
 
@@ -258,19 +271,19 @@ public class CachingProctorStore implements ProctorStore {
             return synchronizedCacheRead(new Callable<String>() {
                 @Override
                 public String call() {
-                    return cachedLatestVersion;
+                    return cachedLatestTestMatrixVersion.getVersion();
                 }
             });
         }
 
-        public TestMatrixVersion getCachedTestMatrix(final String fetchVersion) throws StoreException {
+        public TestMatrixVersion getCachedTestMatrix(final String fetchRevision) throws StoreException {
             return synchronizedCacheRead(new Callable<TestMatrixVersion>() {
                 @Override
                 public TestMatrixVersion call() throws StoreException {
-                    TestMatrixVersion testMatrix = versionCache.getIfPresent(fetchVersion);
+                    TestMatrixVersion testMatrix = revisionCache.getIfPresent(fetchRevision);
                     if (testMatrix == null) {
-                        testMatrix = delegate.getTestMatrix(fetchVersion);
-                        versionCache.put(fetchVersion, testMatrix);
+                        testMatrix = delegate.getTestMatrix(fetchRevision);
+                        revisionCache.put(fetchRevision, testMatrix);
                     }
                     return testMatrix;
                 }
@@ -281,8 +294,7 @@ public class CachingProctorStore implements ProctorStore {
             return synchronizedCacheRead(new Callable<TestMatrixVersion>() {
                 @Override
                 public TestMatrixVersion call() throws StoreException {
-                    final String latestVersion = getCachedLatestVersion();
-                    return getCachedTestMatrix(latestVersion);
+                    return cachedLatestTestMatrixVersion;
                 }
             });
         }
@@ -318,10 +330,10 @@ public class CachingProctorStore implements ProctorStore {
                 @Override
                 public Void call() throws StoreException {
                     final TestMatrixVersion currentTestMatrix = delegate.getCurrentTestMatrix();
-                    final String newVersion = currentTestMatrix.getVersion();
+                    final Revision revision = delegate.getMatrixHistory(0, 1).get(0);
                     final Map<String, List<Revision>> allHistories = delegate.getAllHistories();
-                    versionCache.put(newVersion, currentTestMatrix);
-                    cachedLatestVersion = newVersion;
+                    revisionCache.put(revision.getRevision(), currentTestMatrix);
+                    cachedLatestTestMatrixVersion = currentTestMatrix;
                     historyCache = allHistories;
                     return null;
                 }
