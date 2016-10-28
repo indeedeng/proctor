@@ -8,7 +8,7 @@
     </parent>
 
     <properties>
-        <spring.version>3.2.4.RELEASE</spring.version>
+        <spring.version>4.2.5.RELEASE</spring.version>
     </properties>
 
     <groupId>com.indeed</groupId>
