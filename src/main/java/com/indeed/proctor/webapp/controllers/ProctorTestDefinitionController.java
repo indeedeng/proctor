@@ -801,8 +801,7 @@ public class ProctorTestDefinitionController extends AbstractController {
                         // Create flow
                         prevVersion = null;
                         // check that the test name is valid
-                        final Matcher m = VALID_TEST_NAME_PATTERN.matcher(testName);
-                        if (!m.matches()) {
+                        if (!isValidTestName(testName)) {
                             throw new IllegalArgumentException("Test Name must be alpha-numeric underscore and not start with a number, found: '" + testName + "'");
                         }
                     }
@@ -936,6 +935,16 @@ public class ProctorTestDefinitionController extends AbstractController {
                 return false;
             }
         };
+    }
+
+    public static boolean isValidTestName(String testName) {
+        final Matcher m = VALID_TEST_NAME_PATTERN.matcher(testName);
+        return m.matches();
+    }
+
+    public static boolean isValidBucketName(String bucketName) {
+        final Matcher m = VALID_BUCKET_NAME_PATTERN.matcher(bucketName);
+        return m.matches();
     }
 
      public static boolean isAllocationOnlyChange(final TestDefinition existingTestDefinition, final TestDefinition testDefinitionToUpdate) {
@@ -1321,8 +1330,7 @@ public class ProctorTestDefinitionController extends AbstractController {
 
         for (TestBucket bucket : definition.getBuckets()) {
             final String name = bucket.getName();
-            final Matcher m = VALID_BUCKET_NAME_PATTERN.matcher(name);
-            if (!m.matches()) {
+            if (!isValidBucketName(name)) {
                 throw new IllegalArgumentException("Bucket name must be alpha-numeric underscore and not start with a number, found: '" + name + "'");
             }
         }

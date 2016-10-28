@@ -19,6 +19,26 @@ import java.util.ArrayList;
 
 public class TestProctorTestDefinitionController {
     @Test
+    public void testIsValidTestName() {
+        Assert.assertFalse(ProctorTestDefinitionController.isValidTestName(""));
+        Assert.assertTrue(ProctorTestDefinitionController.isValidTestName("a"));
+        Assert.assertTrue(ProctorTestDefinitionController.isValidTestName("A"));
+        Assert.assertTrue(ProctorTestDefinitionController.isValidTestName("_"));
+        Assert.assertFalse(ProctorTestDefinitionController.isValidTestName("0"));
+        Assert.assertFalse(ProctorTestDefinitionController.isValidTestName("."));
+        Assert.assertTrue(ProctorTestDefinitionController.isValidTestName("_0"));
+        Assert.assertTrue(ProctorTestDefinitionController.isValidTestName("valid_test_Name_10"));
+        Assert.assertFalse(ProctorTestDefinitionController.isValidTestName("inValid#test#name"));
+    }
+
+    @Test
+    public void testIsValidBucketName() {
+        Assert.assertFalse(ProctorTestDefinitionController.isValidBucketName(""));
+        Assert.assertTrue(ProctorTestDefinitionController.isValidBucketName("valid_bucket_Name"));
+        Assert.assertFalse(ProctorTestDefinitionController.isValidBucketName("0invalid_bucket_Name"));
+    }
+
+    @Test
     public void testAllocationOnlyChangeDetection() {
         {
             final double[] rangeOne = {.7, .3};
