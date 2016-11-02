@@ -108,7 +108,6 @@ public class InMemoryProctorStoreTest {
             testee.updateTestDefinition("Alex", "pwd", "incorrectPreviousVersion", "tst1", dummyTestDefinition, Collections.<String, String>emptyMap(), "update tst1 description");
             fail();
         } catch (final StoreException.TestUpdateException e) {
-            assertEquals("Previous version doesn't match", e.getCause().getMessage());
         }
 
     }
