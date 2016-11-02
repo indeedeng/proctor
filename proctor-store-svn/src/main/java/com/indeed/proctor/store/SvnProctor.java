@@ -123,6 +123,11 @@ public class SvnProctor extends FileBasedProctorStore {
     }
 
     @Override
+    public void refresh() throws StoreException {
+        /* do nothing */
+    }
+
+    @Override
     public String getLatestVersion() throws StoreException {
         return getSvnCore().doWithClientAndRepository(new SvnPersisterCore.SvnOperation<String>() {
             @Override
@@ -267,5 +272,10 @@ public class SvnProctor extends FileBasedProctorStore {
             System.out.println("Deleting temp dir : " + tempDir);
             FileUtils.deleteDirectory(tempDir);
         }
+    }
+
+    @Override
+    public String getName() {
+        return SvnProctor.class.getName();
     }
 }

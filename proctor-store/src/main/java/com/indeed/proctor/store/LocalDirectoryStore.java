@@ -14,7 +14,7 @@ public class LocalDirectoryStore extends FileBasedProctorStore {
 
     public LocalDirectoryStore(final File baseDir, final String testDefinitionsDirectory) {
         super(new LocalDirectoryCore(baseDir, testDefinitionsDirectory));
-        if(!baseDir.isDirectory()) {
+        if (!baseDir.isDirectory()) {
             throw new IllegalArgumentException("Base dir " + baseDir + " is not a directory");
         }
         this.baseDir = baseDir;
@@ -51,6 +51,11 @@ public class LocalDirectoryStore extends FileBasedProctorStore {
     }
 
     @Override
+    public void refresh() throws StoreException {
+        /* do nothing since it doesn't need to */
+    }
+
+    @Override
     public void verifySetup() throws StoreException {
         if(!this.baseDir.isDirectory()) {
             throw new RuntimeException("Base dir (" + this.baseDir.getPath() + ") is not a directory.");
@@ -66,5 +71,10 @@ public class LocalDirectoryStore extends FileBasedProctorStore {
     @Override
     public String toString() {
         return baseDir.getAbsolutePath();
+    }
+
+    @Override
+    public String getName() {
+        return "";
     }
 }

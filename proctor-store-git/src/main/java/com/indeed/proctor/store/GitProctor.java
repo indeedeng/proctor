@@ -258,6 +258,16 @@ public class GitProctor extends FileBasedProctorStore {
         getGitCore().checkoutBranch(branchName);
     }
 
+    @Override
+    public void refresh() throws StoreException {
+        getGitCore().refresh();
+    }
+
+    @Override
+    public String getName() {
+        return "GitProctor-" + branchName;
+    }
+
     public static class HistoryParser {
         final RevWalk revWalk;
         final DiffFormatter df;
