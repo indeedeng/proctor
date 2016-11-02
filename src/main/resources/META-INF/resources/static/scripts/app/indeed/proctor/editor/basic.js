@@ -89,9 +89,9 @@ indeed.proctor.editor.BasicEditor.prototype.validate = function() {
     if (goog.string.isEmptySafe(name)) {
       indeed.foundation.forms.addError(this.name, 'Test Name cannot be empty.');
       isValid = false;
-    } else if (/[^a-zA-Z0-9_]/.test(name)) {
+    } else if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(name)) {
       indeed.foundation.forms.addError(this.name,
-          'Test Name must be alpha-numeric underscore.');
+          'Test Name must be alpha-numeric underscore and not start with a number.');
       isValid = false;
     } else {
       indeed.foundation.forms.removeError(this.name);
