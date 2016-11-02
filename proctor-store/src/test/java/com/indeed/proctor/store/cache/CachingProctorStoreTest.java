@@ -257,15 +257,13 @@ public class CachingProctorStoreTest {
         assertNotNull(testee.getTestDefinition("tst1", "revision-1"));
     }
 
-    private static void startThreadsAndSleep(final Thread... threads) {
+    private static void startThreadsAndSleep(final Thread... threads) throws InterruptedException {
         for (final Thread thread : threads) {
             thread.start();
         }
-        try {
-            /** try a sleep command to wait for a while to finish */
-            Thread.sleep(5);
-        } catch (final InterruptedException e) {
-            fail();
+
+        for (final Thread thread : threads)  {
+            thread.join();
         }
     }
 
