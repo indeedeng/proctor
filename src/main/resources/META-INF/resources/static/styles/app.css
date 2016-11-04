@@ -116,3 +116,6 @@ table.line-wrap td { word-wrap: break-word; }
 .js-filter-num-matched, .js-filter-num-all {
     font-weight: bold;
 }
+.js-filter-sorted-by {
+    width: auto;
+}

@@ -46,11 +46,15 @@
                     <span>Inactive: All allocations are occupied by 100% buckets</span>
                 </label>
             </div>
-            <p>Showing <span class="js-filter-num-matched">-</span> / <span class="js-filter-num-all">-</span> tests</p>
+            <p>
+                Showing <span class="js-filter-num-matched">-</span> / <span class="js-filter-num-all">-</span> tests
+                ordered by <select class="js-filter-sorted-by"></select>
+            </p>
         </div>
+        <div id="test-container">
         <c:forEach items="${testMatrix.tests}" var="test">
             <c:set var="testDefinition" value="${test.value}" />
-            <div class="panel radius">
+            <div class="panel radius" data-updated="${updatedTimeMap.get(test.key)}">
             <ui:grid-row extraCssClass="ui-test-definition">
                 <ui:grid-columns width="three">
                     <h6 class="mtn"><a class="ui-test-name" href="/proctor/definition/${proctor:urlencode(test.key)}?branch=${proctor:urlencode(branch.name)}">${fn:escapeXml(test.key)}</a></h6>
@@ -71,6 +75,7 @@
             </ui:grid-row>
             </div>
         </c:forEach>
+        </div>
 
     <layout:javascript
             useCompiledJavascript="${session.useCompiledJavaScript}"

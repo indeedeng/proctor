@@ -2,8 +2,10 @@ package com.indeed.proctor.webapp.controllers;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.google.common.base.Charsets;
+import com.google.common.base.Function;
 import com.google.common.base.Functions;
 import com.google.common.base.Joiner;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -20,6 +22,8 @@ import com.indeed.proctor.common.model.TestDefinition;
 import com.indeed.proctor.common.model.TestMatrixArtifact;
 import com.indeed.proctor.common.model.TestMatrixDefinition;
 import com.indeed.proctor.common.model.TestMatrixVersion;
+import com.indeed.proctor.store.Revision;
+import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.webapp.ProctorSpecificationSource;
 import com.indeed.proctor.webapp.db.Environment;
 import com.indeed.proctor.store.ProctorStore;
@@ -47,9 +51,11 @@ import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -362,6 +368,25 @@ public class ProctorController extends AbstractController {
                                    // todo get the appropriate js compile / non-compile url
                                .build());
         model.addAttribute("testMatrixVersion", testMatrix);
+
+        final Set<String> testNames = testMatrixDefinition.getTests().keySet();
+        final Map<String, Long> updatedTimeMap = FluentIterable.from(testNames).toMap(new Function<String, Long>() {
+            @Override
+            public Long apply(final String test) {
+                final Date defaultDate = new Date(0);
+                final List<Revision> revisions = getHistory(branch, test, 0, 1);
+                if ((revisions == null) || revisions.isEmpty()) {
+                    return defaultDate.getTime();
+                }
+                final Date date = revisions.get(0).getDate();
+                if (date == null) {
+                    return defaultDate.getTime();
+                }
+                return date.getTime();
+            }
+        });
+        model.addAttribute("updatedTimeMap", updatedTimeMap);
+
         final String errorMessage = "Apparently not impossible exception generating JSON";
         try {
             final String testMatrixJson = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(testMatrixDefinition);
@@ -403,6 +428,14 @@ public class ProctorController extends AbstractController {
             return new URL(urlStr);
         } catch (final MalformedURLException e) {
             throw new RuntimeException("Somehow created a malformed URL: " + urlStr, e);
+        }
+    }
+
+    private List<Revision> getHistory(final Environment branch, final String test, final int start, final int limit) {
+        try {
+            return determineStoreFromEnvironment(branch).getHistory(test, start, limit);
+        } catch (final StoreException e) {
+            return null;
         }
     }
 
