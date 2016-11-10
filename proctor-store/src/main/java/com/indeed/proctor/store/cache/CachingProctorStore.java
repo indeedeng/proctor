@@ -282,7 +282,7 @@ public class CachingProctorStore implements ProctorStore {
                 public TestMatrixVersion call() throws StoreException {
                     TestMatrixVersion testMatrix = revisionCache.getIfPresent(fetchRevision);
                     if (testMatrix == null) {
-                        LOGGER.info("Cache miss for fetch revision: " + fetchRevision);
+                        LOGGER.debug("Cache miss for fetch revision: " + fetchRevision);
                         testMatrix = delegate.getTestMatrix(fetchRevision);
                         revisionCache.put(fetchRevision, testMatrix);
                     }
