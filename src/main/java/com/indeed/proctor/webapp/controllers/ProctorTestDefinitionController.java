@@ -212,7 +212,7 @@ public class ProctorTestDefinitionController extends AbstractController {
         @RequestParam(required = false, value = "alloc_hist") final String loadAllocHistParam,
         @CookieValue(value="loadAllocationHistory", defaultValue = "") String loadAllocHistCookie,
         final Model model
-    ) {
+    ) throws StoreException {
         final Environment theEnvironment = determineEnvironmentFromParameter(branch);
         final ProctorStore store = determineStoreFromEnvironment(theEnvironment);
 
@@ -227,7 +227,11 @@ public class ProctorTestDefinitionController extends AbstractController {
             if (revision.length() > 0) {
                 definition = getTestDefinition(store, testName, revision);
             } else {
-                definition = getTestDefinition(store, testName, version.getRevision(theEnvironment));
+                /**
+                 * Use the latest version of current ProctorStore instead of the latest commit hash of the ProTest,
+                 * It's more caching friendly.
+                 **/
+                definition = getTestDefinition(store, testName, store.getLatestVersion());
             }
 
             if (definition == null) {
