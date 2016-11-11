@@ -45,6 +45,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -120,7 +121,7 @@ public class ProctorController extends AbstractController {
         model.addAttribute("emptyClients", emptyClients);
         return getArtifactForView(model, which, View.MATRIX_LIST);
     }
-    
+
     @RequestMapping(value="/matrix/raw", method=RequestMethod.GET)
     public JsonView viewRawTestMatrix(final String branch, final Model model) {
         final Environment which = determineEnvironmentFromParameter(branch);
@@ -351,6 +352,19 @@ public class ProctorController extends AbstractController {
         }
     }
 
+    @Nullable
+    private Date getUpdatedDate(final Map<String, List<Revision>> allHistories, final String testName) {
+        if (allHistories == null) {
+            return null;
+        }
+        final List<Revision> revisions = allHistories.get(testName);
+        if ((revisions == null) || revisions.isEmpty()) {
+            LOGGER.warn(testName + " does't have any revision in allHistories.");
+            return null;
+        }
+        return revisions.get(0).getDate();
+    }
+
     private String getArtifactForView(final Model model, final Environment branch, final View view) {
         final TestMatrixVersion testMatrix = getCurrentMatrix(branch);
         final TestMatrixDefinition testMatrixDefinition;
@@ -370,19 +384,16 @@ public class ProctorController extends AbstractController {
         model.addAttribute("testMatrixVersion", testMatrix);
 
         final Set<String> testNames = testMatrixDefinition.getTests().keySet();
+        final Map<String, List<Revision>> allHistories = getAllHistories(branch);
         final Map<String, Long> updatedTimeMap = FluentIterable.from(testNames).toMap(new Function<String, Long>() {
             @Override
-            public Long apply(final String test) {
-                final Date defaultDate = new Date(0);
-                final List<Revision> revisions = getHistory(branch, test, 0, 1);
-                if ((revisions == null) || revisions.isEmpty()) {
-                    return defaultDate.getTime();
+            public Long apply(final String testName) {
+                final Date updatedDate = getUpdatedDate(allHistories, testName);
+                if (updatedDate != null) {
+                    return updatedDate.getTime();
+                } else {
+                    return 0L;  // Sets 0 as fallback value
                 }
-                final Date date = revisions.get(0).getDate();
-                if (date == null) {
-                    return defaultDate.getTime();
-                }
-                return date.getTime();
             }
         });
         model.addAttribute("updatedTimeMap", updatedTimeMap);
@@ -431,10 +442,11 @@ public class ProctorController extends AbstractController {
         }
     }
 
-    private List<Revision> getHistory(final Environment branch, final String test, final int start, final int limit) {
+    private Map<String, List<Revision>> getAllHistories(final Environment branch) {
         try {
-            return determineStoreFromEnvironment(branch).getHistory(test, start, limit);
+            return determineStoreFromEnvironment(branch).getAllHistories();
         } catch (final StoreException e) {
+            LOGGER.error("Failed to get all histories from proctor store of " + branch, e);
             return null;
         }
     }
