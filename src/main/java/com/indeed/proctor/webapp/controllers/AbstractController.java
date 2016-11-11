@@ -8,6 +8,8 @@ import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.webapp.db.Environment;
 import com.indeed.proctor.webapp.model.WebappConfiguration;
+import org.apache.log4j.Logger;
+import org.eclipse.jgit.lib.ObjectId;
 
 import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
@@ -20,6 +22,8 @@ import java.util.Map;
  * @author parker
  */
 public class AbstractController {
+    private static final Logger LOGGER = Logger.getLogger(AbstractController.class);
+
     private final WebappConfiguration configuration;
     private final Map<Environment, ProctorStore> stores;
 
@@ -29,9 +33,9 @@ public class AbstractController {
                               final ProctorStore productionStore) {
         this.configuration = configuration;
         stores = ImmutableMap.of(
-            Environment.WORKING, trunkStore,
-            Environment.QA, qaStore,
-            Environment.PRODUCTION, productionStore
+                Environment.WORKING, trunkStore,
+                Environment.QA, qaStore,
+                Environment.PRODUCTION, productionStore
         );
     }
 
@@ -64,7 +68,7 @@ public class AbstractController {
 
     protected ProctorStore determineStoreFromEnvironment(final Environment branch) {
         final ProctorStore store = stores.get(branch);
-        if(store == null) {
+        if (store == null) {
             throw new RuntimeException("Unknown store for branch " + branch);
         }
         return store;
@@ -98,10 +102,14 @@ public class AbstractController {
     }
 
     @Nullable
-    private ProctorStore determineStoreFromRevision(final String revision) throws StoreException {
+    private ProctorStore determineStoreFromRevision(final String revision) {
         for (final ProctorStore store : stores.values()) {
-            if (store.getTestMatrix(revision) != null) {
-                return store;
+            try {
+                if (store.getTestMatrix(revision) != null) {
+                    return store;
+                }
+            } catch (final StoreException e) {
+                LOGGER.info(String.format("Failed to find revision %s in %s", revision, store.getName()));
             }
         }
         return null;
@@ -109,7 +117,6 @@ public class AbstractController {
 
     private class BranchOrRevision {
         final String stringValue;
-        @Nullable
         final Environment branch;
         final ProctorStore store;
 
@@ -118,12 +125,14 @@ public class AbstractController {
             branch = Environment.fromName(stringValue);
             if (isBranch()) {
                 store = determineStoreFromEnvironment(branch);
-            } else {
+            } else if (ObjectId.isId(stringValue)) {
                 store = determineStoreFromRevision(stringValue);
+            } else {
+                store = null;
             }
 
             if (store == null) {
-                throw new StoreException("Invalid branch or revision name "+stringValue);
+                throw new StoreException("Invalid branch or revision name " + stringValue);
             }
         }
 
