@@ -67,6 +67,8 @@ import java.util.concurrent.ThreadFactory;
 public class ProctorController extends AbstractController {
     private static final Logger LOGGER = Logger.getLogger(ProctorController.class);
 
+    private static final long FALLBACK_UPDATED_TIME = 0L;
+
     private final ObjectMapper objectMapper = Serializers.strict();
     private final int verificationTimeout;
     private final ExecutorService executor;
@@ -359,7 +361,7 @@ public class ProctorController extends AbstractController {
         }
         final List<Revision> revisions = allHistories.get(testName);
         if ((revisions == null) || revisions.isEmpty()) {
-            LOGGER.warn(testName + " does't have any revision in allHistories.");
+            LOGGER.error(testName + " does't have any revision in allHistories.");
             return null;
         }
         return revisions.get(0).getDate();
@@ -392,7 +394,7 @@ public class ProctorController extends AbstractController {
                 if (updatedDate != null) {
                     return updatedDate.getTime();
                 } else {
-                    return 0L;  // Sets 0 as fallback value
+                    return FALLBACK_UPDATED_TIME;
                 }
             }
         });
