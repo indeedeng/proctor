@@ -1,4 +1,4 @@
-goog.provide('indeed.proctor.filter');
+goog.provide('indeed.proctor.filter.Filter');
 
 goog.require('goog.async.Delay');
 
