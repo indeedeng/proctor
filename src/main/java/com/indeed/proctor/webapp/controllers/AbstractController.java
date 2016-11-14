@@ -9,12 +9,12 @@ import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.webapp.db.Environment;
 import com.indeed.proctor.webapp.model.WebappConfiguration;
 import org.apache.log4j.Logger;
-import org.eclipse.jgit.lib.ObjectId;
 
 import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -101,12 +101,12 @@ public class AbstractController {
         return bor.queryTestDefinitionHistory(testName, start, limit);
     }
 
-    @Nullable
-    private ProctorStore determineStoreFromRevision(final String revision) {
+    private TestMatrixVersion queryMatrixFromRevision(final String revision) {
         for (final ProctorStore store : stores.values()) {
             try {
-                if (store.getTestMatrix(revision) != null) {
-                    return store;
+                final TestMatrixVersion testMatrix = store.getTestMatrix(revision);
+                if (testMatrix != null) {
+                    return testMatrix;
                 }
             } catch (final StoreException e) {
                 LOGGER.info(String.format("Failed to find revision %s in %s", revision, store.getName()));
@@ -115,52 +115,55 @@ public class AbstractController {
         return null;
     }
 
+    private List<Revision> queryTestHistoryFromRevision(final String testName, final String revision, final int start, final int limit) throws StoreException {
+        for (final ProctorStore store : stores.values()) {
+
+            final Map<String, List<Revision>> allHistories = store.getAllHistories();
+            if (allHistories.containsKey(testName)) {
+                for (final Revision r : allHistories.get(testName)) {
+                    if (revision.equals(r.getRevision())) {
+                        LOGGER.debug(String.format("Found revision [%s] in history of test [%s] in store [%s]", revision, testName, store.getName()));
+                        return store.getHistory(testName, revision, start, limit);
+                    }
+                }
+            }
+        }
+        LOGGER.info(String.format("Can not find revision %s in any of stores", revision));
+        return Collections.emptyList();
+    }
+
     private class BranchOrRevision {
         final String stringValue;
         final Environment branch;
-        final ProctorStore store;
 
         private BranchOrRevision(final String branchOrRevision) throws StoreException {
             stringValue = branchOrRevision;
             branch = Environment.fromName(stringValue);
-            if (isBranch()) {
-                store = determineStoreFromEnvironment(branch);
-            } else if (ObjectId.isId(stringValue)) {
-                store = determineStoreFromRevision(stringValue);
-            } else {
-                store = null;
-            }
-
-            if (store == null) {
-                throw new StoreException("Invalid branch or revision name " + stringValue);
-            }
         }
 
         private boolean isBranch() {
             return null != branch;
         }
 
+        @Nullable
         private TestMatrixVersion queryTestMatrixVersion() throws StoreException {
             if (isBranch()) {
-                return store.getCurrentTestMatrix();
+                return determineStoreFromEnvironment(branch).getCurrentTestMatrix();
             } else {
-                return store.getTestMatrix(stringValue);
+                return queryMatrixFromRevision(stringValue);
             }
         }
 
+        @Nullable
         private TestDefinition queryTestDefinition(final String testName) throws StoreException {
-            if (isBranch()) {
-                return store.getCurrentTestDefinition(testName);
-            } else {
-                return store.getTestDefinition(testName, stringValue);
-            }
+            return queryTestMatrixVersion().getTestMatrixDefinition().getTests().get(testName);
         }
 
         private List<Revision> queryTestDefinitionHistory(final String testName, final int start, final int limit) throws StoreException {
             if (isBranch()) {
-                return store.getHistory(testName, start, limit);
+                return determineStoreFromEnvironment(branch).getHistory(testName, start, limit);
             } else {
-                return store.getHistory(testName, stringValue, start, limit);
+                return queryTestHistoryFromRevision(testName, stringValue, start, limit);
             }
         }
     }
