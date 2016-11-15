@@ -282,6 +282,7 @@ public class CachingProctorStore implements ProctorStore {
                 public TestMatrixVersion call() throws StoreException {
                     TestMatrixVersion testMatrix = revisionCache.getIfPresent(fetchRevision);
                     if (testMatrix == null) {
+                        LOGGER.debug("Cache miss for fetch revision: " + fetchRevision);
                         testMatrix = delegate.getTestMatrix(fetchRevision);
                         revisionCache.put(fetchRevision, testMatrix);
                     }
@@ -314,7 +315,7 @@ public class CachingProctorStore implements ProctorStore {
             if (hasNewVersion()) {
                 lockAndRefreshCache();
             } else {
-                LOGGER.info(String.format("[%s] Latest version is not changed. Do not refresh cache", delegate.getName()));
+                LOGGER.debug(String.format("[%s] Latest version is not changed. Do not refresh cache", delegate.getName()));
             }
         }
 
