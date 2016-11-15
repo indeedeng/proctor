@@ -101,37 +101,6 @@ public class AbstractController {
         return bor.queryTestDefinitionHistory(testName, start, limit);
     }
 
-    private TestMatrixVersion queryMatrixFromRevision(final String revision) {
-        for (final ProctorStore store : stores.values()) {
-            try {
-                final TestMatrixVersion testMatrix = store.getTestMatrix(revision);
-                if (testMatrix != null) {
-                    return testMatrix;
-                }
-            } catch (final StoreException e) {
-                LOGGER.info(String.format("Failed to find revision %s in %s", revision, store.getName()));
-            }
-        }
-        return null;
-    }
-
-    private List<Revision> queryTestHistoryFromRevision(final String testName, final String revision, final int start, final int limit) throws StoreException {
-        for (final ProctorStore store : stores.values()) {
-
-            final Map<String, List<Revision>> allHistories = store.getAllHistories();
-            if (allHistories.containsKey(testName)) {
-                for (final Revision r : allHistories.get(testName)) {
-                    if (revision.equals(r.getRevision())) {
-                        LOGGER.debug(String.format("Found revision [%s] in history of test [%s] in store [%s]", revision, testName, store.getName()));
-                        return store.getHistory(testName, revision, start, limit);
-                    }
-                }
-            }
-        }
-        LOGGER.info(String.format("Can not find revision %s in any of stores", revision));
-        return Collections.emptyList();
-    }
-
     private class BranchOrRevision {
         final String stringValue;
         final Environment branch;
@@ -156,7 +125,11 @@ public class AbstractController {
 
         @Nullable
         private TestDefinition queryTestDefinition(final String testName) throws StoreException {
-            return queryTestMatrixVersion().getTestMatrixDefinition().getTests().get(testName);
+            final TestMatrixVersion testMatrixVersion = queryTestMatrixVersion();
+            if (testMatrixVersion == null) {
+                return null;
+            }
+            return testMatrixVersion.getTestMatrixDefinition().getTests().get(testName);
         }
 
         private List<Revision> queryTestDefinitionHistory(final String testName, final int start, final int limit) throws StoreException {
@@ -165,6 +138,37 @@ public class AbstractController {
             } else {
                 return queryTestHistoryFromRevision(testName, stringValue, start, limit);
             }
+        }
+
+        private TestMatrixVersion queryMatrixFromRevision(final String revision) {
+            for (final ProctorStore store : stores.values()) {
+                try {
+                    final TestMatrixVersion testMatrix = store.getTestMatrix(revision);
+                    if (testMatrix != null) {
+                        return testMatrix;
+                    }
+                } catch (final StoreException e) {
+                    LOGGER.info(String.format("Failed to find revision %s in %s", revision, store.getName()));
+                }
+            }
+            return null;
+        }
+
+        private List<Revision> queryTestHistoryFromRevision(final String testName, final String revision, final int start, final int limit) throws StoreException {
+            for (final ProctorStore store : stores.values()) {
+
+                final Map<String, List<Revision>> allHistories = store.getAllHistories();
+                if (allHistories.containsKey(testName)) {
+                    for (final Revision r : allHistories.get(testName)) {
+                        if (revision.equals(r.getRevision())) {
+                            LOGGER.debug(String.format("Found revision [%s] in history of test [%s] in store [%s]", revision, testName, store.getName()));
+                            return store.getHistory(testName, revision, start, limit);
+                        }
+                    }
+                }
+            }
+            LOGGER.info(String.format("Can not find revision %s in any of stores", revision));
+            return Collections.emptyList();
         }
     }
 }
