@@ -1,22 +1,29 @@
 package com.indeed.proctor.webapp.controllers;
 
 import com.google.common.collect.ImmutableMap;
+import com.indeed.proctor.common.model.TestDefinition;
 import com.indeed.proctor.common.model.TestMatrixVersion;
 import com.indeed.proctor.store.ProctorStore;
+import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.webapp.db.Environment;
-import com.indeed.proctor.webapp.ProctorClientSource;
 import com.indeed.proctor.webapp.model.WebappConfiguration;
+import org.apache.log4j.Logger;
 
+import javax.annotation.Nullable;
+import javax.servlet.http.HttpServletRequest;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author parker
  */
 public class AbstractController {
+    private static final Logger LOGGER = Logger.getLogger(AbstractController.class);
+
     private final WebappConfiguration configuration;
     private final Map<Environment, ProctorStore> stores;
 
@@ -26,9 +33,9 @@ public class AbstractController {
                               final ProctorStore productionStore) {
         this.configuration = configuration;
         stores = ImmutableMap.of(
-            Environment.WORKING, trunkStore,
-            Environment.QA, qaStore,
-            Environment.PRODUCTION, productionStore
+                Environment.WORKING, trunkStore,
+                Environment.QA, qaStore,
+                Environment.PRODUCTION, productionStore
         );
     }
 
@@ -61,7 +68,7 @@ public class AbstractController {
 
     protected ProctorStore determineStoreFromEnvironment(final Environment branch) {
         final ProctorStore store = stores.get(branch);
-        if(store == null) {
+        if (store == null) {
             throw new RuntimeException("Unknown store for branch " + branch);
         }
         return store;
@@ -72,6 +79,92 @@ public class AbstractController {
             return determineStoreFromEnvironment(branch).getCurrentTestMatrix();
         } catch (StoreException e) {
             return null;
+        }
+    }
+
+    protected List<Revision> queryMatrixHistory(final Environment branch, final int start, final int limit) throws StoreException {
+        return determineStoreFromEnvironment(branch).getMatrixHistory(start, limit);
+    }
+
+    protected TestMatrixVersion queryMatrixFromBranchOrRevision(final String branchOrRevision) throws StoreException {
+        final BranchOrRevision bor = new BranchOrRevision(branchOrRevision);
+        return bor.queryTestMatrixVersion();
+    }
+
+    protected TestDefinition queryTestDefinition(final String branchOrRevision, final String testName) throws StoreException {
+        final BranchOrRevision bor = new BranchOrRevision(branchOrRevision);
+        return bor.queryTestDefinition(testName);
+    }
+
+    protected List<Revision> queryTestDefinitionHistory(final String branchOrRevision, final String testName, final int start, final int limit) throws StoreException {
+        final BranchOrRevision bor = new BranchOrRevision(branchOrRevision);
+        return bor.queryTestDefinitionHistory(testName, start, limit);
+    }
+
+    private TestMatrixVersion queryMatrixFromRevision(final String revision) {
+        for (final ProctorStore store : stores.values()) {
+            try {
+                final TestMatrixVersion testMatrix = store.getTestMatrix(revision);
+                if (testMatrix != null) {
+                    return testMatrix;
+                }
+            } catch (final StoreException e) {
+                LOGGER.info(String.format("Failed to find revision %s in %s", revision, store.getName()));
+            }
+        }
+        return null;
+    }
+
+    private List<Revision> queryTestHistoryFromRevision(final String testName, final String revision, final int start, final int limit) throws StoreException {
+        for (final ProctorStore store : stores.values()) {
+
+            final Map<String, List<Revision>> allHistories = store.getAllHistories();
+            if (allHistories.containsKey(testName)) {
+                for (final Revision r : allHistories.get(testName)) {
+                    if (revision.equals(r.getRevision())) {
+                        LOGGER.debug(String.format("Found revision [%s] in history of test [%s] in store [%s]", revision, testName, store.getName()));
+                        return store.getHistory(testName, revision, start, limit);
+                    }
+                }
+            }
+        }
+        LOGGER.info(String.format("Can not find revision %s in any of stores", revision));
+        return Collections.emptyList();
+    }
+
+    private class BranchOrRevision {
+        final String stringValue;
+        final Environment branch;
+
+        private BranchOrRevision(final String branchOrRevision) throws StoreException {
+            stringValue = branchOrRevision;
+            branch = Environment.fromName(stringValue);
+        }
+
+        private boolean isBranch() {
+            return null != branch;
+        }
+
+        @Nullable
+        private TestMatrixVersion queryTestMatrixVersion() throws StoreException {
+            if (isBranch()) {
+                return determineStoreFromEnvironment(branch).getCurrentTestMatrix();
+            } else {
+                return queryMatrixFromRevision(stringValue);
+            }
+        }
+
+        @Nullable
+        private TestDefinition queryTestDefinition(final String testName) throws StoreException {
+            return queryTestMatrixVersion().getTestMatrixDefinition().getTests().get(testName);
+        }
+
+        private List<Revision> queryTestDefinitionHistory(final String testName, final int start, final int limit) throws StoreException {
+            if (isBranch()) {
+                return determineStoreFromEnvironment(branch).getHistory(testName, start, limit);
+            } else {
+                return queryTestHistoryFromRevision(testName, stringValue, start, limit);
+            }
         }
     }
 }
