@@ -1,11 +1,13 @@
 package com.indeed.proctor.webapp.controllers;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.indeed.proctor.common.model.TestDefinition;
 import com.indeed.proctor.common.model.TestMatrixVersion;
 import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.store.StoreException;
+import com.indeed.proctor.webapp.db.Environment;
 import com.indeed.proctor.webapp.model.WebappConfiguration;
 import com.indeed.proctor.webapp.views.JsonView;
 import org.apache.log4j.Logger;
@@ -29,7 +31,6 @@ public class TestMatrixApiController extends AbstractController {
 
     private static final Logger LOGGER = Logger.getLogger(TestMatrixApiController.class);
 
-
     @Autowired
     public TestMatrixApiController(final WebappConfiguration configuration,
                                    @Qualifier("trunk") final ProctorStore trunkStore,
@@ -42,8 +43,9 @@ public class TestMatrixApiController extends AbstractController {
     public JsonView getTestMatrix(
             @PathVariable final String branchOrRevision
     ) throws StoreException {
-            final TestMatrixVersion testMatrixVersion = queryMatrixFromBranchOrRevision(branchOrRevision);
-            return new JsonView(testMatrixVersion);
+        final TestMatrixVersion testMatrixVersion = queryMatrixFromBranchOrRevision(branchOrRevision);
+        Preconditions.checkNotNull(testMatrixVersion, String.format("Branch or revision %s not correct", branchOrRevision));
+        return new JsonView(testMatrixVersion);
     }
 
     @RequestMapping(value = "/{branch}/matrix/history", method = RequestMethod.GET)
@@ -52,8 +54,9 @@ public class TestMatrixApiController extends AbstractController {
             @RequestParam(required = false, value = "start", defaultValue = "0") final int start,
             @RequestParam(required = false, value = "limit", defaultValue = "32") final int limit
     ) throws StoreException {
-            final List<Revision> matrixHistory = queryMatrixHistory(determineEnvironmentFromParameter(branch), start, limit);
-            return new JsonView(matrixHistory);
+        final Environment environment = Environment.fromName(branch);
+        Preconditions.checkNotNull(environment, String.format("Branch %s not correct", branch));
+        return new JsonView(queryMatrixHistory(environment, start, limit));
     }
 
     @RequestMapping(value = "/{branchOrRevision}/definition/{testName}", method = RequestMethod.GET)
@@ -61,8 +64,10 @@ public class TestMatrixApiController extends AbstractController {
             @PathVariable final String branchOrRevision,
             @PathVariable final String testName
     ) throws StoreException {
-            final TestDefinition testDefinition = queryTestDefinition(branchOrRevision, testName);
-            return new JsonView(testDefinition);
+        final TestDefinition testDefinition = queryTestDefinition(branchOrRevision, testName);
+        Preconditions.checkNotNull(testDefinition,
+                String.format("Branch or revision %s not correct, or test %s not found", branchOrRevision, testName));
+        return new JsonView(testDefinition);
     }
 
     @RequestMapping(value = "/{branchOrRevision}/definition/{testName}/history", method = RequestMethod.GET)
@@ -73,10 +78,11 @@ public class TestMatrixApiController extends AbstractController {
             @RequestParam(required = false, value = "limit", defaultValue = "32") final int limit
     ) throws StoreException {
         final List<Revision> revisions = queryTestDefinitionHistory(branchOrRevision, testName, start, limit);
+        Preconditions.checkState(!revisions.isEmpty(), String.format("Branch or revision %s not correct, or test %s not found", branchOrRevision, testName));
         return new JsonView(revisions);
     }
 
-    @ResponseStatus(value=HttpStatus.INTERNAL_SERVER_ERROR)
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     @ExceptionHandler(value = {Exception.class})
     public View handleStoreException(final Exception e) {
         LOGGER.error(e);
