@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.indeed</groupId>
         <artifactId>oss-parent</artifactId>
-        <version>14</version>
+        <version>17</version>
     </parent>
 
     <groupId>com.indeed</groupId>
@@ -331,7 +331,7 @@
     </dependencies>
 
     <properties>
-        <proctor.version>1.1.26</proctor.version>
+        <proctor.version>1.1.27</proctor.version>
         <indeed-util.version>1.0.12</indeed-util.version>
         <closure-library.version>20160106</closure-library.version>
         <closure-library-zip>v${closure-library.version}.zip</closure-library-zip>
