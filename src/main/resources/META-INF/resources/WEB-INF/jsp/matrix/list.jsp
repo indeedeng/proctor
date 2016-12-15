@@ -65,12 +65,15 @@
                     </ul>
                     <proctor:renderMatrixListPageInjectionTemplates position="<%=MatrixListPageRenderer.MatrixListPagePosition.LINK%>" testName="${proctor:urlencode(test.key)}" testMatrixVersion="${testMatrixVersion}" testDefinition="${testDefinition}"/>
                 </ui:grid-columns>
-                <ui:grid-columns width="nine">
+                <ui:grid-columns width="eight">
                     <div class="def-description">
                         <proctor:formatCommitMessageDisplay commitMessage="${testDefinition.description}"/>
                     </div>
                     <c:if test="${!empty testDefinition.rule}"><div class="rule">rule: ${fn:escapeXml(testDefinition.rule)}</div></c:if>
                     <ui:allocations definition="${testDefinition}"/>
+                </ui:grid-columns>
+                <ui:grid-columns width="one">
+                    <div class="favorite" data-testname="${fn:escapeXml(test.key)}"></div>
                 </ui:grid-columns>
             </ui:grid-row>
             </div>
