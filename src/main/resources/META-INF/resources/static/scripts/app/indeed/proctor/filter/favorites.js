@@ -39,8 +39,19 @@ indeed.proctor.filter.Favorites.prototype.toggleTestWithName = function(testName
     return hasBeenMarkedAsFavorite;
 };
 
-indeed.proctor.filter.Favorites.prototype.isFavorite = function(testName) {
+/**
+ * Returns the rank of the test based on how recently the test has been marked as favorite or not.
+ * Tests that have been marked as favorite most recently would have the highest rank.
+ * Tests which are not marked as favorite have rank of 0
+ * @param testName name of the test to check
+ */
+indeed.proctor.filter.Favorites.prototype.rankOf = function(testName) {
     var index = this.favoriteTests.indexOf(testName);
-    return (index > -1);
+    var numberOfFavorites = this.favoriteTests.length;
+    if (index > -1) {
+        return numberOfFavorites - index;
+    } else {
+        return 0;
+    }
 };
 

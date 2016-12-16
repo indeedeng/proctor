@@ -33,9 +33,10 @@ indeed.proctor.app.matrix.list.start = function(matrix) {
     });
     var filterContainer = goog.dom.getElement("filter-container");
     var testContainer = goog.dom.getElement("test-container");
+    //todo build common model once here and let controls affect it
     new indeed.proctor.filter.Filter(matrix, filterContainer);
-    new indeed.proctor.filter.Favorites(testContainer);
-    new indeed.proctor.filter.Sorter(filterContainer, testContainer);
+    var favorites = new indeed.proctor.filter.Favorites(testContainer);
+    new indeed.proctor.filter.Sorter(filterContainer, testContainer, favorites);
   });
 };
 

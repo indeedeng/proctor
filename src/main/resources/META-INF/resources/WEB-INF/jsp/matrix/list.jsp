@@ -55,6 +55,7 @@
         <c:forEach items="${testMatrix.tests}" var="test">
             <c:set var="testDefinition" value="${test.value}" />
             <div class="panel radius" data-updated="${updatedTimeMap.get(test.key)}">
+            <!-- todo move the data-updated attribute to the ui-test-definition to make it a bit more semantic -->
             <ui:grid-row extraCssClass="ui-test-definition">
                 <ui:grid-columns width="three">
                     <h6 class="mtn"><a class="ui-test-name" href="/proctor/definition/${proctor:urlencode(test.key)}?branch=${proctor:urlencode(branch.name)}">${fn:escapeXml(test.key)}</a></h6>
