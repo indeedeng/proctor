@@ -2,29 +2,68 @@ goog.provide("indeed.proctor.filter.Favorites");
 
 goog.require('goog.net.cookies');
 
+
 indeed.proctor.filter.Favorites = function (testContainer) {
     var favorites = this;
-    this.testContainer = testContainer;
-    this.favoriteTests = [];
-    goog.array.forEach(goog.dom.getChildren(testContainer), function(child, index){
-        var favoriteToggle = child.querySelector(".favorite");
+    this.favoriteTests = indeed.proctor.filter.Favorites.deserializeFromCookie();
+    new indeed.proctor.filter.Favorites.UI(testContainer, this.favoriteTests, function(testName){return favorites.toggleTestWithName(testName)});
+};
+
+indeed.proctor.filter.Favorites.UI = function (testContainer, favoriteTests, toggleListenerFunc) {
+
+    indeed.proctor.filter.Favorites.UI.FAVORITE_TOGGLE_SELECTOR = '.favorite';
+
+    indeed.proctor.filter.Favorites.UI.markAsFavorite = function(favoriteToggle) {
+        goog.dom.classes.add(favoriteToggle, 'favorite-toggled');
+    }
+
+    indeed.proctor.filter.Favorites.UI.removeFavorite = function(favoriteToggle) {
+        goog.dom.classes.remove(favoriteToggle, 'favorite-toggled');
+    }
+
+    indeed.proctor.filter.Favorites.UI.getTestNameFromToggle = function(favoriteToggle) {
+        return goog.dom.dataset.get(favoriteToggle, "testname");
+    }
+
+    goog.array.forEach(goog.dom.getChildren(testContainer), function(child){
+        var favoriteToggle = child.querySelector(indeed.proctor.filter.Favorites.UI.FAVORITE_TOGGLE_SELECTOR);
+        var testName = indeed.proctor.filter.Favorites.UI.getTestNameFromToggle(favoriteToggle);
+        if (goog.array.contains(favoriteTests, testName)) {
+            indeed.proctor.filter.Favorites.UI.markAsFavorite(favoriteToggle);
+        }
+    });
+
+    goog.array.forEach(goog.dom.getChildren(testContainer), function(child){
+        var favoriteToggle = child.querySelector(indeed.proctor.filter.Favorites.UI.FAVORITE_TOGGLE_SELECTOR);
         goog.events.listen(favoriteToggle, goog.events.EventType.CLICK, function(){
-            favorites.toggle(favoriteToggle);
+            var testName = indeed.proctor.filter.Favorites.UI.getTestNameFromToggle(favoriteToggle);
+            var isFavorite = toggleListenerFunc(testName);
+            if(isFavorite) {
+                indeed.proctor.filter.Favorites.UI.markAsFavorite(favoriteToggle);
+            } else {
+                indeed.proctor.filter.Favorites.UI.removeFavorite(favoriteToggle);
+            }
         });
     });
 
-    //todo read cookie
-};
 
-indeed.proctor.filter.Favorites.prototype.toggle = function (favoriteToggle) {
-    var testName = goog.dom.dataset.get(favoriteToggle, "testname");
-    var isFavorite = this.toggleTestWithName(testName);
-    if(isFavorite) {
-        goog.dom.classes.add(favoriteToggle, 'favorite-toggled'); //todo move to reactive method ?
-    } else {
-        goog.dom.classes.remove(favoriteToggle, 'favorite-toggled');
+}
+
+indeed.proctor.filter.Favorites.deserializeFromCookie = function () {
+    var favoriteTests = [];
+    var cookieValue = goog.net.cookies.get('FavoriteTests', ''); //todo define in constant
+    if(cookieValue.length > 0) {
+        favoriteTests = cookieValue.split(',');
     }
-};
+    return favoriteTests;
+}
+
+indeed.proctor.filter.Favorites.prototype.serializeToCookie = function () {
+    var favoriteTests = this.favoriteTests;
+    var serializedValue = favoriteTests.join(','); //todo define in constant
+    goog.net.cookies.set('FavoriteTests', serializedValue, 31536000, '/');
+    return favoriteTests;
+}
 
 indeed.proctor.filter.Favorites.prototype.toggleTestWithName = function(testName) {
     var index = this.favoriteTests.indexOf(testName);
@@ -36,6 +75,7 @@ indeed.proctor.filter.Favorites.prototype.toggleTestWithName = function(testName
         this.favoriteTests.unshift(testName);
         hasBeenMarkedAsFavorite = true;
     }
+    this.serializeToCookie();
     return hasBeenMarkedAsFavorite;
 };
 
