@@ -17,9 +17,23 @@ indeed.proctor.filter.Sorter = function (filterContainer, testContainer, favorit
     goog.events.listen(this.sortedByNode, goog.events.EventType.CHANGE, function(){
         sorter.refreshOrder();
     });
+
+    sorter.sortWithDefaultOrder();
+}
+
+indeed.proctor.filter.Sorter.prototype.sortWithDefaultOrder = function() {
+    this.refreshOrder();
 }
 
 indeed.proctor.filter.Sorter.prototype.options = [
+    {
+        name: "favorites first",
+        keyFunction: function(x){
+            var sortKey = (''+(999999999 - x.relevancyRank)).concat(x.name);
+            return sortKey;
+        },
+        comparator: goog.array.defaultCompare
+    },
     {
         name: "test name",
         keyFunction: function(x){ return x.name; },
@@ -29,14 +43,6 @@ indeed.proctor.filter.Sorter.prototype.options = [
         name: "updated date",
         keyFunction: function(x){ return x.updated; },
         comparator: goog.array.inverseDefaultCompare
-    },
-    {
-        name: "favorites first",
-        keyFunction: function(x){
-            var sortKey = (''+(999999999 - x.relevancyRank)).concat(x.name);
-            return sortKey;
-        },
-        comparator: goog.array.defaultCompare
     }
 ];
 
