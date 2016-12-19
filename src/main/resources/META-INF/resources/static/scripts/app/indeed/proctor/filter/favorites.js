@@ -4,6 +4,10 @@ goog.require('goog.net.cookies');
 
 
 indeed.proctor.filter.Favorites = function (testContainer) {
+
+    indeed.proctor.filter.Favorites.COOKIE_NAME = 'FavoriteTests';
+    indeed.proctor.filter.Favorites.COOKIE_SEPARATOR = ',';
+
     var favorites = this;
     this.favoriteTests = indeed.proctor.filter.Favorites.deserializeFromCookie();
     new indeed.proctor.filter.Favorites.UI(testContainer, this.favoriteTests, function(testName){return favorites.toggleTestWithName(testName)});
@@ -46,22 +50,21 @@ indeed.proctor.filter.Favorites.UI = function (testContainer, favoriteTests, tog
         });
     });
 
-
 }
 
 indeed.proctor.filter.Favorites.deserializeFromCookie = function () {
     var favoriteTests = [];
-    var cookieValue = goog.net.cookies.get('FavoriteTests', ''); //todo define in constant
+    var cookieValue = goog.net.cookies.get(indeed.proctor.filter.Favorites.COOKIE_NAME, '');
     if(cookieValue.length > 0) {
-        favoriteTests = cookieValue.split(',');
+        favoriteTests = cookieValue.split(indeed.proctor.filter.Favorites.COOKIE_SEPARATOR);
     }
     return favoriteTests;
 }
 
 indeed.proctor.filter.Favorites.prototype.serializeToCookie = function () {
     var favoriteTests = this.favoriteTests;
-    var serializedValue = favoriteTests.join(','); //todo define in constant
-    goog.net.cookies.set('FavoriteTests', serializedValue, 31536000, '/');
+    var serializedValue = favoriteTests.join(indeed.proctor.filter.Favorites.COOKIE_SEPARATOR);
+    goog.net.cookies.set(indeed.proctor.filter.Favorites.COOKIE_NAME, serializedValue, 31536000, '/');
     return favoriteTests;
 }
 
