@@ -65,7 +65,7 @@ indeed.proctor.filter.Sorter.prototype.refreshOrder = function () {
 
 indeed.proctor.filter.Sorter.prototype.createModels = function () {
     var children = goog.dom.getChildren(this.testContainer);
-    var favorites = this.favorites;
+    var favorites = this.favorites.refresh();
     var models = goog.array.map(children, function(child){
         var updated = goog.dom.dataset.get(child, "updated");
         var testName = goog.dom.getTextContent(child.querySelector(".mtn"));
