@@ -22,8 +22,7 @@ indeed.proctor.filter.Favorites.Model = function (eventBus) {
 
     indeed.proctor.filter.Favorites.Model.prototype.addFavorite = function(testName) {
         this.refreshFavoriteTests();
-        var index = this.favoriteTests.indexOf(testName);
-        if (!(index > -1)) {
+        if (!goog.array.contains(this.favoriteTests, testName)) {
             this.favoriteTests.unshift(testName);
             this.fireUpdated();
         }
@@ -31,9 +30,8 @@ indeed.proctor.filter.Favorites.Model = function (eventBus) {
 
     indeed.proctor.filter.Favorites.Model.prototype.removeFavorite = function(testName) {
         this.refreshFavoriteTests();
-        var index = this.favoriteTests.indexOf(testName);
-        if (index > -1) {
-            this.favoriteTests.splice(index, 1);
+        var hasBeenremoved = goog.array.remove(this.favoriteTests, testName);
+        if (hasBeenremoved) {
             this.fireUpdated();
         }
     }
