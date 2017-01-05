@@ -1,16 +1,16 @@
 package com.indeed.proctor.consumer.spring;
 
 import com.google.common.base.Supplier;
-import com.indeed.proctor.common.AbstractProctorLoader;
 import com.indeed.proctor.common.Proctor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.HttpRequestHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import java.io.IOException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.List;
 
 /**
  * To get basic showGroups functionality mount this controller and implement determineGroups(HttpServletRequest request).
@@ -39,22 +39,28 @@ public abstract class AbstractShowTestGroupsController implements ShowGroupsHand
         this.showTestMatrixHandler = new ShowTestMatrixHandler(proctorSupplier);
     }
 
+    public AbstractShowTestGroupsController(final List<Supplier<Proctor>> proctorSuppliers) {
+        this.showGroupsHandler = new ShowGroupsHandler(this);
+        this.randomGroupsHandler = new ShowRandomGroupsHandler(proctorSuppliers);
+        this.showTestMatrixHandler = new ShowTestMatrixHandler(proctorSuppliers);
+    }
+
     @RequestMapping(value = "/showGroups")
-    public void showGroups(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+    public void showGroups(final HttpServletRequest request, final HttpServletResponse response) throws IOException, ServletException {
         handle(request, response, showGroupsHandler);
     }
 
     @RequestMapping(value = "/showRandomGroups")
-    public void showRandomGroups(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+    public void showRandomGroups(final HttpServletRequest request, final HttpServletResponse response) throws IOException, ServletException {
         handle(request, response, randomGroupsHandler);
     }
 
     @RequestMapping(value = "/showTestMatrix")
-    public void showTestMatrix(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+    public void showTestMatrix(final HttpServletRequest request, final HttpServletResponse response) throws IOException, ServletException {
         handle(request, response, showTestMatrixHandler);
     }
 
-    private void handle(HttpServletRequest request, HttpServletResponse response, HttpRequestHandler handler) throws IOException, ServletException {
+    private void handle(final HttpServletRequest request, final HttpServletResponse response, final HttpRequestHandler handler) throws IOException, ServletException {
         if(isAccessAllowed(request)) {
             handler.handleRequest(request, response);
         } else {
