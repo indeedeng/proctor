@@ -59,7 +59,7 @@ import java.util.Set;
 
 
 public abstract class ProctorUtils {
-    private static final ObjectMapper OBJECT_MAPPER = Serializers.lenient();
+    private static final ObjectMapper OBJECT_MAPPER = Serializers.lenient().configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
     private static final Logger LOGGER = Logger.getLogger(ProctorUtils.class);
 
     public static MessageDigest createMessageDigest() {

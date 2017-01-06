@@ -191,10 +191,12 @@ public class CachingProctorStoreTest {
             @Override
             public void run() {
                 try {
+                    Thread.sleep(1);
                     testee.updateTestDefinition("Mike", "pwd", "2", "tst1", newTst2, Collections.<String, String>emptyMap(), "Update description of tst1");
                     fail();
                 } catch (final TestUpdateException e) {
                     /* expected */
+                } catch (final InterruptedException ignored) {
                 }
             }
         });
