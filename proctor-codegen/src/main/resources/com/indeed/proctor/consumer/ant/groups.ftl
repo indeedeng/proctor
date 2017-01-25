@@ -22,11 +22,12 @@ public class ${mainClassName} extends AbstractGroups {
     }
 
     public static Bucket<${testEnumName}>[] getBuckets(final ${testEnumName} test) {
+        /** As a workaround to an ART bug, cast return value to Bucket<${testEnumName}>[] PROC-259 **/
         switch (test) {
             <#list testDefs as testDef>
             <#if testDef.buckets?has_content>
             case ${testDef.enumName}:
-                return ${testDef.javaClassName}.values();
+                return (Bucket<${testEnumName}>[])${testDef.javaClassName}.values();
             </#if>
             </#list>
         }
