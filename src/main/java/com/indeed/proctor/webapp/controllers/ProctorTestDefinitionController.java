@@ -955,15 +955,9 @@ public class ProctorTestDefinitionController extends AbstractController {
          final List<Allocation> existingAllocations = existingTestDefinition.getAllocations();
          final List<Allocation> allocationsToUpdate = testDefinitionToUpdate.getAllocations();
          final boolean nullRule = existingTestDefinition.getRule() == null;
-         final boolean nullDescription = existingTestDefinition.getDescription() == null;
          if (nullRule && testDefinitionToUpdate.getRule() != null) {
              return false;
          } else if (!nullRule && !existingTestDefinition.getRule().equals(testDefinitionToUpdate.getRule())) {
-             return false;
-         }
-         if (nullDescription && testDefinitionToUpdate.getDescription() != null) {
-             return false;
-         } else if (!nullDescription && !existingTestDefinition.getDescription().equals(testDefinitionToUpdate.getDescription())) {
              return false;
          }
          if (!existingTestDefinition.getConstants().equals(testDefinitionToUpdate.getConstants())
