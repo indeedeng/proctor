@@ -163,6 +163,7 @@ public class TestProctorTestDefinitionController {
             final double[] rangeTwo = {.5, .5};
             final TestDefinition testDefinitionOne = createTestDefinition("testbuck:0,control:2",TestType.RANDOM, "salt1",rangeOne,payloadst1);
             final TestDefinition testDefinitionTwo = createTestDefinition("testbuck:0,control:2",TestType.RANDOM, "salt1", rangeTwo,payloadst2);
+            testDefinitionTwo.setDescription("updated description");
             Assert.assertTrue(ProctorTestDefinitionController.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
         }
         { //testing map payload failed autopromote equality
