@@ -13,6 +13,7 @@ import com.indeed.util.varexport.VarExporter;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,6 +32,8 @@ public class GitProctorStoreFactory implements StoreFactory {
      * */
     private final File tempRoot;
 
+    private final int gitDirectoryLockTimeoutSeconds;
+
     /**
      * @deprecated executor and gitRefreshSecond are no longer required. Use other constructors instead.
      */
@@ -41,24 +44,17 @@ public class GitProctorStoreFactory implements StoreFactory {
                                   final String gitUsername,
                                   final String gitPassword,
                                   final String testDefinitionsDirectory,
-                                  final String tempRootDirectory) throws IOException, ConfigurationException {
-        this.gitUrl = gitUrl;
-        this.gitUsername = gitUsername;
-        this.gitPassword = gitPassword;
-        this.testDefinitionsDirectory = testDefinitionsDirectory;
-
-        if (StringUtils.isEmpty(tempRootDirectory)) {
-            tempRoot = identifyImplicitTempRoot();
-        } else {
-            tempRoot = new File(tempRootDirectory);
-        }
+                                  final String tempRootDirectory,
+                                  final int gitDirectoryLockTimeoutSeconds) throws IOException, ConfigurationException {
+        this(gitUrl, gitUsername, gitPassword, testDefinitionsDirectory, tempRootDirectory, gitDirectoryLockTimeoutSeconds);
     }
 
     public GitProctorStoreFactory(final String gitUrl,
                                   final String gitUsername,
                                   final String gitPassword,
                                   final String testDefinitionsDirectory,
-                                  final String tempRootDirectory) throws IOException, ConfigurationException {
+                                  final String tempRootDirectory,
+                                  final int gitDirectoryLockTimeoutSeconds) throws IOException, ConfigurationException {
         this.gitUrl = gitUrl;
         this.gitUsername = gitUsername;
         this.gitPassword = gitPassword;
@@ -69,6 +65,8 @@ public class GitProctorStoreFactory implements StoreFactory {
         } else {
             tempRoot = new File(tempRootDirectory);
         }
+
+        this.gitDirectoryLockTimeoutSeconds = gitDirectoryLockTimeoutSeconds;
     }
 
     public ProctorStore getTrunkStore() {
@@ -89,7 +87,7 @@ public class GitProctorStoreFactory implements StoreFactory {
 
         Preconditions.checkArgument(!CharMatcher.WHITESPACE.matchesAllOf(Strings.nullToEmpty(gitUrl)), "scm.path property cannot be empty");
 
-        final GitWorkspaceProviderImpl provider = new GitWorkspaceProviderImpl(tempDirectory);
+        final GitWorkspaceProviderImpl provider = new GitWorkspaceProviderImpl(tempDirectory, gitDirectoryLockTimeoutSeconds);
         final GitProctorCore gitCore = new GitProctorCore(gitUrl, gitUsername, gitPassword, testDefinitionsDirectory, provider);
 
         final String branchName = relativePath.substring(relativePath.lastIndexOf("/")+1);
@@ -126,4 +124,5 @@ public class GitProctorStoreFactory implements StoreFactory {
         tempFile.delete();
         return tempFile.getParentFile();
     }
+
 }

@@ -27,6 +27,7 @@ public class RevisionControlStoreFactory implements FactoryBean<StoreFactory> {
     private String testDefinitionsDirectory;
     private String tempRootDirectory;
 
+    private int gitDirectoryLockTimeoutSeconds;
 
     @Override
     public StoreFactory getObject() throws Exception {
@@ -52,7 +53,8 @@ public class RevisionControlStoreFactory implements FactoryBean<StoreFactory> {
                 scmUsername,
                 scmPassword,
                 testDefinitionsDirectory,
-                tempRootDirectory);
+                tempRootDirectory,
+                gitDirectoryLockTimeoutSeconds);
         }
         return null;
     }
@@ -131,5 +133,10 @@ public class RevisionControlStoreFactory implements FactoryBean<StoreFactory> {
     @Value("${temp.root.directory:}")
     public void setTempRootDirectory(final String tempRootDirectory) {
         this.tempRootDirectory = tempRootDirectory;
+    }
+
+    @Value("${git.timeout.seconds.lock.directory:90}")
+    public void setGitDirectoryLockTimeoutSeconds(final int seconds) {
+        gitDirectoryLockTimeoutSeconds = seconds;
     }
 }
