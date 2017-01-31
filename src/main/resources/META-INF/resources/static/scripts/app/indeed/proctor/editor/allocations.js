@@ -590,16 +590,6 @@ indeed.proctor.editor.AllocationEditor.prototype.buildBucketOptions_ =
   return /** @type {Element} */ (df);
 };
 
-indeed.proctor.editor.AllocationEditor.prototype.buildNewBucketOption_ =
-    function(newBucket) {
-   var attrs = {
-     'value': newBucket['value']
-   };
-   var option = goog.dom.createDom(goog.dom.TagName.OPTION, attrs);
-   option.text = newBucket['name'];
-   return /** @type {Dom} */ option;
-};
-
 
 /**
  *
