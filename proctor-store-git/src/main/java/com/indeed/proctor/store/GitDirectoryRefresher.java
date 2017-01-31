@@ -42,7 +42,7 @@ public class GitDirectoryRefresher extends TimerTask {
                             .setProgressMonitor(PROGRESS_MONITOR)
                             .setRebase(true)
                             .setCredentialsProvider(user)
-                            .setTimeout(GitProctorUtils.GIT_PULL_PUSH_TIMEOUT)
+                            .setTimeout(GitProctorUtils.DEFAULT_GIT_PULL_PUSH_TIMEOUT_SECONDS)
                             .call();
                     if (!result.isSuccessful()) {
                         /** if git pull failed, use git reset **/
