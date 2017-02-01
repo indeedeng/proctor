@@ -331,7 +331,7 @@
     </dependencies>
 
     <properties>
-        <proctor.version>1.1.29</proctor.version>
+        <proctor.version>1.1.30</proctor.version>
         <indeed-util.version>1.0.12</indeed-util.version>
         <closure-library.version>20160106</closure-library.version>
         <closure-library-zip>v${closure-library.version}.zip</closure-library-zip>
