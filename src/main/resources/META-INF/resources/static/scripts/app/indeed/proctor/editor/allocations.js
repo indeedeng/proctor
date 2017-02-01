@@ -278,6 +278,12 @@ indeed.proctor.editor.AllocationEditor.prototype.bind_ = function() {
 
   this.handler_.listen(this, ['ratioChange', 'ratioAdded', 'ratioDeleted'],
                        this.onDataChange_);
+  var selectors = this.dom_.getElementsByClass('js-bucket-select', this.container);
+  for (var i = 0; i < selectors.length; i++) {
+    this.handler_.listen(selectors[i], goog.events.EventType.FOCUS, function(e){
+      this.reloadSelectorOptions_(e.target);
+    })
+  }
 };
 
 
@@ -545,10 +551,20 @@ indeed.proctor.editor.AllocationEditor.prototype.buildBucketSelector_ =
   var df = goog.dom.createDom(goog.dom.TagName.SELECT,
                               {'name': this.getRangeIndexPath(rangeIndex) +
             '.bucketValue', 'class': 'json js-bucket-select' });
+  this.handler_.listen(df,  goog.events.EventType.FOCUS, function(e){
+    this.reloadSelectorOptions_(e.target);
+  });
   goog.dom.appendChild(df, this.buildBucketOptions_(value));
   return goog.dom.createDom(goog.dom.TagName.SPAN, {'class': 'inline'}, df);
 };
 
+indeed.proctor.editor.AllocationEditor.prototype.reloadSelectorOptions_ = function(selector) {
+  var oldvalue = parseInt(goog.dom.forms.getValue(selector));
+  var newoptions =
+      this.buildBucketOptions_(oldvalue);
+  goog.dom.removeChildren(selector);
+  goog.dom.appendChild(selector, newoptions);
+};
 
 /**
  *
@@ -823,35 +839,52 @@ indeed.proctor.editor.AllocationEditor.prototype.bucketsUpdated =
       undefined, this.dom_.getElementByClass('js-allocations', this.container));
   for (var i = 0; i < selectors.length; i++) {
     var selector = selectors[i];
-    /** @type {string} */
-    var oldvalue = goog.dom.forms.getValue(selector);
-    var oldbucket = this.getBucketByValue_(oldvalue, oldbuckets) ||
-                    {'value': -9999, 'name': 'Unknown'},
-        newbucket = this.getBucketByValueOrName_(oldbucket['value'],
-        oldbucket['name'], this.buckets);
-    var newoptions =
-        this.buildBucketOptions_(newbucket != null ?
-                                 newbucket['value'] : oldvalue);
-    goog.dom.removeChildren(selector);
-    goog.dom.appendChild(selector, newoptions);
-    // if newvalue !=
-    if (newbucket == null) {
-      indeed.foundation.forms.addError(selector,
-          (oldbucket ? oldbucket['name'] : 'Unknown') + ' bucket deleted');
+    var check = this.checkSelectedBucketIsChanged_(selector, oldbuckets);
+    if (check['isChanged']) {
+      var newbucket = check['newbucket'];
+      var oldbucket = check['oldbucket'];
+      /** selected buckets has been updated **/
+      if (newbucket == null) {
+        this.setSelectorDefault_(selector);
+        indeed.foundation.forms.addError(selector,
+            (oldbucket ? oldbucket['name'] : 'Unknown') + ' bucket deleted');
+      } else {
+        goog.dom.forms.setValue(selector, newbucket['value'].toString());
+        this.reloadSelectorOptions_(selector);
+      }
+      // Update the ranges based on the new JSON from all the updated selectors
+      this.ranges = this.toJSON()['ranges'];
+      this.redrawAllocationBar_();
     }
   }
 
   var addSelector = this.dom_.getElementsByTagNameAndClass(
       goog.dom.TagName.SELECT, undefined, this.addRatioRow)[0];
-  goog.dom.removeChildren(addSelector);
-  var newoptions = this.buildBucketOptions_(-1);
-  goog.dom.appendChild(addSelector, newoptions);
-
-  // Update the ranges based on the new JSON from all the updated selectors
-  this.ranges = this.toJSON()['ranges'];
-  this.redrawAllocationBar_();
+  var check = this.checkSelectedBucketIsChanged_(addSelector, oldbuckets);
+  if (check['isChanged']) {
+    this.setSelectorDefault_(addSelector);
+  }
 };
 
+indeed.proctor.editor.AllocationEditor.prototype.checkSelectedBucketIsChanged_ = function(selector, oldBuckets) {
+  var oldvalue = goog.dom.forms.getValue(selector);
+  var oldbucket = this.getBucketByValue_(oldvalue, oldBuckets) ||
+      {'value': -9999, 'name': 'Unknown'};
+  var newbucket = this.getBucketByValueOrName_(oldbucket['value'],
+      oldbucket['name'], this.buckets);
+  return {
+    oldbucket: oldbucket,
+    newbucket: newbucket,
+    isChanged: newbucket == null || !goog.object.equals(oldbucket, newbucket)
+  };
+};
+
+indeed.proctor.editor.AllocationEditor.prototype.setSelectorDefault_ = function(selector) {
+  if (this.buckets.length > 0) {
+    var defaultBucket = this.buckets[0];
+    goog.dom.forms.setValue(selector, defaultBucket['value'].toString());
+  }
+};
 
 /**
  * Render the widget into 'js-allocations'.
