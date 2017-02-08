@@ -15,12 +15,16 @@ public abstract class BackgroundJob<T> implements Callable<T> {
 
     private Long id;
 
+    private final long createdTime = System.currentTimeMillis();
+
     // URL to direct users to upon completion
-    private List<ResultUrl> urls = Lists.newArrayList();
+    private final List<ResultUrl> urls = Lists.newArrayList();
 
     private String endMessage = "";
 
-    public void log(String message) {
+    private Throwable error = null;
+
+    public void log(final String message) {
         logBuilder.append(message).append("\n");
     }
 
@@ -29,7 +33,9 @@ public abstract class BackgroundJob<T> implements Callable<T> {
     }
 
     public String getStatus() {
-        if (future != null) {
+        if (error != null) {
+            setStatus("FAILED");
+        } else if (future != null) {
             if (future.isCancelled()) {
                 setStatus("CANCELLED");
             } else if (future.isDone()) {
@@ -39,7 +45,7 @@ public abstract class BackgroundJob<T> implements Callable<T> {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(final String status) {
         this.status = status;
     }
 
@@ -47,11 +53,11 @@ public abstract class BackgroundJob<T> implements Callable<T> {
         return future;
     }
 
-    public void setFuture(Future<T> future) {
+    public void setFuture(final Future<T> future) {
         this.future = future;
     }
 
-    public void setId(long id) {
+    public void setId(final long id) {
         this.id = id;
     }
 
@@ -63,11 +69,11 @@ public abstract class BackgroundJob<T> implements Callable<T> {
         return urls;
     }
 
-    public void addUrl(final String url, final String text ) {
+    public void addUrl(final String url, final String text) {
         this.addUrl(url, text, "");
     }
 
-    public void addUrl(final String url, final String text, final String target ) {
+    public void addUrl(final String url, final String text, final String target) {
         this.addUrl(new ResultUrl(url, text, target));
     }
 
@@ -83,6 +89,18 @@ public abstract class BackgroundJob<T> implements Callable<T> {
         this.endMessage = endMessage;
     }
 
+    public Throwable getError() {
+        return error;
+    }
+
+    public void setError(final Throwable error) {
+        this.error = error;
+    }
+
+    public long getCreatedTime() {
+        return createdTime;
+    }
+
     public String toString() {
         return id + ": " + status;
     }
@@ -93,10 +111,14 @@ public abstract class BackgroundJob<T> implements Callable<T> {
 
     public abstract String getTitle();
 
+    public String getJobType() {
+        return "unknown";
+    }
+
     public static class ResultUrl {
-        private String href;
-        private String text;
-        private String target;
+        private final String href;
+        private final String text;
+        private final String target;
 
         public ResultUrl(final String href,
                          final String text,

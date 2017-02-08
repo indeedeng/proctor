@@ -219,7 +219,7 @@ indeed.proctor.JobMonitor.prototype.onAjaxSuccess_ = function(ev) {
           indeed.proctor.JobMonitor.EventTypes.IN_PROGRESS, this.jobid, job));
       this.checkStatusTimerId_ = window.setTimeout(
           goog.bind(this.checkStatus, this), this.refresh_interval);
-    } else if ('DONE' == job['status']) {
+    } else if ('DONE' == job['status'] || 'FAILED' == job['status']) {
       this.dispatchEvent(new indeed.proctor.JobMonitor.Event(
           indeed.proctor.JobMonitor.EventTypes.COMPLETE, this.jobid, job));
     } else if ('CANCELLED' == job['status']) {

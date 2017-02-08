@@ -365,6 +365,11 @@ public class ProctorTestDefinitionController extends AbstractController {
             }
 
             @Override
+            public String getJobType() {
+                return "test-deletion";
+            }
+
+            @Override
             public Boolean call() throws Exception {
                 final ProctorStore store = determineStoreFromEnvironment(source);
                 final TestDefinition definition = getTestDefinition(store, testName);
@@ -497,6 +502,11 @@ public class ProctorTestDefinitionController extends AbstractController {
             @Override
             public String getTitle() {
                 return String.format("(%s) promoting %s %s %1.7s to %s", username, testName, source, srcRevision, destination);
+            }
+
+            @Override
+            public String getJobType() {
+                return "test-promotion";
             }
 
             @Override
@@ -771,6 +781,11 @@ public class ProctorTestDefinitionController extends AbstractController {
             @Override
             public String getTitle() {
                 return String.format("(%s) %s %s", username, (isCreate ? "Creating" : "Editing"), testName);
+            }
+
+            @Override
+            public String getJobType() {
+                return isCreate ? "test-creation" : "test-edit";
             }
 
             @Override
@@ -1417,6 +1432,7 @@ public class ProctorTestDefinitionController extends AbstractController {
 
     private static void logFailedJob(final BackgroundJob job, final Throwable t) {
         job.log("Failed:");
+        job.setError(t);
         Throwable cause = t;
         final StringBuilder level = new StringBuilder(10);
         while (cause != null) {
