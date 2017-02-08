@@ -20,15 +20,15 @@ public class JsonProctorLoaderFactory {
     private static final ObjectMapper OBJECT_MAPPER = Serializers.lenient();
 
     @Nullable
-    private String classResourcePath;
+    protected String classResourcePath;
     @Nullable
-    private String filePath;
+    protected String filePath;
     @Nullable
-    private ProctorSpecification _specification;
+    protected ProctorSpecification _specification;
 
-    private FunctionMapper functionMapper = RuleEvaluator.FUNCTION_MAPPER;
+    protected FunctionMapper functionMapper = RuleEvaluator.FUNCTION_MAPPER;
 
-    private AbstractProctorDiffReporter diffReporter = new AbstractProctorDiffReporter();
+    protected AbstractProctorDiffReporter diffReporter = new AbstractProctorDiffReporter();
 
     @SuppressWarnings("UnusedDeclaration")
     public void setClassResourcePath(@Nullable final String classResourcePath) {
