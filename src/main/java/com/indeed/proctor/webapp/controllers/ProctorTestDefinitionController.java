@@ -35,6 +35,8 @@ import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.webapp.ProctorSpecificationSource;
 import com.indeed.proctor.webapp.controllers.BackgroundJob.ResultUrl;
 import com.indeed.proctor.webapp.db.Environment;
+import com.indeed.proctor.webapp.extensions.AfterBackgroundJobExecute;
+import com.indeed.proctor.webapp.extensions.BeforeBackgroundJobExecute;
 import com.indeed.proctor.webapp.extensions.DefinitionChangeLog;
 import com.indeed.proctor.webapp.extensions.PostDefinitionCreateChange;
 import com.indeed.proctor.webapp.extensions.PostDefinitionDeleteChange;
@@ -134,6 +136,10 @@ public class ProctorTestDefinitionController extends AbstractController {
     private List<PreDefinitionPromoteChange> preDefinitionPromoteChanges = Collections.emptyList();
     @Autowired(required=false)
     private List<PostDefinitionPromoteChange> postDefinitionPromoteChanges = Collections.emptyList();
+    @Autowired(required=false)
+    private List<BeforeBackgroundJobExecute> beforeBackgroundJobExecutes = Collections.emptyList();
+    @Autowired(required=false)
+    private List<AfterBackgroundJobExecute> afterBackgroundJobExecutes = Collections.emptyList();
     @Autowired(required=false)
     private RevisionCommitCommentFormatter revisionCommitCommentFormatter;
 
@@ -371,7 +377,17 @@ public class ProctorTestDefinitionController extends AbstractController {
             }
 
             @Override
-            public Boolean call() throws Exception {
+            protected List<BeforeBackgroundJobExecute> getBeforeBackgroundJobExecutes() {
+                return beforeBackgroundJobExecutes;
+            }
+
+            @Override
+            protected List<AfterBackgroundJobExecute> getAfterBackgroundJobExecutes() {
+                return afterBackgroundJobExecutes;
+            }
+
+            @Override
+            protected Boolean execute() throws Exception {
                 final ProctorStore store = determineStoreFromEnvironment(source);
                 final TestDefinition definition = getTestDefinition(store, testName);
                 if (definition == null) {
@@ -511,7 +527,17 @@ public class ProctorTestDefinitionController extends AbstractController {
             }
 
             @Override
-            public Void call() throws Exception {
+            protected List<BeforeBackgroundJobExecute> getBeforeBackgroundJobExecutes() {
+                return beforeBackgroundJobExecutes;
+            }
+
+            @Override
+            protected List<AfterBackgroundJobExecute> getAfterBackgroundJobExecutes() {
+                return afterBackgroundJobExecutes;
+            }
+
+            @Override
+            public Void execute() throws Exception {
                 /*
                     Valid permutations:
                     TRUNK -> QA
@@ -789,8 +815,19 @@ public class ProctorTestDefinitionController extends AbstractController {
                 return isCreate ? BackgroundJobType.TEST_CREATION : BackgroundJobType.TEST_EDIT;
             }
 
+
             @Override
-            public Boolean call() throws Exception {
+            protected List<BeforeBackgroundJobExecute> getBeforeBackgroundJobExecutes() {
+                return beforeBackgroundJobExecutes;
+            }
+
+            @Override
+            protected List<AfterBackgroundJobExecute> getAfterBackgroundJobExecutes() {
+                return afterBackgroundJobExecutes;
+            }
+
+            @Override
+            public Boolean execute() throws Exception {
                 final Environment theEnvironment = Environment.WORKING; // only allow editing of TRUNK!
                 final ProctorStore store = determineStoreFromEnvironment(theEnvironment);
                 final EnvironmentVersion environmentVersion = promoter.getEnvironmentVersion(testName);

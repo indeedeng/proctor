@@ -2,6 +2,8 @@ package com.indeed.proctor.webapp.controllers;
 
 import com.indeed.proctor.webapp.db.Environment;
 import com.indeed.proctor.store.ProctorStore;
+import com.indeed.proctor.webapp.extensions.AfterBackgroundJobExecute;
+import com.indeed.proctor.webapp.extensions.BeforeBackgroundJobExecute;
 import com.indeed.proctor.webapp.model.BackgroundJobType;
 import com.indeed.proctor.webapp.model.WebappConfiguration;
 import com.indeed.proctor.webapp.views.JsonView;
@@ -14,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.view.RedirectView;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
@@ -25,6 +29,11 @@ import javax.servlet.http.HttpServletRequest;
 public class CleanWorkingDirectoryController extends AbstractController {
 
     private final BackgroundJobManager jobManager;
+
+    @Autowired(required=false)
+    private List<BeforeBackgroundJobExecute> beforeBackgroundJobExecutes = Collections.emptyList();
+    @Autowired(required=false)
+    private List<AfterBackgroundJobExecute> afterBackgroundJobExecutes = Collections.emptyList();
 
     @Autowired
     public CleanWorkingDirectoryController(final WebappConfiguration configuration,
@@ -64,7 +73,17 @@ public class CleanWorkingDirectoryController extends AbstractController {
             }
 
             @Override
-            public Boolean call() throws Exception {
+            protected List<BeforeBackgroundJobExecute> getBeforeBackgroundJobExecutes() {
+                return beforeBackgroundJobExecutes;
+            }
+
+            @Override
+            protected List<AfterBackgroundJobExecute> getAfterBackgroundJobExecutes() {
+                return afterBackgroundJobExecutes;
+            }
+
+            @Override
+            protected Boolean execute() throws Exception {
                 boolean success = true;
                 for(final Environment env : new Environment[] { Environment.WORKING, Environment.QA, Environment.PRODUCTION }) {
                     success &= cleanUserWorkspace(env, determineStoreFromEnvironment(env));

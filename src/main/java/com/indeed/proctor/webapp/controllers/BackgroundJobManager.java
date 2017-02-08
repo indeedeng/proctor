@@ -3,6 +3,8 @@ package com.indeed.proctor.webapp.controllers;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.MapMaker;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.indeed.proctor.webapp.util.threads.LogOnUncaughtExceptionHandler;
 import com.indeed.util.varexport.VarExporter;
 import com.indeed.proctor.webapp.util.ThreadPoolExecutorVarExports;
 
@@ -11,7 +13,10 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class BackgroundJobManager {
@@ -23,10 +28,23 @@ public class BackgroundJobManager {
             .makeMap();
     private final AtomicLong lastId = new AtomicLong(0);
 
+    public BackgroundJobManager() {
+        this(initThreadPool());
+    }
+
     public BackgroundJobManager(final ThreadPoolExecutor executor) {
         final VarExporter exporter = VarExporter.forNamespace(getClass().getSimpleName());
+
         exporter.export(new ThreadPoolExecutorVarExports(executor), "pool-");
         this.service = executor;
+    }
+
+    private static ThreadPoolExecutor initThreadPool() {
+        final ThreadFactory threadFactory = new ThreadFactoryBuilder()
+                .setNameFormat(BackgroundJobManager.class.getSimpleName() + "-Thread-%d")
+                .setUncaughtExceptionHandler(new LogOnUncaughtExceptionHandler())
+                .build();
+        return new ThreadPoolExecutor(3, 3, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(), threadFactory);
     }
 
     public <T> void submit(BackgroundJob<T> job) {

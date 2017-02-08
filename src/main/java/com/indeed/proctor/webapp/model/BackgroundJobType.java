@@ -6,6 +6,7 @@ public enum BackgroundJobType {
     TEST_DELETION("test-deletion"),
     TEST_PROMOTION("test-promotion"),
     WORKING_DIRECTORY_CLEANING("working-directory-cleaning"),
+    JOB_TEST("job-test"),
     UNKNOWN("unknown");
 
     private final String name;

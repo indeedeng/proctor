@@ -48,21 +48,7 @@
         <constructor-arg name="executor" ref="proctorPromoterExecutorService" />
     </bean>
 
-    <bean id="backgroundJobManager" class="com.indeed.proctor.webapp.controllers.BackgroundJobManager">
-        <constructor-arg name="executor" ref="backgroundJobExecutorService" />
-    </bean>
-
-
-    <bean id="backgroundJobExecutorService" class="com.indeed.proctor.webapp.util.spring.BackGroundJobExecutorFactoryBean" lazy-init="false">
-        <property name="corePoolSize" value="3"/>
-        <property name="maxPoolSize" value="3"/>
-        <property name="keepAliveSeconds" value="0"/>
-        <property name="threadFactory">
-            <bean class="com.indeed.proctor.webapp.util.spring.ThreadFactoryBean">
-                <property name="nameFormat" value="BackgroundJobManager-Thread-%d"/>
-            </bean>
-        </property>
-    </bean>
+    <bean id="backgroundJobManager" class="com.indeed.proctor.webapp.controllers.BackgroundJobManager"/>
 
     <bean id="proctorSpecificationSource" class="com.indeed.proctor.webapp.RemoteProctorSpecificationSource" destroy-method="shutdown">
         <constructor-arg name="httpTimeout" value="${verify.http.timeout:1000}"/>

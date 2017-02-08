@@ -1,6 +1,8 @@
 package com.indeed.proctor.webapp.controllers;
 
 import com.google.common.collect.Lists;
+import com.indeed.proctor.webapp.extensions.AfterBackgroundJobExecute;
+import com.indeed.proctor.webapp.extensions.BeforeBackgroundJobExecute;
 import com.indeed.proctor.webapp.model.BackgroundJobType;
 
 import java.util.List;
@@ -140,5 +142,23 @@ public abstract class BackgroundJob<T> implements Callable<T> {
         public String getText() {
             return text;
         }
+    }
+
+    protected abstract List<BeforeBackgroundJobExecute> getBeforeBackgroundJobExecutes();
+
+    protected abstract List<AfterBackgroundJobExecute> getAfterBackgroundJobExecutes();
+
+    protected abstract T execute() throws Exception;
+
+    @Override
+    public T call() throws Exception {
+        for (final BeforeBackgroundJobExecute beforeBackgroundJobExecute : getBeforeBackgroundJobExecutes()) {
+            beforeBackgroundJobExecute.beforeExecute(this);
+        }
+        final T result = execute();
+        for (final AfterBackgroundJobExecute afterBackgroundJobExecute : getAfterBackgroundJobExecutes()) {
+            afterBackgroundJobExecute.afterExecute(this, result);
+        }
+        return result;
     }
 }

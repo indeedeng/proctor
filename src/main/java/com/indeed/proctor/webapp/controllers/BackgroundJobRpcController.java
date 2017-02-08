@@ -1,6 +1,9 @@
 package com.indeed.proctor.webapp.controllers;
 
 import com.google.common.collect.ImmutableMap;
+import com.indeed.proctor.webapp.extensions.AfterBackgroundJobExecute;
+import com.indeed.proctor.webapp.extensions.BeforeBackgroundJobExecute;
+import com.indeed.proctor.webapp.model.BackgroundJobType;
 import com.indeed.proctor.webapp.model.SessionViewModel;
 import com.indeed.proctor.webapp.model.WebappConfiguration;
 import com.indeed.proctor.webapp.views.JsonView;
@@ -13,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.View;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
@@ -30,6 +34,11 @@ public class BackgroundJobRpcController {
 
     private final WebappConfiguration configuration;
     private final BackgroundJobManager manager;
+
+    @Autowired(required=false)
+    private List<BeforeBackgroundJobExecute> beforeBackgroundJobExecutes = Collections.emptyList();
+    @Autowired(required=false)
+    private List<AfterBackgroundJobExecute> afterBackgroundJobExecutes = Collections.emptyList();
 
     @Autowired
     public BackgroundJobRpcController(final BackgroundJobManager manager,
@@ -114,7 +123,22 @@ public class BackgroundJobRpcController {
             }
 
             @Override
-            public Boolean call() throws Exception {
+            public BackgroundJobType getJobType() {
+                return BackgroundJobType.JOB_TEST;
+            }
+
+            @Override
+            protected List<BeforeBackgroundJobExecute> getBeforeBackgroundJobExecutes() {
+                return beforeBackgroundJobExecutes;
+            }
+
+            @Override
+            protected List<AfterBackgroundJobExecute> getAfterBackgroundJobExecutes() {
+                return afterBackgroundJobExecutes;
+            }
+
+            @Override
+            public Boolean execute() throws Exception {
                 final long endms = start + ms;
                 while (true) {
                     long now = System.currentTimeMillis();
