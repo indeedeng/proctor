@@ -46,6 +46,7 @@ import com.indeed.proctor.webapp.extensions.PreDefinitionEditChange;
 import com.indeed.proctor.webapp.extensions.PreDefinitionPromoteChange;
 import com.indeed.proctor.webapp.extensions.RevisionCommitCommentFormatter;
 import com.indeed.proctor.webapp.model.AppVersion;
+import com.indeed.proctor.webapp.model.BackgroundJobType;
 import com.indeed.proctor.webapp.model.ProctorClientApplication;
 import com.indeed.proctor.webapp.model.RevisionDefinition;
 import com.indeed.proctor.webapp.model.SessionViewModel;
@@ -365,8 +366,8 @@ public class ProctorTestDefinitionController extends AbstractController {
             }
 
             @Override
-            public String getJobType() {
-                return "test-deletion";
+            public BackgroundJobType getJobType() {
+                return BackgroundJobType.TEST_DELETION;
             }
 
             @Override
@@ -505,8 +506,8 @@ public class ProctorTestDefinitionController extends AbstractController {
             }
 
             @Override
-            public String getJobType() {
-                return "test-promotion";
+            public BackgroundJobType getJobType() {
+                return BackgroundJobType.TEST_PROMOTION;
             }
 
             @Override
@@ -784,8 +785,8 @@ public class ProctorTestDefinitionController extends AbstractController {
             }
 
             @Override
-            public String getJobType() {
-                return isCreate ? "test-creation" : "test-edit";
+            public BackgroundJobType getJobType() {
+                return isCreate ? BackgroundJobType.TEST_CREATION : BackgroundJobType.TEST_EDIT;
             }
 
             @Override

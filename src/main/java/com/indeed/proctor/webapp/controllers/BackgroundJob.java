@@ -1,6 +1,7 @@
 package com.indeed.proctor.webapp.controllers;
 
 import com.google.common.collect.Lists;
+import com.indeed.proctor.webapp.model.BackgroundJobType;
 
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -111,8 +112,8 @@ public abstract class BackgroundJob<T> implements Callable<T> {
 
     public abstract String getTitle();
 
-    public String getJobType() {
-        return "unknown";
+    public BackgroundJobType getJobType() {
+        return BackgroundJobType.UNKNOWN;
     }
 
     public static class ResultUrl {
