@@ -4,10 +4,14 @@ package com.indeed.proctor.webapp.controllers;
 import com.google.common.collect.Lists;
 import com.google.common.collect.MapMaker;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.indeed.proctor.webapp.extensions.AfterBackgroundJobExecute;
+import com.indeed.proctor.webapp.extensions.BeforeBackgroundJobExecute;
 import com.indeed.proctor.webapp.util.threads.LogOnUncaughtExceptionHandler;
 import com.indeed.util.varexport.VarExporter;
 import com.indeed.proctor.webapp.util.ThreadPoolExecutorVarExports;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -27,6 +31,11 @@ public class BackgroundJobManager {
             .softValues()
             .makeMap();
     private final AtomicLong lastId = new AtomicLong(0);
+
+    @Autowired(required=false)
+    private List<BeforeBackgroundJobExecute> beforeBackgroundJobExecutes = Collections.emptyList();
+    @Autowired(required=false)
+    private List<AfterBackgroundJobExecute> afterBackgroundJobExecutes = Collections.emptyList();
 
     public BackgroundJobManager() {
         this(initThreadPool());
@@ -50,6 +59,8 @@ public class BackgroundJobManager {
     public <T> void submit(BackgroundJob<T> job) {
         long id = lastId.incrementAndGet();
         job.setId(id);
+        job.setBeforeBackgroundJobExecutes(beforeBackgroundJobExecutes);
+        job.setAfterBackgroundJobExecutes(afterBackgroundJobExecutes);
         Future<T> future = service.submit(job);
         job.setFuture(future);
         backgroundJobs.add(job);
