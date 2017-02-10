@@ -3,7 +3,6 @@ package com.indeed.proctor.webapp.controllers;
 import com.google.common.collect.ImmutableMap;
 import com.indeed.proctor.webapp.extensions.AfterBackgroundJobExecute;
 import com.indeed.proctor.webapp.extensions.BeforeBackgroundJobExecute;
-import com.indeed.proctor.webapp.model.BackgroundJobType;
 import com.indeed.proctor.webapp.model.SessionViewModel;
 import com.indeed.proctor.webapp.model.WebappConfiguration;
 import com.indeed.proctor.webapp.views.JsonView;
@@ -123,8 +122,8 @@ public class BackgroundJobRpcController {
             }
 
             @Override
-            public BackgroundJobType getJobType() {
-                return BackgroundJobType.JOB_TEST;
+            public JobType getJobType() {
+                return JobType.JOB_TEST;
             }
 
             @Override

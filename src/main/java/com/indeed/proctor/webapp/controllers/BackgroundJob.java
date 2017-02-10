@@ -3,7 +3,6 @@ package com.indeed.proctor.webapp.controllers;
 import com.google.common.collect.Lists;
 import com.indeed.proctor.webapp.extensions.AfterBackgroundJobExecute;
 import com.indeed.proctor.webapp.extensions.BeforeBackgroundJobExecute;
-import com.indeed.proctor.webapp.model.BackgroundJobType;
 
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -114,8 +113,8 @@ public abstract class BackgroundJob<T> implements Callable<T> {
 
     public abstract String getTitle();
 
-    public BackgroundJobType getJobType() {
-        return BackgroundJobType.UNKNOWN;
+    public JobType getJobType() {
+        return JobType.UNKNOWN;
     }
 
     public static class ResultUrl {
@@ -160,5 +159,25 @@ public abstract class BackgroundJob<T> implements Callable<T> {
             afterBackgroundJobExecute.afterExecute(this, result);
         }
         return result;
+    }
+
+    public enum JobType {
+        TEST_CREATION("test-creation"),
+        TEST_EDIT("test-edit"),
+        TEST_DELETION("test-deletion"),
+        TEST_PROMOTION("test-promotion"),
+        WORKING_DIRECTORY_CLEANING("working-directory-cleaning"),
+        JOB_TEST("job-test"),
+        UNKNOWN("unknown");
+
+        private final String name;
+
+        JobType(final String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
     }
 }

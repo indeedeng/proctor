@@ -4,7 +4,6 @@ import com.indeed.proctor.webapp.db.Environment;
 import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.webapp.extensions.AfterBackgroundJobExecute;
 import com.indeed.proctor.webapp.extensions.BeforeBackgroundJobExecute;
-import com.indeed.proctor.webapp.model.BackgroundJobType;
 import com.indeed.proctor.webapp.model.WebappConfiguration;
 import com.indeed.proctor.webapp.views.JsonView;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,8 +67,8 @@ public class CleanWorkingDirectoryController extends AbstractController {
             }
 
             @Override
-            public BackgroundJobType getJobType() {
-                return BackgroundJobType.WORKING_DIRECTORY_CLEANING;
+            public JobType getJobType() {
+                return JobType.WORKING_DIRECTORY_CLEANING;
             }
 
             @Override
