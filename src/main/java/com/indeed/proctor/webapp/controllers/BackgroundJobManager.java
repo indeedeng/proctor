@@ -32,11 +32,6 @@ public class BackgroundJobManager {
             .makeMap();
     private final AtomicLong lastId = new AtomicLong(0);
 
-    @Autowired(required=false)
-    private List<BeforeBackgroundJobExecute> beforeBackgroundJobExecutes = Collections.emptyList();
-    @Autowired(required=false)
-    private List<AfterBackgroundJobExecute> afterBackgroundJobExecutes = Collections.emptyList();
-
     public BackgroundJobManager() {
         this(initThreadPool());
     }
@@ -59,8 +54,6 @@ public class BackgroundJobManager {
     public <T> void submit(BackgroundJob<T> job) {
         long id = lastId.incrementAndGet();
         job.setId(id);
-        job.setBeforeBackgroundJobExecutes(beforeBackgroundJobExecutes);
-        job.setAfterBackgroundJobExecutes(afterBackgroundJobExecutes);
         Future<T> future = service.submit(job);
         job.setFuture(future);
         backgroundJobs.add(job);

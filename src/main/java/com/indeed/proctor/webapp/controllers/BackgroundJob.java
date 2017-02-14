@@ -4,8 +4,6 @@ import com.google.common.collect.Lists;
 import com.indeed.proctor.webapp.extensions.AfterBackgroundJobExecute;
 import com.indeed.proctor.webapp.extensions.BeforeBackgroundJobExecute;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -27,9 +25,6 @@ public abstract class BackgroundJob<T> implements Callable<T> {
     private String endMessage = "";
 
     private Throwable error = null;
-
-    private final List<BeforeBackgroundJobExecute> beforeBackgroundJobExecutes = new ArrayList<>();
-    private final List<AfterBackgroundJobExecute> afterBackgroundJobExecutes = new ArrayList<>();
 
     public void log(final String message) {
         logBuilder.append(message).append("\n");
@@ -148,25 +143,18 @@ public abstract class BackgroundJob<T> implements Callable<T> {
         }
     }
 
-    public void setBeforeBackgroundJobExecutes(Collection<BeforeBackgroundJobExecute> beforeBackgroundJobExecutes) {
-        this.beforeBackgroundJobExecutes.clear();
-        this.beforeBackgroundJobExecutes.addAll(beforeBackgroundJobExecutes);
-    }
-
-    public void setAfterBackgroundJobExecutes(Collection<AfterBackgroundJobExecute> afterBackgroundJobExecutes) {
-        this.afterBackgroundJobExecutes.clear();
-        this.afterBackgroundJobExecutes.addAll(afterBackgroundJobExecutes);
-    }
+    protected abstract List<BeforeBackgroundJobExecute> getBeforeBackgroundJobExecutes();
+    protected abstract List<AfterBackgroundJobExecute> getAfterBackgroundJobExecutes();
 
     protected abstract T execute() throws Exception;
 
     @Override
     public T call() throws Exception {
-        for (final BeforeBackgroundJobExecute beforeBackgroundJobExecute : beforeBackgroundJobExecutes) {
+        for (final BeforeBackgroundJobExecute beforeBackgroundJobExecute : getBeforeBackgroundJobExecutes()) {
             beforeBackgroundJobExecute.beforeExecute(this);
         }
         final T result = execute();
-        for (final AfterBackgroundJobExecute afterBackgroundJobExecute : afterBackgroundJobExecutes) {
+        for (final AfterBackgroundJobExecute afterBackgroundJobExecute : getAfterBackgroundJobExecutes()) {
             afterBackgroundJobExecute.afterExecute(this, result);
         }
         return result;
