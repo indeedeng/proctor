@@ -3,6 +3,7 @@ package com.indeed.proctor.webapp.controllers;
 import com.google.common.collect.Lists;
 import com.indeed.proctor.webapp.extensions.AfterBackgroundJobExecute;
 import com.indeed.proctor.webapp.extensions.BeforeBackgroundJobExecute;
+import org.apache.log4j.Logger;
 
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -11,6 +12,8 @@ import java.util.concurrent.Future;
 /**
  */
 public abstract class BackgroundJob<T> implements Callable<T> {
+    private static final Logger LOGGER = Logger.getLogger(BackgroundJob.class);
+
     private Future<T> future;
     private String status = "PENDING";
     protected final StringBuilder logBuilder = new StringBuilder();
@@ -117,6 +120,18 @@ public abstract class BackgroundJob<T> implements Callable<T> {
         return JobType.UNKNOWN;
     }
 
+    public void logFailedJob(final Throwable t) {
+        log("Failed:");
+        setError(t);
+        Throwable cause = t;
+        final StringBuilder level = new StringBuilder(10);
+        while (cause != null) {
+            log(level.toString() + cause.getMessage());
+            cause = cause.getCause();
+            level.append("-- ");
+        }
+    }
+
     public static class ResultUrl {
         private final String href;
         private final String text;
@@ -150,13 +165,34 @@ public abstract class BackgroundJob<T> implements Callable<T> {
 
     @Override
     public T call() throws Exception {
-        for (final BeforeBackgroundJobExecute beforeBackgroundJobExecute : getBeforeBackgroundJobExecutes()) {
-            beforeBackgroundJobExecute.beforeExecute(this);
+        T result = null;
+
+        try {
+            for (final BeforeBackgroundJobExecute beforeBackgroundJobExecute : getBeforeBackgroundJobExecutes()) {
+                beforeBackgroundJobExecute.beforeExecute(this);
+            }
+        } catch (final Exception e) {
+            LOGGER.error("BeforeBackgroundJobExecute Failed: " + getTitle(), e);
+            logFailedJob(e);
+            return null;
         }
-        final T result = execute();
-        for (final AfterBackgroundJobExecute afterBackgroundJobExecute : getAfterBackgroundJobExecutes()) {
-            afterBackgroundJobExecute.afterExecute(this, result);
+
+        try {
+            result = execute();
+        } catch (final Exception e) {
+            LOGGER.error("Background Job Failed: " + getTitle(), e);
+            logFailedJob(e);
         }
+
+        try {
+            for (final AfterBackgroundJobExecute afterBackgroundJobExecute : getAfterBackgroundJobExecutes()) {
+                afterBackgroundJobExecute.afterExecute(this, result);
+            }
+        } catch (final Exception e) {
+            LOGGER.error("AfterBackgroundJobExecute Failed: " + getTitle(), e);
+            logFailedJob(e);
+        }
+
         return result;
     }
 

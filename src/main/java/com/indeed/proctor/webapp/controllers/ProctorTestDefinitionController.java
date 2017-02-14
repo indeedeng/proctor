@@ -441,13 +441,13 @@ public class ProctorTestDefinitionController extends AbstractController {
 
 
                         } catch (StoreException.TestUpdateException exp) {
-                            logFailedJob(job, exp);
+                            job.logFailedJob(exp);
                             LOGGER.error("Deletion Failed: " + job.getTitle(), exp);
                         } catch (IllegalArgumentException exp) {
-                            logFailedJob(job, exp);
+                            job.logFailedJob(exp);
                             LOGGER.info("Deletion Failed: " + job.getTitle(), exp);
                         } catch (Exception e) {
-                            logFailedJob(job, e);
+                            job.logFailedJob(e);
                             LOGGER.error("Deletion Failed: " + job.getTitle(), e);
                         }
                         return null;
@@ -510,16 +510,16 @@ public class ProctorTestDefinitionController extends AbstractController {
                         try {
                             doJobIndependentPromoteInternal(testName, username, password, source, srcRevision, destination, destRevision, requestParameterMap, job, false);
                         } catch (ProctorPromoter.TestPromotionException exp) {
-                            logFailedJob(job, exp);
+                            job.logFailedJob(exp);
                             LOGGER.error("Promotion Failed: " + job.getTitle(), exp);
                         } catch (StoreException.TestUpdateException exp) {
-                            logFailedJob(job, exp);
+                            job.logFailedJob(exp);
                             LOGGER.error("Promotion Failed: " + job.getTitle(), exp);
                         } catch (IllegalArgumentException exp) {
-                            logFailedJob(job, exp);
+                            job.logFailedJob(exp);
                             LOGGER.info("Promotion Failed: " + job.getTitle(), exp);
                         } catch (Exception exp) {
-                            logFailedJob(job, exp);
+                            job.logFailedJob(exp);
                             LOGGER.error("Promotion Failed: " + job.getTitle(), exp);
                         }
 
@@ -916,16 +916,16 @@ public class ProctorTestDefinitionController extends AbstractController {
                             job.addUrl("/proctor/definition/" + UtilityFunctions.urlEncode(testName) + "?branch=" + theEnvironment.getName(), "View Result");
                             return true;
                         } catch (final StoreException.TestUpdateException exp) {
-                            logFailedJob(job, exp);
+                            job.logFailedJob(exp);
                             LOGGER.error("Edit Failed: " + job.getTitle(), exp);
                         } catch (IncompatibleTestMatrixException exp) {
-                            logFailedJob(job, exp);
+                            job.logFailedJob(exp);
                             LOGGER.info("Edit Failed: " + job.getTitle(), exp);
                         } catch (IllegalArgumentException exp) {
-                            logFailedJob(job, exp);
+                            job.logFailedJob(exp);
                             LOGGER.info("Edit Failed: " + job.getTitle(), exp);
                         } catch (Exception exp) {
-                            logFailedJob(job, exp);
+                            job.logFailedJob(exp);
                             LOGGER.error("Edit Failed: " + job.getTitle(), exp);
                         }
                         return false;
@@ -1408,17 +1408,6 @@ public class ProctorTestDefinitionController extends AbstractController {
         return view.getName();
     }
 
-    private static void logFailedJob(final BackgroundJob job, final Throwable t) {
-        job.log("Failed:");
-        job.setError(t);
-        Throwable cause = t;
-        final StringBuilder level = new StringBuilder(10);
-        while (cause != null) {
-            job.log(level.toString() + cause.getMessage());
-            cause = cause.getCause();
-            level.append("-- ");
-        }
-    }
 
     /**
      * This needs to be moved to a separate checker class implementing some interface
