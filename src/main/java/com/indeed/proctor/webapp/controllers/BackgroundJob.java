@@ -15,7 +15,7 @@ public abstract class BackgroundJob<T> implements Callable<T> {
     private static final Logger LOGGER = Logger.getLogger(BackgroundJob.class);
 
     private Future<T> future;
-    private String status = "PENDING";
+    private JobStatus status = JobStatus.PENDING;
     protected final StringBuilder logBuilder = new StringBuilder();
 
     private Long id;
@@ -37,20 +37,11 @@ public abstract class BackgroundJob<T> implements Callable<T> {
         return logBuilder.toString();
     }
 
-    public String getStatus() {
-        if (error != null) {
-            setStatus("FAILED");
-        } else if (future != null) {
-            if (future.isCancelled()) {
-                setStatus("CANCELLED");
-            } else if (future.isDone()) {
-                setStatus("DONE");
-            }
-        }
+    public JobStatus getStatus() {
         return status;
     }
 
-    public void setStatus(final String status) {
+    public void setStatus(final JobStatus status) {
         this.status = status;
     }
 
@@ -122,14 +113,19 @@ public abstract class BackgroundJob<T> implements Callable<T> {
 
     public void logFailedJob(final Throwable t) {
         log("Failed:");
-        setError(t);
+        JobStatus status = JobStatus.FAILED;
         Throwable cause = t;
         final StringBuilder level = new StringBuilder(10);
         while (cause != null) {
             log(level.toString() + cause.getMessage());
             cause = cause.getCause();
+            if (cause instanceof InterruptedException) {
+                status = JobStatus.CANCELLED;
+            }
             level.append("-- ");
         }
+        setError(t);
+        setStatus(status);
     }
 
     public static class ResultUrl {
@@ -179,6 +175,7 @@ public abstract class BackgroundJob<T> implements Callable<T> {
 
         try {
             result = execute();
+            setStatus(JobStatus.DONE);
         } catch (final Exception e) {
             LOGGER.error("Background Job Failed: " + getTitle(), e);
             logFailedJob(e);
@@ -212,6 +209,28 @@ public abstract class BackgroundJob<T> implements Callable<T> {
         }
 
         public String getName() {
+            return name;
+        }
+    }
+
+    public enum JobStatus {
+        PENDING("PENDING"),
+        DONE("DONE"),
+        CANCELLED("CANCELLED"),
+        FAILED("FAILED");
+
+        private final String name;
+
+        JobStatus(final String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public String toString() {
             return name;
         }
     }
