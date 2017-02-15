@@ -112,6 +112,7 @@ public class ProctorTestDefinitionController extends AbstractController {
     private final ExecutorService verifierExecutor;
 
     private final BackgroundJobManager jobManager;
+    private final BackgroundJobFactory jobFactory;
 
     /*
        TODO: preDefinitionChanges and postDefinitionChanges should be included in the autowird constructor.
@@ -164,10 +165,12 @@ public class ProctorTestDefinitionController extends AbstractController {
                                            @Qualifier("production") final ProctorStore productionStore,
                                            final ProctorPromoter promoter,
                                            final ProctorSpecificationSource specificationSource,
-                                           final BackgroundJobManager jobManager) {
+                                           final BackgroundJobManager jobManager,
+                                           final BackgroundJobFactory jobFactory) {
         super(configuration, trunkStore, qaStore, productionStore);
         this.promoter = promoter;
         this.jobManager = jobManager;
+        this.jobFactory = jobFactory;
 
         this.verificationTimeout = configuration.getVerifyHttpTimeout();
         this.specificationSource = specificationSource;
@@ -358,100 +361,99 @@ public class ProctorTestDefinitionController extends AbstractController {
 
     ) {
         LOGGER.info(String.format("Deleting test %s branch: %s user: %s ", testName, source, username));
-        return new BackgroundJob<Boolean>() {
-            @Override
-            public String getTitle() {
-                return String.format("(%s) deleting %s branch: %s ", username, testName, source);
-            }
-
-            @Override
-            public Boolean call() throws Exception {
-                final ProctorStore store = determineStoreFromEnvironment(source);
-                final TestDefinition definition = getTestDefinition(store, testName);
-                if (definition == null) {
-                    log("Unknown test definition : " + testName);
-                    return false;
-                }
-
-                try {
-                    validateUsernamePassword(username, password);
-
-                    final Revision prevVersion;
-                    log("(scm) getting history for '" + testName + "'");
-                    final List<Revision> history = getTestHistory(store, testName, 1);
-                    if (history.size() > 0) {
-                        prevVersion = history.get(0);
-                        if (!prevVersion.getRevision().equals(srcRevision)) {
-                            throw new IllegalArgumentException("Test has been updated since " + srcRevision + " currently at " + prevVersion.getRevision());
+        return jobFactory.createBackgroundJob(
+                String.format("(%s) deleting %s branch: %s ", username, testName, source),
+                BackgroundJob.JobType.TEST_DELETION,
+                new BackgroundJobFactory.Executor<Boolean>() {
+                    @Override
+                    public Boolean execute(final BackgroundJob job) {
+                        final ProctorStore store = determineStoreFromEnvironment(source);
+                        final TestDefinition definition = getTestDefinition(store, testName);
+                        if (definition == null) {
+                            job.log("Unknown test definition : " + testName);
+                            return false;
                         }
-                    } else {
-                        throw new IllegalArgumentException("Could not get any history for " + testName);
-                    }
 
-                    final String fullComment = formatFullComment(comment, requestParameterMap);
+                        try {
+                            validateUsernamePassword(username, password);
 
-                    if (source.equals(Environment.WORKING) || source.equals(Environment.QA)) {
-                        final CheckMatrixResult checkMatrixResultInQa = checkMatrix(Environment.QA, testName, null);
-                        if (!checkMatrixResultInQa.isValid) {
-                            throw new IllegalArgumentException("There are still clients in QA using " + testName + " " + checkMatrixResultInQa.getErrors().get(0));
-                        }
-                        final CheckMatrixResult checkMatrixResultInProd = checkMatrix(Environment.PRODUCTION, testName, null);
-                        if (!checkMatrixResultInProd.isValid) {
-                            throw new IllegalArgumentException("There are still clients in prod using " + testName + " " + checkMatrixResultInProd.getErrors().get(0));
-                        }
-                    } else {
-                        final CheckMatrixResult checkMatrixResult = checkMatrix(source, testName, null);
-                        if (!checkMatrixResult.isValid()) {
-                            throw new IllegalArgumentException("There are still clients in prod using " + testName + " " + checkMatrixResult.getErrors().get(0));
-                        }
-                    }
-
-                    //PreDefinitionDeleteChanges
-                    log("Executing pre delete extension tasks.");
-                    for (final PreDefinitionDeleteChange preDefinitionDeleteChange: preDefinitionDeleteChanges) {
-                        final DefinitionChangeLog definitionChangeLog = preDefinitionDeleteChange.preDelete(definition, requestParameterMap);
-                        logDefinitionChangeLog(definitionChangeLog, preDefinitionDeleteChange.getClass().getSimpleName(), this);
-                    }
-
-                    log("(svn) delete " + testName);
-                    store.deleteTestDefinition(username, password, srcRevision, testName, definition, fullComment);
-
-                    boolean testExistsInOtherEnvironments = false;
-                    for (final Environment otherEnvironment : Environment.values()) {
-                        if (otherEnvironment != source) {
-                            final ProctorStore otherStore = determineStoreFromEnvironment(otherEnvironment);
-                            final TestDefinition otherDefinition = getTestDefinition(otherStore, testName);
-                            if (otherDefinition != null) {
-                                testExistsInOtherEnvironments = true;
-                                addUrl("/proctor/definition/" + UtilityFunctions.urlEncode(testName) + "?branch=" + otherEnvironment.getName(), "view " + testName + " on " + otherEnvironment.getName());
+                            final Revision prevVersion;
+                            job.log("(scm) getting history for '" + testName + "'");
+                            final List<Revision> history = getTestHistory(store, testName, 1);
+                            if (history.size() > 0) {
+                                prevVersion = history.get(0);
+                                if (!prevVersion.getRevision().equals(srcRevision)) {
+                                    throw new IllegalArgumentException("Test has been updated since " + srcRevision + " currently at " + prevVersion.getRevision());
+                                }
+                            } else {
+                                throw new IllegalArgumentException("Could not get any history for " + testName);
                             }
+
+                            final String fullComment = formatFullComment(comment, requestParameterMap);
+
+                            if (source.equals(Environment.WORKING) || source.equals(Environment.QA)) {
+                                final CheckMatrixResult checkMatrixResultInQa = checkMatrix(Environment.QA, testName, null);
+                                if (!checkMatrixResultInQa.isValid) {
+                                    throw new IllegalArgumentException("There are still clients in QA using " + testName + " " + checkMatrixResultInQa.getErrors().get(0));
+                                }
+                                final CheckMatrixResult checkMatrixResultInProd = checkMatrix(Environment.PRODUCTION, testName, null);
+                                if (!checkMatrixResultInProd.isValid) {
+                                    throw new IllegalArgumentException("There are still clients in prod using " + testName + " " + checkMatrixResultInProd.getErrors().get(0));
+                                }
+                            } else {
+                                final CheckMatrixResult checkMatrixResult = checkMatrix(source, testName, null);
+                                if (!checkMatrixResult.isValid()) {
+                                    throw new IllegalArgumentException("There are still clients in prod using " + testName + " " + checkMatrixResult.getErrors().get(0));
+                                }
+                            }
+
+                            //PreDefinitionDeleteChanges
+                            job.log("Executing pre delete extension tasks.");
+                            for (final PreDefinitionDeleteChange preDefinitionDeleteChange: preDefinitionDeleteChanges) {
+                                final DefinitionChangeLog definitionChangeLog = preDefinitionDeleteChange.preDelete(definition, requestParameterMap);
+                                logDefinitionChangeLog(definitionChangeLog, preDefinitionDeleteChange.getClass().getSimpleName(), job);
+                            }
+
+                            job.log("(svn) delete " + testName);
+                            store.deleteTestDefinition(username, password, srcRevision, testName, definition, fullComment);
+
+                            boolean testExistsInOtherEnvironments = false;
+                            for (final Environment otherEnvironment : Environment.values()) {
+                                if (otherEnvironment != source) {
+                                    final ProctorStore otherStore = determineStoreFromEnvironment(otherEnvironment);
+                                    final TestDefinition otherDefinition = getTestDefinition(otherStore, testName);
+                                    if (otherDefinition != null) {
+                                        testExistsInOtherEnvironments = true;
+                                        job.addUrl("/proctor/definition/" + UtilityFunctions.urlEncode(testName) + "?branch=" + otherEnvironment.getName(), "view " + testName + " on " + otherEnvironment.getName());
+                                    }
+                                }
+                            }
+                            if (!testExistsInOtherEnvironments) {
+                                job.setEndMessage("This test no longer exists in any environment.");
+                            }
+
+                            //PostDefinitionDeleteChanges
+                            job.log("Executing post delete extension tasks.");
+                            for (final PostDefinitionDeleteChange postDefinitionDeleteChange: postDefinitionDeleteChanges) {
+                                final DefinitionChangeLog definitionChangeLog = postDefinitionDeleteChange.postDelete(requestParameterMap);
+                                logDefinitionChangeLog(definitionChangeLog, postDefinitionDeleteChange.getClass().getSimpleName(), job);
+                            }
+
+
+                        } catch (StoreException.TestUpdateException exp) {
+                            job.logFailedJob(exp);
+                            LOGGER.error("Deletion Failed: " + job.getTitle(), exp);
+                        } catch (IllegalArgumentException exp) {
+                            job.logFailedJob(exp);
+                            LOGGER.info("Deletion Failed: " + job.getTitle(), exp);
+                        } catch (Exception e) {
+                            job.logFailedJob(e);
+                            LOGGER.error("Deletion Failed: " + job.getTitle(), e);
                         }
+                        return null;
                     }
-                    if (!testExistsInOtherEnvironments) {
-                        setEndMessage("This test no longer exists in any environment.");
-                    }
-
-                    //PostDefinitionDeleteChanges
-                    log("Executing post delete extension tasks.");
-                    for (final PostDefinitionDeleteChange postDefinitionDeleteChange: postDefinitionDeleteChanges) {
-                        final DefinitionChangeLog definitionChangeLog = postDefinitionDeleteChange.postDelete(requestParameterMap);
-                        logDefinitionChangeLog(definitionChangeLog, postDefinitionDeleteChange.getClass().getSimpleName(), this);
-                    }
-
-
-                } catch (StoreException.TestUpdateException exp) {
-                    logFailedJob(this, exp);
-                    LOGGER.error("Deletion Failed: " + getTitle(), exp);
-                } catch (IllegalArgumentException exp) {
-                    logFailedJob(this, exp);
-                    LOGGER.info("Deletion Failed: " + getTitle(), exp);
-                } catch (Exception e) {
-                    logFailedJob(this, e);
-                    LOGGER.error("Deletion Failed: " + getTitle(), e);
                 }
-                return null;
-            }
-        };
+        );
     }
 
 
@@ -493,39 +495,38 @@ public class ProctorTestDefinitionController extends AbstractController {
                                             final String destRevision,
                                             final Map<String, String[]> requestParameterMap
     ) {
-        return new BackgroundJob<Void>() {
-            @Override
-            public String getTitle() {
-                return String.format("(%s) promoting %s %s %1.7s to %s", username, testName, source, srcRevision, destination);
-            }
+        return jobFactory.createBackgroundJob(
+                String.format("(%s) promoting %s %s %1.7s to %s", username, testName, source, srcRevision, destination),
+                BackgroundJob.JobType.TEST_PROMOTION,
+                new BackgroundJobFactory.Executor() {
+                    @Override
+                    public Object execute(final BackgroundJob job) {
+                        /*
+                            Valid permutations:
+                            TRUNK -> QA
+                            TRUNK -> PRODUCTION
+                            QA -> PRODUCTION
+                         */
+                        try {
+                            doJobIndependentPromoteInternal(testName, username, password, source, srcRevision, destination, destRevision, requestParameterMap, job, false);
+                        } catch (ProctorPromoter.TestPromotionException exp) {
+                            job.logFailedJob(exp);
+                            LOGGER.error("Promotion Failed: " + job.getTitle(), exp);
+                        } catch (StoreException.TestUpdateException exp) {
+                            job.logFailedJob(exp);
+                            LOGGER.error("Promotion Failed: " + job.getTitle(), exp);
+                        } catch (IllegalArgumentException exp) {
+                            job.logFailedJob(exp);
+                            LOGGER.info("Promotion Failed: " + job.getTitle(), exp);
+                        } catch (Exception exp) {
+                            job.logFailedJob(exp);
+                            LOGGER.error("Promotion Failed: " + job.getTitle(), exp);
+                        }
 
-            @Override
-            public Void call() throws Exception {
-                /*
-                    Valid permutations:
-                    TRUNK -> QA
-                    TRUNK -> PRODUCTION
-                    QA -> PRODUCTION
-                 */
-                try {
-                    doJobIndependentPromoteInternal(testName, username, password, source, srcRevision, destination, destRevision, requestParameterMap, this, false);
-                } catch (ProctorPromoter.TestPromotionException exp) {
-                    logFailedJob(this, exp);
-                    LOGGER.error("Promotion Failed: " + getTitle(), exp);
-                } catch (StoreException.TestUpdateException exp) {
-                    logFailedJob(this, exp);
-                    LOGGER.error("Promotion Failed: " + getTitle(), exp);
-                } catch (IllegalArgumentException exp) {
-                    logFailedJob(this, exp);
-                    LOGGER.info("Promotion Failed: " + getTitle(), exp);
-                } catch (Exception exp) {
-                    logFailedJob(this, exp);
-                    LOGGER.error("Promotion Failed: " + getTitle(), exp);
+                        return null;
+                    }
                 }
-
-                return null;
-            }
-        };
+        );
     }
     private boolean doJobIndependentPromoteInternal(final String testName,
                                                     final String username,
@@ -767,178 +768,170 @@ public class ProctorTestDefinitionController extends AbstractController {
         final boolean isAutopromote,
         final Map<String, String[]> requestParameterMap) {
 
-        return new BackgroundJob<Boolean>() {
-            @Override
-            public String getTitle() {
-                return String.format("(%s) %s %s", username, (isCreate ? "Creating" : "Editing"), testName);
-            }
+        return jobFactory.createBackgroundJob(
+                String.format("(%s) %s %s", username, (isCreate ? "Creating" : "Editing"), testName),
+                isCreate ? BackgroundJob.JobType.TEST_CREATION : BackgroundJob.JobType.TEST_EDIT,
+                new BackgroundJobFactory.Executor<Boolean>() {
+                    @Override
+                    public Boolean execute(final BackgroundJob job) {
+                        final Environment theEnvironment = Environment.WORKING; // only allow editing of TRUNK!
+                        final ProctorStore store = determineStoreFromEnvironment(theEnvironment);
+                        final EnvironmentVersion environmentVersion = promoter.getEnvironmentVersion(testName);
+                        final String qaRevision = environmentVersion == null ? EnvironmentVersion.UNKNOWN_REVISION : environmentVersion.getQaRevision();
+                        final String prodRevision = environmentVersion == null ? EnvironmentVersion.UNKNOWN_REVISION : environmentVersion.getProductionRevision();
 
-            @Override
-            public Boolean call() throws Exception {
-                final Environment theEnvironment = Environment.WORKING; // only allow editing of TRUNK!
-                final ProctorStore store = determineStoreFromEnvironment(theEnvironment);
-                final EnvironmentVersion environmentVersion = promoter.getEnvironmentVersion(testName);
-                final String qaRevision = environmentVersion == null ? EnvironmentVersion.UNKNOWN_REVISION : environmentVersion.getQaRevision();
-                final String prodRevision = environmentVersion == null ? EnvironmentVersion.UNKNOWN_REVISION : environmentVersion.getProductionRevision();
-
-                try {
-                    if (CharMatcher.WHITESPACE.matchesAllOf(Strings.nullToEmpty(testDefinitionJson))) {
-                        throw new IllegalArgumentException("No new test definition given");
-                    }
-                    validateUsernamePassword(username, password);
-                    validateComment(comment);
-
-
-                    final Revision prevVersion;
-                    if (previousRevision.length() > 0) {
-                        log("(scm) getting history for '" + testName + "'");
-                        final List<Revision> history = getTestHistory(store, testName, 1);
-                        if (history.size() > 0) {
-                            prevVersion = history.get(0);
-                            if (! prevVersion.getRevision().equals(previousRevision)) {
-                                throw new IllegalArgumentException("Test has been updated since " + previousRevision + " currently at " + prevVersion.getRevision());
+                        try {
+                            if (CharMatcher.WHITESPACE.matchesAllOf(Strings.nullToEmpty(testDefinitionJson))) {
+                                throw new IllegalArgumentException("No new test definition given");
                             }
-                        } else {
-                            prevVersion = null;
+                            validateUsernamePassword(username, password);
+                            validateComment(comment);
+
+                            final Revision prevVersion;
+                            if (previousRevision.length() > 0) {
+                                job.log("(scm) getting history for '" + testName + "'");
+                                final List<Revision> history = getTestHistory(store, testName, 1);
+                                if (history.size() > 0) {
+                                    prevVersion = history.get(0);
+                                    if (!prevVersion.getRevision().equals(previousRevision)) {
+                                        throw new IllegalArgumentException("Test has been updated since " + previousRevision + " currently at " + prevVersion.getRevision());
+                                    }
+                                } else {
+                                    prevVersion = null;
+                                }
+                            } else {
+                                // Create flow
+                                prevVersion = null;
+                                // check that the test name is valid
+                                if (!isValidTestName(testName)) {
+                                    throw new IllegalArgumentException("Test Name must be alpha-numeric underscore and not start with a number, found: '" + testName + "'");
+                                }
+                            }
+
+                            final TestDefinition testDefinitionToUpdate;
+                            job.log("Parsing test definition json");
+                            testDefinitionToUpdate = TestDefinitionFunctions.parseTestDefinition(testDefinitionJson);
+
+                            //  TODO: make these parameters
+                            final boolean skipVerification = true;
+                            //  TODO: make these parameters
+                            final boolean allowInstanceFailure = true;
+
+                            final ProctorStore trunkStore = determineStoreFromEnvironment(Environment.WORKING);
+                            job.log("(scm) loading existing test definition for '" + testName + "'");
+                            // Getting the TestDefinition via currentTestMatrix instead of trunkStore.getTestDefinition because the test
+                            final TestDefinition existingTestDefinition = trunkStore.getCurrentTestMatrix().getTestMatrixDefinition().getTests().get(testName);
+                            if (previousRevision.length() <= 0 && existingTestDefinition != null) {
+                                throw new IllegalArgumentException("Current tests exists with name : '" + testName + "'");
+                            }
+
+                            if (testDefinitionToUpdate.getTestType() == null && existingTestDefinition != null) {
+                                testDefinitionToUpdate.setTestType(existingTestDefinition.getTestType());
+                            }
+                            if (isCreate) {
+                                testDefinitionToUpdate.setVersion("-1");
+                            } else if (existingTestDefinition != null) {
+                                testDefinitionToUpdate.setVersion(existingTestDefinition.getVersion());
+                            }
+                            job.log("verifying test definition and buckets");
+                            validateBasicInformation(testDefinitionToUpdate, job);
+
+                            final ConsumableTestDefinition consumableTestDefinition = ProctorUtils.convertToConsumableTestDefinition(testDefinitionToUpdate);
+                            ProctorUtils.verifyInternallyConsistentDefinition(testName, "edit", consumableTestDefinition);
+
+                            //PreDefinitionEdit
+                            if (isCreate) {
+                                job.log("Executing pre create extension tasks.");
+                                for (final PreDefinitionCreateChange preDefinitionCreateChange : preDefinitionCreateChanges) {
+                                    final DefinitionChangeLog definitionChangeLog = preDefinitionCreateChange.preCreate(testDefinitionToUpdate, requestParameterMap);
+                                    logDefinitionChangeLog(definitionChangeLog, preDefinitionCreateChange.getClass().getSimpleName(), job);
+                                }
+                            } else {
+                                job.log("Executing pre edit extension tasks.");
+                                for (final PreDefinitionEditChange preDefinitionEditChange : preDefinitionEditChanges) {
+                                    final DefinitionChangeLog definitionChangeLog = preDefinitionEditChange.preEdit(existingTestDefinition, testDefinitionToUpdate, requestParameterMap);
+                                    logDefinitionChangeLog(definitionChangeLog, preDefinitionEditChange.getClass().getSimpleName(), job);
+                                }
+                            }
+
+                            final String fullComment = formatFullComment(comment, requestParameterMap);
+
+                            //Change definition
+                            final Map<String, String> metadata = Collections.emptyMap();
+                            if (existingTestDefinition == null) {
+                                job.log("(scm) adding test definition");
+                                trunkStore.addTestDefinition(username, password, testName, testDefinitionToUpdate, metadata, fullComment);
+                                promoter.refreshWorkingVersion(testName);
+                            } else {
+                                job.log("(scm) updating test definition");
+                                trunkStore.updateTestDefinition(username, password, previousRevision, testName, testDefinitionToUpdate, metadata, fullComment);
+                                promoter.refreshWorkingVersion(testName);
+                            }
+
+                            //PostDefinitionEdit
+                            if (isCreate) {
+                                job.log("Executing post create extension tasks.");
+                                for (final PostDefinitionCreateChange postDefinitionCreateChange : postDefinitionCreateChanges) {
+                                    final DefinitionChangeLog definitionChangeLog = postDefinitionCreateChange.postCreate(testDefinitionToUpdate, requestParameterMap);
+                                    logDefinitionChangeLog(definitionChangeLog, postDefinitionCreateChange.getClass().getSimpleName(), job);
+
+                                }
+                            } else {
+                                job.log("Executing post edit extension tasks.");
+                                for (final PostDefinitionEditChange postDefinitionEditChange : postDefinitionEditChanges) {
+                                    final DefinitionChangeLog definitionChangeLog = postDefinitionEditChange.postEdit(existingTestDefinition, testDefinitionToUpdate, requestParameterMap);
+                                    logDefinitionChangeLog(definitionChangeLog, postDefinitionEditChange.getClass().getSimpleName(), job);
+                                }
+                            }
+
+                            //Autopromote if necessary
+                            if (isAutopromote
+                                    && existingTestDefinition != null
+                                    && isAllocationOnlyChange(existingTestDefinition, testDefinitionToUpdate)) {
+                                final boolean isQaPromoted;
+                                job.log("allocation only change, checking against other branches for auto-promote capability for test " + testName + "\nat QA revision " + qaRevision + " and PRODUCTION revision " + prodRevision);
+                                final ProctorStore qaStore = determineStoreFromEnvironment(Environment.QA);
+                                final boolean isQaPromotable = qaRevision != EnvironmentVersion.UNKNOWN_REVISION
+                                        && isAllocationOnlyChange(getTestDefinition(qaStore, testName, qaRevision), testDefinitionToUpdate);
+                                if (isQaPromotable) {
+                                    job.log("auto-promoting changes to QA");
+                                    isQaPromoted = doJobIndependentPromoteInternal(testName, username, password, Environment.WORKING, trunkStore.getLatestVersion(), Environment.QA, qaRevision, requestParameterMap, job, true);
+                                } else {
+                                    isQaPromoted = false;
+                                    job.log("previous revision changes prevented auto-promote to QA");
+                                }
+                                final ProctorStore prodStore = determineStoreFromEnvironment(Environment.PRODUCTION);
+                                if (isQaPromotable && isQaPromoted
+                                        && prodRevision != EnvironmentVersion.UNKNOWN_REVISION
+                                        && isAllocationOnlyChange(getTestDefinition(prodStore, testName, prodRevision), testDefinitionToUpdate)) {
+                                    job.log("auto-promoting changes to PRODUCTION");
+                                    doJobIndependentPromoteInternal(testName, username, password, Environment.WORKING, trunkStore.getLatestVersion(), Environment.PRODUCTION, prodRevision, requestParameterMap, job, true);
+
+                                } else {
+                                    job.log("previous revision changes prevented auto-promote to PRODUCTION");
+                                }
+                            }
+
+                            job.log("COMPLETE");
+                            job.addUrl("/proctor/definition/" + UtilityFunctions.urlEncode(testName) + "?branch=" + theEnvironment.getName(), "View Result");
+                            return true;
+                        } catch (final StoreException.TestUpdateException exp) {
+                            job.logFailedJob(exp);
+                            LOGGER.error("Edit Failed: " + job.getTitle(), exp);
+                        } catch (IncompatibleTestMatrixException exp) {
+                            job.logFailedJob(exp);
+                            LOGGER.info("Edit Failed: " + job.getTitle(), exp);
+                        } catch (IllegalArgumentException exp) {
+                            job.logFailedJob(exp);
+                            LOGGER.info("Edit Failed: " + job.getTitle(), exp);
+                        } catch (Exception exp) {
+                            job.logFailedJob(exp);
+                            LOGGER.error("Edit Failed: " + job.getTitle(), exp);
                         }
-                    } else {
-                        // Create flow
-                        prevVersion = null;
-                        // check that the test name is valid
-                        if (!isValidTestName(testName)) {
-                            throw new IllegalArgumentException("Test Name must be alpha-numeric underscore and not start with a number, found: '" + testName + "'");
-                        }
+                        return false;
                     }
-
-                    final TestDefinition testDefinitionToUpdate;
-                    log("Parsing test definition json");
-                    testDefinitionToUpdate = TestDefinitionFunctions.parseTestDefinition(testDefinitionJson);
-
-                    //  TODO: make these parameters
-                    final boolean skipVerification = true;
-                    //  TODO: make these parameters
-                    final boolean allowInstanceFailure = true;
-
-                    final ProctorStore trunkStore = determineStoreFromEnvironment(Environment.WORKING);
-                    log("(scm) loading existing test definition for '" + testName + "'");
-                    // Getting the TestDefinition via currentTestMatrix instead of trunkStore.getTestDefinition because the test
-                    final TestDefinition existingTestDefinition = trunkStore.getCurrentTestMatrix().getTestMatrixDefinition().getTests().get(testName);
-                    if (previousRevision.length() <= 0 && existingTestDefinition != null) {
-                        throw new IllegalArgumentException("Current tests exists with name : '" + testName + "'");
-                    }
-
-                    if (testDefinitionToUpdate.getTestType() == null && existingTestDefinition != null) {
-                        testDefinitionToUpdate.setTestType(existingTestDefinition.getTestType());
-                    }
-                    if (isCreate) {
-                        testDefinitionToUpdate.setVersion("-1");
-                    }
-                    else if (existingTestDefinition != null) {
-                        testDefinitionToUpdate.setVersion(existingTestDefinition.getVersion());
-                    }
-                    log("verifying test definition and buckets");
-                    validateBasicInformation(testDefinitionToUpdate, this);
-
-                    final ConsumableTestDefinition consumableTestDefinition = ProctorUtils.convertToConsumableTestDefinition(testDefinitionToUpdate);
-                    ProctorUtils.verifyInternallyConsistentDefinition(testName, "edit", consumableTestDefinition);
-
-
-
-                    //PreDefinitionEdit
-                    if (isCreate) {
-                        log("Executing pre create extension tasks.");
-                        for (final PreDefinitionCreateChange preDefinitionCreateChange: preDefinitionCreateChanges) {
-                            final DefinitionChangeLog definitionChangeLog = preDefinitionCreateChange.preCreate(testDefinitionToUpdate, requestParameterMap);
-                            logDefinitionChangeLog(definitionChangeLog, preDefinitionCreateChange.getClass().getSimpleName(), this);
-                        }
-                    } else {
-                        log("Executing pre edit extension tasks.");
-                        for (final PreDefinitionEditChange preDefinitionEditChange: preDefinitionEditChanges) {
-                            final DefinitionChangeLog definitionChangeLog = preDefinitionEditChange.preEdit(existingTestDefinition, testDefinitionToUpdate, requestParameterMap);
-                            logDefinitionChangeLog(definitionChangeLog, preDefinitionEditChange.getClass().getSimpleName(), this);
-                        }
-                    }
-
-
-                    final String fullComment = formatFullComment(comment, requestParameterMap);
-
-                    //Change definition
-                    final Map<String, String> metadata = Collections.emptyMap();
-                    if (existingTestDefinition == null) {
-                        log("(scm) adding test definition");
-                        trunkStore.addTestDefinition(username, password, testName, testDefinitionToUpdate, metadata, fullComment);
-                        promoter.refreshWorkingVersion(testName);
-                    } else {
-                        log("(scm) updating test definition");
-                        trunkStore.updateTestDefinition(username, password, previousRevision, testName, testDefinitionToUpdate, metadata, fullComment);
-                        promoter.refreshWorkingVersion(testName);
-                    }
-
-
-
-                    //PostDefinitionEdit
-                    if (isCreate) {
-                        log("Executing post create extension tasks.");
-                        for (final PostDefinitionCreateChange postDefinitionCreateChange : postDefinitionCreateChanges) {
-                            final DefinitionChangeLog definitionChangeLog = postDefinitionCreateChange.postCreate(testDefinitionToUpdate, requestParameterMap);
-                            logDefinitionChangeLog(definitionChangeLog, postDefinitionCreateChange.getClass().getSimpleName(), this);
-
-                        }
-                    } else {
-                        log("Executing post edit extension tasks.");
-                        for (final PostDefinitionEditChange postDefinitionEditChange : postDefinitionEditChanges) {
-                            final DefinitionChangeLog definitionChangeLog = postDefinitionEditChange.postEdit(existingTestDefinition, testDefinitionToUpdate, requestParameterMap);
-                            logDefinitionChangeLog(definitionChangeLog, postDefinitionEditChange.getClass().getSimpleName(), this);
-                        }
-                    }
-
-                    //Autopromote if necessary
-                    if (isAutopromote
-                            && existingTestDefinition!= null
-                            && isAllocationOnlyChange(existingTestDefinition, testDefinitionToUpdate)) {
-                        final boolean isQaPromoted;
-                        log("allocation only change, checking against other branches for auto-promote capability for test " + testName + "\nat QA revision " + qaRevision + " and PRODUCTION revision " + prodRevision);
-                        final ProctorStore qaStore = determineStoreFromEnvironment(Environment.QA);
-                        final boolean isQaPromotable = qaRevision != EnvironmentVersion.UNKNOWN_REVISION
-                                && isAllocationOnlyChange(getTestDefinition(qaStore,testName,qaRevision),testDefinitionToUpdate);
-                        if (isQaPromotable) {
-                            log("auto-promoting changes to QA");
-                            isQaPromoted = doJobIndependentPromoteInternal(testName, username, password, Environment.WORKING, trunkStore.getLatestVersion(), Environment.QA, qaRevision, requestParameterMap, this, true);
-                        } else {
-                            isQaPromoted = false;
-                            log("previous revision changes prevented auto-promote to QA");
-                        }
-                        final ProctorStore prodStore = determineStoreFromEnvironment(Environment.PRODUCTION);
-                        if (isQaPromotable && isQaPromoted
-                                && prodRevision != EnvironmentVersion.UNKNOWN_REVISION
-                                && isAllocationOnlyChange(getTestDefinition(prodStore,testName,prodRevision),testDefinitionToUpdate)) {
-                            log("auto-promoting changes to PRODUCTION");
-                            doJobIndependentPromoteInternal(testName, username, password, Environment.WORKING, trunkStore.getLatestVersion(), Environment.PRODUCTION, prodRevision, requestParameterMap, this, true);
-
-                        } else {
-                            log("previous revision changes prevented auto-promote to PRODUCTION");
-                        }
-                    }
-
-                    log("COMPLETE");
-                    addUrl("/proctor/definition/" + UtilityFunctions.urlEncode(testName) + "?branch=" + theEnvironment.getName(), "View Result");
-                    return true;
-                } catch (final StoreException.TestUpdateException exp) {
-                    logFailedJob(this, exp);
-                    LOGGER.error("Edit Failed: " + getTitle(), exp);
-                } catch (IncompatibleTestMatrixException exp) {
-                    logFailedJob(this, exp);
-                    LOGGER.info("Edit Failed: " + getTitle(), exp);
-                } catch (IllegalArgumentException exp) {
-                    logFailedJob(this, exp);
-                    LOGGER.info("Edit Failed: " + getTitle(), exp);
-                } catch (Exception exp) {
-                    logFailedJob(this, exp);
-                    LOGGER.error("Edit Failed: " + getTitle(), exp);
                 }
-                return false;
-            }
-        };
+        );
     }
 
     public static boolean isValidTestName(String testName) {
@@ -1415,16 +1408,6 @@ public class ProctorTestDefinitionController extends AbstractController {
         return view.getName();
     }
 
-    private static void logFailedJob(final BackgroundJob job, final Throwable t) {
-        job.log("Failed:");
-        Throwable cause = t;
-        final StringBuilder level = new StringBuilder(10);
-        while (cause != null) {
-            job.log(level.toString() + cause.getMessage());
-            cause = cause.getCause();
-            level.append("-- ");
-        }
-    }
 
     /**
      * This needs to be moved to a separate checker class implementing some interface

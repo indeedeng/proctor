@@ -49,6 +49,7 @@
     </bean>
 
     <bean id="backgroundJobManager" class="com.indeed.proctor.webapp.controllers.BackgroundJobManager"/>
+    <bean id="backgroundJobFactory" class="com.indeed.proctor.webapp.controllers.BackgroundJobFactory"/>
 
     <bean id="proctorSpecificationSource" class="com.indeed.proctor.webapp.RemoteProctorSpecificationSource" destroy-method="shutdown">
         <constructor-arg name="httpTimeout" value="${verify.http.timeout:1000}"/>

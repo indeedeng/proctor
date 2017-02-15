@@ -30,12 +30,15 @@ public class BackgroundJobRpcController {
 
     private final WebappConfiguration configuration;
     private final BackgroundJobManager manager;
+    private final BackgroundJobFactory factory;
 
     @Autowired
     public BackgroundJobRpcController(final BackgroundJobManager manager,
-                                      final WebappConfiguration configuration) {
+                                      final WebappConfiguration configuration,
+                                      final BackgroundJobFactory factory) {
         this.manager = manager;
         this.configuration = configuration;
+        this.factory = factory;
     }
 
     @RequestMapping(value = "/status", method = RequestMethod.GET)
@@ -107,31 +110,30 @@ public class BackgroundJobRpcController {
     public View submitTestJob(@RequestParam(value = "ms", defaultValue = "1000") final long ms) {
         final long start = System.currentTimeMillis();
         final long interval = 100; // log every 100 milliseconds
-        final BackgroundJob<Boolean> job = new BackgroundJob<Boolean>() {
-            @Override
-            public String getTitle() {
-                return "Sleeping for a total of " + ms + " ms";
-            }
-
-            @Override
-            public Boolean call() throws Exception {
-                final long endms = start + ms;
-                while (true) {
-                    long now = System.currentTimeMillis();
-                    long sleepms = Math.min(interval, endms - now);
-                    if( sleepms > 0) {
-                        final double elapsed_sec = (now - start) / 1000.0;
-                        log(String.format("Elapsed = %.3f seconds, sleeping for %s ms", elapsed_sec, sleepms));
-                        Thread.sleep(sleepms);
-                    } else {
-                        break;
+        final BackgroundJob<Boolean> job = factory.createBackgroundJob(
+                "Sleeping for a total of " + ms + " ms",
+                BackgroundJob.JobType.JOB_TEST,
+                new BackgroundJobFactory.Executor<Boolean>() {
+                    @Override
+                    public Boolean execute(final BackgroundJob job) throws Exception {
+                        final long endms = start + ms;
+                        while (true) {
+                            long now = System.currentTimeMillis();
+                            long sleepms = Math.min(interval, endms - now);
+                            if( sleepms > 0) {
+                                final double elapsed_sec = (now - start) / 1000.0;
+                                job.log(String.format("Elapsed = %.3f seconds, sleeping for %s ms", elapsed_sec, sleepms));
+                                Thread.sleep(sleepms);
+                            } else {
+                                break;
+                            }
+                        }
+                        job.addUrl("http://www.indeed.com", "Indeed.com");
+                        job.addUrl("http://www.google.com", "Google", "_blank");
+                        return Boolean.TRUE;
                     }
                 }
-                addUrl("http://www.indeed.com", "Indeed.com");
-                addUrl("http://www.google.com", "Google", "_blank");
-                return Boolean.TRUE;
-            }
-        };
+        );
         manager.submit(job);
 
         final JsonResponse<Map> response = new JsonResponse<Map>(buildJobJson(job), true, null);

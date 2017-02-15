@@ -24,15 +24,18 @@ import javax.servlet.http.HttpServletRequest;
 public class CleanWorkingDirectoryController extends AbstractController {
 
     private final BackgroundJobManager jobManager;
+    private final BackgroundJobFactory jobFactory;
 
     @Autowired
     public CleanWorkingDirectoryController(final WebappConfiguration configuration,
                                            @Qualifier("trunk") final ProctorStore trunkStore,
                                            @Qualifier("qa") final ProctorStore qaStore,
                                            @Qualifier("production") final ProctorStore productionStore,
-                                           final BackgroundJobManager jobManager) {
+                                           final BackgroundJobManager jobManager,
+                                           final BackgroundJobFactory jobFactory) {
         super(configuration, trunkStore, qaStore, productionStore);
         this.jobManager = jobManager;
+        this.jobFactory = jobFactory;
     }
 
     @RequestMapping(value = "/rpc/svn/clean-working-directory", method = RequestMethod.POST)
@@ -51,26 +54,25 @@ public class CleanWorkingDirectoryController extends AbstractController {
     }
 
     private BackgroundJob<Boolean> createCleanWorkingDirectoryJob(final String username) {
-        return new BackgroundJob<Boolean>() {
-            @Override
-            public String getTitle() {
-                return String.format("Cleaning workspace for %s", username);
-            }
-
-            @Override
-            public Boolean call() throws Exception {
-                boolean success = true;
-                for(final Environment env : new Environment[] { Environment.WORKING, Environment.QA, Environment.PRODUCTION }) {
-                    success &= cleanUserWorkspace(env, determineStoreFromEnvironment(env));
+        return jobFactory.createBackgroundJob(
+                String.format("Cleaning workspace for %s", username),
+                BackgroundJob.JobType.WORKING_DIRECTORY_CLEANING,
+                new BackgroundJobFactory.Executor<Boolean>() {
+                    @Override
+                    public Boolean execute(final BackgroundJob job) {
+                        boolean success = true;
+                        for(final Environment env : new Environment[] { Environment.WORKING, Environment.QA, Environment.PRODUCTION }) {
+                            success &= cleanUserWorkspace(env, determineStoreFromEnvironment(env), job);
+                        }
+                        return success;
+                    }
+                    private boolean cleanUserWorkspace(final Environment environment,
+                                                       final ProctorStore store,
+                                                       final BackgroundJob job) {
+                        job.log(String.format("Cleaning %s workspace for user %s", environment.getName(), username));
+                        return store.cleanUserWorkspace(username);
+                    }
                 }
-                return success;
-            }
-
-            private boolean cleanUserWorkspace(final Environment environment,
-                                               final ProctorStore store) {
-                log(String.format("Cleaning %s workspace for user %s", environment.getName(), username));
-                return store.cleanUserWorkspace(username);
-            }
-        };
+        );
     }
 }
