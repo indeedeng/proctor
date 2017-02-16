@@ -28,6 +28,7 @@ public abstract class BackgroundJob<T> implements Callable<T> {
     private String endMessage = "";
 
     private Throwable error = null;
+    private boolean executeFinished = false;
 
     public void log(final String message) {
         logBuilder.append(message).append("\n");
@@ -38,6 +39,15 @@ public abstract class BackgroundJob<T> implements Callable<T> {
     }
 
     public JobStatus getStatus() {
+        if (future != null && status == JobStatus.PENDING) {
+            if (future.isCancelled()) {
+                setStatus(JobStatus.CANCELLED);
+            } else if(error != null) {
+                setStatus(JobStatus.FAILED);
+            } else if (executeFinished){
+                setStatus(JobStatus.DONE);
+            }
+        }
         return status;
     }
 
@@ -113,19 +123,16 @@ public abstract class BackgroundJob<T> implements Callable<T> {
 
     public void logFailedJob(final Throwable t) {
         log("Failed:");
-        JobStatus status = JobStatus.FAILED;
         Throwable cause = t;
         final StringBuilder level = new StringBuilder(10);
         while (cause != null) {
             log(level.toString() + cause.getMessage());
             cause = cause.getCause();
-            if (cause instanceof InterruptedException) {
-                status = JobStatus.CANCELLED;
-            }
             level.append("-- ");
         }
-        setError(t);
-        setStatus(status);
+        if (!future.isCancelled() && !executeFinished) {
+            setError(t);
+        }
     }
 
     public static class ResultUrl {
@@ -175,10 +182,11 @@ public abstract class BackgroundJob<T> implements Callable<T> {
 
         try {
             result = execute();
-            setStatus(JobStatus.DONE);
         } catch (final Exception e) {
             LOGGER.error("Background Job Failed: " + getTitle(), e);
             logFailedJob(e);
+        } finally {
+            executeFinished = true;
         }
 
         try {
