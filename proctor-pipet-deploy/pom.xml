@@ -7,11 +7,11 @@
     <parent>
         <groupId>com.indeed</groupId>
         <artifactId>proctor-pipet-parent</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>0.0.2-SNAPSHOT</version>
     </parent>
 
     <properties>
-        <bitwalker.version>1.14</bitwalker.version>
+        <bitwalker.version>1.20</bitwalker.version>
     </properties>
 
     <repositories>
