@@ -230,6 +230,7 @@ indeed.proctor.editor.AllocationEditor =
   this.buckets = goog.array.clone(buckets);
   this.allocation = allocation;
   this.ranges = goog.array.clone(allocation['ranges']);
+  this.prevRanges = JSON.parse(JSON.stringify(this.ranges));  // Deep copy
 
   this.isDefault = isDefault;
 
@@ -728,10 +729,62 @@ indeed.proctor.editor.AllocationEditor.prototype.buildAllocationBar_ =
     warnings.push('You should have a zero bucket (control).');
   }
 
+  /* check if the changing allocation cause a user drift */
+  if(this.checkUserDrift_(this.prevRanges, this.ranges)) {
+    warnings.push('The allocation changing may cause a user drift.');
+  }
+
   this.displayMessages_(errors, warnings);
   return df;
 };
 
+/**
+ *
+ * @param {Array} prevRanges Ranges before changing.
+ * @param {Array} newRanges Ranges after changing.
+ * @return Boolean Whether given allocation changing contains a user drift.
+ * @private
+ */
+indeed.proctor.editor.AllocationEditor.prototype.checkUserDrift_ =
+    function(prevRanges, newRanges) {
+  var boundaries = [];
+  var addBoundaries = function(ranges) {
+    var sum = 0;
+    for (var i = 0; i < ranges.length; i++) {
+      boundaries.push(sum += ranges[i]["length"]);
+    }
+  };
+  addBoundaries(prevRanges);
+  addBoundaries(newRanges);
+  boundaries.sort();
+
+  var getValue = function(ranges, pos) {
+    var sum = 0;
+    for (var i = 0; i < ranges.length; i++) {
+      sum += ranges[i]["length"];
+      if (pos < sum) {
+        return ranges[i]["bucketValue"];
+      }
+    }
+    return -1;
+  };
+
+  var left = 0.0;
+  for (var i=0;i<boundaries.length;i++) {
+    right = boundaries[i];
+    var len = right - left;
+    if (len > 1E-4) {
+      var mid = (left + right) / 2;
+      var prevValue = getValue(prevRanges, mid);
+      var newValue = getValue(newRanges, mid);
+      if(prevValue > 0 && newValue != -1 && prevValue != newValue) {
+        return true;
+      }
+    }
+    left = right;
+  }
+  return false;
+};
 
 /**
  *
