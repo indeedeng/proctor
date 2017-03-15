@@ -731,7 +731,17 @@ indeed.proctor.editor.AllocationEditor.prototype.buildAllocationBar_ =
 
   /* check if the changing allocation cause a user drift */
   if(this.checkUserDrift_(this.prevRanges, this.ranges)) {
-    warnings.push('The allocation changing may cause a user drift.');
+    warnings.push(
+      [
+        'The allocation changing may cause a ',
+        goog.dom.createDom(
+          goog.dom.TagName.A,
+          {'href': 'http://opensource.indeedeng.io/proctor/docs/best-practices/'},
+          'user drift'
+        ),
+        '.'
+      ]
+    )
   }
 
   this.displayMessages_(errors, warnings);
@@ -770,7 +780,7 @@ indeed.proctor.editor.AllocationEditor.prototype.checkUserDrift_ =
   };
 
   var left = 0.0;
-  for (var i=0;i<boundaries.length;i++) {
+  for (var i = 0; i < boundaries.length; i++) {
     right = boundaries[i];
     var len = right - left;
     if (len > 1E-4) {
