@@ -38,7 +38,15 @@ public class ShowTestMatrixHandler implements HttpRequestHandler{
             return;
         }
 
+        writer.print("[");
+        boolean firstTime = true;
+
         for(final Supplier<Proctor> proctorSupplier : proctorSuppliers) {
+            if(firstTime) {
+                firstTime = false;
+            } else {
+                writer.print(",");
+            }
             final Proctor proctor = proctorSupplier.get();
             if (proctor == null) {
                 writer.println("Did not determine a Proctor instance");
@@ -48,5 +56,7 @@ public class ShowTestMatrixHandler implements HttpRequestHandler{
                 proctor.appendTestMatrix(writer);
             }
         }
+
+        writer.print("]");
     }
 }
