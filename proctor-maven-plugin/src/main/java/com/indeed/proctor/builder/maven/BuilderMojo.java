@@ -35,7 +35,7 @@ public class BuilderMojo extends AbstractMojo {
             outputFile.getParentFile().mkdirs();
 
             Writer w = new FileWriter(outputFile);
-            new LocalProctorBuilder(topDirectory, w, "".equals(author) ? author : null, version).execute();
+            new LocalProctorBuilder(topDirectory, w, "".equals(author) ? null : author, version).execute();
             w.close();
         } catch (Exception e) {
             throw new MojoExecutionException("Failure during builder execution", e);
