@@ -35,6 +35,7 @@ public class GitProctorStoreFactory implements StoreFactory {
     private final int gitDirectoryLockTimeoutSeconds;
     private final int gitPullPushTimeoutSeconds;
     private final int gitCloneTimeoutSeconds;
+    private final boolean gitCleanInitialization;
 
     /**
      * @deprecated executor and gitRefreshSecond are no longer required. Use other constructors instead.
@@ -49,9 +50,10 @@ public class GitProctorStoreFactory implements StoreFactory {
                                   final String tempRootDirectory,
                                   final int gitDirectoryLockTimeoutSeconds,
                                   final int gitPullPushTimeoutSeconds,
-                                  final int gitCloneTimeoutSeconds) throws IOException, ConfigurationException {
+                                  final int gitCloneTimeoutSeconds,
+                                  final boolean gitCleanInitialization) throws IOException, ConfigurationException {
         this(gitUrl, gitUsername, gitPassword, testDefinitionsDirectory, tempRootDirectory,
-                gitDirectoryLockTimeoutSeconds, gitPullPushTimeoutSeconds, gitCloneTimeoutSeconds);
+                gitDirectoryLockTimeoutSeconds, gitPullPushTimeoutSeconds, gitCloneTimeoutSeconds, gitCleanInitialization);
     }
 
     public GitProctorStoreFactory(final String gitUrl,
@@ -61,7 +63,8 @@ public class GitProctorStoreFactory implements StoreFactory {
                                   final String tempRootDirectory,
                                   final int gitDirectoryLockTimeoutSeconds,
                                   final int gitPullPushTimeoutSeconds,
-                                  final int gitCloneTimeoutSeconds) throws IOException, ConfigurationException {
+                                  final int gitCloneTimeoutSeconds,
+                                  final boolean gitCleanInitialization) throws IOException, ConfigurationException {
         this.gitUrl = gitUrl;
         this.gitUsername = gitUsername;
         this.gitPassword = gitPassword;
@@ -76,6 +79,7 @@ public class GitProctorStoreFactory implements StoreFactory {
         this.gitDirectoryLockTimeoutSeconds = gitDirectoryLockTimeoutSeconds;
         this.gitPullPushTimeoutSeconds = gitPullPushTimeoutSeconds;
         this.gitCloneTimeoutSeconds = gitCloneTimeoutSeconds;
+        this.gitCleanInitialization = gitCleanInitialization;
     }
 
     public ProctorStore getTrunkStore() {
@@ -98,7 +102,7 @@ public class GitProctorStoreFactory implements StoreFactory {
 
         final GitWorkspaceProviderImpl provider = new GitWorkspaceProviderImpl(tempDirectory, gitDirectoryLockTimeoutSeconds);
         final GitProctorCore gitCore = new GitProctorCore(gitUrl, gitUsername, gitPassword, testDefinitionsDirectory,
-                provider, gitPullPushTimeoutSeconds, gitCloneTimeoutSeconds);
+                provider, gitPullPushTimeoutSeconds, gitCloneTimeoutSeconds, gitCleanInitialization);
 
         final String branchName = relativePath.substring(relativePath.lastIndexOf("/")+1);
         final GitProctor store = new GitProctor(gitCore, testDefinitionsDirectory, branchName);

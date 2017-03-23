@@ -30,6 +30,7 @@ public class RevisionControlStoreFactory implements FactoryBean<StoreFactory> {
     private int gitDirectoryLockTimeoutSeconds;
     private int gitPullPushTimeoutSeconds;
     private int gitCloneTimeoutSeconds;
+    private boolean gitCleanInitialization;
 
     @Override
     public StoreFactory getObject() throws Exception {
@@ -58,7 +59,8 @@ public class RevisionControlStoreFactory implements FactoryBean<StoreFactory> {
                 tempRootDirectory,
                 gitDirectoryLockTimeoutSeconds,
                 gitPullPushTimeoutSeconds,
-                gitCloneTimeoutSeconds);
+                gitCloneTimeoutSeconds,
+                gitCleanInitialization);
         }
         return null;
     }
@@ -152,5 +154,10 @@ public class RevisionControlStoreFactory implements FactoryBean<StoreFactory> {
     @Value("${git.timeout.seconds.operation.clone:180}")
     public void setGitCloneTimeoutSeconds(final int seconds) {
         gitCloneTimeoutSeconds = seconds;
+    }
+
+    @Value("${git.initialize.clean:false}")
+    public void setGitCleanInitialization(final boolean cleanInitialization) {
+        gitCleanInitialization = cleanInitialization;
     }
 }
