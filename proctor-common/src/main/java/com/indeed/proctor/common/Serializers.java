@@ -35,7 +35,7 @@ public class Serializers {
     }
 
     /**
-     * Get an {@link ObjectMapper} configured to do things as we want
+     * @return an {@link ObjectMapper} configured to do things as we want
      * @deprecated Specify whether you want {@link #lenient()} or {@link #strict()}} parsing
      */
     @Nonnull
@@ -59,7 +59,7 @@ public class Serializers {
     }
 
     /**
-     * Get an {@link ObjectMapper} configured to do things as we want
+     * @return an {@link ObjectMapper} configured to do things as we want
      */
     @Nonnull
     public static ObjectMapper strict() {

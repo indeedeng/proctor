@@ -29,9 +29,7 @@ public class TestMatrixArtifact {
         this.audit = audit;
     }
 
-    /**
-     * TODO: move somewhere better
-     */
+    /* TODO: move somewhere better */
     public static Map<String, Object> collectionsToSets(@Nonnull final Map<String, Object> inputMap) {
         final Map<String, Object> newMap = Maps.newHashMap();
         for (final Entry<String, Object> entry : inputMap.entrySet()) {

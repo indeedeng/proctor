@@ -120,6 +120,8 @@ public class TestRangeSelector {
     /**
      * Do not evaluate the rule, do not use the pseudo-random allocation algorithm, do not collect $200.
      * This should ONLY be used by privileged code for debugging.
+     *
+     * @param value bucket number
      * @return a {@link TestBucket} with the specified value or null if none exists
      */
     @Nullable

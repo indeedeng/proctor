@@ -71,8 +71,8 @@ public abstract class AbstractShowTestGroupsController implements ShowGroupsHand
     /**
      * Override this if the show groups controller should only be shown to specific types of requests.
      * eg. restricted by IP
-     * @param request
-     * @return
+     * @param request request
+     * @return trun if access allowed
      */
     public abstract boolean isAccessAllowed(final HttpServletRequest request);
 

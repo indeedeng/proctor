@@ -34,6 +34,9 @@ public abstract class AbstractGroups {
     }
 
     /**
+     * @param testName test name
+     * @param value bucket value
+     * @return true if bucket is active
      * @deprecated Use {@link #isBucketActive(String, int, int)} instead
      */
     protected boolean isBucketActive(final String testName, final int value) {
@@ -75,6 +78,8 @@ public abstract class AbstractGroups {
      * Always returns a payload so the client doesn't crash on a malformed
      * test definition.
      *
+     * @param testName test name
+     * @return pay load attached to the current active bucket
      * @deprecated Use {@link #getPayload(String, Bucket)} instead
      */
     @Nonnull
@@ -117,14 +122,15 @@ public abstract class AbstractGroups {
         return Objects.firstNonNull(payload, Payload.EMPTY_PAYLOAD);
     }
 
-
-     /**
+    /**
      * Return the TestBucket, as defined in the current test matrix, for the test called testName with bucket value targetBucket.getValue().
-     *
      * Can return null if it can't find any such bucket.
-     *
      * This does a linear search over the list of defined buckets.  There shouldn't be too many buckets in any test,
      * so this should be fast enough.
+     *
+     * @param testName     test name
+     * @param targetBucket target bucket
+     * @return the TestBucket. Return null if not found.
      */
     protected @Nullable
     TestBucket getTestBucketForBucket(final String testName, Bucket<?> targetBucket) {
@@ -161,6 +167,7 @@ public abstract class AbstractGroups {
 
     /**
      * To be called when logging ONLY
+     * @return formatted group string
      */
     @Override
     public String toString() {
@@ -189,7 +196,7 @@ public abstract class AbstractGroups {
      * Return a value indicating if the groups are empty
      * and should be represented by an empty-string
      * {@link #toString()}
-     * @return
+     * @return true if empty
      */
     protected boolean isEmpty() {
         return proctorResult.getBuckets().isEmpty();
@@ -198,11 +205,12 @@ public abstract class AbstractGroups {
     /**
      * Appends each group to the StringBuilder using the separator to delimit
      * group names. the separator should be appended for each group added
-       * to the string builder
-     *
+     * to the string builder
      * {@link #toString()}
      * {@link #buildTestGroupString()} or {@link #appendTestGroups(StringBuilder)}
-     * @param sb
+     *
+     * @param sb        a string builder
+     * @param separator a char used as separator
      */
     public void appendTestGroups(final StringBuilder sb, char separator) {
         for (final Entry<String, TestBucket> entry : proctorResult.getBuckets().entrySet()) {
@@ -220,7 +228,7 @@ public abstract class AbstractGroups {
      * indeed.proctor.groups.init and
      * indeed.proctor.groups.inGroup(tstName, bucketValue)
      *
-     * @return
+     * @return a {@link Map} of config JSON
      */
     public Map<String, Integer> getJavaScriptConfig() {
         // For now this is a simple mapping from {testName to bucketValue}
@@ -244,7 +252,7 @@ public abstract class AbstractGroups {
      * to a string and passing it to {packageName}.init();
      *
      * @param tests an alphabetical list of Test enums from your generated proctor java subclass of {@link com.indeed.proctor.consumer.AbstractGroups}.
-     * @param <E>
+     * @param <E> Generic Type of Test
      * @return a list of 2-element lists that hold the bucketValue and payloadValue for each test in alphabetical order
      */
     public <E extends Test> List<List<Object>> getJavaScriptConfig(final E[] tests) {

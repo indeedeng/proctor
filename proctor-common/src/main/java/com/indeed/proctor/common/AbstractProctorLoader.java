@@ -43,7 +43,11 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
         this.functionMapper = functionMapper;
     }
 
-    /** user can override this function to provide a context for rule verification **/
+    /**
+     * user can override this function to provide a context for rule verification
+     *
+     * @return a context for rule verification
+     **/
     protected Map<String, Object> getRuleVerificationContext() {
         return Collections.<String, Object>emptyMap();
     }

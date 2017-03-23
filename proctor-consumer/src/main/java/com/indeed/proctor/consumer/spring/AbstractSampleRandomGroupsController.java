@@ -12,8 +12,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.beans.PropertyDescriptor;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 
 /**
  * Take a random sampling of group determinations for a test or set of tests.
@@ -26,7 +24,8 @@ import java.io.StringWriter;
  * all of the fields in the specification's providedContext. Any field with a bean-style setter can be set using URL
  * parameters. The default implementation using reflection to populate the {@link ProctorContext} object.
  *
- * Override  {@link #resolveContext(HttpServletRequest request)} and {@link #printProctorContext(ProctorContext context)}
+ * Override {@link #resolveContext} and
+ * {@link #printProctorContext}
  * to provide an implementation of context resolving that doesn't use reflection.
  *
  * The page will be mapped at /sampleRandomGroups under wherever the controller is mapped.

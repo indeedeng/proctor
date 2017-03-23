@@ -21,8 +21,7 @@ public class ProctorSpecification {
     }
 
     /**
-     * Return the test specification for each named test.
-     *
+     * @return the test specification for each named test.
      * If null, tests is intentionally omitted. All tests in the test matrix should be considered.
      */
     @Nullable

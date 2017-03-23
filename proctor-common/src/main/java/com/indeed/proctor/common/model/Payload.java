@@ -1,8 +1,8 @@
 package com.indeed.proctor.common.model;
 
-import com.google.common.collect.Maps;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Joiner;
+import com.google.common.collect.Maps;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -174,8 +174,7 @@ public class Payload {
     }
 
     /**
-     * return the payload type as a string.  Used by Proctor Webapp.
-     * @return
+     * @return the payload type as a string.  Used by Proctor Webapp.
      */
     @Nonnull
     public String fetchType() {
@@ -249,7 +248,7 @@ public class Payload {
     }
 
     /**
-     * Return "the" value of this Payload, stuffed into an Object.
+     * @return "the" value of this Payload, stuffed into an Object.
      * This is used for evaluating the "validator" portion of a
      * PayloadSpecification against these Payloads.
      *

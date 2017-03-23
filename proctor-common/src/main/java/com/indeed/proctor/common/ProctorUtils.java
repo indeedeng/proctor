@@ -237,10 +237,12 @@ public abstract class ProctorUtils {
      * Removes non-required tests from the TestMatrix
      * Replaces invalid or missing tests (buckets are not compatible) with
      * default implementation returning the fallback value see defaultFor
-     * @param testMatrix
-     * @param matrixSource
-     * @param requiredTests
-     * @return
+     *
+     * @param testMatrix     the {@link TestMatrixArtifact} to be verified.
+     * @param matrixSource   a {@link String} of the source of proctor artifact. For example a path of proctor artifact file.
+     * @param requiredTests  a {@link Map} of required test. The {@link TestSpecification} would be verified
+     * @param functionMapper a given el {@link FunctionMapper}
+     * @return a {@link ProctorLoadResult} to describe the result of verification. It contains errors of verification and a list of missing test.
      */
     public static ProctorLoadResult verifyAndConsolidate(@Nonnull final TestMatrixArtifact testMatrix, final String matrixSource, @Nonnull final Map<String, TestSpecification> requiredTests, @Nonnull final FunctionMapper functionMapper) {
         return verifyAndConsolidate(testMatrix, matrixSource, requiredTests, functionMapper, new ProvidedContext(ProvidedContext.EMPTY_CONTEXT,false));
@@ -264,12 +266,14 @@ public abstract class ProctorUtils {
 
     /**
      * Verifies that the TestMatrix is correct and sane without using a specification.
-     *
      * The Proctor API doesn't use a test specification so that it can serve all tests in the matrix
      * without restriction.
-     *
      * Does a limited set of sanity checks that are applicable when there is no specification,
      * and thus no required tests or provided context.
+     *
+     * @param testMatrix   the {@link TestMatrixArtifact} to be verified.
+     * @param matrixSource a {@link String} of the source of proctor artifact. For example a path of proctor artifact file.
+     * @return a {@link ProctorLoadResult} to describe the result of verification. It contains errors of verification and a list of missing test.
      */
     public static ProctorLoadResult verifyWithoutSpecification(@Nonnull final TestMatrixArtifact testMatrix,
                                                                final String matrixSource) {
@@ -294,17 +298,18 @@ public abstract class ProctorUtils {
         return verify(testMatrix, matrixSource, requiredTests, RuleEvaluator.FUNCTION_MAPPER, new ProvidedContext(ProvidedContext.EMPTY_CONTEXT,false)); //use default function mapper
     }
 
-
-        /**
-         * Does not mutate the TestMatrix.
-         *
-         * Verifies that the test matrix contains all the required tests and that
-         * each required test is valid.
-         * @param testMatrix
-         * @param matrixSource
-         * @param requiredTests
-         * @return
-         */
+    /**
+     * Does not mutate the TestMatrix.
+     * Verifies that the test matrix contains all the required tests and that
+     * each required test is valid.
+     *
+     * @param testMatrix      the {@link TestMatrixArtifact} to be verified.
+     * @param matrixSource    a {@link String} of the source of proctor artifact. For example a path of proctor artifact file.
+     * @param requiredTests   a {@link Map} of required test. The {@link TestSpecification} would be verified
+     * @param functionMapper  a given el {@link FunctionMapper}
+     * @param providedContext a {@link Map} containing variables describing the context in which the request is executing. These will be supplied to verifying all rules.
+     * @return a {@link ProctorLoadResult} to describe the result of verification. It contains errors of verification and a list of missing test.
+     */
     public static ProctorLoadResult verify(@Nonnull final TestMatrixArtifact testMatrix, final String matrixSource, @Nonnull final Map<String, TestSpecification> requiredTests, @Nonnull final FunctionMapper functionMapper, final ProvidedContext providedContext) {
         final ProctorLoadResult.Builder resultBuilder = ProctorLoadResult.newBuilder();
 
@@ -764,8 +769,9 @@ public abstract class ProctorUtils {
     /**
      * Returns flag whose value indicates if the string is null, empty or
      * only contains whitespace characters
-     * @param s
-     * @return
+     *
+     * @param s a string
+     * @return true if the string is null, empty or only contains whitespace characters
      */
     static boolean isEmptyWhitespace(@Nullable final String s) {
         if (s == null) {
@@ -777,6 +783,9 @@ public abstract class ProctorUtils {
     /**
      * Generates a usable test specification for a given test definition
      * Uses the first bucket as the fallback value
+     *
+     * @param testDefinition a {@link TestDefinition}
+     * @return a {@link TestSpecification} which corresponding to given test definition.
      */
     public static TestSpecification generateSpecification(@Nonnull final TestDefinition testDefinition) {
         final TestSpecification testSpecification = new TestSpecification();
@@ -818,11 +827,11 @@ public abstract class ProctorUtils {
         return testSpecification;
     }
 
-
     /**
      * Removes the expression braces "${ ... }" surrounding the rule.
-     * @param rule
-     * @return
+     *
+     * @param rule a given rule String.
+     * @return the given rule with the most outside braces stripped
      */
     @Nullable
     static String removeElExpressionBraces(@Nullable final String rule) {

@@ -6,13 +6,16 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Maps;
-import com.indeed.util.varexport.VarExporter;
 import com.indeed.proctor.common.model.Audit;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.common.model.TestMatrixArtifact;
 import com.indeed.proctor.common.model.TestType;
+import com.indeed.util.varexport.VarExporter;
 
+import javax.annotation.Nonnull;
+import javax.el.ExpressionFactory;
+import javax.el.FunctionMapper;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
@@ -22,9 +25,6 @@ import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
-import javax.annotation.Nonnull;
-import javax.el.ExpressionFactory;
-import javax.el.FunctionMapper;
 
 /**
  * The sole entry point for client applications determining the test buckets for a particular client.  See {@link #determineTestGroups(Identifiers, java.util.Map, java.util.Map)}
@@ -35,6 +35,11 @@ public class Proctor {
 
     /**
      * Factory method to do the setup and transformation of inputs
+     *
+     * @param matrix a {@link TestMatrixArtifact} loaded by ProctorLoader
+     * @param loadResult a {@link ProctorLoadResult} which contains result of validation of test definition
+     * @param functionMapper a given el {@link FunctionMapper}
+     * @return constructed Proctor object
      */
     @Nonnull
     public static Proctor construct(@Nonnull final TestMatrixArtifact matrix, ProctorLoadResult loadResult, FunctionMapper functionMapper) {
@@ -110,9 +115,14 @@ public class Proctor {
 
     /**
      * Determine which test buckets apply to a particular client.
-     * @param testType
-     * @param identifier a unique-ish {@link String} identifying the client.  This should be consistent across requests from the same client.
-     * @param context a {@link Map} containing variables describing the context in which the request is executing.  These will be supplied to any rules that execute to determine test eligibility.
+     *
+     * @param testType    the {@link TestType} of the test
+     * @param identifier  a unique-ish {@link String} identifying the client.
+     *                    This should be consistent across requests from the same client.
+     * @param context     a {@link Map} containing variables describing the context in which the request is executing.
+     *                    These will be supplied to any rules that execute to determine test eligibility.
+     * @param forceGroups a {@link Map} from a String test name to an Integer bucket value. For the specified test allocate the specified bucket (if valid) regardless
+     *                    of the standard logic
      * @return a {@link ProctorResult} containing the test buckets that apply to this client as well as the versions of the tests that were executed
      * @deprecated use {@link Proctor#determineTestGroups(Identifiers, java.util.Map, java.util.Map)} instead
      */
@@ -126,13 +136,14 @@ public class Proctor {
 
     /**
      * Determine which test buckets apply to a particular client.
-     * @param identifiers a {@link Map} of unique-ish {@link String}s describing the request in the context of different {@link TestType}s.For example,
-     *            {@link TestType#USER} has a CTK associated, {@link TestType#EMAIL} is an email address, {@link TestType#PAGE} might be a url-encoded String
-     *            containing the normalized relevant page parameters
+     *
+     * @param identifiers  a {@link Map} of unique-ish {@link String}s describing the request in the context of different {@link TestType}s.For example,
+     *                     {@link TestType#USER} has a CTK associated, {@link TestType#EMAIL} is an email address, {@link TestType#PAGE} might be a url-encoded String
+     *                     containing the normalized relevant page parameters
      * @param inputContext a {@link Map} containing variables describing the context in which the request is executing. These will be supplied to any rules that
-     *            execute to determine test eligibility.
-     * @param forceGroups a Map from a String test name to an Integer bucket value. For the specified test allocate the specified bucket (if valid) regardless
-     *            of the standard logic
+     *                     execute to determine test eligibility.
+     * @param forceGroups  a {@link Map} from a String test name to an Integer bucket value. For the specified test allocate the specified bucket (if valid) regardless
+     *                     of the standard logic
      * @return a {@link ProctorResult} containing the test buckets that apply to this client as well as the versions of the tests that were executed
      */
     @Nonnull
@@ -142,12 +153,19 @@ public class Proctor {
 
     /**
      * See determineTestGroups() above. Adds a test name filter for returning a subset of tests.
-     *
      * This is useful for the Proctor REST API. It lacks a specification and needs a way to evaluate
      * only the tests mentioned in the HTTP parameters by each particular query. Otherwise, there will be
      * logged errors due to missing context variables.
      *
+     * @param identifiers    a {@link Map} of unique-ish {@link String}s describing the request in the context of different {@link TestType}s.For example,
+     *                       {@link TestType#USER} has a CTK associated, {@link TestType#EMAIL} is an email address, {@link TestType#PAGE} might be a url-encoded String
+     *                       containing the normalized relevant page parameters
+     * @param inputContext   a {@link Map} containing variables describing the context in which the request is executing. These will be supplied to any rules that
+     *                       execute to determine test eligibility.
+     * @param forceGroups    a {@link Map} from a String test name to an Integer bucket value. For the specified test allocate the specified bucket (if valid) regardless
+     *                       of the standard logic
      * @param testNameFilter Only evaluates and returns the tests named in this collection. If empty, no filter is applied.
+     * @return a {@link ProctorResult} containing the test buckets that apply to this client as well as the versions of the tests that were executed
      */
     @Nonnull
     public ProctorResult determineTestGroups(@Nonnull final Identifiers identifiers,

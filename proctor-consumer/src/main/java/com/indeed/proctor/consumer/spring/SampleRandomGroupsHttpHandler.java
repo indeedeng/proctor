@@ -189,7 +189,7 @@ public class SampleRandomGroupsHttpHandler<ProctorContext> implements HttpReques
 
         String printProctorContext(ProctorContext proctorContext);
 
-        /**
+        /*
          * Determine groups for the given context and identifiers.
          */
         AbstractGroups getRandomGroups(ProctorContext proctorContext, Identifiers identifiers);

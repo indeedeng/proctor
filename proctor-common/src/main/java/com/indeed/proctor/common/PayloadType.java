@@ -48,6 +48,9 @@ public enum PayloadType {
      * See whether a given Payload has a specified type.  This could also
      * be done with introspection, and might belong in the Payload bean
      * itself.
+     *
+     * @param payload A payload
+     * @return true if the payload has the type
      */
     public boolean payloadHasThisType(@Nullable Payload payload) {
         if (payload == null) {
@@ -93,7 +96,9 @@ public enum PayloadType {
 
     /**
      * Given a Payload field name, return its corresponding PayloadType.
-     * Return null if it isn't an existing field name.
+     *
+     * @param payloadTypeName a string of payload type
+     * @return null if it isn't an existing field name.
      */
     @Nonnull
     public static PayloadType payloadTypeForName(@Nonnull final String payloadTypeName)
@@ -110,6 +115,8 @@ public enum PayloadType {
      * Flexible method for determining payload type from a value - helpful for
      * determining the schema of map payload types
      *
+     * @param payloadValue a payload value
+     * @return the payload type determined from the given value
      */
     @Nonnull
     public static PayloadType payloadTypeForValue(@Nonnull final Object payloadValue) throws IllegalArgumentException {
@@ -147,6 +154,8 @@ public enum PayloadType {
 
     /**
      * For printing useful error messages, the proctor webapp, and for testing.
+
+     * @return all types name
      */
     @Nonnull
     public static List<String> allTypeNames() {

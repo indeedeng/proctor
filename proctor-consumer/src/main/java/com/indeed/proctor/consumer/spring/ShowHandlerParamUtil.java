@@ -18,7 +18,11 @@ public class ShowHandlerParamUtil {
      *
      * Returns null if there was no query parameter.
      *
-     * Ex: ?test=bgcolortst,example2 -> ['bgcolortst, example2']
+     * Ex: ?test=bgcolortst,example2
+     * returns ['bgcolortst, example2']
+     *
+     * @param request request
+     * @return a {@link Collection} of query parameters
      */
     public static Collection<String> getTestQueryParameters(final HttpServletRequest request)
     {

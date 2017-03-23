@@ -1,27 +1,23 @@
 package com.indeed.proctor.consumer;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Strings;
+import com.google.common.collect.Maps;
 import com.indeed.proctor.common.Identifiers;
 import com.indeed.proctor.common.Proctor;
 import com.indeed.proctor.common.ProctorResult;
 import com.indeed.proctor.common.model.TestType;
-
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
+import org.apache.log4j.Logger;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.apache.log4j.Logger;
-
-import com.google.common.collect.Maps;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 
 public class ProctorConsumerUtils {
     private static final Logger LOGGER = Logger.getLogger(ProctorConsumerUtils.class);
@@ -53,6 +49,8 @@ public class ProctorConsumerUtils {
 
     /**
      * Consumer is required to do any privilege checks before getting here
+     *
+     * @param request a {@link HttpServletRequest} which may contain forced groups parameters from URL, Header or Cookie.
      * @return a map of test names to bucket values specified by the request.  Returns an empty {@link Map} if nothing was specified
      */
     @Nonnull
@@ -130,6 +128,9 @@ public class ProctorConsumerUtils {
 
     /**
      * Set a cookie that will be parsed by {@link #parseForcedGroups(HttpServletRequest)}.  Cookie expires at end of browser session
+     * @param request request
+     * @param response response
+     * @param forceGroups parsed force groups
      */
     public static void setForcedGroupsCookie(final HttpServletRequest request, final HttpServletResponse response, final Map<String, Integer> forceGroups) {
         //  don't overwrite with empty; this would be relevant in a race condition where there is a forceGroups request simultaneous with a non-forceGroups request
