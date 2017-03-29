@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.indeed</groupId>
         <artifactId>oss-parent</artifactId>
-        <version>17</version>
+        <version>19</version>
     </parent>
 
     <groupId>com.indeed</groupId>
@@ -40,30 +40,6 @@
         <module>proctor-tomcat-deps</module>
         <module>proctor-tomcat-deps-provided</module>
     </modules>
-
-
-    <profiles>
-        <profile>
-            <id>sonatype-oss-release</id>
-            <properties>
-                <releaseOnClose>true</releaseOnClose>
-            </properties>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.sonatype.plugins</groupId>
-                        <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <version>1.6.8</version>
-                        <extensions>true</extensions>
-                        <configuration>
-                            <serverId>sonatype-nexus-staging</serverId>
-                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 
     <properties>
         <indeed-util.version>1.0.12</indeed-util.version>
