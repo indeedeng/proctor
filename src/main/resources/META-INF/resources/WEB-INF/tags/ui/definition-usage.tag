@@ -2,7 +2,7 @@
 <%@ taglib prefix="proctor" uri="http://tags.indeed.com/proctor" %>
 <%@ taglib prefix="ui" tagdir="/WEB-INF/tags/ui" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
-<%@ tag language="java" pageEncoding="UTF-8" description="Popup view of a definition" body-content="scriptless" %>
+<%@ tag language="java" pageEncoding="UTF-8" description="Popup view of a definition" body-content="scriptless" trimDirectiveWhitespaces="true" %>
 <%@ attribute name="testName" type="java.lang.String" description="Test Name" %>
 <%@ attribute name="devApplications" type="java.util.Set" description="dev Applications" %>
 <%@ attribute name="qaApplications" type="java.util.Set" description="dev Applications" %>

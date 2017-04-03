@@ -1,4 +1,4 @@
-<%@ tag language="java" pageEncoding="UTF-8" description="Dump out a map of constants" body-content="scriptless" %>
+<%@ tag language="java" pageEncoding="UTF-8" description="Dump out a map of constants" body-content="scriptless" trimDirectiveWhitespaces="true" %>
 <%@ attribute name="constants" required="true" type="java.util.Map" %>
 
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>

@@ -1,4 +1,4 @@
-<%@ tag language="java" pageEncoding="UTF-8" body-content="scriptless" %>
+<%@ tag language="java" pageEncoding="UTF-8" body-content="scriptless" trimDirectiveWhitespaces="true" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="proctor" uri="http://tags.indeed.com/proctor" %>
 <%@ taglib prefix="ui" tagdir="/WEB-INF/tags/ui" %>
