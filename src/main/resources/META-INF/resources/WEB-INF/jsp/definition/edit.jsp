@@ -38,7 +38,7 @@
 
 <c:set var="action" value="/proctor/definition/${proctor:urlencode(testName)}/edit"/>
 <c:if test="${isCreate}">
-    <c:set var="action" value="/proctor/definition/{testName}/edit"/>
+<c:set var="action" value="/proctor/definition/${proctor:urlencode('{testName}')}/edit"/>
 </c:if>
 <form class="js-edit-definition-form" action="${action}" method="POST">
 
