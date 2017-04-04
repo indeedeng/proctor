@@ -140,3 +140,16 @@ table.line-wrap td { word-wrap: break-word; }
 .updated-date {
     text-align: right;
 }
+
+.pager-row {
+    position: relative;
+}
+.pager-column {
+    position: absolute;
+    bottom: 20px;
+    right: 0;
+}
+
+#pager-container {
+    float: right;
+}

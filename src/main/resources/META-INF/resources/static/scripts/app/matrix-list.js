@@ -13,9 +13,7 @@ goog.require('indeed.foundation.Tabs');
 goog.require('indeed.proctor.JobMonitor');
 goog.require('indeed.proctor.editor.AllocationsEditor');
 goog.require('indeed.proctor.editor.CleanWorkspace');
-goog.require('indeed.proctor.filter.Filter');
-goog.require('indeed.proctor.filter.Sorter');
-goog.require('indeed.proctor.filter.Favorites');
+goog.require('indeed.proctor.filter.Pager');
 
 
 /**
@@ -23,20 +21,14 @@ goog.require('indeed.proctor.filter.Favorites');
  */
 indeed.proctor.app.matrix.list.start = function(matrix) {
   goog.events.listen(window, 'load', function() {
-
     indeed.expandcollapse.ExpandCollapse.detect(document.body);
-
 
     var tabs = goog.dom.getElementsByClass('js-tabs-container');
     goog.array.forEach(tabs, function(tab) {
       var uiTab = new indeed.foundation.Tabs(tab);
     });
-    var filterContainer = goog.dom.getElement("filter-container");
-    var testContainer = goog.dom.getElement("test-container");
-    //todo build common model once here and let controls affect it
-    new indeed.proctor.filter.Filter(matrix, filterContainer);
-    var favorites = new indeed.proctor.filter.Favorites(testContainer);
-    new indeed.proctor.filter.Sorter(filterContainer, testContainer, favorites);
+    console.log("list.start");
+    new indeed.proctor.filter.Pager(matrix);
   });
 };
 

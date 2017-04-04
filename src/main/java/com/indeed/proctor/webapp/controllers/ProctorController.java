@@ -44,6 +44,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -113,7 +114,9 @@ public class ProctorController extends AbstractController {
      */
     @RequestMapping(value="/", method=RequestMethod.GET)
     public String viewTestMatrix(final String branch,
-                                 final Model model) {
+                                 final Model model,
+                                 @RequestParam(value="testsPerPage", defaultValue="50") final Integer testsPerPage,
+                                 @RequestParam(value="page", defaultValue="0") final Integer page) {
         final Environment which = determineEnvironmentFromParameter(branch);
 
         boolean emptyClients = true;
@@ -121,7 +124,11 @@ public class ProctorController extends AbstractController {
             emptyClients &= specificationSource.loadAllSpecifications(environment).keySet().isEmpty();
         }
         model.addAttribute("emptyClients", emptyClients);
-        return getArtifactForView(model, which, View.MATRIX_LIST);
+
+        final String artifactForView = getArtifactForView(model, which, View.MATRIX_LIST);
+        model.addAttribute("testsPerPage", testsPerPage);
+        model.addAttribute("page", page);
+        return artifactForView;
     }
 
     @RequestMapping(value="/matrix/raw", method=RequestMethod.GET)
