@@ -297,12 +297,12 @@ public class ProctorTestDefinitionController extends AbstractController {
     public String doEditGet(
         @PathVariable String testName,
         final Model model
-    ) {
+    ) throws StoreException {
         final Environment theEnvironment = Environment.WORKING; // only allow editing of TRUNK!
         final ProctorStore store = determineStoreFromEnvironment(theEnvironment);
         final EnvironmentVersion version = promoter.getEnvironmentVersion(testName);
 
-        final TestDefinition definition = getTestDefinition(store, testName, version.getTrunkRevision());
+        final TestDefinition definition = getTestDefinition(store, testName, store.getLatestVersion());
         if (definition == null) {
             LOGGER.info("Unknown test definition : " + testName);
             // unknown testdefinition
