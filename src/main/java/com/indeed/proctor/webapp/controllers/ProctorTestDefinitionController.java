@@ -230,11 +230,7 @@ public class ProctorTestDefinitionController extends AbstractController {
             if (revision.length() > 0) {
                 definition = getTestDefinition(store, testName, revision);
             } else {
-                /**
-                 * Use the latest version of current ProctorStore instead of the latest commit hash of the ProTest,
-                 * It's more caching friendly.
-                 **/
-                definition = getTestDefinition(store, testName, store.getLatestVersion());
+                definition = getTestDefinition(store, testName);
             }
 
             if (definition == null) {
@@ -302,7 +298,7 @@ public class ProctorTestDefinitionController extends AbstractController {
         final ProctorStore store = determineStoreFromEnvironment(theEnvironment);
         final EnvironmentVersion version = promoter.getEnvironmentVersion(testName);
 
-        final TestDefinition definition = getTestDefinition(store, testName, store.getLatestVersion());
+        final TestDefinition definition = getTestDefinition(store, testName);
         if (definition == null) {
             LOGGER.info("Unknown test definition : " + testName);
             // unknown testdefinition
@@ -542,8 +538,7 @@ public class ProctorTestDefinitionController extends AbstractController {
         validateUsernamePassword(username, password);
 
         // TODO (parker) 9/5/12 - Verify that promoting to the destination branch won't cause issues
-        final ProctorStore srcStore = determineStoreFromEnvironment(source);
-        final TestDefinition testDefintion = getTestDefinition(srcStore, testName, srcRevision);
+        final TestDefinition testDefintion = getTestDefinition(source, testName, srcRevision);
         //            if(d == null) {
         //                return "could not find " + testName + " on " + source + " with revision " + srcRevision;
         //            }
@@ -890,9 +885,8 @@ public class ProctorTestDefinitionController extends AbstractController {
                                     && isAllocationOnlyChange(existingTestDefinition, testDefinitionToUpdate)) {
                                 final boolean isQaPromoted;
                                 job.log("allocation only change, checking against other branches for auto-promote capability for test " + testName + "\nat QA revision " + qaRevision + " and PRODUCTION revision " + prodRevision);
-                                final ProctorStore qaStore = determineStoreFromEnvironment(Environment.QA);
                                 final boolean isQaPromotable = qaRevision != EnvironmentVersion.UNKNOWN_REVISION
-                                        && isAllocationOnlyChange(getTestDefinition(qaStore, testName, qaRevision), testDefinitionToUpdate);
+                                        && isAllocationOnlyChange(getTestDefinition(Environment.QA, testName, qaRevision), testDefinitionToUpdate);
                                 if (isQaPromotable) {
                                     job.log("auto-promoting changes to QA");
                                     isQaPromoted = doJobIndependentPromoteInternal(testName, username, password, Environment.WORKING, trunkStore.getLatestVersion(), Environment.QA, qaRevision, requestParameterMap, job, true);
@@ -900,10 +894,9 @@ public class ProctorTestDefinitionController extends AbstractController {
                                     isQaPromoted = false;
                                     job.log("previous revision changes prevented auto-promote to QA");
                                 }
-                                final ProctorStore prodStore = determineStoreFromEnvironment(Environment.PRODUCTION);
                                 if (isQaPromotable && isQaPromoted
                                         && prodRevision != EnvironmentVersion.UNKNOWN_REVISION
-                                        && isAllocationOnlyChange(getTestDefinition(prodStore, testName, prodRevision), testDefinitionToUpdate)) {
+                                        && isAllocationOnlyChange(getTestDefinition(Environment.PRODUCTION, testName, prodRevision), testDefinitionToUpdate)) {
                                     job.log("auto-promoting changes to PRODUCTION");
                                     doJobIndependentPromoteInternal(testName, username, password, Environment.WORKING, trunkStore.getLatestVersion(), Environment.PRODUCTION, prodRevision, requestParameterMap, job, true);
 
@@ -1087,9 +1080,7 @@ public class ProctorTestDefinitionController extends AbstractController {
             return "source == destination";
         }
 
-        final ProctorStore source = determineStoreFromEnvironment(srcBranch);
-
-        final TestDefinition d = getTestDefinition(source, testName, srcRevision);
+        final TestDefinition d = getTestDefinition(srcBranch, testName, srcRevision);
         if (d == null) {
             return "could not find " + testName + " on " + srcBranch + " with revision " + srcRevision;
         }
@@ -1443,6 +1434,18 @@ public class ProctorTestDefinitionController extends AbstractController {
         } catch (StoreException e) {
             LOGGER.info("Failed to get current test definition for: " + testName, e);
             return null;
+        }
+    }
+
+    private TestDefinition getTestDefinition(final Environment environment, final String testName, final String revision) {
+        final ProctorStore store = determineStoreFromEnvironment(environment);
+        final EnvironmentVersion version = promoter.getEnvironmentVersion(testName);
+        final String environmentVersion = version.getRevision(environment);
+        if (!"-1".equals(environmentVersion) && revision.equals(environmentVersion)) {
+            // if revision is environment latest version, fetching current environment version is more cache-friendly
+            return getTestDefinition(store, testName);
+        } else {
+            return getTestDefinition(store, testName, revision);
         }
     }
 
