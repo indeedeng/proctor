@@ -340,6 +340,7 @@
         <closure-compiler.version>20160315</closure-compiler.version>
         <closure-compiler-zip>compiler-${closure-compiler.version}.zip</closure-compiler-zip>
         <closure-compiler-url>http://dl.google.com/closure-compiler/${closure-compiler-zip}</closure-compiler-url>
+        <additionalparam>-Xdoclint:none</additionalparam>
     </properties>
 
 </project>
