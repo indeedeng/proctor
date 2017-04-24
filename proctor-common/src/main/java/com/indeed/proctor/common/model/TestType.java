@@ -1,6 +1,5 @@
 package com.indeed.proctor.common.model;
 
-import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -31,7 +30,8 @@ public final class TestType implements JsonSerializable {
     @Nonnull
     public static TestType register(@Nonnull final String name) {
         final TestType testType = new TestType(name);
-        return Objects.firstNonNull(TYPES.putIfAbsent(testType.name(), testType), testType);
+        final TestType previous = TYPES.putIfAbsent(testType.name(), testType);
+        return previous != null ? previous : testType;
     }
 
     // Emulate enum
