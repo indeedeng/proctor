@@ -1,7 +1,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="proctor" uri="http://tags.indeed.com/proctor" %>
 <%@ taglib prefix="ui" tagdir="/WEB-INF/tags/ui" %>
-<%@ tag language="java" pageEncoding="UTF-8" description="Popup view of a definition" body-content="scriptless" %>
+<%@ tag language="java" pageEncoding="UTF-8" description="Popup view of a definition" body-content="scriptless" trimDirectiveWhitespaces="true" %>
 <%@ attribute name="testName" type="java.lang.String" description="Test Name" %>
 <%@ attribute name="branch" type="com.indeed.proctor.webapp.db.Environment" description="Branch" %>
 <%@ attribute name="testDefinitionHistory" type="java.util.List<com.indeed.proctor.webapp.model.RevisionDefinition>" description="revision to definition map" %>
