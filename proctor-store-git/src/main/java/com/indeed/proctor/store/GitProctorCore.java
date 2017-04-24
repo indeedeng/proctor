@@ -92,6 +92,18 @@ public class GitProctorCore implements FileBasedPersisterCore {
                           final GitWorkspaceProviderImpl workspaceProvider,
                           final int pullPushTimeoutSeconds,
                           final int cloneTimeoutSeconds) {
+        this(gitUrl, username, password, testDefinitionsDirectory, workspaceProvider,
+                pullPushTimeoutSeconds, cloneTimeoutSeconds, false);
+    }
+
+    public GitProctorCore(final String gitUrl,
+                          final String username,
+                          final String password,
+                          final String testDefinitionsDirectory,
+                          final GitWorkspaceProviderImpl workspaceProvider,
+                          final int pullPushTimeoutSeconds,
+                          final int cloneTimeoutSeconds,
+                          final boolean cleanInitialization) {
         this.gitUrl = gitUrl;
         this.refName = Constants.HEAD;
         this.workspaceProvider = Preconditions
@@ -103,10 +115,30 @@ public class GitProctorCore implements FileBasedPersisterCore {
         gcExecutor = Executors.newSingleThreadScheduledExecutor();
         this.pullPushTimeoutSeconds = pullPushTimeoutSeconds;
         this.cloneTimeoutSeconds = cloneTimeoutSeconds;
-        initializeRepository();
+        initializeRepository(cleanInitialization);
     }
 
-    void initializeRepository() {
+    private Git pullRepository(final File workingDir) throws GitAPIException, IOException {
+        final Git git = Git.open(workingDir);
+        git.pull().setProgressMonitor(PROGRESS_MONITOR)
+                .setRebase(true)
+                .setCredentialsProvider(user)
+                .setTimeout(pullPushTimeoutSeconds)
+                .call();
+        return git;
+    }
+
+    private Git cloneRepository(final File workingDir) throws GitAPIException {
+        return Git.cloneRepository()
+                .setURI(gitUrl)
+                .setDirectory(workingDir)
+                .setProgressMonitor(PROGRESS_MONITOR)
+                .setCredentialsProvider(user)
+                .setTimeout(cloneTimeoutSeconds)
+                .call();
+    }
+
+    void initializeRepository(final boolean cleanInitialization) {
         final File workingDir = workspaceProvider.getRootDirectory();
         final File gitDirectory = new File(workingDir, ".git");
         LOGGER.info("Initializing repository " + gitUrl + " in working dir " + workingDir.getAbsolutePath());
@@ -115,36 +147,22 @@ public class GitProctorCore implements FileBasedPersisterCore {
             @Override
             public Void call() {
                 try {
-                    if (gitDirectory.exists()) {
+                    if (!gitDirectory.exists()) {
+                        LOGGER.info("Local repository not found, creating a new clone...");
+                        git = cloneRepository(workingDir);
+                    } else if(cleanInitialization) {
+                        LOGGER.info("Existing local repository found, but creating a new clone to clean up working directory...");
+                        workspaceProvider.cleanWorkingDirectory();
+                        git = cloneRepository(workingDir);
+                    } else {
                         LOGGER.info("Existing local repository found, pulling latest changes...");
                         try {
-                            git = Git.open(workingDir);
-                            git.pull()
-                                    .setProgressMonitor(PROGRESS_MONITOR)
-                                    .setRebase(true)
-                                    .setCredentialsProvider(user)
-                                    .setTimeout(pullPushTimeoutSeconds)
-                                    .call();
+                            git = pullRepository(workingDir);
                         } catch (final Exception e) {
                             LOGGER.error("Could not update existing local repository, creating a new clone...", e);
                             workspaceProvider.cleanWorkingDirectory();
-                            final CloneCommand gitCommand = Git.cloneRepository()
-                                    .setURI(gitUrl)
-                                    .setDirectory(workingDir)
-                                    .setProgressMonitor(PROGRESS_MONITOR)
-                                    .setCredentialsProvider(user)
-                                    .setTimeout(cloneTimeoutSeconds);
-                            git = gitCommand.call();
+                            git = cloneRepository(workingDir);
                         }
-                    } else {
-                        LOGGER.info("Local repository not found, creating a new clone...");
-                        git = Git.cloneRepository()
-                                .setURI(gitUrl)
-                                .setDirectory(workingDir)
-                                .setProgressMonitor(PROGRESS_MONITOR)
-                                .setCredentialsProvider(user)
-                                .setTimeout(cloneTimeoutSeconds)
-                                .call();
                     }
                 } catch (final GitAPIException e) {
                     LOGGER.error("Unable to clone git repository at " + gitUrl, e);

@@ -147,7 +147,7 @@ public class GitProctor extends FileBasedProctorStore {
     @Override
     public boolean cleanUserWorkspace(final String username) {
         getGitCore().undoLocalChanges();
-        getGitCore().initializeRepository();
+        getGitCore().initializeRepository(false);
         checkoutBranch(this.branchName);
         return true;
     }
