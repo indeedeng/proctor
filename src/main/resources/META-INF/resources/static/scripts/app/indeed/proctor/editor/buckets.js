@@ -215,7 +215,7 @@ indeed.proctor.editor.BucketsEditor.prototype.validateBucket_ =
   indeed.foundation.forms.removeError(el_description);
   indeed.foundation.forms.removeError(el_payload);
 
-  if (!goog.isNumber(value)) {
+  if (!Number.isInteger(value)) {
     indeed.foundation.forms.addError(el_value, 'Bucket value must be a number');
     return false;
   }
