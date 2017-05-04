@@ -13,11 +13,12 @@ Provides an interface for consuming and accessing the groups for a user. Accesso
 **AbstractGroupsManager** -
 Provides an interface for determining the groups for a user based on the provided `Identifiers` and `context`.
 
-### Example specification
+## Example specification
 
 Consider the following [ExampleGroups.json](https://gist.github.com/parker/3bb0e94b9b238b48429f#file-2-examplegroups-context-json) specification
 
-```javascript
+<pre>
+  <code class="javascript">    
 {
     "tests" : {
         "bgcolortst": {
@@ -38,11 +39,13 @@ Consider the following [ExampleGroups.json](https://gist.github.com/parker/3bb0e
         "ua": "com.indeed.example.UserAgent"
     }
 }
-```
+  </code>
+</pre>
 
 ### Generated ExampleGroupsManager.java
 
-```java
+<pre>
+  <code class="java">   
 package com.indeed.example;
 
 public class ExampleGroupsManager extends AbstractGroupsManager {
@@ -65,19 +68,21 @@ public class ExampleGroupsManager extends AbstractGroupsManager {
                                         final String language,
                                         final com.indeed.example.UserAgent ua);
 }
-```
-key points:
+  </code>
+</pre>
+<h3>Key points:</h3>
 
-- The `Supplier<Proctor> proctorSource` constructor argument should provide a loaded Proctor instance. Typically, this is an implementation of `AbstractProctorLoader`. See [proctor-loader][Loader] for more details.
-- The `determineBuckets` method signature contains context variables as defined in the `providedContext`. These automatically get mapped to their corresponding variable names in the context mapping.
-- `ProctorResult` encapsulates the collection of test-buckets identified for each test in an application's specification. The `ProctorResult` is a thin wrapper around a map from `testName => TestBucket`. This map will only contain tests that satisfy all of the following:
-  - The `Identifiers` contain an value for the test's `test-type`. If a test-type is `RANDOM`, it will only be included if `Identifiers.randomEnabled` is `true'`
-  - A test's `eligibility-rule` must have evaluated to `true`.
-  - The test-matrix must contain a valid `test-definition` for the test.
+- The <strong>Supplier<Proctor> proctorSource</strong> constructor argument should provide a loaded Proctor instance. Typically, this is an implementation of <strong>AbstractProctorLoader</strong>. See [proctor-loader][Loader] for more details.
+- The <strong>determineBuckets</strong> method signature contains context variables as defined in the <strong>providedContext</strong>. These automatically get mapped to their corresponding variable names in the context mapping.
+- <strong>ProctorResult</strong> encapsulates the collection of test-buckets identified for each test in an application's specification. The <strong>ProctorResult</strong> is a thin wrapper around a map from <strong>testName => TestBucket</strong>. This map will only contain tests that satisfy all of the following:
+  - The <strong>Identifiers</strong> contain an value for the test's <strong>test-type</strong>. If a test-type is <strong>RANDOM</strong>, it will only be included if <strong>Identifiers.randomEnabled</strong> is <strong>true'</strong>.
+  - A test's <strong>eligibility-rule</strong> must have evaluated to <strong>true</strong>.
+  - The test-matrix must contain a valid <strong>test-definition</strong> for the test.
 
 ### Generated ExampleGroups.java
 
-```java
+<pre>
+  <code class="java">
 package com.indeed.example;
 
 public class ExampleGroups extends AbstractGroups {
@@ -108,17 +113,18 @@ public class ExampleGroups extends AbstractGroups {
     public boolean isBgcolortstAltcolor3();
     public boolean isBgcolortstAltcolor4();
 }
-```
+</code></pre>
 
-key points
+<h3>Key points:</h3>
 
-- `AbstractGroups` provide a application-specific meaning to each test and test-bucket.
-- An `enum` is created for each `test` and corresponding `group`
-- Accessors for each test `group` are generated and can be used to check if a proctor-result contains the specified `test bucket`.
+- <strong>AbstractGroups</strong> provide a application-specific meaning to each test and test-bucket.
+- An <strong>enum</strong> is created for each <strong>test</strong> and corresponding <strong>group</strong>.
+- Accessors for each test <strong>group</strong> are generated and can be used to check if a proctor-result contains the specified <strong>test bucket</strong>.
 
 ### Generated ExampleGroups.js
 
-```javascript
+<pre>
+  <code class="javascript">
 define('com.indeed.example.groups', [], function() {
 
   var ExampleGroups_ = function(opt_values) {
@@ -176,16 +182,16 @@ define('com.indeed.example.groups', [], function() {
   };
 });
 
-```
+</code></pre>
 
-key points
+<h3>Key points:</h3>
 
-- Functionality of Javascript groups is dependent on using `determineBuckets` in your Java code.
-- The value passed to `init()` is an array of bucket allocations and payloads. A method is included in `AbstractGroups` to generate this object.
-- A `Google Closure` style generated file is also available.
+- Functionality of Javascript groups is dependent on using <strong>determineBuckets</strong> in your Java code.
+- The value passed to <strong>init()</strong> is an array of bucket allocations and payloads. A method is included in <strong>AbstractGroups</strong> to generate this object.
+- A <strong>Google Closure</strong> style generated file is also available.
 
 ## <a name="maven"></a>proctor-maven-plugin
-The `proctor-maven-plugin` plugin makes it easy to incorporate Java code generation into the [maven build lifecycle](http://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html).
+The <strong>proctor-maven-plugin</strong> makes it easy to incorporate Java code generation into the [maven build lifecycle](http://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html).
 
 | Goal | Default Phase | Description |
 | ---- | ------------- | ----------- |
@@ -193,10 +199,11 @@ The `proctor-maven-plugin` plugin makes it easy to incorporate Java code generat
 | `generate-test` | generate-test-sources | Generates groups and groups-manager from `src/test/proctor` and adds specification as test resource |
 | `generate-js` | generate-js-sources | Generates groups from `src/main/proctor` and adds specification as source resource |
 | `generate-js-test` | generate-js-test-sources | Generates groups from `src/test/proctor` and adds specification as test resource |
-
+<br><br>
 The following `plugin` element should be added to your application's `pom.xml` ([complete pom.xml example example](https://gist.github.com/parker/c0ea111ff343f58346e0#file-pom-xml)):
 
-```xml
+<pre>
+<code class="xml">
 ...
   <plugin>
     <groupId>com.indeed</groupId>
@@ -212,17 +219,20 @@ The following `plugin` element should be added to your application's `pom.xml` (
     </executions>
   </plugin>
 ...
-```
+
+</code></pre>
 
 The `generate` goal will be executed in the standard compile and build lifecycle. To man manually run the code generator, run the following in a terminal:
 
-```bash
+<pre>
+<code class="bash">
 $ mvn com.indeed:proctor-maven-plugin:generate
-```
+</code></pre>
 
 By convention, the plugin determines the java package and classname from the specification's path and filename, respectively.
 
-```bash
+<pre>
+<code class="bash">
 .
 ├── src
 |   ├── main
@@ -231,17 +241,19 @@ By convention, the plugin determines the java package and classname from the spe
 |   ├── test
 |       ├── proctor
 |           ├── org/your/company/app/ExampleGroups.json
-```
 
-```bash
+</code></pre>
+
+<pre>
+<code class="bash">
 src/main/org/your/company/app/ExampleGroups.json 
     => org.your.company.app.ExampleGroups.java
     => org.your.company.app.ExampleGroupsManager.java
-```
+</code></pre>
 
 Alternatively, for a split specification, the format would look like
-
-```bash
+<pre>
+<code class="bash">
 .
 ├── src
 |   ├── main
@@ -256,11 +268,13 @@ Alternatively, for a split specification, the format would look like
 |           ├── examplefirsttest.json
 |           ├── examplesecondtest.json
 |           ├── examplethirdtest.json
-```
+
+</code></pre>
 
 The generated file is sent to target/generated-resources/proctor and must be added separately in the pom.xml for inclusion in classpath resources, this could look like:
 
-```bash
+<pre>
+<code class="bash">
   <build>
    ...
       <resources>
@@ -269,16 +283,21 @@ The generated file is sent to target/generated-resources/proctor and must be add
           </resource>
       </resources>
   </build>
-```
+
+</code></pre>
 
 ## <a name="ant"></a>proctor-ant-plugin
-The `proctor-ant-plugin` project provides two ant tasks that can be invoked during ant's build process: `com.indeed.proctor.consumer.gen.ant.TestGroupsJavaGeneratorTask` is used to generate Java code, `com.indeed.proctor.consumer.gen.ant.TestGroupsJavascriptGeneratorTask` is used to generate Javascript code
+The <strong>proctor-ant-plugin</strong> project provides two ant tasks that can be invoked during ant's build process: <ul>
+<li><code>com.indeed.proctor.consumer.gen.ant.TestGroupsJavaGeneratorTask</code> is used to generate Java code </li>
+<li><code>com.indeed.proctor.consumer.gen.ant.TestGroupsJavascriptGeneratorTask</code> is used to generate Javascript code</li></ul>
 
 [TODO: is the ant task bundled properly? Adjust ant task to use file name and package just like maven plugin?]
+<ol>
 
-1. Add a _proctor_ configuration and _proctor-ant-plugin_ dependency to your application's _ivy.xml_
+<li>Add a <em>proctor</em>configuration and <em>>proctor-ant-plugin</em> dependency to your application's <em>ivy.xml</em>
 
-  ```xml
+  <pre>
+<code class="xml">
     <configurations defaultconfmapping="default->default(master)">
         <conf name="compile" extends="default"/>
         <conf name="proctor" extends="compile"/>
@@ -288,20 +307,24 @@ The `proctor-ant-plugin` project provides two ant tasks that can be invoked duri
         <dependency org="com.indeed" name="proctor-ant-plugin" 
                     rev="1.0-SNAPSHOT" conf="proctor->default" />
     </dependencies>
-  ```
+ 
+</code></pre></li>
 
-2. Create specification in your application's `src/resources` directory
+<li>Create specification in your application's <code>src/resources</code> directory
 
-  ```bash
+  <pre>
+<code class="bash">
     .
     ├── src
-    |   ├── resources
+    |    resources
     |       ├── org/your/company/app/ExampleGroups.json
-  ```
+  
+  </code></pre>
 
-  Alternatively, for a split specification, the format would look like
+  Alternatively, for a split specification, the format would look like:
 
-  ```bash
+<pre>
+<code class="bash">
   .
   ├── src
   |   ├── resources
@@ -310,14 +333,16 @@ The `proctor-ant-plugin` project provides two ant tasks that can be invoked duri
   |           ├── examplefirsttest.json
   |           ├── examplesecondtest.json
   |           ├── examplethirdtest.json
-  ```
+  
+  </code></pre></li>
 
 
 
 
-3. Add a classpath ref for the _proctor_ configuration and define a ant target for invoking the task. Unlike the maven plugin, the package, groups class name, and groups manager class name must be specified in the ant task. Typically, the _compile_ target depends on the _proctor-generate_ target and the generated-code (in `generated-src`) is not committed to version-control.
+<li>Add a classpath ref for the <em>proctor</em> configuration and define a ant target for invoking the task. Unlike the maven plugin, the package, groups class name, and groups manager class name must be specified in the ant task. Typically, the <em>compile</em> target depends on the <em>proctor-generate</em> target and the generated-code (in <code>generated-src</code>) is not committed to version-control.
 
-  ```xml
+ <pre>
+<code class="xml">
     <target name="init" description="Resolve dependencies and set classpaths">
         ...
         <ivy:cachepath pathid="proctor.path"  conf="proctor"/>
@@ -353,7 +378,8 @@ The `proctor-ant-plugin` project provides two ant tasks that can be invoked duri
     <target name="makeweb" depends="proctor-generate-js">
           ...
     </target>
-  ```
+ 
+ </code></pre></li>
 
   See [example ivy.xml and build.xml gist](https://gist.github.com/parker/9eebd91fcb57ea416c6a) for a complete example
 
