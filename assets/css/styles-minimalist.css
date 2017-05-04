@@ -2,10 +2,21 @@
 @import url(https://fonts.googleapis.com/css?family=Lato:300italic,700italic,300,700);
 
 body {
-  padding:50px;
-  font:14px/1.5 Lato, "Helvetica Neue", Helvetica, Arial, sans-serif;
-  color:#777;
+  padding:0;
+  font-family: 'Avenir', Helvetica Neue, Helvetica, Arial, sans-serif;
+  font-size: 14px;
   font-weight:300;
+}
+
+header {
+  padding-top: 20px;
+}
+
+h3 {
+
+header, section, article, footer {
+  padding-left: 0;
+  margin-left: 0;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -30,7 +41,7 @@ h3, h4, h5, h6 {
 }
 
 a {
-  color:#39c;
+  color:#00c;	
   text-decoration:none;
 }
 
@@ -57,9 +68,9 @@ blockquote {
 }
 
 code, pre {
-  font-family:Monaco, Bitstream Vera Sans Mono, Lucida Console, Terminal;
+  font-family:Monospace, Bitstream Vera Sans Mono, Lucida Console, Terminal;
   color:#333;
-  font-size:12px;
+  font-size:14px;
 }
 
 pre {
