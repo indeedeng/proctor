@@ -69,7 +69,7 @@
                 </ui:grid-columns>
                 <ui:grid-columns width="eight">
                     <div class="updated-date">
-                        Updated:
+                        last updated:
                         <jsp:useBean id="updatedDate" class="java.util.Date"/>
                         <jsp:setProperty name="updatedDate" property="time" value="${updatedTimeMap.get(test.key)}"/>
                         <fmt:formatDate value="${updatedDate}" pattern="yyyy-MM-dd"/>
