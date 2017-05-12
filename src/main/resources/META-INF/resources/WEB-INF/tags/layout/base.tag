@@ -67,9 +67,9 @@
             </div>
 
             <div class="ft">
+                <proctor:renderBasePageInjectionTemplates position="<%=BasePageRenderer.BasePagePosition.FOOTER%>" branch="${branch}"/>
             </div>
         </div>
     </div>
-    <proctor:renderBasePageInjectionTemplates position="<%=BasePageRenderer.BasePagePosition.FOOTER%>" branch="${branch}"/>
 </body>
 </html>

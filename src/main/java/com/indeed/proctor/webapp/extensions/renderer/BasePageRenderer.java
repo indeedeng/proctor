@@ -2,6 +2,8 @@ package com.indeed.proctor.webapp.extensions.renderer;
 
 import com.indeed.proctor.webapp.db.Environment;
 
+import javax.servlet.jsp.PageContext;
+
 /**
  */
 public interface BasePageRenderer {
@@ -12,5 +14,12 @@ public interface BasePageRenderer {
 
     BasePagePosition getBasePagePosition();
 
-    public String getRenderedHtml(final Environment branch);
+    @Deprecated
+    public default String getRenderedHtml(final Environment branch) {
+        return "";
+    }
+
+    public default String getRenderedHtml(final PageContext pageContext, final Environment branch) {
+        return "";
+    }
 }
