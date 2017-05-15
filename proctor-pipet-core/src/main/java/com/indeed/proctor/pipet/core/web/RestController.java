@@ -18,6 +18,7 @@ import com.indeed.proctor.pipet.core.model.JsonMeta;
 import com.indeed.proctor.pipet.core.model.JsonResponse;
 import com.indeed.proctor.pipet.core.model.JsonResult;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -43,6 +44,9 @@ public class RestController {
     private final Extractor extractor;
     private final Converter converter;
 
+    @Value("${proctor.pipet.identify.all.disable:false}")
+    private boolean disableIdentifyAllTests;
+
     @Autowired
     public RestController(final VariableConfiguration configuration,
                           final AbstractProctorLoader loader) {
@@ -61,12 +65,12 @@ public class RestController {
         final ConvertedParameters param = converter.convert(raw);
 
         final ProctorResult result;
-        if (param.getTest() == null) {
+        if (param.getTest() == null && !disableIdentifyAllTests) {
             // Get all existing tests.
             // This can log many errors if not all context variables in the test matrix were provided.
             result = proctor.determineTestGroups(
                     param.getIdentifiers(), param.getContext(), param.getForceGroups(), Collections.<String>emptyList());
-        } else if (param.getTest().isEmpty()) {
+        } else if (param.getTest() == null || param.getTest().isEmpty()) {
             // Get zero tests.
             result = ProctorResult.EMPTY;
         } else {
