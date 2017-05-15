@@ -136,3 +136,7 @@ table.line-wrap td { word-wrap: break-word; }
             no-repeat
             left center;
 }
+
+.updated-date {
+    text-align: right;
+}

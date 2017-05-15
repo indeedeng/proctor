@@ -5,6 +5,7 @@
 <%@ taglib prefix="layout" tagdir="/WEB-INF/tags/layout" %>
 <%@ taglib prefix="proctor" uri="http://tags.indeed.com/proctor" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%--@elvariable id="session" type="com.indeed.proctor.webapp.model.SessionViewModel"--%>
 <%--@elvariable id="testMatrixVersion" type="com.indeed.proctor.webapp.TestMatrixVersion"--%>
 <%--@elvariable id="testMatrixDefinition" type="java.lang.String"--%>
@@ -67,6 +68,12 @@
                     <proctor:renderMatrixListPageInjectionTemplates position="<%=MatrixListPageRenderer.MatrixListPagePosition.LINK%>" testName="${proctor:urlencode(test.key)}" testMatrixVersion="${testMatrixVersion}" testDefinition="${testDefinition}"/>
                 </ui:grid-columns>
                 <ui:grid-columns width="eight">
+                    <div class="updated-date">
+                        last updated:
+                        <jsp:useBean id="updatedDate" class="java.util.Date"/>
+                        <jsp:setProperty name="updatedDate" property="time" value="${updatedTimeMap.get(test.key)}"/>
+                        <fmt:formatDate value="${updatedDate}" pattern="yyyy-MM-dd"/>
+                    </div>
                     <div class="def-description">
                         <proctor:formatCommitMessageDisplay commitMessage="${testDefinition.description}"/>
                     </div>
