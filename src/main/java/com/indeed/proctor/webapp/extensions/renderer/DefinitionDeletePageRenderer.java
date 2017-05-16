@@ -1,5 +1,7 @@
 package com.indeed.proctor.webapp.extensions.renderer;
 
+import javax.servlet.jsp.PageContext;
+
 /**
  */
 public interface DefinitionDeletePageRenderer {
@@ -12,5 +14,12 @@ public interface DefinitionDeletePageRenderer {
 
     DefinitionDeletePagePosition getDefinitionDeletePagePosition();
 
-    public String getRenderedHtml(final String testName);
+    @Deprecated
+    default String getRenderedHtml(final String testName){
+        return "";
+    }
+
+    default String getRenderedHtml(final PageContext pageContext, final String testName){
+        return "";
+    }
 }

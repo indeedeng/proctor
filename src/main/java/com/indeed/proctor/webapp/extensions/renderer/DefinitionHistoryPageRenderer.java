@@ -2,6 +2,8 @@ package com.indeed.proctor.webapp.extensions.renderer;
 
 import com.indeed.proctor.store.Revision;
 
+import javax.servlet.jsp.PageContext;
+
 /**
  */
 public interface DefinitionHistoryPageRenderer {
@@ -11,5 +13,12 @@ public interface DefinitionHistoryPageRenderer {
 
     DefinitionHistoryPagePosition getDefinitionHistoryPagePositionPosition();
 
-    public String getRenderedHtml(final String testName, final Revision testDefinitionVersion);
+    @Deprecated
+    default String getRenderedHtml(final String testName, final Revision testDefinitionVersion){
+        return "";
+    }
+
+    default String getRenderedHtml(final PageContext pageContext, final String testName, final Revision testDefinitionVersion){
+        return "";
+    }
 }

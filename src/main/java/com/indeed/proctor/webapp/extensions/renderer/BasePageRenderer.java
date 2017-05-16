@@ -15,11 +15,11 @@ public interface BasePageRenderer {
     BasePagePosition getBasePagePosition();
 
     @Deprecated
-    public default String getRenderedHtml(final Environment branch) {
+    default String getRenderedHtml(final Environment branch) {
         return "";
     }
 
-    public default String getRenderedHtml(final PageContext pageContext, final Environment branch) {
+    default String getRenderedHtml(final PageContext pageContext, final Environment branch) {
         return "";
     }
 }
