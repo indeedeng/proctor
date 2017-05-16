@@ -68,17 +68,17 @@
                     <proctor:renderMatrixListPageInjectionTemplates position="<%=MatrixListPageRenderer.MatrixListPagePosition.LINK%>" testName="${proctor:urlencode(test.key)}" testMatrixVersion="${testMatrixVersion}" testDefinition="${testDefinition}"/>
                 </ui:grid-columns>
                 <ui:grid-columns width="eight">
-                    <div class="updated-date">
-                        last updated:
-                        <jsp:useBean id="updatedDate" class="java.util.Date"/>
-                        <jsp:setProperty name="updatedDate" property="time" value="${updatedTimeMap.get(test.key)}"/>
-                        <fmt:formatDate value="${updatedDate}" pattern="yyyy-MM-dd"/>
-                    </div>
                     <div class="def-description">
                         <proctor:formatCommitMessageDisplay commitMessage="${testDefinition.description}"/>
                     </div>
                     <c:if test="${!empty testDefinition.rule}"><div class="rule">rule: ${fn:escapeXml(testDefinition.rule)}</div></c:if>
                     <ui:allocations definition="${testDefinition}"/>
+                    <div class="updated-date">
+                        last updated:
+                        <jsp:useBean id="updatedDate" class="java.util.Date"/>
+                        <jsp:setProperty name="updatedDate" property="time" value="${updatedTimeMap.get(test.key)}"/>
+                        <fmt:formatDate value="${updatedDate}" pattern="yyyy-MM-dd HH:mm:ss"/>
+                    </div>
                 </ui:grid-columns>
                 <ui:grid-columns width="one">
                     <div class="favorite" data-testname="${fn:escapeXml(test.key)}"></div>
