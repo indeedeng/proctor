@@ -2,6 +2,8 @@ package com.indeed.proctor.webapp.extensions.renderer;
 
 import com.indeed.proctor.common.model.TestDefinition;
 
+import javax.servlet.jsp.PageContext;
+
 /**
  */
 public interface DefinitionDetailsPageRenderer {
@@ -13,5 +15,12 @@ public interface DefinitionDetailsPageRenderer {
 
     DefinitionDetailsPagePosition getDefinitionDetailsPagePosition();
 
-    public String getRenderedHtml(final String testName, final TestDefinition testDefinition);
+    @Deprecated
+    default String getRenderedHtml(final String testName, final TestDefinition testDefinition){
+        return "";
+    }
+
+    default String getRenderedHtml(final PageContext pageContext, final String testName, final TestDefinition testDefinition){
+        return "";
+    }
 }

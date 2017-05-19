@@ -40,7 +40,6 @@
         </c:otherwise>
     </c:choose>
 
-
   <c:if test="${not empty canonicalLink}"><link rel="canonical" href="${canonicalLink}" /></c:if>
 </head>
 <body>
@@ -68,6 +67,7 @@
             </div>
 
             <div class="ft">
+                <proctor:renderBasePageInjectionTemplates position="<%=BasePageRenderer.BasePagePosition.FOOTER%>" branch="${branch}"/>
             </div>
         </div>
     </div>

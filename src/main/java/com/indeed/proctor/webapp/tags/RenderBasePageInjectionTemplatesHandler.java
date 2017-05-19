@@ -48,6 +48,7 @@ public class RenderBasePageInjectionTemplatesHandler extends TagSupport {
             for (final BasePageRenderer renderer : rendererBeans.values()) {
                 if (position == renderer.getBasePagePosition()) {
                     renderedHTML.append(renderer.getRenderedHtml(branch));
+                    renderedHTML.append(renderer.getRenderedHtml(pageContext, branch));
                 }
             }
         } catch (Exception e) {
