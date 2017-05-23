@@ -47,6 +47,7 @@ public class RenderDefinitionDeletePageInjectionTemplatesHandler extends TagSupp
             for (final DefinitionDeletePageRenderer renderer : rendererBeans.values()) {
                 if (position == renderer.getDefinitionDeletePagePosition()) {
                     renderedHTML.append(renderer.getRenderedHtml(testName));
+                    renderedHTML.append(renderer.getRenderedHtml(pageContext, testName));
                 }
             }
         } catch (Exception e) {

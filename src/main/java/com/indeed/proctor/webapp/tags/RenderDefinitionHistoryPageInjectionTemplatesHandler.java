@@ -53,6 +53,7 @@ public class RenderDefinitionHistoryPageInjectionTemplatesHandler extends TagSup
             for (final DefinitionHistoryPageRenderer renderer : rendererBeans.values()) {
                 if (position == renderer.getDefinitionHistoryPagePositionPosition()) {
                     renderedHTML.append(renderer.getRenderedHtml(testName, testDefinitionVersion));
+                    renderedHTML.append(renderer.getRenderedHtml(pageContext, testName, testDefinitionVersion));
                 }
             }
         } catch (Exception e) {
