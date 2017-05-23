@@ -59,6 +59,7 @@ public class RenderMatrixListPageInjectionTemplatesHandler extends TagSupport {
             for (final MatrixListPageRenderer renderer : rendererBeans.values()) {
                 if (position == renderer.getMatrixListPagePosition()) {
                     renderedHTML.append(renderer.getRenderedHtml(testName, testMatrixVersion, testDefinition));
+                    renderedHTML.append(renderer.getRenderedHtml(pageContext, testName, testMatrixVersion, testDefinition));
                 }
             }
         } catch (Exception e) {

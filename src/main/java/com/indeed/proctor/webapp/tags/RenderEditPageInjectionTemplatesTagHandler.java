@@ -57,6 +57,7 @@ public class RenderEditPageInjectionTemplatesTagHandler extends TagSupport {
             for (final EditPageRenderer renderer : rendererBeans.values()) {
                 if (position == renderer.getEditPagePosition()) {
                     renderedHTML.append(renderer.getRenderedHtml(testName, testDefinitionJson, isCreate));
+                    renderedHTML.append(renderer.getRenderedHtml(pageContext, testName, testDefinitionJson, isCreate));
                 }
             }
         } catch (Exception e) {

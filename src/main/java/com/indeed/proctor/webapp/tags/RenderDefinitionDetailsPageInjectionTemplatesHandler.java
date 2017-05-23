@@ -53,6 +53,7 @@ public class RenderDefinitionDetailsPageInjectionTemplatesHandler extends TagSup
             for (final DefinitionDetailsPageRenderer renderer : rendererBeans.values()) {
                 if (position == renderer.getDefinitionDetailsPagePosition()) {
                     renderedHTML.append(renderer.getRenderedHtml(testName, testDefinition));
+                    renderedHTML.append(renderer.getRenderedHtml(pageContext, testName, testDefinition));
                 }
             }
         } catch (Exception e) {
