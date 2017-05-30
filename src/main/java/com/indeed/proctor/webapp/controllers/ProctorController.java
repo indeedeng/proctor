@@ -124,11 +124,9 @@ public class ProctorController extends AbstractController {
             emptyClients &= specificationSource.loadAllSpecifications(environment).keySet().isEmpty();
         }
         model.addAttribute("emptyClients", emptyClients);
-
-        final String artifactForView = getArtifactForView(model, which, View.MATRIX_LIST);
         model.addAttribute("testsPerPage", testsPerPage);
         model.addAttribute("page", page);
-        return artifactForView;
+        return getArtifactForView(model, which, View.MATRIX_LIST);
     }
 
     @RequestMapping(value="/matrix/raw", method=RequestMethod.GET)

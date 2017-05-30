@@ -11,6 +11,7 @@
 <%@ attribute name="session" required="false" type="com.indeed.proctor.webapp.model.SessionViewModel" %>
 <%@ attribute name="branch" required="false" type="com.indeed.proctor.webapp.db.Environment" %>
 <%@ attribute name="emptyClients" required="false" type="java.lang.Boolean" %>
+<%@ attribute name="extraCssId" required="false" type="java.lang.String" rtexprvalue="true" %>
 <!DOCTYPE html>
 
 <!-- paulirish.com/2008/conditional-stylesheets-vs-css-hacks-answer-neither/ -->
@@ -62,7 +63,7 @@
             </ul>
         </div>
         <div class="inner row">
-            <div class="bd">
+            <div class="bd" id="${extraCssId}">
                 <jsp:doBody/>
             </div>
 

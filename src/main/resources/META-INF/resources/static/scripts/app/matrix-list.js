@@ -27,7 +27,6 @@ indeed.proctor.app.matrix.list.start = function(matrix) {
     goog.array.forEach(tabs, function(tab) {
       var uiTab = new indeed.foundation.Tabs(tab);
     });
-    console.log("list.start");
     new indeed.proctor.filter.Pager(matrix);
   });
 };

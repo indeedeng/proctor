@@ -153,3 +153,15 @@ table.line-wrap td { word-wrap: break-word; }
 #pager-container {
     float: right;
 }
+
+#matrix-list-container {
+    overflow: visible;
+}
+
+#filter-container {
+    background: white;
+    z-index: 10;
+    position: -webkit-sticky; /* Safari */
+    position: sticky;
+    top: 0;
+}

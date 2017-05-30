@@ -29,7 +29,7 @@ indeed.proctor.filter.Filter = function (models, container, refreshCallback) {
       this.refreshCallback(0);
     }, this));
     goog.events.listen(this.textNode, goog.events.EventType.INPUT, function(){
-        delay.start(400);
+        delay.start(100);
     });
     goog.events.listen(this.filterTypeNode, goog.events.EventType.CHANGE, function(){
         delay.start(100);
@@ -75,9 +75,6 @@ indeed.proctor.filter.Filter.prototype.filter = function (text, key, active) {
         model.excluded = !matched;
         if (matched) {
             numMatched++;
-            //model.dom.style.display = "";
-        } else {
-            //model.dom.style.display = "none";
         }
     });
     goog.dom.setTextContent(this.numMatchedNode, numMatched);
@@ -85,7 +82,7 @@ indeed.proctor.filter.Filter.prototype.filter = function (text, key, active) {
 
 indeed.proctor.filter.Filter.prototype.addModels = function (models) {
     models.forEach(function(model){
-      model.texts = this.getTexts(model.testName, model.definition);
+        model.texts = this.getTexts(model.testName, model.definition);
     }, this);
 };
 

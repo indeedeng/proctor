@@ -13,7 +13,7 @@
 <%--@elvariable id="testsPerPage" type="java.lang.Integer"--%>
 <%--@elvariable id="page" type="java.lang.Integer"--%>
 <c:set var="testMatrix" value="${testMatrixVersion.testMatrixDefinition}"/>
-<layout:base title="Proctor - current test matrix" session="${session}">
+<layout:base title="Proctor - current test matrix" session="${session}" extraCssId="matrix-list-container">
     <h2>${branch.name} test matrix</h2>
     <div id="filter-container">
         <ui:grid-row>
@@ -71,14 +71,14 @@
         <c:forEach items="${testMatrix.tests}" var="test" varStatus="status">
             <c:set var="testDefinition" value="${test.value}"/>
             <div class="panel radius" data-updated="${updatedTimeMap.get(test.key)}" ${page * testsPerPage <= status.index && status.index < ((page + 1) * testsPerPage) ? "" : "style=\"display:none;\""}>
-                    <%-- todo move the data-updated attribute to the ui-test-definition to make it a bit more semantic --%>
+                <%-- todo move the data-updated attribute to the ui-test-definition to make it a bit more semantic --%>
                 <ui:grid-row extraCssClass="ui-test-definition">
                     <ui:grid-columns width="three">
                         <h6 class="mtn"><a class="ui-test-name" href="/proctor/definition/${proctor:urlencode(test.key)}?branch=${proctor:urlencode(branch.name)}">${fn:escapeXml(test.key)}</a></h6>
                         <ul class="button-group radius">
                             <li><a class="tiny button secondary radius" href="/proctor/definition/${proctor:urlencode(test.key)}/edit?branch=${proctor:urlencode(branch.name)}">edit</a>
                             </li>
-                                <%--<li><a class="tiny button secondary radius" href="/proctor/definition/${test.key}/history">history</a></li>--%>
+                            <%--<li><a class="tiny button secondary radius" href="/proctor/definition/${test.key}/history">history</a></li>--%>
                             <li><a class="tiny button secondary radius" href="/proctor/definition/${proctor:urlencode(test.key)}?branch=${proctor:urlencode(branch.name)}">details</a>
                             </li>
                         </ul>

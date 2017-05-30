@@ -26,35 +26,40 @@ indeed.proctor.filter.Pager = function (matrix) {
   new indeed.proctor.filter.Sorter(this.models, filterContainer, testContainer, goog.bind(this.refreshPager, this));
   this.matchedTestLength = this.models.length;
 
-  goog.events.listen(this.prevButton, goog.events.EventType.CLICK, goog.bind(function(){
+  goog.events.listen(this.prevButton, goog.events.EventType.CLICK, goog.bind(function () {
     this.refreshPager(this.currentPage - 1);
   }, this));
-  goog.events.listen(this.nextButton, goog.events.EventType.CLICK, goog.bind(function(){
+  goog.events.listen(this.nextButton, goog.events.EventType.CLICK, goog.bind(function () {
     this.refreshPager(this.currentPage + 1);
   }, this));
 };
 
 indeed.proctor.filter.Pager.prototype.refreshPager = function (page) {
   if (page != null) {
-    this.currentPage = Math.min(Math.max(0, page), Math.ceil(this.matchedTestLength / this.testsPerPage));
+    var oldPage = this.currentPage;
+    this.currentPage = Math.max(0, Math.min(page, Math.ceil(this.matchedTestLength / this.testsPerPage) - 1));
   }
   var matched = 0;
   goog.array.forEach(this.models, function (model) {
     model.dom.style.display = "none";
     if (!model.excluded) {
-      if(this.testsPerPage * this.currentPage <= matched && matched < this.testsPerPage * (this.currentPage + 1)) {
+      if (this.testsPerPage * this.currentPage <= matched && matched < this.testsPerPage * (this.currentPage + 1)) {
         model.dom.style.display = "";
       }
-      matched ++;
+      matched++;
     }
   }, this);
   this.matchedTestLength = matched;
   goog.dom.setTextContent(this.currentPageText, this.currentPage + 1);
   goog.dom.setTextContent(this.pageNumText, Math.ceil(this.matchedTestLength / this.testsPerPage));
+
+  if (oldPage != this.currentPage) {
+    window.scrollTo(0, 0);
+  }
 };
 
 indeed.proctor.filter.Pager.prototype.createModels = function (matrix, testContainer) {
-  return goog.array.map(testContainer.querySelectorAll('.ui-test-definition'), function(testDefinitionNode){
+  return goog.array.map(testContainer.querySelectorAll('.ui-test-definition'), function (testDefinitionNode) {
     var testName = goog.dom.getTextContent(testDefinitionNode.querySelector(".mtn"));
     var definition = matrix.tests[testName];
     return {
