@@ -11,9 +11,8 @@
 <%--@elvariable id="testMatrixDefinition" type="java.lang.String"--%>
 <%--@elvariable id="branch" type="com.indeed.proctor.webapp.db.Environment"--%>
 <%--@elvariable id="testsPerPage" type="java.lang.Integer"--%>
-<%--@elvariable id="page" type="java.lang.Integer"--%>
 <c:set var="testMatrix" value="${testMatrixVersion.testMatrixDefinition}"/>
-<layout:base title="Proctor - current test matrix" session="${session}" extraCssId="matrix-list-container">
+<layout:base title="Proctor - current test matrix" session="${session}">
     <h2>${branch.name} test matrix</h2>
     <div id="filter-container">
         <ui:grid-row>
@@ -63,7 +62,7 @@
         </ui:grid-row>
     </div>
 
-    <div id="test-container" data-tests-per-page="${testsPerPage}" data-page="${page}">
+    <div id="test-container" data-tests-per-page="${testsPerPage}">
         <c:forEach items="${testMatrix.tests}" var="test" varStatus="status">
             <c:set var="testDefinition" value="${test.value}"/>
             <div class="panel radius" data-updated="${updatedTimeMap.get(test.key)}" ${page * testsPerPage <= status.index && status.index < ((page + 1) * testsPerPage) ? "" : "style=\"display:none;\""}>

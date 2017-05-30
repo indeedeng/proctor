@@ -25,8 +25,9 @@ indeed.proctor.filter.Filter = function (models, container, updateCallback) {
 
     this.updateCallback = updateCallback;
     var delay = new goog.async.Delay(goog.bind(function() {
-      this.refreshFilter();
-      this.updateCallback(0);
+      if(this.refreshFilter()) {
+        this.updateCallback();
+      }
     }, this));
     goog.events.listen(this.textNode, goog.events.EventType.INPUT, function(){
         delay.start(100);
@@ -47,12 +48,12 @@ indeed.proctor.filter.Filter.prototype.refreshFilter = function () {
             active = radio.value;
         }
     }
-    this.filter(this.textNode.value, this.filterTypeNode.value, active);
+    return this.filter(this.textNode.value, this.filterTypeNode.value, active);
 };
 indeed.proctor.filter.Filter.prototype.filter = function (text, key, active) {
     var texts = text.toLowerCase().split(" ");
     var numMatched = 0;
-
+    var updated = false;
     goog.array.forEach(this.models, function (model) {
         var matched = goog.array.every(texts, function (text) {
             return model.texts[key].indexOf(text) >= 0;
@@ -72,12 +73,15 @@ indeed.proctor.filter.Filter.prototype.filter = function (text, key, active) {
                 });
             }
         }
+
+        updated |= model.excluded != !matched;
         model.excluded = !matched;
         if (matched) {
             numMatched++;
         }
     });
     goog.dom.setTextContent(this.numMatchedNode, numMatched);
+    return updated;
 };
 
 indeed.proctor.filter.Filter.prototype.addModels = function (models) {

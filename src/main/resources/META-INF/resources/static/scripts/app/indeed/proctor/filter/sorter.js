@@ -28,7 +28,7 @@ indeed.proctor.filter.Sorter = function (models, filterContainer, testContainer,
     this.updateCallback = updateCallback;
     goog.events.listen(this.sortedByNode, goog.events.EventType.CHANGE, goog.bind(function(){
         this.refreshOrder();
-        this.updateCallback(0);
+        this.updateCallback();
     }, this));
 
     this.sortWithDefaultOrder();
@@ -36,7 +36,6 @@ indeed.proctor.filter.Sorter = function (models, filterContainer, testContainer,
 
 indeed.proctor.filter.Sorter.prototype.sortWithDefaultOrder = function() {
     this.refreshOrder();
-    this.updateCallback();
 };
 
 indeed.proctor.filter.Sorter.prototype.options = [
