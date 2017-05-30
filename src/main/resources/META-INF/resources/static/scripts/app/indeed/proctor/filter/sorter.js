@@ -4,7 +4,15 @@ goog.require("goog.dom.dataset");
 goog.require("goog.format");
 goog.require('indeed.proctor.filter.Favorites');
 
-indeed.proctor.filter.Sorter = function (models, filterContainer, testContainer, refreshCallback) {
+/**
+ * Sorter controller for detecting form changes and sorting models
+ * @param models parent models that contains test name and definition
+ * @param filterContainer container for filter form
+ * @param testContainer container for test form
+ * @param updateCallback callback called after any sorting
+ * @constructor
+ */
+indeed.proctor.filter.Sorter = function (models, filterContainer, testContainer, updateCallback) {
     this.testContainer = testContainer;
     this.favorites = new indeed.proctor.filter.Favorites(testContainer);
     this.sortedByNode = filterContainer.querySelector(".js-filter-sorted-by");
@@ -17,10 +25,10 @@ indeed.proctor.filter.Sorter = function (models, filterContainer, testContainer,
             goog.dom.createDom(goog.dom.TagName.OPTION, {"value": index}, x.name));
     }, this));
 
-    this.refreshCallback = refreshCallback;
+    this.updateCallback = updateCallback;
     goog.events.listen(this.sortedByNode, goog.events.EventType.CHANGE, goog.bind(function(){
         this.refreshOrder();
-        this.refreshCallback(0);
+        this.updateCallback(0);
     }, this));
 
     this.sortWithDefaultOrder();
@@ -28,7 +36,7 @@ indeed.proctor.filter.Sorter = function (models, filterContainer, testContainer,
 
 indeed.proctor.filter.Sorter.prototype.sortWithDefaultOrder = function() {
     this.refreshOrder();
-    this.refreshCallback();
+    this.updateCallback();
 };
 
 indeed.proctor.filter.Sorter.prototype.options = [
@@ -66,13 +74,10 @@ indeed.proctor.filter.Sorter.prototype.refreshOrder = function () {
     });
 };
 
-indeed.proctor.filter.Sorter.prototype.getRelevancyRank = function (testName) {
-    return this.favorites.refresh().rankOf(testName);
-};
-
 indeed.proctor.filter.Sorter.prototype.addModels = function (models) {
+  this.favorites.refresh();
     models.forEach(function(model){
         model.updated = goog.dom.dataset.get(model.dom, "updated");
-        model.relevancyRank = this.getRelevancyRank(model.testName);
+        model.relevancyRank = this.favorites.rankOf(model.testName);
     }, this);
 };

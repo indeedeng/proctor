@@ -35,7 +35,7 @@
                 </label>
             </ui:grid-columns>
         </ui:grid-row>
-        <ui:grid-row extraCssClass="pager-row">
+        <ui:grid-row>
             <ui:grid-columns width="eight">
                 <div class="js-filter-active">
                     <label>
@@ -58,16 +58,12 @@
                 </p>
             </ui:grid-columns>
             <ui:grid-columns width="three" extraCssClass="pager-column">
-                <div id="pager-container" data-tests-per-page="${testsPerPage}" data-page="${page}">
-                    <a class="pager-prev tiny button secondary radius" href="javascript:void(0)">Prev</a>
-                    <span class="pager-current-page">-</span> / <span class="pager-page-num">-</span>
-                    <a class="pager-next tiny button secondary radius" href="javascript:void(0)">Next</a>
-                </div>
+                <ui:pager-controller />
             </ui:grid-columns>
         </ui:grid-row>
     </div>
 
-    <div id="test-container">
+    <div id="test-container" data-tests-per-page="${testsPerPage}" data-page="${page}">
         <c:forEach items="${testMatrix.tests}" var="test" varStatus="status">
             <c:set var="testDefinition" value="${test.value}"/>
             <div class="panel radius" data-updated="${updatedTimeMap.get(test.key)}" ${page * testsPerPage <= status.index && status.index < ((page + 1) * testsPerPage) ? "" : "style=\"display:none;\""}>
@@ -109,7 +105,9 @@
             </div>
         </c:forEach>
     </div>
-
+    <div class="pager-column">
+        <ui:pager-controller />
+    </div>
     <layout:javascript
             useCompiledJavascript="${session.useCompiledJavaScript}"
             compiledJavascriptSrc="/static/scripts/app/matrix-list-compiled.js"

@@ -6,10 +6,10 @@ goog.require('goog.async.Delay');
  * Filter controller for detecting form changes and filtering DOM
  * @param models parent models that contains test name and definition
  * @param container container for filter form
- * @param refreshCallback callback for when refreshing needed
+ * @param updateCallback callback called after any filtering
  * @constructor
  */
-indeed.proctor.filter.Filter = function (models, container, refreshCallback) {
+indeed.proctor.filter.Filter = function (models, container, updateCallback) {
     this.textNode = container.querySelector(".js-filter-text");
     this.filterTypeNode = container.querySelector(".js-filter-type");
     this.filterActiveNode = container.querySelector(".js-filter-active");
@@ -23,10 +23,10 @@ indeed.proctor.filter.Filter = function (models, container, refreshCallback) {
     goog.dom.setTextContent(this.numAllNode, this.models.length);
     this.textNode.focus();
 
-    this.refreshCallback = refreshCallback;
+    this.updateCallback = updateCallback;
     var delay = new goog.async.Delay(goog.bind(function() {
       this.refreshFilter();
-      this.refreshCallback(0);
+      this.updateCallback(0);
     }, this));
     goog.events.listen(this.textNode, goog.events.EventType.INPUT, function(){
         delay.start(100);

@@ -141,27 +141,6 @@ table.line-wrap td { word-wrap: break-word; }
     text-align: right;
 }
 
-.pager-row {
-    position: relative;
-}
 .pager-column {
-    position: absolute;
-    bottom: 20px;
-    right: 0;
-}
-
-#pager-container {
     float: right;
-}
-
-#matrix-list-container {
-    overflow: visible;
-}
-
-#filter-container {
-    background: white;
-    z-index: 10;
-    position: -webkit-sticky; /* Safari */
-    position: sticky;
-    top: 0;
 }
