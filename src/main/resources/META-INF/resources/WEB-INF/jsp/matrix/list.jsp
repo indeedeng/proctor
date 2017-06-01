@@ -65,7 +65,7 @@
     <div id="test-container" data-tests-per-page="${testsPerPage}">
         <c:forEach items="${testMatrix.tests}" var="test" varStatus="status">
             <c:set var="testDefinition" value="${test.value}"/>
-            <div class="panel radius" data-updated="${updatedTimeMap.get(test.key)}" ${page * testsPerPage <= status.index && status.index < ((page + 1) * testsPerPage) ? "" : "style=\"display:none;\""}>
+            <div class="panel radius" data-updated="${updatedTimeMap.get(test.key)}" style="display:none;">
                 <%-- todo move the data-updated attribute to the ui-test-definition to make it a bit more semantic --%>
                 <ui:grid-row extraCssClass="ui-test-definition">
                     <ui:grid-columns width="three">

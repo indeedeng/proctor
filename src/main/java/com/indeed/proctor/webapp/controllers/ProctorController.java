@@ -115,7 +115,7 @@ public class ProctorController extends AbstractController {
     @RequestMapping(value="/", method=RequestMethod.GET)
     public String viewTestMatrix(final String branch,
                                  final Model model,
-                                 @RequestParam(value="testsPerPage", defaultValue="50") final Integer testsPerPage) {
+                                 @RequestParam(defaultValue="50") final Integer testsPerPage) {
         final Environment which = determineEnvironmentFromParameter(branch);
 
         boolean emptyClients = true;

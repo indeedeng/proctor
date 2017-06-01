@@ -74,7 +74,7 @@ indeed.proctor.filter.Sorter.prototype.refreshOrder = function () {
 };
 
 indeed.proctor.filter.Sorter.prototype.addModels = function (models) {
-  this.favorites.refresh();
+    this.favorites.refresh();
     models.forEach(function(model){
         model.updated = goog.dom.dataset.get(model.dom, "updated");
         model.relevancyRank = this.favorites.rankOf(model.testName);

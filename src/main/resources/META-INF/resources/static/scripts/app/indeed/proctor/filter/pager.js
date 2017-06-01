@@ -14,7 +14,7 @@ indeed.proctor.filter.Pager = function (matrix) {
 
   this.numMatchedNode = filterContainer.querySelector(".js-filter-num-matched");
   this.pagerControllers = goog.dom.getElementsByClass("pager-controller");
-  this.testsPerPage = +testContainer.getAttribute("data-tests-per-page");
+  this.testsPerPage = Number(testContainer.getAttribute("data-tests-per-page"));
   this.models = this.createModels(matrix, testContainer);
 
   new indeed.proctor.filter.Filter(this.models, filterContainer, goog.bind(this.resetPage, this));
