@@ -141,6 +141,11 @@ table.line-wrap td { word-wrap: break-word; }
     text-align: right;
 }
 
-.pager-column {
-    float: right;
+.filter-stats {
+    margin-bottom: 10px;
+}
+
+.pager-container {
+    text-align: center;
+    margin-bottom: 15px;
 }

@@ -50,6 +50,25 @@ indeed.proctor.filter.Pager.prototype.updateControllers = function (pagerControl
     var pageNumText = controller.querySelector(".pager-page-num");
     goog.dom.setTextContent(currentPageText, this.currentPage + 1);
     goog.dom.setTextContent(pageNumText, Math.ceil(this.getNumMatchedTest() / this.testsPerPage));
+
+    if (this.getNumMatchedTest() <= this.testsPerPage) {
+      controller.style.display = "none";
+    } else {
+      controller.style.display = "";
+    }
+
+    var prevButton = controller.querySelector(".pager-prev");
+    var nextButton = controller.querySelector(".pager-next");
+    if (this.adjustPage(this.currentPage - 1) != this.currentPage - 1) {
+      prevButton.setAttribute("disabled", 1);
+    } else {
+      prevButton.removeAttribute("disabled");
+    }
+    if (this.adjustPage(this.currentPage + 1) != this.currentPage + 1) {
+      nextButton.setAttribute("disabled", 1);
+    } else {
+      nextButton.removeAttribute("disabled");
+    }
   }, this);
 };
 

@@ -34,34 +34,26 @@
                 </label>
             </ui:grid-columns>
         </ui:grid-row>
-        <ui:grid-row>
-            <ui:grid-columns width="eight">
-                <div class="js-filter-active">
-                    <label>
-                        <input type="radio" name="filterActive" value="all" checked>
-                        All
-                    </label>
-                    <label>
-                        <input type="radio" name="filterActive" value="active">
-                        <span>Active: Some allocations are occupied by multiple buckets</span>
-                    </label>
-                    <label>
-                        <input type="radio" name="filterActive" value="inactive">
-                        <span>Inactive: All allocations are occupied by 100% buckets</span>
-                    </label>
-                </div>
-                <p>
-                    Showing <span class="js-filter-num-matched">-</span> / <span class="js-filter-num-all">-</span>
-                    tests
-                    ordered by <select class="js-filter-sorted-by"></select>
-                </p>
-            </ui:grid-columns>
-            <ui:grid-columns width="three" extraCssClass="pager-column">
-                <ui:pager-controller />
-            </ui:grid-columns>
-        </ui:grid-row>
+        <div class="js-filter-active">
+            <label>
+                <input type="radio" name="filterActive" value="all" checked>
+                All
+            </label>
+            <label>
+                <input type="radio" name="filterActive" value="active">
+                <span>Active: Some allocations are occupied by multiple buckets</span>
+            </label>
+            <label>
+                <input type="radio" name="filterActive" value="inactive">
+                <span>Inactive: All allocations are occupied by 100% buckets</span>
+            </label>
+        </div>
+        <p class="filter-stats">
+            Showing <span class="js-filter-num-matched">-</span> / <span class="js-filter-num-all">-</span> tests
+            ordered by <select class="js-filter-sorted-by"></select>
+        </p>
     </div>
-
+    <ui:pager-controller extraCssClass="pager-container"/>
     <div id="test-container" data-tests-per-page="${testsPerPage}">
         <c:forEach items="${testMatrix.tests}" var="test" varStatus="status">
             <c:set var="testDefinition" value="${test.value}"/>
@@ -104,9 +96,7 @@
             </div>
         </c:forEach>
     </div>
-    <div class="pager-column">
-        <ui:pager-controller />
-    </div>
+    <ui:pager-controller extraCssClass="pager-container"/>
     <layout:javascript
             useCompiledJavascript="${session.useCompiledJavaScript}"
             compiledJavascriptSrc="/static/scripts/app/matrix-list-compiled.js"
