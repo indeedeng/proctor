@@ -54,6 +54,7 @@
         </p>
     </div>
     <ui:pager-controller extraCssClass="pager-container"/>
+    <ui:pager-messenger />
     <div id="test-container" data-tests-per-page="${testsPerPage}">
         <c:forEach items="${testMatrix.tests}" var="test" varStatus="status">
             <c:set var="testDefinition" value="${test.value}"/>

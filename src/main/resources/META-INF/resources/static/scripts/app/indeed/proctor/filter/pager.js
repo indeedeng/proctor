@@ -14,6 +14,7 @@ indeed.proctor.filter.Pager = function (matrix) {
 
   this.numMatchedNode = filterContainer.querySelector(".js-filter-num-matched");
   this.pagerControllers = goog.dom.getElementsByClass("pager-controller");
+  this.pagerMessengers = goog.dom.getElementsByClass("pager-messenger");
   this.testsPerPage = Number(testContainer.getAttribute("data-tests-per-page"));
   this.models = this.createModels(matrix, testContainer);
 
@@ -44,8 +45,8 @@ indeed.proctor.filter.Pager.prototype.registerControllers = function (pagerContr
   }, this));
 };
 
-indeed.proctor.filter.Pager.prototype.updateControllers = function (pagerControllers) {
-  goog.array.forEach(pagerControllers, function (controller) {
+indeed.proctor.filter.Pager.prototype.updateControllers = function () {
+  goog.array.forEach(this.pagerControllers, function (controller) {
     var currentPageText = controller.querySelector(".pager-current-page");
     var pageNumText = controller.querySelector(".pager-page-num");
     goog.dom.setTextContent(currentPageText, this.currentPage + 1);
@@ -70,6 +71,11 @@ indeed.proctor.filter.Pager.prototype.updateControllers = function (pagerControl
       nextButton.removeAttribute("disabled");
     }
   }, this);
+
+  goog.array.forEach(this.pagerMessengers, function (messenger) {
+    var noResultMessage = messenger.querySelector(".pager-message-no-result");
+    noResultMessage.style.display = (this.getNumMatchedTest() == 0) ? "" : "none";
+  }, this);
 };
 
 /**
@@ -89,7 +95,7 @@ indeed.proctor.filter.Pager.prototype.updatePager = function () {
     }
   }, this);
 
-  this.updateControllers(this.pagerControllers);
+  this.updateControllers();
   if (oldPage != this.currentPage) {
     this.scrollToTop();
   }

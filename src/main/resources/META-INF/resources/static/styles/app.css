@@ -149,3 +149,16 @@ table.line-wrap td { word-wrap: break-word; }
     text-align: center;
     margin-bottom: 15px;
 }
+
+.pager-current-page, .pager-page-num {
+    font-size: 17px;
+}
+
+.pager-messenger {
+    text-align: center;
+}
+
+.pager-controller-text {
+    display: inline-block;
+    vertical-align: middle;
+}
