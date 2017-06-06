@@ -83,6 +83,22 @@
                 "validator":"${anarray[0]+adouble>0}"
             }
         },
+        "payloadonly_maptype": {
+            "payloadOnly": true,
+            "payload": {
+                "type": "map",
+                "schema": {
+                    "astring" : "stringValue",
+                    "adouble" : "doubleValue"
+                }
+            }
+        },
+        "payloadonly_doubletype": {
+            "payloadOnly": true,
+            "payload": {
+                "type": "doubleValue"
+            }
+        },
         "payloaded_excluded" : {
             "buckets" : {
                 "inactive": -1,
