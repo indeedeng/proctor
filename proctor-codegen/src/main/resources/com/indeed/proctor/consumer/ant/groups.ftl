@@ -136,11 +136,11 @@ public class ${mainClassName} extends AbstractGroups {
     <#if (testDef.payloadJavaClass)??>
     <#if (testDef.isMap)??>
     public @Nullable ${mainClassName}Payload.${testDef.name?cap_first} get${testDef.javaClassName}Payload() {
-        final @Nullable TestBucket bucket = getTestBucketForBucket(${testEnumName}.${testDef.enumName}.getName()<#if testDef.buckets?has_content>, ${testDef.javaClassName}.getFallback()</#if>);
-        if (bucket == null) {
+        final @Nullable Payload payload = getPayload(${testEnumName}.${testDef.enumName}.getName()<#if testDef.buckets?has_content>, ${testDef.javaClassName}.getFallback()</#if>);
+        if (payload == null) {
             return null;
         }
-        return new ${mainClassName}Payload.${testDef.name?cap_first}(bucket);
+        return new ${mainClassName}Payload.${testDef.name?cap_first}(payload);
     }
 
     <#if testDef.buckets?has_content>

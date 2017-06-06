@@ -1,10 +1,10 @@
 package ${packageName};
 
+import com.indeed.proctor.common.model.Payload;
 import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.consumer.AbstractGroupsPayload;
 
 import javax.annotation.Nullable;
-import javax.annotation.Nonnull;
 
 /*
 * GENERATED source; do not edit directly
@@ -19,9 +19,14 @@ public final class ${mainClassName} {
         <#list testDef.nestedPayloadsList as nestedPayloadsMap>
         private final ${nestedPayloadsMap.value} ${nestedPayloadsMap.key};
         </#list>
-        public ${testDef.name?cap_first} (@Nullable TestBucket bucket) {
+
+        public ${testDef.name?cap_first}(@Nullable TestBucket bucket) {
+            this(bucket != null ? bucket.getPayload() : null);
+        }
+
+        public ${testDef.name?cap_first}(@Nullable Payload payload) {
             <#list testDef.nestedPayloadsList as nestedPayloadsMap>
-            this.${nestedPayloadsMap.key} = super.convertTo${nestedPayloadsMap.payloadTypeName?cap_first}(bucket, "${nestedPayloadsMap.key}");
+            this.${nestedPayloadsMap.key} = super.convertTo${nestedPayloadsMap.payloadTypeName?cap_first}(payload, "${nestedPayloadsMap.key}");
             </#list>
         }
 

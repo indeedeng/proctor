@@ -1,52 +1,51 @@
 package com.indeed.proctor.consumer;
 
 
-import com.indeed.proctor.common.model.TestBucket;
+import com.indeed.proctor.common.model.Payload;
 
 import java.util.ArrayList;
 
 public abstract class AbstractGroupsPayload {
 
-
-    protected String convertToStringValue(final TestBucket bucket, final String payloadMapKey) throws IllegalArgumentException {
-        checkBucketAndPayloadExist(bucket, payloadMapKey);
-        return (String)bucket.getPayload().getMap().get(payloadMapKey);
+    protected String convertToStringValue(final Payload payload, final String payloadMapKey) throws IllegalArgumentException {
+        checkPayloadExist(payload, payloadMapKey);
+        return (String) payload.getMap().get(payloadMapKey);
     }
 
-    protected Long convertToLongValue(final TestBucket bucket, final String payloadMapKey) throws IllegalArgumentException {
-        checkBucketAndPayloadExist(bucket, payloadMapKey);
-        return (Long)bucket.getPayload().getMap().get(payloadMapKey);
+    protected Long convertToLongValue(final Payload payload, final String payloadMapKey) throws IllegalArgumentException {
+        checkPayloadExist(payload, payloadMapKey);
+        return (Long) payload.getMap().get(payloadMapKey);
     }
 
-    protected Double convertToDoubleValue(final TestBucket bucket, final String payloadMapKey) throws IllegalArgumentException {
-        checkBucketAndPayloadExist(bucket, payloadMapKey);
-        return (Double)bucket.getPayload().getMap().get(payloadMapKey);
+    protected Double convertToDoubleValue(final Payload payload, final String payloadMapKey) throws IllegalArgumentException {
+        checkPayloadExist(payload, payloadMapKey);
+        return (Double) payload.getMap().get(payloadMapKey);
     }
 
-    protected String[] convertToStringArray(final TestBucket bucket, final String payloadMapKey) throws IllegalArgumentException {
-        checkBucketAndPayloadExist(bucket, payloadMapKey);
-        final Object[] toConvert = ((ArrayList)bucket.getPayload().getMap().get(payloadMapKey)).toArray();
+    protected String[] convertToStringArray(final Payload payload, final String payloadMapKey) throws IllegalArgumentException {
+        checkPayloadExist(payload, payloadMapKey);
+        final Object[] toConvert = ((ArrayList) payload.getMap().get(payloadMapKey)).toArray();
         return convertObjectArrToStringArr(toConvert);
     }
 
-    protected Long[] convertToLongArray(final TestBucket bucket, final String payloadMapKey) throws IllegalArgumentException {
-        checkBucketAndPayloadExist(bucket, payloadMapKey);
-        final Object[] toConvert = ((ArrayList)bucket.getPayload().getMap().get(payloadMapKey)).toArray();
+    protected Long[] convertToLongArray(final Payload payload, final String payloadMapKey) throws IllegalArgumentException {
+        checkPayloadExist(payload, payloadMapKey);
+        final Object[] toConvert = ((ArrayList) payload.getMap().get(payloadMapKey)).toArray();
         return convertObjectArrToLongArr(toConvert);
     }
 
-    protected Double[] convertToDoubleArray(final TestBucket bucket, final String payloadMapKey) throws IllegalArgumentException {
-        checkBucketAndPayloadExist(bucket, payloadMapKey);
-        final Object[] toConvert = ((ArrayList)bucket.getPayload().getMap().get(payloadMapKey)).toArray();
+    protected Double[] convertToDoubleArray(final Payload payload, final String payloadMapKey) throws IllegalArgumentException {
+        checkPayloadExist(payload, payloadMapKey);
+        final Object[] toConvert = ((ArrayList) payload.getMap().get(payloadMapKey)).toArray();
         return convertObjectArrToDoubleArr(toConvert);
 
     }
 
-    private void checkBucketAndPayloadExist(final TestBucket bucket, final String payloadMapKey) {
-        if(bucket != null && bucket.getPayload() != null && bucket.getPayload().getMap() != null && bucket.getPayload().getMap().containsKey(payloadMapKey)) {
+    private void checkPayloadExist(final Payload payload, final String payloadMapKey) {
+        if (payload != null && payload.getMap() != null && payload.getMap().containsKey(payloadMapKey)) {
             return;
         }
-        throw new IllegalArgumentException("Missing bucket for payload constructor");
+        throw new IllegalArgumentException("Missing payload for constructor");
     }
 
     /*
