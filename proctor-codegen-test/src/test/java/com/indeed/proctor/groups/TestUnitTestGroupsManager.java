@@ -3,7 +3,6 @@ package com.indeed.proctor.groups;
 import com.google.common.base.Predicate;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableMap;
-
 import com.google.common.collect.Maps;
 import com.google.common.io.CharStreams;
 import com.indeed.proctor.SampleOuterClass.Account;
@@ -38,7 +37,6 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -389,7 +387,34 @@ public class TestUnitTestGroupsManager {
         assertArrayEquals(unitTestGroupsPayloadControl.getAnarray(), new Long[]{1L, 2L, 3L});
         assertArrayEquals(unitTestGroupsPayloadControl.getAstringarr(), new String[]{"one","two","three"});
         assertArrayEquals(unitTestGroupsPayloadControl.getAdarray(), new Double[]{1.1,2.1,3.1});
+    }
 
+    @Test
+    public void testGetMapPayloadForControlGroups() {
+        final UnitTestGroupsContext testContext = UnitTestGroupsContext.newBuilder()
+                .setLoggedIn(true)
+                .setCountry("FR")
+                .setAccount(new Account(10))
+                .build();
+
+        final String identifier = findIdentifier(TestType.USER, testContext, UnitTestGroups.Test.MAP_PAYLOAD,
+                UnitTestGroups.Map_payload.CONTROL.getValue(), 1000);
+        final Identifiers identifiers = new Identifiers(TestType.USER, identifier);
+        final ProctorResult result = testContext.getProctorResult(manager, identifiers);
+
+        final UnitTestGroups grps = new UnitTestGroups(result);
+
+        assertEquals("`control` group should be chosen by the identifier",
+                UnitTestGroups.Map_payload.CONTROL.getValue(),
+                grps.getMap_payloadValue());
+
+        // GetPayload method should return a payload of `control` group
+        final UnitTestGroupsPayload.Map_payload payload = grps.getMap_payloadPayload();
+        assertEquals(payload.getAstring(), "str2");
+        assertEquals(payload.getAdouble(), (Double) 3.1);
+        assertArrayEquals(payload.getAnarray(), new Long[]{1L, 2L, 3L});
+        assertArrayEquals(payload.getAstringarr(), new String[]{"one", "two", "three"});
+        assertArrayEquals(payload.getAdarray(), new Double[]{1.1, 2.1, 3.1});
     }
 
     @Test
@@ -411,7 +436,36 @@ public class TestUnitTestGroupsManager {
                 !providedContext.getContext().isEmpty());
     }
 
+    @Test
+    public void testPayloadOnlyMapType() {
+        final UnitTestGroupsContext testContext = UnitTestGroupsContext.newBuilder()
+                .setAccount(new Account(123))
+                .build();
+        final String identifier = findIdentifier(TestType.USER, testContext, UnitTestGroups.Test.PAYLOADONLY_MAPTYPE,
+                1, 1000);
+        final Identifiers identifiers = new Identifiers(TestType.USER, identifier);
+        final ProctorResult result = testContext.getProctorResult(manager, identifiers);
 
+        final UnitTestGroups grps = new UnitTestGroups(result);
+        assertEquals(1, grps.getPayloadonly_maptypeValue());
+        assertEquals(1.0, grps.getPayloadonly_maptypePayload().getAdouble(), 1e-6);
+        assertEquals("test", grps.getPayloadonly_maptypePayload().getAstring());
+    }
+
+    @Test
+    public void testPayloadOnlyDoubleType() {
+        final UnitTestGroupsContext testContext = UnitTestGroupsContext.newBuilder()
+                .setAccount(new Account(123))
+                .build();
+        final String identifier = findIdentifier(TestType.USER, testContext, UnitTestGroups.Test.PAYLOADONLY_DOUBLETYPE,
+                0, 1000);
+        final Identifiers identifiers = new Identifiers(TestType.USER, identifier);
+        final ProctorResult result = testContext.getProctorResult(manager, identifiers);
+
+        final UnitTestGroups grps = new UnitTestGroups(result);
+        assertEquals(0, grps.getPayloadonly_doubletypeValue());
+        assertEquals(0.0, grps.getPayloadonly_doubletypePayload(), 1e-6);
+    }
 
     private String calcBuckets(ProctorResult proctorResult) {
         final StringBuilder sb = new StringBuilder();
@@ -430,5 +484,22 @@ public class TestUnitTestGroupsManager {
             sb.append(testName).append(":").append(testBucket.getName()).append(testBucket.getValue());
         }
         return sb.toString();
+    }
+
+    private String findIdentifier(final TestType testType,
+                                  final UnitTestGroupsContext context,
+                                  final UnitTestGroups.Test test,
+                                  final int targetValue,
+                                  final int maxIteration) {
+        for (int i = 0; i < maxIteration; i++) {
+            final String identifier = String.valueOf(i);
+            final Identifiers identifiers = Identifiers.of(testType, identifier);
+            final ProctorResult result = context.getProctorResult(manager, identifiers);
+            final TestBucket bucket = result.getBuckets().get(test.getName());
+            if (bucket.getValue() == targetValue) {
+                return identifier;
+            }
+        }
+        throw new RuntimeException("identifier not found for target bucket within " + maxIteration + " iterations");
     }
 }

@@ -15,5 +15,9 @@ public class SampleOuterClass {
         public Account(final int id) {
             this.id = id;
         }
+
+        public int getId() {
+            return id;
+        }
     }
 }

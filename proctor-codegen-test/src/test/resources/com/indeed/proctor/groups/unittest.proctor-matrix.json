@@ -326,6 +326,114 @@
             ]
         },
 
+        "payloadonly_maptype": {
+            "version": 2,
+            "salt": "map",
+            "testType": "USER",
+            "description": "payload only test for map type",
+            "rule": "${account.id == 123}",
+            "buckets": [
+                {
+                    "name": "inactive",
+                    "value": -1,
+
+                    "payload": {
+                        "map" : {
+                            "astring": "inactive",
+                            "adouble": -1.0
+                        }
+                    }
+                },
+                {
+                    "name": "control",
+                    "value": 0,
+                    "payload": {
+                        "map" : {
+                            "astring": "control",
+                            "adouble": 0.0
+                        }
+                    }
+                },
+                {
+                    "name": "test",
+                    "value": 1,
+                    "payload": {
+                        "map" : {
+                            "astring": "test",
+                            "adouble": 1.0
+                        }
+                    }
+                }
+            ],
+            "allocations": [
+                {
+                    "ranges": [
+                        {
+                            "bucketValue": -1,
+                            "length": 0.2
+                        },
+                        {
+                            "bucketValue": 0,
+                            "length": 0.4
+                        },
+                        {
+                            "bucketValue": 1,
+                            "length": 0.4
+                        }
+                    ]
+                }
+            ]
+        },
+
+        "payloadonly_doubletype": {
+            "version": 2,
+            "salt": "long",
+            "testType": "USER",
+            "description": "payload only test for long type",
+            "rule": "${account.id == 123}",
+            "buckets": [
+                {
+                    "name": "inactive",
+                    "value": -1,
+                    "payload": {
+                        "doubleValue": -1.0
+                    }
+                },
+                {
+                    "name": "control",
+                    "value": 0,
+                    "payload": {
+                        "doubleValue": 0.0
+                    }
+                },
+                {
+                    "name": "test",
+                    "value": 1,
+                    "payload": {
+                        "doubleValue": 1.0
+                    }
+                }
+            ],
+            "allocations": [
+                {
+                    "ranges": [
+                        {
+                            "bucketValue": -1,
+                            "length": 0.2
+                        },
+                        {
+                            "bucketValue": 0,
+                            "length": 0.4
+                        },
+                        {
+                            "bucketValue": 1,
+                            "length": 0.4
+                        }
+                    ]
+                }
+            ]
+        },
+
         "payloaded_excluded" : {
             "version" : 1,
             "salt" : "in the cookies",
