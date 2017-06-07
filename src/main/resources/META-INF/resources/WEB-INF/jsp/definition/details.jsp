@@ -19,6 +19,8 @@
 
 <layout:base title="${testName} | Proctor" session="${session}" >
 
+    <c:choose>
+        <c:when test = "${!fn:startsWith(testName,  'Test \"')}">
     <div>
         <h2><span class="mrm">${fn:escapeXml(testName)}</span> (<a href="/proctor/definition/${proctor:urlencode(testName)}/edit">edit</a>)</h2>
         <c:if test="${!empty testDefinition.description}"><h3 class="subheader">${fn:escapeXml(testDefinition.description)}</h3></c:if>
@@ -59,6 +61,13 @@
             </li>
         </ul>
     </div>
+        </c:when>
+        <c:otherwise>
+        <div>
+            <h2><span class="mrm">${fn:escapeXml(testName)}</span></h2>
+        </div>
+        </c:otherwise>
+    </c:choose>
 
     <layout:javascript
             useCompiledJavascript="${session.useCompiledJavaScript}"

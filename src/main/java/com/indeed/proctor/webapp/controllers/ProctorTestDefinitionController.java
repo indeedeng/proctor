@@ -105,6 +105,8 @@ public class ProctorTestDefinitionController extends AbstractController {
     private static final Pattern VALID_TEST_NAME_PATTERN = ALPHA_NUMERIC_JAVA_IDENTIFIER_PATTERN;
     private static final Pattern VALID_BUCKET_NAME_PATTERN = ALPHA_NUMERIC_JAVA_IDENTIFIER_PATTERN;
 
+    private static final List<Environment> ALL_ENVIRONMNETS = Arrays.asList(Environment.WORKING, Environment.QA, Environment.PRODUCTION);
+
     private final ProctorPromoter promoter;
 
     private final ProctorSpecificationSource specificationSource;
@@ -236,13 +238,36 @@ public class ProctorTestDefinitionController extends AbstractController {
             if (definition == null) {
                 LOGGER.info("Unknown test definition : " + testName + " revision " + revision);
                 // unknown testdefinition
-                return "404";
+                if (!testExistInEnvs(getOtherEnvs(theEnvironment), testName, revision)){
+                    return "404";
+                }
+                final String errorMsg = "Test \"" + testName + "\" does not exist in " + branch + " branch! Please check other branches.";
+                return doView(theEnvironment, Views.DETAILS, errorMsg, new TestDefinition(), new ArrayList<>(), version, model);
             }
             final boolean loadAllocHistory = shouldLoadAllocationHistory(loadAllocHistParam, loadAllocHistCookie, response);
             history = makeRevisionDefinitionList(store, testName, version.getRevision(theEnvironment), loadAllocHistory);
         }
 
         return doView(theEnvironment, Views.DETAILS, testName, definition, history, version, model);
+    }
+
+    private List<Environment> getOtherEnvs(final Environment theEnvironment) {
+        final List<Environment> otherEnvs = new ArrayList<>();
+        for (final Environment env : ALL_ENVIRONMNETS) {
+            if (env != theEnvironment) {
+                otherEnvs.add(env);
+            }
+        }
+        return otherEnvs;
+    }
+
+    private boolean testExistInEnvs(final List<Environment> environments, final String testName, final String revision) {
+        for (final Environment env : environments) {
+            if (getTestDefinition(env, testName, revision) != null) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private List<RevisionDefinition> makeRevisionDefinitionList(final ProctorStore store,
@@ -1441,7 +1466,8 @@ public class ProctorTestDefinitionController extends AbstractController {
         final ProctorStore store = determineStoreFromEnvironment(environment);
         final EnvironmentVersion version = promoter.getEnvironmentVersion(testName);
         final String environmentVersion = version.getRevision(environment);
-        if (!"-1".equals(environmentVersion) && revision.equals(environmentVersion)) {
+        if (revision.isEmpty() ||
+                (!"-1".equals(environmentVersion) && revision.equals(environmentVersion))) {
             // if revision is environment latest version, fetching current environment version is more cache-friendly
             return getTestDefinition(store, testName);
         } else {
