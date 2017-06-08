@@ -37,6 +37,7 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -465,6 +466,14 @@ public class TestUnitTestGroupsManager {
         final UnitTestGroups grps = new UnitTestGroups(result);
         assertEquals(0, grps.getPayloadonly_doubletypeValue());
         assertEquals(0.0, grps.getPayloadonly_doubletypePayload(), 1e-6);
+    }
+
+    @Test
+    public void testPayloadOfEmptyTestResult() {
+        assertNull(UnitTestGroups.EMPTY.getPayloaded_verifiedPayload());
+        assertNull(UnitTestGroups.EMPTY.getMap_payloadPayload());
+        assertNull(UnitTestGroups.EMPTY.getPayloadonly_doubletypePayload());
+        assertNull(UnitTestGroups.EMPTY.getPayloadonly_maptypePayload());
     }
 
     private String calcBuckets(ProctorResult proctorResult) {
