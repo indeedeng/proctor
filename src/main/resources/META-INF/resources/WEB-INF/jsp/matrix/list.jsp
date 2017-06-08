@@ -98,6 +98,10 @@
         </c:forEach>
     </div>
     <ui:pager-controller extraCssClass="pager-container"/>
+    <form method="get" class="tests-per-page-form">
+        <input type="text" name="testsPerPage" value="${testsPerPage}" size="2" />
+        <input type="submit" class="tiny button secondary radius" value="tests / page" />
+    </form>
     <layout:javascript
             useCompiledJavascript="${session.useCompiledJavaScript}"
             compiledJavascriptSrc="/static/scripts/app/matrix-list-compiled.js"

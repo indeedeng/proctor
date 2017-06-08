@@ -162,3 +162,15 @@ table.line-wrap td { word-wrap: break-word; }
     display: inline-block;
     vertical-align: middle;
 }
+
+.tests-per-page-form {
+    text-align: right;
+}
+
+.tests-per-page-form input {
+    width: auto;
+    height: 23px;
+    display: inline;
+    vertical-align: middle;
+    margin: 0 0 0 0;
+}
