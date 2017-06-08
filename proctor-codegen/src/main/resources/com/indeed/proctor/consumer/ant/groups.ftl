@@ -136,8 +136,8 @@ public class ${mainClassName} extends AbstractGroups {
     <#if (testDef.payloadJavaClass)??>
     <#if (testDef.isMap)??>
     public @Nullable ${mainClassName}Payload.${testDef.name?cap_first} get${testDef.javaClassName}Payload() {
-        final @Nullable Payload payload = getPayload(${testEnumName}.${testDef.enumName}.getName()<#if testDef.buckets?has_content>, ${testDef.javaClassName}.getFallback()</#if>);
-        if (payload == null) {
+        final Payload payload = getPayload(${testEnumName}.${testDef.enumName}.getName()<#if testDef.buckets?has_content>, ${testDef.javaClassName}.getFallback()</#if>);
+        if (payload == null || payload.equals(Payload.EMPTY_PAYLOAD)) {
             return null;
         }
         return new ${mainClassName}Payload.${testDef.name?cap_first}(payload);
