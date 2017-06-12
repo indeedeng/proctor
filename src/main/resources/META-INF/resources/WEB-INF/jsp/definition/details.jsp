@@ -21,51 +21,51 @@
 
     <c:choose>
         <c:when test = "${!fn:startsWith(testName,  'Test \"')}">
-    <div>
-        <h2><span class="mrm">${fn:escapeXml(testName)}</span> (<a href="/proctor/definition/${proctor:urlencode(testName)}/edit">edit</a>)</h2>
-        <c:if test="${!empty testDefinition.description}"><h3 class="subheader">${fn:escapeXml(testDefinition.description)}</h3></c:if>
-    </div>
-    <div class="js-tabs-container">
-        <dl class="tabs contained">
-          <dd class="active"><a href="#tab-details">Details</a></dd>
-          <dd><a href="#tab-history">History</a></dd>
-          <dd><a href="#tab-definition">Definition</a></dd>
-          <dd><a href="#tab-spec">Specification</a></dd>
-          <dd><a href="#tab-usage">Usage</a></dd>
-          <dd><a href="#tab-delete">Delete</a></dd>
-        </dl>
+            <div>
+                <h2><span class="mrm">${fn:escapeXml(testName)}</span> (<a href="/proctor/definition/${proctor:urlencode(testName)}/edit">edit</a>)</h2>
+                <c:if test="${!empty testDefinition.description}"><h3 class="subheader">${fn:escapeXml(testDefinition.description)}</h3></c:if>
+            </div>
+            <div class="js-tabs-container">
+                <dl class="tabs contained">
+                  <dd class="active"><a href="#tab-details">Details</a></dd>
+                  <dd><a href="#tab-history">History</a></dd>
+                  <dd><a href="#tab-definition">Definition</a></dd>
+                  <dd><a href="#tab-spec">Specification</a></dd>
+                  <dd><a href="#tab-usage">Usage</a></dd>
+                  <dd><a href="#tab-delete">Delete</a></dd>
+                </dl>
 
-        <ul class="tabs-content contained">
-          <li class="active" id="tab-details">
-              <ui:definition-view testName="${testName}" definition="${testDefinition}"/>
-          </li>
-            <li id="tab-history">
-              <ui:definition-history branch="${branch}" testName="${testName}" testDefinitionHistory="${testDefinitionHistory}" version="${version}"/>
-          </li>
-          <li id="tab-definition">
-              <!-- TODO use prettified JSON library for code display -->
-              <pre class="prettify code json"><c:out value="${testDefinitionJson}" /></pre>
-          </li>
-          <li id="tab-spec">
-              <!-- TODO use prettified JSON library for code display -->
-              <pre class="prettify code json"><c:out value="${testSpecificationJson}" /></pre>
-          </li>
-          <li id="tab-usage">
-            <ui:definition-usage testName="${testName}" devApplications="${devApplications}" qaApplications="${qaApplications}" productionApplications="${productionApplications}"/>
-          </li>
-            <li id="tab-delete">
-                <ui:definition-delete-form testName="${testName}"
-                                            src="${branch.name}"
-                                            srcRevision="${testDefinitionVersion.revision}"
-                />
-            </li>
-        </ul>
-    </div>
+                <ul class="tabs-content contained">
+                  <li class="active" id="tab-details">
+                      <ui:definition-view testName="${testName}" definition="${testDefinition}"/>
+                  </li>
+                    <li id="tab-history">
+                      <ui:definition-history branch="${branch}" testName="${testName}" testDefinitionHistory="${testDefinitionHistory}" version="${version}"/>
+                  </li>
+                  <li id="tab-definition">
+                      <!-- TODO use prettified JSON library for code display -->
+                      <pre class="prettify code json"><c:out value="${testDefinitionJson}" /></pre>
+                  </li>
+                  <li id="tab-spec">
+                      <!-- TODO use prettified JSON library for code display -->
+                      <pre class="prettify code json"><c:out value="${testSpecificationJson}" /></pre>
+                  </li>
+                  <li id="tab-usage">
+                    <ui:definition-usage testName="${testName}" devApplications="${devApplications}" qaApplications="${qaApplications}" productionApplications="${productionApplications}"/>
+                  </li>
+                    <li id="tab-delete">
+                        <ui:definition-delete-form testName="${testName}"
+                                                    src="${branch.name}"
+                                                    srcRevision="${testDefinitionVersion.revision}"
+                        />
+                    </li>
+                </ul>
+            </div>
         </c:when>
         <c:otherwise>
-        <div>
-            <h2><span class="mrm">${fn:escapeXml(testName)}</span></h2>
-        </div>
+            <div>
+                <h2><span class="mrm">${fn:escapeXml(testName)}</span></h2>
+            </div>
         </c:otherwise>
     </c:choose>
 

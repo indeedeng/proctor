@@ -84,6 +84,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -104,8 +105,6 @@ public class ProctorTestDefinitionController extends AbstractController {
     private static final Pattern ALPHA_NUMERIC_JAVA_IDENTIFIER_PATTERN = Pattern.compile("^[a-z_][a-z0-9_]*$", Pattern.CASE_INSENSITIVE);
     private static final Pattern VALID_TEST_NAME_PATTERN = ALPHA_NUMERIC_JAVA_IDENTIFIER_PATTERN;
     private static final Pattern VALID_BUCKET_NAME_PATTERN = ALPHA_NUMERIC_JAVA_IDENTIFIER_PATTERN;
-
-    private static final List<Environment> ALL_ENVIRONMNETS = Arrays.asList(Environment.WORKING, Environment.QA, Environment.PRODUCTION);
 
     private final ProctorPromoter promoter;
 
@@ -238,10 +237,12 @@ public class ProctorTestDefinitionController extends AbstractController {
             if (definition == null) {
                 LOGGER.info("Unknown test definition : " + testName + " revision " + revision);
                 // unknown testdefinition
-                if (!testExistInEnvs(getOtherEnvs(theEnvironment), testName, revision)){
+                if (testNotExistsInAnyEnvs(theEnvironment, testName, revision)){
                     return "404";
                 }
-                final String errorMsg = "Test \"" + testName + "\" does not exist in " + branch + " branch! Please check other branches.";
+                final String errorMsg = "Test \"" + testName + "\" " +
+                        (revision.isEmpty() ? "" : "of revision " + revision + " ") +
+                        "does not exist in " + branch + " branch! Please check other branches.";
                 return doView(theEnvironment, Views.DETAILS, errorMsg, new TestDefinition(), new ArrayList<>(), version, model);
             }
             final boolean loadAllocHistory = shouldLoadAllocationHistory(loadAllocHistParam, loadAllocHistCookie, response);
@@ -251,23 +252,10 @@ public class ProctorTestDefinitionController extends AbstractController {
         return doView(theEnvironment, Views.DETAILS, testName, definition, history, version, model);
     }
 
-    private List<Environment> getOtherEnvs(final Environment theEnvironment) {
-        final List<Environment> otherEnvs = new ArrayList<>();
-        for (final Environment env : ALL_ENVIRONMNETS) {
-            if (env != theEnvironment) {
-                otherEnvs.add(env);
-            }
-        }
-        return otherEnvs;
-    }
-
-    private boolean testExistInEnvs(final List<Environment> environments, final String testName, final String revision) {
-        for (final Environment env : environments) {
-            if (getTestDefinition(env, testName, revision) != null) {
-                return true;
-            }
-        }
-        return false;
+    private boolean testNotExistsInAnyEnvs(final Environment theEnvironment, final String testName, final String revision) {
+        return Stream.of(Environment.values())
+                .filter(env -> !theEnvironment.equals(env))
+                .allMatch(env -> getTestDefinition(env, testName, revision) == null);
     }
 
     private List<RevisionDefinition> makeRevisionDefinitionList(final ProctorStore store,
