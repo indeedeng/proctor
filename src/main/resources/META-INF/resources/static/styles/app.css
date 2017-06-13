@@ -140,3 +140,37 @@ table.line-wrap td { word-wrap: break-word; }
 .updated-date {
     text-align: right;
 }
+
+.filter-stats {
+    margin-bottom: 10px;
+}
+
+.pager-container {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.pager-current-page, .pager-page-num {
+    font-size: 17px;
+}
+
+.pager-messenger {
+    text-align: center;
+}
+
+.pager-controller-text {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.tests-per-page-form {
+    text-align: right;
+}
+
+.tests-per-page-form input {
+    width: auto;
+    height: 23px;
+    display: inline;
+    vertical-align: middle;
+    margin: 0 0 0 0;
+}

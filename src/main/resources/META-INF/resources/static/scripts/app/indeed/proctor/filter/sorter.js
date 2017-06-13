@@ -2,41 +2,54 @@ goog.provide("indeed.proctor.filter.Sorter");
 
 goog.require("goog.dom.dataset");
 goog.require("goog.format");
+goog.require('indeed.proctor.filter.Favorites');
 
-indeed.proctor.filter.Sorter = function (filterContainer, testContainer, favorites) {
-    var sorter = this;
+/**
+ * Sorter controller for detecting form changes and sorting models
+ * @param models parent models that contains test name and definition
+ * @param filterContainer container for filter form
+ * @param testContainer container for test form
+ * @param updateCallback callback called after any sorting
+ * @constructor
+ */
+indeed.proctor.filter.Sorter = function (models, filterContainer, testContainer, updateCallback) {
     this.testContainer = testContainer;
-    this.favorites = favorites;
+    this.favorites = new indeed.proctor.filter.Favorites(testContainer);
     this.sortedByNode = filterContainer.querySelector(".js-filter-sorted-by");
+    this.models = models;
 
-    goog.array.forEach(this.options, function(x, index){
-        goog.dom.appendChild(sorter.sortedByNode,
+    this.addModels(this.models);
+
+    goog.array.forEach(this.options, goog.bind(function(x, index){
+        goog.dom.appendChild(this.sortedByNode,
             goog.dom.createDom(goog.dom.TagName.OPTION, {"value": index}, x.name));
-    });
+    }, this));
 
-    goog.events.listen(this.sortedByNode, goog.events.EventType.CHANGE, function(){
-        sorter.refreshOrder();
-    });
+    this.updateCallback = updateCallback;
+    goog.events.listen(this.sortedByNode, goog.events.EventType.CHANGE, goog.bind(function(){
+        this.refreshOrder();
+        this.updateCallback();
+    }, this));
 
-    sorter.sortWithDefaultOrder();
-}
+    this.sortWithDefaultOrder();
+};
 
 indeed.proctor.filter.Sorter.prototype.sortWithDefaultOrder = function() {
     this.refreshOrder();
-}
+};
 
 indeed.proctor.filter.Sorter.prototype.options = [
     {
         name: "favorites first",
         keyFunction: function(x){
-            var sortKey = (''+(999999999 - x.relevancyRank)).concat(x.name);
+            var sortKey = (''+(999999999 - x.relevancyRank)).concat(x.testName);
             return sortKey;
         },
         comparator: goog.array.defaultCompare
     },
     {
         name: "test name",
-        keyFunction: function(x){ return x.name; },
+        keyFunction: function(x){ return x.testName; },
         comparator: goog.array.defaultCompare
     },
     {
@@ -49,33 +62,21 @@ indeed.proctor.filter.Sorter.prototype.options = [
 indeed.proctor.filter.Sorter.prototype.refreshOrder = function () {
     var index = this.sortedByNode.value;
     var option = this.options[index];
-    var models = this.createModels();
     goog.array.sortByKey(
-        models,
+        this.models,
         option.keyFunction,
         option.comparator
     );
     var testContainer = this.testContainer;
-    goog.array.forEach(models, function(x) {
-        goog.dom.appendChild(testContainer, x.dom);
+    goog.array.forEach(this.models, function(model) {
+        goog.dom.appendChild(testContainer, model.dom);
     });
-}
+};
 
-
-
-indeed.proctor.filter.Sorter.prototype.createModels = function () {
-    var children = goog.dom.getChildren(this.testContainer);
-    var favorites = this.favorites.refresh();
-    var models = goog.array.map(children, function(child){
-        var updated = goog.dom.dataset.get(child, "updated");
-        var testName = goog.dom.getTextContent(child.querySelector(".mtn"));
-        var relevancyRank = favorites.rankOf(testName);
-        return {
-            dom: child,
-            updated: updated,
-            name: testName,
-            relevancyRank: relevancyRank
-        };
-    });
-    return models;
-}
+indeed.proctor.filter.Sorter.prototype.addModels = function (models) {
+    this.favorites.refresh();
+    models.forEach(function(model){
+        model.updated = goog.dom.dataset.get(model.dom, "updated");
+        model.relevancyRank = this.favorites.rankOf(model.testName);
+    }, this);
+};
