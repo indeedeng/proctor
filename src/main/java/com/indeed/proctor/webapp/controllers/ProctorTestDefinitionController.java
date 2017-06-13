@@ -84,6 +84,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -236,13 +237,25 @@ public class ProctorTestDefinitionController extends AbstractController {
             if (definition == null) {
                 LOGGER.info("Unknown test definition : " + testName + " revision " + revision);
                 // unknown testdefinition
-                return "404";
+                if (testNotExistsInAnyEnvs(theEnvironment, testName, revision)){
+                    return "404";
+                }
+                final String errorMsg = "Test \"" + testName + "\" " +
+                        (revision.isEmpty() ? "" : "of revision " + revision + " ") +
+                        "does not exist in " + branch + " branch! Please check other branches.";
+                return doView(theEnvironment, Views.DETAILS, errorMsg, new TestDefinition(), new ArrayList<>(), version, model);
             }
             final boolean loadAllocHistory = shouldLoadAllocationHistory(loadAllocHistParam, loadAllocHistCookie, response);
             history = makeRevisionDefinitionList(store, testName, version.getRevision(theEnvironment), loadAllocHistory);
         }
 
         return doView(theEnvironment, Views.DETAILS, testName, definition, history, version, model);
+    }
+
+    private boolean testNotExistsInAnyEnvs(final Environment theEnvironment, final String testName, final String revision) {
+        return Stream.of(Environment.values())
+                .filter(env -> !theEnvironment.equals(env))
+                .allMatch(env -> getTestDefinition(env, testName, revision) == null);
     }
 
     private List<RevisionDefinition> makeRevisionDefinitionList(final ProctorStore store,
@@ -1441,7 +1454,8 @@ public class ProctorTestDefinitionController extends AbstractController {
         final ProctorStore store = determineStoreFromEnvironment(environment);
         final EnvironmentVersion version = promoter.getEnvironmentVersion(testName);
         final String environmentVersion = version.getRevision(environment);
-        if (!"-1".equals(environmentVersion) && revision.equals(environmentVersion)) {
+        if (revision.isEmpty() ||
+                (!"-1".equals(environmentVersion) && revision.equals(environmentVersion))) {
             // if revision is environment latest version, fetching current environment version is more cache-friendly
             return getTestDefinition(store, testName);
         } else {
