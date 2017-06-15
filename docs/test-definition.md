@@ -6,45 +6,47 @@ permalink: /docs/test-definition/
 
 The test definition describes a test's buckets, allocations, eligibility rules, allocations and constants. Each test's `definition.json` file should be under revision control.
 
-```bash
-.
+<pre><code>.
 ├── test-definitions
 |   ├── your-test-name
 |       ├── definition.json
-```
+</code></pre>
 
 
 ## JSON Schema
+
 | JSON Property | Description |
 | ------------- | ----------- |
-| `testType` | The [Identifier]({{ site.baseurl }}/docs/terminology/#identifier) to use for this test |
-| `version` | the version for this test |
-| `salt` | A salt used in the hashing function used to map String identifiers to integer values. A good convention is to use the test name. Salts that start with "&" can allow you to align bucket assignments by using identical salts. |
-| `description` | description of the tests and the features impacted by this test |
-| `rule` | (optional) [eligibility rule]({{ site.baseurl }}/docs/test-rules/) for this test |
-| `constants` | (optional) collection of variables available in the `rules` for this test |
-| `buckets` | An array of `buckets` for this test |
-| `allocations` | An array of `allocations` for this test|
+| `testType` | The [Identifier]({{ site.baseurl }}/docs/terminology/#identifier) to use for this test. |
+| `version` | The version for this test. |
+| `salt` | A salt in the hashing function used to map String identifiers to integer values. A good convention is to use the test name. Salts that start with "&" allow you to align bucket assignments by using identical salts. |
+| `description` | Description of the tests and the features impacted by this test. |
+| `rule` | (Optional) [eligibility rule]({{ site.baseurl }}/docs/test-rules/) for this test. |
+| `constants` | (Optional) Collection of variables available in the `rules` for this test. |
+| `buckets` | An array of `buckets` for this test. |
+| `allocations` | An array of `allocations` for this test. |
 
-## Bucket schema
+## Bucket Schema
+
 | JSON Property | Description |
 | ------------- | ----------- |
-| `name` | human-readable name for this bucket. By convention, this is the same as the name in the application's specification. |
-| `value` | int value for this bucket. This bucket must map to a bucket value of an application's specification |
-| `description` | human-readable description for the behavior this bucket defines |
-| `payload.{payloadType}` | (optional) payload data. The `payloadType` must be consistent with the [payload.type]({{ site.baseurl }}/docs/specification/#payloads) defined in the application's specification |
+| `name` | The human-readable name for this bucket. By convention, this is the same as the name in the application's specification. |
+| `value` | The integer value for this bucket. This bucket must map to a bucket value of an application's specification. |
+| `description` | The human-readable description for the behavior this bucket defines. |
+| `payload.{payloadType}` | (Optional) Payload data. The `payloadType` must be consistent with the [payload.type]({{ site.baseurl }}/docs/specification/#payloads) defined in the application's specification. |
 
-## Allocation schema
+## Allocation Schema
+
 | JSON Property | Description |
 | ------------- | ----------- |
-| `rule` | (optional) [rule]({{ site.baseurl }}/docs/test-rules/) for this allocation |
-| `ranges` | An array of `bucketValue`, `length` pairs describing the bucket distribution |
-| `ranges[i].bucketValue` | The bucket value for this part of the distribution |
-| `ranges[i].length` | The group size, `[0, 1.0]`, for the given bucket value |
+| `rule` | (Optional) [rule]({{ site.baseurl }}/docs/test-rules/) for this allocation. |
+| `ranges` | An array of `bucketValue`, `length` pairs describing the bucket distribution. |
+| `ranges[i].bucketValue` | The bucket value for this part of the distribution. |
+| `ranges[i].length` | The group size, `[0, 1.0]`, for the given bucket value. |
 
 
 
-### Example: single allocation
+### Example: Single Allocation
 
 | Property | Value |
 | -------- | ----- |
@@ -57,17 +59,17 @@ The test definition describes a test's buckets, allocations, eligibility rules, 
 <table>
   <thead>
     <tr>
-      <th>rule</th>
-      <th>allocation</th>
+      <th>Rule</th>
+      <th>Allocation</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <td style="width:10%;"><code>Default (<code>rule = null</code>)</code></td>
       <td>
-      
+
         {% include range_allocation_table.html buckets='altcolor1 inactive altcolor2' values="0 -1 1" ranges='25 50 25' %}
-      
+
       </td>
     </tr>
   </tbody>
@@ -76,7 +78,7 @@ The test definition describes a test's buckets, allocations, eligibility rules, 
 {% gist parker/3bb0e94b9b238b48429f 1-definition.json %}
 
 
-### Example: multiple allocations with rules
+### Example: Multiple Allocations with Rules
 
 | Property | Value |
 | -------- | ----- |
@@ -89,8 +91,8 @@ The test definition describes a test's buckets, allocations, eligibility rules, 
 <table>
   <thead>
     <tr>
-      <th>rule</th>
-      <th>allocation</th>
+      <th>Rule</th>
+      <th>Allocation</th>
     </tr>
   </thead>
   <tbody>
@@ -116,4 +118,3 @@ The test definition describes a test's buckets, allocations, eligibility rules, 
 </table>
 
 {% gist parker/3bb0e94b9b238b48429f 2-definition.json %}
-

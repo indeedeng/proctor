@@ -4,22 +4,22 @@ title: Deploying
 permalink: /docs/deploying-groups/
 ---
 
-# Order of Operations (deploys)
+# Order of Operations
 
-When creating, modifying, or removing a test, the order in which your application and test matrix are deploy is important to ensure that your users continue to see an consistent experience.
+When creating, modifying, or removing a test, it's critical to deploy the changes in the order specified below. This  ensures a consistent user experience.
 
-## Creating new Test
+## Creating a Test
 
-Creating a new test requires that your test matrix be deployed before your application. Since your application is expecting the test to exist, it will throw an warning on startup if the test matrix does not include the new test definition. All users will be placed in the inactive test group until the test definition exists.
+When you create a test, you must deploy your test matrix before your application. Since your application expects the test to exist, it will issue a warning on startup if the test matrix does not include the new test definition. All users will be placed in the inactive test group until the test definition exists.
 
-## Removing a test
+## Removing a Test
 
-To remove a test, first remove the test from the proctor specification in your application. After your application is deployed, then you can safely remove the test from the test matrix.
+To remove a test, first remove the test from the Proctor specification in your application. After your application is deployed, you can safely remove the test from the test matrix.
 
-## Adding a bucket
+## Adding a Bucket
 
-Adding a bucket can be done in any order, as long as the new bucket is set to 0%. Before increasing the percentage of a bucket, your application's proctor specification must be aware of it.
+You can add a bucket in any order, as long as the new bucket is set to 0%. You must add the bucket to your application's Proctor specification before you increase the bucket's percentage.
 
-## Removing a bucket
+## Removing a Bucket
 
-The bucket must be removed from the test matrix or be set to 0% before removing it from your application's proctor specification.
+Remove the bucket from the test matrix or set it to 0% before you remove it from your application's Proctor specification.
