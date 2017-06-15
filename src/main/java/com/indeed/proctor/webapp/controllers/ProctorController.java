@@ -199,6 +199,9 @@ public class ProctorController extends AbstractController {
                 final String matrixSource = matrixEnvironment.getName() + " r" + artifact.getAudit().getVersion();
                 final ProctorLoadResult plr = ProctorUtils.verify(artifact, matrixSource, requiredTests);
                 final boolean compatible = !plr.hasInvalidTests();
+                if (!plr.getTestErrorMap().isEmpty()) {
+                    LOGGER.info("Find incompatible test " + testName + ", unable to load test matrix");
+                }
                 final String error = String.format("test %s is invalid for %s", testName, matrixSource);
                 usageViewModel.addVersion(environment, new CompatibleSpecificationResult(version, compatible, error));
             }
@@ -292,6 +295,9 @@ public class ProctorController extends AbstractController {
                     final String matrixSource = artifactEnvironment.getName() + " r" + artifact.getAudit().getVersion();
                     final ProctorLoadResult plr = ProctorUtils.verify(artifact, matrixSource, remoteResult.getSpecificationResult().getSpecification().getTests());
                     compatible = !plr.hasInvalidTests();
+                    if (!plr.getTestErrorMap().isEmpty()) {
+                        LOGGER.info("Find incompatible test, unable to load test matrix. Details are " + plr.getTestErrorMap().toString());
+                    }
                     error = String.format("Incompatible: Tests Missing: %s Invalid Tests: %s for %s", plr.getMissingTests(), plr.getTestsWithErrors(), matrixSource);
                 } else {
                     compatible = false;
