@@ -13,6 +13,28 @@ aside h1, aside h2, aside h3, aside h4, aside h5, aside h6 {
 
 table code {
     white-space: nowrap;
+    color: #000000;
+    background-color: #E8E8EE;
+}
+
+td {
+    vertical-align: top;
+}
+
+span.smallcode code {
+    font-family: 'Monaco, Bitstream Vera Sans Mono, Lucida Console, Terminal';
+    font-size: 12px;
+    white-space: normal;
+}
+
+span.xscode code {
+    font-family: 'Monaco, Bitstream Vera Sans Mono, Lucida Console, Terminal';
+    font-size: 10px;
+    white-space: normal;
+}
+
+span.smallcode,span.xscode a code {
+    color: #39c;
 }
 
 .ui-allocation-bar{
