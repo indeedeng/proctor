@@ -1,12 +1,15 @@
-name: Proctor - A/B Testing Framework by Indeed
-# http://stackoverflow.com/questions/10759577/underscore-issues-jekyll-redcarpet-github-flavored-markdown
-markdown: redcarpet
-highlighter: pygments
+name: Indeed APIs
+# https://github.com/blog/2100-github-pages-now-faster-and-simpler-with-jekyll-3-0
+highlighter: rouge
+markdown: kramdown
+kramdown:
+    input: GFM #Enable GitHub Flavored Markdown (fenced code blocks)
+    auto_ids: true
+    hard_wrap: false
+    syntax_highlighter: rouge
+
+    exclude: ['Gemfile', 'Gemfile.lock', 'Rakefile.rb', 'README.md']
+
 # jekyll serve --watch --baseurl=
 baseurl: "http://indeedeng.github.io/proctor"
-# permalinks are relative to their parent folder
-relative_permalinks: false
-redcarpet:
-  extensions: ["fenced_code_blocks", "no_intra_emphasis", "autolink", "tables", "with_toc_data"]
 
-exclude: ['Gemfile', 'Gemfile.lock', 'Rakefile.rb', 'README.md', 'proctor-parent.iml', 'proctor-ant-plugin', 'proctor-builder', 'proctor-codegen', 'proctor-codegen-test', 'proctor-common', 'proctor-consumer', 'proctor-maven-plugin', 'proctor-store', 'proctor-store-svn']
