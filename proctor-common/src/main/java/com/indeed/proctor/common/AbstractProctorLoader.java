@@ -111,7 +111,9 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
         }
 
         if (!loadResult.getTestErrorMap().isEmpty()) {
-            LOGGER.error("Unable to load test matrix. Details are " + loadResult.getTestErrorMap().toString());
+            for (final Map.Entry<String, IncompatibleTestMatrixException> errorTest : loadResult.getTestErrorMap().entrySet()) {
+                LOGGER.error(String.format("Unable to load test matrix for %s", errorTest.getKey()), errorTest.getValue());
+            }
         }
 
         final Audit newAudit = testMatrix.getAudit();
