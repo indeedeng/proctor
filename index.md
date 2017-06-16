@@ -27,10 +27,7 @@ The following Indeed Engineering blog posts describe Proctor in more detail:  <b
 <td>Announces the open sourcing of proctor-pipet -- a Java web application that exposes Proctor as a simple REST API accessible over HTTP -- which allows you to do A/B testing in applications written in non-JVM languages. </td>
 </tr>
   </table> 
-  <br><br>
-
-
-
+ 
 GitHub source for Proctor: <a href="https://github.com/indeedeng/proctor">https://github.com/indeedeng/proctor</a>
 
 
@@ -44,14 +41,18 @@ GitHub source for Proctor: <a href="https://github.com/indeedeng/proctor">https:
 - Overriding test groups during internal testing
 - Java and JavaScript code generation for A/B tests groups
 
+
 # Getting Started
 Read the [Quick Start]({{ site.baseurl }}/docs/quick-start) guide to start running A/B test using Proctor.
+
 
 # Example
 [https://github.com/indeedeng/proctor-demo](https://github.com/indeedeng/proctor-demo)
 
+
 # Discussion
 Ask and answer questions in our Q&A forum for Proctor: [indeedeng-proctor-users](https://groups.google.com/forum/#!categories/indeedeng-proctor-users)
+
 
 # License
 
