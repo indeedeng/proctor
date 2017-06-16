@@ -28,10 +28,10 @@ The following Indeed Engineering blog posts describe Proctor in more detail:  <b
 </tr>
   </table> 
  
-GitHub source for Proctor: <a href="https://github.com/indeedeng/proctor">https://github.com/indeedeng/proctor</a>
+GitHub source for Proctor: <a href="https://github.com/indeedeng/proctor">https://github.com/indeedeng/proctor</a><br><br>
 
 
-# Features
+## Features
 - Consistent tests across multiple applications, services and tools
 - Group adjustments without code deploys
 - Rule-based group assignment for segmenting users:
@@ -39,21 +39,21 @@ GitHub source for Proctor: <a href="https://github.com/indeedeng/proctor">https:
   - Logged-out users: 25% A, 25% B, 25% C, 25% D
 - Human-readable test format
 - Overriding test groups during internal testing
-- Java and JavaScript code generation for A/B tests groups
+- Java and JavaScript code generation for A/B tests groups<br><br>
 
 
-# Getting Started
-Read the [Quick Start]({{ site.baseurl }}/docs/quick-start) guide to start running A/B test using Proctor.
+## Getting Started
+Read the [Quick Start]({{ site.baseurl }}/docs/quick-start) guide to start running A/B test using Proctor.<br><br>
 
 
-# Example
+## Example
 [https://github.com/indeedeng/proctor-demo](https://github.com/indeedeng/proctor-demo)
 
 
-# Discussion
-Ask and answer questions in our Q&A forum for Proctor: [indeedeng-proctor-users](https://groups.google.com/forum/#!categories/indeedeng-proctor-users)
+## Discussion
+Ask and answer questions in our Q&A forum for Proctor: [indeedeng-proctor-users](https://groups.google.com/forum/#!categories/indeedeng-proctor-users)<br><br>
 
 
-# License
+## License
 
 [Apache License Version 2.0](https://github.com/indeedeng/proctor/blob/master/LICENSE)
