@@ -11,5 +11,5 @@ kramdown:
     exclude: ['Gemfile', 'Gemfile.lock', 'Rakefile.rb', 'README.md']
 
 # jekyll serve --watch --baseurl=
-baseurl: "http://indeedeng.github.io/proctor"
+baseurl: "https://indeedeng.github.io/proctor"
 
