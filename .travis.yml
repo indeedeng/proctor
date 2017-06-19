@@ -4,8 +4,6 @@ branches:
     - master
 jdk:
   - oraclejdk8
-  - oraclejdk7
-  - openjdk7
 
 notifications:
   email:
