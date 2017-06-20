@@ -15,10 +15,10 @@
             <tr>
                 <th style="width:25%;"><h6>Name</h6></th>
                  <c:if test="${proctor:containsAnyDev(tests.values())}">
-                    <th style="width:25%;">DEV (webapp)</th>
+                    <th style="width:25%;">DEV</th>
                  </c:if>
-                <th style="width:25%;">QA (webapp)</th>
-                <th style="width:25%;">PRODUCTION (webapp)</th>
+                <th style="width:25%;">QA</th>
+                <th style="width:25%;">PRODUCTION</th>
             </tr>
         </thead>
         <c:forEach items="${tests}" var="entry">
@@ -35,7 +35,7 @@
                     <td>
                         <ul class="nice">
                             <c:if test="${inDevMatrix}"><li><a class="label" href="/proctor/definition/${proctor:urlencode(testName)}">TRUNK MATRIX</a></li></c:if>
-                            <c:if test="${empty row.dev}"><li>[no webapps]</li></c:if>
+                            <c:if test="${empty row.dev}"><li>[no apps]</li></c:if>
                             <c:forEach items="${row.dev}" var="version">
                                 <li><ui:compatible-result version="${version}" branch="trunk" /></li>
                             </c:forEach>
@@ -45,7 +45,7 @@
                 <td>
                     <ul class="nice">
                         <c:if test="${inQaMatrix}"><li><a class="label" href="/proctor/definition/${proctor:urlencode(testName)}?branch=qa">QA MATRIX</a></li></c:if>
-                        <c:if test="${empty row.qa}"><li>[no webapps]</li></c:if>
+                        <c:if test="${empty row.qa}"><li>[no apps]</li></c:if>
                         <c:forEach items="${row.qa}" var="version">
                             <li><ui:compatible-result version="${version}" branch="qa" /></li>
                         </c:forEach>
@@ -54,7 +54,7 @@
                 <td>
                     <ul class="nice">
                         <c:if test="${inProductionMatrix}"><li><a class="label" href="/proctor/definition/${proctor:urlencode(testName)}?branch=production">PRODUCTION MATRIX</a></li></c:if>
-                        <c:if test="${empty row.production}"><li>[no webapps]</li></c:if>
+                        <c:if test="${empty row.production}"><li>[no apps]</li></c:if>
                         <c:forEach items="${row.production}" var="version">
                             <li><ui:compatible-result version="${version}" branch="production" /></li>
                         </c:forEach>

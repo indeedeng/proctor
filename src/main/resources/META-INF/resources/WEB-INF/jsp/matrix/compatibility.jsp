@@ -17,10 +17,10 @@
             <tr>
                 <th style="width:25%;">Matrix</th>
                 <c:if test="${!empty row.dev}">
-                    <th style="width:25%;">DEV (webapp)</th>
+                    <th style="width:25%;">DEV</th>
                 </c:if>
-                <th style="width:25%;">QA (webapp)</th>
-                <th style="width:25%;">PRODUCTION (webapp)</th>
+                <th style="width:25%;">QA</th>
+                <th style="width:25%;">PRODUCTION</th>
             </tr>
         </thead>
         <tbody>
