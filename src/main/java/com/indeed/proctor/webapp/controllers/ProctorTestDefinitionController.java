@@ -34,6 +34,7 @@ import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.store.GitNoAuthorizationException;
 import com.indeed.proctor.store.GitNoMasterAccessLevelException;
+import com.indeed.proctor.store.GitNoDevelperAccessLevelException;
 import com.indeed.proctor.webapp.ProctorSpecificationSource;
 import com.indeed.proctor.webapp.controllers.BackgroundJob.ResultUrl;
 import com.indeed.proctor.webapp.db.Environment;
@@ -451,7 +452,7 @@ public class ProctorTestDefinitionController extends AbstractController {
                             }
 
 
-                        } catch (final GitNoMasterAccessLevelException | GitNoAuthorizationException exp) {
+                        } catch (final GitNoMasterAccessLevelException | GitNoAuthorizationException | GitNoDevelperAccessLevelException exp) {
                             job.logFailedJob(exp);
                             LOGGER.info("Deletion Failed: " + job.getTitle(), exp);
                         } catch (StoreException.TestUpdateException exp) {
@@ -523,7 +524,7 @@ public class ProctorTestDefinitionController extends AbstractController {
                          */
                         try {
                             doJobIndependentPromoteInternal(testName, username, password, source, srcRevision, destination, destRevision, requestParameterMap, job, false);
-                        } catch (final GitNoAuthorizationException | GitNoMasterAccessLevelException exp) {
+                        } catch (final GitNoAuthorizationException | GitNoMasterAccessLevelException | GitNoDevelperAccessLevelException exp) {
                             job.logFailedJob(exp);
                             LOGGER.info("Promotion Failed: " + job.getTitle(), exp);
                         } catch (ProctorPromoter.TestPromotionException exp) {
@@ -929,7 +930,7 @@ public class ProctorTestDefinitionController extends AbstractController {
                             job.log("COMPLETE");
                             job.addUrl("/proctor/definition/" + UtilityFunctions.urlEncode(testName) + "?branch=" + theEnvironment.getName(), "View Result");
                             return true;
-                        } catch (final GitNoAuthorizationException exp) {
+                        } catch (final GitNoAuthorizationException | GitNoDevelperAccessLevelException exp) {
                             job.logFailedJob(exp);
                             LOGGER.info("Edit Failed: " + job.getTitle(), exp);
                         } catch (final StoreException.TestUpdateException exp) {
