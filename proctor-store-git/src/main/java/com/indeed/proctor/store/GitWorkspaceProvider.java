@@ -1,7 +1,6 @@
 package com.indeed.proctor.store;
 
 import java.io.File;
-import java.util.concurrent.Callable;
 
 public interface GitWorkspaceProvider {
     /**
@@ -13,5 +12,7 @@ public interface GitWorkspaceProvider {
 
     File getRootDirectory();
 
-    <T> T synchronizedOperation(final Callable<T> callable);
+    <T> T synchronizedOperation(final GitProctorCallable<T> callable);
+
+    <T> T synchronizedUpdateOperation (final GitProctorCallable<T> callable) throws StoreException.TestUpdateException;
 }

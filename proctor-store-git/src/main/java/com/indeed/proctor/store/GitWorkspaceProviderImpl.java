@@ -40,13 +40,20 @@ public class GitWorkspaceProviderImpl implements GitWorkspaceProvider {
     }
 
     @Override
-    public <T> T synchronizedOperation(final Callable<T> callable) {
+    public <T> T synchronizedOperation(final GitProctorCallable<T> callable) {
+        try {
+            return synchronizedUpdateOperation(callable);
+        } catch (final StoreException.TestUpdateException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+
+    @Override
+    public <T> T synchronizedUpdateOperation(final GitProctorCallable<T> callable) throws StoreException.TestUpdateException {
         try {
             if (directoryLock.tryLock(lockTimeoutSeconds, TimeUnit.SECONDS)) {
                 try {
                     return callable.call();
-                } catch (final Exception e) {
-                    throw Throwables.propagate(e);
                 } finally {
                     directoryLock.unlock();
                 }
@@ -60,7 +67,7 @@ public class GitWorkspaceProviderImpl implements GitWorkspaceProvider {
     }
 
     public boolean cleanWorkingDirectory() {
-        synchronizedOperation(new Callable<Void>() {
+        synchronizedOperation(new GitProctorCallable<Void>() {
             @Override
             public Void call() {
                 try {
