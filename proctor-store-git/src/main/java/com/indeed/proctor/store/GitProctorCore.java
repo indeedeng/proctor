@@ -147,7 +147,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
         final File gitDirectory = new File(workingDir, ".git");
         LOGGER.info("Initializing repository " + gitUrl + " in working dir " + workingDir.getAbsolutePath());
 
-        workspaceProvider.synchronizedOperation(new GitProctorCallable<Void>() {
+        workspaceProvider.synchronizedOperation(new Callable<Void>() {
             @Override
             public Void call() {
                 try {
@@ -354,7 +354,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
      */
     void undoLocalChanges() {
 
-        workspaceProvider.synchronizedOperation(new GitProctorCallable<Void>() {
+        workspaceProvider.synchronizedOperation(new Callable<Void>() {
             @Override
             public Void call() {
                 try {
@@ -420,7 +420,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
 
     public void checkoutBranch(final String branchName) {
 
-        workspaceProvider.synchronizedOperation(new GitProctorCallable<Void>() {
+        workspaceProvider.synchronizedOperation(new Callable<Void>() {
             @Override
             public Void call() {
                 try {
@@ -467,7 +467,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
         @Override
         public void run() {
 
-            workspaceProvider.synchronizedOperation(new GitProctorCallable<Void>() {
+            workspaceProvider.synchronizedOperation(new Callable<Void>() {
                 @Override
                 public Void call() {
                     try {

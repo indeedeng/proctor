@@ -7,6 +7,7 @@ import org.eclipse.jgit.lib.TextProgressMonitor;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 
 import java.util.TimerTask;
+import java.util.concurrent.Callable;
 
 /**
  * Timer task used to periodically run git fetch/reset in a git directory
@@ -31,10 +32,11 @@ public class GitDirectoryRefresher extends TimerTask {
 
     @Override
     public void run() {
-        workspaceProvider.synchronizedOperation(new GitProctorCallable<Void>() {
+        workspaceProvider.synchronizedOperation(new Callable<Void>() {
             @Override
             public Void call() {
                 try {
+
                     final PullResult result = gitProctorCore.getGit()
                             .pull()
                             .setProgressMonitor(PROGRESS_MONITOR)

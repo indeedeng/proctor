@@ -40,12 +40,23 @@ public class GitWorkspaceProviderImpl implements GitWorkspaceProvider {
     }
 
     @Override
-    public <T> T synchronizedOperation(final GitProctorCallable<T> callable) {
+    public <T> T synchronizedOperation(final Callable<T> callable) {
         try {
-            return synchronizedUpdateOperation(callable);
-        } catch (final StoreException.TestUpdateException e) {
-            throw Throwables.propagate(e);
+            if (directoryLock.tryLock(lockTimeoutSeconds, TimeUnit.SECONDS)) {
+                try {
+                    return callable.call();
+                } catch (final Exception e) {
+                    throw Throwables.propagate(e);
+                } finally {
+                    directoryLock.unlock();
+                }
+            } else {
+                throw Throwables.propagate(new StoreException("Attempt to acquire lock on working directory was timeout: " + lockTimeoutSeconds + "s. Maybe due to dead lock"));
+            }
+        } catch (final InterruptedException e) {
+            LOGGER.error("Thread interrupted. ", e);
         }
+        return null;
     }
 
     @Override
@@ -67,7 +78,7 @@ public class GitWorkspaceProviderImpl implements GitWorkspaceProvider {
     }
 
     public boolean cleanWorkingDirectory() {
-        synchronizedOperation(new GitProctorCallable<Void>() {
+        synchronizedOperation(new Callable<Void>() {
             @Override
             public Void call() {
                 try {
