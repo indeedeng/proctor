@@ -13,6 +13,9 @@ import org.junit.Test;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 
 import static com.indeed.proctor.store.InMemoryProctorStoreTest.createDummyTestDefinition;
 import static org.junit.Assert.assertEquals;
@@ -32,6 +35,14 @@ public class CachingProctorStoreTest {
             makeRevision("4"),
             makeRevision("5")
     );
+
+    private static final Thread.UncaughtExceptionHandler ASSERTION_FAILURE_HANDLER = new Thread.UncaughtExceptionHandler() {
+        public void uncaughtException(final Thread thread, final Throwable throwable) {
+            if (throwable instanceof AssertionError) {
+                fail();
+            }
+        }
+    };
 
     private CachingProctorStore testee;
     private ProctorStore delegate;
@@ -170,57 +181,45 @@ public class CachingProctorStoreTest {
     }
 
     @Test
-    public void testTwoUpdates() throws StoreException, InterruptedException {
+    public void testTwoUpdates() throws StoreException, InterruptedException, ExecutionException {
         final TestDefinition newTst1 = createDummyTestDefinition("3", "tst1");
-        newTst1.setDescription("updated description tst1");
+        final String description1 = "updated description tst1 from newTst1";
+        newTst1.setDescription(description1);
         final TestDefinition newTst2 = createDummyTestDefinition("3", "tst1");
-        newTst2.setDescription("This test shouldn't be updated");
+        final String description2 = "updated description tst1 from newTst2";
+        newTst2.setDescription(description2);
 
-        final Thread successThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    testee.updateTestDefinition("Mike", "pwd", "2", "tst1", newTst1, Collections.<String, String>emptyMap(), "Update description of tst1");
-                } catch (final TestUpdateException e) {
-                    fail();
-                    /* expected */
-                }
-            }
-        });
-        final Thread failureThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Thread.sleep(1);
-                    testee.updateTestDefinition("Mike", "pwd", "2", "tst1", newTst2, Collections.<String, String>emptyMap(), "Update description of tst1");
-                    fail();
-                } catch (final TestUpdateException e) {
-                    /* expected */
-                } catch (final InterruptedException ignored) {
-                }
-            }
-        });
-        startThreadsAndSleep(successThread, failureThread);
-        assertEquals("updated description tst1", testee.getCurrentTestDefinition("tst1").getDescription());
+        final FutureTask<Boolean> future1 = getFutureTaskUpdateTestDefinition("2", "tst1", newTst1, "update description tst1");
+        final FutureTask<Boolean> future2 = getFutureTaskUpdateTestDefinition("2", "tst1", newTst2, "update description tst1");
+        startThreadsAndSleep(new Thread(future1), new Thread(future2));
+        final boolean thread1UpdateSuccess = future1.get();
+        final boolean thread2UpdateSuccess = future2.get();
+        assertTrue(thread1UpdateSuccess ^ thread2UpdateSuccess);
+        assertEquals(thread1UpdateSuccess ? description1 : description2, testee.getCurrentTestDefinition("tst1").getDescription());
         assertFalse(testee.getRefreshTaskFuture().isCancelled());
     }
 
+    private FutureTask<Boolean> getFutureTaskUpdateTestDefinition(final String previousVersion, final String testName, final TestDefinition test, final String comment) {
+        return new FutureTask<>(new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                try {
+                    testee.updateTestDefinition("Mike", "pwd", previousVersion, testName, test, Collections.<String, String>emptyMap(), comment);
+                    return true;
+                } catch (final TestUpdateException e) {
+                    return false;
+                }
+            }
+        });
+    }
+
     @Test
-    public void testOneUpdateAndOneAdd() throws StoreException, InterruptedException {
+    public void testOneUpdateAndOneAdd() throws StoreException, InterruptedException, ExecutionException {
         final TestDefinition newTst1 = createDummyTestDefinition("3", "tst1");
         newTst1.setDescription("updated description tst1");
         final TestDefinition tst4 = createDummyTestDefinition("4", "tst4");
 
-        final Thread updateThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    testee.updateTestDefinition("Mike", "pwd", "2", "tst1", newTst1, Collections.<String, String>emptyMap(), "Update description of tst1");
-                } catch (final TestUpdateException e) {
-                    fail();
-                }
-            }
-        });
+        final FutureTask<Boolean> updateFuture = getFutureTaskUpdateTestDefinition("2", "tst1", newTst1, "Update description of tst1");
         final Thread addThread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -232,11 +231,14 @@ public class CachingProctorStoreTest {
             }
         });
         assertEquals(1, testee.getHistory("tst1", 0, 4).size());
-        startThreadsAndSleep(updateThread, addThread);
-        assertEquals("updated description tst1", testee.getCurrentTestDefinition("tst1").getDescription());
+        startThreadsAndSleep(new Thread(updateFuture), addThread);
+        final boolean updateSuccess = updateFuture.get();
         assertEquals("description of tst4", testee.getCurrentTestDefinition("tst4").getDescription());
-        assertEquals(2, testee.getHistory("tst1", 0, 4).size());
-        assertEquals("Update description of tst1", testee.getHistory("tst1", 0, 4).get(0).getMessage());
+        if (updateSuccess) {
+            assertEquals("updated description tst1", testee.getCurrentTestDefinition("tst1").getDescription());
+            assertEquals(2, testee.getHistory("tst1", 0, 4).size());
+            assertEquals("Update description of tst1", testee.getHistory("tst1", 0, 4).get(0).getMessage());
+        }
     }
 
     @Test
@@ -261,6 +263,7 @@ public class CachingProctorStoreTest {
 
     private static void startThreadsAndSleep(final Thread... threads) throws InterruptedException {
         for (final Thread thread : threads) {
+            thread.setUncaughtExceptionHandler(ASSERTION_FAILURE_HANDLER);
             thread.start();
         }
 
