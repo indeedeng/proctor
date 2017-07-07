@@ -5,6 +5,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
+import com.indeed.proctor.common.IncompatibleTestMatrixException;
+
 import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.Map;
@@ -15,7 +17,7 @@ import java.util.Set;
  */
 public class ProctorLoadResult {
     @Nonnull
-    private final Map<String, String> testErrorMap;
+    private final Map<String, IncompatibleTestMatrixException> testErrorMap;
     @Nonnull
     private final Set<String> missingTests;
 
@@ -37,7 +39,7 @@ public class ProctorLoadResult {
     }
 
     public ProctorLoadResult(
-        @Nonnull final Map<String, String> testErrorMap,
+        @Nonnull final Map<String, IncompatibleTestMatrixException> testErrorMap,
         @Nonnull Set<String> missingTests,
         final boolean verifiedRules
     ) {
@@ -52,7 +54,7 @@ public class ProctorLoadResult {
     }
 
     @Nonnull
-    public Map<String, String> getTestErrorMap() {
+    public Map<String, IncompatibleTestMatrixException> getTestErrorMap() {
         return testErrorMap;
     }
 
@@ -65,11 +67,11 @@ public class ProctorLoadResult {
         return verifiedRules;
     }
 
-    private static Map<String, String> makeTestErrorMap(final Set<String> testsWithErrors) {
-        return Maps.asMap(testsWithErrors, new Function<String, String>() {
+    private static Map<String, IncompatibleTestMatrixException> makeTestErrorMap(final Set<String> testsWithErrors) {
+        return Maps.asMap(testsWithErrors, new Function<String, IncompatibleTestMatrixException>() {
             @Override
-            public String apply(final String testName) {
-                return testName + " has an invalid specification";
+            public IncompatibleTestMatrixException apply(final String testName) {
+                return new IncompatibleTestMatrixException(testName + " has an invalid specification");
             }
         });
     }
@@ -91,20 +93,20 @@ public class ProctorLoadResult {
     }
 
     public static class Builder {
-        private ImmutableMap.Builder<String, String> testsWithErrors = ImmutableMap.builder();
+        private ImmutableMap.Builder<String, IncompatibleTestMatrixException> testsWithErrors = ImmutableMap.builder();
         private ImmutableSet.Builder<String> missingTests = ImmutableSet.builder();
         private boolean verifiedRules = false;
         private Builder() { }
 
         @Nonnull
-        public Builder recordError(final String testName, final String message) {
-            testsWithErrors.put(testName, message);
+        public Builder recordError(final String testName, final IncompatibleTestMatrixException exception) {
+            testsWithErrors.put(testName, exception);
             return this;
         }
 
         @Nonnull
         public Builder recordError(final String testName) {
-            testsWithErrors.put(testName, testName + " has an invalid specification");
+            testsWithErrors.put(testName, new IncompatibleTestMatrixException(testName + " has an invalid specification"));
             return this;
         }
 

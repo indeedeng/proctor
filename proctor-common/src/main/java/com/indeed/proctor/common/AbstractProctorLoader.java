@@ -110,6 +110,12 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
             loadResult = ProctorUtils.verifyAndConsolidate(testMatrix, getSource(), requiredTests, functionMapper, providedContext);
         }
 
+        if (!loadResult.getTestErrorMap().isEmpty()) {
+            for (final Map.Entry<String, IncompatibleTestMatrixException> errorTest : loadResult.getTestErrorMap().entrySet()) {
+                LOGGER.error(String.format("Unable to load test matrix for %s", errorTest.getKey()), errorTest.getValue());
+            }
+        }
+
         final Audit newAudit = testMatrix.getAudit();
         if (lastAudit != null) {
             final Audit audit = Preconditions.checkNotNull(newAudit, "Missing audit");
