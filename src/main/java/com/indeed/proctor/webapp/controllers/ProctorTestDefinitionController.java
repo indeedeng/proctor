@@ -32,6 +32,9 @@ import com.indeed.proctor.common.model.TestType;
 import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.store.StoreException;
+import com.indeed.proctor.store.GitNoAuthorizationException;
+import com.indeed.proctor.store.GitNoMasterAccessLevelException;
+import com.indeed.proctor.store.GitNoDevelperAccessLevelException;
 import com.indeed.proctor.webapp.ProctorSpecificationSource;
 import com.indeed.proctor.webapp.controllers.BackgroundJob.ResultUrl;
 import com.indeed.proctor.webapp.db.Environment;
@@ -449,6 +452,9 @@ public class ProctorTestDefinitionController extends AbstractController {
                             }
 
 
+                        } catch (final GitNoMasterAccessLevelException | GitNoAuthorizationException | GitNoDevelperAccessLevelException exp) {
+                            job.logFailedJob(exp);
+                            LOGGER.info("Deletion Failed: " + job.getTitle(), exp);
                         } catch (StoreException.TestUpdateException exp) {
                             job.logFailedJob(exp);
                             LOGGER.error("Deletion Failed: " + job.getTitle(), exp);
@@ -518,6 +524,9 @@ public class ProctorTestDefinitionController extends AbstractController {
                          */
                         try {
                             doJobIndependentPromoteInternal(testName, username, password, source, srcRevision, destination, destRevision, requestParameterMap, job, false);
+                        } catch (final GitNoAuthorizationException | GitNoMasterAccessLevelException | GitNoDevelperAccessLevelException exp) {
+                            job.logFailedJob(exp);
+                            LOGGER.info("Promotion Failed: " + job.getTitle(), exp);
                         } catch (ProctorPromoter.TestPromotionException exp) {
                             job.logFailedJob(exp);
                             LOGGER.error("Promotion Failed: " + job.getTitle(), exp);
@@ -921,6 +930,9 @@ public class ProctorTestDefinitionController extends AbstractController {
                             job.log("COMPLETE");
                             job.addUrl("/proctor/definition/" + UtilityFunctions.urlEncode(testName) + "?branch=" + theEnvironment.getName(), "View Result");
                             return true;
+                        } catch (final GitNoAuthorizationException | GitNoDevelperAccessLevelException exp) {
+                            job.logFailedJob(exp);
+                            LOGGER.info("Edit Failed: " + job.getTitle(), exp);
                         } catch (final StoreException.TestUpdateException exp) {
                             job.logFailedJob(exp);
                             LOGGER.error("Edit Failed: " + job.getTitle(), exp);
