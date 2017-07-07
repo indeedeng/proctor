@@ -1216,12 +1216,12 @@ public class ProctorTestDefinitionController extends AbstractController {
     }
 
     private static String getErrorMessage(final AppVersion appVersion, final ProctorLoadResult proctorLoadResult) {
-        final Map<String, String> testsWithErrors = proctorLoadResult.getTestErrorMap();
+        final Map<String, IncompatibleTestMatrixException> testsWithErrors = proctorLoadResult.getTestErrorMap();
         final Set<String> missingTests = proctorLoadResult.getMissingTests();
 
         // We expect at most one test to have a problem because we limited the verification to a single test
         if (testsWithErrors.size() > 0) {
-            return testsWithErrors.values().iterator().next();
+            return testsWithErrors.values().iterator().next().getMessage();
         } else if (missingTests.size() > 0) {
             return String.format("%s requires test '%s'", appVersion, missingTests.iterator().next());
         } else {
