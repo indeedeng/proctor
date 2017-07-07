@@ -6,6 +6,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.indeed.proctor.common.Serializers;
+import com.indeed.proctor.store.GitAPIExceptionWrapper;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -57,6 +58,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
     private final GitWorkspaceProvider workspaceProvider;
     private final ScheduledExecutorService gcExecutor;
     private final UsernamePasswordCredentialsProvider user;
+    private final GitAPIExceptionWrapper gitAPIExceptionWrapper;
 
     private final int pullPushTimeoutSeconds;
     private final int cloneTimeoutSeconds;
@@ -115,6 +117,8 @@ public class GitProctorCore implements FileBasedPersisterCore {
         gcExecutor = Executors.newSingleThreadScheduledExecutor();
         this.pullPushTimeoutSeconds = pullPushTimeoutSeconds;
         this.cloneTimeoutSeconds = cloneTimeoutSeconds;
+        this.gitAPIExceptionWrapper = new GitAPIExceptionWrapper();
+        this.gitAPIExceptionWrapper.setGitUrl(gitUrl);
         initializeRepository(cleanInitialization);
     }
 
@@ -289,7 +293,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
         final UsernamePasswordCredentialsProvider user = new UsernamePasswordCredentialsProvider(username, password);
         final File workingDir = workspaceProvider.getRootDirectory();
 
-        workspaceProvider.synchronizedOperation(new Callable<Void>() {
+        workspaceProvider.synchronizedUpdateOperation(new GitProctorCallable<Void>() {
             @Override
             public Void call() throws StoreException.TestUpdateException {
                 try {
@@ -333,10 +337,10 @@ public class GitProctorCore implements FileBasedPersisterCore {
                     }
                 } catch (final GitAPIException e) {
                     undoLocalChanges();
-                    throw new StoreException.TestUpdateException("Unable to commit/push changes", e);
+                    throw gitAPIExceptionWrapper.wrapException(new StoreException.TestUpdateException("Unable to commit/push changes", e));
                 } catch (final IllegalStateException e) {
                     undoLocalChanges();
-                    throw new StoreException.TestUpdateException("Unable to push changes", e);
+                    throw gitAPIExceptionWrapper.wrapException(new StoreException.TestUpdateException("Unable to push changes", e));
                 } catch (final Exception e) {
                     throw new StoreException.TestUpdateException("Unable to perform operation", e);
                 }
@@ -362,7 +366,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
                     final String remoteBranch = Constants.R_REMOTES + Constants.DEFAULT_REMOTE_NAME + '/' + git.getRepository().getBranch();
                     git.reset().setMode(ResetType.HARD).setRef(remoteBranch).call();
                     git.clean().setCleanDirectories(true).call();
-                } catch (Exception e) {
+                } catch (final Exception e) {
                     LOGGER.error("Unable to undo changes", e);
                 }
                 return null;
@@ -470,7 +474,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
                         LOGGER.info("Start running `git gc` command to clean up git garbage");
                         final Properties call = getGit().gc().call();
                         LOGGER.info("`git gc` has been completed " + call.toString());
-                    } catch (final Exception e) {
+                    } catch (final GitAPIException e) {
                         LOGGER.error("Failed to run `git gc` command.", e);
                     }
                     return null;
