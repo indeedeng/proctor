@@ -45,12 +45,12 @@ indeed.proctor.filter.Sorter.prototype.options = [
             var sortKey = (''+(999999999 - x.relevancyRank)).concat(x.testName);
             return sortKey;
         },
-        comparator: function(a, b) { return a.toLowerCase() > b.toLowerCase(); }
+        comparator: function(a, b) { return a.toLowerCase() > b.toLowerCase() ? 1 : -1; }
     },
     {
         name: "test name",
         keyFunction: function(x){ return x.testName; },
-        comparator: function(a, b) { return a.toLowerCase() > b.toLowerCase(); }
+        comparator: function(a, b) { return a.toLowerCase() > b.toLowerCase() ? 1 : -1; }
     },
     {
         name: "updated date",
