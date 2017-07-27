@@ -16,12 +16,6 @@
 
     <bean name="appProps" class="com.indeed.proctor.webapp.util.temp.ServletContextConfiguredPropertyPlaceholderConfigurer"/>
 
-    <bean id="viewResolver" class="org.springframework.web.servlet.view.UrlBasedViewResolver">
-        <property name="viewClass" value="org.springframework.web.servlet.view.JstlView"/>
-        <property name="prefix" value="/WEB-INF/jsp/"/>
-        <property name="suffix" value=".jsp"/>
-    </bean>
-
     <bean id="storeFactory" class="com.indeed.proctor.webapp.db.RevisionControlStoreFactory">
         <property name="scheduledExecutorService" ref="scheduledExecutorService"/>
     </bean>
