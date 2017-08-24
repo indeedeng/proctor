@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.indeed</groupId>
         <artifactId>oss-parent</artifactId>
-        <version>19</version>
+        <version>20</version>
     </parent>
 
     <groupId>com.indeed</groupId>
@@ -44,7 +44,6 @@
     <properties>
         <indeed-util.version>1.0.12</indeed-util.version>
 	    <apache-commons-pool2.version>2.2</apache-commons-pool2.version>
-        <spring.version>4.2.5.RELEASE</spring.version>
     </properties>
 
 </project>
