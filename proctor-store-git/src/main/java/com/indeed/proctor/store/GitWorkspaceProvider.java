@@ -14,4 +14,6 @@ public interface GitWorkspaceProvider {
     File getRootDirectory();
 
     <T> T synchronizedOperation(final Callable<T> callable);
+
+    <T> T synchronizedUpdateOperation (final GitProctorCallable<T> callable) throws StoreException.TestUpdateException;
 }
