@@ -148,7 +148,7 @@ public class ServletContextConfiguredPropertyPlaceholderConfigurer extends Prope
     @Override
     public void postProcessBeanFactory(final ConfigurableListableBeanFactory beanFactory) throws BeansException {
         if (this.servletContext == null) {
-            throw new IllegalStateException("No servletContext set; " + ServletContextConfiguredPropertyPlaceholderConfigurer.class.getName() + " cannot be used outside a WebApplicationContext");
+            LOGGER.warn("No servletContext set; " + ServletContextConfiguredPropertyPlaceholderConfigurer.class.getName() + " cannot be used outside a WebApplicationContext");
         }
         super.postProcessBeanFactory(beanFactory);
     }

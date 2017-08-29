@@ -117,7 +117,7 @@
                     </ui:grid-columns>
                     <ui:grid-columns width="nine">
                         <div class="row collapse">
-                            <c:set var="pfix" value="${"/>
+                            <c:set var="pfix" value="\${"/>
                             <div class="one columns"><span class="prefix">${pfix}</span></div>
                             <div class="ten columns"><input class="json" name="rule" type="text" value="${fn:escapeXml(testDefinition.rule)}"/></div>
                             <div class="one columns"><span class="postfix">}</span></div>

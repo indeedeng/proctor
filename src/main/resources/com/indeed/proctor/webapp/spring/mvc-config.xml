@@ -24,6 +24,12 @@
     <!-- Configures the @Controller programming model -->
     <mvc:annotation-driven />
 
+    <bean id="viewResolver" class="org.springframework.web.servlet.view.UrlBasedViewResolver">
+        <property name="viewClass" value="org.springframework.web.servlet.view.JstlView"/>
+        <property name="prefix" value="/WEB-INF/jsp/"/>
+        <property name="suffix" value=".jsp"/>
+    </bean>
+
     <bean name="propertyPlaceholderConfigurer" class="com.indeed.proctor.webapp.util.temp.ServletContextConfiguredPropertyPlaceholderConfigurer" />
 
     <mvc:resources mapping="/static/**" location="/static/" cache-period="604800" />
