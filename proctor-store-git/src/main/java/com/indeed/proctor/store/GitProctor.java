@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.Weigher;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -42,6 +43,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -62,7 +64,6 @@ public class GitProctor extends FileBasedProctorStore {
     private final Git git;
     private String branchName;
 
-    private Cache<ObjectId, List<DiffEntry>> diffEntriesCache = CacheBuilder.newBuilder().build();
 
     public GitProctor(final String gitPath,
                       final String username,
@@ -234,7 +235,7 @@ public class GitProctor extends FileBasedProctorStore {
             df.setRepository(git.getRepository());
             df.setDiffComparator(RawTextComparator.DEFAULT);
 
-            final HistoryParser historyParser = new HistoryParser(revWalk, df, getTestDefinitionsDirectory(), activeTests, this.diffEntriesCache);
+            final HistoryParser historyParser = new HistoryParser(revWalk, df, getTestDefinitionsDirectory(), activeTests);
             return historyParser.parseFromHead(head);
 
         } catch (final IOException e) {
@@ -280,26 +281,21 @@ public class GitProctor extends FileBasedProctorStore {
         final DiffFormatter df;
         final Pattern testNamePattern;
         final Set<String> activeTests;
-        final Cache<ObjectId, List<DiffEntry>> diffEntriesCache;
+
+        final static private Cache<ObjectId, List<DiffEntry>> diffEntriesCache = CacheBuilder
+                .newBuilder()
+                .expireAfterAccess(1, TimeUnit.DAYS)
+                .maximumSize(1_000_000)
+                .build();
 
         public HistoryParser(final RevWalk revWalk,
                              final DiffFormatter df,
                              final String definitionDirectory,
                              final Set<String> activeTests) {
-            this(revWalk, df, definitionDirectory, activeTests,
-                    CacheBuilder.newBuilder().<ObjectId, List<DiffEntry>>build());
-        }
-
-        public HistoryParser(final RevWalk revWalk,
-                             final DiffFormatter df,
-                             final String definitionDirectory,
-                             final Set<String> activeTests,
-                             final Cache<ObjectId, List<DiffEntry>> diffEntriesCache) {
             this.revWalk = revWalk;
             this.df = df;
             testNamePattern = compileTestNamePattern(definitionDirectory);
             this.activeTests = activeTests;
-            this.diffEntriesCache = diffEntriesCache;
         }
 
         public Map<String, List<Revision>> parseFromHead(final ObjectId head) throws IOException {
