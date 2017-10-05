@@ -1,6 +1,10 @@
 package com.indeed.proctor.store;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Throwables;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.Weigher;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -37,6 +41,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -56,6 +63,7 @@ public class GitProctor extends FileBasedProctorStore {
 
     private final Git git;
     private String branchName;
+
 
     public GitProctor(final String gitPath,
                       final String username,
@@ -274,6 +282,12 @@ public class GitProctor extends FileBasedProctorStore {
         final Pattern testNamePattern;
         final Set<String> activeTests;
 
+        final static private Cache<ObjectId, List<DiffEntry>> diffEntriesCache = CacheBuilder
+                .newBuilder()
+                .expireAfterAccess(1, TimeUnit.DAYS)
+                .maximumSize(1_000_000)
+                .build();
+
         public HistoryParser(final RevWalk revWalk,
                              final DiffFormatter df,
                              final String definitionDirectory,
@@ -312,7 +326,7 @@ public class GitProctor extends FileBasedProctorStore {
             final RevCommit[] parents = commit.getParents();
             if (parents.length == 1) {
                 final RevCommit parent = revWalk.parseCommit(parents[0].getId());
-                final List<DiffEntry> diffs = df.scan(parent.getTree(), commit.getTree());
+                final List<DiffEntry> diffs = getDiffEntries(commit, parent);
                 for (final DiffEntry diff : diffs) {
                     final String changePath = diff.getChangeType().equals(ChangeType.DELETE) ? diff.getOldPath() : diff.getNewPath();
                     final Matcher testNameMatcher = testNamePattern.matcher(changePath);
@@ -342,6 +356,20 @@ public class GitProctor extends FileBasedProctorStore {
                 for (final RevCommit parent : parents) {
                     queue.add(revWalk.parseCommit(parent.getId()));
                 }
+            }
+        }
+
+        private List<DiffEntry> getDiffEntries(final RevCommit commit, final RevCommit parent) throws IOException {
+            try {
+                return diffEntriesCache.get(commit.toObjectId(), new Callable<List<DiffEntry>>() {
+                    @Override
+                    public List<DiffEntry> call() throws Exception {
+                        return df.scan(parent.getTree(), commit.getTree());
+                    }
+                });
+            } catch (final ExecutionException e) {
+                Throwables.propagateIfInstanceOf(e.getCause(), IOException.class);
+                throw Throwables.propagate(e.getCause());
             }
         }
 
