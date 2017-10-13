@@ -15,6 +15,7 @@ import org.springframework.web.servlet.View;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -42,7 +43,7 @@ public class BackgroundJobRpcController {
     }
 
     @RequestMapping(value = "/status", method = RequestMethod.GET)
-    public View doGetJobStatus(@RequestParam("id") final long jobId) {
+    public View doGetJobStatus(@RequestParam("id") final UUID jobId) {
         final BackgroundJob job = manager.getJobForId(jobId);
         if(job == null) {
             final String msg = "Failed to identify job for " + jobId;
@@ -89,7 +90,7 @@ public class BackgroundJobRpcController {
 
 
     @RequestMapping(value = "/cancel", method = RequestMethod.GET)
-    public View doCancelJob(@RequestParam("id") final long jobId) {
+    public View doCancelJob(@RequestParam("id") final UUID jobId) {
         final BackgroundJob job = manager.getJobForId(jobId);
         if(job == null) {
             final String msg = "Failed to identify job for " + jobId;
@@ -146,7 +147,7 @@ public class BackgroundJobRpcController {
     public static Map<String,Object> buildJobJson(final BackgroundJob job, final Object outcome) {
         final ImmutableMap.Builder<String,Object> builder = ImmutableMap.builder();
 
-        builder.put("jobId", job.getId())
+        builder.put("jobId", job.getUUID())
             .put("status", job.getStatus())
             .put("log", job.getLog())
             .put("title", job.getTitle())

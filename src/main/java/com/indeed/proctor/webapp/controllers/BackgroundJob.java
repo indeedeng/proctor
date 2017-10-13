@@ -6,6 +6,7 @@ import com.indeed.proctor.webapp.extensions.BeforeBackgroundJobExecute;
 import org.apache.log4j.Logger;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
@@ -19,6 +20,7 @@ public abstract class BackgroundJob<T> implements Callable<T> {
     protected final StringBuilder logBuilder = new StringBuilder();
 
     private Long id;
+    private UUID uuid;
 
     private final long createdTime = System.currentTimeMillis();
 
@@ -69,6 +71,14 @@ public abstract class BackgroundJob<T> implements Callable<T> {
 
     public Long getId() {
         return id;
+    }
+
+    public void setUUID(final UUID uuid) {
+        this.uuid = uuid;
+    }
+
+    public UUID getUUID() {
+        return uuid;
     }
 
     public List<ResultUrl> getUrls() {
