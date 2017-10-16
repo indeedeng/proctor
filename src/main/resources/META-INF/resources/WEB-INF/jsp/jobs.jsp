@@ -14,12 +14,13 @@
     </ui:expand-collapse>
     <table class="w100">
         <thead>
-            <tr><th>JobId</th><th>Status</th><th>Description</th></tr>
+            <tr><th>JobId</th><th>JobUUID</th></th><th>Status</th><th>Description</th></tr>
         </thead>
         <tbody>
         <c:forEach items="${jobs}" var="job" varStatus="loopStatus">
             <tr data-jobid="${job.id}">
                 <td>${job.id}</td>
+                <td>${job.uuid}</td>
                 <td><a href="#${job.id}" class="tiny button js-job-view"><c:choose><c:when test="${job.running}">RUNNING</c:when><c:otherwise>${fn:escapeXml(job.status)}</c:otherwise></c:choose></a></td>
                 <td>${fn:escapeXml(job.title)}</td>
             </tr>
