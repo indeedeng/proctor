@@ -358,6 +358,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
                     undoLocalChanges();
                     throw gitAPIExceptionWrapper.wrapException(new StoreException.TestUpdateException("Unable to push changes", e));
                 } catch (final Exception e) {
+                    undoLocalChanges();
                     throw new StoreException.TestUpdateException("Unable to perform operation", e);
                 }
                 return null;
