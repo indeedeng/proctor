@@ -320,6 +320,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
                     thingsChanged = updater.doInWorkingDirectory(rcsClient, workingDir);
                     if (thingsChanged) {
                         final Set<String> stagedTests = parseStagedTestNames();
+                        LOGGER.debug("Staged tests are " + Joiner.on(",").join(stagedTests));
                         if (stagedTests != null && stagedTests.size() >= 2) {
                             LOGGER.error("Multiple tests are going to be modified at the one commit : " + Joiner.on(",").join(stagedTests));
                             throw new IllegalStateException("Another test are staged unintentionally due to invalid local git state");
