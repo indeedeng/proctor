@@ -2,22 +2,28 @@ package com.indeed.proctor.store;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Predicates;
+import com.google.common.base.Strings;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.indeed.proctor.common.Serializers;
-import com.indeed.proctor.store.GitAPIExceptionWrapper;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.CreateBranchCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.RebaseCommand;
 import org.eclipse.jgit.api.ResetCommand.ResetType;
+import org.eclipse.jgit.api.Status;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.WrongRepositoryStateException;
+import org.eclipse.jgit.errors.NoWorkTreeException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectLoader;
@@ -33,11 +39,13 @@ import org.eclipse.jgit.treewalk.filter.AndTreeFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.treewalk.filter.PathSuffixFilter;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -311,6 +319,14 @@ public class GitProctorCore implements FileBasedPersisterCore {
                     final boolean thingsChanged;
                     thingsChanged = updater.doInWorkingDirectory(rcsClient, workingDir);
                     if (thingsChanged) {
+                        final Set<String> stagedTests = parseStagedTestNames();
+                        if (stagedTests != null && stagedTests.size() >= 2) {
+                            LOGGER.error("Multiple tests are going to be modified at the one commit : " + Joiner.on(",").join(stagedTests));
+                            throw new IllegalStateException("Another test are staged unintentionally due to invalid local git state");
+                        } else if (stagedTests != null && stagedTests.isEmpty()) {
+                            LOGGER.warn("Failed to parse staged test names or no test files aren't staged");
+                        }
+
                         git.commit().setCommitter(username, username).setAuthor(username, username).setMessage(comment).call();
                         final Iterable<PushResult> pushResults = git.push().setProgressMonitor(PROGRESS_MONITOR).setCredentialsProvider(user)
                                 .setTimeout(pullPushTimeoutSeconds)
@@ -347,6 +363,43 @@ public class GitProctorCore implements FileBasedPersisterCore {
                 return null;
             }
         });
+    }
+
+    @Nullable
+    @VisibleForTesting
+    static String parseTestName(final String testDefinitionsDirectory, final String filePath) {
+        final String prefix = (Strings.isNullOrEmpty(testDefinitionsDirectory) ? "" : testDefinitionsDirectory + File.separator);
+        if (filePath != null && filePath.startsWith(prefix)) {
+            final String[] directories = filePath.substring(prefix.length()).split(File.separator);
+            return directories.length > 1 ? directories[0] : null;
+        } else {
+            return null;
+        }
+    }
+
+    @Nullable
+    private Set<String> parseStagedTestNames() {
+        try {
+            final Status status = git.status().call();
+            final Iterable<String> stagedFileNames = Iterables.concat(
+                    status.getAdded(),
+                    status.getChanged(),
+                    status.getRemoved()
+            );
+            return FluentIterable.from(stagedFileNames)
+                    .transform(new Function<String, String>() {
+                        @Nullable
+                        @Override
+                        public String apply(@Nullable final String s) {
+                            return parseTestName(testDefinitionsDirectory, s);
+                        }
+                    })
+                    .filter(Predicates.notNull())
+                    .toSet();
+        } catch (final GitAPIException | NoWorkTreeException e) {
+            LOGGER.warn("Failed to call git status", e);
+            return null;
+        }
     }
 
     /**
