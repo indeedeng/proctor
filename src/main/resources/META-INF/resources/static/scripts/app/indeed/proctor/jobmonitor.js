@@ -29,9 +29,16 @@ indeed.proctor.JobMonitor = function(container, jobid) {
   this.jobid = jobid;
   /** @type {number} */
   this.refresh_interval = 1000;
+  /** @type {number} */
+  this.max_retries = 8;
+  /** @type {number} */
+  this.time_out_ms = 10000;
+
+  this.retries_ = 0;
 
   /** @type {goog.net.XhrIo} @private */
   this.xhr_ = new goog.net.XhrIo();
+  this.xhr_.setTimeoutInterval(this.time_out_ms);
 
   goog.events.listen(this.xhr_, goog.net.EventType.SUCCESS,
                      this.onAjaxSuccess_, false, this);
@@ -240,15 +247,24 @@ indeed.proctor.JobMonitor.prototype.onAjaxSuccess_ = function(ev) {
  * @private
  */
 indeed.proctor.JobMonitor.prototype.onAjaxError_ = function(ev) {
-  /** @type {goog.net.XhrIo} */
-  var xhr = ev.target;
-  var msg = xhr.getLastErrorCode() + ': ' + xhr.getLastError();
-  this.update(msg,
+  this.retries_ = this.retries_ + 1;
+  if (this.retries_ > this.max_retries) {
+    /** @type {goog.net.XhrIo} */
+    var xhr = ev.target;
+    var msg = xhr.getLastErrorCode() + ': ' + xhr.getLastError();
+    this.update(msg,
       'ERROR',
       ['Failed to retrieve job status for ' + this.jobid, msg].join('\n')
-  );
-  this.dispatchEvent(new indeed.proctor.JobMonitor.Event(
+    );
+    if (this.xhr_.isActive()) {
+      this.xhr_.abort();
+    }
+    this.dispatchEvent(new indeed.proctor.JobMonitor.Event(
       indeed.proctor.JobMonitor.EventTypes.ERROR, this.jobid));
+  } else {
+    this.checkStatusTimerId_ = window.setTimeout(
+      goog.bind(this.checkStatus, this), this.refresh_interval);
+  }
 };
 
 
