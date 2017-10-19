@@ -16,6 +16,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.eclipse.jgit.api.CreateBranchCommand;
+import org.eclipse.jgit.api.FetchCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.RebaseCommand;
@@ -31,6 +32,7 @@ import org.eclipse.jgit.lib.TextProgressMonitor;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevTree;
 import org.eclipse.jgit.revwalk.RevWalk;
+import org.eclipse.jgit.transport.FetchResult;
 import org.eclipse.jgit.transport.PushResult;
 import org.eclipse.jgit.transport.RemoteRefUpdate;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
@@ -313,6 +315,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
                             .setTimeout(pullPushTimeoutSeconds)
                             .call();
                     if (!pullResult.isSuccessful()) {
+                        LOGGER.info("Failed to pull from the remote repository. Running undo local changes");
                         undoLocalChanges();
                     }
                     final FileBasedProctorStore.RcsClient rcsClient = new GitProctorCore.GitRcsClient(git, testDefinitionsDirectory);
@@ -413,6 +416,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
             @Override
             public Void call() {
                 try {
+                    LOGGER.info("Undo local changes due to failure of git operations");
                     try {
                         git.rebase().setOperation(RebaseCommand.Operation.ABORT).call();
                     } catch (WrongRepositoryStateException e) {
@@ -421,6 +425,12 @@ public class GitProctorCore implements FileBasedPersisterCore {
                     final String remoteBranch = Constants.R_REMOTES + Constants.DEFAULT_REMOTE_NAME + '/' + git.getRepository().getBranch();
                     git.reset().setMode(ResetType.HARD).setRef(remoteBranch).call();
                     git.clean().setCleanDirectories(true).call();
+                    try {
+                        final ObjectId head = git.getRepository().resolve(Constants.HEAD);
+                        LOGGER.info("Undo local changes completed. HEAD is " + head.getName());
+                    } catch (final Exception e) {
+                        LOGGER.warn("Failed to fetch HEAD", e);
+                    }
                 } catch (final Exception e) {
                     LOGGER.error("Unable to undo changes", e);
                 }
