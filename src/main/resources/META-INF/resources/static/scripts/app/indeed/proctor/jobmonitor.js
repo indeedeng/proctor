@@ -18,14 +18,14 @@ goog.require('indeed.proctor.CenterWindowPosition');
 
 /**
  * @param {Element} container Root element.
- * @param {number} jobid Element Container.
+ * @param {string} jobid Element Container.
  *
  * @constructor
  * @extends {goog.events.EventTarget}
  */
 indeed.proctor.JobMonitor = function(container, jobid) {
   goog.base(this);
-  /** @type {number} */
+  /** @type {string} */
   this.jobid = jobid;
   /** @type {number} */
   this.refresh_interval = 1000;
@@ -296,7 +296,7 @@ indeed.proctor.JobMonitor.prototype.disposeInternal = function() {
  * Event object dispatched after the history state has changed.
  * @param {indeed.proctor.JobMonitor.EventTypes} type The type
  * of this event.
- * @param {number} jobid The job id for this event.
+ * @param {string} jobid The job id for this event.
  * @param {Object=} opt_job_status The job status returned from the rpc
  * controller. Null if type==error.
  * @constructor
@@ -304,7 +304,7 @@ indeed.proctor.JobMonitor.prototype.disposeInternal = function() {
  */
 indeed.proctor.JobMonitor.Event = function(type, jobid, opt_job_status) {
   goog.events.Event.call(this, type);
-  /** @type {number} */
+  /** @type {string} */
   this.jobid = jobid;
 
   /** @type {?Object|undefined} */
@@ -315,7 +315,7 @@ goog.inherits(indeed.proctor.JobMonitor.Event, goog.events.Event);
 
 /**
  *
- * @param {number} jobid The job id.
+ * @param {string} jobid The job id.
  * @param {boolean=} opt_allow_close Optional boolean, default false, indicating
  * if the user should be able to close the popup with escape / clicking off.
  * @return {indeed.proctor.JobMonitor} The job monitor instance created.
