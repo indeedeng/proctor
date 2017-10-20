@@ -282,7 +282,7 @@ public class GitProctor extends FileBasedProctorStore {
         final Pattern testNamePattern;
         final Set<String> activeTests;
 
-        final static private Cache<ObjectId, List<DiffEntry>> diffEntriesCache = CacheBuilder
+        final static private Cache<String, List<DiffEntry>> diffEntriesCache = CacheBuilder
                 .newBuilder()
                 .expireAfterAccess(1, TimeUnit.DAYS)
                 .maximumSize(1_000_000)
@@ -361,7 +361,7 @@ public class GitProctor extends FileBasedProctorStore {
 
         private List<DiffEntry> getDiffEntries(final RevCommit commit, final RevCommit parent) throws IOException {
             try {
-                return diffEntriesCache.get(commit.toObjectId(), new Callable<List<DiffEntry>>() {
+                return diffEntriesCache.get(commit.getName(), new Callable<List<DiffEntry>>() {
                     @Override
                     public List<DiffEntry> call() throws Exception {
                         return df.scan(parent.getTree(), commit.getTree());
