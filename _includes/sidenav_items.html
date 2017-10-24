@@ -1,13 +1,21 @@
-<aside>
-  <h3>Getting Started</h3>
-  <a href="http://indeedeng.github.io/proctor/">Introduction</a>
+<nav>
+<p><button data-toggle="collapse" data-target="#global_nav">Proctor - All Topics</button></p>
+
+<div id="global_nav" class="collapse">
+
+<div style="width: 100%">
+
+  <h3 data-toc-skip>Getting Started</h3>
+  <a href="{{ site.baseurl }}/">Introduction</a>
   {% include docs_ul.html items='quick-start installation terminology maven-modules' %}
-  <h3>Application Usage</h3>
+  <h3 data-toc-skip>Application Usage</h3>
   {% include docs_ul.html items='specification codegen loader using-groups evaluating-tests best-practices' %}
-  <h3>Test Matrix</h3>
+  <h3 data-toc-skip>Test Matrix</h3>
     {% include docs_ul.html items='matrix-schema test-definition test-rules builder' %}  
-  <h3>Deployment</h3>
+  <h3 data-toc-skip>Deployment</h3>
   {% include docs_ul.html items='deploying-groups' %}
-  <h3>Miscellaneous</h3>
-  {% include docs_ul.html items='contributing license' %}  
-</aside>
+
+<br style="clear: left;" />
+</div>
+</div>
+</nav>
