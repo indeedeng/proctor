@@ -2264,6 +2264,7 @@ line-height: 14px;
 
 .affix {
     top: 0;
+    position: relative;
     }
 
 @media (max-width: 767px){
