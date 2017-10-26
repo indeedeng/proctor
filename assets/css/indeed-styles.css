@@ -2265,22 +2265,16 @@ line-height: 14px;
 .affix {
     top: 0;
     }
-    
+
 .affix-bottom {
     position: absolute;
     }
 
 @media (max-width: 767px){
 
-   #toc.affix {         
+   .affix {         
 
-    position: static;   
-    width: auto;        
+    position: static;        
     top: 0;              
     }  
-    }
-
-/* overriding the bootstrap style for the left nav in order to keep long titles from overflowing into body content */    
-nav a {
-    width: 200px;
     }
