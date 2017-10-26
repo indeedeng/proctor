@@ -3,7 +3,7 @@ layout: default
 title: Proctor
 exclude_toc: true
 ---
-<img src="{{ site.baseurl }}/images/Proctor.png" style="max-width:200px;max-height:200px;clear:both;padding:10px;" />
+<img src="{{ site.baseurl }}/images/Proctor.png" style="max-width:125px;max-height:125px;clear:both;padding:10px;" />
 
 Proctor is a A/B testing framework written in Java that enables [data-driven product design](http://engineering.indeed.com/blog/2013/05/indeedeng-data-driven-product-design-slides-video/) at Indeed. Proctor consists of data-model, client specification, matrix builder, and java and javascript code generators.
 
