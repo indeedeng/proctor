@@ -61,8 +61,8 @@
         <div class="container">
             <section>
                 <div class="grid">
-                    <div class="unit one-fifth">
-                        <div data-spy="affix" data-offset-top="108" data-offset-bottom="50">
+                    <div class="unit one-fifth" id="leftnav">
+                        <div id="stickyNav" data-spy="affix" data-offset-bottom="50">
                             {% include sidenav_items.html %}
                             <nav id="toc" data-toggle="toc"></nav>
                              <!--custom script to hide/show the floating page TOC-->
@@ -73,6 +73,12 @@
                                 $( "#navbutton" ).click(function() {
                                     hideObject( "#toc");
                                 });
+                                $( "#stickyNav" ).attr( "data-offset-top", $( "#blogHeader" ).height()+10 );
+                                $( "#stickyNav" ).attr( "style", "width:" + $( "#leftnav" ).width() + "px;" );
+                                $( window ).resize(function() {
+                                    $( "#stickyNav" ).attr( "style", "width:" + $( "#leftnav" ).width() + "px;" );
+                                    $('#stickyNav').data('bs.affix').options.offset = $('#stickyNav').offset().top;
+                            });
                             </script>
                             <!---->
                         </div>
