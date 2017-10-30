@@ -12,4 +12,5 @@ kramdown:
 
 # jekyll serve --watch --baseurl=
 baseurl: "https://indeedeng.github.io/proctor"
+# baseurl: "https://tate-indeed.github.io/proctor-tate-working"
 

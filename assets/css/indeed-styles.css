@@ -57,13 +57,13 @@ article .h1 {
 }
 
 p, ul, ol {
-  margin-left: 20px;
   margin-bottom: 14px;
 }
 
 table {
   width:100%;
   border-collapse:collapse;
+  margin-bottom:1em;
 }
 
 th, td {
@@ -2262,3 +2262,19 @@ line-height: 14px;
 
 @media (min-width:768px){.navbar-toggle{display:none;}}
 
+.affix {
+    top: 0;
+    }
+
+.affix-bottom {
+    position: absolute;
+    }
+
+@media (max-width: 767px){
+
+   .affix {         
+
+    position: static;        
+    top: 0;              
+    }  
+    }
