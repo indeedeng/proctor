@@ -549,17 +549,24 @@ public class GitProctorCore implements FileBasedPersisterCore {
     }
 
     public void refresh() {
-        try {
-            synchronized (workspaceProvider.getRootDirectory()) {
-                /** git pull is preferable since it's more efficient **/
-                final PullResult result = getGit().pull().setProgressMonitor(PROGRESS_MONITOR).setRebase(true).setCredentialsProvider(user).call();
-                if (!result.isSuccessful()) {
-                    /** if git pull failed, use git reset **/
-                    undoLocalChanges();
+        workspaceProvider.synchronizedOperation(new Callable<Void>() {
+            @Override
+            public Void call() {
+                try {
+                    /** git pull is preferable since it's more efficient **/
+                    LOGGER.debug("Started refresh with git pull")
+                    final PullResult result = getGit().pull().setProgressMonitor(PROGRESS_MONITOR).setRebase(true).setCredentialsProvider(user).call();
+                    if (!result.isSuccessful()) {
+                        /** if git pull failed, use git reset **/
+                        LOGGER.info("refresh failed. Running undo local changes");
+                        undoLocalChanges();
+                    }
+                    LOGGER.debug("Finished refresh");
+                } catch (final Exception e) {
+                    LOGGER.error("Error when refreshing git directory " + workspaceProvider.getRootDirectory(), e);
                 }
+                return null;
             }
-        } catch (final Exception e) {
-            LOGGER.error("Error when refreshing git directory " + workspaceProvider.getRootDirectory(), e);
         }
     }
 }
