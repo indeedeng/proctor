@@ -554,7 +554,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
             public Void call() {
                 try {
                     /** git pull is preferable since it's more efficient **/
-                    LOGGER.debug("Started refresh with git pull")
+                    LOGGER.debug("Started refresh with git pull");
                     final PullResult result = getGit().pull().setProgressMonitor(PROGRESS_MONITOR).setRebase(true).setCredentialsProvider(user).call();
                     if (!result.isSuccessful()) {
                         /** if git pull failed, use git reset **/
@@ -567,6 +567,6 @@ public class GitProctorCore implements FileBasedPersisterCore {
                 }
                 return null;
             }
-        }
+        });
     }
 }
