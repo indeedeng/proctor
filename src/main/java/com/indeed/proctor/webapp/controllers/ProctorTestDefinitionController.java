@@ -18,7 +18,9 @@ import com.indeed.proctor.common.ProctorLoadResult;
 import com.indeed.proctor.common.ProctorPromoter;
 import com.indeed.proctor.common.ProctorSpecification;
 import com.indeed.proctor.common.ProctorUtils;
+import com.indeed.proctor.common.RuleEvaluator;
 import com.indeed.proctor.common.TestSpecification;
+import com.indeed.proctor.common.el.LibraryFunctionMapper;
 import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.Payload;
@@ -104,7 +106,7 @@ import java.util.regex.Pattern;
 @RequestMapping({"/definition", "/proctor/definition"})
 public class ProctorTestDefinitionController extends AbstractController {
     private static final Logger LOGGER = Logger.getLogger(ProctorTestDefinitionController.class);
-
+    private static final LibraryFunctionMapper FUNCTION_MAPPER = RuleEvaluator.defaultFunctionMapperBuilder().build();
     private static final Pattern ALPHA_NUMERIC_JAVA_IDENTIFIER_PATTERN = Pattern.compile("^[a-z_][a-z0-9_]*$", Pattern.CASE_INSENSITIVE);
     private static final Pattern VALID_TEST_NAME_PATTERN = ALPHA_NUMERIC_JAVA_IDENTIFIER_PATTERN;
     private static final Pattern VALID_BUCKET_NAME_PATTERN = ALPHA_NUMERIC_JAVA_IDENTIFIER_PATTERN;
@@ -1239,7 +1241,13 @@ public class ProctorTestDefinitionController extends AbstractController {
         } else {
             requiredTests = Collections.emptyMap();
         }
-        return ProctorUtils.verify(testMatrix, matrixSource, requiredTests);
+        return ProctorUtils.verify(
+                testMatrix,
+                matrixSource,
+                requiredTests,
+                FUNCTION_MAPPER,
+                ProctorUtils.convertContextToTestableMap(spec.getProvidedContext())
+        );
     }
 
     private static void validateUsernamePassword(String username, String password) throws IllegalArgumentException {
