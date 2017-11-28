@@ -3,6 +3,7 @@ package com.indeed.proctor.common;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.indeed.proctor.common.model.Allocation;
+import com.indeed.proctor.common.model.ChooseResult;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.Range;
 import com.indeed.proctor.common.model.TestBucket;
@@ -78,9 +79,9 @@ public class TestStandardTestChooser {
 
         final Map<String, Object> values = Collections.emptyMap();
         for (int i = 0; i < 100; i++) {
-            final TestBucket chosen = rtc.choose(String.valueOf(i), values);
+            final ChooseResult chosen = rtc.choose(String.valueOf(i), values);
             assertNotNull(chosen);
-            assertEquals(1, chosen.getValue());
+            assertEquals(1, chosen.getTestBucket().getValue());
         }
     }
 
@@ -185,12 +186,12 @@ public class TestStandardTestChooser {
         );
 
         // Ensure no exceptions thrown.
-        final TestBucket bucket = new StandardTestChooser(selector)
+        final ChooseResult chooseResult = new StandardTestChooser(selector)
                 .choose("identifier", Collections.<String, Object>emptyMap());
 
         assertEquals(
                 "Expected no bucket to be found ",
-                null, bucket);
+                null, chooseResult.getTestBucket());
 
         EasyMock.verify(ruleEvaluator);
     }
@@ -218,10 +219,10 @@ public class TestStandardTestChooser {
             testDefinition
         );
 
-        final TestBucket bucket = new StandardTestChooser(selector)
+        final ChooseResult chooseResult = new StandardTestChooser(selector)
             .choose("identifier", Collections.<String, Object>emptyMap());
 
-        assertNull("Expected no bucket to be found", bucket);
+        assertNull("Expected no bucket to be found", chooseResult.getTestBucket());
 
         EasyMock.verify(ruleEvaluator);
     }
@@ -250,10 +251,10 @@ public class TestStandardTestChooser {
             testDefinition
         );
 
-        final TestBucket bucket = new StandardTestChooser(selector)
+        final ChooseResult chooseResult = new StandardTestChooser(selector)
             .choose("identifier", Collections.<String, Object>emptyMap());
 
-        assertEquals("Test bucket with value 1 expected", 1, bucket.getValue());
+        assertEquals("Test bucket with value 1 expected", 1, chooseResult.getTestBucket().getValue());
 
         EasyMock.verify(ruleEvaluator);
     }
@@ -284,11 +285,11 @@ public class TestStandardTestChooser {
 
         final Map<String, Object> values = Collections.emptyMap();
         for (int accountId = 1; accountId < num; accountId++) { // deliberately skipping 0
-            final TestBucket chosen = rtc.choose(String.valueOf(accountId), values);
+            final ChooseResult chosen = rtc.choose(String.valueOf(accountId), values);
             assertNotNull(chosen);
 
-            counts[chosen.getValue()]++;
-            hashes[chosen.getValue()] = 31 * hashes[chosen.getValue()] + accountId;
+            counts[chosen.getTestBucket().getValue()]++;
+            hashes[chosen.getTestBucket().getValue()] = 31 * hashes[chosen.getTestBucket().getValue()] + accountId;
         }
     }
 

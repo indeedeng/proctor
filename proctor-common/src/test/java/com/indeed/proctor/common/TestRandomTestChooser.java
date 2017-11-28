@@ -5,6 +5,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import com.indeed.proctor.common.model.Allocation;
+import com.indeed.proctor.common.model.ChooseResult;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.Range;
 import com.indeed.proctor.common.model.TestBucket;
@@ -31,9 +32,9 @@ public class TestRandomTestChooser {
 
         final Map<String, Object> values = Collections.emptyMap();
         for (int i = 0; i < 100; i++) {
-            final TestBucket chosen = rtc.choose(null, values);
+            final ChooseResult chosen = rtc.choose(null, values);
             assertNotNull(chosen);
-            assertEquals(1, chosen.getValue());
+            assertEquals(1, chosen.getTestBucket().getValue());
         }
     }
 
@@ -47,9 +48,9 @@ public class TestRandomTestChooser {
         int[] found = { 0, 0 };
         final Map<String, Object> values = Collections.emptyMap();
         for (int i = 0; i < 1000; i++) {
-            final TestBucket chosen = rtc.choose(null, values);
+            final ChooseResult chosen = rtc.choose(null, values);
             assertNotNull(chosen);
-            found[chosen.getValue()]++;
+            found[chosen.getTestBucket().getValue()]++;
         }
 
         assertTrue(found[0] > 400);
@@ -68,9 +69,9 @@ public class TestRandomTestChooser {
         int[] found = { 0, 0, 0 };
         final Map<String, Object> values = Collections.emptyMap();
         for (int i = 0; i < 1000; i++) {
-            final TestBucket chosen = rtc.choose(null, values);
+            final ChooseResult chosen = rtc.choose(null, values);
             assertNotNull(chosen);
-            found[chosen.getValue()]++;
+            found[chosen.getTestBucket().getValue()]++;
         }
 
         assertTrue(found[0] > 250);

@@ -1,5 +1,7 @@
 package com.indeed.proctor.common.model;
 
+import com.google.common.base.Strings;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -16,21 +18,32 @@ public class Allocation {
     @Nonnull
     private List<Range> ranges = Collections.emptyList();
 
+    @Nonnull
+    private String id = "";
+
     public Allocation() { /* intentionally empty */ }
 
-    public Allocation(@Nullable final String rule, @Nonnull final List<Range> ranges) {
+    public Allocation(@Nullable final String rule,
+                      @Nonnull final List<Range> ranges) {
+        this(rule, ranges, null);
+    }
+
+    public Allocation(@Nullable final String rule,
+                      @Nonnull final List<Range> ranges,
+                      @Nullable final String id) {
         this.rule = rule;
         this.ranges = ranges;
+        this.id = Strings.nullToEmpty(id);
     }
 
     public Allocation(@Nonnull final Allocation other) {
         this.rule = other.rule;
-        this.ranges = new ArrayList<Range>();
+        this.ranges = new ArrayList<>();
         for (final Range range : other.getRanges()) {
             this.ranges.add(new Range(range));
         }
+        this.id = other.id;
     }
-
 
     @Nullable
     public String getRule() {
@@ -49,5 +62,14 @@ public class Allocation {
 
     public void setRanges(@Nonnull final List<Range> ranges) {
         this.ranges = ranges;
+    }
+
+    @Nonnull
+    public String getId() {
+        return id;
+    }
+
+    public void setId(@Nullable final String id) {
+        this.id = Strings.nullToEmpty(id);
     }
 }

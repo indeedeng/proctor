@@ -36,7 +36,7 @@ public class CannedProctorResults {
             testDefinition.getBuckets().add(testBucket);
         }
 
-        return (new ProctorResult(Audit.EMPTY_VERSION, buckets, testVersions));
+        return (new ProctorResult(Audit.EMPTY_VERSION, buckets, Collections.<String, Allocation>emptyMap(), testVersions));
     }
 
     public static ProctorResult of(
@@ -63,7 +63,7 @@ public class CannedProctorResults {
             testDefinition.getBuckets().add(testBucket);
         }
 
-        return (new ProctorResult(Audit.EMPTY_VERSION, buckets, testVersions));
+        return (new ProctorResult(Audit.EMPTY_VERSION, buckets, Collections.<String, Allocation>emptyMap(), testVersions));
     }
 
 

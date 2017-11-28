@@ -1,5 +1,6 @@
 package com.indeed.proctor.common;
 
+import com.indeed.proctor.common.model.ChooseResult;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.TestBucket;
 
@@ -24,6 +25,6 @@ interface TestChooser<IdentifierType> {
     @Nonnull
     String getTestName();
 
-    @Nullable
-    TestBucket choose(@Nullable IdentifierType identifier, @Nonnull Map<String, Object> values);
+    @Nonnull
+    ChooseResult choose(@Nullable IdentifierType identifier, @Nonnull Map<String, Object> values);
 }
