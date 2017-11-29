@@ -28,6 +28,7 @@ public class TestDefinition {
     //  there are multiple ways to allocate the buckets based on rules, but most tests will probably just have one Allocation
     @Nonnull
     private List<Allocation> allocations = Collections.emptyList();
+    private boolean logged = true;
 
     /**
      * For advisory purposes only
@@ -39,6 +40,7 @@ public class TestDefinition {
 
     public TestDefinition() { /* intentionally empty */ }
 
+    @Deprecated
     public TestDefinition(
             final String version,
             @Nullable final String rule,
@@ -61,10 +63,35 @@ public class TestDefinition {
         this.description = description;
     }
 
+    public TestDefinition(
+            final String version,
+            @Nullable final String rule,
+            @Nonnull final TestType testType,
+            @Nonnull final String salt,
+            @Nonnull final List<TestBucket> buckets,
+            @Nonnull final List<Allocation> allocations,
+            @Nonnull final Map<String, Object> constants,
+            final boolean logged,
+            @Nonnull final Map<String, Object> specialConstants,
+            @Nullable final String description
+    ) {
+        this.version = version;
+        this.constants = constants;
+        this.specialConstants = specialConstants;
+        this.salt = salt;
+        this.rule = rule;
+        this.buckets = buckets;
+        this.allocations = allocations;
+        this.logged = logged;
+        this.testType = testType;
+        this.description = description;
+    }
+
     public TestDefinition(@Nonnull final TestDefinition other) {
         this.version = other.version;
         this.salt = other.salt;
         this.rule = other.rule;
+        this.logged = other.logged;
         this.description = other.description;
 
         if (other.constants != null) {
@@ -72,7 +99,7 @@ public class TestDefinition {
         }
 
         if (other.specialConstants != null) {
-            this.specialConstants =  Maps.newHashMap(other.specialConstants);
+            this.specialConstants = Maps.newHashMap(other.specialConstants);
         }
 
         if (other.buckets != null) {
@@ -170,6 +197,10 @@ public class TestDefinition {
     public void setAllocations(@Nonnull final List<Allocation> allocations) {
         this.allocations = allocations;
     }
+
+    public void setLogged(final boolean logged){ this.logged = logged; }
+
+    public boolean getLogged() { return logged; }
 
     @Nonnull
     public TestType getTestType() {

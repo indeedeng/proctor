@@ -22,7 +22,7 @@ public class ConsumableTestDefinition {
     private List<TestBucket> buckets = Collections.emptyList();
     @Nonnull
     private List<Allocation> allocations = Collections.emptyList();
-
+    private boolean logged = true;
     @Nonnull
     private TestType testType;
     @Nullable
@@ -30,6 +30,7 @@ public class ConsumableTestDefinition {
 
     public ConsumableTestDefinition() { /* intentionally empty */ }
 
+    @Deprecated
     public ConsumableTestDefinition(
             final String version,
             @Nullable final String rule,
@@ -46,6 +47,28 @@ public class ConsumableTestDefinition {
         this.rule = rule;
         this.buckets = buckets;
         this.allocations = allocations;
+        this.testType = testType;
+        this.description = description;
+    }
+
+    public ConsumableTestDefinition(
+            final String version,
+            @Nullable final String rule,
+            @Nonnull final TestType testType,
+            @Nullable final String salt,
+            @Nonnull final List<TestBucket> buckets,
+            @Nonnull final List<Allocation> allocations,
+            final boolean logged,
+            @Nonnull final Map<String, Object> constants,
+            @Nullable final String description
+    ) {
+        this.constants = constants;
+        this.version = version;
+        this.salt = salt;
+        this.rule = rule;
+        this.buckets = buckets;
+        this.allocations = allocations;
+        this.logged = logged;
         this.testType = testType;
         this.description = description;
     }
@@ -102,6 +125,10 @@ public class ConsumableTestDefinition {
     public void setAllocations(@Nonnull final List<Allocation> allocations) {
         this.allocations = allocations;
     }
+
+    public void setLogged(final boolean logged){ this.logged = logged; }
+
+    public boolean getLogged() { return logged; }
 
     @Nonnull
     public TestType getTestType() {
