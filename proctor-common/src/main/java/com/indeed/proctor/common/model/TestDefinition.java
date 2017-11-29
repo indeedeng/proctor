@@ -70,8 +70,8 @@ public class TestDefinition {
             @Nonnull final String salt,
             @Nonnull final List<TestBucket> buckets,
             @Nonnull final List<Allocation> allocations,
-            @Nonnull final Map<String, Object> constants,
             final boolean logged,
+            @Nonnull final Map<String, Object> constants,
             @Nonnull final Map<String, Object> specialConstants,
             @Nullable final String description
     ) {

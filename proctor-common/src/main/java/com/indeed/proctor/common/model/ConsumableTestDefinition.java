@@ -23,6 +23,7 @@ public class ConsumableTestDefinition {
     @Nonnull
     private List<Allocation> allocations = Collections.emptyList();
     private boolean logged = true;
+
     @Nonnull
     private TestType testType;
     @Nullable
