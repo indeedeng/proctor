@@ -212,10 +212,11 @@ public abstract class AbstractGroups {
      * @param separator a char used as separator
      */
     public void appendTestGroups(final StringBuilder sb, char separator) {
+        final Map<String, ConsumableTestDefinition> testDefinitions = proctorResult.getTestDefinitions();
         for (final Entry<String, TestBucket> entry : proctorResult.getBuckets().entrySet()) {
             final String testName = entry.getKey();
             final TestBucket testBucket = entry.getValue();
-            if (testBucket.getValue() < 0) {
+            if (!testDefinitions.get(testName).getLogged() || testBucket.getValue() < 0) {
                 continue;
             }
             sb.append(testName).append(testBucket.getValue()).append(separator);
