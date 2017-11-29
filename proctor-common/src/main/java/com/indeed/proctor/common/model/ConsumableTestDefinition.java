@@ -127,9 +127,13 @@ public class ConsumableTestDefinition {
         this.allocations = allocations;
     }
 
-    public void setLogged(final boolean logged){ this.logged = logged; }
+    public void setLogged(final boolean logged) {
+        this.logged = logged;
+    }
 
-    public boolean getLogged() { return logged; }
+    public boolean getLogged() {
+        return logged;
+    }
 
     @Nonnull
     public TestType getTestType() {
