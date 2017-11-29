@@ -41,7 +41,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class SvnPersisterCoreImpl implements SvnPersisterCore, Closeable {
     private static final Logger LOGGER = Logger.getLogger(SvnPersisterCoreImpl.class);
 
-    final ObjectMapper objectMapper = Serializers.strict();
+    final ObjectMapper objectMapper = Serializers.lenient();
 
     // template directory suffix to be used when creating the 'template svn repo'
     private static final String TEMPLATE_DIR_SUFFIX = "template";

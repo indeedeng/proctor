@@ -27,7 +27,7 @@ public abstract class FileBasedProctorStore implements ProctorStore {
     private static final String SUFFIX = ".json";
     static final String TEST_METADATA_FILENAME = "metadata" + SUFFIX;
     static final String TEST_DEFINITION_FILENAME = "definition" + SUFFIX;
-    final ObjectMapper objectMapper = Serializers.strict();
+    final ObjectMapper objectMapper = Serializers.lenient();
 
     public static final String DEFAULT_TEST_DEFINITIONS_DIRECTORY = "test-definitions";
     private final String testDefinitionsDirectory;
