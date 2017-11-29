@@ -32,7 +32,7 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
 
     @Nullable
     private AbstractProctorDiffReporter diffReporter = new AbstractProctorDiffReporter();
-
+    private ProctorLoadReporter reporter = new EmptyProctorLoadReporter();
     public AbstractProctorLoader(@Nonnull final Class<?> cls, @Nonnull final ProctorSpecification specification, @Nonnull final FunctionMapper functionMapper) {
         super(cls.getSimpleName());
         this.requiredTests = specification.getTests();
@@ -67,12 +67,14 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
         try {
             newProctor = doLoad();
         } catch (@Nonnull final Throwable t) {
+            reporter.reportFailed(t);
             lastLoadErrorMessage = t.getMessage();
             throw new RuntimeException("Unable to reload proctor from " + getSource(), t);
         }
         lastLoadErrorMessage = null;
 
         if (newProctor == null) {
+            reporter.reportNoChange();
             // This should only happen if the versions of the matrix files are the same.
 
             if (!dataLoadTimer.isLoadedDataSuccessfullyRecently()) {
@@ -83,8 +85,9 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
             return false;
         }
 
+        reporter.reportReloaded(current, newProctor);
         if (this.current != null && newProctor != null) {
-            this.diffReporter.reportProctorDiff(this.current.getArtifact(), newProctor.getArtifact());
+            this.diffReporter.reportProctorDiff(current.getArtifact(), newProctor.getArtifact());
         }
 
         this.current = newProctor;
@@ -166,5 +169,9 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
         }
 
         this.diffReporter = diffReporter;
+    }
+
+    public void setProctorLoadReporter(final ProctorLoadReporter reporter) {
+        this.reporter = reporter;
     }
 }
