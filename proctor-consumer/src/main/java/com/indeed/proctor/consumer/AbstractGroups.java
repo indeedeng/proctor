@@ -216,7 +216,8 @@ public abstract class AbstractGroups {
         for (final Entry<String, TestBucket> entry : proctorResult.getBuckets().entrySet()) {
             final String testName = entry.getKey();
             final TestBucket testBucket = entry.getValue();
-            if (!testDefinitions.get(testName).getLogged() || testBucket.getValue() < 0) {
+            final ConsumableTestDefinition testDefinition = testDefinitions.get(testName);
+            if ((testDefinition != null && !testDefinition.getLogged()) || testBucket.getValue() < 0) {
                 continue;
             }
             sb.append(testName).append(testBucket.getValue()).append(separator);
