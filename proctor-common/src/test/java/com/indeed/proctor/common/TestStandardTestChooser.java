@@ -80,7 +80,10 @@ public class TestStandardTestChooser {
         for (int i = 0; i < 100; i++) {
             final TestChooser.Result chosen = rtc.choose(String.valueOf(i), values);
             assertNotNull(chosen);
+            assertNotNull(chosen.getTestBucket());
+            assertNotNull(chosen.getAllocation());
             assertEquals(1, chosen.getTestBucket().getValue());
+            assertEquals("#A1", chosen.getAllocation().getId());
         }
     }
 
@@ -188,9 +191,9 @@ public class TestStandardTestChooser {
         final TestChooser.Result chooseResult = new StandardTestChooser(selector)
                 .choose("identifier", Collections.<String, Object>emptyMap());
 
-        assertEquals(
-                "Expected no bucket to be found ",
-                null, chooseResult.getTestBucket());
+        assertNotNull(chooseResult);
+        assertNull( "Expected no bucket to be found ", chooseResult.getTestBucket());
+        assertNull( "Expected no allocation to be found ", chooseResult.getAllocation());
 
         EasyMock.verify(ruleEvaluator);
     }
@@ -207,8 +210,8 @@ public class TestStandardTestChooser {
         testDefinition.setBuckets(INACTIVE_CONTROL_TEST_BUCKETS);
 
         final List<Allocation> allocations = Lists.newArrayList();
-        allocations.add(new Allocation("${country == 'US'}", RANGES_100_0));
-        allocations.add(new Allocation("${country == 'GB'}", RANGES_100_0));
+        allocations.add(new Allocation("${country == 'US'}", RANGES_100_0, "#B1"));
+        allocations.add(new Allocation("${country == 'GB'}", RANGES_100_0, "#C1"));
         testDefinition.setAllocations(allocations);
 
         final RuleEvaluator ruleEvaluator = newRuleEvaluator(false);
@@ -221,7 +224,9 @@ public class TestStandardTestChooser {
         final TestChooser.Result chooseResult = new StandardTestChooser(selector)
             .choose("identifier", Collections.<String, Object>emptyMap());
 
+        assertNotNull(chooseResult);
         assertNull("Expected no bucket to be found", chooseResult.getTestBucket());
+        assertNull("Expected no allocation to be found", chooseResult.getAllocation());
 
         EasyMock.verify(ruleEvaluator);
     }
@@ -240,7 +245,7 @@ public class TestStandardTestChooser {
         testDefinition.setBuckets(INACTIVE_CONTROL_TEST_BUCKETS);
 
         final List<Allocation> allocations = Lists.newArrayList();
-        allocations.add(new Allocation("${country == 'GB'}", RANGES_100_0));
+        allocations.add(new Allocation("${country == 'GB'}", RANGES_100_0, "#B1"));
         testDefinition.setAllocations(allocations);
 
         final RuleEvaluator ruleEvaluator = newRuleEvaluator(true);
@@ -254,6 +259,7 @@ public class TestStandardTestChooser {
             .choose("identifier", Collections.<String, Object>emptyMap());
 
         assertEquals("Test bucket with value 1 expected", 1, chooseResult.getTestBucket().getValue());
+        assertEquals("Test allocation with id #B1 expected", "#B1", chooseResult.getAllocation().getId());
 
         EasyMock.verify(ruleEvaluator);
     }
@@ -286,6 +292,8 @@ public class TestStandardTestChooser {
         for (int accountId = 1; accountId < num; accountId++) { // deliberately skipping 0
             final TestChooser.Result chosen = rtc.choose(String.valueOf(accountId), values);
             assertNotNull(chosen);
+            assertNotNull(chosen.getTestBucket());
+            assertNotNull(chosen.getAllocation());
 
             counts[chosen.getTestBucket().getValue()]++;
             hashes[chosen.getTestBucket().getValue()] = 31 * hashes[chosen.getTestBucket().getValue()] + accountId;
@@ -294,7 +302,7 @@ public class TestStandardTestChooser {
 
     private void updateAllocations(final ImmutableList<Range> ranges) {
         final List<Allocation> allocations = Lists.newArrayList();
-        allocations.add(new Allocation("${}", ranges));
+        allocations.add(new Allocation("${}", ranges, "#A1"));
         testDefinition.setAllocations(allocations);
     }
 }

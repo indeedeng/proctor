@@ -33,6 +33,9 @@ public class TestRandomTestChooser {
         for (int i = 0; i < 100; i++) {
             final TestChooser.Result chosen = rtc.choose(null, values);
             assertNotNull(chosen);
+            assertNotNull(chosen.getTestBucket());
+            assertNotNull(chosen.getAllocation());
+            assertEquals("#A1", chosen.getAllocation().getId());
             assertEquals(1, chosen.getTestBucket().getValue());
         }
     }
@@ -49,6 +52,9 @@ public class TestRandomTestChooser {
         for (int i = 0; i < 1000; i++) {
             final TestChooser.Result chosen = rtc.choose(null, values);
             assertNotNull(chosen);
+            assertNotNull(chosen.getTestBucket());
+            assertNotNull(chosen.getAllocation());
+            assertEquals("#A1", chosen.getAllocation().getId());
             found[chosen.getTestBucket().getValue()]++;
         }
 
@@ -70,6 +76,9 @@ public class TestRandomTestChooser {
         for (int i = 0; i < 1000; i++) {
             final TestChooser.Result chosen = rtc.choose(null, values);
             assertNotNull(chosen);
+            assertNotNull(chosen.getTestBucket());
+            assertNotNull(chosen.getAllocation());
+            assertEquals("#A1", chosen.getAllocation().getId());
             found[chosen.getTestBucket().getValue()]++;
         }
 
@@ -92,7 +101,7 @@ public class TestRandomTestChooser {
         testDefinition.setBuckets(buckets);
 
         final List<Allocation> allocations = Lists.newArrayList();
-        allocations.add(new Allocation("${}", ranges));
+        allocations.add(new Allocation("${}", ranges, "#A1"));
         testDefinition.setAllocations(allocations);
 
         final RandomTestChooser rtc = new RandomTestChooser(expressionFactory, functionMapper, "testName", testDefinition);
