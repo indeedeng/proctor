@@ -1,10 +1,11 @@
 package com.indeed.proctor.common;
 
-
-import com.google.common.base.Preconditions;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Preconditions;
+import com.indeed.util.varexport.ManagedVariable;
+import com.indeed.util.varexport.VarExporter;
 import org.springframework.core.io.Resource;
 
 import javax.annotation.Nonnull;
@@ -14,10 +15,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-
 public class JsonProctorLoaderFactory {
     // Lenient parser used by consumer apps to prevent deployment order dependencies
     private static final ObjectMapper OBJECT_MAPPER = Serializers.lenient();
+    protected static final VarExporter VAR_EXPORTER = VarExporter.forNamespace(JsonProctorLoaderFactory.class.getSimpleName());
 
     @Nullable
     protected String classResourcePath;
@@ -69,6 +70,7 @@ public class JsonProctorLoaderFactory {
     private void readSpecificationResource(@Nonnull final InputStream stream, @Nonnull final String specificationResource) {
         try {
             this._specification = OBJECT_MAPPER.readValue(stream, ProctorSpecification.class);
+            exportJsonSpecification(OBJECT_MAPPER.writeValueAsString(_specification));
 
         } catch (@Nonnull final JsonParseException e) {
             throw new IllegalArgumentException("Unable to read proctor specification from " + specificationResource, e);
@@ -115,5 +117,14 @@ public class JsonProctorLoaderFactory {
         }
 
         this.diffReporter = diffReporter;
+    }
+
+    protected void exportJsonSpecification(final String jsonSpec) {
+        final ManagedVariable<String> managedVariable =
+                ManagedVariable.<String>builder()
+                        .setName("specification")
+                        .setValue(jsonSpec)
+                        .build();
+        VAR_EXPORTER.export(managedVariable);
     }
 }
