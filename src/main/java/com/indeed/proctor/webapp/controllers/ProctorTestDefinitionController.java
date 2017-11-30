@@ -907,13 +907,23 @@ public class ProctorTestDefinitionController extends AbstractController {
                             if (isAutopromote
                                     && existingTestDefinition != null
                                     && isAllocationOnlyChange(existingTestDefinition, testDefinitionToUpdate)) {
-                                final boolean isQaPromoted;
                                 job.log("allocation only change, checking against other branches for auto-promote capability for test " + testName + "\nat QA revision " + qaRevision + " and PRODUCTION revision " + prodRevision);
+
+                                final List<Revision> histories = getTestHistory(trunkStore, testName, 2);
+                                if (histories.size() <= 1) {
+                                    throw new IllegalStateException("Test hasn't been updated since " + previousRevision + ". Failed to find the version for autopromote.");
+                                }
+                                if (!histories.get(1).getRevision().equals(previousRevision)) {
+                                    throw new IllegalStateException("Test has been updated more than once since " + previousRevision + ". Failed to find the version for autopromote.");
+                                }
+                                final Revision currentVersion = histories.get(0);
+
+                                final boolean isQaPromoted;
                                 final boolean isQaPromotable = qaRevision != EnvironmentVersion.UNKNOWN_REVISION
                                         && isAllocationOnlyChange(getTestDefinition(Environment.QA, testName, qaRevision), testDefinitionToUpdate);
                                 if (isQaPromotable) {
                                     job.log("auto-promoting changes to QA");
-                                    isQaPromoted = doJobIndependentPromoteInternal(testName, username, password, Environment.WORKING, trunkStore.getLatestVersion(), Environment.QA, qaRevision, requestParameterMap, job, true);
+                                    isQaPromoted = doJobIndependentPromoteInternal(testName, username, password, Environment.WORKING, currentVersion.getRevision(), Environment.QA, qaRevision, requestParameterMap, job, true);
                                 } else {
                                     isQaPromoted = false;
                                     job.log("previous revision changes prevented auto-promote to QA");
@@ -922,7 +932,7 @@ public class ProctorTestDefinitionController extends AbstractController {
                                         && prodRevision != EnvironmentVersion.UNKNOWN_REVISION
                                         && isAllocationOnlyChange(getTestDefinition(Environment.PRODUCTION, testName, prodRevision), testDefinitionToUpdate)) {
                                     job.log("auto-promoting changes to PRODUCTION");
-                                    doJobIndependentPromoteInternal(testName, username, password, Environment.WORKING, trunkStore.getLatestVersion(), Environment.PRODUCTION, prodRevision, requestParameterMap, job, true);
+                                    doJobIndependentPromoteInternal(testName, username, password, Environment.WORKING, currentVersion.getRevision(), Environment.PRODUCTION, prodRevision, requestParameterMap, job, true);
 
                                 } else {
                                     job.log("previous revision changes prevented auto-promote to PRODUCTION");
