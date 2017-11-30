@@ -217,7 +217,7 @@ public abstract class AbstractGroups {
             final String testName = entry.getKey();
             final TestBucket testBucket = entry.getValue();
             final ConsumableTestDefinition testDefinition = testDefinitions.get(testName);
-            if ((testDefinition != null && !testDefinition.getLogged()) || testBucket.getValue() < 0) {
+            if ((testDefinition != null && !testDefinition.getActive()) || testBucket.getValue() < 0) {
                 continue;
             }
             sb.append(testName).append(testBucket.getValue()).append(separator);
