@@ -28,7 +28,7 @@ public class TestDefinition {
     //  there are multiple ways to allocate the buckets based on rules, but most tests will probably just have one Allocation
     @Nonnull
     private List<Allocation> allocations = Collections.emptyList();
-    private boolean logged = true;
+    private boolean active = true;
 
     /**
      * For advisory purposes only
@@ -70,7 +70,7 @@ public class TestDefinition {
             @Nonnull final String salt,
             @Nonnull final List<TestBucket> buckets,
             @Nonnull final List<Allocation> allocations,
-            final boolean logged,
+            final boolean active,
             @Nonnull final Map<String, Object> constants,
             @Nonnull final Map<String, Object> specialConstants,
             @Nullable final String description
@@ -82,7 +82,7 @@ public class TestDefinition {
         this.rule = rule;
         this.buckets = buckets;
         this.allocations = allocations;
-        this.logged = logged;
+        this.active = active;
         this.testType = testType;
         this.description = description;
     }
@@ -91,7 +91,7 @@ public class TestDefinition {
         this.version = other.version;
         this.salt = other.salt;
         this.rule = other.rule;
-        this.logged = other.logged;
+        this.active = other.active;
         this.description = other.description;
 
         if (other.constants != null) {
@@ -198,12 +198,12 @@ public class TestDefinition {
         this.allocations = allocations;
     }
 
-    public void setLogged(final boolean logged) {
-        this.logged = logged;
+    public void setActive(final boolean active) {
+        this.active = active;
     }
 
-    public boolean getLogged() {
-        return logged;
+    public boolean getActive() {
+        return active;
     }
 
     @Nonnull
