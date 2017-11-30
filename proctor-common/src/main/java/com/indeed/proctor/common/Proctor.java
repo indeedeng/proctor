@@ -8,7 +8,6 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.Maps;
 import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.Audit;
-import com.indeed.proctor.common.model.ChooseResult;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.common.model.TestMatrixArtifact;
@@ -206,19 +205,17 @@ public class Proctor {
                     continue;
                 }
             }
-            final ChooseResult chooseResult;
+            final TestChooser.Result chooseResult;
             if (identifier == null) {
                 chooseResult = ((RandomTestChooser) testChooser).choose(null, inputContext);
             } else {
                 chooseResult = ((StandardTestChooser) testChooser).choose(identifier, inputContext);
             }
-            if (chooseResult != null) {
-                if (chooseResult.getTestBucket() != null) {
-                    testGroups.put(testName, chooseResult.getTestBucket());
-                }
-                if (chooseResult.getAllocation() != null) {
-                    testAllocations.put(testName, chooseResult.getAllocation());
-                }
+            if (chooseResult.getTestBucket() != null) {
+                testGroups.put(testName, chooseResult.getTestBucket());
+            }
+            if (chooseResult.getAllocation() != null) {
+                testAllocations.put(testName, chooseResult.getAllocation());
             }
         }
 

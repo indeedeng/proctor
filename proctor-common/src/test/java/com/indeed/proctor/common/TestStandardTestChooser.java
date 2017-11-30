@@ -3,7 +3,6 @@ package com.indeed.proctor.common;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.indeed.proctor.common.model.Allocation;
-import com.indeed.proctor.common.model.ChooseResult;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.Range;
 import com.indeed.proctor.common.model.TestBucket;
@@ -79,7 +78,7 @@ public class TestStandardTestChooser {
 
         final Map<String, Object> values = Collections.emptyMap();
         for (int i = 0; i < 100; i++) {
-            final ChooseResult chosen = rtc.choose(String.valueOf(i), values);
+            final TestChooser.Result chosen = rtc.choose(String.valueOf(i), values);
             assertNotNull(chosen);
             assertEquals(1, chosen.getTestBucket().getValue());
         }
@@ -98,11 +97,11 @@ public class TestStandardTestChooser {
         // if this ever fails, it means that something is broken about how tests are split
         // and you should investigate why!
 
-        Assert.assertEquals("bucket0 counts", 4999412, counts[0]);
-        Assert.assertEquals("bucket1 counts", 5000587, counts[1]);
+        assertEquals("bucket0 counts", 4999412, counts[0]);
+        assertEquals("bucket1 counts", 5000587, counts[1]);
 
-        Assert.assertEquals("bucket0 hash", 1863060514, hashes[0]);
-        Assert.assertEquals("bucket1 hash", 765061458, hashes[1]);
+        assertEquals("bucket0 hash", 1863060514, hashes[0]);
+        assertEquals("bucket1 hash", 765061458, hashes[1]);
     }
 
     // constants shared between the next two tests
@@ -124,11 +123,11 @@ public class TestStandardTestChooser {
         // if this ever fails, it means that something is broken about how tests are split
         // and you should investigate why!
 
-        Assert.assertEquals("bucket0 counts", COUNTS_BUCKET0_SALT_AMP_TESTNAME, counts[0]);
-        Assert.assertEquals("bucket1 counts", COUNTS_BUCKET1_SALT_AMP_TESTNAME, counts[1]);
+        assertEquals("bucket0 counts", COUNTS_BUCKET0_SALT_AMP_TESTNAME, counts[0]);
+        assertEquals("bucket1 counts", COUNTS_BUCKET1_SALT_AMP_TESTNAME, counts[1]);
 
-        Assert.assertEquals("bucket0 hash", HASH_BUCKET0_SALT_AMP_TESTNAME, hashes[0]);
-        Assert.assertEquals("bucket1 hash", HASH_BUCKET1_SALT_AMP_TESTNAME, hashes[1]);
+        assertEquals("bucket0 hash", HASH_BUCKET0_SALT_AMP_TESTNAME, hashes[0]);
+        assertEquals("bucket1 hash", HASH_BUCKET1_SALT_AMP_TESTNAME, hashes[1]);
     }
 
     @Test
@@ -147,11 +146,11 @@ public class TestStandardTestChooser {
         // and you should investigate why!
 
         // These values should be the same as in the preceding test
-        Assert.assertEquals("bucket0 counts", COUNTS_BUCKET0_SALT_AMP_TESTNAME, counts[0]);
-        Assert.assertEquals("bucket1 counts", COUNTS_BUCKET1_SALT_AMP_TESTNAME, counts[1]);
+        assertEquals("bucket0 counts", COUNTS_BUCKET0_SALT_AMP_TESTNAME, counts[0]);
+        assertEquals("bucket1 counts", COUNTS_BUCKET1_SALT_AMP_TESTNAME, counts[1]);
 
-        Assert.assertEquals("bucket0 hash", HASH_BUCKET0_SALT_AMP_TESTNAME, hashes[0]);
-        Assert.assertEquals("bucket1 hash", HASH_BUCKET1_SALT_AMP_TESTNAME, hashes[1]);
+        assertEquals("bucket0 hash", HASH_BUCKET0_SALT_AMP_TESTNAME, hashes[0]);
+        assertEquals("bucket1 hash", HASH_BUCKET1_SALT_AMP_TESTNAME, hashes[1]);
     }
 
     @Test
@@ -186,7 +185,7 @@ public class TestStandardTestChooser {
         );
 
         // Ensure no exceptions thrown.
-        final ChooseResult chooseResult = new StandardTestChooser(selector)
+        final TestChooser.Result chooseResult = new StandardTestChooser(selector)
                 .choose("identifier", Collections.<String, Object>emptyMap());
 
         assertEquals(
@@ -219,7 +218,7 @@ public class TestStandardTestChooser {
             testDefinition
         );
 
-        final ChooseResult chooseResult = new StandardTestChooser(selector)
+        final TestChooser.Result chooseResult = new StandardTestChooser(selector)
             .choose("identifier", Collections.<String, Object>emptyMap());
 
         assertNull("Expected no bucket to be found", chooseResult.getTestBucket());
@@ -251,7 +250,7 @@ public class TestStandardTestChooser {
             testDefinition
         );
 
-        final ChooseResult chooseResult = new StandardTestChooser(selector)
+        final TestChooser.Result chooseResult = new StandardTestChooser(selector)
             .choose("identifier", Collections.<String, Object>emptyMap());
 
         assertEquals("Test bucket with value 1 expected", 1, chooseResult.getTestBucket().getValue());
@@ -285,7 +284,7 @@ public class TestStandardTestChooser {
 
         final Map<String, Object> values = Collections.emptyMap();
         for (int accountId = 1; accountId < num; accountId++) { // deliberately skipping 0
-            final ChooseResult chosen = rtc.choose(String.valueOf(accountId), values);
+            final TestChooser.Result chosen = rtc.choose(String.valueOf(accountId), values);
             assertNotNull(chosen);
 
             counts[chosen.getTestBucket().getValue()]++;

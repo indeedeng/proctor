@@ -25,7 +25,7 @@ public class Allocation {
 
     public Allocation(@Nullable final String rule,
                       @Nonnull final List<Range> ranges) {
-        this(rule, ranges, null);
+        this(rule, ranges, "");
     }
 
     public Allocation(@Nullable final String rule,

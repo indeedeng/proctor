@@ -6,7 +6,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.indeed.proctor.common.model.Allocation;
-import com.indeed.proctor.common.model.ChooseResult;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.Range;
 import com.indeed.proctor.common.model.TestBucket;
@@ -15,7 +14,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.security.MessageDigest;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
@@ -117,17 +115,17 @@ class StandardTestChooser implements TestChooser<String> {
         return result;
     }
 
-    @Nullable
+    @Nonnull
     @Override
-    public ChooseResult choose(@Nullable final String identifier, @Nonnull final Map<String, Object> values) {
+    public TestChooser.Result choose(@Nullable final String identifier, @Nonnull final Map<String, Object> values) {
         final int matchingRuleIndex = testRangeSelector.findMatchingRule(values);
         if (matchingRuleIndex < 0) {
-            return ChooseResult.EMPTY;
+            return Result.EMPTY;
         }
 
         final Allocation matchingAllocation = testRangeSelector.getTestDefinition().getAllocations().get(matchingRuleIndex);
 
-        return new ChooseResult(
+        return new Result(
                 chooseBucket(
                         cutoffs[matchingRuleIndex],
                         testRangeSelector.getBucketRange(matchingRuleIndex),
