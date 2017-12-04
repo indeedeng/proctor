@@ -22,7 +22,7 @@ public class ConsumableTestDefinition {
     private List<TestBucket> buckets = Collections.emptyList();
     @Nonnull
     private List<Allocation> allocations = Collections.emptyList();
-    private boolean active = true;
+    private boolean silent = false;
 
     @Nonnull
     private TestType testType;
@@ -59,7 +59,7 @@ public class ConsumableTestDefinition {
             @Nullable final String salt,
             @Nonnull final List<TestBucket> buckets,
             @Nonnull final List<Allocation> allocations,
-            final boolean active,
+            final boolean silent,
             @Nonnull final Map<String, Object> constants,
             @Nullable final String description
     ) {
@@ -69,7 +69,7 @@ public class ConsumableTestDefinition {
         this.rule = rule;
         this.buckets = buckets;
         this.allocations = allocations;
-        this.active = active;
+        this.silent = silent;
         this.testType = testType;
         this.description = description;
     }
@@ -127,12 +127,12 @@ public class ConsumableTestDefinition {
         this.allocations = allocations;
     }
 
-    public void setActive(final boolean active) {
-        this.active = active;
+    public void setSilent(final boolean silent) {
+        this.silent = silent;
     }
 
-    public boolean getActive() {
-        return active;
+    public boolean getSilent() {
+        return silent;
     }
 
     @Nonnull

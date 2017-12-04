@@ -194,7 +194,7 @@ public abstract class ProctorUtils {
         constants.putAll(td.getConstants());
         constants.putAll(specialConstants);
 
-        return new ConsumableTestDefinition(td.getVersion(), rule, td.getTestType(), td.getSalt(), td.getBuckets(), allocations, td.getActive(), constants, td.getDescription());
+        return new ConsumableTestDefinition(td.getVersion(), rule, td.getTestType(), td.getSalt(), td.getBuckets(), allocations, td.getSilent(), constants, td.getDescription());
     }
 
     public static ProctorSpecification readSpecification(final File inputFile) {
