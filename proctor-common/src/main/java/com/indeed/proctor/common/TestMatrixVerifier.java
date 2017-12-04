@@ -16,7 +16,7 @@ public class TestMatrixVerifier {
     private static final Logger LOGGER = Logger.getLogger(TestMatrixVerifier.class);
 
     @Nonnull
-    private static final ObjectMapper OBJECT_MAPPER = Serializers.strict();
+    private static final ObjectMapper OBJECT_MAPPER = Serializers.lenient();
     @Nonnull
     private final String source;
     @Nonnull

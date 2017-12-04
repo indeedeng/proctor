@@ -21,7 +21,7 @@ import java.util.List;
  */
 public class LocalDirectoryCore implements FileBasedPersisterCore {
     private static final Logger LOGGER = Logger.getLogger(LocalDirectoryCore.class);
-    private final ObjectMapper objectMapper = Serializers.strict();
+    private final ObjectMapper objectMapper = Serializers.lenient();
 
     private final File baseDir;
     private final String testDefinitionsDirectory;

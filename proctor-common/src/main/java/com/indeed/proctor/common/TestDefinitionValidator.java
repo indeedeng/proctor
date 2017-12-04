@@ -12,7 +12,7 @@ import java.io.InputStream;
  * Simple validator to check if the input JSON file is valid format as test definition.
  */
 public class TestDefinitionValidator {
-    private static final ObjectMapper OBJECT_MAPPER = Serializers.strict();
+    private static final ObjectMapper OBJECT_MAPPER = Serializers.lenient();
 
     private TestDefinitionValidator() {
     }
