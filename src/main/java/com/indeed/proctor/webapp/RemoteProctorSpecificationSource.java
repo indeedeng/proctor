@@ -1,6 +1,7 @@
 package com.indeed.proctor.webapp;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
@@ -21,6 +22,7 @@ import com.indeed.proctor.webapp.model.RemoteSpecificationResult;
 import com.indeed.proctor.webapp.util.threads.LogOnUncaughtExceptionHandler;
 import com.indeed.util.core.DataLoadingTimerTask;
 import com.indeed.util.core.Pair;
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -54,7 +56,7 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
 
     private static final ObjectMapper OBJECT_MAPPER = Serializers.strict();
 
-    @Autowired(required=false)
+    @Autowired(required = false)
     private ProctorClientSource clientSource = new DefaultClientSource();
 
     private final int httpTimeout;
@@ -76,9 +78,9 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
 
     @Override
     public RemoteSpecificationResult getRemoteResult(final Environment environment,
-                                        final AppVersion version) {
+                                                     final AppVersion version) {
         final ImmutableMap<AppVersion, RemoteSpecificationResult> results = cache_.get(environment);
-        if(results != null && results.containsKey(version)) {
+        if (results != null && results.containsKey(version)) {
             return results.get(version);
         }
         return RemoteSpecificationResult.newBuilder(version).build(Collections.<ProctorClientApplication>emptyList());
@@ -87,7 +89,7 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
     @Override
     public Map<AppVersion, RemoteSpecificationResult> loadAllSpecifications(Environment environment) {
         final ImmutableMap<AppVersion, RemoteSpecificationResult> cache = cache_.get(environment);
-        if(cache == null) {
+        if (cache == null) {
             return Collections.emptyMap();
         } else {
             return cache;
@@ -97,10 +99,10 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
     @Override
     public Map<AppVersion, ProctorSpecification> loadAllSuccessfulSpecifications(Environment environment) {
         final ImmutableMap<AppVersion, RemoteSpecificationResult> cache = cache_.get(environment);
-        if(cache == null) {
+        if (cache == null) {
             return Collections.emptyMap();
         } else {
-            final Map<AppVersion, RemoteSpecificationResult> success =  Maps.filterEntries(cache, new Predicate<Map.Entry<AppVersion, RemoteSpecificationResult>>() {
+            final Map<AppVersion, RemoteSpecificationResult> success = Maps.filterEntries(cache, new Predicate<Map.Entry<AppVersion, RemoteSpecificationResult>>() {
                 @Override
                 public boolean apply(@Nullable Map.Entry<AppVersion, RemoteSpecificationResult> input) {
                     return input.getValue().isSuccess();
@@ -115,20 +117,19 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
         }
     }
 
-
     @Override
     public Set<AppVersion> activeClients(final Environment environment, final String testName) {
         final Map<AppVersion, RemoteSpecificationResult> specifications = cache_.get(environment);
-        if(specifications == null) {
+        if (specifications == null) {
             return Collections.emptySet();
         }
         final Set<AppVersion> clients = Sets.newHashSet();
-        for(Map.Entry<AppVersion, RemoteSpecificationResult> entry : specifications.entrySet()) {
+        for (Map.Entry<AppVersion, RemoteSpecificationResult> entry : specifications.entrySet()) {
             final AppVersion version = entry.getKey();
             final RemoteSpecificationResult rr = entry.getValue();
-            if(rr.isSuccess()) {
+            if (rr.isSuccess()) {
                 final ProctorSpecification specification = rr.getSpecificationResult().getSpecification();
-                if(containsTest(specification, testName)) {
+                if (containsTest(specification, testName)) {
                     clients.add(version);
                 }
             }
@@ -139,13 +140,13 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
     @Override
     public Set<String> activeTests(final Environment environment) {
         final Map<AppVersion, RemoteSpecificationResult> specifications = cache_.get(environment);
-        if(specifications == null) {
+        if (specifications == null) {
             return Collections.emptySet();
         }
         final Set<String> tests = Sets.newHashSet();
-        for(Map.Entry<AppVersion, RemoteSpecificationResult> entry : specifications.entrySet()) {
+        for (Map.Entry<AppVersion, RemoteSpecificationResult> entry : specifications.entrySet()) {
             final RemoteSpecificationResult remoteResult = entry.getValue();
-            if(remoteResult.isSuccess()) {
+            if (remoteResult.isSuccess()) {
                 tests.addAll(remoteResult.getSpecificationResult().getSpecification().getTests().keySet());
             }
         }
@@ -155,7 +156,7 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
     @Override
     public boolean load() {
         final boolean success = refreshInternalCache();
-        if(success) {
+        if (success) {
             setDataVersion(new Date().toString());
         }
         return success;
@@ -189,8 +190,7 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
         }
         final ImmutableListMultimap<AppVersion, ProctorClientApplication> apps = builder.build();
 
-
-        for(final AppVersion appVersion : apps.keySet()) {
+        for (final AppVersion appVersion : apps.keySet()) {
             appVersionsToCheck.add(appVersion);
             final List<ProctorClientApplication> callableClients = apps.get(appVersion);
             assert callableClients.size() > 0;
@@ -208,7 +208,7 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
             } catch (final InterruptedException e) {
                 LOGGER.error("Oh heavens", e);
             }
-            for (final Iterator<Map.Entry<AppVersion, Future<RemoteSpecificationResult>>> iterator = futures.entrySet().iterator(); iterator.hasNext();) {
+            for (final Iterator<Map.Entry<AppVersion, Future<RemoteSpecificationResult>>> iterator = futures.entrySet().iterator(); iterator.hasNext(); ) {
                 final Map.Entry<AppVersion, Future<RemoteSpecificationResult>> entry = iterator.next();
                 final AppVersion appVersion = entry.getKey();
                 final Future<RemoteSpecificationResult> future = entry.getValue();
@@ -239,7 +239,7 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
 
         // TODO (parker) 9/6/12 - Fail if we do not have 1 specification for each <Application>.<Version>
         // should we update the cache?
-        if(!appVersionsToCheck.isEmpty()) {
+        if (!appVersionsToCheck.isEmpty()) {
             LOGGER.warn("Failed to load any specification for the following AppVersions: " + Joiner.on(",").join(appVersionsToCheck));
         }
 
@@ -259,13 +259,13 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
         final LinkedList<ProctorClientApplication> remaining = Lists.newLinkedList(clients);
 
         final RemoteSpecificationResult.Builder results = RemoteSpecificationResult.newBuilder(version);
-        while(remaining.peek() != null) {
+        while (remaining.peek() != null) {
             final ProctorClientApplication client = remaining.poll();
             // really stupid method of pinging 1 of the applications.
-            final Pair<Integer, SpecificationResult> result = internalGet(client, timeout);
+            final Pair<Integer, SpecificationResult> result = fetchSpecification(client, timeout);
             final int statusCode = result.getFirst();
             final SpecificationResult specificationResult = result.getSecond();
-            if(specificationResult.getSpecification() == null) {
+            if (fetchSpecificationFailed(specificationResult)) {
                 if (statusCode == HttpURLConnection.HTTP_NOT_FOUND) {
                     LOGGER.info("Client " + client.getBaseApplicationUrl() + " /private/proctor/specification returned 404 - skipping");
                     results.skipped(client, specificationResult);
@@ -283,14 +283,28 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
         return results.build(remaining);
     }
 
+    /**
+     * Firstly try visiting specification API end point. If it's not exported, fetch from private/v instead.
+     * @param client
+     * @param timeout
+     * @return
+     */
+    private static Pair<Integer, SpecificationResult> fetchSpecification(final ProctorClientApplication client, final int timeout) {
+
+        final Pair<Integer, SpecificationResult> apiSpec = fetchSpecificationFromApi(client, timeout);
+        if (fetchSpecificationFailed(apiSpec.getSecond())) {
+            return fetchSpecificationFromExportedVaraible(client, timeout);
+        }
+        return apiSpec;
+    }
+
     // @Nonnull
-    private static Pair<Integer, SpecificationResult> internalGet(final ProctorClientApplication client, final int timeout) {
-        URL url = null;
+    private static Pair<Integer, SpecificationResult> fetchSpecification(final String urlString, final int timeout, final SpecificationParser parser) {
         int statusCode = -1;
         InputStream inputStream = null;
         try {
-            url = getSpecificationUrl(client);
-            LOGGER.info("Trying to read specification for " + client.getApplication() + " from " + url.toString() + " using timeout " + timeout + " ms");
+            final URL url = new URL(urlString);
+            LOGGER.info("Trying to read specification from " + url.toString() + " using timeout " + timeout + " ms");
             final HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setReadTimeout(timeout);
             urlConnection.setConnectTimeout(timeout);
@@ -299,25 +313,30 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
             inputStream = urlConnection.getInputStream();
             //  map from testName => list of bucket names
             final SpecificationResult result = OBJECT_MAPPER.readValue(inputStream, SpecificationResult.class);
-            return new Pair<Integer, SpecificationResult>(statusCode, result);
-        } catch (Throwable t) {
-            final SpecificationResult result = new SpecificationResult();
-            final StringWriter sw = new StringWriter();
-            final PrintWriter writer = new PrintWriter(sw);
-            t.printStackTrace(writer);
-
-            result.setError(t.getMessage());
-            result.setException(sw.toString());
-            return new Pair<Integer, SpecificationResult>(statusCode, result);
+            return new Pair<>(statusCode, result);
+        } catch (final Throwable e) {
+            final SpecificationResult errorResult = createErrorResult(e);
+            return new Pair<>(statusCode, errorResult);
         } finally {
             try {
                 if (inputStream != null) {
                     inputStream.close();
                 }
             } catch (final IOException e) {
-                LOGGER.error("Unable to close stream to " + url, e);
+                LOGGER.error("Unable to close stream to " + urlString, e);
             }
         }
+    }
+
+    private static SpecificationResult createErrorResult(final Throwable t) {
+        final SpecificationResult result = new SpecificationResult();
+        final StringWriter sw = new StringWriter();
+        final PrintWriter writer = new PrintWriter(sw);
+        t.printStackTrace(writer);
+
+        result.setError(t.getMessage());
+        result.setException(sw.toString());
+        return result;
     }
 
     private static boolean containsTest(final ProctorSpecification specification, final String testName) {
@@ -327,9 +346,43 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
     /**
      * This needs to be moved to a separate checker class implementing some interface
      */
-    private static URL getSpecificationUrl(final ProctorClientApplication client) throws MalformedURLException {
-        final String urlStr = client.getBaseApplicationUrl() + "/private/proctor/specification";
-        return new URL(urlStr);
+    private static String getSpecificationApiUrl(final ProctorClientApplication client) throws MalformedURLException {
+        return client.getBaseApplicationUrl() + "/private/proctor/specification";
+    }
+
+    private static Pair<Integer, SpecificationResult> fetchSpecificationFromApi(final ProctorClientApplication client, final int timeout) {
+        final String apiUrl = client.getBaseApplicationUrl() + "/private/proctor/specification";
+        return fetchSpecification(apiUrl, timeout, new SpecificationParser() {
+            @Override
+            public SpecificationResult parse(final InputStream inputStream) throws IOException {
+                return OBJECT_MAPPER.readValue(inputStream, SpecificationResult.class);
+            }
+        });
+    }
+
+    private static Pair<Integer, SpecificationResult> fetchSpecificationFromExportedVaraible(final ProctorClientApplication client, final int timeout) {
+        final String urlStr = client.getBaseApplicationUrl() + "/private/v?ns=JsonProctorLoaderFactory&v=specification";
+        return fetchSpecification(urlStr, timeout, EXPORTED_VARIABLE_PARSER);
+    }
+
+    @VisibleForTesting
+    static final SpecificationParser EXPORTED_VARIABLE_PARSER = new SpecificationParser() {
+        @Override
+        public SpecificationResult parse(final InputStream inputStream) throws IOException {
+            final String json = IOUtils.toString(inputStream).replace("\\", "").trim();
+            final ProctorSpecification proctorSpecification = OBJECT_MAPPER.readValue(json, ProctorSpecification.class);
+            final SpecificationResult specificationResult = new SpecificationResult();
+            specificationResult.setSpecification(proctorSpecification);
+            return specificationResult;
+        }
+    };
+
+    interface SpecificationParser {
+        SpecificationResult parse(final InputStream inputStream) throws IOException;
+    }
+
+    private static boolean fetchSpecificationFailed(final SpecificationResult result) {
+        return result.getSpecification() == null;
     }
 
 }
