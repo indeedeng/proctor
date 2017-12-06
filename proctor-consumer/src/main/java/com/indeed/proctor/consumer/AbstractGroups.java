@@ -202,9 +202,9 @@ public abstract class AbstractGroups {
     }
 
     /**
-     * Appends each group to the StringBuilder using the separator to delimit
-     * group names. the separator should be appended for each group added
-     * to the string builder
+     * Appends each test group to the StringBuilder using the separator to delimit it.
+     * If a test is silent or its bucket value is negative, it is skipped to append.
+     * the separator should be appended for each test group added to the string builder
      * {@link #toString()}
      * {@link #buildTestGroupString()} or {@link #appendTestGroups(StringBuilder)}
      *
