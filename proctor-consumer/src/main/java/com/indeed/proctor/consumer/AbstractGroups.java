@@ -1,7 +1,9 @@
 package com.indeed.proctor.consumer;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.indeed.proctor.common.ProctorResult;
+import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.Payload;
 import com.indeed.proctor.common.model.TestBucket;
@@ -216,11 +218,17 @@ public abstract class AbstractGroups {
         for (final Entry<String, TestBucket> entry : proctorResult.getBuckets().entrySet()) {
             final String testName = entry.getKey();
             final TestBucket testBucket = entry.getValue();
+            final Allocation allocation = proctorResult.getAllocations().get(testName);
             final ConsumableTestDefinition testDefinition = testDefinitions.get(testName);
             if ((testDefinition != null && testDefinition.getSilent()) || testBucket.getValue() < 0) {
                 continue;
             }
             sb.append(testName).append(testBucket.getValue()).append(separator);
+            if ((allocation != null) && !Strings.isNullOrEmpty(allocation.getId())) {
+                sb.append(allocation.getId())
+                        .append(':')
+                        .append(testName).append(testBucket.getValue()).append(separator);
+            }
         }
     }
 
