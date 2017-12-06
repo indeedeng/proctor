@@ -312,7 +312,7 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
             statusCode = urlConnection.getResponseCode();
             inputStream = urlConnection.getInputStream();
             //  map from testName => list of bucket names
-            final SpecificationResult result = OBJECT_MAPPER.readValue(inputStream, SpecificationResult.class);
+            final SpecificationResult result = parser.parse(inputStream);
             return new Pair<>(statusCode, result);
         } catch (final Throwable e) {
             final SpecificationResult errorResult = createErrorResult(e);
