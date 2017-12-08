@@ -1,7 +1,10 @@
 package com.indeed.proctor.consumer;
 
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import com.indeed.proctor.common.ProctorResult;
+import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.Payload;
 import com.indeed.proctor.common.model.TestBucket;
@@ -18,6 +21,11 @@ import java.util.Set;
 public abstract class AbstractGroups {
     private final ProctorResult proctorResult;
     private final LinkedHashMap<String, TestBucket> buckets;
+
+    /**
+     * A character to separate allocation id and test name for a formatted test group with an allocation.
+     */
+    protected static final char ALLOCATION_GROUP_SEPARATOR = ':';
 
     protected AbstractGroups(final ProctorResult proctorResult) {
         this.proctorResult = proctorResult;
@@ -202,7 +210,9 @@ public abstract class AbstractGroups {
     }
 
     /**
-     * Appends each test group to the StringBuilder using the separator to delimit it.
+     * Appends each test group in two forms to the StringBuilder using the separator to delimit them.
+     * The two forms are [test name + bucket value] and [allocation id + ":" + test name + bucket value].
+     * For example, it appends "bgcolortst1,#A1:bgcolortst1" if test name is bgcolortst and allocation id is #A1 and separator is ",".
      * If a test is silent or its bucket value is negative, it is skipped to append.
      * the separator should be appended for each test group added to the string builder
      * {@link #toString()}
@@ -212,7 +222,17 @@ public abstract class AbstractGroups {
      * @param separator a char used as separator
      */
     public void appendTestGroups(final StringBuilder sb, char separator) {
+        final List<String> testNames = getLoggingTestNames();
+        appendTestGroupsWithoutAllocations(sb, separator, testNames);
+        appendTestGroupsWithAllocations(sb, separator, testNames);
+    }
+
+    /**
+     * Returns test names to format test groups of them for logging purpose.
+     */
+    protected final List<String> getLoggingTestNames() {
         final Map<String, ConsumableTestDefinition> testDefinitions = proctorResult.getTestDefinitions();
+        final ImmutableList.Builder<String> builder = ImmutableList.builder();
         for (final Entry<String, TestBucket> entry : proctorResult.getBuckets().entrySet()) {
             final String testName = entry.getKey();
             final TestBucket testBucket = entry.getValue();
@@ -220,7 +240,35 @@ public abstract class AbstractGroups {
             if ((testDefinition != null && testDefinition.getSilent()) || testBucket.getValue() < 0) {
                 continue;
             }
-            sb.append(testName).append(testBucket.getValue()).append(separator);
+            builder.add(testName);
+        }
+        return builder.build();
+    }
+
+    /**
+     * Appends test groups in the form without allocation ids as [test name + bucket value] for given test names.
+     */
+    protected final void appendTestGroupsWithoutAllocations(final StringBuilder sb, char separator, final List<String> testNames) {
+        for (final String testName : testNames) {
+            final TestBucket testBucket = proctorResult.getBuckets().get(testName);
+            if (testBucket != null) {
+                sb.append(testName).append(testBucket.getValue()).append(separator);
+            }
+        }
+    }
+
+    /**
+     * Appends test groups in the form with allocation ids as [allocation id + ":" + test name + bucket value] for given test names.
+     */
+    protected final void appendTestGroupsWithAllocations(final StringBuilder sb, char separator, final List<String> testNames) {
+        for (final String testName : testNames) {
+            final TestBucket testBucket = proctorResult.getBuckets().get(testName);
+            final Allocation allocation = proctorResult.getAllocations().get(testName);
+            if ((testBucket != null) && (allocation != null) && !Strings.isNullOrEmpty(allocation.getId())) {
+                sb.append(allocation.getId())
+                        .append(ALLOCATION_GROUP_SEPARATOR)
+                        .append(testName).append(testBucket.getValue()).append(separator);
+            }
         }
     }
 
