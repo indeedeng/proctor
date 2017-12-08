@@ -1,5 +1,6 @@
 package com.indeed.proctor.common;
 
+import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.TestBucket;
 
@@ -24,6 +25,44 @@ interface TestChooser<IdentifierType> {
     @Nonnull
     String getTestName();
 
-    @Nullable
-    TestBucket choose(@Nullable IdentifierType identifier, @Nonnull Map<String, Object> values);
+    @Nonnull
+    TestChooser.Result choose(@Nullable IdentifierType identifier, @Nonnull Map<String, Object> values);
+
+    /**
+     * Models a result of an assigned bucket and allocation by {@code TestChooser}.
+     */
+    class Result {
+        /**
+         * Empty result for the case when all allocation rules aren't matched to a context
+         */
+        public static Result EMPTY = new Result(null, null);
+
+        @Nullable
+        private final TestBucket testBucket;
+
+        @Nullable
+        private final Allocation allocation;
+
+        Result(@Nullable final TestBucket testBucket,
+               @Nullable final Allocation allocation) {
+            this.testBucket = testBucket;
+            this.allocation = allocation;
+        }
+
+        /**
+         * Returns a chosen test in {@code TestChooser}. Returns null if any bucket isn't chosen.
+         */
+        @Nullable
+        public TestBucket getTestBucket() {
+            return testBucket;
+        }
+
+        /**
+         * Returns a matched allocation in {@code TestChooser}. Returns null if any rules isn't matched.
+         */
+        @Nullable
+        public Allocation getAllocation() {
+            return allocation;
+        }
+    }
 }

@@ -78,9 +78,12 @@ public class TestStandardTestChooser {
 
         final Map<String, Object> values = Collections.emptyMap();
         for (int i = 0; i < 100; i++) {
-            final TestBucket chosen = rtc.choose(String.valueOf(i), values);
+            final TestChooser.Result chosen = rtc.choose(String.valueOf(i), values);
             assertNotNull(chosen);
-            assertEquals(1, chosen.getValue());
+            assertNotNull(chosen.getTestBucket());
+            assertNotNull(chosen.getAllocation());
+            assertEquals(1, chosen.getTestBucket().getValue());
+            assertEquals("#A1", chosen.getAllocation().getId());
         }
     }
 
@@ -97,11 +100,11 @@ public class TestStandardTestChooser {
         // if this ever fails, it means that something is broken about how tests are split
         // and you should investigate why!
 
-        Assert.assertEquals("bucket0 counts", 4999412, counts[0]);
-        Assert.assertEquals("bucket1 counts", 5000587, counts[1]);
+        assertEquals("bucket0 counts", 4999412, counts[0]);
+        assertEquals("bucket1 counts", 5000587, counts[1]);
 
-        Assert.assertEquals("bucket0 hash", 1863060514, hashes[0]);
-        Assert.assertEquals("bucket1 hash", 765061458, hashes[1]);
+        assertEquals("bucket0 hash", 1863060514, hashes[0]);
+        assertEquals("bucket1 hash", 765061458, hashes[1]);
     }
 
     // constants shared between the next two tests
@@ -123,11 +126,11 @@ public class TestStandardTestChooser {
         // if this ever fails, it means that something is broken about how tests are split
         // and you should investigate why!
 
-        Assert.assertEquals("bucket0 counts", COUNTS_BUCKET0_SALT_AMP_TESTNAME, counts[0]);
-        Assert.assertEquals("bucket1 counts", COUNTS_BUCKET1_SALT_AMP_TESTNAME, counts[1]);
+        assertEquals("bucket0 counts", COUNTS_BUCKET0_SALT_AMP_TESTNAME, counts[0]);
+        assertEquals("bucket1 counts", COUNTS_BUCKET1_SALT_AMP_TESTNAME, counts[1]);
 
-        Assert.assertEquals("bucket0 hash", HASH_BUCKET0_SALT_AMP_TESTNAME, hashes[0]);
-        Assert.assertEquals("bucket1 hash", HASH_BUCKET1_SALT_AMP_TESTNAME, hashes[1]);
+        assertEquals("bucket0 hash", HASH_BUCKET0_SALT_AMP_TESTNAME, hashes[0]);
+        assertEquals("bucket1 hash", HASH_BUCKET1_SALT_AMP_TESTNAME, hashes[1]);
     }
 
     @Test
@@ -146,11 +149,11 @@ public class TestStandardTestChooser {
         // and you should investigate why!
 
         // These values should be the same as in the preceding test
-        Assert.assertEquals("bucket0 counts", COUNTS_BUCKET0_SALT_AMP_TESTNAME, counts[0]);
-        Assert.assertEquals("bucket1 counts", COUNTS_BUCKET1_SALT_AMP_TESTNAME, counts[1]);
+        assertEquals("bucket0 counts", COUNTS_BUCKET0_SALT_AMP_TESTNAME, counts[0]);
+        assertEquals("bucket1 counts", COUNTS_BUCKET1_SALT_AMP_TESTNAME, counts[1]);
 
-        Assert.assertEquals("bucket0 hash", HASH_BUCKET0_SALT_AMP_TESTNAME, hashes[0]);
-        Assert.assertEquals("bucket1 hash", HASH_BUCKET1_SALT_AMP_TESTNAME, hashes[1]);
+        assertEquals("bucket0 hash", HASH_BUCKET0_SALT_AMP_TESTNAME, hashes[0]);
+        assertEquals("bucket1 hash", HASH_BUCKET1_SALT_AMP_TESTNAME, hashes[1]);
     }
 
     @Test
@@ -185,12 +188,12 @@ public class TestStandardTestChooser {
         );
 
         // Ensure no exceptions thrown.
-        final TestBucket bucket = new StandardTestChooser(selector)
+        final TestChooser.Result chooseResult = new StandardTestChooser(selector)
                 .choose("identifier", Collections.<String, Object>emptyMap());
 
-        assertEquals(
-                "Expected no bucket to be found ",
-                null, bucket);
+        assertNotNull(chooseResult);
+        assertNull( "Expected no bucket to be found ", chooseResult.getTestBucket());
+        assertNull( "Expected no allocation to be found ", chooseResult.getAllocation());
 
         EasyMock.verify(ruleEvaluator);
     }
@@ -207,8 +210,8 @@ public class TestStandardTestChooser {
         testDefinition.setBuckets(INACTIVE_CONTROL_TEST_BUCKETS);
 
         final List<Allocation> allocations = Lists.newArrayList();
-        allocations.add(new Allocation("${country == 'US'}", RANGES_100_0));
-        allocations.add(new Allocation("${country == 'GB'}", RANGES_100_0));
+        allocations.add(new Allocation("${country == 'US'}", RANGES_100_0, "#B1"));
+        allocations.add(new Allocation("${country == 'GB'}", RANGES_100_0, "#C1"));
         testDefinition.setAllocations(allocations);
 
         final RuleEvaluator ruleEvaluator = newRuleEvaluator(false);
@@ -218,10 +221,12 @@ public class TestStandardTestChooser {
             testDefinition
         );
 
-        final TestBucket bucket = new StandardTestChooser(selector)
+        final TestChooser.Result chooseResult = new StandardTestChooser(selector)
             .choose("identifier", Collections.<String, Object>emptyMap());
 
-        assertNull("Expected no bucket to be found", bucket);
+        assertNotNull(chooseResult);
+        assertNull("Expected no bucket to be found", chooseResult.getTestBucket());
+        assertNull("Expected no allocation to be found", chooseResult.getAllocation());
 
         EasyMock.verify(ruleEvaluator);
     }
@@ -240,7 +245,7 @@ public class TestStandardTestChooser {
         testDefinition.setBuckets(INACTIVE_CONTROL_TEST_BUCKETS);
 
         final List<Allocation> allocations = Lists.newArrayList();
-        allocations.add(new Allocation("${country == 'GB'}", RANGES_100_0));
+        allocations.add(new Allocation("${country == 'GB'}", RANGES_100_0, "#B1"));
         testDefinition.setAllocations(allocations);
 
         final RuleEvaluator ruleEvaluator = newRuleEvaluator(true);
@@ -250,10 +255,11 @@ public class TestStandardTestChooser {
             testDefinition
         );
 
-        final TestBucket bucket = new StandardTestChooser(selector)
+        final TestChooser.Result chooseResult = new StandardTestChooser(selector)
             .choose("identifier", Collections.<String, Object>emptyMap());
 
-        assertEquals("Test bucket with value 1 expected", 1, bucket.getValue());
+        assertEquals("Test bucket with value 1 expected", 1, chooseResult.getTestBucket().getValue());
+        assertEquals("Test allocation with id #B1 expected", "#B1", chooseResult.getAllocation().getId());
 
         EasyMock.verify(ruleEvaluator);
     }
@@ -284,17 +290,19 @@ public class TestStandardTestChooser {
 
         final Map<String, Object> values = Collections.emptyMap();
         for (int accountId = 1; accountId < num; accountId++) { // deliberately skipping 0
-            final TestBucket chosen = rtc.choose(String.valueOf(accountId), values);
+            final TestChooser.Result chosen = rtc.choose(String.valueOf(accountId), values);
             assertNotNull(chosen);
+            assertNotNull(chosen.getTestBucket());
+            assertNotNull(chosen.getAllocation());
 
-            counts[chosen.getValue()]++;
-            hashes[chosen.getValue()] = 31 * hashes[chosen.getValue()] + accountId;
+            counts[chosen.getTestBucket().getValue()]++;
+            hashes[chosen.getTestBucket().getValue()] = 31 * hashes[chosen.getTestBucket().getValue()] + accountId;
         }
     }
 
     private void updateAllocations(final ImmutableList<Range> ranges) {
         final List<Allocation> allocations = Lists.newArrayList();
-        allocations.add(new Allocation("${}", ranges));
+        allocations.add(new Allocation("${}", ranges, "#A1"));
         testDefinition.setAllocations(allocations);
     }
 }

@@ -88,12 +88,12 @@ class RandomTestChooser implements TestChooser<Void> {
         return testRangeSelector.getTestName();
     }
 
-    @Nullable
+    @Nonnull
     @Override
-    public TestBucket choose(@Nullable Void identifier, @Nonnull Map<String, Object> values) {
+    public TestChooser.Result choose(@Nullable Void identifier, @Nonnull Map<String, Object> values) {
         final int matchingRuleIndex = testRangeSelector.findMatchingRule(values);
         if (matchingRuleIndex < 0) {
-            return null;
+            return TestChooser.Result.EMPTY;
         }
         // TODO Reimplement
         //noinspection deprecation
@@ -103,7 +103,7 @@ class RandomTestChooser implements TestChooser<Void> {
     /**
      * @deprecated Temporary implementation; this should be more like {@link StandardTestChooser}, with the cutoffs etc. set in the constructor.
      */
-    TestBucket allocateRandomGroup(final int matchingRuleIndex) {
+    TestChooser.Result allocateRandomGroup(final int matchingRuleIndex) {
         final TestBucket[] matchingBucketRange = testRangeSelector.getBucketRange(matchingRuleIndex);
         final Allocation allocation = allocations.get(matchingRuleIndex);
         final List<Range> ranges = allocation.getRanges();
@@ -115,12 +115,12 @@ class RandomTestChooser implements TestChooser<Void> {
             final double max = current + range.getLength();
             if (nextDouble < max) {
                 final int matchingBucketValue = range.getBucketValue();
-                return getBucketForValue(matchingBucketValue, matchingBucketRange);
+                return new Result(getBucketForValue(matchingBucketValue, matchingBucketRange), allocation);
             }
             current = max;
         }
         //  fallback because I don't trust double math to always do the right thing
-        return getBucketForValue(ranges.get(ranges.size() - 1).getBucketValue(), matchingBucketRange);
+        return new Result(getBucketForValue(ranges.get(ranges.size() - 1).getBucketValue(), matchingBucketRange), allocation);
     }
 
     static TestBucket getBucketForValue(final int matchingBucketValue, @Nonnull final TestBucket[] matchingBucketRange) {

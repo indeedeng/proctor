@@ -6,6 +6,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Maps;
+import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.Audit;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.TestBucket;
@@ -173,6 +174,7 @@ public class Proctor {
                                              @Nonnull final Map<String, Integer> forceGroups,
                                              @Nonnull final Collection<String> testNameFilter) {
         final Map<String, TestBucket> testGroups = Maps.newLinkedHashMap();
+        final Map<String, Allocation> testAllocations = Maps.newLinkedHashMap();
 
         Map<String, TestChooser<?>> filteredChoosers = testChoosers;
         if (!testNameFilter.isEmpty()) {
@@ -203,21 +205,23 @@ public class Proctor {
                     continue;
                 }
             }
-            final TestBucket testBucket;
+            final TestChooser.Result chooseResult;
             if (identifier == null) {
-                testBucket = ((RandomTestChooser) testChooser).choose(null, inputContext);
+                chooseResult = ((RandomTestChooser) testChooser).choose(null, inputContext);
             } else {
-                testBucket = ((StandardTestChooser) testChooser).choose(identifier, inputContext);
+                chooseResult = ((StandardTestChooser) testChooser).choose(identifier, inputContext);
             }
-            if (testBucket != null) {
-                testGroups.put(testName, testBucket);
-                testChooser.getTestDefinition();
+            if (chooseResult.getTestBucket() != null) {
+                testGroups.put(testName, chooseResult.getTestBucket());
+            }
+            if (chooseResult.getAllocation() != null) {
+                testAllocations.put(testName, chooseResult.getAllocation());
             }
         }
 
         // TODO Can we make getAudit nonnull?
         final Audit audit = Preconditions.checkNotNull(matrix.getAudit(), "Missing audit");
-        return new ProctorResult(audit.getVersion(), testGroups, testDefinitions);
+        return new ProctorResult(audit.getVersion(), testGroups, testAllocations, testDefinitions);
     }
 
     TestMatrixArtifact getArtifact() {

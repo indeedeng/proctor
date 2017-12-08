@@ -31,9 +31,12 @@ public class TestRandomTestChooser {
 
         final Map<String, Object> values = Collections.emptyMap();
         for (int i = 0; i < 100; i++) {
-            final TestBucket chosen = rtc.choose(null, values);
+            final TestChooser.Result chosen = rtc.choose(null, values);
             assertNotNull(chosen);
-            assertEquals(1, chosen.getValue());
+            assertNotNull(chosen.getTestBucket());
+            assertNotNull(chosen.getAllocation());
+            assertEquals("#A1", chosen.getAllocation().getId());
+            assertEquals(1, chosen.getTestBucket().getValue());
         }
     }
 
@@ -47,9 +50,12 @@ public class TestRandomTestChooser {
         int[] found = { 0, 0 };
         final Map<String, Object> values = Collections.emptyMap();
         for (int i = 0; i < 1000; i++) {
-            final TestBucket chosen = rtc.choose(null, values);
+            final TestChooser.Result chosen = rtc.choose(null, values);
             assertNotNull(chosen);
-            found[chosen.getValue()]++;
+            assertNotNull(chosen.getTestBucket());
+            assertNotNull(chosen.getAllocation());
+            assertEquals("#A1", chosen.getAllocation().getId());
+            found[chosen.getTestBucket().getValue()]++;
         }
 
         assertTrue(found[0] > 400);
@@ -68,9 +74,12 @@ public class TestRandomTestChooser {
         int[] found = { 0, 0, 0 };
         final Map<String, Object> values = Collections.emptyMap();
         for (int i = 0; i < 1000; i++) {
-            final TestBucket chosen = rtc.choose(null, values);
+            final TestChooser.Result chosen = rtc.choose(null, values);
             assertNotNull(chosen);
-            found[chosen.getValue()]++;
+            assertNotNull(chosen.getTestBucket());
+            assertNotNull(chosen.getAllocation());
+            assertEquals("#A1", chosen.getAllocation().getId());
+            found[chosen.getTestBucket().getValue()]++;
         }
 
         assertTrue(found[0] > 250);
@@ -92,7 +101,7 @@ public class TestRandomTestChooser {
         testDefinition.setBuckets(buckets);
 
         final List<Allocation> allocations = Lists.newArrayList();
-        allocations.add(new Allocation("${}", ranges));
+        allocations.add(new Allocation("${}", ranges, "#A1"));
         testDefinition.setAllocations(allocations);
 
         final RandomTestChooser rtc = new RandomTestChooser(expressionFactory, functionMapper, "testName", testDefinition);

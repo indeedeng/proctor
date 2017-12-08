@@ -115,18 +115,24 @@ class StandardTestChooser implements TestChooser<String> {
         return result;
     }
 
-    @Nullable
+    @Nonnull
     @Override
-    public TestBucket choose(@Nullable final String identifier, @Nonnull final Map<String, Object> values) {
+    public TestChooser.Result choose(@Nullable final String identifier, @Nonnull final Map<String, Object> values) {
         final int matchingRuleIndex = testRangeSelector.findMatchingRule(values);
         if (matchingRuleIndex < 0) {
-            return null;
+            return Result.EMPTY;
         }
 
-        return chooseBucket(
-                cutoffs[matchingRuleIndex],
-                testRangeSelector.getBucketRange(matchingRuleIndex),
-                Preconditions.checkNotNull(identifier, "Missing identifier"));
+        final Allocation matchingAllocation = testRangeSelector.getTestDefinition().getAllocations().get(matchingRuleIndex);
+
+        return new Result(
+                chooseBucket(
+                        cutoffs[matchingRuleIndex],
+                        testRangeSelector.getBucketRange(matchingRuleIndex),
+                        Preconditions.checkNotNull(identifier, "Missing identifier")
+                ),
+                matchingAllocation
+        );
     }
 
     private TestBucket chooseBucket(@Nonnull final int[] matchingCutoffs, final TestBucket[] matchingBucketRange, @Nonnull final String identifier) {
