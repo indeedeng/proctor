@@ -32,7 +32,6 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Date;
@@ -304,7 +303,7 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
         InputStream inputStream = null;
         try {
             final URL url = new URL(urlString);
-            LOGGER.info("Trying to read specification from " + url.toString() + " using timeout " + timeout + " ms");
+            LOGGER.debug("Trying to read specification from " + url.toString() + " using timeout " + timeout + " ms");
             final HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setReadTimeout(timeout);
             urlConnection.setConnectTimeout(timeout);
@@ -341,13 +340,6 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
 
     private static boolean containsTest(final ProctorSpecification specification, final String testName) {
         return specification.getTests().containsKey(testName);
-    }
-
-    /**
-     * This needs to be moved to a separate checker class implementing some interface
-     */
-    private static String getSpecificationApiUrl(final ProctorClientApplication client) throws MalformedURLException {
-        return client.getBaseApplicationUrl() + "/private/proctor/specification";
     }
 
     private static Pair<Integer, SpecificationResult> fetchSpecificationFromApi(final ProctorClientApplication client, final int timeout) {
