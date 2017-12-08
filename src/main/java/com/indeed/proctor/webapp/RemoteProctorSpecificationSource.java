@@ -284,6 +284,7 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
 
     /**
      * Firstly try visiting specification API end point. If it's not exported, fetch from private/v instead.
+     *
      * @param client
      * @param timeout
      * @return
@@ -343,6 +344,9 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
     }
 
     private static Pair<Integer, SpecificationResult> fetchSpecificationFromApi(final ProctorClientApplication client, final int timeout) {
+        /**
+         * This needs to be moved to a separate checker class implementing some interface
+         **/
         final String apiUrl = client.getBaseApplicationUrl() + "/private/proctor/specification";
         return fetchSpecification(apiUrl, timeout, new SpecificationParser() {
             @Override
@@ -353,6 +357,9 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
     }
 
     private static Pair<Integer, SpecificationResult> fetchSpecificationFromExportedVaraible(final ProctorClientApplication client, final int timeout) {
+        /**
+         * This needs to be moved to a separate checker class implementing some interface
+         **/
         final String urlStr = client.getBaseApplicationUrl() + "/private/v?ns=JsonProctorLoaderFactory&v=specification";
         return fetchSpecification(urlStr, timeout, EXPORTED_VARIABLE_PARSER);
     }
