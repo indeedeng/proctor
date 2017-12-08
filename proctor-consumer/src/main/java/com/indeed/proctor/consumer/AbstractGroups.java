@@ -202,9 +202,9 @@ public abstract class AbstractGroups {
     }
 
     /**
-     * Appends each group to the StringBuilder using the separator to delimit
-     * group names. the separator should be appended for each group added
-     * to the string builder
+     * Appends each test group to the StringBuilder using the separator to delimit it.
+     * If a test is silent or its bucket value is negative, it is skipped to append.
+     * the separator should be appended for each test group added to the string builder
      * {@link #toString()}
      * {@link #buildTestGroupString()} or {@link #appendTestGroups(StringBuilder)}
      *
@@ -212,10 +212,12 @@ public abstract class AbstractGroups {
      * @param separator a char used as separator
      */
     public void appendTestGroups(final StringBuilder sb, char separator) {
+        final Map<String, ConsumableTestDefinition> testDefinitions = proctorResult.getTestDefinitions();
         for (final Entry<String, TestBucket> entry : proctorResult.getBuckets().entrySet()) {
             final String testName = entry.getKey();
             final TestBucket testBucket = entry.getValue();
-            if (testBucket.getValue() < 0) {
+            final ConsumableTestDefinition testDefinition = testDefinitions.get(testName);
+            if ((testDefinition != null && testDefinition.getSilent()) || testBucket.getValue() < 0) {
                 continue;
             }
             sb.append(testName).append(testBucket.getValue()).append(separator);
