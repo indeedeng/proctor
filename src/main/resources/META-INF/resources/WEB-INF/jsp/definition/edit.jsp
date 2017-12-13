@@ -129,6 +129,17 @@
                         </div>
                     </ui:grid-columns>
                 </ui:grid-row>
+                <ui:grid-row>
+                    <ui:grid-columns width="two">
+                        <label class="right inline">Silent</label>
+                    </ui:grid-columns>
+                    <ui:grid-columns width="ten">
+                        <span class="inline">
+                            <input class="json" name="silent" type="checkbox" value="true"
+                                   <c:if test="${testDefinition.silent == 'true'}">checked="checked"</c:if>> stop logging this test
+                        </span>
+                    </ui:grid-columns>
+                </ui:grid-row>
             </div>
         </ui:grid-columns>
     </ui:grid-row>
