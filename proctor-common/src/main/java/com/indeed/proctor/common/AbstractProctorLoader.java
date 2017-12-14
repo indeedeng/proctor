@@ -2,6 +2,7 @@ package com.indeed.proctor.common;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
+import com.google.common.collect.ImmutableList;
 import com.indeed.proctor.common.model.Audit;
 import com.indeed.proctor.common.model.TestMatrixArtifact;
 import com.indeed.util.core.DataLoadingTimerTask;
@@ -12,7 +13,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.el.FunctionMapper;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 public abstract class AbstractProctorLoader extends DataLoadingTimerTask implements Supplier<Proctor> {
@@ -25,13 +28,12 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
     @Nullable
     private Audit lastAudit = null;
     @Nullable
-    private String lastLoadErrorMessage= "load never attempted";
+    private String lastLoadErrorMessage = "load never attempted";
     @Nonnull
     private final FunctionMapper functionMapper;
     private final ProvidedContext providedContext;
 
-    @Nullable
-    private AbstractProctorDiffReporter diffReporter = new AbstractProctorDiffReporter();
+    private final List<ProctorLoadReporter> reporters = new ArrayList<>();
 
     public AbstractProctorLoader(@Nonnull final Class<?> cls, @Nonnull final ProctorSpecification specification, @Nonnull final FunctionMapper functionMapper) {
         super(cls.getSimpleName());
@@ -58,6 +60,7 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
 
     @Nullable
     abstract TestMatrixArtifact loadTestMatrix() throws IOException, MissingTestMatrixException;
+
     @Nonnull
     abstract String getSource();
 
@@ -67,6 +70,7 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
         try {
             newProctor = doLoad();
         } catch (@Nonnull final Throwable t) {
+            reportFailed(t);
             lastLoadErrorMessage = t.getMessage();
             throw new RuntimeException("Unable to reload proctor from " + getSource(), t);
         }
@@ -80,14 +84,13 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
                 dataLoadTimer.loadComplete();
             }
 
+            reportNoChange();
             return false;
         }
 
-        if (this.current != null && newProctor != null) {
-            this.diffReporter.reportProctorDiff(this.current.getArtifact(), newProctor.getArtifact());
-        }
+        reportReloaded(current, newProctor);
 
-        this.current = newProctor;
+        current = newProctor;
 
         final Audit lastAudit = Preconditions.checkNotNull(this.lastAudit, "Missing last audit");
         setDataVersion(lastAudit.getVersion() + " @ " + lastAudit.getUpdated() + " by " + lastAudit.getUpdatedBy());
@@ -119,7 +122,7 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
         final Audit newAudit = testMatrix.getAudit();
         if (lastAudit != null) {
             final Audit audit = Preconditions.checkNotNull(newAudit, "Missing audit");
-            if(lastAudit.getVersion().equals(audit.getVersion())) {
+            if (lastAudit.getVersion().equals(audit.getVersion())) {
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug("Not reloading " + getSource() + " test matrix definition because audit is unchanged: " + lastAudit.getVersion() + " @ " + lastAudit.getUpdated() + " by " + lastAudit.getUpdatedBy());
                 }
@@ -157,14 +160,43 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
         return dataLoadTimer.isLoadedDataSuccessfullyRecently();
     }
 
-    // this is used to provide custom reporting of changes in the tests, e.g. reporting to datadog
+    /**
+     * this is used to provide custom reporting of changes in the tests, e.g. reporting to datadog
+     *
+     * @param diffReporter
+     * @deprecated use {@link AbstractProctorDiffReporter#addLoadReporter}
+     */
     @SuppressWarnings({"UnusedDeclaration"})
+    @Deprecated
     public void setDiffReporter(@Nonnull final AbstractProctorDiffReporter diffReporter) {
+        addLoadReporter(diffReporter);
+    }
 
-        if (diffReporter == null) {
-            throw new UnsupportedOperationException("diffReporter can't be null, use AbstractProctorDiffReporter for nop implementation");
+    public void addLoadReporter(@Nonnull final ProctorLoadReporter diffReporter) {
+        Preconditions.checkNotNull(diffReporter, "ProctorLoadReporter can't be null");
+        addLoadReporter(ImmutableList.of(diffReporter));
+    }
+
+    public void addLoadReporter(@Nonnull final List<ProctorLoadReporter> newReporters) {
+        Preconditions.checkNotNull(newReporters, "new reporters shouldn't be empty");
+        reporters.addAll(newReporters);
+    }
+
+    void reportFailed(final Throwable t) {
+        for (final ProctorLoadReporter reporter : reporters) {
+            reporter.reportFailed(t);
         }
+    }
 
-        this.diffReporter = diffReporter;
+    void reportReloaded(final Proctor oldProctor, final Proctor newProctor) {
+        for (final ProctorLoadReporter reporter : reporters) {
+            reporter.reportReloaded(oldProctor, newProctor);
+        }
+    }
+
+    void reportNoChange() {
+        for (final ProctorLoadReporter reporter : reporters) {
+            reporter.reportNoChange();
+        }
     }
 }
