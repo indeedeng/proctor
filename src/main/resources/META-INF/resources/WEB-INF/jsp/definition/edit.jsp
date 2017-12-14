@@ -135,8 +135,14 @@
                     </ui:grid-columns>
                     <ui:grid-columns width="ten">
                         <span class="inline">
-                            <input class="json" name="silent" type="checkbox" value="true"
-                                   <c:if test="${testDefinition.silent == 'true'}">checked="checked"</c:if>> stop logging this test
+                            <label>
+                                <input class="json" name="silent" type="checkbox" value="true"
+                                       <c:if test="${testDefinition.silent == 'true'}">checked="checked"</c:if>>
+                                <c:choose>
+                                    <c:when test="${isCreate}">Do not log this test</c:when>
+                                    <c:otherwise>Stop logging this test</c:otherwise>
+                                </c:choose>
+                            </label>
                         </span>
                     </ui:grid-columns>
                 </ui:grid-row>
