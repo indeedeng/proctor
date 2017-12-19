@@ -1017,6 +1017,9 @@ public class ProctorTestDefinitionController extends AbstractController {
         final Set<String> allocIds = new HashSet<>();
         revisionDefinitions.forEach(
                 x -> {
+                    if (x.getDefinition() == null) {
+                        return;
+                    }
                     x.getDefinition().getAllocations().forEach(
                             y -> {
                                 if (!StringUtils.isEmpty(y.getId())) {
