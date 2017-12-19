@@ -31,12 +31,12 @@ import com.indeed.proctor.common.model.TestMatrixArtifact;
 import com.indeed.proctor.common.model.TestMatrixDefinition;
 import com.indeed.proctor.common.model.TestMatrixVersion;
 import com.indeed.proctor.common.model.TestType;
+import com.indeed.proctor.store.GitNoAuthorizationException;
+import com.indeed.proctor.store.GitNoDevelperAccessLevelException;
+import com.indeed.proctor.store.GitNoMasterAccessLevelException;
 import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.store.StoreException;
-import com.indeed.proctor.store.GitNoAuthorizationException;
-import com.indeed.proctor.store.GitNoMasterAccessLevelException;
-import com.indeed.proctor.store.GitNoDevelperAccessLevelException;
 import com.indeed.proctor.webapp.ProctorSpecificationSource;
 import com.indeed.proctor.webapp.controllers.BackgroundJob.ResultUrl;
 import com.indeed.proctor.webapp.db.Environment;
@@ -57,8 +57,10 @@ import com.indeed.proctor.webapp.model.SessionViewModel;
 import com.indeed.proctor.webapp.model.WebappConfiguration;
 import com.indeed.proctor.webapp.tags.TestDefinitionFunctions;
 import com.indeed.proctor.webapp.tags.UtilityFunctions;
+import com.indeed.proctor.webapp.util.AllocationIdUtil;
 import com.indeed.proctor.webapp.util.threads.LogOnUncaughtExceptionHandler;
 import com.indeed.proctor.webapp.views.JsonView;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -73,6 +75,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.view.RedirectView;
 
+import javax.annotation.Nullable;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -83,13 +86,14 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Stream;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -98,6 +102,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 /**
  * @author parker
@@ -849,8 +854,10 @@ public class ProctorTestDefinitionController extends AbstractController {
                             }
                             if (isCreate) {
                                 testDefinitionToUpdate.setVersion("-1");
+                                handleAllocationIdsForNewTest(testDefinitionToUpdate);
                             } else if (existingTestDefinition != null) {
                                 testDefinitionToUpdate.setVersion(existingTestDefinition.getVersion());
+                                handleAllocationIdsForEditTest(testName, existingTestDefinition, testDefinitionToUpdate);
                             }
                             job.log("verifying test definition and buckets");
                             validateBasicInformation(testDefinitionToUpdate, job);
@@ -962,6 +969,93 @@ public class ProctorTestDefinitionController extends AbstractController {
                     }
                 }
         );
+    }
+
+    /**
+     * @param testName
+     * @param previous test definition before edit
+     * @param current  test definition after edit
+     */
+    private void handleAllocationIdsForEditTest(final String testName, final TestDefinition previous, final TestDefinition current) {
+        // Update allocation id if necessary
+        final Set<Integer> outdatedAllocations = AllocationIdUtil.getOutdatedAllocations(previous, current);
+        for (final int index : outdatedAllocations) {
+            final Allocation allocation = current.getAllocations().get(index);
+            allocation.setId(AllocationIdUtil.getNextVersionOfAllocationId(allocation.getId()));
+        }
+
+        // Generate allocation id for new allocations if necessary
+        final boolean needNewAllocId = current.getAllocations().stream().anyMatch(
+                x -> StringUtils.isEmpty(x.getId())
+        );
+        // Generate new allocation id if any allocation id is empty
+        if (needNewAllocId) {
+            // Get the max allocation id ever used from test definition history, including deleted allocations
+            // maxAllocId does not include prefix and version, e.g. "Z" instead of "#Z1"
+            final String maxAllocId = getMaxUsedAllocationIdForTest(testName);
+            // Convert maxAllocId to base 10 integer, so that we can easily increment it
+            int maxAllocIdInt = maxAllocId == null ? -1 : AllocationIdUtil.convertCharactersToDecimal(maxAllocId.toCharArray());
+            for (int i = 0; i < current.getAllocations().size(); i++) {
+                final Allocation allocation = current.getAllocations().get(i);
+                // Only generate for new allocation
+                if (StringUtils.isEmpty(allocation.getId())) {
+                    allocation.setId(AllocationIdUtil.generateAllocationId(++maxAllocIdInt, 1));
+                }
+            }
+        }
+    }
+
+    /**
+     * @param testName
+     * @return the max allocation id ever used, not including the prefix and version. For example, return "Z" instead of "#Z1"
+     */
+    @Nullable
+    private String getMaxUsedAllocationIdForTest(final String testName) {
+        // Use trunk store
+        final ProctorStore trunkStore = determineStoreFromEnvironment(Environment.WORKING);
+        final List<RevisionDefinition> revisionDefinitions = makeRevisionDefinitionList(trunkStore, testName, null, true);
+        final Set<String> allocIds = new HashSet<>();
+        revisionDefinitions.forEach(
+                x -> {
+                    x.getDefinition().getAllocations().forEach(
+                            y -> {
+                                if (!StringUtils.isEmpty(y.getId())) {
+                                    allocIds.add(y.getId());
+                                }
+                            }
+                    );
+                }
+        );
+        final List<String> allocIdList = new ArrayList<>(allocIds);
+        Collections.sort(allocIdList, new Comparator<String>() {
+            @Override
+            public int compare(String o1, String o2) {
+                // Remove prefix and version from allocation id
+                Preconditions.checkArgument((o1.length() > 2 && o2.length() > 2), "Invalid allocation id, id1: %s, id2: %s", o1, o2);
+                String id1 = o1.substring(1, o1.length() - 1);
+                String id2 = o2.substring(1, o2.length() - 1);
+                final int maxLength = Math.max(id1.length(), id2.length());
+                id1 = AllocationIdUtil.padAllocationIdWithAs(id1, maxLength);
+                id2 = AllocationIdUtil.padAllocationIdWithAs(id2, maxLength);
+                // Sort in reverse order
+                return id2.compareTo(id1);
+            }
+        });
+
+        if (allocIdList.size() == 0) {
+            return null;
+        } else {
+            final String maxAllocid = allocIdList.get(0);
+            // Remove prefix and version from allocation id
+            return maxAllocid.substring(1, maxAllocid.length() - 1);
+        }
+    }
+
+    private void handleAllocationIdsForNewTest(final TestDefinition testDefinition) {
+        for (int i = 0; i < testDefinition.getAllocations().size(); i++) {
+            final Allocation allocation = testDefinition.getAllocations().get(i);
+            allocation.setId(AllocationIdUtil.generateAllocationId(i, 1));
+        }
     }
 
     public static boolean isValidTestName(String testName) {

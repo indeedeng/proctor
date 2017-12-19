@@ -10,6 +10,7 @@
 <div class="js-allocation-editor">
     <div class="panel">
         <c:set var="isDefault" value="${allocationIndex == fn:length(definition.allocations) - 1}"/>
+        <input type="hidden" class="json" name="allocations[${allocationIndex}].id" value="${allocation.id}"/>
         <div class="js-rule-container">
             <ui:grid-row>
                 <ui:grid-columns width="two">
