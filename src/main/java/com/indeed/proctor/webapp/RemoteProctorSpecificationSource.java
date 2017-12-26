@@ -368,7 +368,7 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
     static final SpecificationParser EXPORTED_VARIABLE_PARSER = new SpecificationParser() {
         @Override
         public SpecificationResult parse(final InputStream inputStream) throws IOException {
-            final String json = IOUtils.toString(inputStream).replace("\\", "").trim();
+            final String json = IOUtils.toString(inputStream).replace("\\:", ":").trim();
             final ProctorSpecification proctorSpecification = OBJECT_MAPPER.readValue(json, ProctorSpecification.class);
             final SpecificationResult specificationResult = new SpecificationResult();
             specificationResult.setSpecification(proctorSpecification);
