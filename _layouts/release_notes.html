@@ -64,15 +64,8 @@
                     <div class="unit one-fifth" id="leftnav">
                         <div id="stickyNav" data-spy="affix" data-offset-bottom="50">
                             {% include sidenav_items.html %}
-                            <nav id="toc" data-toggle="toc"></nav>
-                             <!--custom script to hide/show the floating page TOC-->
+                             <!--custom script to float the global TOC-->
                             <script>
-                                function hideObject( element ) {
-                                    $( element ).toggle();
-                                }
-                                $( "#navbutton" ).click(function() {
-                                    hideObject( "#toc");
-                                });
                                 $( "#stickyNav" ).attr( "data-offset-top", $( "#blogHeader" ).height()+10 );
                                 $( "#stickyNav" ).attr( "style", "width:" + $( "#leftnav" ).width() + "px;" );
                                 $( window ).resize(function() {
