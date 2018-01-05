@@ -62,26 +62,7 @@
             <section>
                 <div class="grid">
                     <div class="unit one-fifth" id="leftnav">
-                        <div id="stickyNav" data-spy="affix" data-offset-bottom="50">
                             {% include sidenav_items.html %}
-                            <nav id="toc" data-toggle="toc"></nav>
-                             <!--custom script to hide/show the floating page TOC-->
-                            <script>
-                                function hideObject( element ) {
-                                    $( element ).toggle();
-                                }
-                                $( "#navbutton" ).click(function() {
-                                    hideObject( "#toc");
-                                });
-                                $( "#stickyNav" ).attr( "data-offset-top", $( "#blogHeader" ).height()+10 );
-                                $( "#stickyNav" ).attr( "style", "width:" + $( "#leftnav" ).width() + "px;" );
-                                $( window ).resize(function() {
-                                    $( "#stickyNav" ).attr( "style", "width:" + $( "#leftnav" ).width() + "px;" );
-                                    $('#stickyNav').data('bs.affix').options.offset = $('#stickyNav').offset().top;
-                            });
-                            </script>
-                            <!---->
-                        </div>
                     </div>
                 <div class="unit four-fifths" style="min-height:775px;">
                     <article>
