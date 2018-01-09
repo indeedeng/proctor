@@ -86,13 +86,13 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -103,6 +103,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+
+import static com.indeed.proctor.webapp.util.AllocationIdUtil.ALLOCATION_ID_COMPARATOR;
 
 /**
  * @author parker
@@ -978,23 +980,24 @@ public class ProctorTestDefinitionController extends AbstractController {
      */
     private void handleAllocationIdsForEditTest(final String testName, final TestDefinition previous, final TestDefinition current) {
         // Update allocation id if necessary
-        final Set<Integer> outdatedAllocations = AllocationIdUtil.getOutdatedAllocations(previous, current);
-        for (final int index : outdatedAllocations) {
-            final Allocation allocation = current.getAllocations().get(index);
+        final Set<Allocation> outdatedAllocations = AllocationIdUtil.getOutdatedAllocations(previous, current);
+        for (final Allocation allocation : outdatedAllocations) {
             allocation.setId(AllocationIdUtil.getNextVersionOfAllocationId(allocation.getId()));
         }
 
-        // Generate allocation id for new allocations if necessary
+        /**
+         * Check whether has new allocations.
+         * Doing this check to avoid getMaxUsedAllocationIdForTest when unnecessary because getMaxUsedAllocationIdForTest takes time
+         */
         final boolean needNewAllocId = current.getAllocations().stream().anyMatch(
                 x -> StringUtils.isEmpty(x.getId())
         );
         // Generate new allocation id if any allocation id is empty
         if (needNewAllocId) {
-            // Get the max allocation id ever used from test definition history, including deleted allocations
-            // maxAllocId does not include prefix and version, e.g. "Z" instead of "#Z1"
-            final String maxAllocId = getMaxUsedAllocationIdForTest(testName);
+            // Get the max allocation id ever used from test definition history, including deleted allocations in the format like "#Z1"
+            final Optional<String> maxAllocId = getMaxUsedAllocationIdForTest(testName);
             // Convert maxAllocId to base 10 integer, so that we can easily increment it
-            int maxAllocIdInt = maxAllocId == null ? -1 : AllocationIdUtil.convertCharactersToDecimal(maxAllocId.toCharArray());
+            int maxAllocIdInt = maxAllocId.isPresent() ? AllocationIdUtil.convertBase26ToDecimal(maxAllocId.get().substring(1, maxAllocId.get().length() - 1).toCharArray()) : -1;
             for (int i = 0; i < current.getAllocations().size(); i++) {
                 final Allocation allocation = current.getAllocations().get(i);
                 // Only generate for new allocation
@@ -1007,51 +1010,20 @@ public class ProctorTestDefinitionController extends AbstractController {
 
     /**
      * @param testName
-     * @return the max allocation id ever used, not including the prefix and version. For example, return "Z" instead of "#Z1"
+     * @return the max allocation id ever used in the format like "#Z1"
      */
     @Nullable
-    private String getMaxUsedAllocationIdForTest(final String testName) {
+    private Optional<String> getMaxUsedAllocationIdForTest(final String testName) {
         // Use trunk store
         final ProctorStore trunkStore = determineStoreFromEnvironment(Environment.WORKING);
         final List<RevisionDefinition> revisionDefinitions = makeRevisionDefinitionList(trunkStore, testName, null, true);
-        final Set<String> allocIds = new HashSet<>();
-        revisionDefinitions.forEach(
-                x -> {
-                    if (x.getDefinition() == null) {
-                        return;
-                    }
-                    x.getDefinition().getAllocations().forEach(
-                            y -> {
-                                if (!StringUtils.isEmpty(y.getId())) {
-                                    allocIds.add(y.getId());
-                                }
-                            }
-                    );
-                }
-        );
-        final List<String> allocIdList = new ArrayList<>(allocIds);
-        Collections.sort(allocIdList, new Comparator<String>() {
-            @Override
-            public int compare(String o1, String o2) {
-                // Remove prefix and version from allocation id
-                Preconditions.checkArgument((o1.length() > 2 && o2.length() > 2), "Invalid allocation id, id1: %s, id2: %s", o1, o2);
-                String id1 = o1.substring(1, o1.length() - 1);
-                String id2 = o2.substring(1, o2.length() - 1);
-                final int maxLength = Math.max(id1.length(), id2.length());
-                id1 = AllocationIdUtil.padAllocationIdWithAs(id1, maxLength);
-                id2 = AllocationIdUtil.padAllocationIdWithAs(id2, maxLength);
-                // Sort in reverse order
-                return id2.compareTo(id1);
-            }
-        });
-
-        if (allocIdList.size() == 0) {
-            return null;
-        } else {
-            final String maxAllocid = allocIdList.get(0);
-            // Remove prefix and version from allocation id
-            return maxAllocid.substring(1, maxAllocid.length() - 1);
-        }
+        return revisionDefinitions.stream().map(RevisionDefinition::getDefinition)
+                .filter(Objects::nonNull)
+                .flatMap(x -> x.getAllocations().stream())
+                .map(Allocation::getId)
+                .filter(StringUtils::isNotEmpty)
+                .distinct()
+                .max(ALLOCATION_ID_COMPARATOR);
     }
 
     private void handleAllocationIdsForNewTest(final TestDefinition testDefinition) {

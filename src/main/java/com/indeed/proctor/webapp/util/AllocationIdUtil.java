@@ -9,6 +9,7 @@ import com.indeed.proctor.common.model.TestDefinition;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -25,7 +26,22 @@ import java.util.stream.Collectors;
 public class AllocationIdUtil {
     private static final Logger LOGGER = Logger.getLogger(AllocationIdUtil.class);
 
+    // Allocation id comparator. Compare allocation ids with format like "#A1"
+    public static final Comparator<String> ALLOCATION_ID_COMPARATOR = new Comparator<String>() {
+        @Override
+        public int compare(String o1, String o2) {
+            // Remove prefix and version from allocation id
+            Preconditions.checkArgument((o1.length() > 2 && o2.length() > 2), "Invalid allocation id, id1: %s, id2: %s", o1, o2);
+            final String id1Str = o1.substring(1, o1.length() - 1);
+            final String id2Str = o2.substring(1, o2.length() - 1);
+            final int id1Int = convertBase26ToDecimal(id1Str.toCharArray());
+            final int id2Int = convertBase26ToDecimal(id2Str.toCharArray());
+            return id1Int - id2Int;
+        }
+    };
+
     private static int getSegmentationChangeStartIndex(final TestDefinition previous, final TestDefinition current) {
+        // Currently we can't change the order of allocations, we can only add or delete or update allocations, the following logic is based on this.
         // Test rule change
         if (!Objects.equals(previous.getRule(), current.getRule())) {
             // Update all allocation ids
@@ -49,22 +65,22 @@ public class AllocationIdUtil {
         return -1;
     }
 
-    public static Set<Integer> getOutdatedAllocations(final TestDefinition previous, final TestDefinition current) {
+    public static Set<Allocation> getOutdatedAllocations(final TestDefinition previous, final TestDefinition current) {
         final boolean hasAllocId = current.getAllocations().stream().anyMatch(
                 x -> !StringUtils.isEmpty(x.getId())
         );
+        final Set<Allocation> outdatedAllocations = new HashSet<>();
         // No existing allocation id, return
         if (!hasAllocId) {
-            return new HashSet<>();
+            return outdatedAllocations;
         }
 
-        final Set<Integer> outdatedAllocations = new HashSet<>();
         // Check segmentation change
         final int updateFrom = getSegmentationChangeStartIndex(previous, current);
         if (updateFrom > -1) {
             for (int i = updateFrom; i < current.getAllocations().size(); i++) {
                 if (!StringUtils.isEmpty(current.getAllocations().get(i).getId())) {
-                    outdatedAllocations.add(i);
+                    outdatedAllocations.add(current.getAllocations().get(i));
                 }
             }
         }
@@ -72,7 +88,7 @@ public class AllocationIdUtil {
         final int ratioCheckTo = updateFrom > -1 ? updateFrom : current.getAllocations().size();
         for (int i = 0; i < ratioCheckTo; i++) {
             if (isUnbalancedRatioChange(previous.getAllocations().get(i), current.getAllocations().get(i))) {
-                outdatedAllocations.add(i);
+                outdatedAllocations.add(current.getAllocations().get(i));
             }
         }
         return outdatedAllocations;
@@ -119,15 +135,6 @@ public class AllocationIdUtil {
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    public static int convertCharactersToDecimal(final char[] chars) {
-        int sum = 0;
-        for (int i = 0; i < chars.length; i++) {
-            // 26 alphabetic
-            sum = sum * 26 + convertLetterToNumber(chars[i]);
-        }
-        return sum;
-    }
-
     private static final Pattern ALLOCATION_ID_PATTERN = Pattern.compile("^(#[A-Z]+)(\\d+)$");
 
     /**
@@ -147,48 +154,41 @@ public class AllocationIdUtil {
     }
 
     /**
-     * @param id    allocation id without prefix and version
-     * @param toLen the length of the result string
-     * @return padded allocation id. e.g. if id = "BA", tolen = 5, return "AAABA"
-     */
-    public static String padAllocationIdWithAs(final String id, final int toLen) {
-        Preconditions.checkArgument(toLen >= id.length(), "Can not pad for allocation id: %s to length: %d", id, toLen);
-        String padded = id;
-        int toPadlen = toLen - id.length();
-        while (toPadlen > 0) {
-            padded = 'A' + padded;
-            toPadlen--;
-        }
-        return padded;
-    }
-
-    /**
      * @param index   a base 10 integer
      * @param version version of the allocation id
      * @return the full allocaiton id. e.g. (26, 2) returns #BA2
      */
     public static String generateAllocationId(final int index, final int version) {
-        return "#" + convertDecimalToCharacters(index) + version;
+        return "#" + convertDecimalToBase26(index) + version;
     }
 
-    private static String convertDecimalToCharacters(final int n) {
-        String res = "";
+    private static String convertDecimalToBase26(final int n) {
+        final StringBuilder res = new StringBuilder();
 
         int number = n;
         for (; number >= 26; number /= 26) {
             final int current = number % 26;
-            res = convertNumberToLetter(current) + res;
+            res.append(convertDigitToLetter(current));
         }
 
-        return convertNumberToLetter(number) + res;
+        return res.append(convertDigitToLetter(number)).reverse().toString();
     }
 
-    private static char convertNumberToLetter(final int n) {
+    public static int convertBase26ToDecimal(final char[] chars) {
+        int sum = 0;
+        for (int i = 0; i < chars.length; i++) {
+            // 26 alphabetic
+            sum = sum * 26 + convertLetterToDigit(chars[i]);
+        }
+        return sum;
+    }
+
+    private static char convertDigitToLetter(final int n) {
         Preconditions.checkArgument(n < 26, "Invalid number: %s, you can only convert number between 0 and 26 to letter", n);
         return (char) ('A' + n);
     }
 
-    private static int convertLetterToNumber(final char c) {
+    private static int convertLetterToDigit(final char c) {
         final int n = c - 'A';
         Preconditions.checkArgument((n < 26 && n >= 0), "Invalid letter: %s, the letter should be upper case A -> Z", c);
         return n;
