@@ -8,10 +8,13 @@ import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.webapp.db.Environment;
 import com.indeed.proctor.webapp.model.WebappConfiguration;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.springframework.ui.Model;
 
 import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Collections;
@@ -99,6 +102,17 @@ public class AbstractController {
     protected List<Revision> queryTestDefinitionHistory(final String branchOrRevision, final String testName, final int start, final int limit) throws StoreException {
         final BranchOrRevision bor = new BranchOrRevision(branchOrRevision);
         return bor.queryTestDefinitionHistory(testName, start, limit);
+    }
+
+    protected String doErrorView(final String error, final Throwable throwable, final int responseCode, final HttpServletResponse response, final Model model) {
+        response.setStatus(responseCode);
+        if (StringUtils.isNotEmpty(error)) {
+            model.addAttribute("error", error);
+        }
+        if (throwable != null) {
+            model.addAttribute("exception", throwable);
+        }
+        return "error";
     }
 
     private class BranchOrRevision {
