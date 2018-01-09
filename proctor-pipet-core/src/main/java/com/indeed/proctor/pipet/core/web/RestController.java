@@ -91,8 +91,8 @@ public class RestController {
     @RequestMapping(value="/proctor/matrix", method=RequestMethod.GET)
     public void proctorMatrix(final HttpServletResponse response) throws IOException {
         final Proctor proctor = tryLoadProctor();
-        final PrintWriter writer = response.getWriter();
         response.setContentType("application/json;charset=UTF-8");
+        final PrintWriter writer = response.getWriter();
         proctor.appendTestMatrix(writer);
     }
 
