@@ -31,12 +31,12 @@ import com.indeed.proctor.common.model.TestMatrixArtifact;
 import com.indeed.proctor.common.model.TestMatrixDefinition;
 import com.indeed.proctor.common.model.TestMatrixVersion;
 import com.indeed.proctor.common.model.TestType;
+import com.indeed.proctor.store.GitNoAuthorizationException;
+import com.indeed.proctor.store.GitNoDevelperAccessLevelException;
+import com.indeed.proctor.store.GitNoMasterAccessLevelException;
 import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.store.StoreException;
-import com.indeed.proctor.store.GitNoAuthorizationException;
-import com.indeed.proctor.store.GitNoMasterAccessLevelException;
-import com.indeed.proctor.store.GitNoDevelperAccessLevelException;
 import com.indeed.proctor.webapp.ProctorSpecificationSource;
 import com.indeed.proctor.webapp.controllers.BackgroundJob.ResultUrl;
 import com.indeed.proctor.webapp.db.Environment;
@@ -89,7 +89,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Stream;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -98,6 +97,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 /**
  * @author parker
@@ -243,7 +243,7 @@ public class ProctorTestDefinitionController extends AbstractController {
                 LOGGER.info("Unknown test definition : " + testName + " revision " + revision);
                 // unknown testdefinition
                 if (testNotExistsInAnyEnvs(theEnvironment, testName, revision)){
-                    return "404";
+                    return doErrorView("Test " + testName + " does not exist in any environment", null, HttpServletResponse.SC_NOT_FOUND, response, model);
                 }
                 final String errorMsg = "Test \"" + testName + "\" " +
                         (revision.isEmpty() ? "" : "of revision " + revision + " ") +
@@ -256,6 +256,8 @@ public class ProctorTestDefinitionController extends AbstractController {
 
         return doView(theEnvironment, Views.DETAILS, testName, definition, history, version, model);
     }
+
+
 
     private boolean testNotExistsInAnyEnvs(final Environment theEnvironment, final String testName, final String revision) {
         return Stream.of(Environment.values())
@@ -310,7 +312,8 @@ public class ProctorTestDefinitionController extends AbstractController {
     @RequestMapping(value = "/{testName}/edit", method = RequestMethod.GET)
     public String doEditGet(
         @PathVariable String testName,
-        final Model model
+        final Model model,
+        final HttpServletResponse response
     ) throws StoreException {
         final Environment theEnvironment = Environment.WORKING; // only allow editing of TRUNK!
         final ProctorStore store = determineStoreFromEnvironment(theEnvironment);
@@ -320,7 +323,7 @@ public class ProctorTestDefinitionController extends AbstractController {
         if (definition == null) {
             LOGGER.info("Unknown test definition : " + testName);
             // unknown testdefinition
-            return "404";
+            return doErrorView("Test " + testName + " does not exist in TRUNK", null, HttpServletResponse.SC_NOT_FOUND, response, model);
         }
 
         return doView(theEnvironment, Views.EDIT, testName, definition, Collections.<RevisionDefinition>emptyList(), version, model);
