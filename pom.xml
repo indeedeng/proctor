@@ -4,11 +4,11 @@
     <parent>
         <groupId>com.indeed</groupId>
         <artifactId>oss-parent</artifactId>
-        <version>17</version>
+        <version>22</version>
     </parent>
 
     <properties>
-        <spring.version>4.2.5.RELEASE</spring.version>
+        <spring.version>4.3.8.RELEASE</spring.version>
     </properties>
 
     <groupId>com.indeed</groupId>
