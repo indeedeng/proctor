@@ -57,8 +57,10 @@ import com.indeed.proctor.webapp.model.SessionViewModel;
 import com.indeed.proctor.webapp.model.WebappConfiguration;
 import com.indeed.proctor.webapp.tags.TestDefinitionFunctions;
 import com.indeed.proctor.webapp.tags.UtilityFunctions;
+import com.indeed.proctor.webapp.util.AllocationIdUtil;
 import com.indeed.proctor.webapp.util.threads.LogOnUncaughtExceptionHandler;
 import com.indeed.proctor.webapp.views.JsonView;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -73,6 +75,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.view.RedirectView;
 
+import javax.annotation.Nullable;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -88,6 +91,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -98,6 +103,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+
+import static com.indeed.proctor.webapp.util.AllocationIdUtil.ALLOCATION_ID_COMPARATOR;
 
 /**
  * @author parker
@@ -852,8 +859,10 @@ public class ProctorTestDefinitionController extends AbstractController {
                             }
                             if (isCreate) {
                                 testDefinitionToUpdate.setVersion("-1");
+                                handleAllocationIdsForNewTest(testDefinitionToUpdate);
                             } else if (existingTestDefinition != null) {
                                 testDefinitionToUpdate.setVersion(existingTestDefinition.getVersion());
+                                handleAllocationIdsForEditTest(testName, existingTestDefinition, testDefinitionToUpdate);
                             }
                             job.log("verifying test definition and buckets");
                             validateBasicInformation(testDefinitionToUpdate, job);
@@ -965,6 +974,66 @@ public class ProctorTestDefinitionController extends AbstractController {
                     }
                 }
         );
+    }
+
+    /**
+     * @param testName
+     * @param previous test definition before edit
+     * @param current  test definition after edit
+     */
+    private void handleAllocationIdsForEditTest(final String testName, final TestDefinition previous, final TestDefinition current) {
+        // Update allocation id if necessary
+        final Set<Allocation> outdatedAllocations = AllocationIdUtil.getOutdatedAllocations(previous, current);
+        for (final Allocation allocation : outdatedAllocations) {
+            allocation.setId(AllocationIdUtil.getNextVersionOfAllocationId(allocation.getId()));
+        }
+
+        /**
+         * Check whether has new allocations.
+         * Doing this check to avoid getMaxUsedAllocationIdForTest when unnecessary because getMaxUsedAllocationIdForTest takes time
+         */
+        final boolean needNewAllocId = current.getAllocations().stream().anyMatch(
+                x -> StringUtils.isEmpty(x.getId())
+        );
+        // Generate new allocation id if any allocation id is empty
+        if (needNewAllocId) {
+            // Get the max allocation id ever used from test definition history, including deleted allocations in the format like "#Z1"
+            final Optional<String> maxAllocId = getMaxUsedAllocationIdForTest(testName);
+            // Convert maxAllocId to base 10 integer, so that we can easily increment it
+            int maxAllocIdInt = maxAllocId.isPresent() ? AllocationIdUtil.convertBase26ToDecimal(maxAllocId.get().substring(1, maxAllocId.get().length() - 1).toCharArray()) : -1;
+            for (int i = 0; i < current.getAllocations().size(); i++) {
+                final Allocation allocation = current.getAllocations().get(i);
+                // Only generate for new allocation
+                if (StringUtils.isEmpty(allocation.getId())) {
+                    allocation.setId(AllocationIdUtil.generateAllocationId(++maxAllocIdInt, 1));
+                }
+            }
+        }
+    }
+
+    /**
+     * @param testName
+     * @return the max allocation id ever used in the format like "#Z1"
+     */
+    @Nullable
+    private Optional<String> getMaxUsedAllocationIdForTest(final String testName) {
+        // Use trunk store
+        final ProctorStore trunkStore = determineStoreFromEnvironment(Environment.WORKING);
+        final List<RevisionDefinition> revisionDefinitions = makeRevisionDefinitionList(trunkStore, testName, null, true);
+        return revisionDefinitions.stream().map(RevisionDefinition::getDefinition)
+                .filter(Objects::nonNull)
+                .flatMap(x -> x.getAllocations().stream())
+                .map(Allocation::getId)
+                .filter(StringUtils::isNotEmpty)
+                .distinct()
+                .max(ALLOCATION_ID_COMPARATOR);
+    }
+
+    private void handleAllocationIdsForNewTest(final TestDefinition testDefinition) {
+        for (int i = 0; i < testDefinition.getAllocations().size(); i++) {
+            final Allocation allocation = testDefinition.getAllocations().get(i);
+            allocation.setId(AllocationIdUtil.generateAllocationId(i, 1));
+        }
     }
 
     public static boolean isValidTestName(String testName) {
