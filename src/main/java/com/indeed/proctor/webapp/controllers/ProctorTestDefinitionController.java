@@ -250,7 +250,7 @@ public class ProctorTestDefinitionController extends AbstractController {
                 LOGGER.info("Unknown test definition : " + testName + " revision " + revision);
                 // unknown testdefinition
                 if (testNotExistsInAnyEnvs(theEnvironment, testName, revision)){
-                    return "404";
+                    return doErrorView("Test " + testName + " does not exist in any environment", null, HttpServletResponse.SC_NOT_FOUND, response, model);
                 }
                 final String errorMsg = "Test \"" + testName + "\" " +
                         (revision.isEmpty() ? "" : "of revision " + revision + " ") +
@@ -263,6 +263,8 @@ public class ProctorTestDefinitionController extends AbstractController {
 
         return doView(theEnvironment, Views.DETAILS, testName, definition, history, version, model);
     }
+
+
 
     private boolean testNotExistsInAnyEnvs(final Environment theEnvironment, final String testName, final String revision) {
         return Stream.of(Environment.values())
@@ -317,7 +319,8 @@ public class ProctorTestDefinitionController extends AbstractController {
     @RequestMapping(value = "/{testName}/edit", method = RequestMethod.GET)
     public String doEditGet(
         @PathVariable String testName,
-        final Model model
+        final Model model,
+        final HttpServletResponse response
     ) throws StoreException {
         final Environment theEnvironment = Environment.WORKING; // only allow editing of TRUNK!
         final ProctorStore store = determineStoreFromEnvironment(theEnvironment);
@@ -327,7 +330,7 @@ public class ProctorTestDefinitionController extends AbstractController {
         if (definition == null) {
             LOGGER.info("Unknown test definition : " + testName);
             // unknown testdefinition
-            return "404";
+            return doErrorView("Test " + testName + " does not exist in TRUNK", null, HttpServletResponse.SC_NOT_FOUND, response, model);
         }
 
         return doView(theEnvironment, Views.EDIT, testName, definition, Collections.<RevisionDefinition>emptyList(), version, model);
