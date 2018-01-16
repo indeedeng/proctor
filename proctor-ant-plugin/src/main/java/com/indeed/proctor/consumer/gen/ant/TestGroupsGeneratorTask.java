@@ -114,7 +114,7 @@ public abstract class TestGroupsGeneratorTask extends Task {
             final List<File> files = new ArrayList<>();
 
             for (final String input : inputs) {
-                final File inputFile = new File(input);
+                final File inputFile = new File(input.trim());
                 if (inputFile == null) {
                     LOGGER.error("input not substituted with configured value");
                     return;
