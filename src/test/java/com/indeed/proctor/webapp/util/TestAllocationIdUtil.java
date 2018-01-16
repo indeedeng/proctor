@@ -9,7 +9,6 @@ import org.junit.Test;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 
@@ -92,5 +91,11 @@ public class TestAllocationIdUtil {
         final List<String> allocationIds = Lists.newArrayList("#B1", "#D1", "#A1");
         Collections.sort(allocationIds, AllocationIdUtil.ALLOCATION_ID_COMPARATOR);
         assertEquals(Lists.newArrayList("#A1", "#B1", "#D1"), allocationIds);
+    }
+
+    @Test
+    public void testGetAllocationName() {
+        assertEquals("A", AllocationIdUtil.getAllocationName("#A1"));
+        assertEquals("A", AllocationIdUtil.getAllocationName("#A1111"));
     }
 }

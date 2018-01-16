@@ -1000,7 +1000,7 @@ public class ProctorTestDefinitionController extends AbstractController {
             // Get the max allocation id ever used from test definition history, including deleted allocations in the format like "#Z1"
             final Optional<String> maxAllocId = getMaxUsedAllocationIdForTest(testName);
             // Convert maxAllocId to base 10 integer, so that we can easily increment it
-            int maxAllocIdInt = maxAllocId.isPresent() ? AllocationIdUtil.convertBase26ToDecimal(maxAllocId.get().substring(1, maxAllocId.get().length() - 1).toCharArray()) : -1;
+            int maxAllocIdInt = maxAllocId.isPresent() ? AllocationIdUtil.convertBase26ToDecimal(AllocationIdUtil.getAllocationName(maxAllocId.get()).toCharArray()) : -1;
             for (int i = 0; i < current.getAllocations().size(); i++) {
                 final Allocation allocation = current.getAllocations().get(i);
                 // Only generate for new allocation

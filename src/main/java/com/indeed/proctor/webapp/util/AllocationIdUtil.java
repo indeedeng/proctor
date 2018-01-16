@@ -25,6 +25,16 @@ import java.util.stream.Collectors;
  */
 public class AllocationIdUtil {
     private static final Logger LOGGER = Logger.getLogger(AllocationIdUtil.class);
+    private static final Pattern ALLOCATION_ID_PATTERN = Pattern.compile("^#([A-Z]+)(\\d+)$");
+
+    public static String getAllocationName(final String allocId) {
+        final Matcher matcher = ALLOCATION_ID_PATTERN.matcher(allocId);
+        if (matcher.matches()) {
+            return matcher.group(1);
+        } else {
+            throw new IllegalStateException("Allocation id format is incorrect " + allocId);
+        }
+    }
 
     // Allocation id comparator. Compare allocation ids with format like "#A1"
     public static final Comparator<String> ALLOCATION_ID_COMPARATOR = new Comparator<String>() {
@@ -32,8 +42,8 @@ public class AllocationIdUtil {
         public int compare(String o1, String o2) {
             // Remove prefix and version from allocation id
             Preconditions.checkArgument((o1.length() > 2 && o2.length() > 2), "Invalid allocation id, id1: %s, id2: %s", o1, o2);
-            final String id1Str = o1.substring(1, o1.length() - 1);
-            final String id2Str = o2.substring(1, o2.length() - 1);
+            final String id1Str = getAllocationName(o1);
+            final String id2Str = getAllocationName(o2);
             final int id1Int = convertBase26ToDecimal(id1Str.toCharArray());
             final int id2Int = convertBase26ToDecimal(id2Str.toCharArray());
             return id1Int - id2Int;
@@ -135,8 +145,6 @@ public class AllocationIdUtil {
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
-    private static final Pattern ALLOCATION_ID_PATTERN = Pattern.compile("^(#[A-Z]+)(\\d+)$");
-
     /**
      * @param allocId allocation id e.g. "#A1"
      * @return next version of allocId e.g "#A1" -> "#A2"
@@ -147,7 +155,7 @@ public class AllocationIdUtil {
             final String formerPart = matcher.group(1);
             final int version = Integer.parseInt(matcher.group(2));
             final int newVersion = version + 1;
-            return formerPart + newVersion;
+            return "#" + formerPart + newVersion;
         } else {
             throw new IllegalStateException("Could not get the next version of allocation id for " + allocId);
         }
