@@ -4,7 +4,7 @@ import com.indeed.proctor.common.model.TestMatrixArtifact;
 
 public abstract class AbstractProctorDiffReporter implements ProctorLoadReporter {
 
-    /** provide your implementation to customize reporting **/
+    /* provide your implementation to customize reporting */
     public abstract void reportProctorDiff(final TestMatrixArtifact oldProctor, final TestMatrixArtifact newProctor);
 
     @Override
