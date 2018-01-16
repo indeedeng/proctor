@@ -35,38 +35,45 @@ import java.util.TreeSet;
  */
 public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
     private static final ObjectMapper OBJECT_MAPPER = Serializers.lenient();
-
     /*
-         * If a folder of split jsons defining a proctor specification is provided, this method iterates over the folder
-         * contents, using the individual TestDefinition jsons and a providedcontext.json to create one large
-         * temporary ProctorSpecification json to be used for code generation
-         */
+     * If a folder of split jsons defining a proctor specification is provided, this method iterates over the folder
+     * contents, using the individual TestDefinition jsons and a providedcontext.json to create one large
+     * temporary ProctorSpecification json to be used for code generation
+     */
     public static File makeTotalSpecification(File dir, String targetDir) throws CodeGenException {
         //If no name is provided use the name of the containing folder
-        return makeTotalSpecification(dir,targetDir,dir.getPath().substring(dir.getPath().lastIndexOf(File.separator) + 1) + "Groups.json");
+        return makeTotalSpecification(dir, targetDir,dir.getPath().substring(dir.getPath().lastIndexOf(File.separator) + 1) + "Groups.json");
     }
 
     public static File makeTotalSpecification(File dir, String targetDir, String name) throws CodeGenException {
         final File[] dirFiles = dir.listFiles();
-        Map<String,TestSpecification> testSpec = new LinkedHashMap<String, TestSpecification>();
-        Map<String,String> providedContext = new LinkedHashMap<String,String>();
-        for(File child : dirFiles) {
-            final String childName = child.getName();
-            if(childName.equals("providedcontext.json")){
+        return makeTotalSpecification(Arrays.asList(dirFiles), targetDir, name);
+    }
+
+    public static File makeTotalSpecification(List<File> files, String targetDir, String name) throws CodeGenException {
+        Map<String, TestSpecification> testSpec = new LinkedHashMap<String, TestSpecification>();
+        Map<String, String> providedContext = new LinkedHashMap<String,String>();
+        for(File file : files) {
+            final String fileName = file.getName();
+            if(fileName.equals("providedcontext.json")){
                 try {
-                    providedContext = OBJECT_MAPPER.readValue(child,Map.class);
+                    providedContext = OBJECT_MAPPER.readValue(file, Map.class);
                 } catch (IOException e) {
-                    throw new CodeGenException("Could not read json correctly " + child.getAbsolutePath(), e);
+                    throw new CodeGenException("Could not read json correctly " + file.getAbsolutePath(), e);
                 }
             }
-            else if (childName.endsWith(".json")){
+            else if (fileName.endsWith(".json")){
                 final TestSpecification spec;
                 try {
-                    spec = OBJECT_MAPPER.readValue(child,TestSpecification.class);
+                    spec = OBJECT_MAPPER.readValue(file, TestSpecification.class);
                 } catch (IOException e) {
-                    throw new CodeGenException("Could not read json correctly " + child.getAbsolutePath(),e);
+                    throw new CodeGenException("Could not read json correctly " + file.getAbsolutePath(),e);
                 }
-                testSpec.put(childName.substring(0, childName.indexOf(".json")),spec);
+                final String specName = fileName.substring(0, fileName.indexOf(".json"));
+                if (testSpec.containsKey(specName)) {
+                    throw new CodeGenException("Multiple " + fileName + " found, each test should only have 1 spec file");
+                }
+                testSpec.put(specName, spec);
             }
         }
         final ProctorSpecification proctorSpecification = new ProctorSpecification();

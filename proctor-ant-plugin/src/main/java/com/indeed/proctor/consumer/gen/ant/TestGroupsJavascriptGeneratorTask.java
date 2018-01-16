@@ -5,6 +5,7 @@ import com.indeed.proctor.consumer.gen.TestGroupsJavascriptGenerator;
 import org.apache.log4j.Logger;
 
 import java.io.File;
+import java.util.List;
 
 /**
  * Ant task for generating Javascript Proctor test groups files.
@@ -25,9 +26,16 @@ public class TestGroupsJavascriptGeneratorTask extends TestGroupsGeneratorTask {
         this.useClosure = useClosure;
     }
 
+    @Override
     protected void generateTotalSpecification(final File dir, final File specificationOutputFile) throws CodeGenException {
         final File output = gen.makeTotalSpecification(dir, specificationOutputFile.getParent(), specificationOutputFile.getName());
-        gen.generate(output.getPath(),target,packageName,groupsClass, useClosure);
+        gen.generate(output.getPath(), target, packageName, groupsClass, useClosure);
+    }
+
+    @Override
+    protected void generateTotalSpecification(List<File> files, File specificationOutputFile) throws CodeGenException {
+        final File output = gen.makeTotalSpecification(files, specificationOutputFile.getParent(), specificationOutputFile.getName());
+        gen.generate(output.getPath(), target, packageName, groupsClass, useClosure);
     }
 
     protected void generateFile() throws CodeGenException {
