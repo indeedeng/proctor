@@ -113,7 +113,7 @@ public class JsonProctorLoaderFactory {
     }
 
     /**
-     * @param diffReporter
+     * @param diffReporter a reporter to report changes of new proctor 
      * @deprecated use {@link JsonProctorLoaderFactory#setLoadReporters} instead
      */
     @Deprecated

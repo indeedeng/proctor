@@ -163,8 +163,8 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
     /**
      * this is used to provide custom reporting of changes in the tests, e.g. reporting to datadog
      *
-     * @param diffReporter
-     * @deprecated use {@link AbstractProctorDiffReporter#addLoadReporter}
+     * @param diffReporter a reporter to report change of new proctor
+     * @deprecated use {@link AbstractProctorLoader#addLoadReporter}
      */
     @SuppressWarnings({"UnusedDeclaration"})
     @Deprecated
