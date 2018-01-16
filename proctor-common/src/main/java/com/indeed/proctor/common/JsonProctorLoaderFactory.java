@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.indeed.util.varexport.ManagedVariable;
 import com.indeed.util.varexport.VarExporter;
 import org.springframework.core.io.Resource;
@@ -14,6 +15,8 @@ import javax.el.FunctionMapper;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 public class JsonProctorLoaderFactory {
     // Lenient parser used by consumer apps to prevent deployment order dependencies
@@ -29,7 +32,7 @@ public class JsonProctorLoaderFactory {
 
     protected FunctionMapper functionMapper = RuleEvaluator.FUNCTION_MAPPER;
 
-    protected AbstractProctorDiffReporter diffReporter = new AbstractProctorDiffReporter();
+    protected List<ProctorLoadReporter> reporters = new ArrayList<>();
 
     @SuppressWarnings("UnusedDeclaration")
     public void setClassResourcePath(@Nullable final String classResourcePath) {
@@ -51,7 +54,7 @@ public class JsonProctorLoaderFactory {
     public void setSpecificationResource(@Nonnull final String specificationResource) {
         try {
             if (specificationResource.startsWith("classpath:")) {
-                final String specificationResourceClasspath= specificationResource.replace("classpath:", "");
+                final String specificationResourceClasspath = specificationResource.replace("classpath:", "");
                 final InputStream is = this.getClass().getResourceAsStream(specificationResourceClasspath);
                 readSpecificationResource(is, specificationResource);
                 is.close();
@@ -105,18 +108,22 @@ public class JsonProctorLoaderFactory {
         }
 
         final AbstractJsonProctorLoader loader = new FileProctorLoader(specification, filePath, functionMapper);
-        loader.setDiffReporter(this.diffReporter);
-
+        loader.addLoadReporter(reporters);
         return loader;
     }
 
+    /**
+     * @param diffReporter
+     * @deprecated use {@link JsonProctorLoaderFactory#setLoadReporters} instead
+     */
+    @Deprecated
     public void setDiffReporter(final AbstractProctorDiffReporter diffReporter) {
+        Preconditions.checkNotNull(diffReporter, "diff reporter can't be null use AbstractProctorDiffReporter for nop implementation");
+        setLoadReporters(ImmutableList.<ProctorLoadReporter>of(diffReporter));
+    }
 
-        if (diffReporter == null) {
-            throw new UnsupportedOperationException("diff reporter can't be null use AbstractProctorDiffReporter for nop implementation");
-        }
-
-        this.diffReporter = diffReporter;
+    public void setLoadReporters(final List<ProctorLoadReporter> reporters) {
+        this.reporters = reporters;
     }
 
     protected void exportJsonSpecification(final String jsonSpec) {
