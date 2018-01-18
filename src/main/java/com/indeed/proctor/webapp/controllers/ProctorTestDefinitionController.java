@@ -2,6 +2,7 @@ package com.indeed.proctor.webapp.controllers;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
@@ -977,7 +978,7 @@ public class ProctorTestDefinitionController extends AbstractController {
     }
 
     /**
-     * @param testName
+     * @param testName the proctor test name
      * @param previous test definition before edit
      * @param current  test definition after edit
      */
@@ -1001,8 +1002,7 @@ public class ProctorTestDefinitionController extends AbstractController {
             final Optional<String> maxAllocId = getMaxUsedAllocationIdForTest(testName);
             // Convert maxAllocId to base 10 integer, so that we can easily increment it
             int maxAllocIdInt = maxAllocId.isPresent() ? AllocationIdUtil.convertBase26ToDecimal(AllocationIdUtil.getAllocationName(maxAllocId.get()).toCharArray()) : -1;
-            for (int i = 0; i < current.getAllocations().size(); i++) {
-                final Allocation allocation = current.getAllocations().get(i);
+            for (final Allocation allocation : current.getAllocations()) {
                 // Only generate for new allocation
                 if (StringUtils.isEmpty(allocation.getId())) {
                     allocation.setId(AllocationIdUtil.generateAllocationId(++maxAllocIdInt, 1));
@@ -1012,7 +1012,7 @@ public class ProctorTestDefinitionController extends AbstractController {
     }
 
     /**
-     * @param testName
+     * @param testName the proctor test name
      * @return the max allocation id ever used in the format like "#Z1"
      */
     @Nullable
@@ -1020,6 +1020,11 @@ public class ProctorTestDefinitionController extends AbstractController {
         // Use trunk store
         final ProctorStore trunkStore = determineStoreFromEnvironment(Environment.WORKING);
         final List<RevisionDefinition> revisionDefinitions = makeRevisionDefinitionList(trunkStore, testName, null, true);
+        return getMaxAllocationId(revisionDefinitions);
+    }
+
+    @VisibleForTesting
+    static Optional<String> getMaxAllocationId(final List<RevisionDefinition> revisionDefinitions) {
         return revisionDefinitions.stream().map(RevisionDefinition::getDefinition)
                 .filter(Objects::nonNull)
                 .flatMap(x -> x.getAllocations().stream())
@@ -1029,6 +1034,9 @@ public class ProctorTestDefinitionController extends AbstractController {
                 .max(ALLOCATION_ID_COMPARATOR);
     }
 
+    /**
+     * @param testDefinition the test definition to generate allocation ids for
+     */
     private void handleAllocationIdsForNewTest(final TestDefinition testDefinition) {
         for (int i = 0; i < testDefinition.getAllocations().size(); i++) {
             final Allocation allocation = testDefinition.getAllocations().get(i);

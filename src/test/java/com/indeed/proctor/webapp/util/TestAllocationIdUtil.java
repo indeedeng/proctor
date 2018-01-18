@@ -72,6 +72,16 @@ public class TestAllocationIdUtil {
         current = createSampleTestDefinition();
         current.getAllocations().get(0).setRanges(Lists.newArrayList(new Range(0, 0.2d), new Range(1, 0.8d)));
         assertEquals(new HashSet<>(Lists.newArrayList(current.getAllocations().get(0))), AllocationIdUtil.getOutdatedAllocations(previous, current));
+
+        // Added allocations at the end
+        current = createSampleTestDefinition();
+        current.getAllocations().add(new Allocation());
+        assertEquals(new HashSet<>(), AllocationIdUtil.getOutdatedAllocations(previous, current));
+
+        // Deleted allocations at the end
+        current = createSampleTestDefinition();
+        current.getAllocations().remove(1);
+        assertEquals(new HashSet<>(), AllocationIdUtil.getOutdatedAllocations(previous, current));
     }
 
     @Test
@@ -97,5 +107,7 @@ public class TestAllocationIdUtil {
     public void testGetAllocationName() {
         assertEquals("A", AllocationIdUtil.getAllocationName("#A1"));
         assertEquals("A", AllocationIdUtil.getAllocationName("#A1111"));
+        assertEquals("BA", AllocationIdUtil.getAllocationName("#BA1"));
+        assertEquals("BBB", AllocationIdUtil.getAllocationName("#BBB123"));
     }
 }
