@@ -95,7 +95,7 @@ public class AllocationIdUtil {
             }
         }
         // Check unbalanced ratio change
-        final int ratioCheckTo = updateFrom > -1 ? updateFrom : current.getAllocations().size();
+        final int ratioCheckTo = updateFrom > -1 ? updateFrom : Math.min(previous.getAllocations().size(), current.getAllocations().size());
         for (int i = 0; i < ratioCheckTo; i++) {
             if (isUnbalancedRatioChange(previous.getAllocations().get(i), current.getAllocations().get(i))) {
                 outdatedAllocations.add(current.getAllocations().get(i));
