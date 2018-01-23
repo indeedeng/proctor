@@ -2,12 +2,14 @@ package com.indeed.proctor.consumer.gen.ant;
 
 import com.google.common.base.Strings;
 import com.indeed.proctor.consumer.gen.CodeGenException;
-import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.log4j.Logger;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.BuildException;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Ant task for generating Proctor test groups files.
@@ -62,48 +64,84 @@ public abstract class TestGroupsGeneratorTask extends Task {
         this.specificationOutput = specificationOutput;
     }
 
+    /**
+     * Use {@link TestGroupsGeneratorTask#totalSpecificationGenerator(List)} instead
+     * @deprecated
+     */
+    @Deprecated
+    protected void totalSpecificationGenerator(final File dir) throws CodeGenException {
+        totalSpecificationGenerator(Arrays.asList(dir.listFiles()));
+    }
     /*
      * Generates total specifications from any partial specifications found
      */
-    protected void totalSpecificationGenerator(final File dir) throws CodeGenException {
-        if (dir.equals(null)) {
-            throw new CodeGenException("input directory creates null file");
+    protected void totalSpecificationGenerator(final List<File> files) throws CodeGenException {
+        if (files == null || files.size() == 0) {
+            throw new CodeGenException("No specifications file input");
         }
-        final File[] providedContextFiles = dir.listFiles((java.io.FileFilter) FileFilterUtils.andFileFilter(FileFilterUtils.fileFileFilter(), FileFilterUtils.nameFileFilter("providedcontext.json")));
-        if (providedContextFiles.length == 1) {
+        final List<File> providedContextFiles =  new ArrayList<>();
+        for (final File file : files) {
+            if ("providedcontext.json".equals(file.getName())) {
+                providedContextFiles.add(file);
+            }
+        }
+        if (providedContextFiles.size() == 1) {
             //make directory if it doesn't exist
-            (new File(specificationOutput.substring(0,specificationOutput.lastIndexOf(File.separator)))).mkdirs();
+            (new File(specificationOutput.substring(0, specificationOutput.lastIndexOf(File.separator)))).mkdirs();
             final File specificationOutputFile = new File(specificationOutput);
-            generateTotalSpecification(dir, specificationOutputFile);
+            generateTotalSpecification(files, specificationOutputFile);
         } else {
             throw new CodeGenException("Incorrect amount of providedcontext.json in specified input folder");
         }
     }
 
+    /**
+     * Use {@link TestGroupsGeneratorTask#generateTotalSpecification(List, File)} instead
+     * @deprecated
+     */
+    @Deprecated
     protected abstract void generateTotalSpecification(final File dir, final File specificationOutputFile) throws CodeGenException;
 
+    protected abstract void generateTotalSpecification(final List<File> files, final File specificationOutputFile) throws CodeGenException;
+
     public void execute() throws BuildException {
-        //  TODO: validate
-        final File inputFile = new File(input);
-        if (inputFile == null) {
-            LOGGER.error("input not substituted with configured value");
+        final String[] inputs = input.split(",");
+
+        if (inputs.length == 0) {
+            LOGGER.error("input shouldn't be empty");
             return;
-        }
-        if (inputFile.isDirectory()) {
-            if(!Strings.isNullOrEmpty(getSpecificationOutput())) {
+        } else {
+            final List<File> files = new ArrayList<>();
+
+            for (final String input : inputs) {
+                final File inputFile = new File(input.trim());
+                if (inputFile == null) {
+                    LOGGER.error("input not substituted with configured value");
+                    return;
+                }
+                if (inputFile.isDirectory()) {
+                    files.addAll(Arrays.asList(inputFile.listFiles()));
+                } else {
+                    files.add(inputFile);
+                }
+            }
+
+            if (files.size() == 1) {
                 try {
-                    totalSpecificationGenerator(inputFile);
-                } catch (final CodeGenException e) {
-                    throw new BuildException("Could not create total specification", e);
+                    generateFile();
+                } catch (final CodeGenException ex) {
+                    throw new BuildException("Unable to generate code " + ex.toString(), ex);
                 }
             } else {
-                throw new BuildException("Undefined output folder for generated specification");
-            }
-        } else {
-            try {
-                generateFile();
-            } catch (final CodeGenException ex) {
-                throw new BuildException("Unable to generate code " + ex.toString(), ex);
+                if (!Strings.isNullOrEmpty(getSpecificationOutput())) {
+                    try {
+                        totalSpecificationGenerator(files);
+                    } catch (final CodeGenException e) {
+                        throw new BuildException("Could not create total specification", e);
+                    }
+                } else {
+                    throw new BuildException("Undefined output folder for generated specification");
+                }
             }
         }
     }

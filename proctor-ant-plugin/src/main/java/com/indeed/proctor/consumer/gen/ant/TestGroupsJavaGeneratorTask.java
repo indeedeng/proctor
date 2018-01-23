@@ -4,6 +4,7 @@ import com.indeed.proctor.consumer.gen.CodeGenException;
 import com.indeed.proctor.consumer.gen.TestGroupsJavaGenerator;
 
 import java.io.File;
+import java.util.List;
 
 /**
  * Ant task for generating Java Proctor test groups files.
@@ -32,8 +33,15 @@ public class TestGroupsJavaGeneratorTask extends TestGroupsGeneratorTask {
         this.contextClass = contextClass;
     }
 
+    @Override
     protected void generateTotalSpecification(final File dir, final File specificationOutputFile) throws CodeGenException {
         final File output = gen.makeTotalSpecification(dir, specificationOutputFile.getParent(), specificationOutputFile.getName());
+        gen.generate(output.getPath(), target, packageName, groupsClass, groupsManagerClass, contextClass);
+    }
+
+    @Override
+    protected void generateTotalSpecification(final List<File> files, final File specificationOutputFile) throws CodeGenException {
+        final File output = gen.makeTotalSpecification(files, specificationOutputFile.getParent(), specificationOutputFile.getName());
         gen.generate(output.getPath(), target, packageName, groupsClass, groupsManagerClass, contextClass);
     }
 
