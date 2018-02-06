@@ -850,7 +850,15 @@ public class ProctorTestDefinitionController extends AbstractController {
                             final ProctorStore trunkStore = determineStoreFromEnvironment(Environment.WORKING);
                             job.log("(scm) loading existing test definition for '" + testName + "'");
                             // Getting the TestDefinition via currentTestMatrix instead of trunkStore.getTestDefinition because the test
-                            final TestDefinition existingTestDefinition = trunkStore.getCurrentTestMatrix().getTestMatrixDefinition().getTests().get(testName);
+                            final TestDefinition existingTestDefinition = trunkStore.getCurrentTestMatrix()
+                                    .getTestMatrixDefinition()
+                                    .getTests()
+                                    .entrySet()
+                                    .stream()
+                                    .filter(map -> testName.equalsIgnoreCase(map.getKey()))
+                                    .map(Map.Entry::getValue)
+                                    .findAny()
+                                    .orElse(null);
                             if (previousRevision.length() <= 0 && existingTestDefinition != null) {
                                 throw new IllegalArgumentException("Current tests exists with name : '" + testName + "'");
                             }
