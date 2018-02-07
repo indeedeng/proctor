@@ -15,6 +15,7 @@
                 <div><span class="field-label">version:</span>${definition.version}</div>
                 <div><span class="field-label">rule:</span>${fn:escapeXml(definition.rule)}</div>
                 <div><span class="field-label">salt:</span>${fn:escapeXml(definition.salt)}</div>
+                <div><span class="field-label">silent:</span>${fn:escapeXml(definition.silent)}</div>
                 <proctor:renderDefinitionDetailsPageInjectionTemplates position="<%=DefinitionDetailsPageRenderer.DefinitionDetailsPagePosition.TOP%>" testName="${testName}" testDefinition="${definition}"/>
             </div>
         </div>
