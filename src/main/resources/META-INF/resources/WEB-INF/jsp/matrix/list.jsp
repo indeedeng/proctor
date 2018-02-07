@@ -92,6 +92,9 @@
                     </ui:grid-columns>
                     <ui:grid-columns width="one">
                         <div class="favorite" data-testname="${fn:escapeXml(test.key)}"></div>
+                        <div class="silent"
+                             <c:if test="${testDefinition.silent == 'false'}">style="display:none"</c:if>
+                             title="This test is not logged"></div>
                     </ui:grid-columns>
                 </ui:grid-row>
             </div>
