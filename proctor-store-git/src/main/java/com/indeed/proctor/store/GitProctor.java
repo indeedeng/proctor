@@ -4,12 +4,10 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.Weigher;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.io.Files;
-import com.indeed.proctor.common.model.TestMatrixDefinition;
 import com.indeed.proctor.common.model.TestMatrixVersion;
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
@@ -31,6 +29,7 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.util.io.DisabledOutputStream;
 
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
@@ -64,7 +63,6 @@ public class GitProctor extends FileBasedProctorStore {
     private final Git git;
     private String branchName;
 
-
     public GitProctor(final String gitPath,
                       final String username,
                       final String password,
@@ -79,7 +77,6 @@ public class GitProctor extends FileBasedProctorStore {
                       final String branchName) {
         this(new GitProctorCore(gitPath, username, password, testDefinitionsDirectory, Files.createTempDir()), testDefinitionsDirectory, branchName);
     }
-
 
     public GitProctor(final String gitPath,
                       final String username,
@@ -117,7 +114,7 @@ public class GitProctor extends FileBasedProctorStore {
             System.out.println("Running load matrix for last " + num_revisions + " revisions");
             final long start = System.currentTimeMillis();
             final List<Revision> revisions = client.getMatrixHistory(0, num_revisions);
-            for(final Revision rev : revisions) {
+            for (final Revision rev : revisions) {
                 final TestMatrixVersion matrix = client.getTestMatrix(rev.getRevision());
             }
             final long elapsed = System.currentTimeMillis() - start;
@@ -177,9 +174,9 @@ public class GitProctor extends FileBasedProctorStore {
         try {
             final ObjectId branchHead = git.getRepository().resolve(getGitCore().getRefName());
             logCommand = git.log()
-                .add(branchHead)
-                .setSkip(start)
-                .setMaxCount(limit);
+                    .add(branchHead)
+                    .setSkip(start)
+                    .setMaxCount(limit);
             return getHistoryFromLogCommand(logCommand);
         } catch (MissingObjectException e) {
             throw new StoreException("Could not get history for starting at " + getGitCore().getRefName(), e);
@@ -207,11 +204,11 @@ public class GitProctor extends FileBasedProctorStore {
         try {
             final ObjectId commitId = ObjectId.fromString(revision);
             final LogCommand logCommand = git.log()
-                // TODO: create path to definition.json file, sanitize test name for invalid / relative characters
-                .addPath(getTestDefinitionsDirectory()  + File.separator + test + File.separator + FileBasedProctorStore.TEST_DEFINITION_FILENAME)
-                .add(commitId)
-                .setSkip(start)
-                .setMaxCount(limit);
+                    // TODO: create path to definition.json file, sanitize test name for invalid / relative characters
+                    .addPath(getTestDefinitionsDirectory() + File.separator + test + File.separator + FileBasedProctorStore.TEST_DEFINITION_FILENAME)
+                    .add(commitId)
+                    .setSkip(start)
+                    .setMaxCount(limit);
             return getHistoryFromLogCommand(logCommand);
 
         } catch (IOException e) {
@@ -221,12 +218,6 @@ public class GitProctor extends FileBasedProctorStore {
 
     @Override
     public Map<String, List<Revision>> getAllHistories() throws StoreException {
-        final TestMatrixDefinition testMatrixDefinition = getCurrentTestMatrix().getTestMatrixDefinition();
-        if (testMatrixDefinition == null) {
-            return Collections.emptyMap();
-        }
-        final Set<String> activeTests = testMatrixDefinition.getTests().keySet();
-
         final Repository repository = git.getRepository();
         try {
             final ObjectId head = repository.resolve(Constants.HEAD);
@@ -235,7 +226,7 @@ public class GitProctor extends FileBasedProctorStore {
             df.setRepository(git.getRepository());
             df.setDiffComparator(RawTextComparator.DEFAULT);
 
-            final HistoryParser historyParser = new HistoryParser(revWalk, df, getTestDefinitionsDirectory(), activeTests);
+            final HistoryParser historyParser = new HistoryParser(revWalk, df, getTestDefinitionsDirectory());
             return historyParser.parseFromHead(head);
 
         } catch (final IOException e) {
@@ -251,12 +242,12 @@ public class GitProctor extends FileBasedProctorStore {
         } catch (GitAPIException e) {
             throw new StoreException("Could not get history", e);
         }
-        for( RevCommit commit : commits) {
+        for (RevCommit commit : commits) {
             versions.add(new Revision(
-                commit.getName(),
-                commit.getAuthorIdent().toExternalString(),
-                new Date(Long.valueOf(commit.getCommitTime()) * 1000 /* convert seconds to milliseconds */),
-                commit.getFullMessage()
+                    commit.getName(),
+                    commit.getAuthorIdent().toExternalString(),
+                    new Date(Long.valueOf(commit.getCommitTime()) * 1000 /* convert seconds to milliseconds */),
+                    commit.getFullMessage()
             ));
         }
         return versions;
@@ -280,6 +271,7 @@ public class GitProctor extends FileBasedProctorStore {
         final RevWalk revWalk;
         final DiffFormatter df;
         final Pattern testNamePattern;
+        @Nullable
         final Set<String> activeTests;
 
         final static private Cache<String, List<DiffEntry>> diffEntriesCache = CacheBuilder
@@ -291,11 +283,17 @@ public class GitProctor extends FileBasedProctorStore {
         public HistoryParser(final RevWalk revWalk,
                              final DiffFormatter df,
                              final String definitionDirectory,
-                             final Set<String> activeTests) {
+                             @Nullable final Set<String> activeTests) {
             this.revWalk = revWalk;
             this.df = df;
             testNamePattern = compileTestNamePattern(definitionDirectory);
             this.activeTests = activeTests;
+        }
+
+        public HistoryParser(final RevWalk revWalk,
+                             final DiffFormatter df,
+                             final String definitionDirectory) {
+            this(revWalk, df, definitionDirectory, null);
         }
 
         public Map<String, List<Revision>> parseFromHead(final ObjectId head) throws IOException {
@@ -333,7 +331,7 @@ public class GitProctor extends FileBasedProctorStore {
 
                     if (testNameMatcher.matches()) {
                         final String testName = testNameMatcher.group(1);
-                        if (activeTests.contains(testName)) {
+                        if ((activeTests == null) || activeTests.contains(testName)) {
                             List<Revision> history = histories.get(testName);
                             if (history == null) {
                                 history = Lists.newArrayList();
@@ -385,7 +383,6 @@ public class GitProctor extends FileBasedProctorStore {
                 Collections.sort(revisions, comparator);
             }
         }
-
 
         @VisibleForTesting
         public static Pattern compileTestNamePattern(final String definitionDirectory) {
