@@ -191,6 +191,7 @@
         <ui:grid-columns width="two"></ui:grid-columns>
         <ui:grid-columns width="ten">
             <div class="panel js-save-info">
+                <div id="silent-warning" <c:if test="${testDefinition.silent == 'false'}">style="display:none;"</c:if>>Logging has been disabled for this test. If you need logging, uncheck the 'Silent' checkbox at the top of the page.</div>
                 <ui:grid-row>
                     <ui:grid-columns width="three"><label class="right inline">SCM</label></ui:grid-columns>
                     <ui:grid-columns width="four"><input placeholder="Username" type="text" name="username" /></ui:grid-columns>

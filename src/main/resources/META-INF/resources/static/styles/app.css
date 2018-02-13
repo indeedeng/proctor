@@ -181,3 +181,11 @@ table.line-wrap td { word-wrap: break-word; }
     vertical-align: middle;
     margin: 0 0 0 0;
 }
+
+#silent-warning {
+    margin: 0 0 10px 0;
+    padding:10px;
+    font-size: 14px;
+    color: #FFF;
+    background-color: #F00;
+}
