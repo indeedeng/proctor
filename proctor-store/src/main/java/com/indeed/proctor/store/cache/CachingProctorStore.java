@@ -224,7 +224,8 @@ public class CachingProctorStore implements ProctorStore {
 
     /**
      * This class provides thread-safe read/write operations to the cached data including
-     * the latest version, revision histories of all ProTest and maximum 5 versions of test Matrix.
+     * the latest version, revision histories of all ProTest, maximum 3 versions of test Matrix
+     * and maximum 5000 versions of test definitions.
      */
     class CacheHolder {
         private final ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
@@ -236,10 +237,10 @@ public class CachingProctorStore implements ProctorStore {
 
         /* version information won't change so we don't expire */
         private final Cache<String, TestMatrixVersion> revisionTestMatrixCache = CacheBuilder.newBuilder()
-                .maximumSize(5)
+                .maximumSize(3)
                 .build();
         private final Cache<TDKey, TestDefinition> revisionTestDefinitionCache = CacheBuilder.newBuilder()
-                .maximumSize(1000) // 1000 * (the size of test definition) ~ 10 MB
+                .maximumSize(5000) // 5000 * (the size of test definition) ~ 50 MB
                 .build();
 
         private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
