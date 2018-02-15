@@ -127,7 +127,7 @@ public class SampleRandomGroupsHttpHandler<ProctorContext> implements HttpReques
             }
             if (testType == null) {
                 testType = testDefinition.getTestType();
-            } else if (testDefinition.getTestType() != testType) {
+            } else if (!testType.equals(testDefinition.getTestType())) {
                 throw new IllegalArgumentException("Target test group list contains tests of multiple test types: " +
                         testType + " and " + testDefinition.getTestType());
             }
