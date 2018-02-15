@@ -108,6 +108,9 @@ indeed.proctor.app.editor.DefinitionEditor =
  * @private
  */
 indeed.proctor.app.editor.DefinitionEditor.prototype.bind_ = function() {
+  if (!this.isCreate && this.basicEditor_.silent.value === "true") {
+    this.bindWarningForSilent_();
+  }
   this.definitionForm = goog.dom.getElementByClass('js-edit-definition-form');
   this.handler_.listen(this.definitionForm,
                        goog.events.EventType.SUBMIT, this.onFormSubmit_);
@@ -124,6 +127,19 @@ indeed.proctor.app.editor.DefinitionEditor.prototype.bind_ = function() {
   var saveinfo = goog.dom.getElementByClass('js-save-info', this.container);
   this.svninfo = new indeed.proctor.editor.SvnInfoEditor(saveinfo, false);
 
+};
+
+/**
+ * add event listener warning when silent is true but test is active
+ * @private
+ */
+indeed.proctor.app.editor.DefinitionEditor.prototype.bindWarningForSilent_ = function () {
+  this.handler_.listen(this.allocationEditors_.container, goog.events.EventType.CHANGE, goog.bind(function () {
+    if (this.allocationEditors_.validate() && this.allocationEditors_.checkActive()) {
+      this.basicEditor_.silent.checked = false;
+      goog.dom.getElement('silent-warning').textContent = "Logging is automatically enabled for this test because you change allocations. If you don't need logging, check the 'Silent' checkbox at the top of the page.";
+    }
+  }, this));
 };
 
 

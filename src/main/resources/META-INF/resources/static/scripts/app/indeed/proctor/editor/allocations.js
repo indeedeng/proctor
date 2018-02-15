@@ -104,6 +104,14 @@ indeed.proctor.editor.AllocationsEditor.prototype.validate = function() {
   return isValid;
 };
 
+/**
+ * @return {boolean} Flag indicating if this widget is active.
+ */
+indeed.proctor.editor.AllocationsEditor.prototype.checkActive = function () {
+  return this.allocationEditors_.some(function (allocationEditor) {
+    return allocationEditor.checkActive();
+  });
+};
 
 /**
  * @param {goog.events.Event} e delete allocation event with an AllocationEditor as target.
@@ -1024,6 +1032,15 @@ indeed.proctor.editor.AllocationEditor.prototype.validate = function() {
   return isValid;
 };
 
+/**
+ * @return {boolean} Flag indicating if this widget is active.
+ */
+indeed.proctor.editor.AllocationEditor.prototype.checkActive = function () {
+  return this.toJSON().ranges.some(function (range) {
+    const length = goog.string.toNumber(range.length);
+    return length !== 0 && length !== 1.0;
+  });
+};
 
 /**
  *

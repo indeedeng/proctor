@@ -45,6 +45,9 @@ indeed.proctor.editor.BasicEditor = function(container, definition, isCreate) {
   /** @type {Element} rule input */
   this.rule = indeed.proctor.forms.getElementByInputName('rule',
       goog.dom.TagName.INPUT, null, container);
+  /** @type {Element} silent input */
+  this.silent = indeed.proctor.forms.getElementByInputName('silent',
+    goog.dom.TagName.INPUT, null, container);
 
   /**
    * @type {goog.events.EventHandler}
