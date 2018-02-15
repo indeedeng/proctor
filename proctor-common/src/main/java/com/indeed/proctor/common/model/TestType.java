@@ -122,11 +122,11 @@ public final class TestType implements JsonSerializable {
     public static final TestType COMPANY = register("COMPANY");
 
     @JsonCreator
-    public static TestType getTestType(String value) {
+    public static TestType getTestType(final String value) {
         if (TYPES.containsKey(value)) {
             return TYPES.get(value);
         } else {
-            throw new IllegalStateException(String.format("Value '%s' not one of the declared instances %s", value, TYPES.keySet()));
+            return new TestType(value);
         }
     }
 }

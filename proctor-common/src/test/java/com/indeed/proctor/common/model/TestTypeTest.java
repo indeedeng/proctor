@@ -1,14 +1,13 @@
 package com.indeed.proctor.common.model;
 
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.indeed.proctor.common.Serializers;
 import org.junit.Test;
 
 import java.io.IOException;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 public class TestTypeTest {
     private static final ObjectMapper MAPPER = Serializers.lenient();
@@ -32,11 +31,7 @@ public class TestTypeTest {
     @Test
     public void testJson_notDefined() throws IOException {
         String json = "\"FOOBAR\"";
-        try {
-            MAPPER.readValue(json, TestType.class);
-            fail();
-        } catch (final JsonMappingException e) {
-            assertTrue(e.getCause().getMessage().startsWith("Value 'FOOBAR' not one of the declared instances"));
-        }
+        final TestType testType = MAPPER.readValue(json, TestType.class);
+        assertEquals("FOOBAR", testType.name());
     }
 }
