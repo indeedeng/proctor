@@ -1,11 +1,12 @@
 package com.indeed.proctor.common.model;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Maps;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializable;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Maps;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
@@ -14,7 +15,7 @@ import java.util.concurrent.ConcurrentMap;
 
 /**
  * Value class that captures most of the enum flavor while allowing
- *  library users to extend the supported types of test.
+ * library users to extend the supported types of test.
  */
 public final class TestType implements JsonSerializable {
     private static final ConcurrentMap<String, TestType> TYPES = Maps.newConcurrentMap();
@@ -22,7 +23,6 @@ public final class TestType implements JsonSerializable {
     private final String name;
 
     // Use the factory
-    // TODO Do we need to offer this at a higher visibility to support jackson deserialization under more restrictive security models?
     private TestType(@Nonnull final String id) {
         this.name = id;
     }
@@ -120,4 +120,13 @@ public final class TestType implements JsonSerializable {
      * @deprecated Legacy from migration to github
      */
     public static final TestType COMPANY = register("COMPANY");
+
+    @JsonCreator
+    public static TestType getTestType(String value) {
+        if (TYPES.containsKey(value)) {
+            return TYPES.get(value);
+        } else {
+            throw new IllegalStateException(String.format("Value '%s' not one of the declared instances %s", value, TYPES.keySet()));
+        }
+    }
 }
