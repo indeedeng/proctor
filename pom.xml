@@ -9,7 +9,7 @@
 
     <groupId>com.indeed</groupId>
     <artifactId>proctor-webapp-library</artifactId>
-    <version>1.1.12-SNAPSHOT</version>
+    <version>1.1.12</version>
 
     <licenses>
         <license>
