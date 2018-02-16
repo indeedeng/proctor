@@ -137,7 +137,7 @@ indeed.proctor.app.editor.DefinitionEditor.prototype.bindWarningForSilent_ = fun
   this.handler_.listen(this.allocationEditors_.container, goog.events.EventType.CHANGE, goog.bind(function () {
     if (this.allocationEditors_.validate() && this.allocationEditors_.checkActive()) {
       this.basicEditor_.silent.checked = false;
-      goog.dom.getElement('silent-warning').textContent = "Logging is automatically enabled for this test because you change allocations. If you don't need logging, check the 'Silent' checkbox at the top of the page.";
+      goog.dom.getElement('silent-warning').textContent = "Logging is automatically enabled for this test because you change allocations. If you don't need logging, please check the 'Silent' checkbox at the top of the page.";
     }
   }, this));
 };
