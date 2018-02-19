@@ -1,0 +1,16 @@
+package com.indeed.proctor.common;
+
+import com.indeed.proctor.common.model.ConsumableTestDefinition;
+
+public class TestNamePrefixFilter implements DynamicFilter {
+    private final String prefix;
+
+    public TestNamePrefixFilter(final String prefix) {
+        this.prefix = prefix;
+    }
+
+    @Override
+    public boolean match(final String testName, final ConsumableTestDefinition testDefinition) {
+        return testName.startsWith(prefix);
+    }
+}

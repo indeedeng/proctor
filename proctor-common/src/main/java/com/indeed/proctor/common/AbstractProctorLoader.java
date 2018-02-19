@@ -3,7 +3,9 @@ package com.indeed.proctor.common;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.indeed.proctor.common.model.Audit;
+import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.TestMatrixArtifact;
 import com.indeed.util.core.DataLoadingTimerTask;
 import com.indeed.util.varexport.Export;
@@ -14,6 +16,7 @@ import javax.annotation.Nullable;
 import javax.el.FunctionMapper;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +37,7 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
     private final ProvidedContext providedContext;
 
     private final List<ProctorLoadReporter> reporters = new ArrayList<>();
+    private final List<DynamicFilter> dynamicFilters = new ArrayList<>();
 
     public AbstractProctorLoader(@Nonnull final Class<?> cls, @Nonnull final ProctorSpecification specification, @Nonnull final FunctionMapper functionMapper) {
         super(cls.getSimpleName());
@@ -110,7 +114,12 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
             // Probably an absent specification.
             loadResult = ProctorUtils.verifyWithoutSpecification(testMatrix, getSource());
         } else {
-            loadResult = ProctorUtils.verifyAndConsolidate(testMatrix, getSource(), requiredTests, functionMapper, providedContext);
+            final Map<String, TestSpecification> dynamicRequiredTests = constructDynamicRequiredTests(
+                    testMatrix.getTests(),
+                    requiredTests,
+                    dynamicFilters
+            );
+            loadResult = ProctorUtils.verifyAndConsolidate(testMatrix, getSource(), dynamicRequiredTests, functionMapper, providedContext);
         }
 
         if (!loadResult.getTestErrorMap().isEmpty()) {
@@ -198,5 +207,30 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
         for (final ProctorLoadReporter reporter : reporters) {
             reporter.reportNoChange();
         }
+    }
+
+    public void addDynamicFilters(final Collection<DynamicFilter> filters) {
+        dynamicFilters.addAll(filters);
+    }
+
+    private static Map<String, TestSpecification> constructDynamicRequiredTests(
+            final Map<String, ConsumableTestDefinition> definedTests,
+            final Map<String, TestSpecification> requiredTestsFromSpecification,
+            final List<DynamicFilter> dynamicFilters
+    ) {
+        final ImmutableMap.Builder<String, TestSpecification> builder = ImmutableMap.builder();
+        builder.putAll(requiredTestsFromSpecification);
+        for (final Map.Entry<String, ConsumableTestDefinition> entry : definedTests.entrySet()) {
+            final String testName = entry.getKey();
+            final ConsumableTestDefinition testDefinition = entry.getValue();
+            if ((testDefinition != null) && !requiredTestsFromSpecification.containsKey(testName)) {
+                for (final DynamicFilter filter : dynamicFilters) {
+                    if (filter.match(testName, testDefinition)) {
+                        builder.put(testName, new TestSpecification());
+                    }
+                }
+            }
+        }
+        return builder.build();
     }
 }

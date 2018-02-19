@@ -16,6 +16,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class JsonProctorLoaderFactory {
@@ -33,6 +34,8 @@ public class JsonProctorLoaderFactory {
     protected FunctionMapper functionMapper = RuleEvaluator.FUNCTION_MAPPER;
 
     protected List<ProctorLoadReporter> reporters = new ArrayList<>();
+
+    protected List<DynamicFilter> dynamicFilters = new ArrayList<>();
 
     @SuppressWarnings("UnusedDeclaration")
     public void setClassResourcePath(@Nullable final String classResourcePath) {
@@ -109,6 +112,7 @@ public class JsonProctorLoaderFactory {
 
         final AbstractJsonProctorLoader loader = new FileProctorLoader(specification, filePath, functionMapper);
         loader.addLoadReporter(reporters);
+        loader.addDynamicFilters(dynamicFilters);
         return loader;
     }
 
@@ -124,6 +128,10 @@ public class JsonProctorLoaderFactory {
 
     public void setLoadReporters(final List<ProctorLoadReporter> reporters) {
         this.reporters = reporters;
+    }
+
+    public void setDynamicFilters(final Collection<DynamicFilter> filters) {
+        this.dynamicFilters = ImmutableList.copyOf(filters);
     }
 
     protected void exportJsonSpecification(final String jsonSpec) {
