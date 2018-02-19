@@ -1,5 +1,6 @@
 package com.indeed.proctor.common;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
@@ -114,11 +115,8 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
             // Probably an absent specification.
             loadResult = ProctorUtils.verifyWithoutSpecification(testMatrix, getSource());
         } else {
-            final Map<String, TestSpecification> dynamicRequiredTests = constructDynamicRequiredTests(
-                    testMatrix.getTests(),
-                    requiredTests,
-                    dynamicFilters
-            );
+            // TODO: separete them to static one and dynamic one
+            final Map<String, TestSpecification> dynamicRequiredTests = constructDynamicRequiredTests(testMatrix.getTests());
             loadResult = ProctorUtils.verifyAndConsolidate(testMatrix, getSource(), dynamicRequiredTests, functionMapper, providedContext);
         }
 
@@ -126,6 +124,7 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
             for (final Map.Entry<String, IncompatibleTestMatrixException> errorTest : loadResult.getTestErrorMap().entrySet()) {
                 LOGGER.error(String.format("Unable to load test matrix for %s", errorTest.getKey()), errorTest.getValue());
             }
+            // TODO: warning for dynamic tests
         }
 
         final Audit newAudit = testMatrix.getAudit();
@@ -191,6 +190,10 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
         reporters.addAll(newReporters);
     }
 
+    public void addDynamicFilters(@Nonnull final Collection<DynamicFilter> filters) {
+        dynamicFilters.addAll(filters);
+    }
+
     void reportFailed(final Throwable t) {
         for (final ProctorLoadReporter reporter : reporters) {
             reporter.reportFailed(t);
@@ -209,21 +212,18 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
         }
     }
 
-    public void addDynamicFilters(final Collection<DynamicFilter> filters) {
-        dynamicFilters.addAll(filters);
-    }
-
-    private static Map<String, TestSpecification> constructDynamicRequiredTests(
-            final Map<String, ConsumableTestDefinition> definedTests,
-            final Map<String, TestSpecification> requiredTestsFromSpecification,
-            final List<DynamicFilter> dynamicFilters
+    // Construct a map of required tests which are defined in specification or matches any dynamic filter
+    @VisibleForTesting
+    Map<String, TestSpecification> constructDynamicRequiredTests(
+            final Map<String, ConsumableTestDefinition> definedTests
     ) {
+        Preconditions.checkState(requiredTests != null, "Required tests should be nonnull");
         final ImmutableMap.Builder<String, TestSpecification> builder = ImmutableMap.builder();
-        builder.putAll(requiredTestsFromSpecification);
+        builder.putAll(requiredTests);
         for (final Map.Entry<String, ConsumableTestDefinition> entry : definedTests.entrySet()) {
             final String testName = entry.getKey();
             final ConsumableTestDefinition testDefinition = entry.getValue();
-            if ((testDefinition != null) && !requiredTestsFromSpecification.containsKey(testName)) {
+            if ((testDefinition != null) && !requiredTests.containsKey(testName)) {
                 for (final DynamicFilter filter : dynamicFilters) {
                     if (filter.match(testName, testDefinition)) {
                         builder.put(testName, new TestSpecification());
