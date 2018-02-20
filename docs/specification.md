@@ -156,7 +156,7 @@ The values for each bucket's payload are specified in the test-definition (view 
   ...
 }</code></pre>
 
-To specify a map tye use
+To specify a map type use
 <pre><code>
 "payload": {
   "map": {
@@ -193,7 +193,7 @@ However, in the case of a map payload, use the variable names in the validator i
   "schema" : {
        "var1" : "doubleValue",
        "vartwo" : "longArray"
-  }
+  },
   "validator": "var1 + vartwo[0] < 10"
 }
 </code></pre>
