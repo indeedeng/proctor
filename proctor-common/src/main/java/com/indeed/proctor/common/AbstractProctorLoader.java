@@ -5,6 +5,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.indeed.proctor.common.model.Audit;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.TestMatrixArtifact;
@@ -21,6 +22,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public abstract class AbstractProctorLoader extends DataLoadingTimerTask implements Supplier<Proctor> {
     private static final Logger LOGGER = Logger.getLogger(AbstractProctorLoader.class);
@@ -115,16 +117,26 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
             // Probably an absent specification.
             loadResult = ProctorUtils.verifyWithoutSpecification(testMatrix, getSource());
         } else {
-            // TODO: separete them to static one and dynamic one
-            final Map<String, TestSpecification> dynamicRequiredTests = constructDynamicRequiredTests(testMatrix.getTests());
-            loadResult = ProctorUtils.verifyAndConsolidate(testMatrix, getSource(), dynamicRequiredTests, functionMapper, providedContext);
+            final Set<String> dynamicTests = determineDynamicTests(testMatrix.getTests());
+            loadResult = ProctorUtils.verifyAndConsolidate(
+                    testMatrix,
+                    getSource(),
+                    requiredTests,
+                    functionMapper,
+                    providedContext,
+                    dynamicTests
+            );
         }
 
         if (!loadResult.getTestErrorMap().isEmpty()) {
             for (final Map.Entry<String, IncompatibleTestMatrixException> errorTest : loadResult.getTestErrorMap().entrySet()) {
-                LOGGER.error(String.format("Unable to load test matrix for %s", errorTest.getKey()), errorTest.getValue());
+                final String testName = errorTest.getKey();
+                if (requiredTests.containsKey(testName)) {
+                    LOGGER.error(String.format("Unable to load test matrix for %s in a specification", testName), errorTest.getValue());
+                } else {
+                    LOGGER.warn(String.format("Unable to load test matrix for %s matching dynamic filters", testName), errorTest.getValue());
+                }
             }
-            // TODO: warning for dynamic tests
         }
 
         final Audit newAudit = testMatrix.getAudit();
@@ -212,21 +224,19 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
         }
     }
 
-    // Construct a map of required tests which are defined in specification or matches any dynamic filter
     @VisibleForTesting
-    Map<String, TestSpecification> constructDynamicRequiredTests(
+    Set<String> determineDynamicTests(
             final Map<String, ConsumableTestDefinition> definedTests
     ) {
         Preconditions.checkState(requiredTests != null, "Required tests should be nonnull");
-        final ImmutableMap.Builder<String, TestSpecification> builder = ImmutableMap.builder();
-        builder.putAll(requiredTests);
+        final ImmutableSet.Builder<String> builder = ImmutableSet.builder();
         for (final Map.Entry<String, ConsumableTestDefinition> entry : definedTests.entrySet()) {
             final String testName = entry.getKey();
             final ConsumableTestDefinition testDefinition = entry.getValue();
             if ((testDefinition != null) && !requiredTests.containsKey(testName)) {
                 for (final DynamicFilter filter : dynamicFilters) {
                     if (filter.match(testName, testDefinition)) {
-                        builder.put(testName, new TestSpecification());
+                        builder.add(testName);
                     }
                 }
             }
