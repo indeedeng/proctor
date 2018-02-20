@@ -121,7 +121,7 @@ Arbitrary data can be associated with each test bucket and delivered to your app
 
 {% gist parker/3bb0e94b9b238b48429f 1-ExampleGroups-payload.json %}
 
-Proctor supports 6 types of payloads:
+Proctor supports 7 types of payloads:
 
 | Type | Java Type |
 | ---- | ----------- |
@@ -131,6 +131,7 @@ Proctor supports 6 types of payloads:
 | `doubleArray` | `double[]` |
 | `longValue` | `long` |
 | `longArray` | `long[]` |
+| `map` | `Map<String,Object>` |
 
 The values for each bucket's payload are specified in the test-definition (view [complete test definition](https://gist.github.com/parker/3bb0e94b9b238b48429f#file-1-definition-json))
 
@@ -155,6 +156,25 @@ The values for each bucket's payload are specified in the test-definition (view 
   ...
 }</code></pre>
 
+To specify a map tye use
+<pre><code>
+"payload": {
+  "map": {
+    "firstVariable" : [2.2,3.3],
+    "2ndVar" : "#000000"
+  }
+}
+</code></pre>
+
+<pre><code>
+"payload": {
+  "map": {
+    "firstVariable" : "doubleArray",
+    "2ndVar" : "stringValue"
+  }
+}
+</code></pre>
+
 ### <a name="payload-validator"></a>Payload Validator (Optional)
 An application can optionally define a `payload.validator` string in its specification. Similar to eligibility rules, this string is a boolean expression that should return `true` if a payload value is valid. During the test-matrix load-and-validate phase, each bucket's payload will be checked for compatibility using this expression. If no validator is provided, all payload values (of the correct type) will be considered valid.
 
@@ -164,6 +184,19 @@ An application can optionally define a `payload.validator` string in its specifi
 }</code></pre>
 
 The validator from [the above example](https://gist.github.com/parker/3bb0e94b9b238b48429f#file-1-exampleGroups-payload.json) enforces that each payload, referenced by `value` in expression, starts with "#" and is 7 characters long. such as '#000000'. Unlike *eligibility rules* and *allocation rules*, the only available variable is `value`, the payload value. The specification context variables and test-constants are **NOT** available in the validator expression.
+
+However, in the case of a map payload, use the variable names in the validator instead such as: 
+
+<pre><code>
+"payload": {
+  "type": "map",
+  "schema" : {
+       "var1" : "doubleValue",
+       "vartwo" : "longArray"
+  }
+  "validator": "var1 + vartwo[0] < 10"
+}
+</code></pre>
 
 An application should always provide a default payload value in code and be resilient situations in which the test-matrix cannot be loaded.
 
