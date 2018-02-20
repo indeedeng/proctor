@@ -1,4 +1,4 @@
-package com.indeed.proctor.common;
+package com.indeed.proctor.common.dynamic;
 
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 

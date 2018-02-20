@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.indeed.proctor.common.dynamic.DynamicFilters;
 import com.indeed.util.varexport.ManagedVariable;
 import com.indeed.util.varexport.VarExporter;
 import org.springframework.core.io.Resource;
@@ -16,7 +17,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 public class JsonProctorLoaderFactory {
@@ -35,7 +35,7 @@ public class JsonProctorLoaderFactory {
 
     protected List<ProctorLoadReporter> reporters = new ArrayList<>();
 
-    protected List<DynamicFilter> dynamicFilters = new ArrayList<>();
+    protected DynamicFilters dynamicFilters = new DynamicFilters();
 
     @SuppressWarnings("UnusedDeclaration")
     public void setClassResourcePath(@Nullable final String classResourcePath) {
@@ -130,8 +130,8 @@ public class JsonProctorLoaderFactory {
         this.reporters = reporters;
     }
 
-    public void setDynamicFilters(final Collection<DynamicFilter> filters) {
-        this.dynamicFilters = ImmutableList.copyOf(filters);
+    public void setDynamicFilters(final DynamicFilters filters) {
+        this.dynamicFilters = filters;
     }
 
     protected void exportJsonSpecification(final String jsonSpec) {
