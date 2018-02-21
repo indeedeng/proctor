@@ -204,7 +204,7 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
         reporters.addAll(newReporters);
     }
 
-    public void setDynamicFilters(@Nonnull final Collection<DynamicFilter> dynamicFilters) {
+    public void setDynamicFilters(@Nonnull final Collection<? extends DynamicFilter> dynamicFilters) {
         this.dynamicFilters = new DynamicFilters(dynamicFilters);
     }
 

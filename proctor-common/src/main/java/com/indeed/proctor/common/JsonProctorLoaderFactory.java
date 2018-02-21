@@ -132,7 +132,7 @@ public class JsonProctorLoaderFactory {
         this.reporters = reporters;
     }
 
-    public void setDynamicFilters(final Collection<DynamicFilter> filters) {
+    public void setDynamicFilters(final Collection<? extends DynamicFilter> filters) {
         this.dynamicFilters = new ArrayList<>(filters);
     }
 

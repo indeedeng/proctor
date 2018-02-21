@@ -17,7 +17,7 @@ public class DynamicFilters {
         this.filters = Collections.emptyList();
     }
 
-    public DynamicFilters(final Collection<DynamicFilter> filters) {
+    public DynamicFilters(final Collection<? extends DynamicFilter> filters) {
         this.filters = ImmutableList.copyOf(filters);
     }
 
