@@ -1,7 +1,5 @@
 package com.indeed.proctor.common;
 
-import com.indeed.proctor.common.dynamic.DynamicFilters;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collections;
