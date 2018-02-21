@@ -3,6 +3,7 @@ package com.indeed.proctor.common;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
+import com.indeed.proctor.common.dynamic.DynamicFilter;
 import com.indeed.proctor.common.dynamic.DynamicFilters;
 import com.indeed.proctor.common.model.Audit;
 import com.indeed.proctor.common.model.TestMatrixArtifact;
@@ -15,6 +16,7 @@ import javax.annotation.Nullable;
 import javax.el.FunctionMapper;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +38,7 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
     private final ProvidedContext providedContext;
 
     private final List<ProctorLoadReporter> reporters = new ArrayList<>();
-    private final DynamicFilters dynamicFilters = new DynamicFilters();
+    private DynamicFilters dynamicFilters = new DynamicFilters();
 
     public AbstractProctorLoader(
             @Nonnull final Class<?> cls,
@@ -202,8 +204,8 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
         reporters.addAll(newReporters);
     }
 
-    public void addDynamicFilters(@Nonnull final DynamicFilters dynamicFilters) {
-        this.dynamicFilters.addAll(dynamicFilters);
+    public void setDynamicFilters(@Nonnull final Collection<DynamicFilter> dynamicFilters) {
+        this.dynamicFilters = new DynamicFilters(dynamicFilters);
     }
 
     void reportFailed(final Throwable t) {

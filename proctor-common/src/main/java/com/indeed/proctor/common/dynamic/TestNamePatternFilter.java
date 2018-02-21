@@ -4,7 +4,7 @@ import com.indeed.proctor.common.model.ConsumableTestDefinition;
 
 import java.util.regex.Pattern;
 
-public final class TestNamePatternFilter implements DynamicFilter {
+public class TestNamePatternFilter implements DynamicFilter {
     private final Pattern pattern;
 
     public TestNamePatternFilter(final String regexp) {
