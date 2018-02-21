@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class DynamicFilters {
+public final class DynamicFilters {
     private final List<DynamicFilter> filters = new ArrayList<>();
 
     public Set<String> determineTests(
