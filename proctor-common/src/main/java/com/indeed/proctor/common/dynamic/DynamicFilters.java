@@ -22,7 +22,7 @@ public final class DynamicFilters {
             final ConsumableTestDefinition testDefinition = entry.getValue();
             if ((testDefinition != null) && !requiredTests.contains(testName)) {
                 for (final DynamicFilter filter : filters) {
-                    if (filter.match(testName, testDefinition)) {
+                    if (filter.matches(testName, testDefinition)) {
                         builder.add(testName);
                     }
                 }

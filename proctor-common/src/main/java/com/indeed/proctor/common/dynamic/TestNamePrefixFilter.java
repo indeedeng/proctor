@@ -10,7 +10,7 @@ public final class TestNamePrefixFilter implements DynamicFilter {
     }
 
     @Override
-    public boolean match(final String testName, final ConsumableTestDefinition testDefinition) {
+    public boolean matches(final String testName, final ConsumableTestDefinition testDefinition) {
         return testName.startsWith(prefix);
     }
 }

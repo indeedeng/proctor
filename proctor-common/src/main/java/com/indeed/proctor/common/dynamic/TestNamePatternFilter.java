@@ -12,7 +12,7 @@ public final class TestNamePatternFilter implements DynamicFilter {
     }
 
     @Override
-    public boolean match(final String testName, final ConsumableTestDefinition testDefinition) {
+    public boolean matches(final String testName, final ConsumableTestDefinition testDefinition) {
         return pattern.matcher(testName).matches();
     }
 }
