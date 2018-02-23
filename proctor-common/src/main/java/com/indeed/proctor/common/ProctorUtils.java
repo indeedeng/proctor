@@ -606,10 +606,10 @@ public abstract class ProctorUtils {
         for (Entry<String, ConsumableTestDefinition> next : definedTests.entrySet()) {
             final String testName = next.getKey();
             final ConsumableTestDefinition testDefinition = next.getValue();
-            final boolean isDynamic = dynamicTests.contains(testName);
-            final TestSpecification testSpec = isDynamic ? new TestSpecification() : requiredTests.get(testName);
+            final boolean hasSpec = requiredTests.containsKey(testName);
+            final TestSpecification testSpec = hasSpec ? requiredTests.get(testName) : new TestSpecification();
 
-            final boolean noPayloads = (!isDynamic && (testSpec.getPayload() == null));
+            final boolean noPayloads = (hasSpec && (testSpec.getPayload() == null));
             final Set<Integer> bucketValues = Sets.newHashSet();
             List<TestBucket> buckets = testDefinition.getBuckets();
             for (final TestBucket bucket : buckets) {
