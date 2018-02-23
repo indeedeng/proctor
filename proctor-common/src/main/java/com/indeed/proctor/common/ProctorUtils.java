@@ -575,7 +575,16 @@ public abstract class ProctorUtils {
         final Map<String, ConsumableTestDefinition> definedTests = testMatrix.getTests();
 
         // Sets.difference returns a "view" on the original set, which would require concurrent modification while iterating (copying the set will prevent this)
-        final Set<String> toRemove = ImmutableSet.copyOf(Sets.difference(definedTests.keySet(), requiredTests.keySet()));
+        final Set<String> toRemove = ImmutableSet.copyOf(
+                Sets.difference(
+                        definedTests.keySet(),
+                        Sets.union(
+                                requiredTests.keySet(),
+                                dynamicTests
+                        )
+                )
+        );
+
         for (String testInMatrixNotRequired : toRemove) {
             //  we don't care about this test
             definedTests.remove(testInMatrixNotRequired);
