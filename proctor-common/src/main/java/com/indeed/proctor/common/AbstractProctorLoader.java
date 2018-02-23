@@ -9,6 +9,8 @@ import com.indeed.proctor.common.model.Audit;
 import com.indeed.proctor.common.model.TestMatrixArtifact;
 import com.indeed.util.core.DataLoadingTimerTask;
 import com.indeed.util.varexport.Export;
+import com.indeed.util.varexport.ManagedVariable;
+import com.indeed.util.varexport.VarExporter;
 import org.apache.log4j.Logger;
 
 import javax.annotation.Nonnull;
@@ -24,6 +26,9 @@ import java.util.Set;
 
 public abstract class AbstractProctorLoader extends DataLoadingTimerTask implements Supplier<Proctor> {
     private static final Logger LOGGER = Logger.getLogger(AbstractProctorLoader.class);
+    protected static final VarExporter VAR_EXPORTER = VarExporter
+            .forNamespace(AbstractProctorLoader.class.getSimpleName())
+            .includeInGlobal();
 
     @Nullable
     protected final Map<String, TestSpecification> requiredTests;
@@ -120,6 +125,7 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
             loadResult = ProctorUtils.verifyWithoutSpecification(testMatrix, getSource());
         } else {
             final Set<String> dynamicTests = dynamicFilters.determineTests(testMatrix.getTests(), requiredTests.keySet());
+            exportDynamicTests(dynamicTests);
             loadResult = ProctorUtils.verifyAndConsolidate(
                     testMatrix,
                     getSource(),
@@ -226,4 +232,12 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
         }
     }
 
+    protected void exportDynamicTests(final Set<String> dynamicTests) {
+        final ManagedVariable<Set<String>> managedVariable =
+                ManagedVariable.<Set<String>>builder()
+                        .setName("dynamic-tests")
+                        .setValue(dynamicTests)
+                        .build();
+        VAR_EXPORTER.export(managedVariable);
+    }
 }
