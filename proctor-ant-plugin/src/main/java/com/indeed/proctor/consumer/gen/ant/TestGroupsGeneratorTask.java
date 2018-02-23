@@ -3,8 +3,8 @@ package com.indeed.proctor.consumer.gen.ant;
 import com.google.common.base.Strings;
 import com.indeed.proctor.consumer.gen.CodeGenException;
 import org.apache.log4j.Logger;
-import org.apache.tools.ant.Task;
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Task;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -113,6 +113,7 @@ public abstract class TestGroupsGeneratorTask extends Task {
         } else {
             final List<File> files = new ArrayList<>();
 
+            boolean isSingleSpecificationFile = true;
             for (final String input : inputs) {
                 final File inputFile = new File(input.trim());
                 if (inputFile == null) {
@@ -121,26 +122,26 @@ public abstract class TestGroupsGeneratorTask extends Task {
                 }
                 if (inputFile.isDirectory()) {
                     files.addAll(Arrays.asList(inputFile.listFiles()));
+                    isSingleSpecificationFile = false;
                 } else {
                     files.add(inputFile);
                 }
             }
-
-            if (Strings.isNullOrEmpty(getSpecificationOutput())) {
-                if (files.size() == 1) {
+            if (isSingleSpecificationFile) {
+                try {
+                    generateFile();
+                } catch (final CodeGenException ex) {
+                    throw new BuildException("Unable to generate code " + ex.toString(), ex);
+                }
+            } else {
+                if (!Strings.isNullOrEmpty(getSpecificationOutput())) {
                     try {
-                        generateFile();
-                    } catch (final CodeGenException ex) {
-                        throw new BuildException("Unable to generate code " + ex.toString(), ex);
+                        totalSpecificationGenerator(files);
+                    } catch (final CodeGenException e) {
+                        throw new BuildException("Could not create total specification", e);
                     }
                 } else {
                     throw new BuildException("Undefined output folder for generated specification");
-                }
-            } else {
-                try {
-                    totalSpecificationGenerator(files);
-                } catch (final CodeGenException e) {
-                    throw new BuildException("Could not create total specification", e);
                 }
             }
         }
