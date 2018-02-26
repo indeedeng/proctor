@@ -1,8 +1,11 @@
 package com.indeed.proctor.common;
 
+import com.indeed.proctor.common.dynamic.DynamicFilter;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 public class ProctorSpecification {
@@ -10,6 +13,8 @@ public class ProctorSpecification {
     private Map<String, String> providedContext = Collections.emptyMap();
     @Nullable
     private Map<String, TestSpecification> tests = Collections.emptyMap();
+    @Nonnull
+    private List<DynamicFilter> dynamicFilters = Collections.emptyList();
 
     @Nonnull
     public Map<String, String> getProvidedContext() {
@@ -31,5 +36,13 @@ public class ProctorSpecification {
 
     public void setTests(@Nullable final Map<String, TestSpecification> tests) {
         this.tests = tests;
+    }
+
+    public List<DynamicFilter> getDynamicFilters() {
+        return dynamicFilters;
+    }
+
+    public void setDynamicFilters(@Nonnull final List<DynamicFilter> dynamicFilters) {
+        this.dynamicFilters = dynamicFilters;
     }
 }
