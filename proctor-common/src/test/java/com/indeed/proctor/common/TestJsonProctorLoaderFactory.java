@@ -10,7 +10,7 @@ import java.util.Collections;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-public class JsonProctorLoaderFactoryTest {
+public class TestJsonProctorLoaderFactory {
     @Test
     public void testGetLoaderForDynamicTests() {
         final JsonProctorLoaderFactory factory = new JsonProctorLoaderFactory();

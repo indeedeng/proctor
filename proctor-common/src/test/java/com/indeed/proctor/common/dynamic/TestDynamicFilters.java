@@ -11,7 +11,7 @@ import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
 
-public class DynamicFiltersTest {
+public class TestDynamicFilters {
     @Test
     public void testEmptySetOfFilters() {
         final DynamicFilters filters = new DynamicFilters();

@@ -3,9 +3,11 @@ package com.indeed.proctor.common.dynamic;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-public class TestNamePrefixFilterTest {
+public class TestTestNamePrefixFilter {
     @Test
     public void testPrefixPattern() {
         final TestNamePrefixFilter filter = new TestNamePrefixFilter("abc_");
