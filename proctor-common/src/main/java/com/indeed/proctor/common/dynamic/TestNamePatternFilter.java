@@ -1,7 +1,6 @@
 package com.indeed.proctor.common.dynamic;
 
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
-import com.sun.javaws.exceptions.InvalidArgumentException;
 
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -11,6 +10,7 @@ public class TestNamePatternFilter implements DynamicFilter {
 
     /**
      * Construct the filter from regular expression string.
+     *
      * @param regex regular expression for test name pattern
      * @throws IllegalArgumentException If the regular expression's syntax is invalid.
      */
