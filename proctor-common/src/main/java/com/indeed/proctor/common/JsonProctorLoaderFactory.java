@@ -114,7 +114,7 @@ public class JsonProctorLoaderFactory {
 
         final AbstractJsonProctorLoader loader = new FileProctorLoader(specification, filePath, functionMapper);
         loader.addLoadReporter(reporters);
-        loader.setDynamicFilters(dynamicFilters);
+        loader.addDynamicFilters(dynamicFilters);
         return loader;
     }
 

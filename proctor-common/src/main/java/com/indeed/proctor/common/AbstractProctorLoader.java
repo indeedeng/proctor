@@ -43,7 +43,7 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
     private final ProvidedContext providedContext;
 
     private final List<ProctorLoadReporter> reporters = new ArrayList<>();
-    private DynamicFilters dynamicFilters = new DynamicFilters();
+    private final List<DynamicFilter> dynamicFilters = new ArrayList<>();
 
     public AbstractProctorLoader(
             @Nonnull final Class<?> cls,
@@ -57,6 +57,7 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
             LOGGER.debug("providedContext Objects missing necessary functions for validation, rules will not be tested.");
         }
         this.functionMapper = functionMapper;
+        this.dynamicFilters.addAll(specification.getDynamicFilters());
     }
 
     /**
@@ -124,7 +125,8 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
             // Probably an absent specification.
             loadResult = ProctorUtils.verifyWithoutSpecification(testMatrix, getSource());
         } else {
-            final Set<String> dynamicTests = dynamicFilters.determineTests(testMatrix.getTests(), requiredTests.keySet());
+            final DynamicFilters filters = new DynamicFilters(dynamicFilters);
+            final Set<String> dynamicTests = filters.determineTests(testMatrix.getTests(), requiredTests.keySet());
             exportDynamicTests(dynamicTests);
             loadResult = ProctorUtils.verifyAndConsolidate(
                     testMatrix,
@@ -210,8 +212,8 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
         reporters.addAll(newReporters);
     }
 
-    public void setDynamicFilters(@Nonnull final Collection<? extends DynamicFilter> dynamicFilters) {
-        this.dynamicFilters = new DynamicFilters(dynamicFilters);
+    public void addDynamicFilters(@Nonnull final Collection<? extends DynamicFilter> dynamicFilters) {
+        this.dynamicFilters.addAll(dynamicFilters);
     }
 
     void reportFailed(final Throwable t) {

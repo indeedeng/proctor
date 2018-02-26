@@ -1,0 +1,13 @@
+{
+    "tests": {
+    },
+    "providedContext": {
+        "lang": "String"
+    },
+    "dynamicFilters": [
+        {
+            "type": "name_prefix",
+            "prefix": "example"
+        }
+    ]
+}
