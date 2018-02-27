@@ -79,7 +79,7 @@ public class TestProctor {
     public void testAppendTestMatrix_threeTests() throws IOException {
         // We tested audit above, so I'll leave it null in this matrix.
         final TestMatrixArtifact matrix = createThreeFakeTests();
-        final Proctor proctor = Proctor.construct(matrix, null, null);
+        final Proctor proctor = Proctor.construct(matrix, null, RuleEvaluator.FUNCTION_MAPPER);
         final Writer writer = new StringWriter();
         proctor.appendTestMatrix(writer);
 
@@ -158,7 +158,7 @@ public class TestProctor {
     private JsonNode appendTestMatrixFiltered_processAndGetRoot(Collection<String> names) throws IOException
     {
         final TestMatrixArtifact matrix = createThreeFakeTests();
-        final Proctor proctor = Proctor.construct(matrix, null, null);
+        final Proctor proctor = Proctor.construct(matrix, null, RuleEvaluator.FUNCTION_MAPPER);
         final Writer writer = new StringWriter();
         proctor.appendTestMatrixFiltered(writer, names);
 
@@ -168,7 +168,7 @@ public class TestProctor {
     @Test
     public void testAppendAllTests_threeTest() {
         final TestMatrixArtifact matrix = createThreeFakeTests();
-        final Proctor proctor = Proctor.construct(matrix, null, null);
+        final Proctor proctor = Proctor.construct(matrix, null, RuleEvaluator.FUNCTION_MAPPER);
         final Writer writer = new StringWriter();
         proctor.appendAllTests(writer);
         // Discard trailing empty strings to simplify length testing later.
@@ -232,7 +232,7 @@ public class TestProctor {
     private List<String> appendTestsNameFiltered_process(Collection<String> names)
     {
         final TestMatrixArtifact matrix = createThreeFakeTests();
-        final Proctor proctor = Proctor.construct(matrix, null, null);
+        final Proctor proctor = Proctor.construct(matrix, null, RuleEvaluator.FUNCTION_MAPPER);
         final Writer writer = new StringWriter();
         proctor.appendTestsNameFiltered(writer, names);
         final List<String> lines = Lists.newArrayList(
