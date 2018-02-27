@@ -131,6 +131,22 @@ In general:
 * Program towards the `test` behavior, not the `control` behavior.
 * Create an `inactive` bucket rather than assigning `control` as the fallback bucket.
 
+#### map payload returns
+
+Using a map payload would instead return
+
+<pre><code>
+   public ExampleGroupsPayload.Bgcolortst getBgcolortstPayload() { }
+</code></pre>
+
+Where ExampleGroupsPayload is another generated class, and to retrieve variable values make a call similar to
+
+<pre><code>
+   final String groupVarOne = exampleGroupsInstance.getBgcolortstPayload().getVariableOne();
+   final Double[] groupVarTwo = exampleGroupsInstance.getBgcolortstPayload().getVariableTwo(); 
+   // returns expected variable type
+   // VariableOne and VariableTwo are the names of your variables inside the map payload, capitalized first character 
+</code></pre>
 
 ### JavaScript
 
