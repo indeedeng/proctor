@@ -9,7 +9,6 @@ import com.indeed.proctor.common.ProctorResult;
 import com.indeed.proctor.common.ProctorSpecification;
 import com.indeed.proctor.common.ProctorUtils;
 import com.indeed.proctor.common.StringProctorLoader;
-import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.common.model.TestType;
 import org.apache.log4j.Logger;
 import org.junit.Before;
@@ -21,24 +20,18 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-public class TestSplitSpecificationWithFiltersTestGroupsManager {
-    private static final Logger LOGGER = Logger.getLogger(TestSplitSpecificationWithFiltersTestGroupsManager.class);
-    private static final String SPECIFICATION_RESOURCE = "SplitSpecificationTestGroups.json";
+public class TestSplitSpecificationTestWithFiltersGroupsManager {
+    private static final Logger LOGGER = Logger.getLogger(TestSplitSpecificationTestWithFiltersGroupsManager.class);
+    private static final String SPECIFICATION_RESOURCE = "SplitSpecificationTestWithFiltersGroups.json";
     private static final String SPECIFICATION_MATRIX = "splitspecificationtest.proctor-matrix.json";
 
-    private SplitSpecificationTestGroupsManager manager;
+    private SplitSpecificationTestWithFiltersGroupsManager manager;
 
-
-    public TestSplitSpecificationWithFiltersTestGroupsManager() {
+    public TestSplitSpecificationTestWithFiltersGroupsManager() {
     }
 
     @Before()
@@ -47,7 +40,7 @@ public class TestSplitSpecificationWithFiltersTestGroupsManager {
     }
 
     private void setUp(final Proctor proctor) {
-        manager = new SplitSpecificationWithFiltersTestGroupsManager(new Supplier<Proctor>() {
+        manager = new SplitSpecificationTestWithFiltersGroupsManager(new Supplier<Proctor>() {
             @Override
             public Proctor get() {
                 return proctor;
@@ -61,7 +54,6 @@ public class TestSplitSpecificationWithFiltersTestGroupsManager {
         final Reader matrixResource = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream(SPECIFICATION_MATRIX)));
         final StringWriter matrixString = new StringWriter();
         CharStreams.copy(matrixResource, matrixString);
-
 
         final ProctorSpecification specification = getProctorSpecification();
         final StringProctorLoader loader = new StringProctorLoader(specification, SPECIFICATION_MATRIX, matrixString.toString());
@@ -80,7 +72,7 @@ public class TestSplitSpecificationWithFiltersTestGroupsManager {
 
     @Test
     public void testLoadDynamicTests() {
-        final SplitSpecificationTestGroupsContext testContext = SplitSpecificationTestGroupsContext.newBuilder()
+        final SplitSpecificationTestWithFiltersGroupsContext testContext = SplitSpecificationTestWithFiltersGroupsContext.newBuilder()
                 .setLoggedIn(true)
                 .setCountry("FR")
                 .setAccountId(10)
@@ -99,7 +91,7 @@ public class TestSplitSpecificationWithFiltersTestGroupsManager {
                 "a test matched defined filter should be loaded",
                 result.getAllocations().containsKey("two")
         );
-        assertTrue(
+        assertFalse(
                 "a test not matched in both of specification and filters shouldn't be loaded",
                 result.getAllocations().containsKey("three")
         );
