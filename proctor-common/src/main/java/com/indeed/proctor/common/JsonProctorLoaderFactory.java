@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.indeed.proctor.common.dynamic.DynamicFilter;
-import com.indeed.proctor.common.dynamic.DynamicFilters;
 import com.indeed.util.varexport.ManagedVariable;
 import com.indeed.util.varexport.VarExporter;
 import org.springframework.core.io.Resource;
@@ -101,20 +100,34 @@ public class JsonProctorLoaderFactory {
         this.functionMapper = functionMapper;
     }
 
+    private ProctorSpecification getProctorSpecification() {
+        final ProctorSpecification specificationFromResource = Preconditions.checkNotNull(
+                this._specification,
+                "Missing specification"
+        );
+        final ProctorSpecification specification = new ProctorSpecification(specificationFromResource);
+        final List<DynamicFilter> dynamicFilters = ImmutableList.<DynamicFilter>builder()
+                .addAll(specification.getDynamicFilters())
+                .addAll(this.dynamicFilters)
+                .build();
+        specification.setDynamicFilters(dynamicFilters);
+        return specification;
+    }
+
     @Nonnull
     public AbstractJsonProctorLoader getLoader() {
         if ((classResourcePath == null) == (filePath == null)) {
             throw new IllegalStateException("Must have exactly one of classResourcePath or filePath");
         }
 
-        final ProctorSpecification specification = Preconditions.checkNotNull(this._specification, "Missing specification");
+        final ProctorSpecification specification = getProctorSpecification();
+
         if (classResourcePath != null) {
             return new ClasspathProctorLoader(specification, classResourcePath, functionMapper);
         }
 
         final AbstractJsonProctorLoader loader = new FileProctorLoader(specification, filePath, functionMapper);
         loader.addLoadReporter(reporters);
-        loader.addDynamicFilters(dynamicFilters);
         return loader;
     }
 

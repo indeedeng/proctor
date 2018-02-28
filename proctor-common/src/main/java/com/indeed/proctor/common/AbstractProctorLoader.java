@@ -41,9 +41,9 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
     @Nonnull
     private final FunctionMapper functionMapper;
     private final ProvidedContext providedContext;
+    private final DynamicFilters dynamicFilters;
 
     private final List<ProctorLoadReporter> reporters = new ArrayList<>();
-    private final List<DynamicFilter> dynamicFilters = new ArrayList<>();
 
     public AbstractProctorLoader(
             @Nonnull final Class<?> cls,
@@ -57,7 +57,7 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
             LOGGER.debug("providedContext Objects missing necessary functions for validation, rules will not be tested.");
         }
         this.functionMapper = functionMapper;
-        this.dynamicFilters.addAll(specification.getDynamicFilters());
+        this.dynamicFilters = new DynamicFilters(specification.getDynamicFilters());
     }
 
     /**
@@ -125,8 +125,7 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
             // Probably an absent specification.
             loadResult = ProctorUtils.verifyWithoutSpecification(testMatrix, getSource());
         } else {
-            final DynamicFilters filters = new DynamicFilters(dynamicFilters);
-            final Set<String> dynamicTests = filters.determineTests(testMatrix.getTests(), requiredTests.keySet());
+            final Set<String> dynamicTests = dynamicFilters.determineTests(testMatrix.getTests(), requiredTests.keySet());
             exportDynamicTests(dynamicTests);
             loadResult = ProctorUtils.verifyAndConsolidate(
                     testMatrix,
@@ -210,10 +209,6 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
     public void addLoadReporter(@Nonnull final List<ProctorLoadReporter> newReporters) {
         Preconditions.checkNotNull(newReporters, "new reporters shouldn't be empty");
         reporters.addAll(newReporters);
-    }
-
-    public void addDynamicFilters(@Nonnull final Collection<? extends DynamicFilter> dynamicFilters) {
-        this.dynamicFilters.addAll(dynamicFilters);
     }
 
     void reportFailed(final Throwable t) {
