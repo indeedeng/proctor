@@ -9,6 +9,7 @@ import com.indeed.proctor.common.TestSpecification;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.indeed.proctor.common.dynamic.DynamicFilter;
 import org.apache.commons.lang.StringEscapeUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -53,16 +54,22 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
     public static File makeTotalSpecification(List<File> files, String targetDir, String name) throws CodeGenException {
         Map<String, TestSpecification> testSpec = new LinkedHashMap<String, TestSpecification>();
         Map<String, String> providedContext = new LinkedHashMap<String,String>();
+        List<DynamicFilter> dynamicFilters = new ArrayList<>();
         for(File file : files) {
             final String fileName = file.getName();
-            if(fileName.equals("providedcontext.json")){
+            if(fileName.equals("providedcontext.json")) {
                 try {
                     providedContext = OBJECT_MAPPER.readValue(file, Map.class);
                 } catch (IOException e) {
                     throw new CodeGenException("Could not read json correctly " + file.getAbsolutePath(), e);
                 }
-            }
-            else if (fileName.endsWith(".json")){
+            } else if (fileName.equals("dynamicfilters.json")) {
+                try {
+                    dynamicFilters = Arrays.asList(OBJECT_MAPPER.readValue(file, DynamicFilter[].class));
+                } catch (final IOException e) {
+                    throw new CodeGenException("Could not read json correctly " + file.getAbsolutePath(), e);
+                }
+            } else if (fileName.endsWith(".json")){
                 final TestSpecification spec;
                 try {
                     spec = OBJECT_MAPPER.readValue(file, TestSpecification.class);
@@ -79,6 +86,7 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
         final ProctorSpecification proctorSpecification = new ProctorSpecification();
         proctorSpecification.setTests(testSpec);
         proctorSpecification.setProvidedContext(providedContext);
+        proctorSpecification.setDynamicFilters(dynamicFilters);
 
         final File output =  new File(targetDir, name);
         try {
