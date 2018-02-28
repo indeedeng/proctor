@@ -9,6 +9,7 @@ public class TestNamePrefixFilter implements DynamicFilter {
 
     /**
      * Construct the filter from test name prefix string
+     *
      * @param prefix prefix string matches the test names
      * @throws IllegalArgumentException if prefix is empty string
      */
