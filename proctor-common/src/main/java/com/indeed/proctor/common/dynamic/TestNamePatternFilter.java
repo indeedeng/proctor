@@ -3,6 +3,7 @@ package com.indeed.proctor.common.dynamic;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 
+import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -30,5 +31,22 @@ public class TestNamePatternFilter implements DynamicFilter {
     @Override
     public boolean matches(final String testName, final ConsumableTestDefinition testDefinition) {
         return pattern.matcher(testName).matches();
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        final TestNamePatternFilter that = (TestNamePatternFilter) o;
+        return Objects.equals(pattern.pattern(), that.pattern.pattern());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(pattern.pattern());
     }
 }

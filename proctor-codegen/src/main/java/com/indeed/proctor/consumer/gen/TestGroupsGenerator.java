@@ -10,6 +10,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.indeed.proctor.common.dynamic.DynamicFilter;
+import com.indeed.proctor.common.dynamic.DynamicFilters;
 import org.apache.commons.lang.StringEscapeUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -58,7 +59,7 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
     public static File makeTotalSpecification(List<File> files, String targetDir, String name) throws CodeGenException {
         Map<String, TestSpecification> testSpec = new LinkedHashMap<String, TestSpecification>();
         Map<String, String> providedContext = new LinkedHashMap<String,String>();
-        List<DynamicFilter> dynamicFilters = new ArrayList<>();
+        DynamicFilters dynamicFilters = new DynamicFilters();
         for(File file : files) {
             final String fileName = file.getName();
             if(fileName.equals(PROVIDED_CONTEXT_FILENAME)) {
@@ -69,7 +70,7 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
                 }
             } else if (fileName.equals(DYNAMIC_FILTERS_FILENAME)) {
                 try {
-                    dynamicFilters = Arrays.asList(OBJECT_MAPPER.readValue(file, DynamicFilter[].class));
+                    dynamicFilters = OBJECT_MAPPER.readValue(file, DynamicFilters.class);
                 } catch (final IOException e) {
                     throw new CodeGenException("Could not read json correctly " + file.getAbsolutePath() + " for dynamic filters", e);
                 }

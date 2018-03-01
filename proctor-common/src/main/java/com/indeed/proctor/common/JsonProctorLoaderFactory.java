@@ -36,8 +36,6 @@ public class JsonProctorLoaderFactory {
 
     protected List<ProctorLoadReporter> reporters = new ArrayList<>();
 
-    protected List<DynamicFilter> dynamicFilters = new ArrayList<>();
-
     @SuppressWarnings("UnusedDeclaration")
     public void setClassResourcePath(@Nullable final String classResourcePath) {
         this.classResourcePath = classResourcePath;
@@ -100,27 +98,16 @@ public class JsonProctorLoaderFactory {
         this.functionMapper = functionMapper;
     }
 
-    private ProctorSpecification getProctorSpecification() {
-        final ProctorSpecification specificationFromResource = Preconditions.checkNotNull(
-                this._specification,
-                "Missing specification"
-        );
-        final ProctorSpecification specification = new ProctorSpecification(specificationFromResource);
-        final List<DynamicFilter> dynamicFilters = ImmutableList.<DynamicFilter>builder()
-                .addAll(specification.getDynamicFilters())
-                .addAll(this.dynamicFilters)
-                .build();
-        specification.setDynamicFilters(dynamicFilters);
-        return specification;
-    }
-
     @Nonnull
     public AbstractJsonProctorLoader getLoader() {
         if ((classResourcePath == null) == (filePath == null)) {
             throw new IllegalStateException("Must have exactly one of classResourcePath or filePath");
         }
 
-        final ProctorSpecification specification = getProctorSpecification();
+        final ProctorSpecification specification = Preconditions.checkNotNull(
+                this._specification,
+                "Missing specification"
+        );
 
         if (classResourcePath != null) {
             return new ClasspathProctorLoader(specification, classResourcePath, functionMapper);
@@ -143,10 +130,6 @@ public class JsonProctorLoaderFactory {
 
     public void setLoadReporters(final List<ProctorLoadReporter> reporters) {
         this.reporters = reporters;
-    }
-
-    public void setDynamicFilters(final Collection<? extends DynamicFilter> filters) {
-        this.dynamicFilters = new ArrayList<>(filters);
     }
 
     protected void exportJsonSpecification(final String jsonSpec) {

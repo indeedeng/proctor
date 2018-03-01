@@ -2,6 +2,7 @@ package com.indeed.proctor.common;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.indeed.proctor.common.dynamic.DynamicFilter;
+import com.indeed.proctor.common.dynamic.DynamicFilters;
 import com.indeed.proctor.common.dynamic.TestNamePatternFilter;
 import com.indeed.proctor.common.dynamic.TestNamePrefixFilter;
 import com.indeed.proctor.common.model.Allocation;
@@ -15,6 +16,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -193,7 +195,7 @@ public class TestSerializers {
         final ProctorSpecification specification = objectMapper.readValue(json, ProctorSpecification.class);
         assertTrue(specification.getTests().isEmpty());
         assertTrue(specification.getProvidedContext().isEmpty());
-        assertTrue(specification.getDynamicFilters().isEmpty());
+        assertEquals(new DynamicFilters(), specification.getDynamicFilters());
     }
 
     @Test
@@ -210,11 +212,15 @@ public class TestSerializers {
         final ProctorSpecification specification = objectMapper.readValue(json, ProctorSpecification.class);
         assertTrue(specification.getTests().isEmpty());
         assertTrue(specification.getProvidedContext().isEmpty());
-        assertEquals(2, specification.getDynamicFilters().size());
-        assertTrue(specification.getDynamicFilters().get(0) instanceof TestNamePrefixFilter);
-        assertEquals("abc_", ((TestNamePrefixFilter)specification.getDynamicFilters().get(0)).getPrefix());
-        assertTrue(specification.getDynamicFilters().get(1) instanceof TestNamePatternFilter);
-        assertEquals("abc_[a-z]+_xyz", ((TestNamePatternFilter)specification.getDynamicFilters().get(1)).getRegex());
+        assertEquals(
+                new DynamicFilters(
+                        Arrays.asList(
+                                new TestNamePrefixFilter("abc_"),
+                                new TestNamePatternFilter("abc_[a-z]+_xyz")
+                        )
+                ),
+                specification.getDynamicFilters()
+        );
     }
 
 }

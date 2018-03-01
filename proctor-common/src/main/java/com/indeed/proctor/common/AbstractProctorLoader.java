@@ -57,7 +57,7 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
             LOGGER.debug("providedContext Objects missing necessary functions for validation, rules will not be tested.");
         }
         this.functionMapper = functionMapper;
-        this.dynamicFilters = new DynamicFilters(specification.getDynamicFilters());
+        this.dynamicFilters = specification.getDynamicFilters();
     }
 
     /**
