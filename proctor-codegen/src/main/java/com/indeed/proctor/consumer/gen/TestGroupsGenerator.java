@@ -36,9 +36,13 @@ import java.util.TreeSet;
  */
 public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
     private static final ObjectMapper OBJECT_MAPPER = Serializers.lenient();
+
+    public static final String PROVIDED_CONTEXT_FILENAME = "providedcontext.json";
+    public static final String DYNAMIC_FILTERS_FILENAME = "dynamicfilters.json";
+
     /*
      * If a folder of split jsons defining a proctor specification is provided, this method iterates over the folder
-     * contents, using the individual TestDefinition jsons and a providedcontext.json to create one large
+     * contents, using the individual TestDefinition jsons and a providedcontext.json and dynamicfilters.json to create one large
      * temporary ProctorSpecification json to be used for code generation
      */
     public static File makeTotalSpecification(File dir, String targetDir) throws CodeGenException {
@@ -57,24 +61,24 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
         List<DynamicFilter> dynamicFilters = new ArrayList<>();
         for(File file : files) {
             final String fileName = file.getName();
-            if(fileName.equals("providedcontext.json")) {
+            if(fileName.equals(PROVIDED_CONTEXT_FILENAME)) {
                 try {
                     providedContext = OBJECT_MAPPER.readValue(file, Map.class);
                 } catch (IOException e) {
-                    throw new CodeGenException("Could not read json correctly " + file.getAbsolutePath(), e);
+                    throw new CodeGenException("Could not read json correctly " + file.getAbsolutePath() + " for provided context", e);
                 }
-            } else if (fileName.equals("dynamicfilters.json")) {
+            } else if (fileName.equals(DYNAMIC_FILTERS_FILENAME)) {
                 try {
                     dynamicFilters = Arrays.asList(OBJECT_MAPPER.readValue(file, DynamicFilter[].class));
                 } catch (final IOException e) {
-                    throw new CodeGenException("Could not read json correctly " + file.getAbsolutePath(), e);
+                    throw new CodeGenException("Could not read json correctly " + file.getAbsolutePath() + " for dynamic filters", e);
                 }
             } else if (fileName.endsWith(".json")){
                 final TestSpecification spec;
                 try {
                     spec = OBJECT_MAPPER.readValue(file, TestSpecification.class);
                 } catch (IOException e) {
-                    throw new CodeGenException("Could not read json correctly " + file.getAbsolutePath(),e);
+                    throw new CodeGenException("Could not read json correctly " + file.getAbsolutePath() + " for a test specification", e);
                 }
                 final String specName = fileName.substring(0, fileName.indexOf(".json"));
                 if (testSpec.containsKey(specName)) {
