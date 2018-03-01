@@ -80,18 +80,23 @@ public abstract class TestGroupsGeneratorTask extends Task {
             throw new CodeGenException("No specifications file input");
         }
         final List<File> providedContextFiles =  new ArrayList<>();
+        final List<File> dynamicFiltersFiles =  new ArrayList<>();
         for (final File file : files) {
             if ("providedcontext.json".equals(file.getName())) {
                 providedContextFiles.add(file);
+            } else if ("dynamicfilter.json".equals(file.getName())) {
+                dynamicFiltersFiles.add(file);
             }
         }
-        if (providedContextFiles.size() == 1) {
+        if (providedContextFiles.size() != 1) {
+            throw new CodeGenException("Incorrect amount of providedcontext.json in specified input folder");
+        } else if (dynamicFiltersFiles.size() > 1) {
+            throw new CodeGenException("Incorrect amount of dynamicfilters.json in specified input folder");
+        } else {
             //make directory if it doesn't exist
             (new File(specificationOutput.substring(0, specificationOutput.lastIndexOf(File.separator)))).mkdirs();
             final File specificationOutputFile = new File(specificationOutput);
             generateTotalSpecification(files, specificationOutputFile);
-        } else {
-            throw new CodeGenException("Incorrect amount of providedcontext.json in specified input folder");
         }
     }
 
