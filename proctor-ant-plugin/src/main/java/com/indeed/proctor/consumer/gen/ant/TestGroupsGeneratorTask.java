@@ -112,7 +112,15 @@ public abstract class TestGroupsGeneratorTask extends Task {
 
     protected abstract void generateTotalSpecification(final List<File> files, final File specificationOutputFile) throws CodeGenException;
 
+    @Override
     public void execute() throws BuildException {
+        if (input == null) {
+            throw new BuildException("Undefined input files for code generation from specification");
+        }
+        if (target == null) {
+            throw new BuildException("Undefined target directory for code generation from specification");
+        }
+
         final String[] inputs = input.split(",");
 
         if (inputs.length == 0) {

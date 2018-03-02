@@ -38,6 +38,7 @@ public class TestGroupsJavascriptGeneratorTask extends TestGroupsGeneratorTask {
         gen.generate(output.getPath(), target, packageName, groupsClass, useClosure);
     }
 
+    @Override
     protected void generateFile() throws CodeGenException {
         gen.generate(input, target, packageName, groupsClass, useClosure);
     }
