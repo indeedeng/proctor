@@ -1,12 +1,14 @@
 package com.indeed.proctor.common.dynamic;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 
 import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+@JsonTypeName("name_pattern")
 public class TestNamePatternFilter implements DynamicFilter {
     private final Pattern pattern;
 

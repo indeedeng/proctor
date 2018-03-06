@@ -1,11 +1,13 @@
 package com.indeed.proctor.common.dynamic;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.google.common.base.Preconditions;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 
 import java.util.Objects;
 
+@JsonTypeName("name_prefix")
 public class TestNamePrefixFilter implements DynamicFilter {
     private final String prefix;
 

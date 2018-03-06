@@ -8,9 +8,11 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -22,6 +24,13 @@ import java.util.Set;
  * Immutable collection of dynamic filters which is defined in ProctorSpecification and consumed in AbstractProctorLoader
  */
 public class DynamicFilters implements JsonSerializable {
+    private static final List<Class<? extends DynamicFilter>> FILTER_TYPES = Collections.synchronizedList(
+            Lists.newArrayList(
+                    TestNamePrefixFilter.class,
+                    TestNamePatternFilter.class
+            )
+    );
+
     private final List<DynamicFilter> filters;
 
     public DynamicFilters() {
@@ -33,6 +42,25 @@ public class DynamicFilters implements JsonSerializable {
         this.filters = ImmutableList.copyOf(filters);
     }
 
+    /**
+     * Register custom filter types especially for serializer of specification json file
+     */
+    @SafeVarargs
+    public static void registerFilterTypes(final Class<? extends DynamicFilter>... types) {
+        FILTER_TYPES.addAll(Arrays.asList(types));
+    }
+
+    /**
+     * Get filter types especially for Jackson's serializer to call registerSubTypes
+     */
+    @SuppressWarnings("unchecked")
+    public static Class<? extends DynamicFilter>[] getFilterTypes() {
+        return (Class<? extends DynamicFilter>[]) FILTER_TYPES.toArray(new Class<?>[0]);
+    }
+
+    /**
+     * Determine tests which should be dynamically resolved in proctor loader
+     */
     public Set<String> determineTests(
             final Map<String, ConsumableTestDefinition> definedTests,
             final Set<String> requiredTests
