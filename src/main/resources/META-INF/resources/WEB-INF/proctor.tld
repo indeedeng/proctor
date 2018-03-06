@@ -74,6 +74,18 @@
     </tag>
 
     <tag>
+        <description>Get versionzed filename</description>
+        <name>filenameMapper</name>
+        <tag-class>com.indeed.proctor.webapp.tags.FilenameMapperTagHandler</tag-class>
+        <body-content>empty</body-content>
+        <attribute>
+            <name>filename</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+    </tag>
+
+    <tag>
         <description>Renders all matrix list page injection templates of correct location and injects HTML on page.</description>
         <name>renderMatrixListPageInjectionTemplates</name>
         <tag-class>com.indeed.proctor.webapp.tags.RenderMatrixListPageInjectionTemplatesHandler</tag-class>

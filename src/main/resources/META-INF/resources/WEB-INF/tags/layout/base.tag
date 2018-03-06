@@ -28,15 +28,16 @@
   <!-- Included CSS Files -->
     <c:choose>
         <c:when test="${session.useCompiledCSS}">
-            <link rel="stylesheet" href="/static/styles/styles-compiled.css">
+            <link rel="stylesheet" href=<proctor:filenameMapper filename="/static/styles/styles-compiled.css"/>>
         </c:when>
         <c:otherwise>
-            <link rel="stylesheet" href="/static/lib/normalize/normalize.css">
-            <link rel="stylesheet" href="/static/lib/foundation/stylesheets/foundation.css">
-            <link rel="stylesheet" href="/static/lib/oocss/mod.css">
-            <link rel="stylesheet" href="/static/lib/oocss/media.css">
-            <link rel="stylesheet" href="/static/lib/oocss/space.css">
-            <link rel="stylesheet" href="/static/styles/app.css">
+            <link rel="stylesheet" href=<proctor:filenameMapper filename="/static/lib/normalize/normalize.css"/>>
+            <link rel="stylesheet" href=<proctor:filenameMapper
+                    filename="/static/lib/foundation/stylesheets/foundation.css"/>>
+            <link rel="stylesheet" href=<proctor:filenameMapper filename="/static/lib/oocss/mod.css"/>>
+            <link rel="stylesheet" href=<proctor:filenameMapper filename="/static/lib/oocss/media.css"/>>
+            <link rel="stylesheet" href=<proctor:filenameMapper filename="/static/lib/oocss/space.css"/>>
+            <link rel="stylesheet" href=<proctor:filenameMapper filename="/static/styles/app.css"/>>
         </c:otherwise>
     </c:choose>
 
