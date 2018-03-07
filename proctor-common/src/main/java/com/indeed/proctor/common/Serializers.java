@@ -9,14 +9,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.indeed.proctor.common.dynamic.DynamicFilters;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.text.DecimalFormat;
 
 public class Serializers {
+    private Serializers() {
+    }
+
     /**
      * Customized serializer class for suppressing scientific notation.
+     *
      * @author yosukey
      */
     private static class PlainNumericSerializer extends JsonSerializer<Double> {
@@ -54,6 +59,7 @@ public class Serializers {
         final PlainNumericSerializer plainNumericSerializer = new PlainNumericSerializer();
         module.addSerializer(double.class, plainNumericSerializer);
         module.addSerializer(Double.class, plainNumericSerializer);
+        module.registerSubtypes(DynamicFilters.getFilterTypes());
         mapper.registerModule(module);
         return mapper;
     }
@@ -71,6 +77,7 @@ public class Serializers {
         final PlainNumericSerializer plainNumericSerializer = new PlainNumericSerializer();
         module.addSerializer(double.class, plainNumericSerializer);
         module.addSerializer(Double.class, plainNumericSerializer);
+        module.registerSubtypes(DynamicFilters.getFilterTypes());
         mapper.registerModule(module);
         return mapper;
     }

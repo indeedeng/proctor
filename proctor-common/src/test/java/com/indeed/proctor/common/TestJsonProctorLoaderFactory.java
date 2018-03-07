@@ -11,12 +11,12 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 public class TestJsonProctorLoaderFactory {
+
     @Test
-    public void testGetLoaderForDynamicTests() {
+    public void testDynamicFilterFromSpecification() {
         final JsonProctorLoaderFactory factory = new JsonProctorLoaderFactory();
         factory.setFilePath(getClass().getResource("example-test-matrix.json").getPath());
-        factory.setDynamicFilters(Collections.singletonList(new TestNamePrefixFilter("example")));
-        factory.setSpecificationResource("classpath:example-empty-specification.json");
+        factory.setSpecificationResource("classpath:specification-with-filter.json");
         final AbstractProctorLoader proctorLoader = factory.getLoader();
         proctorLoader.load();
         final Proctor proctor = proctorLoader.get();
@@ -33,4 +33,5 @@ public class TestJsonProctorLoaderFactory {
         assertTrue("a bucket of exampletst should be determined",
                 result.getBuckets().containsKey("exampletst"));
     }
+
 }

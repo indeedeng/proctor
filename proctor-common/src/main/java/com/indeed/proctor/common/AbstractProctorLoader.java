@@ -41,9 +41,9 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
     @Nonnull
     private final FunctionMapper functionMapper;
     private final ProvidedContext providedContext;
+    private final DynamicFilters dynamicFilters;
 
     private final List<ProctorLoadReporter> reporters = new ArrayList<>();
-    private DynamicFilters dynamicFilters = new DynamicFilters();
 
     public AbstractProctorLoader(
             @Nonnull final Class<?> cls,
@@ -57,6 +57,7 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
             LOGGER.debug("providedContext Objects missing necessary functions for validation, rules will not be tested.");
         }
         this.functionMapper = functionMapper;
+        this.dynamicFilters = specification.getDynamicFilters();
     }
 
     /**
@@ -208,10 +209,6 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
     public void addLoadReporter(@Nonnull final List<ProctorLoadReporter> newReporters) {
         Preconditions.checkNotNull(newReporters, "new reporters shouldn't be empty");
         reporters.addAll(newReporters);
-    }
-
-    public void setDynamicFilters(@Nonnull final Collection<? extends DynamicFilter> dynamicFilters) {
-        this.dynamicFilters = new DynamicFilters(dynamicFilters);
     }
 
     void reportFailed(final Throwable t) {

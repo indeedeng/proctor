@@ -45,6 +45,7 @@ public class TestGroupsJavaGeneratorTask extends TestGroupsGeneratorTask {
         gen.generate(output.getPath(), target, packageName, groupsClass, groupsManagerClass, contextClass);
     }
 
+    @Override
     protected void generateFile() throws CodeGenException {
         gen.generate(input, target, packageName, groupsClass, groupsManagerClass, contextClass);
     }
