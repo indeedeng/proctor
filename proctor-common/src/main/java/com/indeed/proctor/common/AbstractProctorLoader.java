@@ -3,10 +3,14 @@ package com.indeed.proctor.common;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
+import com.indeed.proctor.common.dynamic.DynamicFilter;
+import com.indeed.proctor.common.dynamic.DynamicFilters;
 import com.indeed.proctor.common.model.Audit;
 import com.indeed.proctor.common.model.TestMatrixArtifact;
 import com.indeed.util.core.DataLoadingTimerTask;
 import com.indeed.util.varexport.Export;
+import com.indeed.util.varexport.ManagedVariable;
+import com.indeed.util.varexport.VarExporter;
 import org.apache.log4j.Logger;
 
 import javax.annotation.Nonnull;
@@ -14,12 +18,17 @@ import javax.annotation.Nullable;
 import javax.el.FunctionMapper;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public abstract class AbstractProctorLoader extends DataLoadingTimerTask implements Supplier<Proctor> {
     private static final Logger LOGGER = Logger.getLogger(AbstractProctorLoader.class);
+    protected static final VarExporter VAR_EXPORTER = VarExporter
+            .forNamespace(AbstractProctorLoader.class.getSimpleName())
+            .includeInGlobal();
 
     @Nullable
     protected final Map<String, TestSpecification> requiredTests;
@@ -34,8 +43,13 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
     private final ProvidedContext providedContext;
 
     private final List<ProctorLoadReporter> reporters = new ArrayList<>();
+    private DynamicFilters dynamicFilters = new DynamicFilters();
 
-    public AbstractProctorLoader(@Nonnull final Class<?> cls, @Nonnull final ProctorSpecification specification, @Nonnull final FunctionMapper functionMapper) {
+    public AbstractProctorLoader(
+            @Nonnull final Class<?> cls,
+            @Nonnull final ProctorSpecification specification,
+            @Nonnull final FunctionMapper functionMapper
+    ) {
         super(cls.getSimpleName());
         this.requiredTests = specification.getTests();
         this.providedContext = createProvidedContext(specification);
@@ -110,12 +124,26 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
             // Probably an absent specification.
             loadResult = ProctorUtils.verifyWithoutSpecification(testMatrix, getSource());
         } else {
-            loadResult = ProctorUtils.verifyAndConsolidate(testMatrix, getSource(), requiredTests, functionMapper, providedContext);
+            final Set<String> dynamicTests = dynamicFilters.determineTests(testMatrix.getTests(), requiredTests.keySet());
+            exportDynamicTests(dynamicTests);
+            loadResult = ProctorUtils.verifyAndConsolidate(
+                    testMatrix,
+                    getSource(),
+                    requiredTests,
+                    functionMapper,
+                    providedContext,
+                    dynamicTests
+            );
         }
 
         if (!loadResult.getTestErrorMap().isEmpty()) {
             for (final Map.Entry<String, IncompatibleTestMatrixException> errorTest : loadResult.getTestErrorMap().entrySet()) {
-                LOGGER.error(String.format("Unable to load test matrix for %s", errorTest.getKey()), errorTest.getValue());
+                final String testName = errorTest.getKey();
+                if (requiredTests.containsKey(testName)) {
+                    LOGGER.error(String.format("Unable to load test matrix for %s in a specification", testName), errorTest.getValue());
+                } else {
+                    LOGGER.warn(String.format("Unable to load test matrix for %s matching dynamic filters", testName), errorTest.getValue());
+                }
             }
         }
 
@@ -182,6 +210,10 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
         reporters.addAll(newReporters);
     }
 
+    public void setDynamicFilters(@Nonnull final Collection<? extends DynamicFilter> dynamicFilters) {
+        this.dynamicFilters = new DynamicFilters(dynamicFilters);
+    }
+
     void reportFailed(final Throwable t) {
         for (final ProctorLoadReporter reporter : reporters) {
             reporter.reportFailed(t);
@@ -198,5 +230,14 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
         for (final ProctorLoadReporter reporter : reporters) {
             reporter.reportNoChange();
         }
+    }
+
+    protected void exportDynamicTests(final Set<String> dynamicTests) {
+        final ManagedVariable<Set<String>> managedVariable =
+                ManagedVariable.<Set<String>>builder()
+                        .setName("dynamic-tests")
+                        .setValue(dynamicTests)
+                        .build();
+        VAR_EXPORTER.export(managedVariable);
     }
 }

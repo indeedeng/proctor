@@ -1556,6 +1556,105 @@ public class TestProctorUtils {
         assertEquals(bucket.getValue(), (int) buckets.get(bucket.getName()));
     }
 
+    @Test
+    public void testVerifyAndConsolidateShouldResolveDynamicTests() {
+        final String testC = "testc";
+        final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
+        final ConsumableTestDefinition definition = constructDefinition(
+                fromCompactBucketFormat("inactive:-1,control:0,test:1"),
+                fromCompactAllocationFormat("1:1.0")
+        );
+        tests.put(TEST_A, definition);
+        tests.put(TEST_B, definition);
+        tests.put(testC, definition);
+
+        final TestMatrixArtifact matrix = constructArtifact(tests);
+
+        final Map<String, TestSpecification> requiredTests = ImmutableMap.of(
+                TEST_A, new TestSpecification()
+        );
+
+        final Set<String> dynamicTests = Sets.newHashSet(TEST_B);
+
+        final ProctorLoadResult proctorLoadResult = ProctorUtils.verifyAndConsolidate(
+                matrix,
+                "",
+                requiredTests,
+                RuleEvaluator.FUNCTION_MAPPER,
+                new ProvidedContext(ProvidedContext.EMPTY_CONTEXT,false),
+                dynamicTests
+        );
+
+        assertTrue("missing tests should be empty", proctorLoadResult.getMissingTests().isEmpty());
+        assertTrue("invalid tests should be empty", proctorLoadResult.getTestsWithErrors().isEmpty());
+        assertTrue("TEST_A should be resolved", matrix.getTests().containsKey(TEST_A));
+        assertTrue("TEST_B should be resolved", matrix.getTests().containsKey(TEST_B));
+        assertFalse("testC should not be resolved", matrix.getTests().containsKey(testC));
+    }
+
+    @Test
+    public void testVerifyAndConsolidateShouldNotRemovePayloadOfDynamicTests() {
+        final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
+        final ConsumableTestDefinition definitionA = constructDefinition(
+                fromCompactBucketFormat("inactive:-1,control:0,test:1"),
+                fromCompactAllocationFormat("1:1.0")
+        );
+
+        for (final TestBucket bucket : definitionA.getBuckets()) {
+            final Payload payload = new Payload();
+            payload.setLongValue((long)bucket.getValue());
+            bucket.setPayload(payload);
+        }
+
+        final ConsumableTestDefinition definitionB = constructDefinition(
+                fromCompactBucketFormat("inactive:-1,control:0,test:1"),
+                fromCompactAllocationFormat("1:1.0")
+        );
+
+        for (final TestBucket bucket : definitionB.getBuckets()) {
+            final Payload payload = new Payload();
+            payload.setLongValue((long)bucket.getValue());
+            bucket.setPayload(payload);
+        }
+
+        tests.put(TEST_A, definitionA);
+        tests.put(TEST_B, definitionB);
+
+        final TestMatrixArtifact matrix = constructArtifact(tests);
+
+        final Map<String, TestSpecification> requiredTests = ImmutableMap.of(
+                TEST_A, new TestSpecification()
+        );
+
+        final Set<String> dynamicTests = Sets.newHashSet(TEST_B);
+
+        final ProctorLoadResult proctorLoadResult = ProctorUtils.verifyAndConsolidate(
+                matrix,
+                "",
+                requiredTests,
+                RuleEvaluator.FUNCTION_MAPPER,
+                new ProvidedContext(ProvidedContext.EMPTY_CONTEXT,false),
+                dynamicTests
+        );
+
+        assertTrue("missing tests should be empty", proctorLoadResult.getMissingTests().isEmpty());
+        assertTrue("invalid tests should be empty", proctorLoadResult.getTestsWithErrors().isEmpty());
+        assertTrue("TEST_A should be resolved", matrix.getTests().containsKey(TEST_A));
+        assertTrue("TEST_B should be resolved", matrix.getTests().containsKey(TEST_B));
+        for (final TestBucket bucket : matrix.getTests().get(TEST_A).getBuckets()) {
+            assertNull(
+                    "payload should be removed if test is not dynamically resolved" +
+                            " and specification don't have payload type",
+                    bucket.getPayload()
+            );
+        }
+        for (final TestBucket bucket : matrix.getTests().get(TEST_B).getBuckets()) {
+            assertNotNull(
+                    "payload should NOT be removed if test is dynamically resolved",
+                    bucket.getPayload().getLongValue()
+            );
+        }
+    }
 
     /* Test Helper Methods Below */
 

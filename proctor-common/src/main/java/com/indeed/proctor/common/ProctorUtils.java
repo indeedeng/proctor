@@ -52,6 +52,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -244,11 +245,30 @@ public abstract class ProctorUtils {
      * @param functionMapper a given el {@link FunctionMapper}
      * @return a {@link ProctorLoadResult} to describe the result of verification. It contains errors of verification and a list of missing test.
      */
-    public static ProctorLoadResult verifyAndConsolidate(@Nonnull final TestMatrixArtifact testMatrix, final String matrixSource, @Nonnull final Map<String, TestSpecification> requiredTests, @Nonnull final FunctionMapper functionMapper) {
-        return verifyAndConsolidate(testMatrix, matrixSource, requiredTests, functionMapper, new ProvidedContext(ProvidedContext.EMPTY_CONTEXT,false));
+    public static ProctorLoadResult verifyAndConsolidate(
+            @Nonnull final TestMatrixArtifact testMatrix,
+            final String matrixSource,
+            @Nonnull final Map<String, TestSpecification> requiredTests,
+            @Nonnull final FunctionMapper functionMapper
+    ) {
+        return verifyAndConsolidate(
+                testMatrix,
+                matrixSource,
+                requiredTests,
+                functionMapper,
+                new ProvidedContext(ProvidedContext.EMPTY_CONTEXT,false),
+                Collections.<String>emptySet()
+        );
     }
-    public static ProctorLoadResult verifyAndConsolidate(@Nonnull final TestMatrixArtifact testMatrix, final String matrixSource, @Nonnull final Map<String, TestSpecification> requiredTests, @Nonnull final FunctionMapper functionMapper, final ProvidedContext providedContext) {
-        final ProctorLoadResult result = verify(testMatrix, matrixSource, requiredTests, functionMapper, providedContext);
+    public static ProctorLoadResult verifyAndConsolidate(
+            @Nonnull final TestMatrixArtifact testMatrix,
+            final String matrixSource,
+            @Nonnull final Map<String, TestSpecification> requiredTests,
+            @Nonnull final FunctionMapper functionMapper,
+            final ProvidedContext providedContext,
+            @Nonnull final Set<String> dynamicTests
+    ) {
+        final ProctorLoadResult result = verify(testMatrix, matrixSource, requiredTests, functionMapper, providedContext, dynamicTests);
 
         final Map<String, ConsumableTestDefinition> definedTests = testMatrix.getTests();
         // Remove any invalid tests so that any required ones will be replaced with default values during the
@@ -259,7 +279,7 @@ public abstract class ProctorUtils {
             definedTests.remove(invalidTest);
         }
 
-        consolidate(testMatrix, requiredTests);
+        consolidate(testMatrix, requiredTests, dynamicTests);
 
         return result;
     }
@@ -294,8 +314,19 @@ public abstract class ProctorUtils {
     }
 
 
-    public static ProctorLoadResult verify(@Nonnull final TestMatrixArtifact testMatrix, final String matrixSource, @Nonnull final Map<String, TestSpecification> requiredTests) {
-        return verify(testMatrix, matrixSource, requiredTests, RuleEvaluator.FUNCTION_MAPPER, new ProvidedContext(ProvidedContext.EMPTY_CONTEXT,false)); //use default function mapper
+    public static ProctorLoadResult verify(
+            @Nonnull final TestMatrixArtifact testMatrix,
+            final String matrixSource,
+            @Nonnull final Map<String, TestSpecification> requiredTests
+    ) {
+        return verify(
+                testMatrix,
+                matrixSource,
+                requiredTests,
+                RuleEvaluator.FUNCTION_MAPPER,
+                new ProvidedContext(ProvidedContext.EMPTY_CONTEXT,false), //use default function mapper
+                Collections.<String>emptySet()
+        );
     }
 
     /**
@@ -308,9 +339,17 @@ public abstract class ProctorUtils {
      * @param requiredTests   a {@link Map} of required test. The {@link TestSpecification} would be verified
      * @param functionMapper  a given el {@link FunctionMapper}
      * @param providedContext a {@link Map} containing variables describing the context in which the request is executing. These will be supplied to verifying all rules.
+     * @param dynamicTests    a {@link Set} of dynamic tests determined by filters.
      * @return a {@link ProctorLoadResult} to describe the result of verification. It contains errors of verification and a list of missing test.
      */
-    public static ProctorLoadResult verify(@Nonnull final TestMatrixArtifact testMatrix, final String matrixSource, @Nonnull final Map<String, TestSpecification> requiredTests, @Nonnull final FunctionMapper functionMapper, final ProvidedContext providedContext) {
+    public static ProctorLoadResult verify(
+            @Nonnull final TestMatrixArtifact testMatrix,
+            final String matrixSource,
+            @Nonnull final Map<String, TestSpecification> requiredTests,
+            @Nonnull final FunctionMapper functionMapper,
+            final ProvidedContext providedContext,
+            @Nonnull final Set<String> dynamicTests
+    ) {
         final ProctorLoadResult.Builder resultBuilder = ProctorLoadResult.newBuilder();
 
         final Map<String, Map<Integer, String>> allTestsKnownBuckets = Maps.newHashMapWithExpectedSize(requiredTests.size());
@@ -327,16 +366,26 @@ public abstract class ProctorUtils {
         resultBuilder.recordAllMissing(missingTests);
         for (final Entry<String, ConsumableTestDefinition> entry : definedTests.entrySet()) {
             final String testName = entry.getKey();
-            final Map<Integer, String> knownBuckets = allTestsKnownBuckets.remove(testName);
-            if (knownBuckets == null) { //  we don't care about this test
-                // iterator.remove(); DO NOT CONSOLIDATE
+
+            final Map<Integer, String> knownBuckets;
+            final TestSpecification specification;
+            if (allTestsKnownBuckets.containsKey(testName)) {
+                // in specification
+                knownBuckets = allTestsKnownBuckets.remove(testName);
+                specification = requiredTests.get(testName);
+            } else if (dynamicTests.contains(testName)) {
+                // dynamic
+                knownBuckets = Collections.emptyMap();
+                specification = new TestSpecification();
+            } else {
+                //  we don't care about this test
                 continue;
             }
 
             final ConsumableTestDefinition testDefinition = entry.getValue();
 
             try {
-                verifyTest(testName, testDefinition, requiredTests.get(testName), knownBuckets, matrixSource, functionMapper, providedContext);
+                verifyTest(testName, testDefinition, specification, knownBuckets, matrixSource, functionMapper, providedContext);
 
             } catch (IncompatibleTestMatrixException e) {
                 LOGGER.info(String.format("Unable to load test matrix for %s", testName), e);
@@ -518,11 +567,24 @@ public abstract class ProctorUtils {
     }
 
 
-    private static void consolidate(@Nonnull final TestMatrixArtifact testMatrix, @Nonnull final Map<String, TestSpecification> requiredTests) {
+    private static void consolidate(
+            @Nonnull final TestMatrixArtifact testMatrix,
+            @Nonnull final Map<String, TestSpecification> requiredTests,
+            @Nonnull final Set<String> dynamicTests
+    ) {
         final Map<String, ConsumableTestDefinition> definedTests = testMatrix.getTests();
 
         // Sets.difference returns a "view" on the original set, which would require concurrent modification while iterating (copying the set will prevent this)
-        final Set<String> toRemove = ImmutableSet.copyOf(Sets.difference(definedTests.keySet(), requiredTests.keySet()));
+        final Set<String> toRemove = ImmutableSet.copyOf(
+                Sets.difference(
+                        definedTests.keySet(),
+                        Sets.union(
+                                requiredTests.keySet(),
+                                dynamicTests
+                        )
+                )
+        );
+
         for (String testInMatrixNotRequired : toRemove) {
             //  we don't care about this test
             definedTests.remove(testInMatrixNotRequired);
@@ -544,6 +606,10 @@ public abstract class ProctorUtils {
         for (Entry<String, ConsumableTestDefinition> next : definedTests.entrySet()) {
             final String testName = next.getKey();
             final ConsumableTestDefinition testDefinition = next.getValue();
+            if (!requiredTests.containsKey(testName)) {
+                // We don't care here about dynamically resolved tests
+                continue;
+            }
             final TestSpecification testSpec = requiredTests.get(testName);
 
             final boolean noPayloads = (testSpec.getPayload() == null);
