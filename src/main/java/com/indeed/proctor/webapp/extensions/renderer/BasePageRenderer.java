@@ -8,6 +8,7 @@ import javax.servlet.jsp.PageContext;
  */
 public interface BasePageRenderer {
     enum BasePagePosition {
+        HEAD,
         NAVBAR_BUTTON,
         FOOTER,
     }
