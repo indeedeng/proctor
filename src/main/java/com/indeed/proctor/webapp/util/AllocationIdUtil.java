@@ -147,7 +147,7 @@ public class AllocationIdUtil {
 
     /**
      * @param allocId allocation id e.g. "#A1"
-     * @return next version of allocId e.g "#A1" -> "#A2"
+     * @return next version of allocId e.g "#A1" to "#A2"
      */
     public static String getNextVersionOfAllocationId(final String allocId) {
         final Matcher matcher = ALLOCATION_ID_PATTERN.matcher(allocId);

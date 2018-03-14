@@ -26,7 +26,7 @@ import com.google.common.base.Supplier;
  * <p>Allows specifying the location of a .properties file (using Spring's resource syntax) in the servlet context in order to separate structural (object
  * relationships and implementation classes) configuration from the injection of particular values (strings, numbers, etc.).
  * </p>
- *<p>
+ * <p>
  * Use it like this in your Spring configuration:
  *
  * <pre>
@@ -38,7 +38,6 @@ import com.google.common.base.Supplier;
  * <pre>
  *      &lt;Parameter name="propertyPlaceholderResourceLocation" value="/WEB-INF/config/settings.properties" /&gt;
  * </pre>
- * </p>
  * @author ketan
  *
  */
