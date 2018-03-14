@@ -3,7 +3,7 @@
 
     <parent>
         <groupId>com.indeed</groupId>
-        <artifactId>oss-parent</artifactId>
+        <artifactId>common-parent</artifactId>
         <version>19</version>
     </parent>
 
