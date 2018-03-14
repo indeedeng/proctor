@@ -19,13 +19,13 @@
 <!--[if IE 8]>    <html class="lt-ie9" lang="en"> <![endif]-->
 <!--[if gt IE 8]><!--> <html class="" lang="en"> <!--<![endif]-->
 <head>
-  <title>${not empty title ? fn:escapeXml(title): 'Proctor' }</title>
-  <meta charset="utf-8" />
+    <title>${not empty title ? fn:escapeXml(title): 'Proctor' }</title>
+    <meta charset="utf-8"/>
 
-  <!-- Set the viewport width to device width for mobile -->
-  <meta name="viewport" content="width=device-width" />
+    <!-- Set the viewport width to device width for mobile -->
+    <meta name="viewport" content="width=device-width"/>
 
-  <!-- Included CSS Files -->
+    <!-- Included CSS Files -->
     <c:choose>
         <c:when test="${session.useCompiledCSS}">
             <link rel="stylesheet" href=<proctor:filenameMapper filename="/static/styles/styles-compiled.css"/>>
@@ -41,7 +41,11 @@
         </c:otherwise>
     </c:choose>
 
-  <c:if test="${not empty canonicalLink}"><link rel="canonical" href="${canonicalLink}" /></c:if>
+    <c:if test="${not empty canonicalLink}">
+        <link rel="canonical" href="${canonicalLink}"/>
+    </c:if>
+    <proctor:renderBasePageInjectionTemplates position="<%=BasePageRenderer.BasePagePosition.HEAD%>"
+                                              branch="${branch}"/>
 </head>
 <body>
     <div class="page-container">
