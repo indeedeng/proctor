@@ -260,6 +260,24 @@ public abstract class ProctorUtils {
                 Collections.<String>emptySet()
         );
     }
+
+    public static ProctorLoadResult verifyAndConsolidate(
+            @Nonnull final TestMatrixArtifact testMatrix,
+            final String matrixSource,
+            @Nonnull final Map<String, TestSpecification> requiredTests,
+            @Nonnull final FunctionMapper functionMapper,
+            final ProvidedContext providedContext
+    ) {
+        return verifyAndConsolidate(
+                testMatrix,
+                matrixSource,
+                requiredTests,
+                functionMapper,
+                providedContext,
+                Collections.<String>emptySet()
+        );
+    }
+
     public static ProctorLoadResult verifyAndConsolidate(
             @Nonnull final TestMatrixArtifact testMatrix,
             final String matrixSource,
@@ -325,6 +343,23 @@ public abstract class ProctorUtils {
                 requiredTests,
                 RuleEvaluator.FUNCTION_MAPPER,
                 new ProvidedContext(ProvidedContext.EMPTY_CONTEXT,false), //use default function mapper
+                Collections.<String>emptySet()
+        );
+    }
+
+    public static ProctorLoadResult verify(
+            @Nonnull final TestMatrixArtifact testMatrix,
+            final String matrixSource,
+            @Nonnull final Map<String, TestSpecification> requiredTests,
+            @Nonnull final FunctionMapper functionMapper,
+            final ProvidedContext providedContext
+    ) {
+        return verify(
+                testMatrix,
+                matrixSource,
+                requiredTests,
+                functionMapper,
+                providedContext,
                 Collections.<String>emptySet()
         );
     }
