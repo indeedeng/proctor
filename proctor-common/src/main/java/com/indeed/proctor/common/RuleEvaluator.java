@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 import org.apache.taglibs.standard.functions.Functions;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.el.ArrayELResolver;
 import javax.el.BeanELResolver;
 import javax.el.CompositeELResolver;
@@ -101,7 +102,7 @@ public class RuleEvaluator {
         };
     }
 
-    public boolean evaluateBooleanRule(@Nonnull final String rule, @Nonnull final Map<String, Object> values) throws IllegalArgumentException {
+    public boolean evaluateBooleanRule(final String rule, @Nonnull final Map<String, Object> values) throws IllegalArgumentException {
         if (ProctorUtils.isEmptyWhitespace(rule)) {
             return true;
         }

@@ -96,7 +96,7 @@ public class TestRangeSelector {
         return -1;
     }
 
-    private boolean evaluateRule(@Nonnull final String rule, @Nonnull final Map<String, Object> values) throws InvalidRuleException {
+    private boolean evaluateRule(final String rule, @Nonnull final Map<String, Object> values) throws InvalidRuleException {
         try {
             return ruleEvaluator.evaluateBooleanRule(rule, values);
 
