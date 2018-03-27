@@ -298,21 +298,25 @@ public class ProctorController extends AbstractController {
             final SortedSet<AppVersion> versions = Sets.newTreeSet(clients.keySet());
             for(final AppVersion version : versions) {
                 final RemoteSpecificationResult remoteResult = clients.get(version);
-                final boolean compatible;
-                final String error;
                 if (remoteResult.isSkipped()) {
                     continue;
-                } else if (remoteResult.isSuccess()) {
-                    // use all the required tests from the specification
-                    final String matrixSource = artifactEnvironment.getName() + " r" + artifact.getAudit().getVersion();
-                    final ProctorLoadResult plr = ProctorUtils.verify(artifact, matrixSource, remoteResult.getSpecificationResult().getSpecification().getTests());
-                    compatible = !plr.hasInvalidTests();
-                    error = String.format("Incompatible: Tests Missing: %s Invalid Tests: %s for %s", plr.getMissingTests(), plr.getTestsWithErrors(), matrixSource);
-                } else {
-                    compatible = false;
-                    error = "Failed to load a proctor specification from " + Joiner.on(", ").join(Iterables.transform(remoteResult.getFailures().keySet(), Functions.toStringFunction()));
                 }
-                row.addVersion(webappEnvironment, new CompatibleSpecificationResult(version, compatible, error));
+
+                final CompatibleSpecificationResult result;
+                if (remoteResult.isSuccess()) {
+                    result = CompatibleSpecificationResult.fromProctorSpecification(
+                            artifactEnvironment,
+                            version,
+                            artifact,
+                            remoteResult.getSpecificationResult().getSpecification()
+                    );
+                } else {
+                    final String error = "Failed to load a proctor specification from "
+                            + Joiner.on(", ").join(Iterables.transform(remoteResult.getFailures().keySet(), Functions.toStringFunction()));
+                    result = new CompatibleSpecificationResult(version, false, error);
+                }
+
+                row.addVersion(webappEnvironment, result);
             }
     }
 
@@ -536,6 +540,21 @@ public class ProctorController extends AbstractController {
             final ProctorLoadResult plr = ProctorUtils.verify(artifact, matrixSource, Collections.emptyMap(), dynamicTests);
             final boolean compatible = !plr.hasInvalidTests();
             final String error = String.format("test %s is matched in filters but invalid for %s", testName, matrixSource);
+            return new CompatibleSpecificationResult(version, compatible, error);
+        }
+
+        private static CompatibleSpecificationResult fromProctorSpecification(
+                final Environment artifactEnvironment,
+                final AppVersion version,
+                final TestMatrixArtifact artifact,
+                final ProctorSpecification specification
+        ) {
+            final String matrixSource = artifactEnvironment.getName() + " r" + artifact.getAudit().getVersion();
+            final Map<String, TestSpecification> requiredTests = specification.getTests();
+            final Set<String> dynamicTests = specification.getDynamicFilters().determineTests(artifact.getTests(), requiredTests.keySet());
+            final ProctorLoadResult plr = ProctorUtils.verify(artifact, matrixSource, requiredTests, dynamicTests);
+            final boolean compatible = !plr.hasInvalidTests();
+            final String error = String.format("Incompatible: Tests Missing: %s Invalid Tests: %s for %s", plr.getMissingTests(), plr.getTestsWithErrors(), matrixSource);
             return new CompatibleSpecificationResult(version, compatible, error);
         }
     }
