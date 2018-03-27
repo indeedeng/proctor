@@ -351,6 +351,22 @@ public abstract class ProctorUtils {
             @Nonnull final TestMatrixArtifact testMatrix,
             final String matrixSource,
             @Nonnull final Map<String, TestSpecification> requiredTests,
+            @Nonnull final Set<String> dynamicTests
+    ) {
+        return verify(
+                testMatrix,
+                matrixSource,
+                requiredTests,
+                RuleEvaluator.FUNCTION_MAPPER,
+                new ProvidedContext(ProvidedContext.EMPTY_CONTEXT,false), //use default function mapper
+                dynamicTests
+        );
+    }
+
+    public static ProctorLoadResult verify(
+            @Nonnull final TestMatrixArtifact testMatrix,
+            final String matrixSource,
+            @Nonnull final Map<String, TestSpecification> requiredTests,
             @Nonnull final FunctionMapper functionMapper,
             final ProvidedContext providedContext
     ) {
