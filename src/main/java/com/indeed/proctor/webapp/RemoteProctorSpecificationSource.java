@@ -13,8 +13,16 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.indeed.proctor.common.ProctorSpecification;
+import com.indeed.proctor.common.ProctorUtils;
 import com.indeed.proctor.common.Serializers;
 import com.indeed.proctor.common.SpecificationResult;
+import com.indeed.proctor.common.dynamic.DynamicFilters;
+import com.indeed.proctor.common.model.ConsumableTestDefinition;
+import com.indeed.proctor.common.model.TestDefinition;
+import com.indeed.proctor.common.model.TestMatrixArtifact;
+import com.indeed.proctor.common.model.TestMatrixVersion;
+import com.indeed.proctor.store.ProctorReader;
+import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.webapp.db.Environment;
 import com.indeed.proctor.webapp.model.AppVersion;
 import com.indeed.proctor.webapp.model.ProctorClientApplication;
@@ -63,8 +71,13 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
 
     private volatile Map<Environment, ImmutableMap<AppVersion, RemoteSpecificationResult>> cache_ = Maps.newConcurrentMap();
 
-    public RemoteProctorSpecificationSource(int httpTimeout,
-                                            int executorThreads) {
+    private final Map<Environment, ProctorReader> proctorReaderMap;
+
+    public RemoteProctorSpecificationSource(final int httpTimeout,
+                                            final int executorThreads,
+                                            final ProctorReader trunk,
+                                            final ProctorReader qa,
+                                            final ProctorReader production) {
         super(RemoteProctorSpecificationSource.class.getSimpleName());
         this.httpTimeout = httpTimeout;
         Preconditions.checkArgument(httpTimeout > 0, "verificationTimeout > 0");
@@ -73,6 +86,11 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
                 .setUncaughtExceptionHandler(new LogOnUncaughtExceptionHandler())
                 .build();
         this.httpExecutor = Executors.newFixedThreadPool(executorThreads, threadFactory);
+        this.proctorReaderMap = ImmutableMap.of(
+                Environment.WORKING, trunk,
+                Environment.QA, qa,
+                Environment.PRODUCTION, production
+        );
     }
 
     @Override
@@ -123,12 +141,14 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
             return Collections.emptySet();
         }
         final Set<AppVersion> clients = Sets.newHashSet();
+        final ConsumableTestDefinition testDefinition = getCurrentConsumableTestDefinition(environment, testName);
         for (Map.Entry<AppVersion, RemoteSpecificationResult> entry : specifications.entrySet()) {
             final AppVersion version = entry.getKey();
             final RemoteSpecificationResult rr = entry.getValue();
             if (rr.isSuccess()) {
                 final ProctorSpecification specification = rr.getSpecificationResult().getSpecification();
-                if (containsTest(specification, testName)) {
+                final DynamicFilters filters = specification.getDynamicFilters();
+                if (containsTest(specification, testName) || willResolveTest(filters, testName, testDefinition)) {
                     clients.add(version);
                 }
             }
@@ -142,11 +162,21 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
         if (specifications == null) {
             return Collections.emptySet();
         }
+        final TestMatrixArtifact testMatrixArtifact = getCurrentTestMatrixArtifact(environment);
         final Set<String> tests = Sets.newHashSet();
         for (Map.Entry<AppVersion, RemoteSpecificationResult> entry : specifications.entrySet()) {
             final RemoteSpecificationResult remoteResult = entry.getValue();
             if (remoteResult.isSuccess()) {
-                tests.addAll(remoteResult.getSpecificationResult().getSpecification().getTests().keySet());
+                final ProctorSpecification specification = remoteResult.getSpecificationResult().getSpecification();
+                final Set<String> requiredTests = specification.getTests().keySet();
+                tests.addAll(requiredTests);
+                if (testMatrixArtifact != null) {
+                    final Set<String> dynamicTests = specification.getDynamicFilters().determineTests(
+                            testMatrixArtifact.getTests(),
+                            requiredTests
+                    );
+                    tests.addAll(dynamicTests);
+                }
             }
         }
         return tests;
@@ -339,8 +369,41 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
         return result;
     }
 
+    // Check if this test is defined in a specification by a client.
     private static boolean containsTest(final ProctorSpecification specification, final String testName) {
         return specification.getTests().containsKey(testName);
+    }
+
+    // Check if this test will be resolved by defined filters in a client.
+    private static boolean willResolveTest(final DynamicFilters filters, final String testName, final ConsumableTestDefinition testDefinition) {
+        return (filters != null) && (testName != null) && (testDefinition != null) &&
+                filters.determineTests(ImmutableMap.of(testName, testDefinition), Collections.emptySet()).contains(testName);
+    }
+
+    @Nullable
+    private ConsumableTestDefinition getCurrentConsumableTestDefinition(final Environment environment, final String testName) {
+        try {
+            final TestDefinition testDefinition = proctorReaderMap.get(environment).getCurrentTestDefinition(testName);
+            if (testDefinition != null) {
+                return ProctorUtils.convertToConsumableTestDefinition(testDefinition);
+            }
+        } catch (final StoreException e) {
+            LOGGER.warn("Failed to get current consumable test definition for " + testName + " in " + environment, e);
+        }
+        return null;
+    }
+
+    @Nullable
+    private TestMatrixArtifact getCurrentTestMatrixArtifact(final Environment environment) {
+        try {
+            final TestMatrixVersion testMatrix = proctorReaderMap.get(environment).getCurrentTestMatrix();
+            if (testMatrix != null) {
+                return ProctorUtils.convertToConsumableArtifact(testMatrix);
+            }
+        } catch (final StoreException e) {
+            LOGGER.warn("Failed to get current test matrix artifact in " + environment, e);
+        }
+        return null;
     }
 
     private static Pair<Integer, SpecificationResult> fetchSpecificationFromApi(final ProctorClientApplication client, final int timeout) {

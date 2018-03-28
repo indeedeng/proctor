@@ -49,6 +49,9 @@
     <bean id="proctorSpecificationSource" class="com.indeed.proctor.webapp.RemoteProctorSpecificationSource" destroy-method="shutdown">
         <constructor-arg name="httpTimeout" value="${verify.http.timeout:1000}"/>
         <constructor-arg name="executorThreads" value="${verify.executor.threads:10}"/>
+        <constructor-arg name="trunk" ref="trunkStore" />
+        <constructor-arg name="qa" ref="qaStore" />
+        <constructor-arg name="production" ref="prodStore" />
     </bean>
 
     <bean id="proctorPromoterExecutorService" class="org.springframework.scheduling.concurrent.ThreadPoolExecutorFactoryBean" lazy-init="false">
