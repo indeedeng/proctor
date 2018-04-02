@@ -163,21 +163,21 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
         if (specifications == null) {
             return Collections.emptySet();
         }
+
         final TestMatrixArtifact testMatrixArtifact = getCurrentTestMatrixArtifact(environment);
+        Preconditions.checkNotNull(testMatrixArtifact, "Failed to get the current test matrix artifact");
+        final Map<String, ConsumableTestDefinition> definedTests = testMatrixArtifact.getTests();
+
         final Set<String> tests = Sets.newHashSet();
-        for (Map.Entry<AppVersion, RemoteSpecificationResult> entry : specifications.entrySet()) {
+        for (final Map.Entry<AppVersion, RemoteSpecificationResult> entry : specifications.entrySet()) {
             final RemoteSpecificationResult remoteResult = entry.getValue();
             if (remoteResult.isSuccess()) {
                 final ProctorSpecification specification = remoteResult.getSpecificationResult().getSpecification();
                 final Set<String> requiredTests = specification.getTests().keySet();
+                final Set<String> dynamicTests = specification.getDynamicFilters()
+                        .determineTests(definedTests, requiredTests);
                 tests.addAll(requiredTests);
-                if (testMatrixArtifact != null) {
-                    final Set<String> dynamicTests = specification.getDynamicFilters().determineTests(
-                            testMatrixArtifact.getTests(),
-                            requiredTests
-                    );
-                    tests.addAll(dynamicTests);
-                }
+                tests.addAll(dynamicTests);
             }
         }
         return tests;
