@@ -56,7 +56,7 @@ indeed.proctor.editor.AllocationsEditor.prototype.bind_ = function() {
     // assert i < this.allocations.length
 
     var allocationEditor = new indeed.proctor.editor.AllocationEditor(editors[i], i,
-        this.buckets, this.allocations[i], i == editors.length - 1);
+        this.buckets, this.allocations[i], i == editors.length - 1, this);
     this.handler_.listen(allocationEditor, 'deleteAllocation', this.onDeleteAllocationClick_);
     this.handler_.listen(allocationEditor, 'addAllocation', this.onAddAllocationClick_);
 
@@ -223,11 +223,12 @@ indeed.proctor.editor.AllocationsEditor.prototype.updateAllocationEditorIndices_
  * @param {Array} buckets JSON Buckets.
  * @param {Object} allocation JSON allocation.
  * @param {boolean} isDefault Is default allocation.
+ * @param {Object} allocationsEditor allocations editor as parent event target
  * @constructor
  * @extends {goog.events.EventTarget}
  */
 indeed.proctor.editor.AllocationEditor =
-    function(container, index, buckets, allocation, isDefault) {
+    function(container, index, buckets, allocation, isDefault, allocationsEditor) {
   goog.base(this);
   /** @type {goog.dom.DomHelper} @private */
   this.dom_ = goog.dom.getDomHelper(container);
@@ -247,6 +248,7 @@ indeed.proctor.editor.AllocationEditor =
   this.registerDisposable(this.handler_);
 
   this.bind_();
+  this.setParentEventTarget(allocationsEditor);
 };
 goog.inherits(indeed.proctor.editor.AllocationEditor, goog.events.EventTarget);
 
