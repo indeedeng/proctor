@@ -31,6 +31,7 @@ import com.indeed.proctor.webapp.util.threads.LogOnUncaughtExceptionHandler;
 import com.indeed.util.core.DataLoadingTimerTask;
 import com.indeed.util.core.Pair;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -376,7 +377,7 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
 
     // Check if this test will be resolved by defined filters in a client.
     private static boolean willResolveTest(final DynamicFilters filters, final String testName, final ConsumableTestDefinition testDefinition) {
-        return (filters != null) && (testName != null) && (testDefinition != null) &&
+        return (filters != null) && StringUtils.isNotEmpty(testName) && (testDefinition != null) &&
                 filters.determineTests(ImmutableMap.of(testName, testDefinition), Collections.emptySet()).contains(testName);
     }
 
