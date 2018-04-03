@@ -797,7 +797,7 @@ indeed.proctor.editor.AllocationEditor.prototype.checkUserDrift_ =
       var mid = (left + right) / 2;
       var prevValue = getValue(prevRanges, mid);
       var newValue = getValue(newRanges, mid);
-      if(prevValue > 0 && newValue != -1 && prevValue != newValue) {
+      if(prevValue >= 0 && newValue != -1 && prevValue != newValue) {
         return true;
       }
     }
