@@ -582,7 +582,13 @@ public abstract class ProctorUtils {
             } else if (PayloadType.DOUBLE_ARRAY == expectedPayloadType
                     || PayloadType.STRING_ARRAY == expectedPayloadType
                     || PayloadType.LONG_ARRAY == expectedPayloadType) {
-                throw new IncompatibleTestMatrixException("For test " + testName + " from " + matrixSource + " expected payload of type " + specifiedPayloadType.payloadTypeName + " but matrix has a test bucket payload with wrong nested type: " +  bucket);
+                throw new IncompatibleTestMatrixException("For test " + testName + " from " + matrixSource + " expected payload of type " + specifiedPayloadType.payloadTypeName + " but matrix has a test bucket payload with wrong nested type: " + bucket);
+            } else if (PayloadType.DOUBLE_VALUE == expectedPayloadType
+                    || PayloadType.LONG_VALUE == expectedPayloadType) {
+                final Class actualClazz = actualPayload.getClass();
+                if (!Number.class.isAssignableFrom(actualClazz)) {
+                    throw new IncompatibleTestMatrixException("For test " + testName + " from " + matrixSource + " expected payload of type " + specifiedPayloadType.payloadTypeName + " but matrix has a test bucket payload with wrong nested type: " + bucket);
+                }
             } else {
                 try {
                     if(!Class.forName("java.lang."+expectedPayloadType.javaClassName).isInstance(actualPayload)) {
