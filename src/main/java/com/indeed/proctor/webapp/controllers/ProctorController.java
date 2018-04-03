@@ -1,6 +1,8 @@
 package com.indeed.proctor.webapp.controllers;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
@@ -17,16 +19,17 @@ import com.indeed.proctor.common.ProctorSpecification;
 import com.indeed.proctor.common.ProctorUtils;
 import com.indeed.proctor.common.Serializers;
 import com.indeed.proctor.common.TestSpecification;
+import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.common.model.TestDefinition;
 import com.indeed.proctor.common.model.TestMatrixArtifact;
 import com.indeed.proctor.common.model.TestMatrixDefinition;
 import com.indeed.proctor.common.model.TestMatrixVersion;
+import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.webapp.ProctorSpecificationSource;
 import com.indeed.proctor.webapp.db.Environment;
-import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.webapp.model.AppVersion;
 import com.indeed.proctor.webapp.model.ProctorClientApplication;
 import com.indeed.proctor.webapp.model.RemoteSpecificationResult;
@@ -35,8 +38,6 @@ import com.indeed.proctor.webapp.model.WebappConfiguration;
 import com.indeed.proctor.webapp.util.threads.LogOnUncaughtExceptionHandler;
 import com.indeed.proctor.webapp.views.JsonView;
 import org.apache.log4j.Logger;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -62,6 +63,7 @@ import java.util.SortedSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.function.BiFunction;
 
 @Controller
 @RequestMapping({"/", "/proctor"})
@@ -174,13 +176,12 @@ public class ProctorController extends AbstractController {
 
         return new JsonView(spec);
     }
-
-
     private void populateTestUsageViewModel(final Environment matrixEnvironment,
                                             final TestMatrixVersion matrix,
                                             final Map<String, CompatibilityRow> tests,
                                             final Environment environment) {
         final TestMatrixArtifact artifact = ProctorUtils.convertToConsumableArtifact(matrix);
+        final Map<String, ConsumableTestDefinition> definedTests = artifact.getTests();
 
         final Map<AppVersion, ProctorSpecification> clients = specificationSource.loadAllSuccessfulSpecifications(environment);
         // sort the apps (probably should sort the Map.Entry, but this is good enough for now
@@ -188,32 +189,44 @@ public class ProctorController extends AbstractController {
 
         for (final AppVersion version : versions) {
             final ProctorSpecification specification = clients.get(version);
-            for (Map.Entry<String, TestSpecification> testEntry : specification.getTests().entrySet()) {
+
+            final Map<String, TestSpecification> requiredTests = specification.getTests();
+            final Set<String> dynamicTests = specification.getDynamicFilters().determineTests(definedTests, requiredTests.keySet());
+
+            for (final Map.Entry<String, TestSpecification> testEntry : requiredTests.entrySet()) {
                 final String testName = testEntry.getKey();
+                final TestSpecification testSpecification = testEntry.getValue();
 
-                CompatibilityRow usageViewModel = tests.get(testName);
-                if (usageViewModel == null) {
-                    usageViewModel = new CompatibilityRow();
-                    tests.put(testName, usageViewModel);
-                }
+                tests.computeIfAbsent(testName, k -> new CompatibilityRow())
+                        .addVersion(
+                                environment,
+                                CompatibleSpecificationResult.fromRequiredTest(
+                                        matrixEnvironment,
+                                        version,
+                                        artifact,
+                                        testName,
+                                        testSpecification
+                                )
+                        );
+            }
 
-                //
-                final Map<String, TestSpecification> requiredTests = Collections.singletonMap(testEntry.getKey(), testEntry.getValue());
-                final String matrixSource = matrixEnvironment.getName() + " r" + artifact.getAudit().getVersion();
-                final ProctorLoadResult plr = ProctorUtils.verify(artifact, matrixSource, requiredTests);
-                final boolean compatible = !plr.hasInvalidTests();
-                final String error = String.format("test %s is invalid for %s", testName, matrixSource);
-                usageViewModel.addVersion(environment, new CompatibleSpecificationResult(version, compatible, error));
+            for (final String testName : dynamicTests) {
+                tests.computeIfAbsent(testName, k -> new CompatibilityRow())
+                        .addVersion(
+                                environment,
+                                CompatibleSpecificationResult.fromDynamicTest(
+                                        matrixEnvironment,
+                                        version,
+                                        artifact,
+                                        testName
+                                )
+                        );
             }
         }
 
         // for each of the tests in the matrix, make sure there is an entry in the usageViewModel
-        for (final String testName : matrix.getTestMatrixDefinition().getTests().keySet()) {
-            CompatibilityRow usageViewModel = tests.get(testName);
-            if (usageViewModel == null) {
-                usageViewModel = new CompatibilityRow();
-                tests.put(testName, usageViewModel);
-            }
+        for (final String testName : definedTests.keySet()) {
+            tests.computeIfAbsent(testName, k -> new CompatibilityRow());
         }
     }
 
@@ -286,21 +299,25 @@ public class ProctorController extends AbstractController {
             final SortedSet<AppVersion> versions = Sets.newTreeSet(clients.keySet());
             for(final AppVersion version : versions) {
                 final RemoteSpecificationResult remoteResult = clients.get(version);
-                final boolean compatible;
-                final String error;
                 if (remoteResult.isSkipped()) {
                     continue;
-                } else if (remoteResult.isSuccess()) {
-                    // use all the required tests from the specification
-                    final String matrixSource = artifactEnvironment.getName() + " r" + artifact.getAudit().getVersion();
-                    final ProctorLoadResult plr = ProctorUtils.verify(artifact, matrixSource, remoteResult.getSpecificationResult().getSpecification().getTests());
-                    compatible = !plr.hasInvalidTests();
-                    error = String.format("Incompatible: Tests Missing: %s Invalid Tests: %s for %s", plr.getMissingTests(), plr.getTestsWithErrors(), matrixSource);
-                } else {
-                    compatible = false;
-                    error = "Failed to load a proctor specification from " + Joiner.on(", ").join(Iterables.transform(remoteResult.getFailures().keySet(), Functions.toStringFunction()));
                 }
-                row.addVersion(webappEnvironment, new CompatibleSpecificationResult(version, compatible, error));
+
+                final CompatibleSpecificationResult result;
+                if (remoteResult.isSuccess()) {
+                    result = CompatibleSpecificationResult.fromProctorSpecification(
+                            artifactEnvironment,
+                            version,
+                            artifact,
+                            remoteResult.getSpecificationResult().getSpecification()
+                    );
+                } else {
+                    final String error = "Failed to load a proctor specification from "
+                            + Joiner.on(", ").join(Iterables.transform(remoteResult.getFailures().keySet(), Functions.toStringFunction()));
+                    result = new CompatibleSpecificationResult(version, false, error);
+                }
+
+                row.addVersion(webappEnvironment, result);
             }
     }
 
@@ -497,6 +514,79 @@ public class ProctorController extends AbstractController {
         public String toShortString() {
             return appVersion.toShortString();
         }
-    }
 
+        static CompatibleSpecificationResult fromRequiredTest(
+                final Environment matrixEnvironment,
+                final AppVersion version,
+                final TestMatrixArtifact artifact,
+                final String testName,
+                final TestSpecification specification
+        ) {
+            final Map<String, TestSpecification> requiredTests = Collections.singletonMap(testName, specification);
+            final Set<String> dynamicTests = Collections.emptySet();
+            return fromTests(
+                    matrixEnvironment,
+                    version,
+                    artifact,
+                    requiredTests,
+                    dynamicTests,
+                    (matrixSource, plr) ->
+                            "test " + testName + " is required by specification but invalid for " + matrixSource
+            );
+        }
+
+        static CompatibleSpecificationResult fromDynamicTest(
+                final Environment matrixEnvironment,
+                final AppVersion version,
+                final TestMatrixArtifact artifact,
+                final String testName
+        ) {
+            final Map<String, TestSpecification> requiredTests = Collections.emptyMap();
+            final Set<String> dynamicTests = Collections.singleton(testName);
+            return fromTests(
+                    matrixEnvironment,
+                    version,
+                    artifact,
+                    requiredTests,
+                    dynamicTests,
+                    (matrixSource, plr) ->
+                            "test " + testName + " is matched in filters but invalid for " + matrixSource
+            );
+        }
+
+        static CompatibleSpecificationResult fromProctorSpecification(
+                final Environment artifactEnvironment,
+                final AppVersion version,
+                final TestMatrixArtifact artifact,
+                final ProctorSpecification specification
+        ) {
+            final Map<String, TestSpecification> requiredTests = specification.getTests();
+            final Set<String> dynamicTests = specification.getDynamicFilters().determineTests(artifact.getTests(), requiredTests.keySet());
+            return fromTests(
+                    artifactEnvironment,
+                    version,
+                    artifact,
+                    requiredTests,
+                    dynamicTests,
+                    (matrixSource, plr) ->
+                            String.format("Incompatible: Tests Missing: %s Invalid Tests: %s for %s",
+                                    plr.getMissingTests(), plr.getTestsWithErrors(), matrixSource)
+            );
+        }
+
+        private static CompatibleSpecificationResult fromTests(
+                final Environment environment,
+                final AppVersion version,
+                final TestMatrixArtifact artifact,
+                final Map<String, TestSpecification> requiredTests,
+                final Set<String> dynamicTests,
+                final BiFunction<String, ProctorLoadResult, String> errorMessageFunction
+        ) {
+            final String matrixSource = environment.getName() + " r" + artifact.getAudit().getVersion();
+            final ProctorLoadResult plr = ProctorUtils.verify(artifact, matrixSource, requiredTests, dynamicTests);
+            final boolean compatible = !plr.hasInvalidTests();
+            final String error = errorMessageFunction.apply(matrixSource, plr);
+            return new CompatibleSpecificationResult(version, compatible, error);
+        }
+    }
 }
