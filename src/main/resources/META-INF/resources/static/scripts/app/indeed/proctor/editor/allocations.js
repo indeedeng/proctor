@@ -746,7 +746,7 @@ indeed.proctor.editor.AllocationEditor.prototype.buildAllocationBar_ =
         'The allocation changing may cause a ',
         goog.dom.createDom(
           goog.dom.TagName.A,
-          {'href': 'http://opensource.indeedeng.io/proctor/docs/best-practices/'},
+            {'href': 'http://opensource.indeedeng.io/proctor/docs/best-practices/', 'target': '_blank'},
           'user drift'
         ),
         '.'
