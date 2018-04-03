@@ -83,6 +83,17 @@
                 "validator":"${anarray[0]+adouble>0}"
             }
         },
+        "map_payload_int": {
+            "payloadOnly": true,
+            "payload": {
+                "type": "map",
+                "schema": {
+                    "adouble": "doubleValue",
+                    "along": "longValue"
+                },
+                "validator": "${adouble > -1}"
+            }
+        },
         "payloadonly_maptype": {
             "payloadOnly": true,
             "payload": {

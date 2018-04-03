@@ -325,7 +325,63 @@
                 }
             ]
         },
-
+        "map_payload_int": {
+            "version": 2,
+            "salt": "&map_payload_int",
+            "testType": "USER",
+            "description": "payload test for map type with integer format",
+            "rule": "${account.id == 123}",
+            "buckets": [
+                {
+                    "name": "inactive",
+                    "value": -1,
+                    "payload": {
+                        "map": {
+                            "along": 1000000000000,
+                            "adouble": 1e30
+                        }
+                    }
+                },
+                {
+                    "name": "control",
+                    "value": 0,
+                    "payload": {
+                        "map": {
+                            "along": 1000000000000,
+                            "adouble": 1e30
+                        }
+                    }
+                },
+                {
+                    "name": "test",
+                    "value": 1,
+                    "payload": {
+                        "map": {
+                            "along": 2000000000000,
+                            "adouble": 2e30
+                        }
+                    }
+                }
+            ],
+            "allocations": [
+                {
+                    "ranges": [
+                        {
+                            "bucketValue": -1,
+                            "length": 0.2
+                        },
+                        {
+                            "bucketValue": 0,
+                            "length": 0.4
+                        },
+                        {
+                            "bucketValue": 1,
+                            "length": 0.4
+                        }
+                    ]
+                }
+            ]
+        },
         "payloadonly_maptype": {
             "version": 2,
             "salt": "map",
