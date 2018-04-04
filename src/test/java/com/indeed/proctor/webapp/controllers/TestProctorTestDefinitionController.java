@@ -28,23 +28,23 @@ import static org.junit.Assert.assertTrue;
 public class TestProctorTestDefinitionController {
     @Test
     public void testIsValidTestName() {
-        Assert.assertFalse(ProctorTestDefinitionController.isValidTestName(""));
+        assertFalse(ProctorTestDefinitionController.isValidTestName(""));
         assertTrue(ProctorTestDefinitionController.isValidTestName("a"));
         assertTrue(ProctorTestDefinitionController.isValidTestName("A"));
         assertTrue(ProctorTestDefinitionController.isValidTestName("_"));
-        Assert.assertFalse(ProctorTestDefinitionController.isValidTestName("0"));
-        Assert.assertFalse(ProctorTestDefinitionController.isValidTestName("."));
-        Assert.assertFalse(ProctorTestDefinitionController.isValidTestName("_0"));
-        Assert.assertFalse(ProctorTestDefinitionController.isValidTestName("inValid_test_Name_10"));
-        Assert.assertFalse(ProctorTestDefinitionController.isValidTestName("inValid#test#name"));
+        assertFalse(ProctorTestDefinitionController.isValidTestName("0"));
+        assertFalse(ProctorTestDefinitionController.isValidTestName("."));
+        assertFalse(ProctorTestDefinitionController.isValidTestName("_0"));
+        assertFalse(ProctorTestDefinitionController.isValidTestName("inValid_test_Name_10"));
+        assertFalse(ProctorTestDefinitionController.isValidTestName("inValid#test#name"));
     }
 
     @Test
     public void testIsValidBucketName() {
-        Assert.assertFalse(ProctorTestDefinitionController.isValidBucketName(""));
+        assertFalse(ProctorTestDefinitionController.isValidBucketName(""));
         assertTrue(ProctorTestDefinitionController.isValidBucketName("valid_bucket_Name"));
         assertTrue(ProctorTestDefinitionController.isValidBucketName("valid_bucket_Name0"));
-        Assert.assertFalse(ProctorTestDefinitionController.isValidBucketName("0invalid_bucket_Name"));
+        assertFalse(ProctorTestDefinitionController.isValidBucketName("0invalid_bucket_Name"));
     }
 
     @Test
@@ -61,35 +61,35 @@ public class TestProctorTestDefinitionController {
             final double[] rangeTwo = {.5, .5};
             final TestDefinition testDefinitionOne = createTestDefinition("testbuck:0", rangeOne);
             final TestDefinition testDefinitionTwo = createTestDefinition("testbuck:0,control:1", rangeTwo);
-            Assert.assertFalse(ProctorTestDefinitionController.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
+            assertFalse(ProctorTestDefinitionController.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
         }
         { // different buckets
             final double[] rangeOne = {.7, .3};
             final double[] rangeTwo = {.5, .5};
             final TestDefinition testDefinitionOne = createTestDefinition("testbuck:0,control:2", rangeOne);
             final TestDefinition testDefinitionTwo = createTestDefinition("testbuck:0,control:1", rangeTwo);
-            Assert.assertFalse(ProctorTestDefinitionController.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
+            assertFalse(ProctorTestDefinitionController.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
         }
         { //different testtypes
             final double[] rangeOne = {.7, .3};
             final double[] rangeTwo = {.5, .5};
             final TestDefinition testDefinitionOne = createTestDefinition("testbuck:0,control:2", TestType.RANDOM, rangeOne);
             final TestDefinition testDefinitionTwo = createTestDefinition("testbuck:0,control:2", TestType.EMAIL_ADDRESS, rangeTwo);
-            Assert.assertFalse(ProctorTestDefinitionController.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
+            assertFalse(ProctorTestDefinitionController.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
         }
         { //testing different salts
             final double[] rangeOne = {.7, .3};
             final double[] rangeTwo = {.5, .5};
             final TestDefinition testDefinitionOne = createTestDefinition("testbuck:0,control:2", TestType.RANDOM, "salt1", rangeOne);
             final TestDefinition testDefinitionTwo = createTestDefinition("testbuck:0,control:2", TestType.RANDOM, "salt2", rangeTwo);
-            Assert.assertFalse(ProctorTestDefinitionController.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
+            assertFalse(ProctorTestDefinitionController.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
         }
         { //testing 0 to greater allocation
             final double[] rangeOne = {0, 1};
             final double[] rangeTwo = {.5, .5};
             final TestDefinition testDefinitionOne = createTestDefinition("testbuck:0,control:2", rangeOne);
             final TestDefinition testDefinitionTwo = createTestDefinition("testbuck:0,control:2", rangeTwo);
-            Assert.assertFalse(ProctorTestDefinitionController.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
+            assertFalse(ProctorTestDefinitionController.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
         }
         { //testing non 100% to 100% allocation
             final double[] rangeOne = {.5, .5};
@@ -103,7 +103,7 @@ public class TestProctorTestDefinitionController {
             final double[] rangeTwo = {.5, .5};
             final TestDefinition testDefinitionOne = createTestDefinition("testbuck:0,control:2", TestType.RANDOM, "salt1", rangeOne);
             final TestDefinition testDefinitionTwo = createTestDefinition("testbuck:0,control:2", TestType.RANDOM, "salt2", rangeTwo);
-            Assert.assertFalse(ProctorTestDefinitionController.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
+            assertFalse(ProctorTestDefinitionController.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
         }
         { //testing with payloads
             final Payload payloadBucket1Test1 = new Payload();
@@ -137,7 +137,7 @@ public class TestProctorTestDefinitionController {
             final double[] rangeTwo = {.5, .5};
             final TestDefinition testDefinitionOne = createTestDefinition("testbuck:0,control:2", TestType.RANDOM, "salt1", rangeOne, payloadst1);
             final TestDefinition testDefinitionTwo = createTestDefinition("testbuck:0,control:2", TestType.RANDOM, "salt1", rangeTwo, payloadst2);
-            Assert.assertFalse(ProctorTestDefinitionController.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
+            assertFalse(ProctorTestDefinitionController.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
         }
         { //testing null payloads
             final Payload payloadBucket1Test2 = new Payload();
@@ -149,7 +149,7 @@ public class TestProctorTestDefinitionController {
             final double[] rangeTwo = {.5, .5};
             final TestDefinition testDefinitionOne = createTestDefinition("testbuck:0,control:2", TestType.RANDOM, "salt1", rangeOne, null);
             final TestDefinition testDefinitionTwo = createTestDefinition("testbuck:0,control:2", TestType.RANDOM, "salt1", rangeTwo, payloadst2);
-            Assert.assertFalse(ProctorTestDefinitionController.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
+            assertFalse(ProctorTestDefinitionController.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
         }
         { //testing map payload autopromote equality
             final Payload payloadBucket1Test2 = new Payload();
@@ -198,7 +198,7 @@ public class TestProctorTestDefinitionController {
             final double[] rangeTwo = {.5, .5};
             final TestDefinition testDefinitionOne = createTestDefinition("testbuck:0,control:2", TestType.RANDOM, "salt1", rangeOne, payloadst1);
             final TestDefinition testDefinitionTwo = createTestDefinition("testbuck:0,control:2", TestType.RANDOM, "salt1", rangeTwo, payloadst2);
-            Assert.assertFalse(ProctorTestDefinitionController.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
+            assertFalse(ProctorTestDefinitionController.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
         }
     }
 
