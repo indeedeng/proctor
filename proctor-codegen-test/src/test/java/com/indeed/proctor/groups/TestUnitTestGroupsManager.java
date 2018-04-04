@@ -450,7 +450,7 @@ public class TestUnitTestGroupsManager {
         final UnitTestGroups grps = new UnitTestGroups(result);
         assertEquals(1, grps.getMap_payload_intValue());
         assertEquals(2000000000000L, grps.getMap_payload_intPayload().getAlong().longValue());
-        assertEquals(2e30, grps.getMap_payload_intPayload().getAdouble().doubleValue(), 1e-8);
+        assertEquals(2, grps.getMap_payload_intPayload().getAdouble().doubleValue(), 1e-8);
     }
 
     @Test
