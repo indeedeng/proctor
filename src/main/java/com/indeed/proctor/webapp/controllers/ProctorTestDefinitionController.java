@@ -115,8 +115,9 @@ import static com.indeed.proctor.webapp.util.AllocationIdUtil.ALLOCATION_ID_COMP
 public class ProctorTestDefinitionController extends AbstractController {
     private static final Logger LOGGER = Logger.getLogger(ProctorTestDefinitionController.class);
     private static final LibraryFunctionMapper FUNCTION_MAPPER = RuleEvaluator.defaultFunctionMapperBuilder().build();
+    private static final Pattern ALPHA_NUMERIC_END_RESTRICTION_JAVA_IDENTIFIER_PATTERN = Pattern.compile("^([a-z_][a-z0-9_]+)?[a-z_]+$", Pattern.CASE_INSENSITIVE);
     private static final Pattern ALPHA_NUMERIC_JAVA_IDENTIFIER_PATTERN = Pattern.compile("^[a-z_][a-z0-9_]*$", Pattern.CASE_INSENSITIVE);
-    private static final Pattern VALID_TEST_NAME_PATTERN = ALPHA_NUMERIC_JAVA_IDENTIFIER_PATTERN;
+    private static final Pattern VALID_TEST_NAME_PATTERN = ALPHA_NUMERIC_END_RESTRICTION_JAVA_IDENTIFIER_PATTERN;
     private static final Pattern VALID_BUCKET_NAME_PATTERN = ALPHA_NUMERIC_JAVA_IDENTIFIER_PATTERN;
 
     private final ProctorPromoter promoter;
@@ -834,7 +835,7 @@ public class ProctorTestDefinitionController extends AbstractController {
                                 prevVersion = null;
                                 // check that the test name is valid
                                 if (!isValidTestName(testName)) {
-                                    throw new IllegalArgumentException("Test Name must be alpha-numeric underscore and not start with a number, found: '" + testName + "'");
+                                    throw new IllegalArgumentException("Test Name must be alpha-numeric underscore and not start/end with a number, found: '" + testName + "'");
                                 }
                             }
 

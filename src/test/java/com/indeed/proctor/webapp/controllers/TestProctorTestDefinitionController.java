@@ -34,8 +34,8 @@ public class TestProctorTestDefinitionController {
         assertTrue(ProctorTestDefinitionController.isValidTestName("_"));
         Assert.assertFalse(ProctorTestDefinitionController.isValidTestName("0"));
         Assert.assertFalse(ProctorTestDefinitionController.isValidTestName("."));
-        assertTrue(ProctorTestDefinitionController.isValidTestName("_0"));
-        assertTrue(ProctorTestDefinitionController.isValidTestName("valid_test_Name_10"));
+        Assert.assertFalse(ProctorTestDefinitionController.isValidTestName("_0"));
+        Assert.assertFalse(ProctorTestDefinitionController.isValidTestName("inValid_test_Name_10"));
         Assert.assertFalse(ProctorTestDefinitionController.isValidTestName("inValid#test#name"));
     }
 
@@ -43,6 +43,7 @@ public class TestProctorTestDefinitionController {
     public void testIsValidBucketName() {
         Assert.assertFalse(ProctorTestDefinitionController.isValidBucketName(""));
         assertTrue(ProctorTestDefinitionController.isValidBucketName("valid_bucket_Name"));
+        assertTrue(ProctorTestDefinitionController.isValidBucketName("valid_bucket_Name0"));
         Assert.assertFalse(ProctorTestDefinitionController.isValidBucketName("0invalid_bucket_Name"));
     }
 
