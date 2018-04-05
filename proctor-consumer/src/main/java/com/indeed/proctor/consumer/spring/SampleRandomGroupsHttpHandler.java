@@ -18,6 +18,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
@@ -152,7 +153,9 @@ public class SampleRandomGroupsHttpHandler<ProctorContext> implements HttpReques
         }
 
         for (int i = 0; i < determinationsToRun; ++i) {
-            final Identifiers identifiers = Identifiers.of(testType, Long.toString(random.nextLong()));
+            final Identifiers identifiers = TestType.RANDOM.equals(testType)
+                    ? new Identifiers(Collections.<TestType, String>emptyMap(), /* randomEnabled */ true)
+                    : Identifiers.of(testType, Long.toString(random.nextLong()));
             final AbstractGroups groups = supplier.getRandomGroups(proctorContext, identifiers);
             for (final Entry<String, TestBucket> e : groups.getProctorResult().getBuckets().entrySet()) {
                 final String testName = e.getKey();
