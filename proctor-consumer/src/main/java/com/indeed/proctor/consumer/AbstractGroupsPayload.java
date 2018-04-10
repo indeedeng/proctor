@@ -14,12 +14,12 @@ public abstract class AbstractGroupsPayload {
 
     protected Long convertToLongValue(final Payload payload, final String payloadMapKey) throws IllegalArgumentException {
         checkPayloadExist(payload, payloadMapKey);
-        return (Long) payload.getMap().get(payloadMapKey);
+        return ((Number) payload.getMap().get(payloadMapKey)).longValue();
     }
 
     protected Double convertToDoubleValue(final Payload payload, final String payloadMapKey) throws IllegalArgumentException {
         checkPayloadExist(payload, payloadMapKey);
-        return (Double) payload.getMap().get(payloadMapKey);
+        return ((Number) payload.getMap().get(payloadMapKey)).doubleValue();
     }
 
     protected String[] convertToStringArray(final Payload payload, final String payloadMapKey) throws IllegalArgumentException {

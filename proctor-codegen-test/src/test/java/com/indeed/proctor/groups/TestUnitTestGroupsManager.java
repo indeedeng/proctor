@@ -438,6 +438,22 @@ public class TestUnitTestGroupsManager {
     }
 
     @Test
+    public void testMapPayloadWithIntegerFormat() throws IOException {
+        final UnitTestGroupsContext testContext = UnitTestGroupsContext.newBuilder()
+                .setAccount(new Account(123))
+                .build();
+        final String identifier = findIdentifier(TestType.USER, testContext, UnitTestGroups.Test.MAP_PAYLOAD_INT,
+                1, 1000);
+        final Identifiers identifiers = new Identifiers(TestType.USER, identifier);
+        final ProctorResult result = testContext.getProctorResult(manager, identifiers);
+
+        final UnitTestGroups grps = new UnitTestGroups(result);
+        assertEquals(1, grps.getMap_payload_intValue());
+        assertEquals(2000000000000L, grps.getMap_payload_intPayload().getAlong().longValue());
+        assertEquals(2, grps.getMap_payload_intPayload().getAdouble().doubleValue(), 1e-8);
+    }
+
+    @Test
     public void testPayloadOnlyMapType() {
         final UnitTestGroupsContext testContext = UnitTestGroupsContext.newBuilder()
                 .setAccount(new Account(123))
@@ -505,6 +521,9 @@ public class TestUnitTestGroupsManager {
             final Identifiers identifiers = Identifiers.of(testType, identifier);
             final ProctorResult result = context.getProctorResult(manager, identifiers);
             final TestBucket bucket = result.getBuckets().get(test.getName());
+            if (bucket == null) {
+                throw new RuntimeException("Failed to load a test " + test.getName());
+            }
             if (bucket.getValue() == targetValue) {
                 return identifier;
             }
