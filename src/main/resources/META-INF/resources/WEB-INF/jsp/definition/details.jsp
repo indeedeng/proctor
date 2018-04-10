@@ -16,6 +16,9 @@
 <%--@elvariable id="devApplications" type="java.util.Set<com.indeed.proctor.webapp.model.AppVersion>"--%>
 <%--@elvariable id="qaApplications" type="java.util.Set<com.indeed.proctor.webapp.model.AppVersion>"--%>
 <%--@elvariable id="productionApplications" type="java.util.Set<com.indeed.proctor.webapp.model.AppVersion>"--%>
+<%--@elvariable id="devDynamicClients" type="java.util.Set<com.indeed.proctor.webapp.model.AppVersion>"--%>
+<%--@elvariable id="qaDynamicClients" type="java.util.Set<com.indeed.proctor.webapp.model.AppVersion>"--%>
+<%--@elvariable id="productionDynamicClients" type="java.util.Set<com.indeed.proctor.webapp.model.AppVersion>"--%>
 
 <layout:base title="${testName} | Proctor" session="${session}" >
 
@@ -51,7 +54,14 @@
                       <pre class="prettify code json"><c:out value="${testSpecificationJson}" /></pre>
                   </li>
                   <li id="tab-usage">
-                    <ui:definition-usage testName="${testName}" devApplications="${devApplications}" qaApplications="${qaApplications}" productionApplications="${productionApplications}"/>
+                    <ui:definition-usage testName="${testName}"
+                                         devApplications="${devApplications}"
+                                         qaApplications="${qaApplications}"
+                                         productionApplications="${productionApplications}"
+                                         devDynamicClients="${devDynamicClients}"
+                                         qaDynamicClients="${qaDynamicClients}"
+                                         productionDynamicClients="${productionDynamicClients}"
+                    />
                   </li>
                     <li id="tab-delete">
                         <ui:definition-delete-form testName="${testName}"
