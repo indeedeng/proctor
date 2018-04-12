@@ -522,6 +522,9 @@ public class ProctorController extends AbstractController {
             return appVersion.toShortString();
         }
 
+        /**
+         * Construct a instance from a single required test with a specification
+         */
         static CompatibleSpecificationResult fromRequiredTest(
                 final Environment matrixEnvironment,
                 final AppVersion version,
@@ -542,6 +545,9 @@ public class ProctorController extends AbstractController {
             );
         }
 
+        /**
+         * Construct a instance from a single dynamic test without a specification
+         */
         static CompatibleSpecificationResult fromDynamicTest(
                 final Environment matrixEnvironment,
                 final AppVersion version,
@@ -561,6 +567,9 @@ public class ProctorController extends AbstractController {
             );
         }
 
+        /**
+         * Construct a instance from a proctor specification of all tests for a client
+         */
         static CompatibleSpecificationResult fromProctorSpecification(
                 final Environment artifactEnvironment,
                 final AppVersion version,
@@ -592,7 +601,7 @@ public class ProctorController extends AbstractController {
             final String matrixSource = environment.getName() + " r" + artifact.getAudit().getVersion();
             final ProctorLoadResult plr = ProctorUtils.verify(artifact, matrixSource, requiredTests, dynamicTests);
             final boolean compatible = !plr.hasInvalidTests();
-            final String error = errorMessageFunction.apply(matrixSource, plr);
+            final String error = (compatible ? "" : errorMessageFunction.apply(matrixSource, plr));
             return new CompatibleSpecificationResult(version, compatible, error, dynamicTests);
         }
     }
