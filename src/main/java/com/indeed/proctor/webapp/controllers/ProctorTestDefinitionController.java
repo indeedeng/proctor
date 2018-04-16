@@ -1512,7 +1512,7 @@ public class ProctorTestDefinitionController extends AbstractController {
             ProctorUtils.serializeTestSpecification(swSpecification, ProctorUtils.generateSpecification(definition));
             model.addAttribute("testSpecificationJson", swSpecification.toString());
         } catch (IllegalArgumentException e) {
-            LOGGER.error("Could not generate Test Specification", e);
+            LOGGER.warn("Could not generate Test Specification", e);
         } catch (JsonGenerationException e) {
             LOGGER.error("Could not generate JSON", e);
         } catch (JsonMappingException e) {
