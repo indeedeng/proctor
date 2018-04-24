@@ -16,7 +16,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.eclipse.jgit.api.CreateBranchCommand;
-import org.eclipse.jgit.api.FetchCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.api.RebaseCommand;
@@ -32,7 +31,6 @@ import org.eclipse.jgit.lib.TextProgressMonitor;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevTree;
 import org.eclipse.jgit.revwalk.RevWalk;
-import org.eclipse.jgit.transport.FetchResult;
 import org.eclipse.jgit.transport.PushResult;
 import org.eclipse.jgit.transport.RemoteRefUpdate;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
@@ -297,6 +295,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
     @Override
     public void doInWorkingDirectory(final String username,
                                      final String password,
+                                     final String author,
                                      final String comment,
                                      final String previousVersion,
                                      final FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException {
@@ -331,7 +330,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
                             LOGGER.warn("Failed to parse staged test names or no test files aren't staged");
                         }
 
-                        git.commit().setCommitter(username, username).setAuthor(username, username).setMessage(comment).call();
+                        git.commit().setCommitter(username, username).setAuthor(author, author).setMessage(comment).call();
                         final Iterable<PushResult> pushResults = git.push().setProgressMonitor(PROGRESS_MONITOR).setCredentialsProvider(user)
                                 .setTimeout(pullPushTimeoutSeconds)
                                 .call();
@@ -368,6 +367,15 @@ public class GitProctorCore implements FileBasedPersisterCore {
                 return null;
             }
         });
+    }
+
+    @Override
+    public void doInWorkingDirectory(final String username,
+                                     final String password,
+                                     final String comment,
+                                     final String previousVersion,
+                                     final FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException {
+        doInWorkingDirectory(username, password, username, comment, previousVersion, updater);
     }
 
     @Nullable

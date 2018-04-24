@@ -299,6 +299,7 @@ public class SvnPersisterCoreImpl implements SvnPersisterCore, Closeable {
     @Override
     public void doInWorkingDirectory(final String username,
                                      final String password,
+                                     final String author,
                                      final String comment,
                                      final String previousVersion,
                                      final FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException {
@@ -317,6 +318,15 @@ public class SvnPersisterCoreImpl implements SvnPersisterCore, Closeable {
         } catch (final Exception e) {
             throw new StoreException.TestUpdateException("Unable to perform operation", e);
         }
+    }
+
+    @Override
+    public void doInWorkingDirectory(final String username,
+                                     final String password,
+                                     final String comment,
+                                     final String previousVersion,
+                                     final FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException {
+        doInWorkingDirectory(username, password, username, comment, previousVersion, updater);
     }
 
     private File getOrCreateSvnUserDirectory(final String username) throws IOException {

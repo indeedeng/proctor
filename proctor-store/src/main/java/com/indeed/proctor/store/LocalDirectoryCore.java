@@ -85,7 +85,7 @@ public class LocalDirectoryCore implements FileBasedPersisterCore {
 
 
     @Override
-    public void doInWorkingDirectory(String username, String password, String comment, String previousVersion, FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException {
+    public void doInWorkingDirectory(String username, String password, String author, String comment, String previousVersion, FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException {
         try {
             final FileBasedProctorStore.RcsClient rcsClient = new LocalRcsClient();
             final boolean thingsChanged = updater.doInWorkingDirectory(rcsClient, baseDir);
@@ -93,6 +93,11 @@ public class LocalDirectoryCore implements FileBasedPersisterCore {
             throw new StoreException.TestUpdateException("Unable to perform operation", e);
         } finally {
         }
+    }
+
+    @Override
+    public void doInWorkingDirectory(String username, String password, String comment, String previousVersion, FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException {
+        doInWorkingDirectory(username, password, username, comment, previousVersion, updater);
     }
 
     @Override

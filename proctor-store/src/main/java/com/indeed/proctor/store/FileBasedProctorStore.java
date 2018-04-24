@@ -194,9 +194,9 @@ public abstract class FileBasedProctorStore implements ProctorStore {
     }
 
     @Override
-    public final void updateTestDefinition(final String username, final String password, final String previousVersion, final String testName, final TestDefinition testDefinition, final Map<String, String> metadata, final String comment) throws StoreException.TestUpdateException {
-        LOGGER.info(String.format("Update Test Definition: %s %s r%s", username, testName, previousVersion));
-        core.doInWorkingDirectory(username, password, comment, previousVersion, new ProctorUpdater() {
+    public final void updateTestDefinition(final String username, final String password, final String author, final String previousVersion, final String testName, final TestDefinition testDefinition, final Map<String, String> metadata, final String comment) throws StoreException.TestUpdateException {
+        LOGGER.info(String.format("Update Test Definition: username=%s author=%s testName=%s previousVersion=r%s", username, author, testName, previousVersion));
+        core.doInWorkingDirectory(username, password, author, comment, previousVersion, new ProctorUpdater() {
             @Override
             public boolean doInWorkingDirectory(final RcsClient rcsClient, final File workingDir) throws Exception {
                 final File testDefinitionDirectory = getTestDefinitionDirectoryForTest(testName, workingDir);
@@ -215,9 +215,15 @@ public abstract class FileBasedProctorStore implements ProctorStore {
     }
 
     @Override
-    public final void addTestDefinition(final String username, final String password, final String testName, final TestDefinition testDefinition, final Map<String, String> metadata, final String comment) throws StoreException.TestUpdateException {
+    public final void updateTestDefinition(final String username, final String password, final String previousVersion, final String testName, final TestDefinition testDefinition, final Map<String, String> metadata, final String comment) throws StoreException.TestUpdateException {
+        updateTestDefinition(username, password, username, previousVersion, testName, testDefinition, metadata
+        , comment);
+    }
+
+    @Override
+    public final void addTestDefinition(final String username, final String password, final String author, final String testName, final TestDefinition testDefinition, final Map<String, String> metadata, final String comment) throws StoreException.TestUpdateException {
         LOGGER.info(String.format("Add Test Definition: %s %s", username, testName));
-        core.doInWorkingDirectory(username, password, comment, core.getAddTestRevision(), new ProctorUpdater() {
+        core.doInWorkingDirectory(username, password, author, comment, core.getAddTestRevision(), new ProctorUpdater() {
             @Override
             public boolean doInWorkingDirectory(final RcsClient rcsClient, final File workingDir) throws Exception {
                 final File testDefinitionDirectory = getTestDefinitionDirectoryForTest(testName, workingDir);
@@ -242,10 +248,15 @@ public abstract class FileBasedProctorStore implements ProctorStore {
     }
 
     @Override
-    public final void deleteTestDefinition(final String username, final String password, final String previousVersion, final String testName, final TestDefinition testDefinition, final String comment)
+    public final void addTestDefinition(final String username, final String password, final String testName, final TestDefinition testDefinition, final Map<String, String> metadata, final String comment) throws StoreException.TestUpdateException {
+        addTestDefinition(username, password, username, testName, testDefinition, metadata, comment);
+    }
+
+    @Override
+    public final void deleteTestDefinition(final String username, final String password, final String author, final String previousVersion, final String testName, final TestDefinition testDefinition, final String comment)
             throws StoreException.TestUpdateException {
         LOGGER.info(String.format("Delete Test Definition: %s %s r%s ", username, testName, previousVersion));
-        core.doInWorkingDirectory(username, password, comment, previousVersion, new ProctorUpdater() {
+        core.doInWorkingDirectory(username, password, author, comment, previousVersion, new ProctorUpdater() {
             @Override
             public boolean doInWorkingDirectory(final RcsClient rcsClient, final File workingDir) throws Exception {
                 final File testDefinitionDirectory = getTestDefinitionDirectoryForTest(testName, workingDir);
@@ -258,6 +269,12 @@ public abstract class FileBasedProctorStore implements ProctorStore {
                 return true;
             }
         });
+    }
+
+    @Override
+    public final void deleteTestDefinition(final String username, final String password, final String previousVersion, final String testName, final TestDefinition testDefinition, final String comment)
+            throws StoreException.TestUpdateException {
+        deleteTestDefinition(username, password, username, previousVersion, testName, testDefinition, comment);
     }
 
     public interface ProctorUpdater {

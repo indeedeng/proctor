@@ -179,6 +179,19 @@ public class CachingProctorStore implements ProctorStore {
     }
 
     @Override
+    public void updateTestDefinition(final String username,
+                                     final String password,
+                                     final String author,
+                                     final String previousVersion,
+                                     final String testName,
+                                     final TestDefinition testDefinition,
+                                     final Map<String, String> metadata,
+                                     final String comment) throws StoreException.TestUpdateException {
+        delegate.updateTestDefinition(username, password, author, previousVersion, testName, testDefinition, metadata, comment);
+        cacheHolder.startRefreshCacheTask();
+    }
+
+    @Override
     public void deleteTestDefinition(final String username,
                                      final String password,
                                      final String previousVersion,
@@ -190,6 +203,18 @@ public class CachingProctorStore implements ProctorStore {
     }
 
     @Override
+    public void deleteTestDefinition(final String username,
+                                     final String password,
+                                     final String author,
+                                     final String previousVersion,
+                                     final String testName,
+                                     final TestDefinition testDefinition,
+                                     final String comment) throws StoreException.TestUpdateException {
+        delegate.deleteTestDefinition(username, password, author, previousVersion, testName, testDefinition, comment);
+        cacheHolder.startRefreshCacheTask();
+    }
+
+    @Override
     public void addTestDefinition(final String username,
                                   final String password,
                                   final String testName,
@@ -197,6 +222,18 @@ public class CachingProctorStore implements ProctorStore {
                                   final Map<String, String> metadata,
                                   final String comment) throws StoreException.TestUpdateException {
         delegate.addTestDefinition(username, password, testName, testDefinition, metadata, comment);
+        cacheHolder.startRefreshCacheTask();
+    }
+
+    @Override
+    public void addTestDefinition(final String username,
+                                  final String password,
+                                  final String author,
+                                  final String testName,
+                                  final TestDefinition testDefinition,
+                                  final Map<String, String> metadata,
+                                  final String comment) throws StoreException.TestUpdateException {
+        delegate.addTestDefinition(username, password, author, testName, testDefinition, metadata, comment);
         cacheHolder.startRefreshCacheTask();
     }
 
