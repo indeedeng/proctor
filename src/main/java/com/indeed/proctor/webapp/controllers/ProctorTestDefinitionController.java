@@ -247,14 +247,15 @@ public class ProctorTestDefinitionController extends AbstractController {
         Map<String, String[]> requestParameterMap = new HashMap<String, String[]>();
         requestParameterMap.putAll(request.getParameterMap());
         final String nonEmptyComment = formatDefaultDeleteComment(testName, comment);
-        final BackgroundJob job = deleteJob.doDelete(testName,
+        final BackgroundJob job = deleteJob.doDelete(
+                testName,
                 theEnvironment,
                 srcRevision,
                 username,
                 password,
                 nonEmptyComment,
-                requestParameterMap);
-
+                requestParameterMap
+        );
         if (isAJAXRequest(request)) {
             final JsonResponse<Map> response = new JsonResponse<>(BackgroundJobRpcController.buildJobJson(job), true, job.getTitle());
             return new JsonView(response);
@@ -283,7 +284,17 @@ public class ProctorTestDefinitionController extends AbstractController {
 
         final Map<String, String[]> requestParameterMap = new HashMap<String, String[]>();
         requestParameterMap.putAll(request.getParameterMap());
-        final BackgroundJob job = editAndPromoteJob.doPromote(testName, username, password, source, srcRevision, destination, destRevision, requestParameterMap);
+        final BackgroundJob job = editAndPromoteJob.doPromote(
+                testName,
+                username,
+                password,
+                username,
+                source,
+                srcRevision,
+                destination,
+                destRevision,
+                requestParameterMap
+        );
 
         if (isAJAXRequest(request)) {
             final JsonResponse<Map> response = new JsonResponse<>(BackgroundJobRpcController.buildJobJson(job), true, job.getTitle());
@@ -316,15 +327,18 @@ public class ProctorTestDefinitionController extends AbstractController {
         } else {
             nonEmptyComment = formatDefaultUpdateComment(testName, comment);
         }
-        final BackgroundJob job = editAndPromoteJob.doEdit(testName,
+        final BackgroundJob job = editAndPromoteJob.doEdit(
+                testName,
                 username,
                 password,
+                username,
                 isCreate,
                 nonEmptyComment,
                 testDefinition,
                 previousRevision,
                 isAutopromote,
-                requestParameterMap);
+                requestParameterMap
+        );
         if (isAJAXRequest(request)) {
             final JsonResponse<Map> response = new JsonResponse<>(BackgroundJobRpcController.buildJobJson(job), true, job.getTitle());
             return new JsonView(response);

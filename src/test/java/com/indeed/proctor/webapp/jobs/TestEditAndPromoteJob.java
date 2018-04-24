@@ -3,15 +3,26 @@ package com.indeed.proctor.webapp.jobs;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.indeed.proctor.common.EnvironmentVersion;
-import com.indeed.proctor.common.model.*;
+import com.indeed.proctor.common.model.Allocation;
+import com.indeed.proctor.common.model.Payload;
+import com.indeed.proctor.common.model.Range;
+import com.indeed.proctor.common.model.TestBucket;
+import com.indeed.proctor.common.model.TestDefinition;
+import com.indeed.proctor.common.model.TestType;
 import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.webapp.model.RevisionDefinition;
-import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class TestEditAndPromoteJob {
     @Test
@@ -125,8 +136,7 @@ public class TestEditAndPromoteJob {
             final double[] rangeTwo = {.5, .5};
             final TestDefinition testDefinitionOne = createTestDefinition("testbuck:0,control:2", TestType.RANDOM, "salt1", rangeOne, payloadst1);
             final TestDefinition testDefinitionTwo = createTestDefinition("testbuck:0,control:2", TestType.RANDOM, "salt1", rangeTwo, payloadst2);
-            assertFalse(EditAndPromoteJob.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
-        }
+            assertFalse(EditAndPromoteJob.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo)); }
         { //testing null payloads
             final Payload payloadBucket1Test2 = new Payload();
             payloadBucket1Test2.setDoubleValue(10.1D);

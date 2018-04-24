@@ -52,7 +52,6 @@ public class DeleteJob extends AbstractJob {
                                            final List<PostDefinitionDeleteChange> postDefinitionDeleteChanges) {
         this.preDefinitionDeleteChanges = preDefinitionDeleteChanges;
         this.postDefinitionDeleteChanges = postDefinitionDeleteChanges;
-
     }
 
     public BackgroundJob doDelete(
