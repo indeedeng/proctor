@@ -1,4 +1,4 @@
-package com.indeed.proctor.webapp.controllers;
+package com.indeed.proctor.webapp.jobs;
 
 import com.google.common.collect.Lists;
 import com.indeed.proctor.webapp.extensions.AfterBackgroundJobExecute;
@@ -44,9 +44,9 @@ public abstract class BackgroundJob<T> implements Callable<T> {
         if (future != null && status == JobStatus.PENDING) {
             if (future.isCancelled()) {
                 setStatus(JobStatus.CANCELLED);
-            } else if(error != null) {
+            } else if (error != null) {
                 setStatus(JobStatus.FAILED);
-            } else if (executeFinished){
+            } else if (executeFinished) {
                 setStatus(JobStatus.DONE);
             }
         }
@@ -172,6 +172,7 @@ public abstract class BackgroundJob<T> implements Callable<T> {
     }
 
     protected abstract List<BeforeBackgroundJobExecute> getBeforeBackgroundJobExecutes();
+
     protected abstract List<AfterBackgroundJobExecute> getAfterBackgroundJobExecutes();
 
     protected abstract T execute() throws Exception;

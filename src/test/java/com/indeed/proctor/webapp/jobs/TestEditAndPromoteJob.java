@@ -1,50 +1,38 @@
-package com.indeed.proctor.webapp.controllers;
+package com.indeed.proctor.webapp.jobs;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.indeed.proctor.common.EnvironmentVersion;
-import com.indeed.proctor.common.model.Allocation;
-import com.indeed.proctor.common.model.Payload;
-import com.indeed.proctor.common.model.Range;
-import com.indeed.proctor.common.model.TestBucket;
-import com.indeed.proctor.common.model.TestDefinition;
-import com.indeed.proctor.common.model.TestType;
+import com.indeed.proctor.common.model.*;
 import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.webapp.model.RevisionDefinition;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
-public class TestProctorTestDefinitionController {
+public class TestEditAndPromoteJob {
     @Test
     public void testIsValidTestName() {
-        assertFalse(ProctorTestDefinitionController.isValidTestName(""));
-        assertTrue(ProctorTestDefinitionController.isValidTestName("a"));
-        assertTrue(ProctorTestDefinitionController.isValidTestName("A"));
-        assertTrue(ProctorTestDefinitionController.isValidTestName("_"));
-        assertFalse(ProctorTestDefinitionController.isValidTestName("0"));
-        assertFalse(ProctorTestDefinitionController.isValidTestName("."));
-        assertFalse(ProctorTestDefinitionController.isValidTestName("_0"));
-        assertFalse(ProctorTestDefinitionController.isValidTestName("inValid_test_Name_10"));
-        assertFalse(ProctorTestDefinitionController.isValidTestName("inValid#test#name"));
+        assertFalse(EditAndPromoteJob.isValidTestName(""));
+        assertTrue(EditAndPromoteJob.isValidTestName("a"));
+        assertTrue(EditAndPromoteJob.isValidTestName("A"));
+        assertTrue(EditAndPromoteJob.isValidTestName("_"));
+        assertFalse(EditAndPromoteJob.isValidTestName("0"));
+        assertFalse(EditAndPromoteJob.isValidTestName("."));
+        assertFalse(EditAndPromoteJob.isValidTestName("_0"));
+        assertFalse(EditAndPromoteJob.isValidTestName("inValid_test_Name_10"));
+        assertFalse(EditAndPromoteJob.isValidTestName("inValid#test#name"));
     }
 
     @Test
     public void testIsValidBucketName() {
-        assertFalse(ProctorTestDefinitionController.isValidBucketName(""));
-        assertTrue(ProctorTestDefinitionController.isValidBucketName("valid_bucket_Name"));
-        assertTrue(ProctorTestDefinitionController.isValidBucketName("valid_bucket_Name0"));
-        assertFalse(ProctorTestDefinitionController.isValidBucketName("0invalid_bucket_Name"));
+        assertFalse(EditAndPromoteJob.isValidBucketName(""));
+        assertTrue(EditAndPromoteJob.isValidBucketName("valid_bucket_Name"));
+        assertTrue(EditAndPromoteJob.isValidBucketName("valid_bucket_Name0"));
+        assertFalse(EditAndPromoteJob.isValidBucketName("0invalid_bucket_Name"));
     }
 
     @Test
@@ -54,56 +42,56 @@ public class TestProctorTestDefinitionController {
             final double[] rangeTwo = {.5, .5};
             final TestDefinition testDefinitionOne = createTestDefinition("testbuck:0", rangeOne);
             final TestDefinition testDefinitionTwo = createTestDefinition("testbuck:0", rangeTwo);
-            assertTrue(ProctorTestDefinitionController.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
+            assertTrue(EditAndPromoteJob.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
         }
         { // different amounts of buckets
             final double[] rangeOne = {.7, .3};
             final double[] rangeTwo = {.5, .5};
             final TestDefinition testDefinitionOne = createTestDefinition("testbuck:0", rangeOne);
             final TestDefinition testDefinitionTwo = createTestDefinition("testbuck:0,control:1", rangeTwo);
-            assertFalse(ProctorTestDefinitionController.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
+            assertFalse(EditAndPromoteJob.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
         }
         { // different buckets
             final double[] rangeOne = {.7, .3};
             final double[] rangeTwo = {.5, .5};
             final TestDefinition testDefinitionOne = createTestDefinition("testbuck:0,control:2", rangeOne);
             final TestDefinition testDefinitionTwo = createTestDefinition("testbuck:0,control:1", rangeTwo);
-            assertFalse(ProctorTestDefinitionController.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
+            assertFalse(EditAndPromoteJob.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
         }
         { //different testtypes
             final double[] rangeOne = {.7, .3};
             final double[] rangeTwo = {.5, .5};
             final TestDefinition testDefinitionOne = createTestDefinition("testbuck:0,control:2", TestType.RANDOM, rangeOne);
             final TestDefinition testDefinitionTwo = createTestDefinition("testbuck:0,control:2", TestType.EMAIL_ADDRESS, rangeTwo);
-            assertFalse(ProctorTestDefinitionController.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
+            assertFalse(EditAndPromoteJob.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
         }
         { //testing different salts
             final double[] rangeOne = {.7, .3};
             final double[] rangeTwo = {.5, .5};
             final TestDefinition testDefinitionOne = createTestDefinition("testbuck:0,control:2", TestType.RANDOM, "salt1", rangeOne);
             final TestDefinition testDefinitionTwo = createTestDefinition("testbuck:0,control:2", TestType.RANDOM, "salt2", rangeTwo);
-            assertFalse(ProctorTestDefinitionController.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
+            assertFalse(EditAndPromoteJob.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
         }
         { //testing 0 to greater allocation
             final double[] rangeOne = {0, 1};
             final double[] rangeTwo = {.5, .5};
             final TestDefinition testDefinitionOne = createTestDefinition("testbuck:0,control:2", rangeOne);
             final TestDefinition testDefinitionTwo = createTestDefinition("testbuck:0,control:2", rangeTwo);
-            assertFalse(ProctorTestDefinitionController.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
+            assertFalse(EditAndPromoteJob.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
         }
         { //testing non 100% to 100% allocation
             final double[] rangeOne = {.5, .5};
             final double[] rangeTwo = {1, 0};
             final TestDefinition testDefinitionOne = createTestDefinition("testbuck:0,control:2", rangeOne);
             final TestDefinition testDefinitionTwo = createTestDefinition("testbuck:0,control:2", rangeTwo);
-            assertTrue(ProctorTestDefinitionController.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
+            assertTrue(EditAndPromoteJob.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
         }
         { //testing different salts
             final double[] rangeOne = {.7, .3};
             final double[] rangeTwo = {.5, .5};
             final TestDefinition testDefinitionOne = createTestDefinition("testbuck:0,control:2", TestType.RANDOM, "salt1", rangeOne);
             final TestDefinition testDefinitionTwo = createTestDefinition("testbuck:0,control:2", TestType.RANDOM, "salt2", rangeTwo);
-            assertFalse(ProctorTestDefinitionController.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
+            assertFalse(EditAndPromoteJob.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
         }
         { //testing with payloads
             final Payload payloadBucket1Test1 = new Payload();
@@ -120,7 +108,7 @@ public class TestProctorTestDefinitionController {
             final double[] rangeTwo = {.5, .5};
             final TestDefinition testDefinitionOne = createTestDefinition("testbuck:0,control:2", TestType.RANDOM, "salt1", rangeOne, payloadst1);
             final TestDefinition testDefinitionTwo = createTestDefinition("testbuck:0,control:2", TestType.RANDOM, "salt1", rangeTwo, payloadst2);
-            assertTrue(ProctorTestDefinitionController.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
+            assertTrue(EditAndPromoteJob.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
         }
         { //testing different payloads
             final Payload payloadBucket1Test1 = new Payload();
@@ -137,7 +125,7 @@ public class TestProctorTestDefinitionController {
             final double[] rangeTwo = {.5, .5};
             final TestDefinition testDefinitionOne = createTestDefinition("testbuck:0,control:2", TestType.RANDOM, "salt1", rangeOne, payloadst1);
             final TestDefinition testDefinitionTwo = createTestDefinition("testbuck:0,control:2", TestType.RANDOM, "salt1", rangeTwo, payloadst2);
-            assertFalse(ProctorTestDefinitionController.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
+            assertFalse(EditAndPromoteJob.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
         }
         { //testing null payloads
             final Payload payloadBucket1Test2 = new Payload();
@@ -149,7 +137,7 @@ public class TestProctorTestDefinitionController {
             final double[] rangeTwo = {.5, .5};
             final TestDefinition testDefinitionOne = createTestDefinition("testbuck:0,control:2", TestType.RANDOM, "salt1", rangeOne, null);
             final TestDefinition testDefinitionTwo = createTestDefinition("testbuck:0,control:2", TestType.RANDOM, "salt1", rangeTwo, payloadst2);
-            assertFalse(ProctorTestDefinitionController.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
+            assertFalse(EditAndPromoteJob.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
         }
         { //testing map payload autopromote equality
             final Payload payloadBucket1Test2 = new Payload();
@@ -177,7 +165,7 @@ public class TestProctorTestDefinitionController {
             final TestDefinition testDefinitionOne = createTestDefinition("testbuck:0,control:2", TestType.RANDOM, "salt1", rangeOne, payloadst1);
             final TestDefinition testDefinitionTwo = createTestDefinition("testbuck:0,control:2", TestType.RANDOM, "salt1", rangeTwo, payloadst2);
             testDefinitionTwo.setDescription("updated description");
-            assertTrue(ProctorTestDefinitionController.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
+            assertTrue(EditAndPromoteJob.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
         }
         { //testing map payload failed autopromote equality
             final Payload payloadBucket1Test2 = new Payload();
@@ -198,7 +186,7 @@ public class TestProctorTestDefinitionController {
             final double[] rangeTwo = {.5, .5};
             final TestDefinition testDefinitionOne = createTestDefinition("testbuck:0,control:2", TestType.RANDOM, "salt1", rangeOne, payloadst1);
             final TestDefinition testDefinitionTwo = createTestDefinition("testbuck:0,control:2", TestType.RANDOM, "salt1", rangeTwo, payloadst2);
-            assertFalse(ProctorTestDefinitionController.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
+            assertFalse(EditAndPromoteJob.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
         }
     }
 
@@ -264,7 +252,7 @@ public class TestProctorTestDefinitionController {
                 new Revision("revision2", "tester", new Date(now + 1000), "change 2"),
                 createTestDefinition("control:0,test:1", range))
         );
-        Optional<String> maxAllocId = ProctorTestDefinitionController.getMaxAllocationId(revisionDefinitions);
+        Optional<String> maxAllocId = EditAndPromoteJob.getMaxAllocationId(revisionDefinitions);
         assertFalse(maxAllocId.isPresent());
         // Normal allocation ids
         revisionDefinitions.add(new RevisionDefinition(
@@ -286,7 +274,7 @@ public class TestProctorTestDefinitionController {
                 new Revision("revision6", "tester", new Date(now + 5000), "change 6"),
                 createTestDefinition("control:0,test:1", range, Lists.newArrayList("#A1234", "#C1")))
         );
-        maxAllocId = ProctorTestDefinitionController.getMaxAllocationId(revisionDefinitions);
+        maxAllocId = EditAndPromoteJob.getMaxAllocationId(revisionDefinitions);
         assertEquals("#D1", maxAllocId.get());
     }
 }
