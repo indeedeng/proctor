@@ -61,18 +61,18 @@ public class ProctorPromoter {
     }
 
     public void promoteTrunkToQa(final String testName, String trunkRevision, String qaRevision,
-                                 String username, String password, Map<String, String> metadata) throws StoreException, TestPromotionException {
-        promote(testName, Environment.WORKING, trunkRevision, Environment.QA, qaRevision, username, password, metadata);
+                                 String username, String password, String author, Map<String, String> metadata) throws StoreException, TestPromotionException {
+        promote(testName, Environment.WORKING, trunkRevision, Environment.QA, qaRevision, username, password, author, metadata);
     }
 
     public void promoteQaToProduction(final String testName, String qaRevision, String prodRevision,
-                                 String username, String password, Map<String, String> metadata) throws StoreException, TestPromotionException {
-        promote(testName, Environment.QA, qaRevision, Environment.PRODUCTION, prodRevision, username, password, metadata);
+                                 String username, String password, String author, Map<String, String> metadata) throws StoreException, TestPromotionException {
+        promote(testName, Environment.QA, qaRevision, Environment.PRODUCTION, prodRevision, username, password, author, metadata);
     }
 
     public void promoteTrunkToProduction(final String testName, String trunkRevision, String prodRevision,
-                                 String username, String password, Map<String, String> metadata) throws StoreException, TestPromotionException {
-        promote(testName, Environment.WORKING, trunkRevision, Environment.PRODUCTION, prodRevision, username, password, metadata);
+                                 String username, String password, String author, Map<String, String> metadata) throws StoreException, TestPromotionException {
+        promote(testName, Environment.WORKING, trunkRevision, Environment.PRODUCTION, prodRevision, username, password, author, metadata);
     }
 
     public void refreshWorkingVersion(final String testName) throws StoreException {
@@ -105,7 +105,7 @@ public class ProctorPromoter {
 
     @SuppressWarnings({"MethodWithTooManyParameters"})
     private void promote(final String testName, final Environment srcBranch, final String srcRevision, final Environment destBranch, String destRevision,
-                         String username, String password, Map<String, String> metadata) throws TestPromotionException, StoreException {
+                         String username, String password, String author, Map<String, String> metadata) throws TestPromotionException, StoreException {
         LOGGER.info(String.format("%s : Promoting %s from %s r%s to %s r%s", username, testName, srcBranch,
                 srcRevision, destBranch, destRevision));
         final ProctorStore src = getStoreFromBranch(srcBranch);
@@ -152,10 +152,10 @@ public class ProctorPromoter {
             final String commitMessage = formatCommitMessage(testName , srcBranch, effectiveRevision, destBranch, srcVersion.getMessage());
             LOGGER.info(String.format("%s : Committing %s from %s r%s to %s r%s", username, testName, srcBranch,
                     srcRevision, destBranch, destRevision));
-            dest.updateTestDefinition(username, password, destRevision, testName, d, metadata, commitMessage);
+            dest.updateTestDefinition(username, password, author, destRevision, testName, d, metadata, commitMessage);
         } else {
             final String commitMessage = formatCommitMessage(testName , srcBranch, effectiveRevision, destBranch, srcVersion.getMessage());
-            dest.addTestDefinition(username, password, testName, d, metadata, commitMessage);
+            dest.addTestDefinition(username, password, author, testName, d, metadata, commitMessage);
         }
 
         updateTestVersion(testName, destBranch, d.getVersion());
