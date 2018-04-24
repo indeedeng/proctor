@@ -1,4 +1,4 @@
-package com.indeed.proctor.webapp.controllers;
+package com.indeed.proctor.webapp.jobs;
 
 import com.indeed.proctor.webapp.extensions.AfterBackgroundJobExecute;
 import com.indeed.proctor.webapp.extensions.BeforeBackgroundJobExecute;
@@ -8,9 +8,9 @@ import java.util.Collections;
 import java.util.List;
 
 public class BackgroundJobFactory {
-    @Autowired(required=false)
+    @Autowired(required = false)
     private List<BeforeBackgroundJobExecute> beforeBackgroundJobExecutes = Collections.emptyList();
-    @Autowired(required=false)
+    @Autowired(required = false)
     private List<AfterBackgroundJobExecute> afterBackgroundJobExecutes = Collections.emptyList();
 
     public interface Executor<T> {

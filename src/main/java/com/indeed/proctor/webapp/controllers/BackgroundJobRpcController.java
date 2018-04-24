@@ -1,6 +1,9 @@
 package com.indeed.proctor.webapp.controllers;
 
 import com.google.common.collect.ImmutableMap;
+import com.indeed.proctor.webapp.jobs.BackgroundJob;
+import com.indeed.proctor.webapp.jobs.BackgroundJobFactory;
+import com.indeed.proctor.webapp.jobs.BackgroundJobManager;
 import com.indeed.proctor.webapp.model.SessionViewModel;
 import com.indeed.proctor.webapp.model.WebappConfiguration;
 import com.indeed.proctor.webapp.views.JsonView;
@@ -25,7 +28,7 @@ import java.util.concurrent.TimeoutException;
  * @author parker
  */
 @Controller
-@RequestMapping({ "/rpc/jobs", "/proctor/rpc/jobs" })
+@RequestMapping({"/rpc/jobs", "/proctor/rpc/jobs"})
 public class BackgroundJobRpcController {
     private static final Logger LOGGER = Logger.getLogger(BackgroundJobRpcController.class);
 
@@ -45,7 +48,7 @@ public class BackgroundJobRpcController {
     @RequestMapping(value = "/status", method = RequestMethod.GET)
     public View doGetJobStatus(@RequestParam("id") final UUID jobId) {
         final BackgroundJob job = manager.getJobForId(jobId);
-        if(job == null) {
+        if (job == null) {
             final String msg = "Failed to identify job for " + jobId;
             final JsonResponse<String> err = new JsonResponse<String>(msg, false, msg);
             return new JsonView(err);
@@ -55,7 +58,7 @@ public class BackgroundJobRpcController {
             final long timeout = 100;
             final TimeUnit unit = TimeUnit.MILLISECONDS;
             try {
-                if(future != null) {
+                if (future != null) {
                     outcome = future.get(timeout, unit);
                 } else {
                     outcome = null;
@@ -80,10 +83,10 @@ public class BackgroundJobRpcController {
     public String doGetJobList(final Model model) {
         final List<BackgroundJob> jobs = manager.getRecentJobs();
         model.addAttribute("session",
-                   SessionViewModel.builder()
-                       .setUseCompiledCSS(configuration.isUseCompiledCSS())
-                       .setUseCompiledJavaScript(configuration.isUseCompiledJavaScript())
-                       .build());
+                SessionViewModel.builder()
+                        .setUseCompiledCSS(configuration.isUseCompiledCSS())
+                        .setUseCompiledJavaScript(configuration.isUseCompiledJavaScript())
+                        .build());
         model.addAttribute("jobs", jobs);
         return "jobs";
     }
@@ -92,12 +95,12 @@ public class BackgroundJobRpcController {
     @RequestMapping(value = "/cancel", method = RequestMethod.GET)
     public View doCancelJob(@RequestParam("id") final UUID jobId) {
         final BackgroundJob job = manager.getJobForId(jobId);
-        if(job == null) {
+        if (job == null) {
             final String msg = "Failed to identify job for " + jobId;
             final JsonResponse<String> err = new JsonResponse<String>(msg, false, msg);
             return new JsonView(err);
         } else {
-            if(job.getFuture() != null) {
+            if (job.getFuture() != null) {
                 job.getFuture().cancel(true);
             }
             final Map<String, Object> result = buildJobJson(job);
@@ -121,7 +124,7 @@ public class BackgroundJobRpcController {
                         while (true) {
                             long now = System.currentTimeMillis();
                             long sleepms = Math.min(interval, endms - now);
-                            if( sleepms > 0) {
+                            if (sleepms > 0) {
                                 final double elapsed_sec = (now - start) / 1000.0;
                                 job.log(String.format("Elapsed = %.3f seconds, sleeping for %s ms", elapsed_sec, sleepms));
                                 Thread.sleep(sleepms);
@@ -141,18 +144,19 @@ public class BackgroundJobRpcController {
         return new JsonView(response);
     }
 
-    public static Map<String,Object> buildJobJson(final BackgroundJob job) {
+    public static Map<String, Object> buildJobJson(final BackgroundJob job) {
         return buildJobJson(job, null);
     }
-    public static Map<String,Object> buildJobJson(final BackgroundJob job, final Object outcome) {
-        final ImmutableMap.Builder<String,Object> builder = ImmutableMap.builder();
+
+    public static Map<String, Object> buildJobJson(final BackgroundJob job, final Object outcome) {
+        final ImmutableMap.Builder<String, Object> builder = ImmutableMap.builder();
 
         builder.put("jobId", job.getUUID())
-            .put("status", job.getStatus())
-            .put("log", job.getLog())
-            .put("title", job.getTitle())
-            .put("running", job.isRunning());
-        if(outcome != null) {
+                .put("status", job.getStatus())
+                .put("log", job.getLog())
+                .put("title", job.getTitle())
+                .put("running", job.isRunning());
+        if (outcome != null) {
             builder.put("outcome", outcome);
         }
         builder.put("urls", job.getUrls());

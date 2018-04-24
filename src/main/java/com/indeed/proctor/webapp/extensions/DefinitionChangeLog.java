@@ -1,6 +1,6 @@
 package com.indeed.proctor.webapp.extensions;
 
-import com.indeed.proctor.webapp.controllers.BackgroundJob.ResultUrl;
+import com.indeed.proctor.webapp.jobs.BackgroundJob.ResultUrl;
 
 import java.util.ArrayList;
 import java.util.List;
