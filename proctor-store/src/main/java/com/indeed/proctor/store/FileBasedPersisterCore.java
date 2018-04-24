@@ -21,6 +21,8 @@ public interface FileBasedPersisterCore extends Closeable {
 
     void doInWorkingDirectory(String username, String password, String comment, String previousVersion, FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException;
 
+    void doInWorkingDirectory(String username, String password, String author, String comment, String previousVersion, FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException;
+
     TestVersionResult determineVersions(String fetchRevision) throws StoreException.ReadException;
 
     String getAddTestRevision();

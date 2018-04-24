@@ -113,7 +113,7 @@ public class InMemoryProctorStore implements ProctorStore {
     }
 
     @Override
-    public void updateTestDefinition(final String username, final String password, final String previousVersion,
+    public void updateTestDefinition(final String username, final String password, final String author, final String previousVersion,
                                      final String testName, final TestDefinition testDefinition,
                                      final Map<String, String> metadata, final String comment) throws StoreException.TestUpdateException {
         synchronizedWrite(new Callable<Void>() {
@@ -136,7 +136,14 @@ public class InMemoryProctorStore implements ProctorStore {
     }
 
     @Override
-    public void deleteTestDefinition(final String username, final String password, final String previousVersion, final String testName, final TestDefinition testDefinition, final String comment) throws StoreException.TestUpdateException {
+    public void updateTestDefinition(final String username, final String password, final String previousVersion,
+                                     final String testName, final TestDefinition testDefinition,
+                                     final Map<String, String> metadata, final String comment) throws StoreException.TestUpdateException {
+        updateTestDefinition(username, password, username, previousVersion, testName, testDefinition, metadata, comment);
+    }
+
+    @Override
+    public void deleteTestDefinition(final String username, final String password, final String author, final String previousVersion, final String testName, final TestDefinition testDefinition, final String comment) throws StoreException.TestUpdateException {
         synchronizedWrite(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
@@ -163,7 +170,12 @@ public class InMemoryProctorStore implements ProctorStore {
     }
 
     @Override
-    public void addTestDefinition(final String username, final String password, final String testName, final TestDefinition testDefinition, final Map<String, String> metadata, final String comment) throws StoreException.TestUpdateException {
+    public void deleteTestDefinition(final String username, final String password, final String previousVersion, final String testName, final TestDefinition testDefinition, final String comment) throws StoreException.TestUpdateException {
+        deleteTestDefinition(username, password, username, previousVersion, testName, testDefinition, comment);
+    }
+
+    @Override
+    public void addTestDefinition(final String username, final String password, final String author, final String testName, final TestDefinition testDefinition, final Map<String, String> metadata, final String comment) throws StoreException.TestUpdateException {
         synchronizedWrite(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
@@ -180,6 +192,11 @@ public class InMemoryProctorStore implements ProctorStore {
                 return null;
             }
         });
+    }
+
+    @Override
+    public void addTestDefinition(final String username, final String password, final String testName, final TestDefinition testDefinition, final Map<String, String> metadata, final String comment) throws StoreException.TestUpdateException {
+        addTestDefinition(username, password, username, testName, testDefinition, metadata, comment);
     }
 
     @Override
