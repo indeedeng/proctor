@@ -45,25 +45,6 @@ public class TestAbstractJsonProctorLoader {
         assertEquals("${lang == ENGLISH}", testDefinition.getAllocations().get(0).getRule());
         assertEquals(0.25d, testDefinition.getAllocations().get(0).getRanges().get(0).getLength(), 1e-6);
         assertEquals(0.75d, testDefinition.getAllocations().get(0).getRanges().get(1).getLength(), 1e-6);
-        final String fileContent = getFileContent(path);
-        assertEquals(fileContent, proctorLoader.getFileContents());
-    }
-
-    private String getFileContent(final String path) throws IOException {
-        final FileReader reader = new FileReader(new File(path));
-        final char[] buffer = new char[1024];
-        final StringBuilder sb = new StringBuilder();
-        while (true) {
-            final int read = reader.read(buffer);
-            if (read == -1) {
-                break;
-            }
-            if (read > 0) {
-                sb.append(buffer, 0, read);
-            }
-        }
-        reader.close();
-        return sb.toString();
     }
 
     class ExampleJsonProctorLoader extends AbstractJsonProctorLoader {
