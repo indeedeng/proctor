@@ -1,113 +1,88 @@
 {
-    "audit" : {
-        "version" : 1524,
-        "updated" : 1313525000000,
-        "updatedBy" : "shoichi"
+  "audit" : {
+    "version" : "1524",
+    "updated" : 1313525000000,
+    "updatedDate" : "2011-08-16T15:03-0500",
+    "updatedBy" : "shoichi"
+  },
+  "tests" : {
+    "exampletst" : {
+      "constants" : {
+        "ENGLISH" : "en"
+      },
+      "version" : "1",
+      "salt" : "exampletst",
+      "rule" : null,
+      "buckets" : [ {
+        "name" : "control",
+        "value" : 0
+      }, {
+        "name" : "test",
+        "value" : 1
+      } ],
+      "allocations" : [ {
+        "rule" : "${lang == ENGLISH}",
+        "ranges" : [ {
+          "bucketValue" : 0,
+          "length" : 0.25
+        }, {
+          "bucketValue" : 1,
+          "length" : 0.75
+        } ],
+        "id" : ""
+      }, {
+        "rule" : null,
+        "ranges" : [ {
+          "bucketValue" : 0,
+          "length" : 0.1
+        }, {
+          "bucketValue" : 1,
+          "length" : 0.9
+        } ],
+        "id" : ""
+      } ],
+      "silent" : false,
+      "testType" : "USER",
+      "description" : "An example test"
     },
-    "tests" : {
-        "exampletst": {
-            "version": 1,
-            "testType": "USER",
-            "salt": "exampletst",
-            "buckets": [
-                {
-                    "name": "control",
-                    "value": 0,
-                    "description": null
-                },
-                {
-                    "name": "test",
-                    "value": 1,
-                    "description": null
-                }
-            ],
-            "allocations": [
-                {
-                    "rule": "${lang == ENGLISH}",
-                    "ranges": [
-                        {
-                            "length": 0.25,
-                            "bucketValue": 0
-                        },
-                        {
-                            "length": 0.75,
-                            "bucketValue": 1
-                        }
-                    ]
-                },
-                {
-                    "rule": null,
-                    "ranges": [
-                        {
-                            "length": 0.1,
-                            "bucketValue": 0
-                        },
-                        {
-                            "length": 0.90,
-                            "bucketValue": 1
-                        }
-                    ]
-                }
-            ],
-            "constants": {
-                "ENGLISH": "en"
-            },
-            "description": "An example test",
-            "specialConstants": {
-            },
-            "rule": null
-        },
-        "sometst": {
-            "version": 1,
-            "testType": "USER",
-            "salt": "sometst",
-            "buckets": [
-                {
-                    "name": "control",
-                    "value": 0,
-                    "description": null
-                },
-                {
-                    "name": "test",
-                    "value": 1,
-                    "description": null
-                }
-            ],
-            "allocations": [
-                {
-                    "rule": "${lang == ENGLISH}",
-                    "ranges": [
-                        {
-                            "length": 0.25,
-                            "bucketValue": 0
-                        },
-                        {
-                            "length": 0.75,
-                            "bucketValue": 1
-                        }
-                    ]
-                },
-                {
-                    "rule": null,
-                    "ranges": [
-                        {
-                            "length": 0.1,
-                            "bucketValue": 0
-                        },
-                        {
-                            "length": 0.90,
-                            "bucketValue": 1
-                        }
-                    ]
-                }
-            ],
-            "constants": {
-                "ENGLISH": "en"
-            },
-            "description": "An some test",
-            "specialConstants": {
-            },
-            "rule": null
-        }
+    "sometst" : {
+      "constants" : {
+        "ENGLISH" : "en"
+      },
+      "version" : "1",
+      "salt" : "sometst",
+      "rule" : null,
+      "buckets" : [ {
+        "name" : "control",
+        "value" : 0
+      }, {
+        "name" : "test",
+        "value" : 1
+      } ],
+      "allocations" : [ {
+        "rule" : "${lang == ENGLISH}",
+        "ranges" : [ {
+          "bucketValue" : 0,
+          "length" : 0.25
+        }, {
+          "bucketValue" : 1,
+          "length" : 0.75
+        } ],
+        "id" : ""
+      }, {
+        "rule" : null,
+        "ranges" : [ {
+          "bucketValue" : 0,
+          "length" : 0.1
+        }, {
+          "bucketValue" : 1,
+          "length" : 0.9
+        } ],
+        "id" : ""
+      } ],
+      "silent" : false,
+      "testType" : "USER",
+      "description" : "An some test"
     }
+  }
 }
