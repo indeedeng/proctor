@@ -215,34 +215,6 @@
     </ui:grid-row>
 </form>
 
-    <%-- 2012-09-22 explicitly not showing the tabs on the edit page, not sure what value it provides--%>
-    <c:if test="${false && not isCreate}">
-    <div class="js-tabs-container">
-        <dl class="tabs contained">
-          <dd class="active"><a href="#tab-details">Details</a></dd>
-          <dd><a href="#tab-history">History</a></dd>
-          <dd><a href="#tab-json">JSON</a></dd>
-          <dd><a href="#tab-usage">Usage</a></dd>
-        </dl>
-
-        <ul class="tabs-content contained">
-          <li class="active" id="tab-details">
-              <ui:definition-view testName="${testName}" definition="${testDefinition}"/>
-          </li>
-            <li id="tab-history">
-              <ui:definition-history branch="${branch}" testName="${testName}" testDefinitionHistory="${testDefinitionHistory}" version="${version}"/>
-          </li>
-          <li id="tab-json">
-              <!-- TODO use prettified JSON library for code display -->
-              <pre class="prettify code json"><c:out value="${testDefinitionJson}" /></pre>
-          </li>
-          <li id="tab-usage">
-              <ui:definition-usage testName="${testName}" devApplications="${devApplications}" qaApplications="${qaApplications}" productionApplications="${productionApplications}"/>
-          </li>
-        </ul>
-    </div>
-    </c:if>
-
     <proctor:renderEditPageInjectionTemplates position="<%=EditPageRenderer.EditPagePosition.SCRIPT%>" testName="${testName}" testDefinitionJson="${testDefinitionJson}" isCreate="${isCreate}"/>
 
     <layout:javascript

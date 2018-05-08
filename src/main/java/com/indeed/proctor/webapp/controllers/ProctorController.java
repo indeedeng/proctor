@@ -314,7 +314,7 @@ public class ProctorController extends AbstractController {
                 } else {
                     final String error = "Failed to load a proctor specification from "
                             + Joiner.on(", ").join(Iterables.transform(remoteResult.getFailures().keySet(), Functions.toStringFunction()));
-                    result = new CompatibleSpecificationResult(version, false, error);
+                    result = new CompatibleSpecificationResult(version, false, error, Collections.emptySet());
                 }
 
                 row.addVersion(webappEnvironment, result);
@@ -485,13 +485,16 @@ public class ProctorController extends AbstractController {
         private final AppVersion appVersion;
         private final boolean isCompatible;
         private final String error;
+        private final Set<String> dynamicTests;
 
-        public CompatibleSpecificationResult(AppVersion version,
-                                             boolean compatible,
-                                             String error) {
+        public CompatibleSpecificationResult(final AppVersion version,
+                                             final boolean compatible,
+                                             final String error,
+                                             final Set<String> dynamicTest) {
             this.appVersion = version;
             isCompatible = compatible;
             this.error = error;
+            this.dynamicTests = dynamicTest;
         }
 
         public AppVersion getAppVersion() {
@@ -506,6 +509,10 @@ public class ProctorController extends AbstractController {
             return error;
         }
 
+        public boolean isDynamicTest(final String testName) {
+            return dynamicTests.contains(testName);
+        }
+
         @Override
         public String toString() {
             return appVersion.toString();
@@ -515,6 +522,9 @@ public class ProctorController extends AbstractController {
             return appVersion.toShortString();
         }
 
+        /**
+         * Construct a instance from a single required test with a specification
+         */
         static CompatibleSpecificationResult fromRequiredTest(
                 final Environment matrixEnvironment,
                 final AppVersion version,
@@ -535,6 +545,9 @@ public class ProctorController extends AbstractController {
             );
         }
 
+        /**
+         * Construct a instance from a single dynamic test without a specification
+         */
         static CompatibleSpecificationResult fromDynamicTest(
                 final Environment matrixEnvironment,
                 final AppVersion version,
@@ -554,6 +567,9 @@ public class ProctorController extends AbstractController {
             );
         }
 
+        /**
+         * Construct a instance from a proctor specification of all tests for a client
+         */
         static CompatibleSpecificationResult fromProctorSpecification(
                 final Environment artifactEnvironment,
                 final AppVersion version,
@@ -585,8 +601,8 @@ public class ProctorController extends AbstractController {
             final String matrixSource = environment.getName() + " r" + artifact.getAudit().getVersion();
             final ProctorLoadResult plr = ProctorUtils.verify(artifact, matrixSource, requiredTests, dynamicTests);
             final boolean compatible = !plr.hasInvalidTests();
-            final String error = errorMessageFunction.apply(matrixSource, plr);
-            return new CompatibleSpecificationResult(version, compatible, error);
+            final String error = (compatible ? "" : errorMessageFunction.apply(matrixSource, plr));
+            return new CompatibleSpecificationResult(version, compatible, error, dynamicTests);
         }
     }
 }

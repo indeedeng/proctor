@@ -47,7 +47,12 @@
                         <c:if test="${inQaMatrix}"><li><a class="label" href="/proctor/definition/${proctor:urlencode(testName)}?branch=qa">QA MATRIX</a></li></c:if>
                         <c:if test="${empty row.qa}"><li>[no apps]</li></c:if>
                         <c:forEach items="${row.qa}" var="version">
-                            <li><ui:compatible-result version="${version}" branch="qa" /></li>
+                            <li>
+                                <ui:compatible-result version="${version}" branch="qa" />
+                                <c:if test="${version.isDynamicTest(testName)}">
+                                    <span class="label round">Dynamic</span>
+                                </c:if>
+                            </li>
                         </c:forEach>
                     </ul>
                 </td>
@@ -56,7 +61,12 @@
                         <c:if test="${inProductionMatrix}"><li><a class="label" href="/proctor/definition/${proctor:urlencode(testName)}?branch=production">PRODUCTION MATRIX</a></li></c:if>
                         <c:if test="${empty row.production}"><li>[no apps]</li></c:if>
                         <c:forEach items="${row.production}" var="version">
-                            <li><ui:compatible-result version="${version}" branch="production" /></li>
+                            <li>
+                                <ui:compatible-result version="${version}" branch="production" />
+                                <c:if test="${version.isDynamicTest(testName)}">
+                                    <span class="label round">Dynamic</span>
+                                </c:if>
+                            </li>
                         </c:forEach>
                     </ul>
                 </td>
