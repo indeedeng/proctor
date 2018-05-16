@@ -97,6 +97,13 @@ public class TestEditAndPromoteJob {
             final TestDefinition testDefinitionTwo = createTestDefinition("testbuck:0,control:2", rangeTwo);
             assertTrue(EditAndPromoteJob.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
         }
+        { //testing non 100% to 100% allocation removing bucket with length 0
+            final double[] rangeOne = {.5, .5};
+            final double[] rangeTwo = {1};
+            final TestDefinition testDefinitionOne = createTestDefinition("testbuck:0,control:2", rangeOne);
+            final TestDefinition testDefinitionTwo = createTestDefinition("testbuck:0,control:2", rangeTwo);
+            assertTrue(EditAndPromoteJob.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
+        }
         { //testing different salts
             final double[] rangeOne = {.7, .3};
             final double[] rangeTwo = {.5, .5};
@@ -136,7 +143,8 @@ public class TestEditAndPromoteJob {
             final double[] rangeTwo = {.5, .5};
             final TestDefinition testDefinitionOne = createTestDefinition("testbuck:0,control:2", TestType.RANDOM, "salt1", rangeOne, payloadst1);
             final TestDefinition testDefinitionTwo = createTestDefinition("testbuck:0,control:2", TestType.RANDOM, "salt1", rangeTwo, payloadst2);
-            assertFalse(EditAndPromoteJob.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo)); }
+            assertFalse(EditAndPromoteJob.isAllocationOnlyChange(testDefinitionOne, testDefinitionTwo));
+        }
         { //testing null payloads
             final Payload payloadBucket1Test2 = new Payload();
             payloadBucket1Test2.setDoubleValue(10.1D);

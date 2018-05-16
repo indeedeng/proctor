@@ -62,6 +62,7 @@ public class EditAndPromoteJob extends AbstractJob {
     private static final Pattern ALPHA_NUMERIC_JAVA_IDENTIFIER_PATTERN = Pattern.compile("^[a-z_][a-z0-9_]*$", Pattern.CASE_INSENSITIVE);
     private static final Pattern VALID_TEST_NAME_PATTERN = ALPHA_NUMERIC_END_RESTRICTION_JAVA_IDENTIFIER_PATTERN;
     private static final Pattern VALID_BUCKET_NAME_PATTERN = ALPHA_NUMERIC_JAVA_IDENTIFIER_PATTERN;
+    private static final double TOLERANCE = 1E-6;
 
     private List<PreDefinitionEditChange> preDefinitionEditChanges = Collections.emptyList();
     private List<PostDefinitionEditChange> postDefinitionEditChanges = Collections.emptyList();
@@ -474,23 +475,21 @@ public class EditAndPromoteJob extends AbstractJob {
             } else if (existingAllocations.get(i).getRule() != null && !existingAllocations.get(i).getRule().equals(allocationsToUpdate.get(i).getRule())) {
                 return false;
             }
-            Map<Integer, Double> existingAllocRangeMap = generateAllocationRangeMap(existingAllocationRanges);
-            Map<Integer, Double> allocToUpdateRangeMap = generateAllocationRangeMap(allocationToUpdateRanges);
-            if (!existingAllocRangeMap.keySet().equals(allocToUpdateRangeMap.keySet())) {
-                //An allocation was removed or added, do not autopromote
+            if (isNewBucketAdded(existingAllocationRanges, allocationToUpdateRanges)) {
                 return false;
-            } else {
-                for (Map.Entry<Integer, Double> entry : existingAllocRangeMap.entrySet()) {
-                    final int bucketVal = entry.getKey();
-                    final double existingLength = entry.getValue();
-                    final double allocToUpdateLength = allocToUpdateRangeMap.get(bucketVal);
-                    if (existingLength == 0 && allocToUpdateLength != 0) {
-                        return false;
-                    }
-                }
             }
         }
         return true;
+    }
+
+    private static boolean isNewBucketAdded(final List<Range> existingAllocationRanges,
+                                            final List<Range> allocationToUpdateRanges
+    ) {
+        final Map<Integer, Double> existingAllocRangeMap = generateAllocationRangeMap(existingAllocationRanges);
+        final Map<Integer, Double> allocToUpdateRangeMap = generateAllocationRangeMap(allocationToUpdateRanges);
+        return allocToUpdateRangeMap.entrySet().stream()
+                .filter(bucket -> bucket.getValue() > TOLERANCE)
+                .anyMatch(bucket -> existingAllocRangeMap.getOrDefault(bucket.getKey(), 0.0) < TOLERANCE);
     }
 
     private static Map<Integer, Double> generateAllocationRangeMap(final List<Range> ranges) {
@@ -535,7 +534,6 @@ public class EditAndPromoteJob extends AbstractJob {
         final List<Range> ranges = allocation.getRanges();
         final TestType testType = definition.getTestType();
         final int controlBucketValue = 0;
-        final double DELTA = 1E-6;
 
         final Map<Integer, Double> totalTestAllocationMap = new HashMap<Integer, Double>();
         for (Range range : ranges) {
@@ -569,7 +567,7 @@ public class EditAndPromoteJob extends AbstractJob {
                     numActiveBuckets++;
                 }
                 final double difference = totalBucketAllocation - totalControlBucketAllocation;
-                if (bucketValue > 0 && totalBucketAllocation > 0 && Math.abs(difference) >= DELTA) {
+                if (bucketValue > 0 && totalBucketAllocation > 0 && Math.abs(difference) >= TOLERANCE) {
                     backgroundJob.log("WARNING: Positive bucket total allocation size not same as control bucket total allocation size. \nBucket #" + bucketValue + "=" + totalBucketAllocation + ", Zero Bucket=" + totalControlBucketAllocation);
                 }
             }
