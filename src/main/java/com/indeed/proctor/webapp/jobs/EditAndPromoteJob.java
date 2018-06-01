@@ -489,6 +489,7 @@ public class EditAndPromoteJob extends AbstractJob {
         final Map<Integer, Double> allocToUpdateRangeMap = generateAllocationRangeMap(allocationToUpdateRanges);
         return allocToUpdateRangeMap.entrySet().stream()
                 .filter(bucket -> bucket.getValue() > TOLERANCE)
+                .filter(bucket -> bucket.getKey() != -1)
                 .anyMatch(bucket -> existingAllocRangeMap.getOrDefault(bucket.getKey(), 0.0) < TOLERANCE);
     }
 
