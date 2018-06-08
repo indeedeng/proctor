@@ -19,10 +19,6 @@ import org.springframework.web.servlet.View;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 /**
  * @author parker
@@ -47,34 +43,14 @@ public class BackgroundJobRpcController {
 
     @RequestMapping(value = "/status", method = RequestMethod.GET)
     public View doGetJobStatus(@RequestParam("id") final UUID jobId) {
-        final BackgroundJob job = manager.getJobForId(jobId);
-        if (job == null) {
+        final Map<String, Object> jobStatus = manager.getJobStatus(jobId);
+
+        if (jobStatus.isEmpty()) {
             final String msg = "Failed to identify job for " + jobId;
             final JsonResponse<String> err = new JsonResponse<String>(msg, false, msg);
             return new JsonView(err);
         } else {
-            final Future future = job.getFuture();
-            Object outcome = null;
-            final long timeout = 100;
-            final TimeUnit unit = TimeUnit.MILLISECONDS;
-            try {
-                if (future != null) {
-                    outcome = future.get(timeout, unit);
-                } else {
-                    outcome = null;
-                }
-            } catch (InterruptedException exp) {
-                LOGGER.warn("Interrupted during BackgroundJob.future.get(" + timeout + ", " + unit + ")");
-            } catch (TimeoutException exp) {
-                // Expected if Future is not complete, no need to log anything
-            } catch (ExecutionException exp) {
-                // bummer...
-                outcome = null;
-                LOGGER.error("Exception during BackgroundJob.future.get(" + timeout + ", " + unit + ")", exp);
-            }
-
-            final Map<String, Object> result = buildJobJson(job, outcome);
-            final JsonResponse<Map> response = new JsonResponse<Map>(result, true, null);
+            final JsonResponse<Map> response = new JsonResponse<Map>(jobStatus, true, null);
             return new JsonView(response);
         }
     }
@@ -90,7 +66,6 @@ public class BackgroundJobRpcController {
         model.addAttribute("jobs", jobs);
         return "jobs";
     }
-
 
     @RequestMapping(value = "/cancel", method = RequestMethod.GET)
     public View doCancelJob(@RequestParam("id") final UUID jobId) {
@@ -108,7 +83,6 @@ public class BackgroundJobRpcController {
             return new JsonView(response);
         }
     }
-
 
     @RequestMapping(value = "/test", method = RequestMethod.GET)
     public View submitTestJob(@RequestParam(value = "ms", defaultValue = "1000") final long ms) {
