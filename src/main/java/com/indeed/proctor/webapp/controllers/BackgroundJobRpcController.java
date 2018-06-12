@@ -43,14 +43,14 @@ public class BackgroundJobRpcController {
 
     @RequestMapping(value = "/status", method = RequestMethod.GET)
     public View doGetJobStatus(@RequestParam("id") final UUID jobId) {
-        final Map<String, Object> jobStatus = manager.getJobStatus(jobId);
+        final BackgroundJob.JobInfo jobInfo = manager.getJobInfo(jobId);
 
-        if (jobStatus.isEmpty()) {
+        if (jobInfo == null) {
             final String msg = "Failed to identify job for " + jobId;
             final JsonResponse<String> err = new JsonResponse<String>(msg, false, msg);
             return new JsonView(err);
         } else {
-            final JsonResponse<Map> response = new JsonResponse<Map>(jobStatus, true, null);
+            final JsonResponse<BackgroundJob.JobInfo> response = new JsonResponse<>(jobInfo, true, null);
             return new JsonView(response);
         }
     }
@@ -119,10 +119,6 @@ public class BackgroundJobRpcController {
     }
 
     public static Map<String, Object> buildJobJson(final BackgroundJob job) {
-        return buildJobJson(job, null);
-    }
-
-    public static Map<String, Object> buildJobJson(final BackgroundJob job, final Object outcome) {
         final ImmutableMap.Builder<String, Object> builder = ImmutableMap.builder();
 
         builder.put("jobId", job.getUUID())
@@ -130,9 +126,6 @@ public class BackgroundJobRpcController {
                 .put("log", job.getLog())
                 .put("title", job.getTitle())
                 .put("running", job.isRunning());
-        if (outcome != null) {
-            builder.put("outcome", outcome);
-        }
         builder.put("urls", job.getUrls());
         builder.put("endMessage", job.getEndMessage());
         return builder.build();

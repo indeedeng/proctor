@@ -5,6 +5,7 @@ import com.indeed.proctor.webapp.extensions.AfterBackgroundJobExecute;
 import com.indeed.proctor.webapp.extensions.BeforeBackgroundJobExecute;
 import org.apache.log4j.Logger;
 
+import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -212,6 +213,11 @@ public abstract class BackgroundJob<T> implements Callable<T> {
         return result;
     }
 
+    @Nonnull
+    public JobInfo getJobInfo() {
+        return new JobInfo(getUUID(), getStatus(), getLog(), getTitle(), isRunning(), getUrls(), getEndMessage());
+    }
+
     public enum JobType {
         TEST_CREATION("test-creation"),
         TEST_EDIT("test-edit"),
@@ -251,6 +257,60 @@ public abstract class BackgroundJob<T> implements Callable<T> {
         @Override
         public String toString() {
             return name;
+        }
+    }
+
+    public class JobInfo {
+        private final UUID jobId;
+        private final JobStatus status;
+        private final String log;
+        private final String title;
+        private final boolean running;
+        private final List<ResultUrl> urls;
+        private final String endMessage;
+
+        public JobInfo(final UUID jobId,
+                       final JobStatus status,
+                       final String log,
+                       final String title,
+                       final boolean running,
+                       final List<ResultUrl> urls,
+                       final String endMessage) {
+            this.jobId = jobId;
+            this.status = status;
+            this.log = log;
+            this.title = title;
+            this.running = running;
+            this.urls = urls;
+            this.endMessage = endMessage;
+        }
+
+        public UUID getJobId() {
+            return jobId;
+        }
+
+        public JobStatus getStatus() {
+            return status;
+        }
+
+        public String getLog() {
+            return log;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public boolean isRunning() {
+            return running;
+        }
+
+        public List<ResultUrl> getUrls() {
+            return urls;
+        }
+
+        public String getEndMessage() {
+            return endMessage;
         }
     }
 }
