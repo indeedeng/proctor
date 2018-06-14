@@ -9,6 +9,7 @@ import com.indeed.proctor.common.IncompatibleTestMatrixException;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
@@ -20,6 +21,8 @@ public class ProctorLoadResult {
     private final Map<String, IncompatibleTestMatrixException> testErrorMap;
     @Nonnull
     private final Set<String> missingTests;
+    @Nonnull
+    private final Map<String, IncompatibleTestMatrixException> dynamicTestErrorMap;
 
     private final boolean verifiedRules;
 
@@ -43,7 +46,22 @@ public class ProctorLoadResult {
         @Nonnull Set<String> missingTests,
         final boolean verifiedRules
     ) {
+        this(
+                testErrorMap,
+                Collections.<String, IncompatibleTestMatrixException>emptyMap(),
+                missingTests,
+                verifiedRules
+        );
+    }
+
+    public ProctorLoadResult(
+            @Nonnull final Map<String, IncompatibleTestMatrixException> testErrorMap,
+            @Nonnull final Map<String, IncompatibleTestMatrixException> dynamicTestErrorMap,
+            @Nonnull Set<String> missingTests,
+            final boolean verifiedRules
+    ) {
         this.testErrorMap = testErrorMap;
+        this.dynamicTestErrorMap = dynamicTestErrorMap;
         this.missingTests = missingTests;
         this.verifiedRules = verifiedRules;
     }
@@ -51,6 +69,11 @@ public class ProctorLoadResult {
     @Nonnull
     public Set<String> getTestsWithErrors() {
         return testErrorMap.keySet();
+    }
+
+    @Nonnull
+    public Set<String> getDynamicTestWithErrors() {
+        return dynamicTestErrorMap.keySet();
     }
 
     @Nonnull
@@ -94,6 +117,7 @@ public class ProctorLoadResult {
 
     public static class Builder {
         private ImmutableMap.Builder<String, IncompatibleTestMatrixException> testsWithErrors = ImmutableMap.builder();
+        private ImmutableMap.Builder<String, IncompatibleTestMatrixException> dynamicTestsWithErrors = ImmutableMap.builder();
         private ImmutableSet.Builder<String> missingTests = ImmutableSet.builder();
         private boolean verifiedRules = false;
         private Builder() { }
@@ -101,6 +125,12 @@ public class ProctorLoadResult {
         @Nonnull
         public Builder recordError(final String testName, final IncompatibleTestMatrixException exception) {
             testsWithErrors.put(testName, exception);
+            return this;
+        }
+
+        @Nonnull
+        public Builder recordIncompatibleDynamicTest(final String testName, final IncompatibleTestMatrixException exception) {
+            dynamicTestsWithErrors.put(testName, exception);
             return this;
         }
 
@@ -129,7 +159,12 @@ public class ProctorLoadResult {
 
         @Nonnull
         public ProctorLoadResult build() {
-            return new ProctorLoadResult(testsWithErrors.build(), missingTests.build(), verifiedRules);
+            return new ProctorLoadResult(
+                    testsWithErrors.build(),
+                    dynamicTestsWithErrors.build(),
+                    missingTests.build(),
+                    verifiedRules
+            );
         }
     }
 }

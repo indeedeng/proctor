@@ -296,6 +296,11 @@ public abstract class ProctorUtils {
             //  consolidate method below.
             definedTests.remove(invalidTest);
         }
+        // Remove any invalid dynamic tests. This ones won't be replaced with default values
+        // because they are not required tests.
+        for (final String invalidDynamicTest : result.getDynamicTestWithErrors()) {
+            definedTests.remove(invalidDynamicTest);
+        }
 
         consolidate(testMatrix, requiredTests, dynamicTests);
 
@@ -420,12 +425,15 @@ public abstract class ProctorUtils {
 
             final Map<Integer, String> knownBuckets;
             final TestSpecification specification;
+            final boolean isRequired;
             if (allTestsKnownBuckets.containsKey(testName)) {
-                // in specification
+                // required in specification
+                isRequired = true;
                 knownBuckets = allTestsKnownBuckets.remove(testName);
                 specification = requiredTests.get(testName);
             } else if (dynamicTests.contains(testName)) {
-                // dynamic
+                // resolved by dynamic filter
+                isRequired = false;
                 knownBuckets = Collections.emptyMap();
                 specification = new TestSpecification();
             } else {
@@ -440,7 +448,11 @@ public abstract class ProctorUtils {
 
             } catch (IncompatibleTestMatrixException e) {
                 LOGGER.info(String.format("Unable to load test matrix for %s", testName), e);
-                resultBuilder.recordError(testName, e);
+                if (isRequired) {
+                    resultBuilder.recordError(testName, e);
+                } else {
+                    resultBuilder.recordIncompatibleDynamicTest(testName, e);
+                }
             }
         }
 
