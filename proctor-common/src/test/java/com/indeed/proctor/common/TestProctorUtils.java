@@ -1593,6 +1593,65 @@ public class TestProctorUtils {
     }
 
     @Test
+    public void testVerifyAndConsolidateShouldNotRecordInvalidDynamicTests() {
+        final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
+        final ConsumableTestDefinition definition = constructDefinition(
+                fromCompactBucketFormat("inactive:-1,control:0,test:1"),
+                Lists.newArrayList(
+                        new Allocation(
+                                "${unknownField==\"abc\"}",
+                                Lists.newArrayList(
+                                        new Range(
+                                                1,
+                                                1.0
+                                        )
+                                )
+                        )
+                )
+        );
+        tests.put(TEST_A, definition);
+        tests.put(TEST_B, definition);
+
+        final TestMatrixArtifact matrix = constructArtifact(tests);
+
+        final Map<String, TestSpecification> requiredTests = ImmutableMap.of(
+                TEST_A, new TestSpecification()
+        );
+
+        final Set<String> dynamicTests = Sets.newHashSet(TEST_B);
+
+        final ProctorLoadResult proctorLoadResult = ProctorUtils.verifyAndConsolidate(
+                matrix,
+                "",
+                requiredTests,
+                RuleEvaluator.FUNCTION_MAPPER,
+                new ProvidedContext(ProvidedContext.EMPTY_CONTEXT,true),
+                dynamicTests
+        );
+
+        assertEquals(
+                "missing tests should be empty",
+                Collections.emptySet(),
+                proctorLoadResult.getMissingTests()
+        );
+        assertEquals(
+                "only required test (TEST_A) should be error",
+                Sets.newHashSet(TEST_A),
+                proctorLoadResult.getTestsWithErrors()
+        );
+        assertEquals(
+                "only required test (TEST_A) should be resolved.",
+                Sets.newHashSet(TEST_A),
+                matrix.getTests().keySet()
+        );
+        assertEquals(
+                "invalid required test (TEST_A) should contain dummy test definition.",
+                TestType.RANDOM,
+                matrix.getTests().get(TEST_A).getTestType()
+        );
+    }
+
+    @Test
     public void testVerifyAndConsolidateShouldNotRemovePayloadOfDynamicTests() {
         final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
         final ConsumableTestDefinition definitionA = constructDefinition(
