@@ -6,15 +6,18 @@
 <%@ attribute name="testName" type="java.lang.String" description="Test Name" %>
 <%@ attribute name="src" type="java.lang.String" description="Source branch name" %>
 <%@ attribute name="srcRevision" type="java.lang.String" description="Source revision number" %>
+<%@ attribute name="requireAuth" type="java.lang.Boolean" description="Require authentication or not" %>
 <form class="js-delete-definition" action="/proctor/definition/${testName}/delete" method="POST">
     <input type="hidden" value="${src}" name="src"/>
     <input type="hidden" value="${srcRevision}" name="srcRevision"/>
     <div class="panel js-save-info">
-        <ui:grid-row>
-            <ui:grid-columns width="three"><label class="right inline">SCM</label></ui:grid-columns>
-            <ui:grid-columns width="four"><input placeholder="Username" type="text" name="username" /></ui:grid-columns>
-            <ui:grid-columns width="five"><input placeholder="Password" type="password" name="password" /></ui:grid-columns>
-        </ui:grid-row>
+        <c:if test="${requireAuth}">
+            <ui:grid-row>
+                <ui:grid-columns width="three"><label class="right inline">SCM</label></ui:grid-columns>
+                <ui:grid-columns width="four"><input placeholder="Username" type="text" name="username" /></ui:grid-columns>
+                <ui:grid-columns width="five"><input placeholder="Password" type="password" name="password" /></ui:grid-columns>
+            </ui:grid-row>
+        </c:if>
         <proctor:renderDefinitionDeletePageInjectionTemplates position="<%=DefinitionDeletePageRenderer.DefinitionDeletePagePosition.BOTTOM_FORM%>" testName="${testName}"/>
         <ui:grid-row>
             <ui:grid-columns width="three"><label class="right inline">Comment</label></ui:grid-columns>

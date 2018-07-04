@@ -16,6 +16,7 @@
 <%--@elvariable id="isCreate" type="java.lang.Boolean"--%>
 <%--@elvariable id="branch" type="com.indeed.proctor.webapp.db.Environment"--%>
 <%--@elvariable id="version" type="com.indeed.proctor.common.EnvironmentVersion"--%>
+<%--@elvariable id="requireAuth" type="java.lang.Boolean"--%>
 <%--@elvariable id="devApplications" type="java.util.Set<com.indeed.proctor.webapp.model.AppVersion>"--%>
 <%--@elvariable id="qaApplications" type="java.util.Set<com.indeed.proctor.webapp.model.AppVersion>"--%>
 <%--@elvariable id="productionApplications" type="java.util.Set<com.indeed.proctor.webapp.model.AppVersion>"--%>
@@ -192,11 +193,13 @@
         <ui:grid-columns width="ten">
             <div class="panel js-save-info">
                 <div id="silent-warning" <c:if test="${testDefinition.silent == 'false'}">style="display:none;"</c:if>>Logging is currently disabled for this test. If you want to enable logging, please uncheck the 'Silent' checkbox at the top of the page.</div>
-                <ui:grid-row>
-                    <ui:grid-columns width="three"><label class="right inline">SCM</label></ui:grid-columns>
-                    <ui:grid-columns width="four"><input placeholder="Username" type="text" name="username" /></ui:grid-columns>
-                    <ui:grid-columns width="five"><input placeholder="Password" type="password" name="password" /></ui:grid-columns>
-                </ui:grid-row>
+                <c:if test="${requireAuth}">
+                    <ui:grid-row>
+                        <ui:grid-columns width="three"><label class="right inline">SCM</label></ui:grid-columns>
+                        <ui:grid-columns width="four"><input placeholder="Username" type="text" name="username" /></ui:grid-columns>
+                        <ui:grid-columns width="five"><input placeholder="Password" type="password" name="password" /></ui:grid-columns>
+                    </ui:grid-row>
+                </c:if>
                 <ui:grid-row>
                     <ui:grid-columns width="three"><label class="right inline">Comment</label></ui:grid-columns>
                     <ui:grid-columns width="nine"><input placeholder="(optional) description of change" type="text" name="comment" /></ui:grid-columns>

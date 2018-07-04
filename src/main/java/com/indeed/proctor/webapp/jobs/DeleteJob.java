@@ -1,5 +1,6 @@
 package com.indeed.proctor.webapp.jobs;
 
+import com.google.common.base.Strings;
 import com.indeed.proctor.common.model.TestDefinition;
 import com.indeed.proctor.store.GitNoAuthorizationException;
 import com.indeed.proctor.store.GitNoDevelperAccessLevelException;
@@ -56,20 +57,21 @@ public class DeleteJob extends AbstractJob {
 
     public BackgroundJob doDelete(
             final String testName,
-            final Environment source,
-            final String srcRevision,
             final String username,
             final String password,
+            final String author,
+            final Environment source,
+            final String srcRevision,
             final String comment,
             final Map<String, String[]> requestParameterMap
     ) {
         LOGGER.info(String.format("Deleting test %s branch: %s user: %s ", testName, source, username));
         BackgroundJob<Object> backgroundJob = jobFactory.createBackgroundJob(
-                String.format("(%s) deleting %s branch: %s ", username, testName, source),
+                String.format("(username:%s author:%s) deleting %s branch: %s ", username, author, testName, source),
                 BackgroundJob.JobType.TEST_DELETION,
                 job -> {
                     try {
-                        doDeleteInternal(testName, source, srcRevision, username, password, comment, requestParameterMap, job);
+                        doDeleteInternal(testName, username, password, author, source, srcRevision, comment, requestParameterMap, job);
                     } catch (final GitNoMasterAccessLevelException | GitNoAuthorizationException | GitNoDevelperAccessLevelException | IllegalArgumentException exp) {
                         job.logFailedJob(exp);
                         LOGGER.info("Deletion Failed: " + job.getTitle(), exp);
@@ -85,10 +87,11 @@ public class DeleteJob extends AbstractJob {
     }
 
     private Boolean doDeleteInternal(final String testName,
-                                     final Environment source,
-                                     final String srcRevision,
                                      final String username,
                                      final String password,
+                                     final String author,
+                                     final Environment source,
+                                     final String srcRevision,
                                      final String comment,
                                      final Map<String, String[]> requestParameterMap,
                                      final BackgroundJob job
@@ -113,7 +116,8 @@ public class DeleteJob extends AbstractJob {
             throw new IllegalArgumentException("Could not get any history for " + testName);
         }
 
-        final String fullComment = commentFormatter.formatFullComment(comment, requestParameterMap);
+        final String nonEmptyComment = formatDefaultDeleteComment(testName, comment);
+        final String fullComment = commentFormatter.formatFullComment(nonEmptyComment, requestParameterMap);
 
         if (source.equals(Environment.WORKING) || source.equals(Environment.QA)) {
             final MatrixChecker.CheckMatrixResult checkMatrixResultInQa = matrixChecker.checkMatrix(Environment.QA, testName, null);
@@ -139,7 +143,7 @@ public class DeleteJob extends AbstractJob {
         }
 
         job.log("(svn) delete " + testName);
-        store.deleteTestDefinition(username, password, srcRevision, testName, definition, fullComment);
+        store.deleteTestDefinition(username, password, author, srcRevision, testName, definition, fullComment);
 
         boolean testExistsInOtherEnvironments = false;
         for (final Environment otherEnvironment : Environment.values()) {
@@ -163,5 +167,12 @@ public class DeleteJob extends AbstractJob {
             logDefinitionChangeLog(definitionChangeLog, postDefinitionDeleteChange.getClass().getSimpleName(), job);
         }
         return true;
+    }
+
+    private String formatDefaultDeleteComment(final String testName, final String comment) {
+        if (Strings.isNullOrEmpty(comment)) {
+            return String.format("Deleting A/B test %s", testName);
+        }
+        return comment;
     }
 }

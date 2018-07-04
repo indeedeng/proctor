@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.indeed.proctor.common.EnvironmentVersion;
@@ -39,6 +38,7 @@ import com.indeed.proctor.webapp.views.JsonView;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CookieValue;
@@ -77,13 +77,12 @@ public class ProctorTestDefinitionController extends AbstractController {
     private static final Logger LOGGER = Logger.getLogger(ProctorTestDefinitionController.class);
 
     private final ProctorPromoter promoter;
-
     private final ProctorSpecificationSource specificationSource;
     private final int verificationTimeout;
-
     private final MatrixChecker matrixChecker;
     private final DeleteJob deleteJob;
     private final EditAndPromoteJob editAndPromoteJob;
+    private final boolean requireAuth;
 
     private static enum Views {
         DETAILS("definition/details"),
@@ -110,7 +109,9 @@ public class ProctorTestDefinitionController extends AbstractController {
                                            final ProctorSpecificationSource specificationSource,
                                            final MatrixChecker matrixChecker,
                                            final DeleteJob deleteJob,
-                                           final EditAndPromoteJob editAndPromoteJob) {
+                                           final EditAndPromoteJob editAndPromoteJob,
+                                           @Value("${requireAuth:true}") final boolean requireAuth
+    ) {
         super(configuration, trunkStore, qaStore, productionStore);
         this.promoter = promoter;
         this.matrixChecker = matrixChecker;
@@ -118,6 +119,7 @@ public class ProctorTestDefinitionController extends AbstractController {
         this.editAndPromoteJob = editAndPromoteJob;
         this.verificationTimeout = configuration.getVerifyHttpTimeout();
         this.specificationSource = specificationSource;
+        this.requireAuth = requireAuth;
         Preconditions.checkArgument(verificationTimeout > 0, "verificationTimeout > 0");
     }
 
@@ -139,7 +141,7 @@ public class ProctorTestDefinitionController extends AbstractController {
         );
         final List<RevisionDefinition> history = Collections.emptyList();
         final EnvironmentVersion version = null;
-        return doView(Environment.WORKING, Views.CREATE, "", definition, history, version, model);
+        return doView(Environment.WORKING, Views.CREATE, "", definition, history, version, requireAuth, model);
     }
 
     @RequestMapping(value = "/{testName}", method = RequestMethod.GET)
@@ -178,13 +180,13 @@ public class ProctorTestDefinitionController extends AbstractController {
                 final String errorMsg = "Test \"" + testName + "\" " +
                         (revision.isEmpty() ? "" : "of revision " + revision + " ") +
                         "does not exist in " + branch + " branch! Please check other branches.";
-                return doView(theEnvironment, Views.DETAILS, errorMsg, new TestDefinition(), new ArrayList<>(), version, model);
+                return doView(theEnvironment, Views.DETAILS, errorMsg, new TestDefinition(), new ArrayList<>(), version, requireAuth, model);
             }
             final boolean loadAllocHistory = shouldLoadAllocationHistory(loadAllocHistParam, loadAllocHistCookie, response);
             history = TestDefinitionUtil.makeRevisionDefinitionList(store, testName, version.getRevision(theEnvironment), loadAllocHistory);
         }
 
-        return doView(theEnvironment, Views.DETAILS, testName, definition, history, version, model);
+        return doView(theEnvironment, Views.DETAILS, testName, definition, history, version, requireAuth, model);
     }
 
     private boolean testNotExistsInAnyEnvs(final Environment theEnvironment, final String testName, final String revision) {
@@ -233,34 +235,29 @@ public class ProctorTestDefinitionController extends AbstractController {
             return doErrorView("Test " + testName + " does not exist in TRUNK", null, HttpServletResponse.SC_NOT_FOUND, response, model);
         }
 
-        return doView(theEnvironment, Views.EDIT, testName, definition, Collections.<RevisionDefinition>emptyList(), version, model);
+        return doView(theEnvironment, Views.EDIT, testName, definition, Collections.<RevisionDefinition>emptyList(), version, requireAuth, model);
     }
 
-    @RequestMapping(value = "/{testName}/delete", method = RequestMethod.POST)
+    @RequestMapping(value = "/{testName}/delete", method = RequestMethod.POST, params = {"username, password"})
     public View doDeletePost(
             @PathVariable final String testName,
+            @RequestParam final String username,
+            @RequestParam final String password,
             @RequestParam(required = false) String src,
             @RequestParam(required = false) final String srcRevision,
-
-            @RequestParam(required = false) final String username,
-            @RequestParam(required = false) final String password,
             @RequestParam(required = false, defaultValue = "") final String comment,
-            final HttpServletRequest request,
-            final Model model
+            final HttpServletRequest request
     ) {
         final Environment theEnvironment = determineEnvironmentFromParameter(src);
-
-        Map<String, String[]> requestParameterMap = new HashMap<String, String[]>();
-        requestParameterMap.putAll(request.getParameterMap());
-        final String nonEmptyComment = formatDefaultDeleteComment(testName, comment);
         final BackgroundJob job = deleteJob.doDelete(
                 testName,
-                theEnvironment,
-                srcRevision,
                 username,
                 password,
-                nonEmptyComment,
-                requestParameterMap
+                username,
+                theEnvironment,
+                srcRevision,
+                comment,
+                new HashMap<>(request.getParameterMap())
         );
         if (isAJAXRequest(request)) {
             final JsonResponse<Map> response = new JsonResponse<>(BackgroundJobRpcController.buildJobJson(job), true, job.getTitle());
@@ -272,24 +269,19 @@ public class ProctorTestDefinitionController extends AbstractController {
 
     }
 
-    @RequestMapping(value = "/{testName}/promote", method = RequestMethod.POST)
+    @RequestMapping(value = "/{testName}/promote", method = RequestMethod.POST, params = {"username, password"})
     public View doPromotePost(
             @PathVariable final String testName,
-            @RequestParam(required = false) final String username,
-            @RequestParam(required = false) final String password,
-
+            @RequestParam final String username,
+            @RequestParam final String password,
             @RequestParam(required = false) final String src,
             @RequestParam(required = false) final String srcRevision,
             @RequestParam(required = false) final String dest,
             @RequestParam(required = false) final String destRevision,
-            final HttpServletRequest request,
-            final Model model
+            final HttpServletRequest request
     ) {
         final Environment source = determineEnvironmentFromParameter(src);
         final Environment destination = determineEnvironmentFromParameter(dest);
-
-        final Map<String, String[]> requestParameterMap = new HashMap<String, String[]>();
-        requestParameterMap.putAll(request.getParameterMap());
         final BackgroundJob job = editAndPromoteJob.doPromote(
                 testName,
                 username,
@@ -299,9 +291,8 @@ public class ProctorTestDefinitionController extends AbstractController {
                 srcRevision,
                 destination,
                 destRevision,
-                requestParameterMap
+                new HashMap<>(request.getParameterMap())
         );
-
         if (isAJAXRequest(request)) {
             final JsonResponse<Map> response = new JsonResponse<>(BackgroundJobRpcController.buildJobJson(job), true, job.getTitle());
             return new JsonView(response);
@@ -310,40 +301,29 @@ public class ProctorTestDefinitionController extends AbstractController {
         }
     }
 
-    @RequestMapping(value = "/{testName}/edit", method = RequestMethod.POST)
+    @RequestMapping(value = "/{testName}/edit", method = RequestMethod.POST, params = {"username, password"})
     public View doEditPost(
             @PathVariable final String testName,
-            @RequestParam(required = false) final String username,
-            @RequestParam(required = false) final String password,
+            @RequestParam final String username,
+            @RequestParam final String password,
             @RequestParam(required = false, defaultValue = "false") final boolean isCreate,
             @RequestParam(required = false, defaultValue = "") final String comment,
             @RequestParam(required = false) final String testDefinition, // testDefinition is JSON representation of test-definition
             @RequestParam(required = false, defaultValue = "") final String previousRevision,
             @RequestParam(required = false, defaultValue = "false") final boolean isAutopromote,
-            final HttpServletRequest request,
-            final Model model) {
-
-        //TODO: Remove all internal params and just pass request.getParameterMap() to doEditPost() as map of fields and values
-
-        Map<String, String[]> requestParameterMap = new HashMap<String, String[]>();
-        requestParameterMap.putAll(request.getParameterMap());
-        final String nonEmptyComment;
-        if (isCreate) {
-            nonEmptyComment = formatDefaultCreateComment(testName, comment);
-        } else {
-            nonEmptyComment = formatDefaultUpdateComment(testName, comment);
-        }
+            final HttpServletRequest request
+    ) {
         final BackgroundJob job = editAndPromoteJob.doEdit(
                 testName,
                 username,
                 password,
                 username,
                 isCreate,
-                nonEmptyComment,
+                comment,
                 testDefinition,
                 previousRevision,
                 isAutopromote,
-                requestParameterMap
+                new HashMap<>(request.getParameterMap())
         );
         if (isAJAXRequest(request)) {
             final JsonResponse<Map> response = new JsonResponse<>(BackgroundJobRpcController.buildJobJson(job), true, job.getTitle());
@@ -352,27 +332,6 @@ public class ProctorTestDefinitionController extends AbstractController {
             // redirect to a status page for the job id
             return new RedirectView("/proctor/rpc/jobs/list?id=" + job.getId());
         }
-    }
-
-    private String formatDefaultDeleteComment(final String testName, final String comment) {
-        if (Strings.isNullOrEmpty(comment)) {
-            return String.format("Deleting A/B test %s", testName);
-        }
-        return comment;
-    }
-
-    private String formatDefaultUpdateComment(final String testName, final String comment) {
-        if (Strings.isNullOrEmpty(comment)) {
-            return String.format("Updating A/B test %s", testName);
-        }
-        return comment;
-    }
-
-    private String formatDefaultCreateComment(final String testName, final String comment) {
-        if (Strings.isNullOrEmpty(comment)) {
-            return String.format("Creating A/B test %s", testName);
-        }
-        return comment;
     }
 
     @RequestMapping(value = "/{testName}/verify", method = RequestMethod.GET)
@@ -439,12 +398,14 @@ public class ProctorTestDefinitionController extends AbstractController {
                           final TestDefinition definition,
                           final List<RevisionDefinition> history,
                           final EnvironmentVersion version,
+                          final boolean requireAuth,
                           Model model) {
         model.addAttribute("testName", testName);
         model.addAttribute("testDefinition", definition);
         model.addAttribute("isCreate", view == Views.CREATE);
         model.addAttribute("branch", b);
         model.addAttribute("version", version);
+        model.addAttribute("requireAuth", requireAuth);
 
         final Map<String, Object> specialConstants;
         if (definition.getSpecialConstants() != null) {

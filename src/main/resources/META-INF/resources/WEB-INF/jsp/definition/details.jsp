@@ -13,6 +13,7 @@
 <%--@elvariable id="testDefinitionHistory" type="java.util.List<com.indeed.proctor.webapp.model.RevisionDefinition>"--%>
 <%--@elvariable id="branch" type="com.indeed.proctor.webapp.db.Environment"--%>
 <%--@elvariable id="version" type="com.indeed.proctor.common.EnvironmentVersion"--%>
+<%--@elvariable id="requireAuth" type="java.lang.Boolean"--%>
 <%--@elvariable id="devApplications" type="java.util.Set<com.indeed.proctor.webapp.model.AppVersion>"--%>
 <%--@elvariable id="qaApplications" type="java.util.Set<com.indeed.proctor.webapp.model.AppVersion>"--%>
 <%--@elvariable id="productionApplications" type="java.util.Set<com.indeed.proctor.webapp.model.AppVersion>"--%>
@@ -43,7 +44,12 @@
                       <ui:definition-view testName="${testName}" definition="${testDefinition}"/>
                   </li>
                     <li id="tab-history">
-                      <ui:definition-history branch="${branch}" testName="${testName}" testDefinitionHistory="${testDefinitionHistory}" version="${version}"/>
+                      <ui:definition-history branch="${branch}"
+                                             testName="${testName}"
+                                             testDefinitionHistory="${testDefinitionHistory}"
+                                             version="${version}"
+                                             requireAuth="${requireAuth}"
+                      />
                   </li>
                   <li id="tab-definition">
                       <!-- TODO use prettified JSON library for code display -->
@@ -65,8 +71,9 @@
                   </li>
                     <li id="tab-delete">
                         <ui:definition-delete-form testName="${testName}"
-                                                    src="${branch.name}"
-                                                    srcRevision="${testDefinitionVersion.revision}"
+                                                   src="${branch.name}"
+                                                   srcRevision="${testDefinitionVersion.revision}"
+                                                   requireAuth="${requireAuth}"
                         />
                     </li>
                 </ul>

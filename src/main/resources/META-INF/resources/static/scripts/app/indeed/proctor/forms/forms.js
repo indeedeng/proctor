@@ -284,6 +284,9 @@ indeed.proctor.forms.getElementsByInputName_ =
  * validation.
  */
 indeed.proctor.forms.validateRequired = function(el) {
+    if (el === null) {
+        return true;
+    }
   var value = goog.dom.forms.getValue(el);
   if (goog.string.isEmptySafe(value)) {
     indeed.foundation.forms.addError(el, 'This field is required.');
