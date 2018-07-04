@@ -85,7 +85,7 @@ public class MatrixChecker {
             futures.put(appVersion, verifierExecutor.submit(new Callable<ProctorLoadResult>() {
                 @Override
                 public ProctorLoadResult call() throws Exception {
-                    LOGGER.info("Verifying artifact against : cached " + appVersion);
+                    LOGGER.info("Verifying artifact against : cached " + appVersion + " for " + testName);
                     return verify(specification, artifact, testName, appVersion.toString());
                 }
             }));

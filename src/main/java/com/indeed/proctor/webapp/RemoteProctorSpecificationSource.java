@@ -277,6 +277,7 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
             LOGGER.info("Skipped checking specification for the following AppVersions (/private/proctor/specification returned 404): " + Joiner.on(",").join(skippedAppVersions));
         }
 
+        LOGGER.info("Finish refreshing internal list of ProctorSpecifications");
         return appVersionsToCheck.isEmpty();
     }
 
