@@ -6,6 +6,7 @@
 <%@ attribute name="branch" type="com.indeed.proctor.webapp.db.Environment" description="Branch" %>
 <%@ attribute name="testDefinitionHistory" type="java.util.List<com.indeed.proctor.webapp.model.RevisionDefinition>" description="revision to definition map" %>
 <%@ attribute name="version" type="com.indeed.proctor.common.EnvironmentVersion" description="Versions across different branches" %>
+<%@ attribute name="requireAuth" type="java.lang.Boolean" description="Require authentication or not" %>
 
 <c:choose>
     <c:when test="${testDefinitionHistory != null && testDefinitionHistory.size() > 0 && testDefinitionHistory.get(0).definition != null}">
@@ -69,6 +70,7 @@
                                             destRevision="${version.productionRevision}"
                                             promoteText="Promote ${proctor:formatRevision(testDefinitionVersion.revision)} to Production"
                                             testDefinitionVersion="${testDefinitionVersion}"
+                                            requireAuth="${requireAuth}"
                 />
             </ui:expand-collapse>
             </c:if>

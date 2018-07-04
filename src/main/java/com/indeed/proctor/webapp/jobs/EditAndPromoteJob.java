@@ -203,9 +203,11 @@ public class EditAndPromoteJob extends AbstractJob {
         final EnvironmentVersion environmentVersion = promoter.getEnvironmentVersion(testName);
         final String qaRevision = environmentVersion == null ? EnvironmentVersion.UNKNOWN_REVISION : environmentVersion.getQaRevision();
         final String prodRevision = environmentVersion == null ? EnvironmentVersion.UNKNOWN_REVISION : environmentVersion.getProductionRevision();
+        final String nonEmptyComment = isCreate ? formatDefaultCreateComment(testName, comment)
+                : formatDefaultUpdateComment(testName, comment);
 
         validateUsernamePassword(username, password);
-        validateComment(comment);
+        validateComment(nonEmptyComment);
 
         if (previousRevision.length() > 0) {
             job.log("(scm) getting history for '" + testName + "'");
@@ -273,7 +275,7 @@ public class EditAndPromoteJob extends AbstractJob {
             }
         }
 
-        final String fullComment = commentFormatter.formatFullComment(comment, requestParameterMap);
+        final String fullComment = commentFormatter.formatFullComment(nonEmptyComment, requestParameterMap);
 
         //Change definition
         final Map<String, String> metadata = Collections.emptyMap();
@@ -601,6 +603,20 @@ public class EditAndPromoteJob extends AbstractJob {
     static boolean isValidBucketName(final String bucketName) {
         final Matcher m = VALID_BUCKET_NAME_PATTERN.matcher(bucketName);
         return m.matches();
+    }
+
+    private String formatDefaultUpdateComment(final String testName, final String comment) {
+        if (Strings.isNullOrEmpty(comment)) {
+            return String.format("Updating A/B test %s", testName);
+        }
+        return comment;
+    }
+
+    private String formatDefaultCreateComment(final String testName, final String comment) {
+        if (Strings.isNullOrEmpty(comment)) {
+            return String.format("Creating A/B test %s", testName);
+        }
+        return comment;
     }
 
     public BackgroundJob doPromote(final String testName,

@@ -215,13 +215,16 @@ indeed.proctor.app.editor.DefinitionEditor.prototype.save_ = function() {
 
   var jsData = {
     'testDefinition': serializer.serialize(json),
-    'username': goog.dom.forms.getValue(this.svninfo.username),
-    'password': goog.dom.forms.getValue(this.svninfo.password),
     'comment': goog.dom.forms.getValue(this.svninfo.comment),
     'previousRevision': this.prevRevision,
     'isCreate' : this.isCreate,
     'isAutopromote' : goog.dom.getElement("autopromote-checkbox").checked
   };
+  if (this.svninfo.username && this.svninfo.password) {
+    jsData['username'] = goog.dom.forms.getValue(this.svninfo.username);
+    jsData['password'] = goog.dom.forms.getValue(this.svninfo.password);
+  }
+
   var data = {};
   for (var key in formData) {
       data[key] = formData[key];
