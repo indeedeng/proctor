@@ -447,10 +447,11 @@ public abstract class ProctorUtils {
                 verifyTest(testName, testDefinition, specification, knownBuckets, matrixSource, functionMapper, providedContext);
 
             } catch (IncompatibleTestMatrixException e) {
-                LOGGER.info(String.format("Unable to load test matrix for %s", testName), e);
                 if (isRequired) {
+                    LOGGER.error(String.format("Unable to load test matrix for a required test %s", testName), e);
                     resultBuilder.recordError(testName, e);
                 } else {
+                    LOGGER.info(String.format("Unable to load test matrix for a dynamic test %s", testName), e);
                     resultBuilder.recordIncompatibleDynamicTest(testName, e);
                 }
             }
@@ -819,8 +820,7 @@ public abstract class ProctorUtils {
         try {
             RuleVerifyUtils.verifyRule(testRule, providedContext.shouldEvaluate(), expressionFactory, elContext, providedContext.getUninstantiatedIdentifiers());
         } catch (final ELException e) {
-            LOGGER.error(e);
-            throw new IncompatibleTestMatrixException("Unable to evaluate rule ${" + testRule + "} in " + testName);
+            throw new IncompatibleTestMatrixException("Unable to evaluate rule ${" + testRule + "} in " + testName, e);
         }
 
         if (allocations.isEmpty()) {
@@ -868,8 +868,7 @@ public abstract class ProctorUtils {
             try {
                 RuleVerifyUtils.verifyRule(rule, providedContext.shouldEvaluate(), expressionFactory, elContext, providedContext.getUninstantiatedIdentifiers());
             }  catch (final ELException e) {
-                LOGGER.error(e);
-                throw new IncompatibleTestMatrixException("Unable to evaluate rule ${" + rule + "} in allocations of " + testName);
+                throw new IncompatibleTestMatrixException("Unable to evaluate rule ${" + rule + "} in allocations of " + testName, e);
             }
 
         }
