@@ -7,9 +7,6 @@
 <%@ attribute name="less" required="true" type="java.lang.String" %>
 <%@ attribute name="isMoreExpanded" required="true" type="java.lang.Boolean" %>
 <div class="ui-expand-collapse <c:if test="${not isMoreExpanded}">ui-collapsed</c:if>">
-    <div class="ui-expand-collapse-hdr">
-        <a href="javascript:void(0)" class="ui-expand-title ui-expand">${fn:escapeXml(more)}</a>
-        <a href="javascript:void(0)" class="ui-expand-title ui-collapse">${fn:escapeXml(less)}</a>
-    </div>
-    <div class="ui-expand-collapse-bd"><jsp:doBody /></div>
+  <div class="ui-expand-collapse-hdr"><a href="javascript:void(0)" class="ui-expand-title ui-expand">${fn:escapeXml(more)}</a><a href="javascript:void(0)" class="ui-expand-title ui-collapse">${fn:escapeXml(less)}</a></div>
+  <div class="ui-expand-collapse-bd"><jsp:doBody /></div>
 </div>
