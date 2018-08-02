@@ -44,7 +44,7 @@ public class TestRuleVerifyUtils {
         RuleVerifyUtils.verifyRule(testRule, true, expressionFactory, elContext, Sets.newHashSet(absentIdentifiers));
     }
 
-    private void exceptValidRule(final String testRule, final Object[][] context, final String[] absentIdentifiers) {
+    private void expectValidRule(final String testRule, final Object[][] context, final String[] absentIdentifiers) {
         try {
             verifyRule(testRule, context, absentIdentifiers);
 
@@ -56,7 +56,7 @@ public class TestRuleVerifyUtils {
         }
 
     }
-    private void exceptInvalidRule(final String testRule, final Object[][] context, final String[] absentIdentifiers) {
+    private void expectInvalidRule(final String testRule, final Object[][] context, final String[] absentIdentifiers) {
         try {
             verifyRule(testRule, context, absentIdentifiers);
 
@@ -70,7 +70,7 @@ public class TestRuleVerifyUtils {
 
     @Test
     public void testVerifyRulesNormal() {
-        exceptValidRule(
+        expectValidRule(
                 "${browser != 'IE9'}",
                 new Object[][] {
                         {"browser", "IE"},
@@ -83,7 +83,7 @@ public class TestRuleVerifyUtils {
 
     @Test
     public void testVerifyRulesWithoutContext() {
-        exceptInvalidRule(
+        expectInvalidRule(
                 "${browser != 'IE9'}",
                 new Object[][] {
                 },
@@ -94,7 +94,7 @@ public class TestRuleVerifyUtils {
 
     @Test
     public void testVerifyRulesWithAbsentIdentifiers() {
-        exceptValidRule(
+        expectValidRule(
                 "${browser != 'IE9'}",
                 new Object[][]{
                 },
@@ -106,7 +106,7 @@ public class TestRuleVerifyUtils {
 
     @Test
     public void testVerifyAndRuleNormal() {
-        exceptValidRule(
+        expectValidRule(
                 "${browser == 'IE9' && country == 'US'}",
                 new Object[][]{
                         { "browser", "IE" },
@@ -119,7 +119,7 @@ public class TestRuleVerifyUtils {
 
     @Test
     public void testVerifyAndRuleWithoutContext() {
-        exceptInvalidRule(
+        expectInvalidRule(
                 "${browser == 'IE9' && country == 'US'}",
                 new Object[][]{
                         { "browser", "IE" },
@@ -127,7 +127,7 @@ public class TestRuleVerifyUtils {
                 new String[]{
                 }
         );
-        exceptInvalidRule(
+        expectInvalidRule(
                 "${browser == 'IE9' && country == 'US'}",
                 new Object[][]{
                         { "country", "US" },
@@ -135,7 +135,7 @@ public class TestRuleVerifyUtils {
                 new String[]{
                 }
         );
-        exceptInvalidRule(
+        expectInvalidRule(
                 "${browser == 'IE9' && country == 'US'}",
                 new Object[][]{
                 },
@@ -143,7 +143,7 @@ public class TestRuleVerifyUtils {
                         "browser",
                 }
         );
-        exceptInvalidRule(
+        expectInvalidRule(
                 "${browser == 'IE9' && country == 'US'}",
                 new Object[][]{
                 },
@@ -155,7 +155,7 @@ public class TestRuleVerifyUtils {
 
     @Test
     public void testVerifyAndRuleWithAbsentIdentifers() {
-        exceptValidRule(
+        expectValidRule(
                 "${browser == 'IE9' && country == 'US'}",
                 new Object[][]{
                         { "browser", "IE" },
@@ -164,7 +164,7 @@ public class TestRuleVerifyUtils {
                         "country",
                 }
         );
-        exceptValidRule(
+        expectValidRule(
                 "${browser == 'IE9' && country == 'US'}",
                 new Object[][]{
                         { "country", "JP" },
@@ -173,7 +173,7 @@ public class TestRuleVerifyUtils {
                         "browser",
                 }
         );
-        exceptValidRule(
+        expectValidRule(
                 "${browser == 'IE9' && country == 'US'}",
                 new Object[][]{
                 },
