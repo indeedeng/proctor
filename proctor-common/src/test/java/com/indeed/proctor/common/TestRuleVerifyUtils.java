@@ -183,4 +183,17 @@ public class TestRuleVerifyUtils {
                 }
         );
     }
+
+    @Test
+    public void testInvalidSyntaxRule() {
+        expectInvalidRule(
+                "${browser == 'IE9' && country = 'US'}",
+                new Object[][] {
+                        { "browser", "IE" },
+                        { "country", "JP" },
+                },
+                new String[] {
+                }
+        );
+    }
 }
