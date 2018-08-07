@@ -5,7 +5,6 @@ import org.apache.el.lang.ExpressionBuilder;
 import org.apache.el.parser.AstIdentifier;
 import org.apache.el.parser.Node;
 import org.apache.log4j.Logger;
-import org.omg.CORBA.DynAnyPackage.Invalid;
 
 import javax.el.ELContext;
 import javax.el.ELException;
@@ -47,7 +46,6 @@ public class RuleVerifyUtils {
                  * also used to check to make sure any classes included in the EL can be found.
                  * Class
                  */
-
 
                 // Parse test rule as expression language and create AST
                 final Node root;

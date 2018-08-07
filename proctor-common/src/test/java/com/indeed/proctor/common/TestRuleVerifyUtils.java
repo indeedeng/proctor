@@ -16,8 +16,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertTrue;
-
 public class TestRuleVerifyUtils {
 
     private ExpressionFactory expressionFactory = new ExpressionFactoryImpl();
@@ -38,7 +36,7 @@ public class TestRuleVerifyUtils {
     private void verifyRule(final String testRule, final Object[][] context, final String[] absentIdentifiers) throws InvalidRuleException {
         final Map<String, Object> contextMap = new HashMap<>();
         for (final Object[] c : context) {
-            contextMap.put((String)c[0], c[1]);
+            contextMap.put((String) c[0], c[1]);
         }
         final ELContext elContext = setUpElContextWithContext(contextMap, testRule);
         RuleVerifyUtils.verifyRule(testRule, true, expressionFactory, elContext, Sets.newHashSet(absentIdentifiers));
@@ -47,24 +45,21 @@ public class TestRuleVerifyUtils {
     private void expectValidRule(final String testRule, final Object[][] context, final String[] absentIdentifiers) {
         try {
             verifyRule(testRule, context, absentIdentifiers);
-
-            /** no exception was thrown **/
-            assertTrue(true);
-        } catch (final InvalidRuleException el) {
+        } catch (final InvalidRuleException e) {
             /** exception should not be thrown. **/
-            Assert.fail();
+            throw new RuntimeException("validation failed", e);
         }
 
     }
+
     private void expectInvalidRule(final String testRule, final Object[][] context, final String[] absentIdentifiers) {
         try {
             verifyRule(testRule, context, absentIdentifiers);
 
             /** exception should be thrown until here. **/
-            Assert.fail();
-        } catch (final InvalidRuleException el) {
+            Assert.fail("invalid rule exception should be thrown");
+        } catch (final InvalidRuleException e) {
             /** expected **/
-            assertTrue(true);
         }
     }
 
@@ -72,10 +67,10 @@ public class TestRuleVerifyUtils {
     public void testVerifyRulesNormal() {
         expectValidRule(
                 "${browser != 'IE9'}",
-                new Object[][] {
+                new Object[][]{
                         {"browser", "IE"},
                 },
-                new String[] {
+                new String[]{
                 }
         );
 
@@ -85,9 +80,9 @@ public class TestRuleVerifyUtils {
     public void testVerifyRulesWithoutContext() {
         expectInvalidRule(
                 "${browser != 'IE9'}",
-                new Object[][] {
+                new Object[][]{
                 },
-                new String[] {
+                new String[]{
                 }
         );
     }
@@ -109,8 +104,8 @@ public class TestRuleVerifyUtils {
         expectValidRule(
                 "${browser == 'IE9' && country == 'US'}",
                 new Object[][]{
-                        { "browser", "IE" },
-                        { "country", "JP" },
+                        {"browser", "IE"},
+                        {"country", "JP"},
                 },
                 new String[]{
                 }
@@ -122,7 +117,7 @@ public class TestRuleVerifyUtils {
         expectInvalidRule(
                 "${browser == 'IE9' && country == 'US'}",
                 new Object[][]{
-                        { "browser", "IE" },
+                        {"browser", "IE"},
                 },
                 new String[]{
                 }
@@ -130,7 +125,7 @@ public class TestRuleVerifyUtils {
         expectInvalidRule(
                 "${browser == 'IE9' && country == 'US'}",
                 new Object[][]{
-                        { "country", "US" },
+                        {"country", "US"},
                 },
                 new String[]{
                 }
@@ -158,7 +153,7 @@ public class TestRuleVerifyUtils {
         expectValidRule(
                 "${browser == 'IE9' && country == 'US'}",
                 new Object[][]{
-                        { "browser", "IE" },
+                        {"browser", "IE"},
                 },
                 new String[]{
                         "country",
@@ -167,7 +162,7 @@ public class TestRuleVerifyUtils {
         expectValidRule(
                 "${browser == 'IE9' && country == 'US'}",
                 new Object[][]{
-                        { "country", "JP" },
+                        {"country", "JP"},
                 },
                 new String[]{
                         "browser",
@@ -188,11 +183,11 @@ public class TestRuleVerifyUtils {
     public void testInvalidSyntaxRule() {
         expectInvalidRule(
                 "${browser == 'IE9' && country = 'US'}",
-                new Object[][] {
-                        { "browser", "IE" },
-                        { "country", "JP" },
+                new Object[][]{
+                        {"browser", "IE"},
+                        {"country", "JP"},
                 },
-                new String[] {
+                new String[]{
                 }
         );
     }
