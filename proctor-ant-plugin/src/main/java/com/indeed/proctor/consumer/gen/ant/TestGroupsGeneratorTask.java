@@ -147,14 +147,14 @@ public abstract class TestGroupsGeneratorTask extends Task {
                 try {
                     generateFile();
                 } catch (final CodeGenException ex) {
-                    throw new BuildException("Unable to generate code " + ex.toString(), ex);
+                    throw new BuildException("Unable to generate code: " + ex.getMessage(), ex);
                 }
             } else {
                 if (!Strings.isNullOrEmpty(getSpecificationOutput())) {
                     try {
                         totalSpecificationGenerator(files);
                     } catch (final CodeGenException e) {
-                        throw new BuildException("Could not create total specification", e);
+                        throw new BuildException("Unable to generate total specification: " + e.getMessage(), e);
                     }
                 } else {
                     throw new BuildException("Undefined output folder for generated specification");
