@@ -819,7 +819,7 @@ public abstract class ProctorUtils {
 
         try {
             RuleVerifyUtils.verifyRule(testRule, providedContext.shouldEvaluate(), expressionFactory, elContext, providedContext.getUninstantiatedIdentifiers());
-        } catch (final ELException e) {
+        } catch (final InvalidRuleException e) {
             throw new IncompatibleTestMatrixException("Unable to evaluate rule ${" + testRule + "} in " + testName, e);
         }
 
@@ -867,7 +867,7 @@ public abstract class ProctorUtils {
 
             try {
                 RuleVerifyUtils.verifyRule(rule, providedContext.shouldEvaluate(), expressionFactory, elContext, providedContext.getUninstantiatedIdentifiers());
-            }  catch (final ELException e) {
+            }  catch (final InvalidRuleException e) {
                 throw new IncompatibleTestMatrixException("Unable to evaluate rule ${" + rule + "} in allocations of " + testName, e);
             }
 

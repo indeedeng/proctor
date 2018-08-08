@@ -1,6 +1,5 @@
 package com.indeed.proctor.common;
 
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.indeed.proctor.common.el.MulticontextReadOnlyVariableMapper;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
@@ -11,24 +10,17 @@ import org.junit.Test;
 
 import javax.el.ELContext;
 import javax.el.ExpressionFactory;
-import javax.el.PropertyNotFoundException;
 import javax.el.ValueExpression;
 import javax.el.VariableMapper;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import static org.junit.Assert.assertTrue;
-
-/**
- *
- */
 public class TestRuleVerifyUtils {
 
-    private String testRule = "${browser != 'IE9'}";
     private ExpressionFactory expressionFactory = new ExpressionFactoryImpl();
 
-    private ELContext setUpElContextWithContext(final Map<String, Object> context) {
+    private ELContext setUpElContextWithContext(final Map<String, Object> context, final String testRule) {
         final List<TestBucket> buckets = TestProctorUtils.fromCompactBucketFormat("inactive:-1,control:0,test:1");
         final ConsumableTestDefinition testDefVal1 = TestProctorUtils.constructDefinition(buckets,
                 TestProctorUtils.fromCompactAllocationFormat(String.format("%s|-1:0.5,0:0.5,1:0.0", testRule), "-1:0.25,0:0.5,1:0.25"));
@@ -41,38 +33,162 @@ public class TestRuleVerifyUtils {
         return ruleEvaluator.createELContext(variableMapper);
     }
 
-    @Test
-    public void testVerifyRulesNormal() throws IncompatibleTestMatrixException {
-        final Map<String, Object> context = Maps.newHashMap();
-        context.put("browser", "IE");
-        final ELContext elContext = setUpElContextWithContext(context);
-        final Set<String> absentIdentifiers = Sets.newHashSet();
-
-        RuleVerifyUtils.verifyRule(testRule, true, expressionFactory, elContext, absentIdentifiers);
-        /** no exception was thrown **/
-        assertTrue(true);
+    private void verifyRule(final String testRule, final Object[][] context, final String[] absentIdentifiers) throws InvalidRuleException {
+        final Map<String, Object> contextMap = new HashMap<>();
+        for (final Object[] c : context) {
+            contextMap.put((String) c[0], c[1]);
+        }
+        final ELContext elContext = setUpElContextWithContext(contextMap, testRule);
+        RuleVerifyUtils.verifyRule(testRule, true, expressionFactory, elContext, Sets.newHashSet(absentIdentifiers));
     }
 
-    @Test
-    public void testVerifyRulesWithoutContext() throws IncompatibleTestMatrixException {
-        final Map<String, Object> context = Maps.newHashMap();
-        final ELContext elContext = setUpElContextWithContext(context);
-        final Set<String> absentIdentifiers = Sets.newHashSet();
+    private void expectValidRule(final String testRule, final Object[][] context, final String[] absentIdentifiers) {
         try {
-            RuleVerifyUtils.verifyRule(testRule, true, expressionFactory, elContext, absentIdentifiers);
-            Assert.fail();
-        } catch (final PropertyNotFoundException el) {
+            verifyRule(testRule, context, absentIdentifiers);
+        } catch (final InvalidRuleException e) {
+            /** exception should not be thrown. **/
+            throw new RuntimeException("validation failed", e);
+        }
+
+    }
+
+    private void expectInvalidRule(final String testRule, final Object[][] context, final String[] absentIdentifiers) {
+        try {
+            verifyRule(testRule, context, absentIdentifiers);
+
+            /** exception should be thrown until here. **/
+            Assert.fail("invalid rule exception should be thrown");
+        } catch (final InvalidRuleException e) {
             /** expected **/
-            assertTrue(true);
         }
     }
 
     @Test
-    public void testVerifyRulesWithAbsentIdentifiers() throws IncompatibleTestMatrixException {
-        final ELContext elContext = setUpElContextWithContext(Maps.<String, Object>newHashMap());
-        final Set<String> absentIdentifiers = Sets.newHashSet("browser");
-        RuleVerifyUtils.verifyRule(testRule, true, expressionFactory, elContext, absentIdentifiers);
-        /** no exception was thrown **/
-        assertTrue(true);
+    public void testVerifyRulesNormal() {
+        expectValidRule(
+                "${browser != 'IE9'}",
+                new Object[][]{
+                        {"browser", "IE"},
+                },
+                new String[]{
+                }
+        );
+
+    }
+
+    @Test
+    public void testVerifyRulesWithoutContext() {
+        expectInvalidRule(
+                "${browser != 'IE9'}",
+                new Object[][]{
+                },
+                new String[]{
+                }
+        );
+    }
+
+    @Test
+    public void testVerifyRulesWithAbsentIdentifiers() {
+        expectValidRule(
+                "${browser != 'IE9'}",
+                new Object[][]{
+                },
+                new String[]{
+                        "browser",
+                }
+        );
+    }
+
+    @Test
+    public void testVerifyAndRuleNormal() {
+        expectValidRule(
+                "${browser == 'IE9' && country == 'US'}",
+                new Object[][]{
+                        {"browser", "IE"},
+                        {"country", "JP"},
+                },
+                new String[]{
+                }
+        );
+    }
+
+    @Test
+    public void testVerifyAndRuleWithoutContext() {
+        expectInvalidRule(
+                "${browser == 'IE9' && country == 'US'}",
+                new Object[][]{
+                        {"browser", "IE"},
+                },
+                new String[]{
+                }
+        );
+        expectInvalidRule(
+                "${browser == 'IE9' && country == 'US'}",
+                new Object[][]{
+                        {"country", "US"},
+                },
+                new String[]{
+                }
+        );
+        expectInvalidRule(
+                "${browser == 'IE9' && country == 'US'}",
+                new Object[][]{
+                },
+                new String[]{
+                        "browser",
+                }
+        );
+        expectInvalidRule(
+                "${browser == 'IE9' && country == 'US'}",
+                new Object[][]{
+                },
+                new String[]{
+                        "country",
+                }
+        );
+    }
+
+    @Test
+    public void testVerifyAndRuleWithAbsentIdentifers() {
+        expectValidRule(
+                "${browser == 'IE9' && country == 'US'}",
+                new Object[][]{
+                        {"browser", "IE"},
+                },
+                new String[]{
+                        "country",
+                }
+        );
+        expectValidRule(
+                "${browser == 'IE9' && country == 'US'}",
+                new Object[][]{
+                        {"country", "JP"},
+                },
+                new String[]{
+                        "browser",
+                }
+        );
+        expectValidRule(
+                "${browser == 'IE9' && country == 'US'}",
+                new Object[][]{
+                },
+                new String[]{
+                        "browser",
+                        "country",
+                }
+        );
+    }
+
+    @Test
+    public void testInvalidSyntaxRule() {
+        expectInvalidRule(
+                "${browser == 'IE9' && country = 'US'}",
+                new Object[][]{
+                        {"browser", "IE"},
+                        {"country", "JP"},
+                },
+                new String[]{
+                }
+        );
     }
 }
