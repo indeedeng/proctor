@@ -8,6 +8,7 @@ import com.indeed.proctor.store.GitProctor;
 import com.indeed.proctor.store.GitProctorCore;
 import com.indeed.proctor.store.GitWorkspaceProviderImpl;
 import com.indeed.proctor.store.ProctorStore;
+import com.indeed.proctor.store.async.AsyncProctorStore;
 import com.indeed.proctor.store.cache.CachingProctorStore;
 import com.indeed.util.varexport.VarExporter;
 import org.apache.commons.configuration.ConfigurationException;
@@ -82,16 +83,34 @@ public class GitProctorStoreFactory implements StoreFactory {
         this.gitCleanInitialization = gitCleanInitialization;
     }
 
+    // Build ProctorStore which does initial proctor data downloading synchronously in constructor
     public ProctorStore getTrunkStore() {
         return createStore("proctor/git/trunk");
     }
 
+    // Build ProctorStore which does initial proctor data downloading asynchronously which makes constructor returns early
+    public ProctorStore getAsyncTrunkStore() {
+        return new AsyncProctorStore(this, "proctor/git/trunk");
+    }
+
+    // Build ProctorStore which does initial proctor data downloading synchronously in constructor
     public ProctorStore getQaStore() {
         return createStore("proctor/git/qa");
     }
 
+    // Build ProctorStore which does initial proctor data downloading asynchronously which makes constructor returns early
+    public ProctorStore getAsyncQaStore() {
+        return new AsyncProctorStore(this, "proctor/git/qa");
+    }
+
+    // Build ProctorStore which does initial proctor data downloading synchronously in constructor
     public ProctorStore getProductionStore() {
         return createStore("proctor/git/production");
+    }
+
+    // Build ProctorStore which does initial proctor data downloading asynchronously which makes constructor returns early
+    public ProctorStore getAsyncProductionStore() {
+        return new AsyncProctorStore(this, "proctor/git/production");
     }
 
     public ProctorStore createStore(final String relativePath) {

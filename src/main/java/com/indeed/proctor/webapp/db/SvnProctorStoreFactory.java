@@ -3,8 +3,15 @@ package com.indeed.proctor.webapp.db;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import com.indeed.proctor.store.CachedSvnPersisterCore;
+import com.indeed.proctor.store.FileBasedProctorStore;
+import com.indeed.proctor.store.ProctorStore;
+import com.indeed.proctor.store.SvnDirectoryRefresher;
+import com.indeed.proctor.store.SvnPersisterCoreImpl;
+import com.indeed.proctor.store.SvnProctor;
+import com.indeed.proctor.store.SvnWorkspaceProviderImpl;
+import com.indeed.proctor.store.async.AsyncProctorStore;
 import com.indeed.util.varexport.VarExporter;
-import com.indeed.proctor.store.*;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.log4j.Logger;
 
@@ -59,16 +66,34 @@ public class SvnProctorStoreFactory implements StoreFactory {
         this.implicitTempRoot = identifyImplicitTempRoot();
     }
 
+    // Build ProctorStore which does initial proctor data downloading synchronously in constructor
     public ProctorStore getTrunkStore() {
         return createStore("/trunk/matrices");
     }
 
+    // Build ProctorStore which does initial proctor data downloading asynchronously which makes constructor returns early
+    public ProctorStore getAsyncTrunkStore() {
+        return new AsyncProctorStore(this, "/trunk/matrices");
+    }
+
+    // Build ProctorStore which does initial proctor data downloading synchronously in constructor
     public ProctorStore getQaStore() {
         return createStore("/branches/deploy/qa/matrices");
     }
 
+    // Build ProctorStore which does initial proctor data downloading asynchronously which makes constructor returns early
+    public ProctorStore getAsyncQaStore() {
+        return new AsyncProctorStore(this, "/branches/deploy/qa/matrices");
+    }
+
+    // Build ProctorStore which does initial proctor data downloading synchronously in constructor
     public ProctorStore getProductionStore() {
         return createStore("/branches/deploy/production/matrices");
+    }
+
+    // Build ProctorStore which does initial proctor data downloading asynchronously which makes constructor returns early
+    public ProctorStore getAsyncProductionStore() {
+        return new AsyncProctorStore(this, "/branches/deploy/production/matrices");
     }
 
     public ProctorStore createStore(final String relativePath) {
@@ -87,7 +112,7 @@ public class SvnProctorStoreFactory implements StoreFactory {
         LOGGER.info("Scheduling SvnWorkspaceProvider every " + cleanupScheduleMillis + " milliseconds for dir: " + tempDirectory + " with age millis " + tempDirCleanupAgeMillis);
         executor.scheduleWithFixedDelay(provider, cleanupScheduleMillis, cleanupScheduleMillis, TimeUnit.MILLISECONDS);
 
-        if(svnRefreshMillis > 0) {
+        if (svnRefreshMillis > 0) {
             final SvnDirectoryRefresher refresher = svncore.createRefresherTask();
             LOGGER.info("Scheduling SvnDirectoryRefresher every " + svnRefreshMillis + " milliseconds for dir: " + refresher.getDirectoryPath());
             executor.scheduleWithFixedDelay(refresher, svnRefreshMillis, svnRefreshMillis, TimeUnit.MILLISECONDS);
@@ -102,6 +127,7 @@ public class SvnProctorStoreFactory implements StoreFactory {
 
     /**
      * Identify the root-directory for TempFiles
+     *
      * @return
      */
     private File identifyImplicitTempRoot() throws IOException {
@@ -116,12 +142,12 @@ public class SvnProctorStoreFactory implements StoreFactory {
         final String dirName = CharMatcher.is(File.separatorChar).trimAndCollapseFrom(relativePath, '-');
         final File parent = tempRoot != null ? tempRoot : implicitTempRoot;
         final File temp = new File(parent, dirName);
-        if(temp.exists()) {
-           if(!temp.isDirectory()) {
-               throw new IllegalStateException(temp + " exists but is not a directory");
-           }
+        if (temp.exists()) {
+            if (!temp.isDirectory()) {
+                throw new IllegalStateException(temp + " exists but is not a directory");
+            }
         } else {
-            if(!temp.mkdir()) {
+            if (!temp.mkdir()) {
                 throw new IllegalStateException("Could not create directory : " + temp);
             }
         }
