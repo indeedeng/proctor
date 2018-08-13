@@ -33,6 +33,7 @@ public class TestAllocationIdUtil {
 
         final TestDefinition testDefinition = new TestDefinition();
         testDefinition.setAllocations(Lists.newArrayList(alloc1, alloc2));
+        testDefinition.setSalt("salt");
         return testDefinition;
     }
 
