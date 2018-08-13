@@ -18,7 +18,7 @@ import java.util.concurrent.Executors;
 
 public class AsyncProctorStore implements ProctorStore {
     private static final Logger LOGGER = Logger.getLogger(AsyncProctorStore.class);
-    private ProctorStore proctorStore = null;
+    private volatile ProctorStore proctorStore = null;
     private static final ExecutorService executorService = Executors.newCachedThreadPool();
 
     public AsyncProctorStore(final StoreFactory factory, final String relativePath) {
