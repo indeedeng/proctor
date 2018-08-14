@@ -1,5 +1,6 @@
 package com.indeed.proctor.webapp.controllers;
 
+import com.fasterxml.jackson.core.util.MinimalPrettyPrinter;
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -422,7 +423,7 @@ public class ProctorController extends AbstractController {
 
         final String errorMessage = "Apparently not impossible exception generating JSON";
         try {
-            final String testMatrixJson = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(testMatrixDefinition);
+            final String testMatrixJson = objectMapper.writer(new MinimalPrettyPrinter()).writeValueAsString(testMatrixDefinition);
             model.addAttribute("testMatrixDefinition", testMatrixJson);
 
             final Map<String, Map<String, String>> colors = Maps.newHashMap();
