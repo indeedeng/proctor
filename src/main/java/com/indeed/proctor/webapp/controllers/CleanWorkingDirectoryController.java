@@ -59,6 +59,7 @@ public class CleanWorkingDirectoryController extends AbstractController {
     private BackgroundJob<Boolean> createCleanWorkingDirectoryJob(final String username) {
         return jobFactory.createBackgroundJob(
                 String.format("Cleaning workspace for %s", username),
+                username,
                 BackgroundJob.JobType.WORKING_DIRECTORY_CLEANING,
                 new BackgroundJobFactory.Executor<Boolean>() {
                     @Override
