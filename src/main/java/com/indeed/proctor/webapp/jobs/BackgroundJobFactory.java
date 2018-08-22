@@ -17,11 +17,20 @@ public class BackgroundJobFactory {
         T execute(BackgroundJob job) throws Exception;
     }
 
-    public <T> BackgroundJob<T> createBackgroundJob(final String jobTitle, final BackgroundJob.JobType jobType, final Executor<T> executor) {
+    public <T> BackgroundJob<T> createBackgroundJob(final String jobTitle,
+                                                    final String username,
+                                                    final BackgroundJob.JobType jobType,
+                                                    final Executor<T> executor
+    ) {
         return new BackgroundJob<T>() {
             @Override
             public String getTitle() {
                 return jobTitle;
+            }
+
+            @Override
+            public String getUsername() {
+                return username;
             }
 
             @Override

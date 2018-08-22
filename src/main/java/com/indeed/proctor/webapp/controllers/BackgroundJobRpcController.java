@@ -90,6 +90,7 @@ public class BackgroundJobRpcController {
         final long interval = 100; // log every 100 milliseconds
         final BackgroundJob<Boolean> job = factory.createBackgroundJob(
                 "Sleeping for a total of " + ms + " ms",
+                "test-user",
                 BackgroundJob.JobType.JOB_TEST,
                 new BackgroundJobFactory.Executor<Boolean>() {
                     @Override

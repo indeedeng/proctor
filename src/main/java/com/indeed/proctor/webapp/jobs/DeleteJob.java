@@ -40,7 +40,8 @@ public class DeleteJob extends AbstractJob {
                      final BackgroundJobManager jobManager,
                      final BackgroundJobFactory jobFactory,
                      final CommentFormatter commentFormatter,
-                     final MatrixChecker matrixChecker) {
+                     final MatrixChecker matrixChecker
+    ) {
         super(trunkStore, qaStore, productionStore);
         this.jobManager = jobManager;
         this.jobFactory = jobFactory;
@@ -50,24 +51,25 @@ public class DeleteJob extends AbstractJob {
 
     @Autowired(required = false)
     public void setDefinitionDeleteChanges(final List<PreDefinitionDeleteChange> preDefinitionDeleteChanges,
-                                           final List<PostDefinitionDeleteChange> postDefinitionDeleteChanges) {
+                                           final List<PostDefinitionDeleteChange> postDefinitionDeleteChanges
+    ) {
         this.preDefinitionDeleteChanges = preDefinitionDeleteChanges;
         this.postDefinitionDeleteChanges = postDefinitionDeleteChanges;
     }
 
-    public BackgroundJob doDelete(
-            final String testName,
-            final String username,
-            final String password,
-            final String author,
-            final Environment source,
-            final String srcRevision,
-            final String comment,
-            final Map<String, String[]> requestParameterMap
+    public BackgroundJob doDelete(final String testName,
+                                  final String username,
+                                  final String password,
+                                  final String author,
+                                  final Environment source,
+                                  final String srcRevision,
+                                  final String comment,
+                                  final Map<String, String[]> requestParameterMap
     ) {
         LOGGER.info(String.format("Deleting test %s branch: %s user: %s ", testName, source, username));
         BackgroundJob<Object> backgroundJob = jobFactory.createBackgroundJob(
                 String.format("(username:%s author:%s) deleting %s branch: %s ", username, author, testName, source),
+                author,
                 BackgroundJob.JobType.TEST_DELETION,
                 job -> {
                     try {

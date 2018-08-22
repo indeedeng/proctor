@@ -128,6 +128,8 @@ public abstract class BackgroundJob<T> implements Callable<T> {
 
     public abstract String getTitle();
 
+    public abstract String getUsername();
+
     public JobType getJobType() {
         return JobType.UNKNOWN;
     }
@@ -215,7 +217,7 @@ public abstract class BackgroundJob<T> implements Callable<T> {
 
     @Nonnull
     public JobInfo getJobInfo() {
-        return new JobInfo(getUUID(), getStatus(), getLog(), getTitle(), isRunning(), getUrls(), getEndMessage());
+        return new JobInfo(getUUID(), getStatus(), getLog(), getTitle(), getUsername(), isRunning(), getUrls(), getEndMessage());
     }
 
     public enum JobType {
@@ -223,6 +225,7 @@ public abstract class BackgroundJob<T> implements Callable<T> {
         TEST_EDIT("test-edit"),
         TEST_DELETION("test-deletion"),
         TEST_PROMOTION("test-promotion"),
+        TEST_EDIT_PROMOTION("test-edit-promotion"),
         WORKING_DIRECTORY_CLEANING("working-directory-cleaning"),
         JOB_TEST("job-test"),
         UNKNOWN("unknown");
@@ -265,6 +268,7 @@ public abstract class BackgroundJob<T> implements Callable<T> {
         private final JobStatus status;
         private final String log;
         private final String title;
+        private final String username;
         private final boolean running;
         private final List<ResultUrl> urls;
         private final String endMessage;
@@ -273,13 +277,16 @@ public abstract class BackgroundJob<T> implements Callable<T> {
                        final JobStatus status,
                        final String log,
                        final String title,
+                       final String username,
                        final boolean running,
                        final List<ResultUrl> urls,
-                       final String endMessage) {
+                       final String endMessage
+        ) {
             this.jobId = jobId;
             this.status = status;
             this.log = log;
             this.title = title;
+            this.username = username;
             this.running = running;
             this.urls = urls;
             this.endMessage = endMessage;
@@ -299,6 +306,10 @@ public abstract class BackgroundJob<T> implements Callable<T> {
 
         public String getTitle() {
             return title;
+        }
+
+        public String getUsername() {
+            return username;
         }
 
         public boolean isRunning() {
