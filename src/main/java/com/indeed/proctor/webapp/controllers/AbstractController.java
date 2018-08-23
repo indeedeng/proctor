@@ -9,6 +9,7 @@ import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.webapp.db.Environment;
 import com.indeed.proctor.webapp.model.WebappConfiguration;
+import com.indeed.proctor.webapp.util.TestDefinitionUtil;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.ui.Model;
@@ -59,7 +60,7 @@ public abstract class AbstractController {
         return "XMLHttpRequest".equals(xhrHeader);
     }
 
-    protected Environment determineEnvironmentFromParameter(String branch) {
+    protected Environment determineEnvironmentFromParameter(final String branch) {
         final Environment b = Environment.fromName(branch);
         return b != null ? b : Environment.WORKING;
     }
@@ -68,30 +69,27 @@ public abstract class AbstractController {
         return configuration;
     }
 
-    private static ProctorStore determineStoreFromEnvironment(final Environment branch, Map<Environment, ProctorStore> stores) {
+    /**
+     * @return a store for QA, WORKING, PRODUCTION
+     * @throws IllegalArgumentException if branch is not known
+     */
+    @Nonnull
+    protected ProctorStore determineStoreFromEnvironment(final Environment branch) {
         return stores.computeIfAbsent(branch, key -> {
             throw new IllegalArgumentException("Unknown store for branch " + key);
         });
     }
 
-    /**
-     * returns a store for QA, WORKING, PRODUCTION, or else throws RuntimeException
-     */
-    @Nonnull
-    protected ProctorStore determineStoreFromEnvironment(final Environment branch) {
-        return determineStoreFromEnvironment(branch, stores);
-    }
-
     protected TestMatrixVersion getCurrentMatrix(final Environment branch) {
         try {
-            return determineStoreFromEnvironment(branch, stores).getCurrentTestMatrix();
+            return determineStoreFromEnvironment(branch).getCurrentTestMatrix();
         } catch (StoreException e) {
             return null;
         }
     }
 
     protected List<Revision> queryMatrixHistory(final Environment branch, final int start, final int limit) throws StoreException {
-        return determineStoreFromEnvironment(branch, stores).getMatrixHistory(start, limit);
+        return determineStoreFromEnvironment(branch).getMatrixHistory(start, limit);
     }
 
     protected TestMatrixVersion queryMatrixFromBranchOrRevision(final String branchOrRevision) throws StoreException {
@@ -128,7 +126,7 @@ public abstract class AbstractController {
         if (branch == null) {
             return new RevisionRef(branchOrRevisionName, storesList);
         } else {
-            return new BranchRef(determineStoreFromEnvironment(branch, stores));
+            return new BranchRef(determineStoreFromEnvironment(branch));
         }
     }
 
@@ -137,7 +135,7 @@ public abstract class AbstractController {
      */
     private interface BranchOrRevisionRef {
         @Nullable
-        TestDefinition queryTestDefinition(final String testName) throws StoreException;
+        TestDefinition queryTestDefinition(final String testName);
 
         @Nullable
         TestMatrixVersion queryTestMatrixVersion() throws StoreException;
@@ -154,12 +152,8 @@ public abstract class AbstractController {
 
         @Override
         @Nullable
-        public TestDefinition queryTestDefinition(final String testName) throws StoreException {
-            final TestMatrixVersion testMatrixVersion = queryTestMatrixVersion();
-            if (testMatrixVersion == null) {
-                return null;
-            }
-            return testMatrixVersion.getTestMatrixDefinition().getTests().get(testName);
+        public TestDefinition queryTestDefinition(final String testName) {
+            return TestDefinitionUtil.getTestDefinition(store, testName);
         }
 
         @Override
@@ -186,11 +180,13 @@ public abstract class AbstractController {
         @Override
         @Nullable
         public TestDefinition queryTestDefinition(final String testName) {
-            final TestMatrixVersion testMatrixVersion = queryTestMatrixVersion();
-            if (testMatrixVersion == null) {
-                return null;
+            for (final ProctorStore store : stores) {
+                final TestDefinition test = TestDefinitionUtil.getTestDefinition(store, testName);
+                if (test != null) {
+                    return test;
+                }
             }
-            return testMatrixVersion.getTestMatrixDefinition().getTests().get(testName);
+            return null;
         }
 
         @Override
@@ -214,12 +210,10 @@ public abstract class AbstractController {
             for (final ProctorStore store : stores) {
 
                 final Map<String, List<Revision>> allHistories = store.getAllHistories();
-                if (allHistories.containsKey(testName)) {
-                    for (final Revision r : allHistories.get(testName)) {
-                        if (revisionNumber.equals(r.getRevision())) {
-                            LOGGER.debug(String.format("Found revision [%s] in history of test [%s] in store [%s]", revisionNumber, testName, store.getName()));
-                            return store.getHistory(testName, revisionNumber, start, limit);
-                        }
+                for (final Revision r : allHistories.getOrDefault(testName, Collections.emptyList())) {
+                    if (revisionNumber.equals(r.getRevision())) {
+                        LOGGER.debug(String.format("Found revision [%s] in history of test [%s] in store [%s]", revisionNumber, testName, store.getName()));
+                        return store.getHistory(testName, revisionNumber, start, limit);
                     }
                 }
             }
