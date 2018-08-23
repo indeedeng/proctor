@@ -15,8 +15,6 @@ import org.springframework.ui.Model;
 import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -40,14 +38,6 @@ public abstract class AbstractController {
                 Environment.QA, qaStore,
                 Environment.PRODUCTION, productionStore
         );
-    }
-
-    protected static String printThrowable(final Throwable t) {
-        final StringWriter sw = new StringWriter();
-        final PrintWriter pw = new PrintWriter(sw);
-        t.printStackTrace(pw);
-        pw.close();
-        return sw.toString();
     }
 
     protected static boolean isAJAXRequest(final HttpServletRequest request) {
