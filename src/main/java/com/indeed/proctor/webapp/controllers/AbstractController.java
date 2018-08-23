@@ -24,7 +24,7 @@ import java.util.Map;
 /**
  * @author parker
  */
-public class AbstractController {
+public abstract class AbstractController {
     private static final Logger LOGGER = Logger.getLogger(AbstractController.class);
 
     private final WebappConfiguration configuration;
