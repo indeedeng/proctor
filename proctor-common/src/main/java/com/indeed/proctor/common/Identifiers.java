@@ -7,6 +7,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 
 public class Identifiers {
     @Nonnull
@@ -78,5 +79,23 @@ public class Identifiers {
     @Nullable
     public String getAccountId() {
         return getIdentifier(TestType.ACCOUNT);
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        final Identifiers that = (Identifiers) o;
+        return randomEnabled == that.randomEnabled &&
+                Objects.equals(identifierMap, that.identifierMap);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(identifierMap, randomEnabled);
     }
 }
