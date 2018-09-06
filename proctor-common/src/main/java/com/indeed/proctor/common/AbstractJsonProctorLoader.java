@@ -14,7 +14,7 @@ import java.io.Reader;
 import java.util.Objects;
 
 public abstract class AbstractJsonProctorLoader extends AbstractProctorLoader {
-    private static final Logger LOGGER = Logger.getLogger(FileProctorLoader.class);
+    private static final Logger LOGGER = Logger.getLogger(AbstractJsonProctorLoader.class);
 
     @Nonnull
     private final ObjectMapper objectMapper = Serializers.lenient();

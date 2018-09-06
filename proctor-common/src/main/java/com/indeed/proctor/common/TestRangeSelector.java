@@ -25,7 +25,7 @@ import java.util.Map.Entry;
  *
  */
 public class TestRangeSelector {
-    private static final Logger LOGGER = Logger.getLogger(RandomTestChooser.class);
+    private static final Logger LOGGER = Logger.getLogger(TestRangeSelector.class);
 
     @Nonnull
     private final String testName;
