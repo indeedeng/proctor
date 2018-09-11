@@ -17,15 +17,15 @@ public class RevisionControlStoreFactory implements FactoryBean<StoreFactory> {
     private String revisionControlType;
     private ScheduledExecutorService scheduledExecutorService;
 
-    private boolean cache;
-    private long tempDirCleanupAgeMinutes;
-    private long scmRefreshMinutes;
-    private long scmRefreshSeconds;
+    private boolean cache;  // only svn
+    private long tempDirCleanupAgeMinutes; // only svn
+    private long scmRefreshMinutes; // only svn
+    private long scmRefreshSeconds; // only svn
     private String scmPath;
     private String scmUsername;
     private String scmPassword;
     private String testDefinitionsDirectory;
-    private String tempRootDirectory;
+    private String tempRootDirectory;  // only git
 
     private int gitDirectoryLockTimeoutSeconds;
     private int gitPullPushTimeoutSeconds;
@@ -34,11 +34,11 @@ public class RevisionControlStoreFactory implements FactoryBean<StoreFactory> {
 
     @Override
     public StoreFactory getObject() throws Exception {
-        if (scmRefreshMinutes > 0) {
-            scmRefreshSeconds = TimeUnit.MINUTES.toSeconds(scmRefreshMinutes);
-        }
 
         if ("svn".equals(revisionControlType)) {
+            if (scmRefreshMinutes > 0) {
+                scmRefreshSeconds = TimeUnit.MINUTES.toSeconds(scmRefreshMinutes);
+            }
             return new SvnProctorStoreFactory(
                 scheduledExecutorService,
                 cache,
@@ -50,8 +50,6 @@ public class RevisionControlStoreFactory implements FactoryBean<StoreFactory> {
                 testDefinitionsDirectory);
         } else if ("git".equals(revisionControlType)) {
             return new GitProctorStoreFactory(
-                scheduledExecutorService,
-                scmRefreshSeconds,
                 scmPath,
                 scmUsername,
                 scmPassword,
