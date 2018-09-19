@@ -128,6 +128,15 @@
         },
         "no_buckets_specified": {
             "fallbackValue": -1
+        },
+        "with_all_ascii_characters": {
+            "buckets": {
+                "inactive": -1,
+                "control": 0,
+                "test": 1
+            },
+            "description": " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~",
+            "fallbackValue": -1
         }
     },
     "providedContext": {
