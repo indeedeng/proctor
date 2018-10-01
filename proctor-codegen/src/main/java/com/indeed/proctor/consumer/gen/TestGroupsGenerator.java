@@ -11,7 +11,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.indeed.proctor.common.dynamic.DynamicFilter;
 import com.indeed.proctor.common.dynamic.DynamicFilters;
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.File;
