@@ -181,7 +181,7 @@ public abstract class AbstractController {
         @Nullable
         public TestDefinition queryTestDefinition(final String testName) {
             for (final ProctorStore store : stores) {
-                final TestDefinition test = TestDefinitionUtil.getTestDefinition(store, testName);
+                final TestDefinition test = TestDefinitionUtil.getTestDefinition(store, testName, revisionNumber);
                 if (test != null) {
                     return test;
                 }
