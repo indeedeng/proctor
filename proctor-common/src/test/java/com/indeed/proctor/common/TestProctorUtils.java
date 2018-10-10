@@ -327,23 +327,37 @@ public class TestProctorUtils {
     }
     @Test
     public void testELValidity_inProctorBuilderTestRule() throws IncompatibleTestMatrixException {
-        //Testing syntax validation with a test rule
         final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
-        final ConsumableTestDefinition testDefInValTestRule = constructDefinition(buckets,
-                fromCompactAllocationFormat("${proctor:now()>-1}|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25"));
-        testDefInValTestRule.setRule("${b4t#+=}");
-        try {
-            ProctorUtils.verifyInternallyConsistentDefinition("testELevalInValTestRule", "test el recognition - inval test rule", testDefInValTestRule);
-            fail("expected IncompatibleTestMatrixException");
-        } catch (IncompatibleTestMatrixException e) {
-            //expected
+        { //Testing syntax validation with a test rule
+            final ConsumableTestDefinition testDefInValTestRule = constructDefinition(buckets,
+                    fromCompactAllocationFormat("${proctor:now()>-1}|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25"));
+            testDefInValTestRule.setRule("${b4t#+=}");
+            try {
+                ProctorUtils.verifyInternallyConsistentDefinition("testELevalInValTestRule", "test el recognition - inval test rule", testDefInValTestRule);
+                fail("expected IncompatibleTestMatrixException");
+            } catch (IncompatibleTestMatrixException e) {
+                //expected
+            }
         }
 
-        //testing the test rule el function recognition
-        final ConsumableTestDefinition testDefValTestRule = constructDefinition(buckets,
-                fromCompactAllocationFormat("${true}|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25"));
-        testDefValTestRule.setRule("${proctor:now()==indeed:now()}");
-        ProctorUtils.verifyInternallyConsistentDefinition("testELevalValTestRule", "test el recognition - val test rule and functions", testDefValTestRule);
+        {//testing the test rule el function recognition with assignment instead of equals
+            final ConsumableTestDefinition testDefInValTestRule = constructDefinition(buckets,
+                    fromCompactAllocationFormat("${true}|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25"));
+            testDefInValTestRule.setRule("${proctor:now()=indeed:now()}");
+            try {
+                ProctorUtils.verifyInternallyConsistentDefinition("testELevalInValTestRule", "test el recognition - inval test rule", testDefInValTestRule);
+                fail("expected IncompatibleTestMatrixException");
+            } catch (IncompatibleTestMatrixException e) {
+                //expected
+            }
+        }
+
+        {//testing the test rule el function recognition
+            final ConsumableTestDefinition testDefValTestRule = constructDefinition(buckets,
+                    fromCompactAllocationFormat("${true}|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25"));
+            testDefValTestRule.setRule("${proctor:now()==indeed:now()}");
+            ProctorUtils.verifyInternallyConsistentDefinition("testELevalValTestRule", "test el recognition - val test rule and functions", testDefValTestRule);
+        }
 
 
     }

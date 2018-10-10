@@ -180,14 +180,42 @@ public class TestRuleVerifyUtils {
     }
 
     @Test
-    public void testInvalidSyntaxRule() {
-        expectInvalidRule(
-                "${browser == 'IE9' && country = 'US'}",
+    public void testInvalidSyntaxRuleWithAssignment() {
+        final String testRuleUsingValid = "${lang=='en' && ((companyUrl != null && country == 'US' && indeed:contains(EC_COMPANY_URLS, companyUrl)))}";
+        final String testRuleUsingAssign = "${lang=='en' && ((companyUrl != null && country = 'US' && indeed:contains(EC_COMPANY_URLS, companyUrl)))}";
+
+        expectValidRule(
+                testRuleUsingValid,
                 new Object[][]{
-                        {"browser", "IE"},
-                        {"country", "JP"},
+                        {"EC_COMPANY_URLS", "foo"}
                 },
                 new String[]{
+                        "lang",
+                        "companyUrl",
+                        "country",
+                }
+        );
+
+        expectInvalidRule(
+                testRuleUsingAssign,
+                new Object[][]{
+                        {"companyUrl", "indeed.com"},
+                        {"country", "JP"},
+                        {"lang", "en"},
+                        {"EC_COMPANY_URLS", "foo"}
+                },
+                new String[]{
+                }
+        );
+        expectInvalidRule(
+                testRuleUsingAssign,
+                new Object[][]{
+                        {"EC_COMPANY_URLS", "foo"}
+                },
+                new String[]{
+                        "lang",
+                        "companyUrl",
+                        "country",
                 }
         );
     }
