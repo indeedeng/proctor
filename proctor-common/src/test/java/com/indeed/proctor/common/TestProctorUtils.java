@@ -1799,18 +1799,15 @@ public class TestProctorUtils {
         final List<Allocation> allocationList = Lists.newArrayListWithExpectedSize(allocations.size());
         // rule|0:0,0:.0.1,0:.2
         for(String allocation : allocations) {
-            final String[] parts = allocation.split("\\|");
+            int separatorPosition = allocation.lastIndexOf('|');
             final String rule;
             final String sRanges;
-            if(parts.length == 1) {
+            if(separatorPosition < 0) {
                 rule = null;
-                sRanges = parts[0];
-            } else if (parts.length == 2) {
-                rule = parts[0];
-                sRanges = parts[1];
+                sRanges = allocation;
             } else {
-                System.out.println("parts : " + parts.length);
-                throw new IllegalArgumentException("Invalid compact allocation format [" + allocation + "], expected: rule|<bucketValue>:<length>, ...<bucketValue-N>:<length-N>.");
+                rule = allocation.substring(0, separatorPosition);
+                sRanges = allocation.substring(separatorPosition + 1);
             }
             String[] allRanges = sRanges.split(",");
             final List<Range> ranges = Lists.newArrayListWithCapacity(allRanges.length);
