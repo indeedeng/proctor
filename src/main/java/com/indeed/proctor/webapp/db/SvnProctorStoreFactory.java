@@ -22,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * @author parker
+ * Proctor webapp with svn is not actively supported
  */
 public class SvnProctorStoreFactory implements StoreFactory {
     private static final Logger LOGGER = Logger.getLogger(SvnProctorStoreFactory.class);
