@@ -1,18 +1,14 @@
 package com.indeed.proctor.store.cache;
 
-import com.google.common.collect.Lists;
 import com.indeed.proctor.common.model.TestDefinition;
 import com.indeed.proctor.store.InMemoryProctorStore;
 import com.indeed.proctor.store.ProctorStore;
-import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.store.StoreException.TestUpdateException;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Collections;
-import java.util.Date;
-import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
@@ -26,15 +22,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class CachingProctorStoreTest {
-
-    private static final List<Integer> DUMMY_HISTORY = Lists.newArrayList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
-    private static final List<Revision> REVISION_HISTORY = Lists.newArrayList(
-            makeRevision("1"),
-            makeRevision("2"),
-            makeRevision("3"),
-            makeRevision("4"),
-            makeRevision("5")
-    );
 
     private static final Thread.UncaughtExceptionHandler ASSERTION_FAILURE_HANDLER = new Thread.UncaughtExceptionHandler() {
         public void uncaughtException(final Thread thread, final Throwable throwable) {
@@ -59,54 +46,6 @@ public class CachingProctorStoreTest {
         testee = new CachingProctorStore(delegate);
         /* we stop the background refresh task to perform in order to do better unit test */
         testee.getRefreshTaskFuture().cancel(false);
-    }
-
-    @Test
-    public void testSelectHistorySet() {
-        final List<Integer> result = CachingProctorStore.selectHistorySet(DUMMY_HISTORY, 0, 1);
-        assertEquals(Lists.newArrayList(1), result);
-    }
-
-    @Test
-    public void testSelectHistorySetWithNegativeStart() {
-        final List<Integer> result = CachingProctorStore.selectHistorySet(DUMMY_HISTORY, -1, 1);
-        assertEquals(Lists.newArrayList(1), result);
-    }
-
-    @Test
-    public void testSelectHistorySetWithNonPositiveLimit() {
-        final List<Integer> result = CachingProctorStore.selectHistorySet(DUMMY_HISTORY, 2, -1);
-        assertEquals(Collections.<Integer>emptyList(), result);
-    }
-
-    @Test
-    public void testSelectHistorySetNotOverflow() {
-        List<Integer> result = CachingProctorStore.selectHistorySet(DUMMY_HISTORY, 0, Integer.MAX_VALUE);
-        assertEquals(DUMMY_HISTORY, result);
-
-        result = CachingProctorStore.selectHistorySet(DUMMY_HISTORY, 0, Integer.MIN_VALUE);
-        assertEquals(Collections.<Integer>emptyList(), result);
-
-        result = CachingProctorStore.selectHistorySet(DUMMY_HISTORY, Integer.MIN_VALUE, Integer.MAX_VALUE);
-        assertEquals(DUMMY_HISTORY, result);
-    }
-
-    @Test
-    public void testSelectRevisionHistorySetFrom() {
-        final List<Revision> result = CachingProctorStore.selectRevisionHistorySetFrom(REVISION_HISTORY, "2", 0, 3);
-        assertEquals(REVISION_HISTORY.subList(1, 4), result);
-    }
-
-    @Test
-    public void testSelectRevisionHistorySetFromReturnEmtpy() {
-        final List<Revision> result = CachingProctorStore.selectRevisionHistorySetFrom(REVISION_HISTORY, "5", 1, 3);
-        assertEquals(Collections.emptyList(), result);
-    }
-
-    @Test
-    public void testSelectRevisionHistorySetFromNonexistence() {
-        final List<Revision> result = CachingProctorStore.selectRevisionHistorySetFrom(REVISION_HISTORY, "hello", 0, 3);
-        assertEquals(Collections.emptyList(), result);
     }
 
     @Test
@@ -267,12 +206,8 @@ public class CachingProctorStoreTest {
             thread.start();
         }
 
-        for (final Thread thread : threads)  {
+        for (final Thread thread : threads) {
             thread.join();
         }
-    }
-
-    private static Revision makeRevision(final String revision) {
-        return new Revision(revision, "author", new Date(), "revision message");
     }
 }

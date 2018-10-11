@@ -10,7 +10,6 @@ import com.google.common.collect.Maps;
 import com.indeed.proctor.common.model.TestDefinition;
 import com.indeed.proctor.common.model.TestMatrixDefinition;
 import com.indeed.proctor.common.model.TestMatrixVersion;
-import com.indeed.proctor.store.cache.CachingProctorStore;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -23,6 +22,9 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import static com.indeed.proctor.store.utils.HistoryUtil.selectHistorySet;
+import static com.indeed.proctor.store.utils.HistoryUtil.selectRevisionHistorySetFrom;
 
 /**
  * This class is an in-memory implementation of ProctorStore.
@@ -245,7 +247,7 @@ public class InMemoryProctorStore implements ProctorStore {
         return synchronizedRead(new Callable<List<Revision>>() {
             @Override
             public List<Revision> call() throws Exception {
-                final List<RevisionAndTest> result = CachingProctorStore.selectHistorySet(revisionStorage, start, limit);
+                final List<RevisionAndTest> result = selectHistorySet(revisionStorage, start, limit);
                 return castToRevisionList(result);
             }
         });
@@ -257,7 +259,7 @@ public class InMemoryProctorStore implements ProctorStore {
             @Override
             public List<Revision> call() throws Exception {
                 final List<Revision> revisions = filterRevisionByTest(revisionStorage, test);
-                return CachingProctorStore.selectHistorySet(revisions, start, limit);
+                return selectHistorySet(revisions, start, limit);
             }
         });
     }
@@ -268,7 +270,7 @@ public class InMemoryProctorStore implements ProctorStore {
             @Override
             public List<Revision> call() throws Exception {
                 final List<Revision> revisions = filterRevisionByTest(revisionStorage, test);
-                return CachingProctorStore.selectRevisionHistorySetFrom(revisions, revision, start, limit);
+                return selectRevisionHistorySetFrom(revisions, revision, start, limit);
             }
         });
     }

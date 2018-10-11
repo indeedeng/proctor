@@ -19,6 +19,22 @@ public class TestMatrixVersion {
     @Nullable
     private String author;
 
+    public TestMatrixVersion() {
+    }
+
+    public TestMatrixVersion(@Nullable final TestMatrixDefinition testMatrixDefinition,
+                             @Nullable final Date published,
+                             final String version,
+                             @Nullable final String description,
+                             @Nullable final String author
+    ) {
+        this.testMatrixDefinition = testMatrixDefinition;
+        this.published = published;
+        this.version = version;
+        this.description = description;
+        this.author = author;
+    }
+
     @Nullable
     public TestMatrixDefinition getTestMatrixDefinition() {
         return testMatrixDefinition;
