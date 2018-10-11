@@ -4,7 +4,8 @@
     <parent>
         <groupId>com.indeed</groupId>
         <artifactId>proctor-parent</artifactId>
-        <version>1.1.56-SNAPSHOT</version>
+        <!--This version is not used in latest release. See https://mvnrepository.com/artifact/com.indeed/proctor-parent -->
+        <version>9999-SNAPSHOT</version>
     </parent>
 
     <artifactId>proctor-tomcat-deps</artifactId>

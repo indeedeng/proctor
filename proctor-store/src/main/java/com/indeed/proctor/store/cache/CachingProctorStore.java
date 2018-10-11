@@ -11,11 +11,11 @@ import com.indeed.proctor.common.model.TestMatrixVersion;
 import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.store.StoreException;
+import com.indeed.proctor.store.utils.HistoryUtil;
 import org.apache.log4j.Logger;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -117,12 +117,12 @@ public class CachingProctorStore implements ProctorStore {
 
     @Override
     public List<Revision> getHistory(final String test, final int start, final int limit) throws StoreException {
-        return selectHistorySet(cacheHolder.getCachedHistory().get(test), start, limit);
+        return HistoryUtil.selectHistorySet(cacheHolder.getCachedHistory().get(test), start, limit);
     }
 
     @Override
     public List<Revision> getHistory(final String test, final String revision, final int start, final int limit) throws StoreException {
-        return selectRevisionHistorySetFrom(cacheHolder.getCachedHistory().get(test), revision, start, limit);
+        return HistoryUtil.selectRevisionHistorySetFrom(cacheHolder.getCachedHistory().get(test), revision, start, limit);
     }
 
     @Override
@@ -135,26 +135,20 @@ public class CachingProctorStore implements ProctorStore {
         cacheHolder.refreshAll();
     }
 
-    @VisibleForTesting
+    /**
+     * Please use {@link HistoryUtil#selectHistorySet(List, int, int)}
+     */
+    @Deprecated
     public static <T> List<T> selectHistorySet(final List<T> histories, final int start, final int limit) {
-        if ((histories == null) || (start >= histories.size()) || (limit < 1)) {
-            return Collections.emptyList();
-        }
-        final int s = Math.max(start, 0);
-        final int l = Math.min(limit, histories.size() - s); /** to avoid overflow**/
-        return histories.subList(s, s + l);
+        return HistoryUtil.selectHistorySet(histories, start, limit);
     }
 
-    @VisibleForTesting
+    /**
+     * Please use {@link HistoryUtil#selectRevisionHistorySetFrom(List, String, int, int)}
+     */
+    @Deprecated
     public static List<Revision> selectRevisionHistorySetFrom(final List<Revision> history, final String from, final int start, final int limit) {
-        int i = 0;
-        for (final Revision rev : history) {
-            if (rev.getRevision().equals(from)) {
-                break;
-            }
-            i++;
-        }
-        return selectHistorySet(history, start + i, limit);
+        return HistoryUtil.selectRevisionHistorySetFrom(history, from, start, limit);
     }
 
     @Override
