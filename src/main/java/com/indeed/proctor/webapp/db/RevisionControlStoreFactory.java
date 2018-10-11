@@ -1,8 +1,11 @@
 package com.indeed.proctor.webapp.db;
 
+import com.google.common.base.Preconditions;
 import com.indeed.proctor.store.ProctorStore;
+import com.indeed.proctor.webapp.extensions.GlobalCacheStore;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.util.concurrent.ScheduledExecutorService;
@@ -32,33 +35,39 @@ public class RevisionControlStoreFactory implements FactoryBean<StoreFactory> {
     private int gitCloneTimeoutSeconds;
     private boolean gitCleanInitialization;
 
+    private GlobalCacheStore globalCacheStore;
+
     @Override
     public StoreFactory getObject() throws Exception {
-
         if ("svn".equals(revisionControlType)) {
+            Preconditions.checkArgument(
+                    globalCacheStore == null,
+                    "Global cache is not supported in SVN"
+            );
             if (scmRefreshMinutes > 0) {
                 scmRefreshSeconds = TimeUnit.MINUTES.toSeconds(scmRefreshMinutes);
             }
             return new SvnProctorStoreFactory(
-                scheduledExecutorService,
-                cache,
-                tempDirCleanupAgeMinutes,
-                scmRefreshSeconds,
-                scmPath,
-                scmUsername,
-                scmPassword,
-                testDefinitionsDirectory);
+                    scheduledExecutorService,
+                    cache,
+                    tempDirCleanupAgeMinutes,
+                    scmRefreshSeconds,
+                    scmPath,
+                    scmUsername,
+                    scmPassword,
+                    testDefinitionsDirectory);
         } else if ("git".equals(revisionControlType)) {
             return new GitProctorStoreFactory(
-                scmPath,
-                scmUsername,
-                scmPassword,
-                testDefinitionsDirectory,
-                tempRootDirectory,
-                gitDirectoryLockTimeoutSeconds,
-                gitPullPushTimeoutSeconds,
-                gitCloneTimeoutSeconds,
-                gitCleanInitialization);
+                    scmPath,
+                    scmUsername,
+                    scmPassword,
+                    testDefinitionsDirectory,
+                    tempRootDirectory,
+                    gitDirectoryLockTimeoutSeconds,
+                    gitPullPushTimeoutSeconds,
+                    gitCloneTimeoutSeconds,
+                    gitCleanInitialization,
+                    globalCacheStore);
         }
         return null;
     }
@@ -157,5 +166,10 @@ public class RevisionControlStoreFactory implements FactoryBean<StoreFactory> {
     @Value("${git.initialize.clean:false}")
     public void setGitCleanInitialization(final boolean cleanInitialization) {
         gitCleanInitialization = cleanInitialization;
+    }
+
+    @Autowired(required = false)
+    public void setGlobalCacheStore(final GlobalCacheStore globalCacheStore) {
+        this.globalCacheStore = globalCacheStore;
     }
 }
