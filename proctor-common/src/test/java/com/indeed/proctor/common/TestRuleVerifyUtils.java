@@ -182,6 +182,32 @@ public class TestRuleVerifyUtils {
     }
 
     @Test
+    public void testInvalidSyntaxRuleWithConcat() {
+        expectInvalidRule(
+                "${browser == 'IE9' && country += 'US'}",
+                new Object[][]{
+                        {"country", "US"},
+                        {"browser", "chrome"}
+                },
+                new String[]{
+                }
+        );
+    }
+
+    @Test
+    public void testInvalidSyntaxRuleWithArrow() {
+        expectInvalidRule(
+                "${browser == 'IE9' && country -> 'US'}",
+                new Object[][]{
+                        {"country", "US"},
+                        {"browser", "chrome"}
+                },
+                new String[]{
+                }
+        );
+    }
+
+    @Test
     public void testInvalidSyntaxRuleWithAssignment() {
         final String testRuleUsingValid = "${lang=='en' && ((companyUrl != null && country == 'US' && indeed:contains(EC_COMPANY_URLS, companyUrl)))}";
         final String testRuleUsingAssign = "${lang=='en' && ((companyUrl != null && country = 'US' && indeed:contains(EC_COMPANY_URLS, companyUrl)))}";
