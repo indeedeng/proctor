@@ -64,7 +64,8 @@ For this process, we'll use an example similar to the  [https://github.com/indee
 in generated Java class names.
 2. Create the file `src/main/proctor/org/example/proctor/ExampleGroups.json` with this content:
 
-{% gist parker/3bb0e94b9b238b48429f 0-ExampleGroups.json %}
+```{% gist parker/3bb0e94b9b238b48429f 0-ExampleGroups.json %}```
+
 The result is a single test `bgcolortst` with five buckets: `inactive, altcolor1, altcolor2, altcolor3, altcolor4`.
 
 ### Setting up the maven plugin and generate code
@@ -103,7 +104,7 @@ In the test specification you created, you set up 4 test buckets and one inactiv
 
 1. Create a file called `proctor-definition.json` with this content:
 
-   {% gist youknowjack/6782462 proctor-definition.json %}
+   ```{% gist youknowjack/6782462 proctor-definition.json %}```
 
 2. Load this definition from the file system as your test matrix.
 
@@ -111,22 +112,22 @@ In the test specification you created, you set up 4 test buckets and one inactiv
 
 1. Load your specification (from the classpath) and use it to load your test matrix.
 
-   {% gist youknowjack/6782938 LoadProctor.java %}
+ ```  {% gist youknowjack/6782938 LoadProctor.java %}```
 
 2. Use the Proctor object to get the generated convenience class objects. You'll need to provide a user unique id, typically stored in a cookie for web applications, since this is a `USER` test.
 
 
-   {% gist youknowjack/6783121 GetProctorGroups.java %}
+   ```{% gist youknowjack/6783121 GetProctorGroups.java %}```
 
 You can now use the ExampleGroups object in your Java code or your view templates.
 
 #### Java example
 
-{% gist youknowjack/6783207 ExampleGroupsUsage.java %}
+```{% gist youknowjack/6783207 ExampleGroupsUsage.java %}```
 
 #### JSP example
 
-{% gist youknowjack/6783315 %}
+```{% gist youknowjack/6783315 %}```
 
 ### Testing your groups
 
