@@ -114,8 +114,9 @@ public class TestRuleVerifyUtils {
 
     @Test
     public void testVerifyAndRuleWithoutContext() {
+        final String testRule = "${browser == 'IE9' && country == 'US'}";
         expectInvalidRule(
-                "${browser == 'IE9' && country == 'US'}",
+                testRule,
                 new Object[][]{
                         {"browser", "IE"},
                 },
@@ -123,7 +124,7 @@ public class TestRuleVerifyUtils {
                 }
         );
         expectInvalidRule(
-                "${browser == 'IE9' && country == 'US'}",
+                testRule,
                 new Object[][]{
                         {"country", "US"},
                 },
@@ -131,7 +132,7 @@ public class TestRuleVerifyUtils {
                 }
         );
         expectInvalidRule(
-                "${browser == 'IE9' && country == 'US'}",
+                testRule,
                 new Object[][]{
                 },
                 new String[]{
@@ -139,7 +140,7 @@ public class TestRuleVerifyUtils {
                 }
         );
         expectInvalidRule(
-                "${browser == 'IE9' && country == 'US'}",
+                testRule,
                 new Object[][]{
                 },
                 new String[]{
@@ -150,8 +151,9 @@ public class TestRuleVerifyUtils {
 
     @Test
     public void testVerifyAndRuleWithAbsentIdentifers() {
+        final String testRule = "${browser == 'IE9' && country == 'US'}";
         expectValidRule(
-                "${browser == 'IE9' && country == 'US'}",
+                testRule,
                 new Object[][]{
                         {"browser", "IE"},
                 },
@@ -160,7 +162,7 @@ public class TestRuleVerifyUtils {
                 }
         );
         expectValidRule(
-                "${browser == 'IE9' && country == 'US'}",
+                testRule,
                 new Object[][]{
                         {"country", "JP"},
                 },
@@ -169,7 +171,7 @@ public class TestRuleVerifyUtils {
                 }
         );
         expectValidRule(
-                "${browser == 'IE9' && country == 'US'}",
+                testRule,
                 new Object[][]{
                 },
                 new String[]{
@@ -180,14 +182,68 @@ public class TestRuleVerifyUtils {
     }
 
     @Test
-    public void testInvalidSyntaxRule() {
+    public void testInvalidSyntaxRuleWithConcat() {
         expectInvalidRule(
-                "${browser == 'IE9' && country = 'US'}",
+                "${browser == 'IE9' && country += 'US'}",
                 new Object[][]{
-                        {"browser", "IE"},
-                        {"country", "JP"},
+                        {"country", "US"},
+                        {"browser", "chrome"}
                 },
                 new String[]{
+                }
+        );
+    }
+
+    @Test
+    public void testInvalidSyntaxRuleWithArrow() {
+        expectInvalidRule(
+                "${browser == 'IE9' && country -> 'US'}",
+                new Object[][]{
+                        {"country", "US"},
+                        {"browser", "chrome"}
+                },
+                new String[]{
+                }
+        );
+    }
+
+    @Test
+    public void testInvalidSyntaxRuleWithAssignment() {
+        final String testRuleUsingValid = "${lang=='en' && ((companyUrl != null && country == 'US' && indeed:contains(EC_COMPANY_URLS, companyUrl)))}";
+        final String testRuleUsingAssign = "${lang=='en' && ((companyUrl != null && country = 'US' && indeed:contains(EC_COMPANY_URLS, companyUrl)))}";
+
+        expectValidRule(
+                testRuleUsingValid,
+                new Object[][]{
+                        {"EC_COMPANY_URLS", "foo"}
+                },
+                new String[]{
+                        "lang",
+                        "companyUrl",
+                        "country",
+                }
+        );
+
+        expectInvalidRule(
+                testRuleUsingAssign,
+                new Object[][]{
+                        {"companyUrl", "indeed.com"},
+                        {"country", "JP"},
+                        {"lang", "en"},
+                        {"EC_COMPANY_URLS", "foo"}
+                },
+                new String[]{
+                }
+        );
+        expectInvalidRule(
+                testRuleUsingAssign,
+                new Object[][]{
+                        {"EC_COMPANY_URLS", "foo"}
+                },
+                new String[]{
+                        "lang",
+                        "companyUrl",
+                        "country",
                 }
         );
     }

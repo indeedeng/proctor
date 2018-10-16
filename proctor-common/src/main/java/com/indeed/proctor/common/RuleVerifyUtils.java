@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import org.apache.el.lang.ExpressionBuilder;
 import org.apache.el.parser.AstIdentifier;
 import org.apache.el.parser.Node;
+import org.apache.el.parser.NodeVisitor;
 import org.apache.log4j.Logger;
 
 import javax.el.ELContext;
@@ -39,8 +40,10 @@ public class RuleVerifyUtils {
                 throw new InvalidRuleException(e, String.format("Rule %s has invalid syntax.", testRule));
             }
 
+            assertNoAssignmentsInRule(testRule);
+
             if (shouldEvaluate) {
-                /**
+                /*
                  * must have a context to test against, even if it's "Collections.emptyMap()", how to
                  * tell if this method is used for ProctorBuilder or during load of the testMatrix.
                  * also used to check to make sure any classes included in the EL can be found.
@@ -72,6 +75,36 @@ public class RuleVerifyUtils {
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * assert that rule expression contains no assignments.
+     * In apache-el:8, assignments in ValueExpression do not cause Exception, so we need to manually check
+     */
+    private static void assertNoAssignmentsInRule(final String testRule) throws InvalidRuleException {
+        final Node rootNode = ExpressionBuilder.createNode(testRule);
+        try {
+            rootNode.accept(new NodeVisitor() {
+                @Override
+                public void visit(final Node node) throws InvalidRuleException {
+                    // Class org.apache.el.AstAssign was only introduced in apache-el:8, so cannot use instanceOf
+                    if ("Assign".equalsIgnoreCase(node.toString())) {
+                        throw new InvalidRuleException(String.format("Rule %s contains an assignment, be sure to use '==' for comparisons.", testRule));
+                    }
+                    if ("Concatenation".equalsIgnoreCase(node.toString())) {
+                        throw new InvalidRuleException(String.format("Rule %s contains a concatenation, no not use '+='.", testRule));
+                    }
+                    if ("Arrow".equalsIgnoreCase(node.toString())) {
+                        throw new InvalidRuleException(String.format("Rule %s contains an arrow, do not use '->' for comparisons.", testRule));
+                    }
+                }
+            });
+        } catch (final InvalidRuleException e) {
+            throw e;
+        } catch (final Exception e) {
+            // should never happen
+            throw new RuntimeException("Unexpected Exception", e);
         }
     }
 
