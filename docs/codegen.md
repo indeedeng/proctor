@@ -112,7 +112,7 @@ public class ExampleGroups extends AbstractGroups {
 
 Key points
 
-- `AbstractGroups` provides a application-specific meaning to each test and test-bucket.
+- `AbstractGroups` provides an application-specific meaning to each test and test-bucket.
 - An `enum` is created for each `test` and corresponding `group`.
 - Accessors for each test `group` are generated and can be used to check whether a proctor-result contains the specified `test bucket`.
 
@@ -191,7 +191,7 @@ The `proctor-maven-plugin` plugin makes it easy to incorporate Java code generat
 | `generate-js` | generate-js-sources | Generates groups from `src/main/proctor` and adds specification as source resource |
 | `generate-js-test` | generate-js-test-sources | Generates groups from `src/test/proctor` and adds specification as test resource |
 
-The following `plugin` element should be added to your application's `pom.xml` ([complete pom.xml example example](https://gist.github.com/parker/c0ea111ff343f58346e0#file-pom-xml)):
+The following `plugin` element should be added to your application's `pom.xml` ([complete pom.xml example](https://gist.github.com/parker/c0ea111ff343f58346e0#file-pom-xml)):
 
 ```xml
 ...
@@ -211,7 +211,7 @@ The following `plugin` element should be added to your application's `pom.xml` (
 ...
 ```
 
-The `generate` goal is executed in the standard compile and build lifecycle. To man manually run the code generator, run the following in a terminal:
+The `generate` goal is executed in the standard compile and build lifecycle. To manually run the code generator, run the following in a terminal:
 
 <pre><code>$ mvn com.indeed:proctor-maven-plugin:generate</code></pre>
 
