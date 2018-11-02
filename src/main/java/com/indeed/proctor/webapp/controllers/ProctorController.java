@@ -167,7 +167,7 @@ public class ProctorController extends AbstractController {
         return View.MATRIX_USAGE.getName();
     }
 
-    @RequestMapping(value = "/specification")
+    @RequestMapping(value = "/specification", method = RequestMethod.GET)
     public JsonView viewProctorSpecification(final String branch,
                                              final String app,
                                              final String version) throws IOException {

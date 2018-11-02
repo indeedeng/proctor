@@ -365,7 +365,7 @@ public class ProctorTestDefinitionController extends AbstractController {
         }
     }
 
-    @RequestMapping(value = "/{testName}/specification")
+    @RequestMapping(value = "/{testName}/specification", method = RequestMethod.GET)
     public View doSpecificationGet(
             @PathVariable String testName,
             @RequestParam(required = false) final String branch
