@@ -57,26 +57,6 @@ public class EnvironmentVersion {
             productionEffectiveRevision);
     }
 
-    /**
-     * Creates a new EnvironmentVersion modifying the appropriate version and
-     * effectiveRevision.
-     *
-     * @param branch
-     * @param version
-     * @param effectiveRevision
-     * @return
-     */
-    public EnvironmentVersion update(final Environment branch, final Revision version, final String effectiveRevision ) {
-        return new EnvironmentVersion(testName ,
-                                      Environment.WORKING == branch ? version : this.trunk,
-                                      Environment.WORKING == branch ? effectiveRevision : this.trunkEffectiveRevision,
-                                      Environment.QA == branch ? version : this.qa,
-                                      Environment.QA == branch ? effectiveRevision : this.qaEffectiveRevision,
-                                      Environment.PRODUCTION == branch ? version : this.production,
-                                      Environment.PRODUCTION == branch ? effectiveRevision : this.productionEffectiveRevision
-                                      );
-    }
-
     public String getTestName() {
         return testName;
     }
