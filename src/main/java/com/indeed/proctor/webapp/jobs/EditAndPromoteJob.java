@@ -285,11 +285,9 @@ public class EditAndPromoteJob extends AbstractJob {
         if (existingTestDefinition == null) {
             job.log("(scm) adding test definition");
             trunkStore.addTestDefinition(username, password, author, testName, testDefinitionToUpdate, metadata, fullComment);
-            promoter.refreshWorkingVersion(testName);
         } else {
             job.log("(scm) updating test definition");
             trunkStore.updateTestDefinition(username, password, author, previousRevision, testName, testDefinitionToUpdate, metadata, fullComment);
-            promoter.refreshWorkingVersion(testName);
         }
 
         //PostDefinitionEdit
