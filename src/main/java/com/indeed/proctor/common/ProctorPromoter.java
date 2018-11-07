@@ -127,7 +127,7 @@ public class ProctorPromoter {
         }
     }
 
-    private ProctorStore getStoreFromBranch(Environment srcBranch) {
+    protected ProctorStore getStoreFromBranch(Environment srcBranch) {
         switch (srcBranch) {
             case WORKING:
                 return trunk;
