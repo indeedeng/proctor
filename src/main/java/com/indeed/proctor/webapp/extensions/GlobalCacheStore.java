@@ -34,6 +34,17 @@ public interface GlobalCacheStore {
     Optional<TestDefinition> getCachedTestDefinition(final Environment env, final String testName);
 
     /**
+     * Get test definition for a test at a specified revision in a specified environment
+     *
+     * @param env      environment
+     * @param testName test name
+     * @param revision revision of test definition
+     * @return optional of test definition. It is expected to return {@code Optional.empty()} when there is no
+     * corresponding data in global cache or failed to get test definition from it.
+     */
+    Optional<TestDefinition> getCachedTestDefinition(final Environment env, final String testName, final String revision);
+
+    /**
      * Update test definition and history for a test in a specified environment
      *
      * @param env            environment

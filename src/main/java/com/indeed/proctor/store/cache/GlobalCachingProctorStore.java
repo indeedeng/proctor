@@ -5,6 +5,7 @@ import com.indeed.proctor.common.model.TestMatrixVersion;
 import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.store.StoreException;
+import com.indeed.proctor.store.utils.HistoryUtil;
 import com.indeed.proctor.webapp.db.Environment;
 import com.indeed.proctor.webapp.extensions.GlobalCacheStore;
 import org.apache.log4j.Logger;
@@ -13,8 +14,6 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-
-import static com.indeed.proctor.store.utils.HistoryUtil.selectHistorySet;
 
 /**
  * A decorator class for ProctorStore
@@ -110,7 +109,8 @@ public class GlobalCachingProctorStore implements ProctorStore {
 
     @Override
     public TestDefinition getTestDefinition(final String test, final String fetchRevision) throws StoreException {
-        return delegate.getTestDefinition(test, fetchRevision);
+        return globalCacheStore.getCachedTestDefinition(environment, test, fetchRevision)
+                .orElse(delegate.getTestDefinition(test, fetchRevision));
     }
 
     @Override
@@ -121,13 +121,15 @@ public class GlobalCachingProctorStore implements ProctorStore {
     @Override
     public List<Revision> getHistory(final String test, final int start, final int limit) throws StoreException {
         return globalCacheStore.getCachedHistory(environment, test).map(
-                history -> selectHistorySet(history, start, limit)
+                history -> HistoryUtil.selectHistorySet(history, start, limit)
         ).orElse(delegate.getHistory(test, start, limit));
     }
 
     @Override
     public List<Revision> getHistory(final String test, final String revision, final int start, final int limit) throws StoreException {
-        return delegate.getHistory(test, revision, start, limit);
+        return globalCacheStore.getCachedHistory(environment, test).map(
+                history -> HistoryUtil.selectRevisionHistorySetFrom(history, revision, start, limit)
+        ).orElse(delegate.getHistory(test, revision, start, limit));
     }
 
     @Override
