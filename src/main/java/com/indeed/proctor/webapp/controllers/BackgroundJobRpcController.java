@@ -84,7 +84,7 @@ public class BackgroundJobRpcController {
                 job.getFuture().cancel(true);
             }
             final BackgroundJobResponseModel result = new BackgroundJobResponseModel(job);
-            final JsonResponse<BackgroundJobResponseModel> response = new JsonResponse<BackgroundJobResponseModel>(result, true, null);
+            final JsonResponse<BackgroundJobResponseModel> response = new JsonResponse<>(result, true, null);
             return new JsonView(response);
         }
     }

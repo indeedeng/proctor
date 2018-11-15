@@ -117,7 +117,7 @@ public class ProctorController extends AbstractController {
     /**
      * TODO: this should be the default screen at /
      */
-    // not a @ApiOperation
+    // not a @ApiOperation because it produces HTML
     @RequestMapping(value="/", method=RequestMethod.GET)
     public String viewTestMatrix(final String branch,
                                  final Model model,
@@ -142,7 +142,7 @@ public class ProctorController extends AbstractController {
         return new JsonView(testMatrixArtifact);
     }
 
-    // not a @ApiOperation
+    // not a @ApiOperation because it produces HTML
     @RequestMapping(value="/usage", method=RequestMethod.GET)
     public String viewMatrixUsage(final Model model) {
         // treemap for sorted iteration by test name
@@ -237,7 +237,7 @@ public class ProctorController extends AbstractController {
         }
     }
 
-    // not a @ApiOperation
+    // not a @ApiOperation because it produces HTML
     @RequestMapping(value="/compatibility", method=RequestMethod.GET)
     public String viewMatrixCompatibility(final Model model) {
         final Map<Environment, CompatibilityRow> compatibilityMap = Maps.newLinkedHashMap();
