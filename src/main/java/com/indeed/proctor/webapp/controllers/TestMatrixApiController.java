@@ -10,6 +10,8 @@ import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.webapp.db.Environment;
 import com.indeed.proctor.webapp.model.WebappConfiguration;
 import com.indeed.proctor.webapp.views.JsonView;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -39,6 +41,11 @@ public class TestMatrixApiController extends AbstractController {
         super(configuration, trunkStore, qaStore, productionStore);
     }
 
+    @ApiOperation(
+            value = "Show a test matrix for a branch or revision",
+            response = TestMatrixVersion.class,
+            produces = "application/json"
+    )
     @RequestMapping(value = "/{branchOrRevision}/matrix", method = RequestMethod.GET)
     public JsonView getTestMatrix(
             @PathVariable final String branchOrRevision
@@ -48,9 +55,15 @@ public class TestMatrixApiController extends AbstractController {
         return new JsonView(testMatrixVersion);
     }
 
+    @ApiOperation(
+            value = "Show a history of all tests starting at a branch or revision",
+            response = Revision.class,
+            responseContainer = "List",
+            produces = "application/json"
+    )
     @RequestMapping(value = "/{branch}/matrix/history", method = RequestMethod.GET)
     public JsonView getTestMatrixHistory(
-            @PathVariable final String branch,
+            @ApiParam(allowableValues = "trunk,qa,production") @PathVariable final String branch,
             @RequestParam(required = false, value = "start", defaultValue = "0") final int start,
             @RequestParam(required = false, value = "limit", defaultValue = "32") final int limit
     ) throws StoreException {
@@ -59,6 +72,11 @@ public class TestMatrixApiController extends AbstractController {
         return new JsonView(queryMatrixHistory(environment, start, limit));
     }
 
+    @ApiOperation(
+            value = "Show a definition of a test starting at a branch or revision",
+            response = TestDefinition.class,
+            produces = "application/json"
+    )
     @RequestMapping(value = "/{branchOrRevision}/definition/{testName}", method = RequestMethod.GET)
     public JsonView getTestDefinition(
             @PathVariable final String branchOrRevision,
@@ -70,6 +88,12 @@ public class TestMatrixApiController extends AbstractController {
         return new JsonView(testDefinition);
     }
 
+    @ApiOperation(
+            value = "Show a history of a test starting at a branch or revision",
+            response = Revision.class,
+            responseContainer = "List",
+            produces = "application/json"
+    )
     @RequestMapping(value = "/{branchOrRevision}/definition/{testName}/history", method = RequestMethod.GET)
     public JsonView getTestDefinitionHistory(
             @PathVariable final String branchOrRevision,
