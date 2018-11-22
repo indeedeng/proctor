@@ -16,6 +16,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.View;
 
 import java.util.List;
@@ -43,18 +44,17 @@ public class BackgroundJobRpcController {
         this.factory = factory;
     }
 
-    @ApiOperation(value = "Request background job status", response = BackgroundJob.JobInfo.class)
+    @ApiOperation(value = "Request background job status")
     @RequestMapping(value = "/status", method = RequestMethod.GET)
-    public View doGetJobStatus(@RequestParam("id") final UUID jobId) {
+    @ResponseBody
+    public JsonResponse<BackgroundJob.JobInfo> doGetJobStatus(@RequestParam("id") final UUID jobId) {
         final BackgroundJob.JobInfo jobInfo = manager.getJobInfo(jobId);
 
         if (jobInfo == null) {
             final String msg = "Failed to identify job for " + jobId;
-            final JsonResponse<String> err = new JsonResponse<String>(msg, false, msg);
-            return new JsonView(err);
+            return new JsonResponse<>(null, false, msg);
         } else {
-            final JsonResponse<BackgroundJob.JobInfo> response = new JsonResponse<>(jobInfo, true, null);
-            return new JsonView(response);
+            return new JsonResponse<>(jobInfo, true, null);
         }
     }
 
@@ -71,7 +71,7 @@ public class BackgroundJobRpcController {
         return "jobs";
     }
 
-    @ApiOperation(value = "Cancel a background job", response = BackgroundJobResponseModel.class)
+    @ApiOperation(value = "Cancel a background job")
     @RequestMapping(value = "/cancel", method = RequestMethod.GET)
     public View doCancelJob(@RequestParam("id") final UUID jobId) {
         final BackgroundJob job = manager.getJobForId(jobId);
@@ -89,7 +89,7 @@ public class BackgroundJobRpcController {
         }
     }
 
-    @ApiOperation(value = "Test endpoint sleeps for ms milliseconds", response = BackgroundJobResponseModel.class)
+    @ApiOperation(value = "Test endpoint sleeps for ms milliseconds")
     @RequestMapping(value = "/test", method = RequestMethod.GET)
     public View submitTestJob(@RequestParam(value = "ms", defaultValue = "1000") final long ms) {
         final long start = System.currentTimeMillis();
