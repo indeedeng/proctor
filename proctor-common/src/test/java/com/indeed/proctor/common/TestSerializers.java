@@ -1,8 +1,10 @@
 package com.indeed.proctor.common;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 import com.indeed.proctor.common.dynamic.DynamicFilter;
 import com.indeed.proctor.common.dynamic.DynamicFilters;
+import com.indeed.proctor.common.dynamic.ShareTestsArtifactFilter;
 import com.indeed.proctor.common.dynamic.TestNamePatternFilter;
 import com.indeed.proctor.common.dynamic.TestNamePrefixFilter;
 import com.indeed.proctor.common.model.Allocation;
@@ -221,6 +223,15 @@ public class TestSerializers {
                 ),
                 specification.getDynamicFilters()
         );
+    }
+
+    @Test
+    public void testShareTestsArtifactFilterDeserialize() throws IOException {
+        final ObjectMapper objectMapper = Serializers.lenient();
+        final String json = "{\"type\": \"tag\", \"tags\": [\"emo-webapp\"]}";
+        final DynamicFilter filter = objectMapper.readValue(json, DynamicFilter.class);
+        assertTrue(filter instanceof ShareTestsArtifactFilter);
+        assertEquals(ImmutableList.of("emo-webapp"), ((ShareTestsArtifactFilter) filter).getTags());
     }
 
 }
