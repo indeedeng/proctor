@@ -109,4 +109,8 @@ public class DynamicFilters implements JsonSerializable {
         final JsonSerializer<Object> serializer = serializers.findValueSerializer(DynamicFilter[].class);
         serializer.serializeWithType(filters.toArray(), gen, serializers, typeSer);
     }
+
+    public List<DynamicFilter> getFilters() {
+        return filters;
+    }
 }
