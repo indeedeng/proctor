@@ -19,6 +19,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.regex.Pattern;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -208,7 +209,8 @@ public class TestSerializers {
                 "\"providedContext\": {}, " +
                 "\"dynamicFilters\": [" +
                 "{\"type\": \"name_prefix\", \"prefix\": \"abc_\"}, " +
-                "{\"type\": \"name_pattern\", \"regex\": \"abc_[a-z]+_xyz\"}" +
+                "{\"type\": \"name_pattern\", \"regex\": \"abc_[a-z]+_xyz\"}, " +
+                "{\"type\": \"tag\", \"tags\": [\"abc_webapp\"]}" +
                 "]" +
                 "}";
         final ProctorSpecification specification = objectMapper.readValue(json, ProctorSpecification.class);
@@ -218,7 +220,8 @@ public class TestSerializers {
                 new DynamicFilters(
                         Arrays.asList(
                                 new TestNamePrefixFilter("abc_"),
-                                new TestNamePatternFilter("abc_[a-z]+_xyz")
+                                new TestNamePatternFilter("abc_[a-z]+_xyz"),
+                                new ShareTestsArtifactFilter(ImmutableList.of("abc_webapp"))
                         )
                 ),
                 specification.getDynamicFilters()
@@ -231,7 +234,10 @@ public class TestSerializers {
         final String json = "{\"type\": \"tag\", \"tags\": [\"emo-webapp\"]}";
         final DynamicFilter filter = objectMapper.readValue(json, DynamicFilter.class);
         assertTrue(filter instanceof ShareTestsArtifactFilter);
+        ((ShareTestsArtifactFilter) filter).setPatternSupplier(() -> ImmutableList.of(Pattern.compile("abc_[a-z]+_xyz")));
         assertEquals(ImmutableList.of("emo-webapp"), ((ShareTestsArtifactFilter) filter).getTags());
+        assertTrue(filter.matches("abc_aaa_xyz", new ConsumableTestDefinition()));
+        assertFalse(filter.matches("abc_xyz", new ConsumableTestDefinition()));
     }
 
 }
