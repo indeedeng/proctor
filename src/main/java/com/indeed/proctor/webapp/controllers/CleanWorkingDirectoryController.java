@@ -5,6 +5,7 @@ import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.webapp.jobs.BackgroundJob;
 import com.indeed.proctor.webapp.jobs.BackgroundJobFactory;
 import com.indeed.proctor.webapp.jobs.BackgroundJobManager;
+import com.indeed.proctor.webapp.model.BackgroundJobResponseModel;
 import com.indeed.proctor.webapp.model.WebappConfiguration;
 import com.indeed.proctor.webapp.views.JsonView;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,7 +49,8 @@ public class CleanWorkingDirectoryController extends AbstractController {
         jobManager.submit(job);
 
         if (isAJAXRequest(request)) {
-            final JsonResponse<Map> response = new JsonResponse<Map>(BackgroundJobRpcController.buildJobJson(job), true, job.getTitle());
+            final JsonResponse<BackgroundJobResponseModel> response =
+                    new JsonResponse<BackgroundJobResponseModel>(new BackgroundJobResponseModel(job), true, job.getTitle());
             return new JsonView(response);
         } else {
             // redirect to a status page for the job id

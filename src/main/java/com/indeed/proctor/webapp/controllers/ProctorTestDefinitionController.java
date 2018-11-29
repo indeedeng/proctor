@@ -28,6 +28,7 @@ import com.indeed.proctor.webapp.jobs.DeleteJob;
 import com.indeed.proctor.webapp.jobs.EditAndPromoteJob;
 import com.indeed.proctor.webapp.jobs.MatrixChecker;
 import com.indeed.proctor.webapp.model.AppVersion;
+import com.indeed.proctor.webapp.model.BackgroundJobResponseModel;
 import com.indeed.proctor.webapp.model.ProctorClientApplication;
 import com.indeed.proctor.webapp.model.RevisionDefinition;
 import com.indeed.proctor.webapp.model.SessionViewModel;
@@ -35,6 +36,7 @@ import com.indeed.proctor.webapp.model.WebappConfiguration;
 import com.indeed.proctor.webapp.tags.UtilityFunctions;
 import com.indeed.proctor.webapp.util.TestDefinitionUtil;
 import com.indeed.proctor.webapp.views.JsonView;
+import io.swagger.annotations.ApiOperation;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -122,6 +124,7 @@ public class ProctorTestDefinitionController extends AbstractController {
         this.requireAuth = requireAuth;
         Preconditions.checkArgument(verificationTimeout > 0, "verificationTimeout > 0");
     }
+
 
     @RequestMapping(value = "/create", method = RequestMethod.GET)
     public String create(final Model model) {
@@ -238,6 +241,7 @@ public class ProctorTestDefinitionController extends AbstractController {
         return doView(theEnvironment, Views.EDIT, testName, definition, Collections.<RevisionDefinition>emptyList(), version, requireAuth, model);
     }
 
+    @ApiOperation(value = "Delete proctor test")
     @RequestMapping(value = "/{testName}/delete", method = RequestMethod.POST, params = {"username, password"})
     public View doDeletePost(
             @PathVariable final String testName,
@@ -260,7 +264,7 @@ public class ProctorTestDefinitionController extends AbstractController {
                 new HashMap<>(request.getParameterMap())
         );
         if (isAJAXRequest(request)) {
-            final JsonResponse<Map> response = new JsonResponse<>(BackgroundJobRpcController.buildJobJson(job), true, job.getTitle());
+            final JsonResponse<BackgroundJobResponseModel> response = new JsonResponse<>(new BackgroundJobResponseModel(job), true, job.getTitle());
             return new JsonView(response);
         } else {
             // redirect to a status page for the job id
@@ -269,6 +273,7 @@ public class ProctorTestDefinitionController extends AbstractController {
 
     }
 
+    @ApiOperation(value = "Promote proctor test")
     @RequestMapping(value = "/{testName}/promote", method = RequestMethod.POST, params = {"username, password"})
     public View doPromotePost(
             @PathVariable final String testName,
@@ -294,13 +299,14 @@ public class ProctorTestDefinitionController extends AbstractController {
                 new HashMap<>(request.getParameterMap())
         );
         if (isAJAXRequest(request)) {
-            final JsonResponse<Map> response = new JsonResponse<>(BackgroundJobRpcController.buildJobJson(job), true, job.getTitle());
+            final JsonResponse<BackgroundJobResponseModel> response = new JsonResponse<>(new BackgroundJobResponseModel(job), true, job.getTitle());
             return new JsonView(response);
         } else {
             return new RedirectView("/proctor/definition/" + UtilityFunctions.urlEncode(testName) + "?branch=" + destination.getName());
         }
     }
 
+    @ApiOperation(value = "Edit proctor test")
     @RequestMapping(value = "/{testName}/edit", method = RequestMethod.POST, params = {"username, password"})
     public View doEditPost(
             @PathVariable final String testName,
@@ -326,7 +332,7 @@ public class ProctorTestDefinitionController extends AbstractController {
                 new HashMap<>(request.getParameterMap())
         );
         if (isAJAXRequest(request)) {
-            final JsonResponse<Map> response = new JsonResponse<>(BackgroundJobRpcController.buildJobJson(job), true, job.getTitle());
+            final JsonResponse<BackgroundJobResponseModel> response = new JsonResponse<>(new BackgroundJobResponseModel(job), true, job.getTitle());
             return new JsonView(response);
         } else {
             // redirect to a status page for the job id
@@ -365,7 +371,8 @@ public class ProctorTestDefinitionController extends AbstractController {
         }
     }
 
-    @RequestMapping(value = "/{testName}/specification")
+    @ApiOperation(value = "Proctor test specification", response = TestSpecification.class)
+    @RequestMapping(value = "/{testName}/specification", method = RequestMethod.GET)
     public View doSpecificationGet(
             @PathVariable String testName,
             @RequestParam(required = false) final String branch

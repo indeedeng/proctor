@@ -4,9 +4,11 @@ import com.google.common.collect.ImmutableMap;
 import com.indeed.proctor.webapp.jobs.BackgroundJob;
 import com.indeed.proctor.webapp.jobs.BackgroundJobFactory;
 import com.indeed.proctor.webapp.jobs.BackgroundJobManager;
+import com.indeed.proctor.webapp.model.BackgroundJobResponseModel;
 import com.indeed.proctor.webapp.model.SessionViewModel;
 import com.indeed.proctor.webapp.model.WebappConfiguration;
 import com.indeed.proctor.webapp.views.JsonView;
+import io.swagger.annotations.ApiOperation;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -14,6 +16,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.View;
 
 import java.util.List;
@@ -41,20 +44,21 @@ public class BackgroundJobRpcController {
         this.factory = factory;
     }
 
+    @ApiOperation(value = "Request background job status")
     @RequestMapping(value = "/status", method = RequestMethod.GET)
-    public View doGetJobStatus(@RequestParam("id") final UUID jobId) {
+    @ResponseBody
+    public JsonResponse<BackgroundJob.JobInfo> doGetJobStatus(@RequestParam("id") final UUID jobId) {
         final BackgroundJob.JobInfo jobInfo = manager.getJobInfo(jobId);
 
         if (jobInfo == null) {
             final String msg = "Failed to identify job for " + jobId;
-            final JsonResponse<String> err = new JsonResponse<String>(msg, false, msg);
-            return new JsonView(err);
+            return new JsonResponse<>(null, false, msg);
         } else {
-            final JsonResponse<BackgroundJob.JobInfo> response = new JsonResponse<>(jobInfo, true, null);
-            return new JsonView(response);
+            return new JsonResponse<>(jobInfo, true, null);
         }
     }
 
+    @ApiOperation(value = "List background jobs")
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public String doGetJobList(final Model model) {
         final List<BackgroundJob> jobs = manager.getRecentJobs();
@@ -67,6 +71,7 @@ public class BackgroundJobRpcController {
         return "jobs";
     }
 
+    @ApiOperation(value = "Cancel a background job")
     @RequestMapping(value = "/cancel", method = RequestMethod.GET)
     public View doCancelJob(@RequestParam("id") final UUID jobId) {
         final BackgroundJob job = manager.getJobForId(jobId);
@@ -78,12 +83,13 @@ public class BackgroundJobRpcController {
             if (job.getFuture() != null) {
                 job.getFuture().cancel(true);
             }
-            final Map<String, Object> result = buildJobJson(job);
-            final JsonResponse<Map> response = new JsonResponse<Map>(result, true, null);
+            final BackgroundJobResponseModel result = new BackgroundJobResponseModel(job);
+            final JsonResponse<BackgroundJobResponseModel> response = new JsonResponse<>(result, true, null);
             return new JsonView(response);
         }
     }
 
+    @ApiOperation(value = "Test endpoint sleeps for ms milliseconds")
     @RequestMapping(value = "/test", method = RequestMethod.GET)
     public View submitTestJob(@RequestParam(value = "ms", defaultValue = "1000") final long ms) {
         final long start = System.currentTimeMillis();
@@ -115,10 +121,15 @@ public class BackgroundJobRpcController {
         );
         manager.submit(job);
 
-        final JsonResponse<Map> response = new JsonResponse<Map>(buildJobJson(job), true, null);
+        final JsonResponse<BackgroundJobResponseModel> response =
+                new JsonResponse<BackgroundJobResponseModel>(new BackgroundJobResponseModel(job), true, null);
         return new JsonView(response);
     }
 
+    /**
+     * @deprecated Use
+     */
+    @Deprecated
     public static Map<String, Object> buildJobJson(final BackgroundJob job) {
         final ImmutableMap.Builder<String, Object> builder = ImmutableMap.builder();
 

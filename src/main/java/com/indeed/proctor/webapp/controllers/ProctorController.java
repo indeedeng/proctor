@@ -31,6 +31,7 @@ import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.webapp.ProctorSpecificationSource;
 import com.indeed.proctor.webapp.db.Environment;
+import com.indeed.proctor.webapp.jobs.BackgroundJob;
 import com.indeed.proctor.webapp.model.AppVersion;
 import com.indeed.proctor.webapp.model.ProctorClientApplication;
 import com.indeed.proctor.webapp.model.RemoteSpecificationResult;
@@ -38,6 +39,7 @@ import com.indeed.proctor.webapp.model.SessionViewModel;
 import com.indeed.proctor.webapp.model.WebappConfiguration;
 import com.indeed.proctor.webapp.util.threads.LogOnUncaughtExceptionHandler;
 import com.indeed.proctor.webapp.views.JsonView;
+import io.swagger.annotations.ApiOperation;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -115,6 +117,7 @@ public class ProctorController extends AbstractController {
     /**
      * TODO: this should be the default screen at /
      */
+    // not a @ApiOperation because it produces HTML
     @RequestMapping(value="/", method=RequestMethod.GET)
     public String viewTestMatrix(final String branch,
                                  final Model model,
@@ -130,6 +133,7 @@ public class ProctorController extends AbstractController {
         return getArtifactForView(model, which, View.MATRIX_LIST);
     }
 
+    @ApiOperation(value = "Proctor test matrix", response = TestMatrixArtifact.class)
     @RequestMapping(value="/matrix/raw", method=RequestMethod.GET)
     public JsonView viewRawTestMatrix(final String branch, final Model model) {
         final Environment which = determineEnvironmentFromParameter(branch);
@@ -138,6 +142,7 @@ public class ProctorController extends AbstractController {
         return new JsonView(testMatrixArtifact);
     }
 
+    // not a @ApiOperation because it produces HTML
     @RequestMapping(value="/usage", method=RequestMethod.GET)
     public String viewMatrixUsage(final Model model) {
         // treemap for sorted iteration by test name
@@ -167,7 +172,8 @@ public class ProctorController extends AbstractController {
         return View.MATRIX_USAGE.getName();
     }
 
-    @RequestMapping(value = "/specification")
+    @ApiOperation(value = "Proctor test specification", response = TestMatrixArtifact.class)
+    @RequestMapping(value = "/specification", method = RequestMethod.GET)
     public JsonView viewProctorSpecification(final String branch,
                                              final String app,
                                              final String version) throws IOException {
@@ -231,6 +237,7 @@ public class ProctorController extends AbstractController {
         }
     }
 
+    // not a @ApiOperation because it produces HTML
     @RequestMapping(value="/compatibility", method=RequestMethod.GET)
     public String viewMatrixCompatibility(final Model model) {
         final Map<Environment, CompatibilityRow> compatibilityMap = Maps.newLinkedHashMap();
