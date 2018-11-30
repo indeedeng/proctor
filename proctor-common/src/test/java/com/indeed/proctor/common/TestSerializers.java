@@ -4,7 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.indeed.proctor.common.dynamic.DynamicFilter;
 import com.indeed.proctor.common.dynamic.DynamicFilters;
-import com.indeed.proctor.common.dynamic.ShareTestsArtifactFilter;
+import com.indeed.proctor.common.dynamic.PatternSupplier;
+import com.indeed.proctor.common.dynamic.TaggedPatternFilter;
 import com.indeed.proctor.common.dynamic.TestNamePatternFilter;
 import com.indeed.proctor.common.dynamic.TestNamePrefixFilter;
 import com.indeed.proctor.common.model.Allocation;
@@ -16,9 +17,11 @@ import com.indeed.proctor.common.model.TestType;
 import org.junit.Assert;
 import org.junit.Test;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import static org.junit.Assert.assertEquals;
@@ -221,7 +224,7 @@ public class TestSerializers {
                         Arrays.asList(
                                 new TestNamePrefixFilter("abc_"),
                                 new TestNamePatternFilter("abc_[a-z]+_xyz"),
-                                new ShareTestsArtifactFilter(ImmutableList.of("abc_webapp"))
+                                new TaggedPatternFilter(ImmutableList.of("abc_webapp"))
                         )
                 ),
                 specification.getDynamicFilters()
@@ -231,11 +234,17 @@ public class TestSerializers {
     @Test
     public void testShareTestsArtifactFilterDeserialize() throws IOException {
         final ObjectMapper objectMapper = Serializers.lenient();
-        final String json = "{\"type\": \"tag\", \"tags\": [\"emo-webapp\"]}";
+        final String json = "{\"type\": \"tag\", \"tags\": [\"tag1\"]}";
         final DynamicFilter filter = objectMapper.readValue(json, DynamicFilter.class);
-        assertTrue(filter instanceof ShareTestsArtifactFilter);
-        ((ShareTestsArtifactFilter) filter).setPatternSupplier(() -> ImmutableList.of(Pattern.compile("abc_[a-z]+_xyz")));
-        assertEquals(ImmutableList.of("emo-webapp"), ((ShareTestsArtifactFilter) filter).getTags());
+        assertTrue(filter instanceof TaggedPatternFilter);
+        ((TaggedPatternFilter) filter).setPatternSupplier(new PatternSupplier() {
+            @Nonnull
+            @Override
+            public List<Pattern> getPattern(final List<String> tags) {
+                return ImmutableList.of(Pattern.compile("abc_[a-z]+_xyz"));
+            }
+        });
+        assertEquals(ImmutableList.of("tag1"), ((TaggedPatternFilter) filter).getTags());
         assertTrue(filter.matches("abc_aaa_xyz", new ConsumableTestDefinition()));
         assertFalse(filter.matches("abc_xyz", new ConsumableTestDefinition()));
     }

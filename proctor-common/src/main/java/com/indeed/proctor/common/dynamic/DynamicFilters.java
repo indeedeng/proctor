@@ -28,7 +28,7 @@ public class DynamicFilters implements JsonSerializable {
             Lists.newArrayList(
                     TestNamePrefixFilter.class,
                     TestNamePatternFilter.class,
-                    ShareTestsArtifactFilter.class
+                    TaggedPatternFilter.class
             )
     );
 
@@ -111,6 +111,6 @@ public class DynamicFilters implements JsonSerializable {
     }
 
     public List<DynamicFilter> getFilters() {
-        return filters;
+        return ImmutableList.copyOf(filters);
     }
 }
