@@ -45,7 +45,7 @@ public class TaggedPatternFilter implements DynamicFilter {
             return false;
         }
 
-        final List<Pattern> patterns = patternSupplier.getPattern(tags);
+        final List<Pattern> patterns = patternSupplier.getPatterns(tags);
         for (final Pattern compiledPattern : patterns) {
             if (compiledPattern.matcher(testName).matches()) {
                 return true;
@@ -64,12 +64,12 @@ public class TaggedPatternFilter implements DynamicFilter {
             return false;
         }
         final TaggedPatternFilter that = (TaggedPatternFilter) o;
-        return Objects.equals(tags, that.tags);
+        return Objects.equals(tags, that.tags) && Objects.equals(patternSupplier, that.patternSupplier);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(tags);
+        return Objects.hash(tags, patternSupplier);
     }
 
     /**

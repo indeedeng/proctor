@@ -1,5 +1,6 @@
 package com.indeed.proctor.common;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.indeed.proctor.common.dynamic.DynamicFilter;
@@ -213,7 +214,8 @@ public class TestSerializers {
                 "\"dynamicFilters\": [" +
                 "{\"type\": \"name_prefix\", \"prefix\": \"abc_\"}, " +
                 "{\"type\": \"name_pattern\", \"regex\": \"abc_[a-z]+_xyz\"}, " +
-                "{\"type\": \"tag\", \"tags\": [\"abc_webapp\"]}" +
+                "{\"type\": \"tag\", \"tags\": [\"abc_webapp\"]}, " +
+                "{\"type\": \"tag\", \"tags\": [\"bcd_webapp\", \"cde_webapp\", \"def_webapp\"]}" +
                 "]" +
                 "}";
         final ProctorSpecification specification = objectMapper.readValue(json, ProctorSpecification.class);
@@ -224,11 +226,26 @@ public class TestSerializers {
                         Arrays.asList(
                                 new TestNamePrefixFilter("abc_"),
                                 new TestNamePatternFilter("abc_[a-z]+_xyz"),
-                                new TaggedPatternFilter(ImmutableList.of("abc_webapp"))
+                                new TaggedPatternFilter(ImmutableList.of("abc_webapp")),
+                                new TaggedPatternFilter(ImmutableList.of("bcd_webapp", "cde_webapp", "def_webapp"))
                         )
                 ),
                 specification.getDynamicFilters()
         );
+    }
+
+    @Test(expected = JsonMappingException.class)
+    public void testEmptyTaggedPatternDynamicFilterSpecificationDeserialize() throws IOException {
+        final ObjectMapper objectMapper = Serializers.lenient();
+        final String json = "{" +
+                "\"tests\": {}, " +
+                "\"providedContext\": {}, " +
+                "\"dynamicFilters\": [" +
+                "{\"type\": \"tag\", \"tags\": []}, " +
+                "]" +
+                "}";
+        // Exception because tags list should not be empty
+        final ProctorSpecification specification = objectMapper.readValue(json, ProctorSpecification.class);
     }
 
     @Test
@@ -240,7 +257,7 @@ public class TestSerializers {
         ((TaggedPatternFilter) filter).setPatternSupplier(new PatternSupplier() {
             @Nonnull
             @Override
-            public List<Pattern> getPattern(final List<String> tags) {
+            public List<Pattern> getPatterns(final List<String> tags) {
                 return ImmutableList.of(Pattern.compile("abc_[a-z]+_xyz"));
             }
         });

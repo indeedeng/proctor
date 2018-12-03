@@ -10,5 +10,5 @@ import java.util.regex.Pattern;
 
 public interface PatternSupplier {
     @Nonnull
-    List<Pattern> getPattern(final List<String> tags);
+    List<Pattern> getPatterns(final List<String> tags);
 }
