@@ -41,7 +41,6 @@ public class TaggedPatternFilter implements DynamicFilter {
     @Override
     public boolean matches(final String testName, final ConsumableTestDefinition testDefinition) {
         if (patternSupplier == null) {
-            LOGGER.warn("No PatternSupplier specified when matches() is called");
             return false;
         }
 
