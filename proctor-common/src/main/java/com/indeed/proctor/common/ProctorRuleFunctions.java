@@ -1,18 +1,56 @@
 package com.indeed.proctor.common;
 
-import java.util.Collection;
-
 import com.indeed.util.core.ReleaseVersion;
+
+import java.util.Collection;
 
 /**
  * Library of functions to make available to EL rules
- * @author ketan
  *
+ * @author ketan
  */
 @SuppressWarnings("UnusedDeclaration")
 public class ProctorRuleFunctions {
     public static boolean contains(final Collection c, final Object element) {
+        if (isIntegerNumber(element)) {
+            // This special treatment is required because the type of constant variable
+            // determined implicitly in deserialization from JSON definition file.
+            // Without this treatment, it may cause an unintended behavior
+            // when collection comes from constant integer array (ex. [1, 2, 3]: List<Integer>)
+            // and element comes from context variable defined as Long.
+            // This doesn't handle float number since it's not usual to do strict equal comparison.
+            final long elementValue = toLong(element);
+            for (final Object x : c) {
+                if (isIntegerNumber(x)) {
+                    final long value = toLong(x);
+                    if (elementValue == value) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
         return c.contains(element);
+    }
+
+    private static boolean isFloatNumber(final Object object) {
+        return (object instanceof Float) || (object instanceof Double);
+    }
+
+    private static boolean isIntegerNumber(final Object object) {
+        return (object instanceof Number) && !isFloatNumber(object);
+    }
+
+    /**
+     * Casts to long. Argument variable must be instance of Number class
+     *
+     * @param number Number object
+     * @return casted long value
+     * @throws ClassCastException if given object is not instance of Number class
+     */
+    private static long toLong(final Object number) {
+        return ((Number) number).longValue();
     }
 
     public static boolean matches(final String value, final String regex) {
