@@ -285,7 +285,7 @@ public class CachingProctorStore implements ProctorStore {
             public void run() {
                 try {
                     refreshAll();
-                } catch (final StoreException e) {
+                } catch (final Exception e) {
                     LOGGER.error("Failed to update cache", e);
                 }
             }
