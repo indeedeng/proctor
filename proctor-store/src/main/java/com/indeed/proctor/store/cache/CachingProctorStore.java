@@ -35,7 +35,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  */
 public class CachingProctorStore implements ProctorStore {
     private static final Logger LOGGER = Logger.getLogger(CachingProctorStore.class);
-    private static final long REFRESH_RATE_IN_SECOND = 10;
+    private static final long REFRESH_RATE_IN_SECOND = 15;
     private static final long READ_TIMEOUT_IN_SECOND = 30;
     private static final long WRITE_TIMEOUT_IN_SECOND = 180;
 
