@@ -96,7 +96,7 @@ public class RuleVerifyUtils {
                         throw new InvalidRuleException(String.format("Rule %s has invalid syntax: do not use '+='.", testRule));
                     }
                     if ("Arrow".equalsIgnoreCase(node.toString())) {
-                        throw new InvalidRuleException(String.format("Rule %s has invalid syntax: do not use '->' for comparisons.", testRule));
+                        throw new InvalidRuleException(String.format("Rule %s has invalid syntax: do not use '->'.", testRule));
                     }
                     if ("ListData".equalsIgnoreCase(node.toString())) {
                         throw new InvalidRuleException(String.format("Rule %s has invalid syntax: do not use [] Lists.", testRule));
@@ -105,10 +105,10 @@ public class RuleVerifyUtils {
                         throw new InvalidRuleException(String.format("Rule %s has invalid syntax: do not use {:} Maps.", testRule));
                     }
                     if ("SetData".equalsIgnoreCase(node.toString())) {
-                        throw new InvalidRuleException(String.format("Rule %s has invalid syntax: do not use {:} Maps.", testRule));
+                        throw new InvalidRuleException(String.format("Rule %s has invalid syntax: do not use {} Sets.", testRule));
                     }
                     if ("Semicolon".equalsIgnoreCase(node.toString())) {
-                        throw new InvalidRuleException(String.format("Rule %s has invalid syntax: do not use {:} Maps.", testRule));
+                        throw new InvalidRuleException(String.format("Rule %s has invalid syntax: do not use Semicolon.", testRule));
                     }
                     if (node.getClass().getName().contains("AstLambda")) {
                         throw new InvalidRuleException(String.format("Rule %s has invalid syntax: do not use -> Lambdas.", testRule));
@@ -128,7 +128,7 @@ public class RuleVerifyUtils {
         for (final Node n : leaves) {
             final String image = n.getImage();
             if (absentIdentifiers.contains(image)) {
-                /** we can ignore this test failure since the identifier context is not provided **/
+                /* we can ignore this test failure since the identifier context is not provided **/
                 return true;
             }
         }
