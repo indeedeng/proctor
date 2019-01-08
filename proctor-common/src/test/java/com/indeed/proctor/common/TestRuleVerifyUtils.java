@@ -4,8 +4,8 @@ import com.google.common.collect.Sets;
 import com.indeed.proctor.common.el.MulticontextReadOnlyVariableMapper;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.TestBucket;
+import junit.framework.AssertionFailedError;
 import org.apache.el.ExpressionFactoryImpl;
-import org.junit.Assert;
 import org.junit.Test;
 
 import javax.el.ELContext;
@@ -16,9 +16,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.junit.Assert.assertThat;
+import static org.junit.matchers.JUnitMatchers.containsString;
+
 public class TestRuleVerifyUtils {
 
-    private ExpressionFactory expressionFactory = new ExpressionFactoryImpl();
+    private final ExpressionFactory expressionFactory = new ExpressionFactoryImpl();
 
     private ELContext setUpElContextWithContext(final Map<String, Object> context, final String testRule) {
         final List<TestBucket> buckets = TestProctorUtils.fromCompactBucketFormat("inactive:-1,control:0,test:1");
@@ -46,20 +49,21 @@ public class TestRuleVerifyUtils {
         try {
             verifyRule(testRule, context, absentIdentifiers);
         } catch (final InvalidRuleException e) {
-            /** exception should not be thrown. **/
+            /* exception should not be thrown. **/
             throw new RuntimeException("validation failed", e);
         }
 
     }
 
-    private void expectInvalidRule(final String testRule, final Object[][] context, final String[] absentIdentifiers) {
+    private InvalidRuleException expectInvalidRule(final String testRule, final Object[][] context, final String[] absentIdentifiers) {
         try {
             verifyRule(testRule, context, absentIdentifiers);
 
-            /** exception should be thrown until here. **/
-            Assert.fail("invalid rule exception should be thrown");
+            /* exception should be thrown until here. **/
+            throw new AssertionFailedError("invalid rule exception should be thrown");
         } catch (final InvalidRuleException e) {
-            /** expected **/
+            /* expected **/
+            return e;
         }
     }
 
@@ -78,13 +82,14 @@ public class TestRuleVerifyUtils {
 
     @Test
     public void testVerifyRulesWithoutContext() {
-        expectInvalidRule(
+        final InvalidRuleException e = expectInvalidRule(
                 "${browser != 'IE9'}",
                 new Object[][]{
                 },
                 new String[]{
                 }
         );
+        assertThat(e.getMessage(), containsString("contains undefined identifier"));
     }
 
     @Test
@@ -97,6 +102,69 @@ public class TestRuleVerifyUtils {
                         "browser",
                 }
         );
+    }
+
+    @Test
+    public void testVerifyRulesWithList() {
+        final InvalidRuleException e = expectInvalidRule(
+                "${[browser]}",
+                new Object[][]{
+                        {"browser", "IE"},
+                },
+                new String[]{
+                }
+        );
+        assertThat(e.getMessage(), containsString("has invalid syntax"));
+    }
+
+    @Test
+    public void testVerifyRulesWithSet() {
+        final InvalidRuleException e = expectInvalidRule(
+                "${{browser}.size() > 0}",
+                new Object[][]{
+                        {"browser", "IE"},
+                },
+                new String[]{
+                }
+        );
+        assertThat(e.getMessage(), containsString("has invalid syntax"));
+    }
+
+    @Test
+    public void testVerifyRulesWithMap() {
+        final InvalidRuleException e = expectInvalidRule(
+                "${{'Foo': true}.size() > 0}",
+                new Object[][]{
+                },
+                new String[]{
+                }
+        );
+        assertThat(e.getMessage(), containsString("has invalid syntax"));
+    }
+
+    @Test
+    public void testVerifyRulesWithSemicolon() {
+        final InvalidRuleException e = expectInvalidRule(
+                "${false;true}",
+                new Object[][]{
+                },
+                new String[]{
+                }
+        );
+        assertThat(e.getMessage(), containsString("has invalid syntax"));
+    }
+
+    @Test
+    public void testVerifyRulesWithLambda() {
+        final InvalidRuleException e = expectInvalidRule(
+                "${(x -> 42);true}",
+                new Object[][]{
+                        {"browser", "IE"},
+                },
+                new String[]{
+                }
+        );
+        assertThat(e.getMessage(), containsString("has invalid syntax"));
     }
 
     @Test
@@ -115,7 +183,7 @@ public class TestRuleVerifyUtils {
     @Test
     public void testVerifyAndRuleWithoutContext() {
         final String testRule = "${browser == 'IE9' && country == 'US'}";
-        expectInvalidRule(
+        InvalidRuleException e = expectInvalidRule(
                 testRule,
                 new Object[][]{
                         {"browser", "IE"},
@@ -123,7 +191,8 @@ public class TestRuleVerifyUtils {
                 new String[]{
                 }
         );
-        expectInvalidRule(
+        assertThat(e.getMessage(), containsString("contains undefined identifier"));
+        e = expectInvalidRule(
                 testRule,
                 new Object[][]{
                         {"country", "US"},
@@ -131,7 +200,8 @@ public class TestRuleVerifyUtils {
                 new String[]{
                 }
         );
-        expectInvalidRule(
+        assertThat(e.getMessage(), containsString("contains undefined identifier"));
+        e = expectInvalidRule(
                 testRule,
                 new Object[][]{
                 },
@@ -139,7 +209,8 @@ public class TestRuleVerifyUtils {
                         "browser",
                 }
         );
-        expectInvalidRule(
+        assertThat(e.getMessage(), containsString("contains undefined identifier"));
+        e = expectInvalidRule(
                 testRule,
                 new Object[][]{
                 },
@@ -147,6 +218,7 @@ public class TestRuleVerifyUtils {
                         "country",
                 }
         );
+        assertThat(e.getMessage(), containsString("contains undefined identifier"));
     }
 
     @Test
@@ -183,7 +255,7 @@ public class TestRuleVerifyUtils {
 
     @Test
     public void testInvalidSyntaxRuleWithConcat() {
-        expectInvalidRule(
+        final InvalidRuleException e = expectInvalidRule(
                 "${browser == 'IE9' && country += 'US'}",
                 new Object[][]{
                         {"country", "US"},
@@ -192,11 +264,12 @@ public class TestRuleVerifyUtils {
                 new String[]{
                 }
         );
+        assertThat(e.getMessage(), containsString("has invalid syntax"));
     }
 
     @Test
     public void testInvalidSyntaxRuleWithArrow() {
-        expectInvalidRule(
+        final InvalidRuleException e = expectInvalidRule(
                 "${browser == 'IE9' && country -> 'US'}",
                 new Object[][]{
                         {"country", "US"},
@@ -205,6 +278,7 @@ public class TestRuleVerifyUtils {
                 new String[]{
                 }
         );
+        assertThat(e.getMessage(), containsString("has invalid syntax"));
     }
 
     @Test
@@ -224,7 +298,7 @@ public class TestRuleVerifyUtils {
                 }
         );
 
-        expectInvalidRule(
+        InvalidRuleException e = expectInvalidRule(
                 testRuleUsingAssign,
                 new Object[][]{
                         {"companyUrl", "indeed.com"},
@@ -235,7 +309,8 @@ public class TestRuleVerifyUtils {
                 new String[]{
                 }
         );
-        expectInvalidRule(
+        assertThat(e.getMessage(), containsString("has invalid syntax"));
+        e = expectInvalidRule(
                 testRuleUsingAssign,
                 new Object[][]{
                         {"EC_COMPANY_URLS", "foo"}
@@ -246,5 +321,6 @@ public class TestRuleVerifyUtils {
                         "country",
                 }
         );
+        assertThat(e.getMessage(), containsString("has invalid syntax"));
     }
 }
