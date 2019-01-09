@@ -160,7 +160,7 @@ public class GitProctor extends FileBasedProctorStore {
     @Override
     public String getLatestVersion() throws StoreException {
         try {
-            final Ref branch = git.getRepository().getRef(getGitCore().getRefName());
+            final Ref branch = git.getRepository().findRef(getGitCore().getRefName());
             return branch.getObjectId().name();
         } catch (IOException e) {
             throw new StoreException(e);
