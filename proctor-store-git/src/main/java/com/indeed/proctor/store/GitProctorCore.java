@@ -9,12 +9,14 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Predicates;
 import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.indeed.proctor.common.Serializers;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.CreateBranchCommand;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.PullResult;
@@ -63,6 +65,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
     private Git git;
     private final String gitUrl;
     private final String refName;
+    private final String branchName;
     private final GitWorkspaceProvider workspaceProvider;
     private final ScheduledExecutorService gcExecutor;
     private final UsernamePasswordCredentialsProvider user;
@@ -114,6 +117,19 @@ public class GitProctorCore implements FileBasedPersisterCore {
                           final int pullPushTimeoutSeconds,
                           final int cloneTimeoutSeconds,
                           final boolean cleanInitialization) {
+        this(gitUrl, username, password, testDefinitionsDirectory, workspaceProvider,
+                pullPushTimeoutSeconds, cloneTimeoutSeconds, cleanInitialization, null);
+    }
+
+    public GitProctorCore(final String gitUrl,
+                          final String username,
+                          final String password,
+                          final String testDefinitionsDirectory,
+                          final GitWorkspaceProviderImpl workspaceProvider,
+                          final int pullPushTimeoutSeconds,
+                          final int cloneTimeoutSeconds,
+                          final boolean cleanInitialization,
+                          @Nullable final String branchName) {
         this.gitUrl = gitUrl;
         this.refName = Constants.HEAD;
         this.workspaceProvider = Preconditions
@@ -125,6 +141,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
         gcExecutor = Executors.newSingleThreadScheduledExecutor();
         this.pullPushTimeoutSeconds = pullPushTimeoutSeconds;
         this.cloneTimeoutSeconds = cloneTimeoutSeconds;
+        this.branchName = branchName;
         this.gitAPIExceptionWrapper = new GitAPIExceptionWrapper();
         this.gitAPIExceptionWrapper.setGitUrl(gitUrl);
         initializeRepository(cleanInitialization);
@@ -141,13 +158,18 @@ public class GitProctorCore implements FileBasedPersisterCore {
     }
 
     private Git cloneRepository(final File workingDir) throws GitAPIException {
-        return Git.cloneRepository()
+        final CloneCommand cloneCommand = Git.cloneRepository()
                 .setURI(gitUrl)
                 .setDirectory(workingDir)
                 .setProgressMonitor(PROGRESS_MONITOR)
                 .setCredentialsProvider(user)
-                .setTimeout(cloneTimeoutSeconds)
-                .call();
+                .setTimeout(cloneTimeoutSeconds);
+
+        if (StringUtils.isNotEmpty(branchName)) {
+            cloneCommand.setBranchesToClone(ImmutableSet.of(branchName));
+        }
+
+        return cloneCommand.call();
     }
 
     void initializeRepository(final boolean cleanInitialization) {
