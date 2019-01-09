@@ -93,7 +93,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
                           final String username,
                           final String password,
                           final String testDefinitionsDirectory,
-                          final GitWorkspaceProviderImpl workspaceProvider) {
+                          final GitWorkspaceProvider workspaceProvider) {
         this(gitUrl, username, password, testDefinitionsDirectory, workspaceProvider,
                 GitProctorUtils.DEFAULT_GIT_PULL_PUSH_TIMEOUT_SECONDS, GitProctorUtils.DEFAULT_GIT_CLONE_TIMEOUT_SECONDS);
     }
@@ -102,7 +102,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
                           final String username,
                           final String password,
                           final String testDefinitionsDirectory,
-                          final GitWorkspaceProviderImpl workspaceProvider,
+                          final GitWorkspaceProvider workspaceProvider,
                           final int pullPushTimeoutSeconds,
                           final int cloneTimeoutSeconds) {
         this(gitUrl, username, password, testDefinitionsDirectory, workspaceProvider,
@@ -113,7 +113,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
                           final String username,
                           final String password,
                           final String testDefinitionsDirectory,
-                          final GitWorkspaceProviderImpl workspaceProvider,
+                          final GitWorkspaceProvider workspaceProvider,
                           final int pullPushTimeoutSeconds,
                           final int cloneTimeoutSeconds,
                           final boolean cleanInitialization) {
@@ -125,7 +125,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
                           final String username,
                           final String password,
                           final String testDefinitionsDirectory,
-                          final GitWorkspaceProviderImpl workspaceProvider,
+                          final GitWorkspaceProvider workspaceProvider,
                           final int pullPushTimeoutSeconds,
                           final int cloneTimeoutSeconds,
                           final boolean cleanInitialization,
