@@ -71,7 +71,7 @@ public class RuleVerifyUtils {
                     if (isIgnorable(root, absentIdentifiers)) {
                         LOGGER.debug(String.format("Rule %s contains uninstantiated identifier(s) in %s, ignore the failure", testRule, absentIdentifiers), e);
                     } else {
-                        throw new InvalidRuleException(e, String.format("Failed to evaluate a rule %s", testRule));
+                        throw new InvalidRuleException(e, String.format("Failed to evaluate a rule %s: " + e.getMessage(), testRule));
                     }
                 }
             }
@@ -88,15 +88,30 @@ public class RuleVerifyUtils {
             rootNode.accept(new NodeVisitor() {
                 @Override
                 public void visit(final Node node) throws InvalidRuleException {
-                    // Class org.apache.el.AstAssign was only introduced in apache-el:8, so cannot use instanceOf
+                    // Classes org.apache.el.AstAssign, AstMapData, AstListData... were only introduced in apache-el:8, so cannot use instanceOf
                     if ("Assign".equalsIgnoreCase(node.toString())) {
-                        throw new InvalidRuleException(String.format("Rule %s contains an assignment, be sure to use '==' for comparisons.", testRule));
+                        throw new InvalidRuleException(String.format("Rule %s has invalid syntax: be sure to use '==' for comparisons.", testRule));
                     }
                     if ("Concatenation".equalsIgnoreCase(node.toString())) {
-                        throw new InvalidRuleException(String.format("Rule %s contains a concatenation, no not use '+='.", testRule));
+                        throw new InvalidRuleException(String.format("Rule %s has invalid syntax: do not use '+='.", testRule));
                     }
                     if ("Arrow".equalsIgnoreCase(node.toString())) {
-                        throw new InvalidRuleException(String.format("Rule %s contains an arrow, do not use '->' for comparisons.", testRule));
+                        throw new InvalidRuleException(String.format("Rule %s has invalid syntax: do not use '->'.", testRule));
+                    }
+                    if ("ListData".equalsIgnoreCase(node.toString())) {
+                        throw new InvalidRuleException(String.format("Rule %s has invalid syntax: do not use [] Lists.", testRule));
+                    }
+                    if ("MapData".equalsIgnoreCase(node.toString())) {
+                        throw new InvalidRuleException(String.format("Rule %s has invalid syntax: do not use {:} Maps.", testRule));
+                    }
+                    if ("SetData".equalsIgnoreCase(node.toString())) {
+                        throw new InvalidRuleException(String.format("Rule %s has invalid syntax: do not use {} Sets.", testRule));
+                    }
+                    if ("Semicolon".equalsIgnoreCase(node.toString())) {
+                        throw new InvalidRuleException(String.format("Rule %s has invalid syntax: do not use Semicolon.", testRule));
+                    }
+                    if (node.getClass().getName().contains("AstLambda")) {
+                        throw new InvalidRuleException(String.format("Rule %s has invalid syntax: do not use -> Lambdas.", testRule));
                     }
                 }
             });
@@ -113,7 +128,7 @@ public class RuleVerifyUtils {
         for (final Node n : leaves) {
             final String image = n.getImage();
             if (absentIdentifiers.contains(image)) {
-                /** we can ignore this test failure since the identifier context is not provided **/
+                /* we can ignore this test failure since the identifier context is not provided **/
                 return true;
             }
         }
