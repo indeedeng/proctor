@@ -57,6 +57,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
     private static final Logger LOGGER = Logger.getLogger(GitProctorCore.class);
     private static final TextProgressMonitor PROGRESS_MONITOR = new TextProgressMonitor(new LoggerPrintWriter(LOGGER, Level.DEBUG));
     private static final long GC_INTERVAL_IN_DAY = 1;
+    private static final boolean DEFAULT_CLEAN_INITIALIZATION = false;
 
     private final String username;
     private final String password;
@@ -65,7 +66,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
     private Git git;
     private final String gitUrl;
     private final String refName;
-    private final String branchName;
+    @Nullable private final String branchName;
     private final GitWorkspaceProvider workspaceProvider;
     private final ScheduledExecutorService gcExecutor;
     private final UsernamePasswordCredentialsProvider user;
@@ -80,6 +81,18 @@ public class GitProctorCore implements FileBasedPersisterCore {
                           final String testDefinitionsDirectory,
                           final File tempDir) {
         this(gitUrl, username, password, testDefinitionsDirectory, new GitWorkspaceProviderImpl(tempDir));
+    }
+
+    public GitProctorCore(final String gitUrl,
+                          final String username,
+                          final String password,
+                          final String testDefinitionsDirectory,
+                          final File tempDir,
+                          final String branchName) {
+        this(gitUrl, username, password, testDefinitionsDirectory, new GitWorkspaceProviderImpl(tempDir),
+                GitProctorUtils.DEFAULT_GIT_PULL_PUSH_TIMEOUT_SECONDS, GitProctorUtils.DEFAULT_GIT_CLONE_TIMEOUT_SECONDS,
+                DEFAULT_CLEAN_INITIALIZATION, branchName);
+
     }
 
     /**
@@ -106,7 +119,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
                           final int pullPushTimeoutSeconds,
                           final int cloneTimeoutSeconds) {
         this(gitUrl, username, password, testDefinitionsDirectory, workspaceProvider,
-                pullPushTimeoutSeconds, cloneTimeoutSeconds, false);
+                pullPushTimeoutSeconds, cloneTimeoutSeconds, DEFAULT_CLEAN_INITIALIZATION);
     }
 
     public GitProctorCore(final String gitUrl,
@@ -514,6 +527,12 @@ public class GitProctorCore implements FileBasedPersisterCore {
     }
 
     public void checkoutBranch(final String branchName) {
+        Preconditions.checkArgument(
+                StringUtils.isEmpty(this.branchName) || this.branchName.equals(branchName),
+                "Unable to checkout branch %s because this repository cloned only the branch %s",
+                branchName,
+                this.branchName
+        );
 
         workspaceProvider.synchronizedOperation(new Callable<Void>() {
             @Override
