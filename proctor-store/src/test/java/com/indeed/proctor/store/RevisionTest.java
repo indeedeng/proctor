@@ -5,6 +5,8 @@ import com.indeed.proctor.common.Serializers;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.Calendar;
+import java.util.TimeZone;
 
 import static org.junit.Assert.assertEquals;
 
@@ -22,9 +24,12 @@ public class RevisionTest {
         final Revision revision = mapper.readValue(serializedRevision, Revision.class);
         assertEquals("123", revision.getRevision());
         assertEquals("test-user", revision.getAuthor());
-        assertEquals(118, revision.getDate().getYear());
-        assertEquals(0, revision.getDate().getMonth());
-        assertEquals(1, revision.getDate().getDay());
+        final Calendar calendar = Calendar.getInstance();
+        calendar.setTime(revision.getDate());
+        calendar.setTimeZone(TimeZone.getTimeZone("UTC"));
+        assertEquals(2018, calendar.get(Calendar.YEAR));
+        assertEquals(0, calendar.get(Calendar.MONTH));
+        assertEquals(1, calendar.get(Calendar.DAY_OF_MONTH));
         assertEquals("test", revision.getMessage());
     }
 }
