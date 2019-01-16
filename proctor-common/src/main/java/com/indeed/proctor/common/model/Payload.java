@@ -2,6 +2,7 @@ package com.indeed.proctor.common.model;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Joiner;
+import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
 
 import javax.annotation.Nonnull;
@@ -299,5 +300,10 @@ public class Payload {
         if (map != null ? !map.equals(payload.map) : payload.map != null) return false;
 
         return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(doubleValue, doubleArray, longValue, longArray, stringValue, stringArray, map);
     }
 }

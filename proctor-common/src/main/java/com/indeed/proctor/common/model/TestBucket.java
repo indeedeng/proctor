@@ -1,5 +1,6 @@
 package com.indeed.proctor.common.model;
 
+import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
@@ -94,7 +95,7 @@ public class TestBucket {
     @Nullable
     @Override
     public String toString() {
-        return name + " = " + value + ((payload == null) ? "" : " "+payload);
+        return name + " = " + value + ((payload == null) ? "" : " " + payload);
     }
 
     @Override
@@ -115,4 +116,27 @@ public class TestBucket {
         }
         return name.equals(((TestBucket) obj).name);
     }
+
+    /*
+     * because TestBucket.equals() only compares name for unknown reasons,
+     * comparing all other values here
+     */
+    boolean fullEquals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        final TestBucket that = (TestBucket) o;
+        return value == that.value &&
+                Objects.equal(name, that.name) &&
+                Objects.equal(description, that.description) &&
+                Objects.equal(payload, that.payload);
+    }
+
+    public int fullHashCode() {
+        return Objects.hashCode(name, value, description, payload);
+    }
+
 }
