@@ -76,7 +76,7 @@ public class TestTestDefinition {
 
 
     @Test
-    public void testEqualityWithNulls() {
+    public void testEqualityWithAlmostEmptyTestDefinition() {
         // compare minimal TestDefinition to minimal that has one change
         for (final Function<TestDefinition, TestDefinition> modifier : Arrays.asList(
                 new Function<TestDefinition, TestDefinition>() {
