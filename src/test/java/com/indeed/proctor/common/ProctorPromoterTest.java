@@ -216,9 +216,22 @@ public class ProctorPromoterTest {
     }
 
     @Test
+    public void promoteAgainWhenTestinDestinationHasBeenDeleted() throws StoreException, ProctorPromoter.TestPromotionException {
+        Mockito.when(trunk.getHistory(TEST_NAME, TRUNK_REVISION, 0, 1)).thenReturn(TRUNK_HISTORY);
+        Mockito.when(qa.getHistory(TEST_NAME, 0, 1)).thenReturn(QA_HISTORY);
+        Mockito.when(qa.getCurrentTestDefinition(TEST_NAME)).thenReturn(null);
+        mockEnvironmentVersion(Environment.QA, QA_REVISION);
+
+        expectedException.expectMessage("Test '" + TEST_NAME + "' has been deleted in destination, not allowed to promote again.");
+        expectedException.expect(IllegalArgumentException.class);
+        proctorPromoter.promote(TEST_NAME, Environment.WORKING, TRUNK_REVISION, Environment.QA, QA_REVISION, USERNAME, PASSWORD, AUTHOR, METADATA);
+    }
+
+    @Test
     public void promoteWhenRevExistsUpdatesTestDefinition() throws StoreException, ProctorPromoter.TestPromotionException {
         Mockito.when(trunk.getHistory(TEST_NAME, TRUNK_REVISION, 0, 1)).thenReturn(TRUNK_HISTORY);
         Mockito.when(qa.getHistory(TEST_NAME, 0, 1)).thenReturn(QA_HISTORY);
+        Mockito.when(qa.getCurrentTestDefinition(TEST_NAME)).thenReturn(Mockito.mock(TestDefinition.class));
         mockEnvironmentVersion(Environment.QA, QA_REVISION);
 
         proctorPromoter.promote(TEST_NAME, Environment.WORKING, TRUNK_REVISION, Environment.QA, QA_REVISION, USERNAME, PASSWORD, AUTHOR, METADATA);

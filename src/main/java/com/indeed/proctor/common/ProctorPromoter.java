@@ -72,8 +72,8 @@ public class ProctorPromoter {
 
     @SuppressWarnings({"MethodWithTooManyParameters"})
     @VisibleForTesting
-    void promote(final String testName, final Environment srcBranch, final String srcRevision, final Environment destBranch, String destRevision,
-                 String username, String password, String author, Map<String, String> metadata) throws TestPromotionException, StoreException {
+    void promote(final String testName, final Environment srcBranch, final String srcRevision, final Environment destBranch, final String destRevision,
+                 final String username, final String password, final String author, final Map<String, String> metadata) throws TestPromotionException, StoreException {
         LOGGER.info(String.format("%s : Promoting %s from %s r%s to %s r%s", username, testName, srcBranch,
                 srcRevision, destBranch, destRevision));
         final ProctorStore src = getStoreFromBranch(srcBranch);
@@ -108,8 +108,9 @@ public class ProctorPromoter {
         }
 
         if (!knownDestRevision.equals(UNKNOWN_REVISION) && knownDestRevision.length() > 0) {
-            // This test exists in the destination branch. Get its most recent test-history in the event that EnvironmentVersion is stale.
-            List<Revision> history = getMostRecentHistory(dest, testName);
+            // This test exists in the destination branch history (but might have been deleted).
+            // Get its most recent test-history in the event that EnvironmentVersion is stale.
+            final List<Revision> history = getMostRecentHistory(dest, testName);
             if (history.isEmpty()) {
                 throw new TestPromotionException("No history found for '" + testName + "' in destination ( " + destBranch + " ).");
             }
@@ -117,6 +118,11 @@ public class ProctorPromoter {
             if (!destVersion.getRevision().equals(destRevision)) {
                 throw new IllegalArgumentException("Test '" + testName + "' updated since " + destRevision + ". Currently at " + history.get(0).getRevision());
             }
+            if (dest.getCurrentTestDefinition(testName) == null) {
+                // test exist in history but no current definition means it was deleted
+                throw new IllegalArgumentException("Test '" + testName + "' has been deleted in destination, not allowed to promote again.");
+            }
+
             final String commitMessage = formatCommitMessage(testName, srcBranch, effectiveRevision, destBranch, srcVersion.getMessage());
             LOGGER.info(String.format("%s : Committing %s from %s r%s to %s r%s", username, testName, srcBranch,
                     srcRevision, destBranch, destRevision));
