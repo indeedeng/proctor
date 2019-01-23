@@ -7,3 +7,5 @@ _site
 _cache
 *.gem
 *.lock
+
+**/target/*

@@ -2,6 +2,7 @@ package com.indeed.proctor.common.model;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Joiner;
+import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
 
 import javax.annotation.Nonnull;
@@ -281,23 +282,26 @@ public class Payload {
         return null;
     }
 
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        final Payload payload = (Payload) o;
+        return Objects.equal(doubleValue, payload.doubleValue) &&
+                Objects.equal(doubleArray, payload.doubleArray) &&
+                Objects.equal(longValue, payload.longValue) &&
+                Objects.equal(longArray, payload.longArray) &&
+                Objects.equal(stringValue, payload.stringValue) &&
+                Objects.equal(stringArray, payload.stringArray) &&
+                Objects.equal(map, payload.map);
+    }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        Payload payload = (Payload) o;
-
-        if (map != null ? !map.equals(payload.map) : payload.map != null) return false;
-        if (!Arrays.equals(doubleArray, payload.doubleArray)) return false;
-        if (doubleValue != null ? !doubleValue.equals(payload.doubleValue) : payload.doubleValue != null) return false;
-        if (!Arrays.equals(longArray, payload.longArray)) return false;
-        if (longValue != null ? !longValue.equals(payload.longValue) : payload.longValue != null) return false;
-        if (!Arrays.equals(stringArray, payload.stringArray)) return false;
-        if (stringValue != null ? !stringValue.equals(payload.stringValue) : payload.stringValue != null) return false;
-        if (map != null ? !map.equals(payload.map) : payload.map != null) return false;
-
-        return true;
+    public int hashCode() {
+        return Objects.hashCode(doubleValue, doubleArray, longValue, longArray, stringValue, stringArray, map);
     }
 }

@@ -1,11 +1,15 @@
 package com.indeed.proctor.common.model;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Objects;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -28,7 +32,7 @@ public class TestDefinition {
     //  there are multiple ways to allocate the buckets based on rules, but most tests will probably just have one Allocation
     @Nonnull
     private List<Allocation> allocations = Collections.emptyList();
-    private boolean silent = false;
+    private boolean silent;
 
     /**
      * For advisory purposes only
@@ -52,15 +56,16 @@ public class TestDefinition {
             @Nonnull final Map<String, Object> specialConstants,
             @Nullable final String description
     ) {
-        this.version = version;
-        this.constants = constants;
-        this.specialConstants = specialConstants;
-        this.salt = salt;
-        this.rule = rule;
-        this.buckets = buckets;
-        this.allocations = allocations;
-        this.testType = testType;
-        this.description = description;
+        this(version,
+                rule,
+                testType,
+                salt,
+                buckets,
+                allocations,
+                false,
+                constants,
+                specialConstants,
+                description);
     }
 
     public TestDefinition(
@@ -223,5 +228,86 @@ public class TestDefinition {
     @Nullable
     public String getDescription() {
         return description;
+    }
+
+    @Override
+    public String toString() {
+        return "TestDefinition{" +
+                "version='" + version + '\'' +
+                ", constants=" + constants +
+                ", specialConstants=" + specialConstants +
+                ", salt='" + salt + '\'' +
+                ", rule='" + rule + '\'' +
+                ", buckets=" + buckets +
+                ", allocations=" + allocations +
+                ", silent=" + silent +
+                ", testType=" + testType +
+                ", description='" + description + '\'' +
+                '}';
+    }
+
+    @Override
+    public int hashCode() {
+        // because TestBuckets.hashCode() only considers name for unknown reasons, need to use testBuckets.fullHashCode()
+        final List<Object> bucketWrappers = new ArrayList<>();
+        if (buckets != null) {
+            for (final TestBucket bucket: buckets) {
+                bucketWrappers.add(new Object() {
+                    @Override
+                    public int hashCode() {
+                        return bucket.fullHashCode();
+                    }
+                });
+            }
+        }
+        return Objects.hashCode(version, constants, specialConstants, salt, rule, bucketWrappers, allocations, silent, testType, description);
+    }
+
+    /**
+     * similar to generated equals() method, but special treatment of buckets,
+     * because testBucket has unconventional equals/hashcode implementation for undocumented reason.
+     *
+     * Difference is checked by Unit test.
+     */
+    @Override
+    public boolean equals(final Object otherDefinition) {
+        if (this == otherDefinition) {
+            return true;
+        }
+        if (otherDefinition == null || getClass() != otherDefinition.getClass()) {
+            return false;
+        }
+        final TestDefinition that = (TestDefinition) otherDefinition;
+        return silent == that.silent &&
+                Objects.equal(version, that.version) &&
+                Objects.equal(constants, that.constants) &&
+                Objects.equal(specialConstants, that.specialConstants) &&
+                Objects.equal(salt, that.salt) &&
+                Objects.equal(rule, that.rule) &&
+                bucketListEqual(buckets, that.buckets) && // difference here
+                Objects.equal(allocations, that.allocations) &&
+                Objects.equal(testType, that.testType) &&
+                Objects.equal(description, that.description);
+    }
+
+    @VisibleForTesting
+    static boolean bucketListEqual(final List<TestBucket> bucketsA, final List<TestBucket> bucketsB) {
+        if (bucketsA == bucketsB) {
+            return true;
+        }
+        // TestBucket Equal returns true too often, but false means false. This also handles single-sided null cases and different list size.
+        if (!Objects.equal(bucketsA, bucketsB)) {
+            return false;
+        }
+        final Iterator<TestBucket> itA = bucketsA.iterator();
+        final Iterator<TestBucket> itB = bucketsB.iterator();
+        while (itA.hasNext() && itB.hasNext()) {
+            final TestBucket bucketA = itA.next();
+            final TestBucket bucketB = itB.next();
+            if ((bucketA != null) && !bucketA.fullEquals(bucketB)) {
+                return false;
+            }
+        }
+        return true;
     }
 }

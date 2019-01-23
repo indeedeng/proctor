@@ -1,5 +1,6 @@
 package com.indeed.proctor.common.model;
 
+import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 
 import javax.annotation.Nonnull;
@@ -71,5 +72,33 @@ public class Allocation {
 
     public void setId(@Nullable final String id) {
         this.id = Strings.nullToEmpty(id);
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        final Allocation that = (Allocation) o;
+        return Objects.equal(rule, that.rule) &&
+                Objects.equal(ranges, that.ranges) &&
+                Objects.equal(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(rule, ranges, id);
+    }
+
+    @Override
+    public String toString() {
+        return "Allocation{" +
+                "rule='" + rule + '\'' +
+                ", ranges=" + ranges +
+                ", id='" + id + '\'' +
+                '}';
     }
 }
