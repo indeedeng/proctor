@@ -41,6 +41,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.HashMap;
@@ -189,6 +190,22 @@ public class EditAndPromoteJob extends AbstractJob {
         return backgroundJob;
     }
 
+    /**
+     * Makes changes to the given test definition.
+     * @param testName
+     * @param username
+     * @param password
+     * @param author
+     * @param isCreate
+     * @param comment
+     * @param testDefinitionToUpdate
+     * @param previousRevision
+     * @param isAutopromote
+     * @param requestParameterMap
+     * @param job
+     * @return
+     * @throws Exception
+     */
     private Boolean doEditInternal(final String testName,
                                    final String username,
                                    final String password,
@@ -315,17 +332,47 @@ public class EditAndPromoteJob extends AbstractJob {
         return true;
     }
 
+    /**
+     * Maybe promotes the test and logs the result.
+     * @param testName
+     * @param username
+     * @param password
+     * @param author
+     * @param testDefinitionToUpdate
+     * @param previousRevision
+     * @param isAutopromote
+     * @param requestParameterMap
+     * @param job
+     * @param trunkStore
+     * @param qaRevision
+     * @param prodRevision
+     * @param existingTestDefinition
+     * @throws Exception
+     */
     private void maybeAutoPromote(final String testName, final String username, final String password,
                                   final String author, final TestDefinition testDefinitionToUpdate,
                                   final String previousRevision, final boolean isAutopromote,
                                   final Map<String, String[]> requestParameterMap, final BackgroundJob job,
                                   final ProctorStore trunkStore, final String qaRevision, final String prodRevision,
                                   final TestDefinition existingTestDefinition) throws Exception {
-        final Revision currentVersion = getCurrentVersion(testName, testDefinitionToUpdate, previousRevision,
-                isAutopromote, job, trunkStore, qaRevision, prodRevision, existingTestDefinition);
-        if (currentVersion == null) {
+        if (!isAutopromote) {
+            job.log("Not autopromoting because it wasn't requested by user.");
             return;
         }
+        if (existingTestDefinition == null) {
+            job.log("Not autopromoting because there is no existing test definition.");
+            return;
+        }
+        if (!isAllocationOnlyChange(existingTestDefinition, testDefinitionToUpdate)) {
+            job.log("Not autopromoting because this isn't an allocation-only change.");
+            return;
+        }
+
+        job.log("allocation only change, checking against other branches for auto-promote capability for test " +
+                testName + "\nat QA revision " + qaRevision + " and PRODUCTION revision " + prodRevision);
+
+        final Revision currentVersion = getCurrentVersion(testName, previousRevision,
+                trunkStore);
 
         final boolean isQaPromoted;
         final boolean isQaPromotable = qaRevision != EnvironmentVersion.UNKNOWN_REVISION
@@ -354,24 +401,9 @@ public class EditAndPromoteJob extends AbstractJob {
         }
     }
 
-    private Revision getCurrentVersion(final String testName, final TestDefinition testDefinitionToUpdate,
-                                       final String previousRevision, final boolean isAutopromote,
-                                       final BackgroundJob job, final ProctorStore trunkStore, final String qaRevision,
-                                       final String prodRevision, final TestDefinition existingTestDefinition) {
-        if (!isAutopromote) {
-            job.log("Not autopromoting because it wasn't requested by user.");
-            return null;
-        }
-        if (existingTestDefinition == null) {
-            job.log("Not autopromoting because there is no existing test definition.");
-            return null;
-        }
-        if (!isAllocationOnlyChange(existingTestDefinition, testDefinitionToUpdate)) {
-            job.log("Not autopromoting because this isn't an allocation-only change.");
-            return null;
-        }
-        job.log("allocation only change, checking against other branches for auto-promote capability for test " +
-                testName + "\nat QA revision " + qaRevision + " and PRODUCTION revision " + prodRevision);
+    @Nonnull
+    private Revision getCurrentVersion(final String testName, final String previousRevision,
+                                       final ProctorStore trunkStore) {
 
         final List<Revision> histories = TestDefinitionUtil.getTestHistory(trunkStore, testName, 2);
         if (histories.size() <= 1) {
