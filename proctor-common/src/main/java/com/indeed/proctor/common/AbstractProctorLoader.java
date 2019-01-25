@@ -3,7 +3,6 @@ package com.indeed.proctor.common;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
-import com.indeed.proctor.common.dynamic.DynamicFilter;
 import com.indeed.proctor.common.dynamic.DynamicFilters;
 import com.indeed.proctor.common.model.Audit;
 import com.indeed.proctor.common.model.TestMatrixArtifact;
@@ -18,7 +17,6 @@ import javax.annotation.Nullable;
 import javax.el.FunctionMapper;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +43,11 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
 
     private final List<ProctorLoadReporter> reporters = new ArrayList<>();
 
+    /**
+     * @param cls name will be used as namespace for timer
+     * @param specification provides tests, context, dynamic Filters
+     * @param functionMapper evaluates functions in allocation rules
+     */
     public AbstractProctorLoader(
             @Nonnull final Class<?> cls,
             @Nonnull final ProctorSpecification specification,
@@ -183,10 +186,21 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
         return lastLoadErrorMessage;
     }
 
-    // this is used for healthchecks
+    // this is used for healthchecks at Indeed
+    /**
+     * @return true if there was a success and it came after the last error
+     */
     @SuppressWarnings({"UnusedDeclaration"})
     public boolean isLoadedDataSuccessfullyRecently() {
         return dataLoadTimer.isLoadedDataSuccessfullyRecently();
+    }
+
+    /**
+     * @return seconds since last reload was tried, null if never tried.
+     */
+    @Nullable
+    public Integer secondsSinceLastReloadAttempt() {
+        return dataLoadTimer.getSecondsSinceLastLoadCheck();
     }
 
     /**
