@@ -191,19 +191,11 @@ public class EditAndPromoteJob extends AbstractJob {
     }
 
     /**
-     * Makes changes to the given test definition.
-     * @param testName
-     * @param username
-     * @param password
-     * @param author
-     * @param isCreate
-     * @param comment
-     * @param testDefinitionToUpdate
-     * @param previousRevision
-     * @param isAutopromote
-     * @param requestParameterMap
-     * @param job
-     * @return
+     * Creates/updates test with given {@code testName} in trunk store to new state from {@code testDefinitionToUpdate}.
+     * {@code isCreate} is set if this is a new test definition. {@code isAutopromote} Is set if the users requested the
+     * test be autopromoted.
+     *
+     * @return true, else throws an exception.
      * @throws Exception
      */
     private Boolean doEditInternal(final String testName,
@@ -333,21 +325,7 @@ public class EditAndPromoteJob extends AbstractJob {
     }
 
     /**
-     * Maybe promotes the test and logs the result.
-     * @param testName
-     * @param username
-     * @param password
-     * @param author
-     * @param testDefinitionToUpdate
-     * @param previousRevision
-     * @param isAutopromote
-     * @param requestParameterMap
-     * @param job
-     * @param trunkStore
-     * @param qaRevision
-     * @param prodRevision
-     * @param existingTestDefinition
-     * @throws Exception
+     * Attempts to promote {@code test} and logs the result.
      */
     private void maybeAutoPromote(final String testName, final String username, final String password,
                                   final String author, final TestDefinition testDefinitionToUpdate,
@@ -371,8 +349,7 @@ public class EditAndPromoteJob extends AbstractJob {
         job.log("allocation only change, checking against other branches for auto-promote capability for test " +
                 testName + "\nat QA revision " + qaRevision + " and PRODUCTION revision " + prodRevision);
 
-        final Revision currentVersion = getCurrentVersion(testName, previousRevision,
-                trunkStore);
+        final Revision currentVersion = getCurrentVersion(testName, previousRevision, trunkStore);
 
         final boolean isQaPromoted;
         final boolean isQaPromotable = qaRevision != EnvironmentVersion.UNKNOWN_REVISION
@@ -401,11 +378,13 @@ public class EditAndPromoteJob extends AbstractJob {
         }
     }
 
+    /**
+     * @return Gets the current revision of {@code testName} to autopromote. {@code previousRevision} is used to check
+     * for any modification since this edit process began.
+     */
     @Nonnull
-    private Revision getCurrentVersion(final String testName, final String previousRevision,
-                                       final ProctorStore trunkStore) {
-
-        final List<Revision> histories = TestDefinitionUtil.getTestHistory(trunkStore, testName, 2);
+    private Revision getCurrentVersion(final String testName, final String previousRevision, final ProctorStore store) {
+        final List<Revision> histories = TestDefinitionUtil.getTestHistory(store, testName, 2);
         if (histories.size() <= 1) {
             throw new IllegalStateException(
                     "Test hasn't been updated since " + previousRevision +
