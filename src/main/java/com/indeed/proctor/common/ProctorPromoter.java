@@ -89,7 +89,8 @@ public class ProctorPromoter {
         // TODO (parker) 7/1/14 - alloq ProctorStore to implement valid / unknown revision parsing
         if (knownDestRevision.length() == 0 && destRevision.length() > 0) {
             throw new TestPromotionException("Positive revision r" + destRevision + " given for destination ( " + destBranch + " ) but '" + testName + "' does not exist.");
-        } else if (!knownDestRevision.equals(UNKNOWN_REVISION) && knownDestRevision.length() > 0 && destRevision.length() == 0) {
+        }
+        if (!knownDestRevision.equals(UNKNOWN_REVISION) && knownDestRevision.length() > 0 && destRevision.length() == 0) {
             throw new TestPromotionException("Non-Positive revision r" + destRevision + " given for destination ( " + destBranch + " ) but '" + testName + "' exists.");
         }
 
@@ -133,7 +134,7 @@ public class ProctorPromoter {
         }
     }
 
-    protected ProctorStore getStoreFromBranch(Environment srcBranch) {
+    protected ProctorStore getStoreFromBranch(final Environment srcBranch) {
         switch (srcBranch) {
             case WORKING:
                 return trunk;
@@ -213,12 +214,12 @@ public class ProctorPromoter {
         }
 
         @Override
-        public List<Revision> call() throws Exception {
+        public List<Revision> call() throws StoreException {
             return getMostRecentHistory(store, testName);
         }
     }
 
-    private final Pattern CHARM_MERGE_REVISION = Pattern.compile("^merged r([\\d]+):", Pattern.MULTILINE);
+    private static final Pattern CHARM_MERGE_REVISION = Pattern.compile("^merged r([\\d]+):", Pattern.MULTILINE);
 
     private String identifyEffectiveRevision(final TestDefinition branchDefinition,
                                              final Revision branchRevision) {
