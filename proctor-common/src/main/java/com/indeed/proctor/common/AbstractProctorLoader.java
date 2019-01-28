@@ -45,7 +45,7 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
 
     /**
      * @param cls name will be used as namespace for timer
-     * @param specification provides tests, context, dynamic Filters
+     * @param specification provides tests, context, dynamic filters
      * @param functionMapper evaluates functions in allocation rules
      */
     public AbstractProctorLoader(
@@ -186,7 +186,7 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
         return lastLoadErrorMessage;
     }
 
-    // this is used for healthchecks at Indeed
+    // this can be used in subclasses for healthchecks
     /**
      * @return true if there was a success and it came after the last error
      */
