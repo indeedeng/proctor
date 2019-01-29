@@ -181,7 +181,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
         if (StringUtils.isNotEmpty(branchName)) {
             final String refBranchName = "refs/heads/" + branchName;
             cloneCommand.setBranchesToClone(ImmutableSet.of(refBranchName))
-                    .setNoCheckout(true);
+                    .setBranch(refBranchName); // prevent clone command from looking at the HEAD of the master branch
         }
 
         return cloneCommand.call();
