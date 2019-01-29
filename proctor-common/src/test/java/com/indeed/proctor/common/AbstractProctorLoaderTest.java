@@ -4,6 +4,7 @@ import com.indeed.proctor.common.model.TestMatrixArtifact;
 import com.indeed.util.core.DataLoadTimer;
 import org.apache.el.lang.FunctionMapperImpl;
 import org.easymock.classextension.EasyMock;
+import org.junit.Before;
 import org.junit.Test;
 
 import javax.annotation.Nonnull;
@@ -16,8 +17,14 @@ import static org.junit.Assert.assertTrue;
 
 public class AbstractProctorLoaderTest {
 
-    private final DataLoadTimer dataLoaderTimerMock = EasyMock.createMock(DataLoadTimer.class);
-    private final TestProctorLoader loader = createTestProctorLoader(dataLoaderTimerMock);
+    private DataLoadTimer dataLoaderTimerMock;
+    private TestProctorLoader loader;
+
+    @Before
+    public void setUp() {
+        dataLoaderTimerMock = EasyMock.createMock(DataLoadTimer.class);
+        loader = createTestProctorLoader(dataLoaderTimerMock);
+    }
 
     @Test
     public void testLoaderTimerFunctionsNoLoad() {
