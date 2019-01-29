@@ -106,8 +106,7 @@ public abstract class ProctorUtils {
 
     @SuppressWarnings("UnusedDeclaration")
     public static JsonNode readJsonFromFile(final File input) throws IOException {
-        final JsonNode rootNode = OBJECT_MAPPER.readValue(input, JsonNode.class);
-        return rootNode;
+        return OBJECT_MAPPER.readValue(input, JsonNode.class);
     }
 
     public static void serializeTestSpecification(Writer writer, final TestSpecification specification) throws IOException {
@@ -460,9 +459,7 @@ public abstract class ProctorUtils {
 
         resultBuilder.recordVerifiedRules(providedContext.shouldEvaluate());
 
-        final ProctorLoadResult loadResult = resultBuilder.build();
-
-        return loadResult;
+        return resultBuilder.build();
     }
 
     private static void verifyTest(
@@ -738,7 +735,7 @@ public abstract class ProctorUtils {
 
     public static ProvidedContext convertContextToTestableMap(final Map<String, String> providedContext, final Map<String, Object> ruleVerificationContext) {
         final ExpressionFactory expressionFactory = new ExpressionFactoryImpl();
-        Map<String, Object> primitiveVals = new HashMap<String, Object>();
+        final Map<String, Object> primitiveVals = new HashMap<String, Object>();
         primitiveVals.put("int", 0);
         primitiveVals.put("integer", 0);
         primitiveVals.put("long", (long)0);
@@ -752,9 +749,9 @@ public abstract class ProctorUtils {
         primitiveVals.put("byte", (byte)0);
 
         if (providedContext != null) {
-            Map<String, Object> newProvidedContext = new HashMap<String, Object>();
+            final Map<String, Object> newProvidedContext = new HashMap<String, Object>();
             final Set<String> uninstantiatedIdentifiers = Sets.newHashSet();
-            for(Entry<String,String> entry : providedContext.entrySet()) {
+            for(final Entry<String,String> entry : providedContext.entrySet()) {
                 final String identifier = entry.getKey();
                 Object toAdd = null;
                 if (ruleVerificationContext.containsKey(identifier)) {
@@ -856,7 +853,7 @@ public abstract class ProctorUtils {
                 throw new IncompatibleTestMatrixException(sb.toString());
             }
             final String rule = allocation.getRule();
-            final boolean lastAllocation = i == allocations.size() - 1;
+            final boolean lastAllocation = i == (allocations.size() - 1);
             final String bareRule = removeElExpressionBraces(rule);
             if(!lastAllocation && isEmptyWhitespace(bareRule)) {
                 throw new IncompatibleTestMatrixException("Allocation[" + i + "] for test " + testName + " from " + matrixSource + " has empty rule: " + allocation.getRule());
@@ -893,7 +890,7 @@ public abstract class ProctorUtils {
                 bucketsWithoutPayloads.add(bucket);
             }
         }
-        if ((nonEmptyPayload != null) && (bucketsWithoutPayloads.size() != 0)) {
+        if ((nonEmptyPayload != null) && (!bucketsWithoutPayloads.isEmpty())) {
             throw new IncompatibleTestMatrixException("Test " + testName + " from " + matrixSource + " has some test buckets without payloads: " + bucketsWithoutPayloads);
         }
     }
