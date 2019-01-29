@@ -10,6 +10,7 @@ import static com.google.common.io.Files.createTempDir;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 public class GitProctorCoreTest extends RepositoryTestCase {
 
@@ -115,5 +116,11 @@ public class GitProctorCoreTest extends RepositoryTestCase {
 
         final String localCommitMessage = git.log().call().iterator().next().getFullMessage();
         assertEquals(commitMessage, localCommitMessage);
+
+        try {
+            gitProctorCore.checkoutBranch(branchName);
+        } catch (final Exception unexpected) {
+            fail("checkoutBranch should not throw any exceptions");
+        }
     }
 }
