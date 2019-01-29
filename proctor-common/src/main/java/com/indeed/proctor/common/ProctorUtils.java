@@ -33,7 +33,6 @@ import org.apache.log4j.Logger;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.el.ELContext;
-import javax.el.ELException;
 import javax.el.ExpressionFactory;
 import javax.el.FunctionMapper;
 import javax.el.ValueExpression;
@@ -52,7 +51,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -60,7 +58,8 @@ import java.util.Set;
 
 
 public abstract class ProctorUtils {
-    private static final ObjectMapper OBJECT_MAPPER = Serializers.lenient().configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
+    private static final ObjectMapper OBJECT_MAPPER_NON_AUTOCLOSE = Serializers.lenient().configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
+    private static final ObjectMapper OBJECT_MAPPER = Serializers.lenient();
     private static final Logger LOGGER = Logger.getLogger(ProctorUtils.class);
 
     public static MessageDigest createMessageDigest() {
@@ -107,8 +106,7 @@ public abstract class ProctorUtils {
 
     @SuppressWarnings("UnusedDeclaration")
     public static JsonNode readJsonFromFile(final File input) throws IOException {
-        final ObjectMapper mapper = Serializers.lenient();
-        final JsonNode rootNode = mapper.readValue(input, JsonNode.class);
+        final JsonNode rootNode = OBJECT_MAPPER.readValue(input, JsonNode.class);
         return rootNode;
     }
 
@@ -117,7 +115,7 @@ public abstract class ProctorUtils {
     }
 
     private static <T> void serializeObject(Writer writer, final T artifact) throws IOException {
-        OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValue(writer, artifact);
+        OBJECT_MAPPER_NON_AUTOCLOSE.writerWithDefaultPrettyPrinter().writeValue(writer, artifact);
     }
 
     @Nonnull
@@ -222,7 +220,7 @@ public abstract class ProctorUtils {
     public static ProctorSpecification readSpecification(final InputStream inputFile) {
         final ProctorSpecification spec;
         try {
-            spec = OBJECT_MAPPER.readValue(inputFile, ProctorSpecification.class);
+            spec = OBJECT_MAPPER_NON_AUTOCLOSE.readValue(inputFile, ProctorSpecification.class);
         } catch (@Nonnull final JsonParseException e) {
             throw new RuntimeException("Unable to read test set from " + inputFile + ": ", e);
         } catch (@Nonnull final JsonMappingException e) {
