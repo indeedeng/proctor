@@ -2,9 +2,11 @@ package com.indeed.proctor.store;
 
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class GitProctorCoreTest {
+
     @Test
     public void testParseTestName() {
         assertEquals(
@@ -23,14 +25,8 @@ public class GitProctorCoreTest {
                 "testname",
                 GitProctorCore.parseTestName("", "testname/definition.json")
         );
-        assertEquals(
-                null,
-                GitProctorCore.parseTestName("matrices/test-definitions", "")
-        );
-        assertEquals(
-                null,
-                GitProctorCore.parseTestName("matrices/test-definitions", "some_file.txt")
-        );
+        assertNull(GitProctorCore.parseTestName("matrices/test-definitions", ""));
+        assertNull(GitProctorCore.parseTestName("matrices/test-definitions", "some_file.txt"));
         assertEquals(
                 "testname",
                 GitProctorCore.parseTestName("matrices/test-definitions", "matrices/test-definitions/testname/some/file")
