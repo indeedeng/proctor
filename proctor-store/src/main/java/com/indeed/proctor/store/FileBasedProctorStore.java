@@ -198,6 +198,9 @@ public abstract class FileBasedProctorStore implements ProctorStore {
                 //  this is easier than trying to get svnKit to do a useful diff
                 boolean thingsChanged = updateThing(rcsClient, testDefinitionFile, testDefinition);
                 thingsChanged = updateThing(rcsClient, metaDataFile, metadata) || thingsChanged;
+                if (!thingsChanged) {
+                    throw new StoreException.TestUpdateException("Attempting to save test definition without changes for test " + testName);
+                }
                 return thingsChanged;
             }
         });

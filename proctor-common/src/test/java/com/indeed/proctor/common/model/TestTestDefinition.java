@@ -25,7 +25,7 @@ public class TestTestDefinition {
                 "lang == 'en'",
                 TestType.ANONYMOUS_USER,
                 "&sample_test",
-                sampleBuckets(),
+                sampleDoublePayloadBuckets(),
                 sampleAllocations(),
                 false,
                 sampleConstants(),
@@ -61,9 +61,22 @@ public class TestTestDefinition {
         );
     }
 
-    private static List<TestBucket> sampleBuckets() {
+    private static List<TestBucket> sampleDoublePayloadBuckets() {
         final Payload p1 = new Payload();
         p1.setDoubleValue(1.0);
+        return Lists.newArrayList(
+                new TestBucket(
+                        "inactive",
+                        -1,
+                        "inactive",
+                        p1
+                )
+        );
+    }
+
+    private static List<TestBucket> sampleStringArrayBuckets() {
+        final Payload p1 = new Payload();
+        p1.setStringArray(new String[] {"foo", "bar"});
         return Lists.newArrayList(
                 new TestBucket(
                         "inactive",
@@ -124,7 +137,14 @@ public class TestTestDefinition {
                 new Function<TestDefinition, TestDefinition>() {
                     @Override
                     public TestDefinition apply(@Nullable final TestDefinition input) {
-                        input.setBuckets(TestTestDefinition.sampleBuckets());
+                        input.setBuckets(TestTestDefinition.sampleDoublePayloadBuckets());
+                        return input;
+                    }
+                },
+                new Function<TestDefinition, TestDefinition>() {
+                    @Override
+                    public TestDefinition apply(@Nullable final TestDefinition input) {
+                        input.setBuckets(TestTestDefinition.sampleStringArrayBuckets());
                         return input;
                     }
                 },
@@ -155,6 +175,7 @@ public class TestTestDefinition {
             final TestDefinition anotherModifiedTest = modifier.apply(new TestDefinition());
             assertThat(initialTest, not(equalTo(anotherModifiedTest)));
             assertEquals(modifiedTest, anotherModifiedTest);
+            assertEquals(modifiedTest.hashCode(), anotherModifiedTest.hashCode());
         }
     }
 

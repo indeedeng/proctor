@@ -2,13 +2,13 @@ package com.indeed.proctor.common.model;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Joiner;
-import com.google.common.base.Objects;
 import com.google.common.collect.Maps;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Models a payload value for a bucket in a test, generally meant to have one kind of value per bucket.
@@ -284,6 +284,10 @@ public class Payload {
 
     @Override
     public boolean equals(final Object o) {
+        /*
+         * WARNING: Do not implement equals using Objects.equals for the arrays,
+         * because new String[]{"a"}.equals(new String[]{"a"}) is false
+         */
         if (this == o) {
             return true;
         }
@@ -291,17 +295,21 @@ public class Payload {
             return false;
         }
         final Payload payload = (Payload) o;
-        return Objects.equal(doubleValue, payload.doubleValue) &&
-                Objects.equal(doubleArray, payload.doubleArray) &&
-                Objects.equal(longValue, payload.longValue) &&
-                Objects.equal(longArray, payload.longArray) &&
-                Objects.equal(stringValue, payload.stringValue) &&
-                Objects.equal(stringArray, payload.stringArray) &&
-                Objects.equal(map, payload.map);
+        return Objects.equals(doubleValue, payload.doubleValue) &&
+                Arrays.equals(doubleArray, payload.doubleArray) &&
+                Objects.equals(longValue, payload.longValue) &&
+                Arrays.equals(longArray, payload.longArray) &&
+                Objects.equals(stringValue, payload.stringValue) &&
+                Arrays.equals(stringArray, payload.stringArray) &&
+                Objects.equals(map, payload.map);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(doubleValue, doubleArray, longValue, longArray, stringValue, stringArray, map);
+        int result = Objects.hash(doubleValue, longValue, stringValue, map);
+        result = 31 * result + Arrays.hashCode(doubleArray);
+        result = 31 * result + Arrays.hashCode(longArray);
+        result = 31 * result + Arrays.hashCode(stringArray);
+        return result;
     }
 }
