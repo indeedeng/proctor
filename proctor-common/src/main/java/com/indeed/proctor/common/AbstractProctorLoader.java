@@ -190,7 +190,6 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
     /**
      * @return true if there was a success and it came after the last error
      */
-    @SuppressWarnings({"UnusedDeclaration"})
     public boolean isLoadedDataSuccessfullyRecently() {
         return dataLoadTimer.isLoadedDataSuccessfullyRecently();
     }
