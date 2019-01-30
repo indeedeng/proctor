@@ -360,7 +360,7 @@
 
     <properties>
         <java.version>1.8</java.version>
-        <proctor.version>1.1.74</proctor.version>
+        <proctor.version>1.1.76</proctor.version>
         <indeed-util.version>1.0.12</indeed-util.version>
         <closure-library.version>20160106</closure-library.version>
         <closure-library-zip>v${closure-library.version}.zip</closure-library-zip>
