@@ -4,8 +4,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.io.Files;
 import com.indeed.proctor.common.model.TestMatrixDefinition;
-import com.indeed.proctor.common.model.TestMatrixVersion;
-import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.SVNLogEntry;
@@ -17,7 +15,6 @@ import org.tmatesoft.svn.core.wc.SVNClientManager;
 import org.tmatesoft.svn.core.wc.SVNLogClient;
 import org.tmatesoft.svn.core.wc.SVNRevision;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
@@ -235,43 +232,6 @@ public class SvnProctor extends FileBasedProctorStore {
 
     private SvnPersisterCore getSvnCore() {
         return (SvnPersisterCore) this.core;
-    }
-
-    public static void main(String args[]) throws IOException {
-        final String svnpath = System.console().readLine("svn path: ");
-        final String svnuser = System.console().readLine("user: ");
-        final String password = new String(System.console().readPassword("password: "));
-        final boolean usecache = "y".equals(System.console().readLine("cache (y/n): "));
-        final int num_revisions = Integer.parseInt(System.console().readLine("number of histories: "));
-        final String testDefinitionsDirectory = System.console().readLine("test definitions directory: ");
-
-        final File tempDir = Files.createTempDir();
-        try {
-            final SvnPersisterCoreImpl core = new SvnPersisterCoreImpl(svnpath, svnuser, password, testDefinitionsDirectory, tempDir);
-            final SvnPersisterCore core1;
-            if (usecache) {
-                core1 = new CachedSvnPersisterCore(core);
-            } else {
-                core1 = core;
-            }
-            final SvnProctor client = new SvnProctor(core1, testDefinitionsDirectory);
-
-            System.out.println("Running load matrix for last " + num_revisions + " revisions");
-            final long start = System.currentTimeMillis();
-            final List<Revision> revisions = client.getMatrixHistory(0, num_revisions);
-            for (final Revision rev : revisions) {
-                final TestMatrixVersion matrix = client.getTestMatrix(rev.getRevision());
-            }
-            final long elapsed = System.currentTimeMillis() - start;
-            System.out.println("Finished reading matrix history (" + revisions.size() + ") in " + elapsed + " ms");
-            client.close();
-        } catch (StoreException e) {
-            e.printStackTrace(System.err);
-            LOGGER.error(e);
-        } finally {
-            System.out.println("Deleting temp dir : " + tempDir);
-            FileUtils.deleteDirectory(tempDir);
-        }
     }
 
     @Override

@@ -33,7 +33,6 @@ import org.apache.log4j.Logger;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.el.ELContext;
-import javax.el.ELException;
 import javax.el.ExpressionFactory;
 import javax.el.FunctionMapper;
 import javax.el.ValueExpression;
@@ -52,7 +51,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -60,7 +58,8 @@ import java.util.Set;
 
 
 public abstract class ProctorUtils {
-    private static final ObjectMapper OBJECT_MAPPER = Serializers.lenient().configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
+    private static final ObjectMapper OBJECT_MAPPER_NON_AUTOCLOSE = Serializers.lenient().configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
+    private static final ObjectMapper OBJECT_MAPPER = Serializers.lenient();
     private static final Logger LOGGER = Logger.getLogger(ProctorUtils.class);
 
     public static MessageDigest createMessageDigest() {
@@ -107,9 +106,7 @@ public abstract class ProctorUtils {
 
     @SuppressWarnings("UnusedDeclaration")
     public static JsonNode readJsonFromFile(final File input) throws IOException {
-        final ObjectMapper mapper = Serializers.lenient();
-        final JsonNode rootNode = mapper.readValue(input, JsonNode.class);
-        return rootNode;
+        return OBJECT_MAPPER.readValue(input, JsonNode.class);
     }
 
     public static void serializeTestSpecification(Writer writer, final TestSpecification specification) throws IOException {
@@ -117,7 +114,7 @@ public abstract class ProctorUtils {
     }
 
     private static <T> void serializeObject(Writer writer, final T artifact) throws IOException {
-        OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValue(writer, artifact);
+        OBJECT_MAPPER_NON_AUTOCLOSE.writerWithDefaultPrettyPrinter().writeValue(writer, artifact);
     }
 
     @Nonnull
@@ -222,7 +219,7 @@ public abstract class ProctorUtils {
     public static ProctorSpecification readSpecification(final InputStream inputFile) {
         final ProctorSpecification spec;
         try {
-            spec = OBJECT_MAPPER.readValue(inputFile, ProctorSpecification.class);
+            spec = OBJECT_MAPPER_NON_AUTOCLOSE.readValue(inputFile, ProctorSpecification.class);
         } catch (@Nonnull final JsonParseException e) {
             throw new RuntimeException("Unable to read test set from " + inputFile + ": ", e);
         } catch (@Nonnull final JsonMappingException e) {
@@ -462,9 +459,7 @@ public abstract class ProctorUtils {
 
         resultBuilder.recordVerifiedRules(providedContext.shouldEvaluate());
 
-        final ProctorLoadResult loadResult = resultBuilder.build();
-
-        return loadResult;
+        return resultBuilder.build();
     }
 
     private static void verifyTest(
@@ -740,7 +735,7 @@ public abstract class ProctorUtils {
 
     public static ProvidedContext convertContextToTestableMap(final Map<String, String> providedContext, final Map<String, Object> ruleVerificationContext) {
         final ExpressionFactory expressionFactory = new ExpressionFactoryImpl();
-        Map<String, Object> primitiveVals = new HashMap<String, Object>();
+        final Map<String, Object> primitiveVals = new HashMap<String, Object>();
         primitiveVals.put("int", 0);
         primitiveVals.put("integer", 0);
         primitiveVals.put("long", (long)0);
@@ -754,9 +749,9 @@ public abstract class ProctorUtils {
         primitiveVals.put("byte", (byte)0);
 
         if (providedContext != null) {
-            Map<String, Object> newProvidedContext = new HashMap<String, Object>();
+            final Map<String, Object> newProvidedContext = new HashMap<String, Object>();
             final Set<String> uninstantiatedIdentifiers = Sets.newHashSet();
-            for(Entry<String,String> entry : providedContext.entrySet()) {
+            for(final Entry<String,String> entry : providedContext.entrySet()) {
                 final String identifier = entry.getKey();
                 Object toAdd = null;
                 if (ruleVerificationContext.containsKey(identifier)) {
@@ -858,7 +853,7 @@ public abstract class ProctorUtils {
                 throw new IncompatibleTestMatrixException(sb.toString());
             }
             final String rule = allocation.getRule();
-            final boolean lastAllocation = i == allocations.size() - 1;
+            final boolean lastAllocation = i == (allocations.size() - 1);
             final String bareRule = removeElExpressionBraces(rule);
             if(!lastAllocation && isEmptyWhitespace(bareRule)) {
                 throw new IncompatibleTestMatrixException("Allocation[" + i + "] for test " + testName + " from " + matrixSource + " has empty rule: " + allocation.getRule());
@@ -895,7 +890,7 @@ public abstract class ProctorUtils {
                 bucketsWithoutPayloads.add(bucket);
             }
         }
-        if ((nonEmptyPayload != null) && (bucketsWithoutPayloads.size() != 0)) {
+        if ((nonEmptyPayload != null) && (!bucketsWithoutPayloads.isEmpty())) {
             throw new IncompatibleTestMatrixException("Test " + testName + " from " + matrixSource + " has some test buckets without payloads: " + bucketsWithoutPayloads);
         }
     }

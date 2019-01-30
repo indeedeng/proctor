@@ -1,17 +1,14 @@
 package com.indeed.proctor.store;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
-import com.indeed.util.varexport.Export;
 import com.indeed.proctor.common.Serializers;
 import com.indeed.proctor.common.model.TestDefinition;
 import com.indeed.proctor.common.model.TestMatrixDefinition;
 import com.indeed.proctor.common.model.TestMatrixVersion;
+import com.indeed.util.varexport.Export;
 import org.apache.log4j.Logger;
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.File;
 import java.io.IOException;
@@ -54,10 +51,6 @@ public abstract class FileBasedProctorStore implements ProctorStore {
                 if (currentThing.equals(newThing)) {
                     return false;
                 }
-            } catch (final JsonParseException e) {
-                throw new StoreException.TestUpdateException("Unable to parse instance of " + newThing.getClass().getCanonicalName() + " from " + f, e);
-            } catch (final JsonMappingException e) {
-                throw new StoreException.TestUpdateException("Unable to parse instance of " + newThing.getClass().getCanonicalName() + " from " + f, e);
             } catch (final IOException e) {
                 throw new StoreException.TestUpdateException("Unable to parse instance of " + newThing.getClass().getCanonicalName() + " from " + f, e);
             }
@@ -69,16 +62,12 @@ public abstract class FileBasedProctorStore implements ProctorStore {
     protected static <T> void writeThing(final ObjectMapper mapper, final File f, final T newThing) throws StoreException.TestUpdateException {
         try {
             mapper.writerWithDefaultPrettyPrinter().writeValue(f, newThing);
-        } catch (final JsonGenerationException e) {
-            throw new StoreException.TestUpdateException("Unable to write instance of " + newThing.getClass().getCanonicalName() + " to " + f, e);
-        } catch (final JsonMappingException e) {
-            throw new StoreException.TestUpdateException("Unable to write instance of " + newThing.getClass().getCanonicalName() + " to " + f, e);
         } catch (final IOException e) {
             throw new StoreException.TestUpdateException("Unable to write instance of " + newThing.getClass().getCanonicalName() + " to " + f, e);
         }
     }
 
-    File getTestDefinitionDirectoryForTest(final String testName, File workingDir) {
+    File getTestDefinitionDirectoryForTest(final String testName, final File workingDir) {
         return new File(workingDir + File.separator + getTestDefinitionsDirectory() + File.separator + testName);
     }
 
