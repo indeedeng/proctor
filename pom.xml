@@ -212,7 +212,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
                     <systemPropertyVariables>
-                        <log4j.configuration>file:${project.build.testOutputDirectory}/config/log4j.xml</log4j.configuration>
+                        <log4j.configuration>file:${project.build.testOutputDirectory}/log4j.properties</log4j.configuration>
                     </systemPropertyVariables>
                     <!-- argline required for jacoco plugin -->
                     <argLine>${argLine} -Xmx1024m</argLine>
@@ -323,6 +323,18 @@
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <version>1.9.5</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-module-junit4</artifactId>
+            <version>1.5.6</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-api-mockito</artifactId>
+            <version>1.5.6</version>
             <scope>test</scope>
         </dependency>
         <dependency>

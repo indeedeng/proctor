@@ -1,5 +1,7 @@
 package com.indeed.proctor.store.async;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.indeed.proctor.common.model.TestDefinition;
 import com.indeed.proctor.common.model.TestMatrixVersion;
 import com.indeed.proctor.store.ProctorStore;
@@ -15,134 +17,128 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class AsyncProctorStore implements ProctorStore {
     private static final Logger LOGGER = Logger.getLogger(AsyncProctorStore.class);
-    private volatile ProctorStore proctorStore = null;
     private static final ExecutorService executorService = Executors.newCachedThreadPool();
+    private final StoreFactory factory;
+    private final String relativePath;
+    private Future<ProctorStore> proctorStoreFuture;
 
     public AsyncProctorStore(final StoreFactory factory, final String relativePath) {
-        executorService.submit(new Callable<Void>() {
+        this.factory = factory;
+        this.relativePath = relativePath;
+        submitCreateStoreJob();
+    }
+
+    private void submitCreateStoreJob() {
+        proctorStoreFuture = executorService.submit(new Callable<ProctorStore>() {
             @Override
-            public Void call() throws ConfigurationException {
-                proctorStore = factory.createStore(relativePath);
-                return null;
+            public ProctorStore call() throws ConfigurationException {
+                return factory.createStore(relativePath);
             }
         });
     }
 
+    private ProctorStore getProctorStore() {
+        return getProctorStore(true);
+    }
+
+    @VisibleForTesting
+    ProctorStore getProctorStore(final boolean retry) {
+        try {
+            if (proctorStoreFuture.isDone()) {
+                final ProctorStore proctorStore = proctorStoreFuture.get();
+                Preconditions.checkNotNull(proctorStore, "ProctorStore should not be null");
+                return proctorStore;
+            } else {
+                LOGGER.info("The ProctorStore creation task is not done.");
+            }
+        } catch (final Exception e) {
+            LOGGER.error("Failed to initialize ProctorStore", e);
+            if (retry) {
+                LOGGER.error("Retry ProctorStore initialization job");
+                submitCreateStoreJob();
+            }
+        }
+
+        throw new RuntimeException("Not initialized.");
+    }
+
     @Override
     public void close() throws IOException {
-        if (proctorStore != null) {
-            proctorStore.close();
+        try {
+            getProctorStore(false).close();
+        } catch(final IOException e) {
+            throw e;
+        } catch(final Exception e) {
+            LOGGER.warn("Exception thrown during closing ProctorStore", e);
         }
     }
 
     @Override
     public TestMatrixVersion getCurrentTestMatrix() throws StoreException {
-        if (proctorStore == null) {
-            throw new RuntimeException("Not initialized.");
-        } else {
-            return proctorStore.getCurrentTestMatrix();
-        }
+        return getProctorStore().getCurrentTestMatrix();
     }
 
     @Override
     public TestDefinition getCurrentTestDefinition(final String test) throws StoreException {
-        if (proctorStore == null) {
-            throw new RuntimeException("Not initialized.");
-        } else {
-            return proctorStore.getCurrentTestDefinition(test);
-        }
+        return getProctorStore().getCurrentTestDefinition(test);
     }
 
     @Override
     public void verifySetup() throws StoreException {
-        if (proctorStore == null) {
-            throw new RuntimeException("Not initialized.");
-        } else {
-            proctorStore.verifySetup();
-        }
+        getProctorStore().verifySetup();
     }
 
     @Override
     public String getLatestVersion() throws StoreException {
-        if (proctorStore == null) {
-            throw new RuntimeException("Not initialized.");
-        } else {
-            return proctorStore.getLatestVersion();
-        }
+        return getProctorStore().getLatestVersion();
     }
 
     @Override
     public TestMatrixVersion getTestMatrix(final String fetchRevision) throws StoreException {
-        if (proctorStore == null) {
-            throw new RuntimeException("Not initialized.");
-        } else {
-            return proctorStore.getTestMatrix(fetchRevision);
-        }
+        return getProctorStore().getTestMatrix(fetchRevision);
     }
 
     @Override
     public TestDefinition getTestDefinition(final String test, final String fetchRevision) throws StoreException {
-        if (proctorStore == null) {
-            throw new RuntimeException("Not initialized.");
-        } else {
-            return proctorStore.getTestDefinition(test, fetchRevision);
-        }
+        return getProctorStore().getTestDefinition(test, fetchRevision);
     }
 
     @Override
     public List<Revision> getMatrixHistory(final int start, final int limit) throws StoreException {
-        if (proctorStore == null) {
-            throw new RuntimeException("Not initialized.");
-        } else {
-            return proctorStore.getMatrixHistory(start, limit);
-        }
+        return getProctorStore().getMatrixHistory(start, limit);
     }
 
     @Override
     public List<Revision> getHistory(final String test, final int start, final int limit) throws StoreException {
-        if (proctorStore == null) {
-            throw new RuntimeException("Not initialized.");
-        } else {
-            return proctorStore.getHistory(test, start, limit);
-        }
+        return getProctorStore().getHistory(test, start, limit);
     }
 
     @Override
     public List<Revision> getHistory(final String test, final String revision, final int start, final int limit) throws StoreException {
-        if (proctorStore == null) {
-            throw new RuntimeException("Not initialized.");
-        } else {
-            return proctorStore.getHistory(test, revision, start, limit);
-        }
+        return getProctorStore().getHistory(test, revision, start, limit);
     }
 
     @Override
     public Map<String, List<Revision>> getAllHistories() throws StoreException {
-        if (proctorStore == null) {
-            throw new RuntimeException("Not initialized.");
-        } else {
-            return proctorStore.getAllHistories();
-        }
+        return getProctorStore().getAllHistories();
     }
 
     @Override
     public void refresh() throws StoreException {
-        if (proctorStore == null) {
-            throw new RuntimeException("Not initialized.");
-        } else {
-            proctorStore.refresh();
-        }
+        getProctorStore().refresh();
     }
 
     @Override
     public boolean cleanUserWorkspace(final String username) {
-        if (proctorStore != null) {
-            return proctorStore.cleanUserWorkspace(username);
+        try {
+            getProctorStore(false).cleanUserWorkspace(username);
+        } catch (final Exception e) {
+            LOGGER.warn("Exception thrown during cleaning user workspace", e);
         }
-
         return false;
     }
 
@@ -154,11 +150,7 @@ public class AsyncProctorStore implements ProctorStore {
                                      final TestDefinition testDefinition,
                                      final Map<String, String> metadata,
                                      final String comment) throws StoreException.TestUpdateException {
-        if (proctorStore == null) {
-            throw new RuntimeException("Not initialized.");
-        } else {
-            proctorStore.updateTestDefinition(username, password, previousVersion, testName, testDefinition, metadata, comment);
-        }
+        getProctorStore().updateTestDefinition(username, password, previousVersion, testName, testDefinition, metadata, comment);
     }
 
     @Override
@@ -170,11 +162,7 @@ public class AsyncProctorStore implements ProctorStore {
                                      final TestDefinition testDefinition,
                                      final Map<String, String> metadata,
                                      final String comment) throws StoreException.TestUpdateException {
-        if (proctorStore == null) {
-            throw new RuntimeException("Not initialized.");
-        } else {
-            proctorStore.updateTestDefinition(username, password, author, previousVersion, testName, testDefinition, metadata, comment);
-        }
+        getProctorStore().updateTestDefinition(username, password, author, previousVersion, testName, testDefinition, metadata, comment);
     }
 
     @Override
@@ -184,11 +172,7 @@ public class AsyncProctorStore implements ProctorStore {
                                      final String testName,
                                      final TestDefinition testDefinition,
                                      final String comment) throws StoreException.TestUpdateException {
-        if (proctorStore == null) {
-            throw new RuntimeException("Not initialized.");
-        } else {
-            proctorStore.deleteTestDefinition(username, password, previousVersion, testName, testDefinition, comment);
-        }
+        getProctorStore().deleteTestDefinition(username, password, previousVersion, testName, testDefinition, comment);
     }
 
     @Override
@@ -199,11 +183,7 @@ public class AsyncProctorStore implements ProctorStore {
                                      final String testName,
                                      final TestDefinition testDefinition,
                                      final String comment) throws StoreException.TestUpdateException {
-        if (proctorStore == null) {
-            throw new RuntimeException("Not initialized.");
-        } else {
-            proctorStore.deleteTestDefinition(username, password, author, previousVersion, testName, testDefinition, comment);
-        }
+        getProctorStore().deleteTestDefinition(username, password, author, previousVersion, testName, testDefinition, comment);
     }
 
     @Override
@@ -213,11 +193,7 @@ public class AsyncProctorStore implements ProctorStore {
                                   final TestDefinition testDefinition,
                                   final Map<String, String> metadata,
                                   final String comment) throws StoreException.TestUpdateException {
-        if (proctorStore == null) {
-            throw new RuntimeException("Not initialized.");
-        } else {
-            proctorStore.addTestDefinition(username, password, testName, testDefinition, metadata, comment);
-        }
+        getProctorStore().addTestDefinition(username, password, testName, testDefinition, metadata, comment);
     }
 
     @Override
@@ -228,20 +204,12 @@ public class AsyncProctorStore implements ProctorStore {
                                   final TestDefinition testDefinition,
                                   final Map<String, String> metadata,
                                   final String comment) throws StoreException.TestUpdateException {
-        if (proctorStore == null) {
-            throw new RuntimeException("Not initialized.");
-        } else {
-            proctorStore.addTestDefinition(username, password, author, testName, testDefinition, metadata, comment);
-        }
+        getProctorStore().addTestDefinition(username, password, author, testName, testDefinition, metadata, comment);
     }
 
     @Override
     public String getName() {
-        if (proctorStore == null) {
-            throw new RuntimeException("Not initialized.");
-        } else {
-            return proctorStore.getName();
-        }
+        return getProctorStore().getName();
     }
 }
 
