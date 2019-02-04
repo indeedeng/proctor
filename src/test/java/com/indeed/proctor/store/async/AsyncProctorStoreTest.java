@@ -8,23 +8,23 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadPoolExecutor;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.anyLong;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(PowerMockRunner.class)
+@PrepareForTest( { AsyncProctorStore.class } )
 public class AsyncProctorStoreTest {
 
     private static final String RELATIVE_PATH = "relative/path";
@@ -34,80 +34,91 @@ public class AsyncProctorStoreTest {
     @Mock
     private StoreFactory factory;
     @Mock
-    private ThreadPoolExecutor executor;
-    @Mock
-    private Future<ProctorStore> proctorStoreFuture;
+    private Thread thread;
 
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         when(factory.createStore(RELATIVE_PATH)).thenReturn(proctorStore);
 
-        // Mock Executor
-        PowerMockito.mockStatic(Executors.class);
-        when(Executors.newCachedThreadPool()).thenReturn(executor);
-        when(executor.submit(Mockito.any(Callable.class))).thenAnswer(i -> {
-            final Callable callable = (Callable) i.getArguments()[0];
-            callable.call();
-            return proctorStoreFuture;
-        });
+        // Mock Thread.sleep
+        PowerMockito.mockStatic(Thread.class);
+        PowerMockito.doNothing().when(Thread.class);
+        Thread.sleep(anyLong());
+    }
 
-        // Mock ProctorStoreFuture
-        when(proctorStoreFuture.isDone()).thenReturn(true);
-        when(proctorStoreFuture.get()).thenReturn(proctorStore);
+    /**
+     * Mock `Thread(Runnable runnable)`
+     * When `new Thread(runnable)` is called, it will also mock `thread.start()` to run `runnable`
+     * @throws Exception
+     */
+    private void mockNewThreadWithRunnable() throws Exception {
+        PowerMockito.whenNew(Thread.class)
+                .withParameterTypes(Runnable.class)
+                .withArguments(Mockito.any(Runnable.class))
+                .thenAnswer(new Answer() {
+                    @Override
+                    public Thread answer(final InvocationOnMock invocationOnMock) {
+                        final Runnable runnable = (Runnable) invocationOnMock.getArguments()[0];
+                        doAnswer(new Answer() {
+                            @Override
+                            public Object answer(final InvocationOnMock invocationOnMock) {
+                                runnable.run();
+                                return null;
+                            }
+                        }).when(thread).start();
+                        return thread;
+                    }
+                });
     }
 
     @Test
-    @PrepareForTest( { AsyncProctorStore.class } )
     public void testAsyncProctorStoreConstructor() throws Exception {
+        mockNewThreadWithRunnable();
         new AsyncProctorStore(factory, RELATIVE_PATH);
 
+        verify(thread, times(1)).start();
         verify(factory, times(1)).createStore(RELATIVE_PATH);
-        verify(executor, times(1)).submit(Mockito.any(Callable.class));
     }
 
     @Test
-    @PrepareForTest( { AsyncProctorStore.class } )
+    public void testAsyncProctorStoreConstructorRetries() throws Exception {
+        mockNewThreadWithRunnable();
+        when(factory.createStore(RELATIVE_PATH))
+                .thenThrow(new RuntimeException("Failed to create"))
+                .thenReturn(proctorStore);
+
+        new AsyncProctorStore(factory, RELATIVE_PATH);
+
+        verify(thread, times(1)).start();
+        verify(factory, times(2)).createStore(RELATIVE_PATH);
+    }
+
+    @Test
     public void testGetProctorStoreSuccess() throws Exception {
+        mockNewThreadWithRunnable();
         final AsyncProctorStore asyncProctorStore = new AsyncProctorStore(factory, RELATIVE_PATH);
 
-        final ProctorStore result = asyncProctorStore.getProctorStore(false);
+        final ProctorStore result = asyncProctorStore.getProctorStore();
 
-        verify(proctorStoreFuture, times(1)).isDone();
-        verify(proctorStoreFuture, times(1)).get();
         assertEquals(proctorStore, result);
     }
 
     @Test
-    @PrepareForTest( { AsyncProctorStore.class } )
-    public void testGetProctorStoreByNotDoneJob() {
-        when(proctorStoreFuture.isDone()).thenReturn(false);
+    public void testGetNotInitializedProctorStore() throws Exception {
+        PowerMockito.whenNew(Thread.class)
+                .withParameterTypes(Runnable.class)
+                .withArguments(Mockito.any(Runnable.class))
+                .thenReturn(thread);
+        doNothing().when(thread).start();
 
         final AsyncProctorStore asyncProctorStore = new AsyncProctorStore(factory, RELATIVE_PATH);
 
         try {
-            asyncProctorStore.getProctorStore(false);
+            asyncProctorStore.getProctorStore();
             fail("getProctorStore should throw");
-        } catch (final RuntimeException e) {
+        } catch (final AsyncProctorStore.NotInitializedException e) {
             assertEquals("Not initialized.", e.getMessage());
         }
-        verify(executor, times(1)).submit(Mockito.any(Callable.class));
-    }
-
-    @Test
-    @PrepareForTest( { AsyncProctorStore.class } )
-    public void testGetProctorStoreByFailedJob() throws Exception {
-        when(proctorStoreFuture.get())
-                .thenThrow(new ExecutionException("Failed to run job", new RuntimeException()));
-
-        final AsyncProctorStore asyncProctorStore = new AsyncProctorStore(factory, RELATIVE_PATH);
-
-        try {
-            asyncProctorStore.getProctorStore(true);
-            fail("getProctorStore should throw");
-        } catch (final RuntimeException e) {
-            assertEquals("Not initialized.", e.getMessage());
-        }
-        verify(executor, times(2)).submit(Mockito.any(Callable.class));
     }
 }
