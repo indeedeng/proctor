@@ -7,12 +7,17 @@ import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.webapp.db.StoreFactory;
+import com.indeed.proctor.webapp.util.RetryWithExponentialBackoff;
+import org.apache.commons.configuration.ConfigurationException;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 /**
  * AsyncProctorStore is an implementation of ProctorStore.
@@ -26,64 +31,41 @@ public class AsyncProctorStore implements ProctorStore {
     private static final Logger LOGGER = Logger.getLogger(AsyncProctorStore.class);
     private static final int MAX_RETRY_COUNT = 10;
     private static final long MAX_RETRY_INTERVAL_INCREASE = 8; // Max interval: (1L << MAX_RETRY_INTERVAL_INCREASE) * 1000
-    private AtomicReference<ProctorStore> proctorStore;
+    private final Future<Optional<ProctorStore>> proctorStoreFuture;
+    private ProctorStore proctorStore;
 
-    public AsyncProctorStore(final StoreFactory factory, final String relativePath) {
-        proctorStore = new AtomicReference<>(null);
-        startCreateStoreJob(factory, relativePath, proctorStore);
-    }
-
-    /**
-     * startCreateStoreJob starts initializing ProctorStore.
-     * When `factory.createStore(relativePath)` fails, this will retry it up to MAX_RETRY_COUNT times with interval.
-     * The interval time increases by twice of the previous interval time for each time.
-     * The initial interval time is 1 second.
-     * The maximum interval time is 2^MAX_RETRY_INTERVAL_INCREASE.
-     * @param factory
-     * @param relativePath
-     * @param atomicStore This method sets the created ProctorStore to atomicStore.
-     */
-    private static void startCreateStoreJob(
-            final StoreFactory factory,
-            final String relativePath,
-            final AtomicReference<ProctorStore> atomicStore
-    ) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                int retryCount = 0;
-                while(true) {
+    public AsyncProctorStore(final StoreFactory factory, final String relativePath, final ExecutorService executor) {
+        proctorStoreFuture = executor.submit(() -> RetryWithExponentialBackoff.retry(
+                () -> {
                     try {
-                        atomicStore.set(factory.createStore(relativePath));
-                        break;
-                    } catch (final Exception e) {
-                        LOGGER.error(String.format("Failed to initialize ProctorStore %s times", ++retryCount), e);
+                        return factory.createStore(relativePath);
+                    } catch (ConfigurationException e) {
+                        throw new InitializationFailedException(e);
                     }
-
-                    if (retryCount > MAX_RETRY_COUNT) {
-                        LOGGER.error("Reached max-retries to initialize ProctorStore");
-                        break;
-                    }
-
-                    try {
-                        final long sleepTimeMillis = (1L << Math.min(retryCount - 1, MAX_RETRY_INTERVAL_INCREASE)) * 1000;
-                        LOGGER.info(String.format("Sleep %s seconds before retrying to initialize ProctorStore", sleepTimeMillis / 1000));
-                        Thread.sleep(sleepTimeMillis);
-                    } catch (final InterruptedException e) {
-                        LOGGER.error("Failed to sleep", e);
-                    }
-                }
-            }
-        }).start();
+                },
+                MAX_RETRY_COUNT,
+                MAX_RETRY_INTERVAL_INCREASE,
+                (e, retryCount) -> LOGGER.error(String.format("Failed to initialize ProctorStore %s times", ++retryCount), e)
+        ));
     }
 
     @VisibleForTesting
     ProctorStore getProctorStore() {
-        final ProctorStore store = proctorStore.get();
-        if (store == null) {
-            throw new NotInitializedException("Not initialized.");
+        if (proctorStore == null) {
+            if (!proctorStoreFuture.isDone()) {
+                throw new NotInitializedException("Still initializing");
+            }
+            try {
+                final Optional<ProctorStore> proctorStoreOptional = proctorStoreFuture.get();
+                proctorStore = proctorStoreOptional.orElseThrow(() -> new NotInitializedException("Not initialized."));
+            } catch (final ExecutionException e) {
+                throw new RuntimeException(e.getCause());
+            } catch (final Exception e) {
+                LOGGER.warn("Initializing process has finished but proctorStore is not initialized.", e);
+                throw new NotInitializedException("Initializing process has unsuccessfully finished", e);
+            }
         }
-        return store;
+        return proctorStore;
     }
 
     @Override
@@ -110,7 +92,11 @@ public class AsyncProctorStore implements ProctorStore {
 
     @Override
     public void verifySetup() throws StoreException {
-        getProctorStore().verifySetup();
+        if (!proctorStoreFuture.isDone()) {
+
+        } else {
+            getProctorStore().verifySetup();
+        }
     }
 
     @Override
@@ -237,6 +223,17 @@ public class AsyncProctorStore implements ProctorStore {
     static class NotInitializedException extends RuntimeException {
         NotInitializedException(final String message) {
             super(message);
+        }
+
+        NotInitializedException(final String message, final Throwable throwable) {
+            super(message, throwable);
+        }
+    }
+
+    @VisibleForTesting
+    static class InitializationFailedException extends RuntimeException {
+        InitializationFailedException(final Throwable throwable) {
+            super(throwable);
         }
     }
 }

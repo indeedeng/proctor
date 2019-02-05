@@ -74,7 +74,7 @@ public class SvnProctorStoreFactory implements StoreFactory {
 
     // Build ProctorStore which does initial proctor data downloading asynchronously which makes constructor returns early
     public ProctorStore getAsyncTrunkStore() {
-        return new AsyncProctorStore(this, "/trunk/matrices");
+        return new AsyncProctorStore(this, "/trunk/matrices", executor);
     }
 
     // Build ProctorStore which does initial proctor data downloading synchronously in constructor
@@ -84,7 +84,7 @@ public class SvnProctorStoreFactory implements StoreFactory {
 
     // Build ProctorStore which does initial proctor data downloading asynchronously which makes constructor returns early
     public ProctorStore getAsyncQaStore() {
-        return new AsyncProctorStore(this, "/branches/deploy/qa/matrices");
+        return new AsyncProctorStore(this, "/branches/deploy/qa/matrices", executor);
     }
 
     // Build ProctorStore which does initial proctor data downloading synchronously in constructor
@@ -94,7 +94,7 @@ public class SvnProctorStoreFactory implements StoreFactory {
 
     // Build ProctorStore which does initial proctor data downloading asynchronously which makes constructor returns early
     public ProctorStore getAsyncProductionStore() {
-        return new AsyncProctorStore(this, "/branches/deploy/production/matrices");
+        return new AsyncProctorStore(this, "/branches/deploy/production/matrices", executor);
     }
 
     public ProctorStore createStore(final String relativePath) {

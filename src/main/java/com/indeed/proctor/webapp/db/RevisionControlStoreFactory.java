@@ -58,6 +58,7 @@ public class RevisionControlStoreFactory implements FactoryBean<StoreFactory> {
                     testDefinitionsDirectory);
         } else if ("git".equals(revisionControlType)) {
             return new GitProctorStoreFactory(
+                    scheduledExecutorService,
                     scmPath,
                     scmUsername,
                     scmPassword,
