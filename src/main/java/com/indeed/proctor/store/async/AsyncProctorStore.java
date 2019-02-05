@@ -219,8 +219,7 @@ public class AsyncProctorStore implements ProctorStore {
         return getProctorStore().getName();
     }
 
-    @VisibleForTesting
-    static class NotInitializedException extends RuntimeException {
+    public static class NotInitializedException extends RuntimeException {
         NotInitializedException(final String message) {
             super(message);
         }
@@ -230,8 +229,7 @@ public class AsyncProctorStore implements ProctorStore {
         }
     }
 
-    @VisibleForTesting
-    static class InitializationFailedException extends RuntimeException {
+    public static class InitializationFailedException extends RuntimeException {
         InitializationFailedException(final Throwable throwable) {
             super(throwable);
         }
