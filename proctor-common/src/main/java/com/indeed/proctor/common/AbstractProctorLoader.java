@@ -191,15 +191,8 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
      * @return true if there was a success and it came after the last error
      */
     public boolean isLoadedDataSuccessfullyRecently() {
+        // most dataLoadTimer methods already exposed in parent class DataLoadingTimerTask
         return dataLoadTimer.isLoadedDataSuccessfullyRecently();
-    }
-
-    /**
-     * @return seconds since last reload was tried, null if never tried.
-     */
-    @Nullable
-    public Integer secondsSinceLastReloadAttempt() {
-        return dataLoadTimer.getSecondsSinceLastLoadCheck();
     }
 
     /**

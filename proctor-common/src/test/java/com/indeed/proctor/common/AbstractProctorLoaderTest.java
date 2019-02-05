@@ -36,7 +36,7 @@ public class AbstractProctorLoaderTest {
                 .once();
         EasyMock.replay(dataLoaderTimerMock);
 
-        assertNull(loader.secondsSinceLastReloadAttempt());
+        assertNull(loader.getSecondsSinceLastLoadCheck());
         assertFalse(loader.isLoadedDataSuccessfullyRecently());
     }
 
@@ -50,7 +50,7 @@ public class AbstractProctorLoaderTest {
                 .once();
         EasyMock.replay(dataLoaderTimerMock);
 
-        assertEquals(42, (int) loader.secondsSinceLastReloadAttempt());
+        assertEquals(42, (int) loader.getSecondsSinceLastLoadCheck());
         assertTrue(loader.isLoadedDataSuccessfullyRecently());
     }
 
