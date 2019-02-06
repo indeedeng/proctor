@@ -8,7 +8,6 @@ import com.indeed.proctor.store.GitProctor;
 import com.indeed.proctor.store.GitProctorCore;
 import com.indeed.proctor.store.GitWorkspaceProviderImpl;
 import com.indeed.proctor.store.ProctorStore;
-import com.indeed.proctor.store.async.AsyncProctorStoreFactory;
 import com.indeed.proctor.store.cache.CachingProctorStore;
 import com.indeed.proctor.store.cache.GlobalCachingProctorStore;
 import com.indeed.proctor.webapp.extensions.GlobalCacheStore;
@@ -38,13 +37,12 @@ public class GitProctorStoreFactory implements StoreFactory, TrunkQaProdStoresFa
     private final int gitPullPushTimeoutSeconds;
     private final int gitCloneTimeoutSeconds;
     private final boolean gitCleanInitialization;
-    private final AsyncProctorStoreFactory asyncProctorStoreFactory;
 
     @Nullable
     private final GlobalCacheStore globalCacheStore;
 
     /**
-     * @deprecated gitRefreshSecond are no longer required. Use other constructors instead.
+     * @deprecated executor and gitRefreshSecond are no longer required. Use other constructors instead.
      */
     @Deprecated
     public GitProctorStoreFactory(final ScheduledExecutorService executor,
@@ -68,12 +66,10 @@ public class GitProctorStoreFactory implements StoreFactory, TrunkQaProdStoresFa
                 gitPullPushTimeoutSeconds,
                 gitCloneTimeoutSeconds,
                 gitCleanInitialization,
-                null,
-                executor
+                null
         );
     }
 
-    @Deprecated
     public GitProctorStoreFactory(final String gitUrl,
                                   final String gitUsername,
                                   final String gitPassword,
@@ -109,34 +105,6 @@ public class GitProctorStoreFactory implements StoreFactory, TrunkQaProdStoresFa
                                   final boolean gitCleanInitialization,
                                   final GlobalCacheStore globalCacheStore
     ) throws IOException {
-        this(
-                gitUrl,
-                gitUsername,
-                gitPassword,
-                testDefinitionsDirectory,
-                tempRootDirectory,
-                gitDirectoryLockTimeoutSeconds,
-                gitPullPushTimeoutSeconds,
-                gitCloneTimeoutSeconds,
-                gitCleanInitialization,
-                null,
-                null
-        );
-
-    }
-
-    public GitProctorStoreFactory(final String gitUrl,
-                                  final String gitUsername,
-                                  final String gitPassword,
-                                  final String testDefinitionsDirectory,
-                                  final String tempRootDirectory,
-                                  final int gitDirectoryLockTimeoutSeconds,
-                                  final int gitPullPushTimeoutSeconds,
-                                  final int gitCloneTimeoutSeconds,
-                                  final boolean gitCleanInitialization,
-                                  @Nullable final GlobalCacheStore globalCacheStore,
-                                  @Nullable final ScheduledExecutorService executor
-    ) throws IOException {
         this.gitUrl = gitUrl;
         this.gitUsername = gitUsername;
         this.gitPassword = gitPassword;
@@ -153,7 +121,6 @@ public class GitProctorStoreFactory implements StoreFactory, TrunkQaProdStoresFa
         this.gitCloneTimeoutSeconds = gitCloneTimeoutSeconds;
         this.gitCleanInitialization = gitCleanInitialization;
         this.globalCacheStore = globalCacheStore;
-        this.asyncProctorStoreFactory = new AsyncProctorStoreFactory(this, executor);
     }
 
     // Build ProctorStore which does initial proctor data downloading synchronously in constructor
@@ -161,29 +128,14 @@ public class GitProctorStoreFactory implements StoreFactory, TrunkQaProdStoresFa
         return createStore("proctor/git/trunk");
     }
 
-    // Build ProctorStore which does initial proctor data downloading asynchronously which makes constructor returns early
-    public ProctorStore getAsyncTrunkStore() {
-        return asyncProctorStoreFactory.getTrunkStore();
-    }
-
     // Build ProctorStore which does initial proctor data downloading synchronously in constructor
     public ProctorStore getQaStore() {
         return createStore("proctor/git/qa");
     }
 
-    // Build ProctorStore which does initial proctor data downloading asynchronously which makes constructor returns early
-    public ProctorStore getAsyncQaStore() {
-        return asyncProctorStoreFactory.getQaStore();
-    }
-
     // Build ProctorStore which does initial proctor data downloading synchronously in constructor
     public ProctorStore getProductionStore() {
         return createStore("proctor/git/production");
-    }
-
-    // Build ProctorStore which does initial proctor data downloading asynchronously which makes constructor returns early
-    public ProctorStore getAsyncProductionStore() {
-        return asyncProctorStoreFactory.getProductionStore();
     }
 
     public ProctorStore createStore(final String relativePath) {

@@ -71,8 +71,7 @@ public class GitProctorStoreFactoryTest {
                 10,
                 10,
                 true,
-                globalCacheStore,
-                executor
+                globalCacheStore
         );
     }
 }

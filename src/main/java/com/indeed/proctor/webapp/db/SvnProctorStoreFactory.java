@@ -10,7 +10,6 @@ import com.indeed.proctor.store.SvnDirectoryRefresher;
 import com.indeed.proctor.store.SvnPersisterCoreImpl;
 import com.indeed.proctor.store.SvnProctor;
 import com.indeed.proctor.store.SvnWorkspaceProviderImpl;
-import com.indeed.proctor.store.async.AsyncProctorStoreFactory;
 import com.indeed.util.varexport.VarExporter;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.log4j.Logger;
@@ -48,8 +47,6 @@ public class SvnProctorStoreFactory implements StoreFactory, TrunkQaProdStoresFa
     // The period to use when scheduling a refresh of the svn directory
     private long svnRefreshMillis = TimeUnit.SECONDS.toMillis(300);
 
-    private final AsyncProctorStoreFactory asyncProctorStoreFactory;
-
     public SvnProctorStoreFactory(final ScheduledExecutorService executor,
                                   final boolean cache,
                                   final long tempDirCleanupAgeMinutes,
@@ -67,7 +64,6 @@ public class SvnProctorStoreFactory implements StoreFactory, TrunkQaProdStoresFa
         this.svnPassword = svnPassword;
         this.testDefinitionsDirectory = testDefinitionsDirectory;
         this.implicitTempRoot = identifyImplicitTempRoot();
-        this.asyncProctorStoreFactory = new AsyncProctorStoreFactory(this, executor);
     }
 
     // Build ProctorStore which does initial proctor data downloading synchronously in constructor
@@ -75,29 +71,14 @@ public class SvnProctorStoreFactory implements StoreFactory, TrunkQaProdStoresFa
         return createStore("/trunk/matrices");
     }
 
-    // Build ProctorStore which does initial proctor data downloading asynchronously which makes constructor returns early
-    public ProctorStore getAsyncTrunkStore() {
-        return asyncProctorStoreFactory.getTrunkStore();
-    }
-
     // Build ProctorStore which does initial proctor data downloading synchronously in constructor
     public ProctorStore getQaStore() {
         return createStore("/branches/deploy/qa/matrices");
     }
 
-    // Build ProctorStore which does initial proctor data downloading asynchronously which makes constructor returns early
-    public ProctorStore getAsyncQaStore() {
-        return asyncProctorStoreFactory.getQaStore();
-    }
-
     // Build ProctorStore which does initial proctor data downloading synchronously in constructor
     public ProctorStore getProductionStore() {
         return createStore("/branches/deploy/production/matrices");
-    }
-
-    // Build ProctorStore which does initial proctor data downloading asynchronously which makes constructor returns early
-    public ProctorStore getAsyncProductionStore() {
-        return asyncProctorStoreFactory.getProductionStore();
     }
 
     public ProctorStore createStore(final String relativePath) {
