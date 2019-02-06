@@ -7,33 +7,33 @@ import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
 /**
- * Util to run a supplier several time until success or max-retries
+ * Util to run a supplier several time until success or max-attempts
  */
 public class RetryWithExponentialBackoff {
 
     private static final Logger LOGGER = Logger.getLogger(RetryWithExponentialBackoff.class);
 
     /**
-     * This tries supplier.get() up to maxRetryCount times.
-     * For each retires, it has interval time which is increased by twice.
+     * This tries supplier.get() up to maxAttemptCount times.
+     * Between each attempts, it has interval time which is increased by twice.
      * The initial interval time is 1 second.
-     * The maximum interval time is 2^maxRetryIntervalIncrease seconds.
+     * The maximum interval time is 2^maxAttemptIntervalIncrease seconds.
      * @param supplier this can throw an exception.
-     * @param maxRetryCount the max limit of the number of retries
-     * @param maxRetryIntervalIncrease the max limit of the interval time increase
-     * @param reportFailOnce log the exception and retry-count when supplier fails.
+     * @param maxAttemptCount the max limit of the number of retries
+     * @param maxAttemptIntervalIncrease the max limit of the interval time increase
+     * @param reportFailOnce log the exception and attempt-count when supplier fails.
      * @param <T> the type of the return value of supplier.
-     * @return the result of supplier.get() wrapped by Optional. It can be empty if it failed after maxRetryCount retries.
+     * @return the result of supplier.get() wrapped by Optional. It can be empty if it failed after maxAttemptCount attempts.
      */
-    public static <T> Optional<T> retry(
+    public <T> Optional<T> retry(
             final Supplier<T> supplier,
-            final int maxRetryCount,
-            final long maxRetryIntervalIncrease,
-            final BiConsumer<Throwable, Integer> reportFailOnce
+            final int maxAttemptCount,
+            final long maxAttemptIntervalIncrease,
+            final BiConsumer<Exception, Integer> reportFailOnce
     ) {
-        for (int retryCount = 0; retryCount < maxRetryCount; retryCount++) {
-            if (retryCount > 0) {
-                final long sleepTimeMillis = (1L << Math.min(retryCount - 1, maxRetryIntervalIncrease)) * 1000;
+        for (int attemptCount = 0; attemptCount < maxAttemptCount; attemptCount++) {
+            if (attemptCount > 0) {
+                final long sleepTimeMillis = (1L << Math.min(attemptCount - 1, maxAttemptIntervalIncrease)) * 1000;
                 sleep(sleepTimeMillis);
             }
 
@@ -44,13 +44,13 @@ public class RetryWithExponentialBackoff {
                 }
                 return Optional.of(value);
             } catch (final Exception e) {
-                reportFailOnce.accept(e, retryCount);
+                reportFailOnce.accept(e, attemptCount);
             }
         }
         return Optional.empty();
     }
 
-    static void sleep(final long sleepTimeMillis) {
+    public void sleep(final long sleepTimeMillis) {
         try {
             LOGGER.info(String.format("Sleep %s seconds before retrying", sleepTimeMillis / 1000));
             Thread.sleep(sleepTimeMillis);

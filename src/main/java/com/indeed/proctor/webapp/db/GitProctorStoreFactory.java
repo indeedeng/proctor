@@ -8,7 +8,7 @@ import com.indeed.proctor.store.GitProctor;
 import com.indeed.proctor.store.GitProctorCore;
 import com.indeed.proctor.store.GitWorkspaceProviderImpl;
 import com.indeed.proctor.store.ProctorStore;
-import com.indeed.proctor.store.async.AsyncProctorStore;
+import com.indeed.proctor.store.async.AsyncProctorStoreFactory;
 import com.indeed.proctor.store.cache.CachingProctorStore;
 import com.indeed.proctor.store.cache.GlobalCachingProctorStore;
 import com.indeed.proctor.webapp.extensions.GlobalCacheStore;
@@ -19,10 +19,9 @@ import org.apache.log4j.Logger;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-public class GitProctorStoreFactory implements StoreFactory {
+public class GitProctorStoreFactory implements StoreFactory, TrunkQaProdStoresFactory {
     private static final Logger LOGGER = Logger.getLogger(GitProctorStoreFactory.class);
 
     private String gitUrl;
@@ -39,7 +38,7 @@ public class GitProctorStoreFactory implements StoreFactory {
     private final int gitPullPushTimeoutSeconds;
     private final int gitCloneTimeoutSeconds;
     private final boolean gitCleanInitialization;
-    private final ScheduledExecutorService executor;
+    private final AsyncProctorStoreFactory asyncProctorStoreFactory;
 
     @Nullable
     private final GlobalCacheStore globalCacheStore;
@@ -60,7 +59,6 @@ public class GitProctorStoreFactory implements StoreFactory {
                                   final int gitCloneTimeoutSeconds,
                                   final boolean gitCleanInitialization) throws IOException {
         this(
-                executor,
                 gitUrl,
                 gitUsername,
                 gitPassword,
@@ -70,7 +68,8 @@ public class GitProctorStoreFactory implements StoreFactory {
                 gitPullPushTimeoutSeconds,
                 gitCloneTimeoutSeconds,
                 gitCleanInitialization,
-                null
+                null,
+                executor
         );
     }
 
@@ -111,7 +110,6 @@ public class GitProctorStoreFactory implements StoreFactory {
                                   final GlobalCacheStore globalCacheStore
     ) throws IOException {
         this(
-                Executors.newSingleThreadScheduledExecutor(),
                 gitUrl,
                 gitUsername,
                 gitPassword,
@@ -121,13 +119,13 @@ public class GitProctorStoreFactory implements StoreFactory {
                 gitPullPushTimeoutSeconds,
                 gitCloneTimeoutSeconds,
                 gitCleanInitialization,
+                null,
                 null
         );
 
     }
 
-    public GitProctorStoreFactory(final ScheduledExecutorService executor,
-                                  final String gitUrl,
+    public GitProctorStoreFactory(final String gitUrl,
                                   final String gitUsername,
                                   final String gitPassword,
                                   final String testDefinitionsDirectory,
@@ -136,9 +134,9 @@ public class GitProctorStoreFactory implements StoreFactory {
                                   final int gitPullPushTimeoutSeconds,
                                   final int gitCloneTimeoutSeconds,
                                   final boolean gitCleanInitialization,
-                                  final GlobalCacheStore globalCacheStore
+                                  @Nullable final GlobalCacheStore globalCacheStore,
+                                  @Nullable final ScheduledExecutorService executor
     ) throws IOException {
-        this.executor = executor;
         this.gitUrl = gitUrl;
         this.gitUsername = gitUsername;
         this.gitPassword = gitPassword;
@@ -155,6 +153,7 @@ public class GitProctorStoreFactory implements StoreFactory {
         this.gitCloneTimeoutSeconds = gitCloneTimeoutSeconds;
         this.gitCleanInitialization = gitCleanInitialization;
         this.globalCacheStore = globalCacheStore;
+        this.asyncProctorStoreFactory = new AsyncProctorStoreFactory(this, executor);
     }
 
     // Build ProctorStore which does initial proctor data downloading synchronously in constructor
@@ -164,7 +163,7 @@ public class GitProctorStoreFactory implements StoreFactory {
 
     // Build ProctorStore which does initial proctor data downloading asynchronously which makes constructor returns early
     public ProctorStore getAsyncTrunkStore() {
-        return new AsyncProctorStore(this, "proctor/git/trunk", executor);
+        return asyncProctorStoreFactory.getTrunkStore();
     }
 
     // Build ProctorStore which does initial proctor data downloading synchronously in constructor
@@ -174,7 +173,7 @@ public class GitProctorStoreFactory implements StoreFactory {
 
     // Build ProctorStore which does initial proctor data downloading asynchronously which makes constructor returns early
     public ProctorStore getAsyncQaStore() {
-        return new AsyncProctorStore(this, "proctor/git/qa", executor);
+        return asyncProctorStoreFactory.getQaStore();
     }
 
     // Build ProctorStore which does initial proctor data downloading synchronously in constructor
@@ -184,7 +183,7 @@ public class GitProctorStoreFactory implements StoreFactory {
 
     // Build ProctorStore which does initial proctor data downloading asynchronously which makes constructor returns early
     public ProctorStore getAsyncProductionStore() {
-        return new AsyncProctorStore(this, "proctor/git/production", executor);
+        return asyncProctorStoreFactory.getProductionStore();
     }
 
     public ProctorStore createStore(final String relativePath) {

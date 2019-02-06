@@ -62,7 +62,6 @@ public class GitProctorStoreFactoryTest {
             final GlobalCacheStore globalCacheStore
     ) throws IOException, ConfigurationException {
         return new GitProctorStoreFactory(
-                executor,
                 "test.git",
                 "test-user",
                 "password",
@@ -72,7 +71,8 @@ public class GitProctorStoreFactoryTest {
                 10,
                 10,
                 true,
-                globalCacheStore
+                globalCacheStore,
+                executor
         );
     }
 }

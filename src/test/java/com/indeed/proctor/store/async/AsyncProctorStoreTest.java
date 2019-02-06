@@ -1,7 +1,8 @@
 package com.indeed.proctor.store.async;
 
+import com.google.common.util.concurrent.MoreExecutors;
 import com.indeed.proctor.store.ProctorStore;
-import com.indeed.proctor.webapp.db.StoreFactory;
+import com.indeed.proctor.webapp.util.RetryWithExponentialBackoff;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -10,58 +11,48 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.Optional;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
+import java.util.function.Supplier;
 
 import static org.assertj.core.api.Fail.fail;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class AsyncProctorStoreTest {
 
-    private static final String RELATIVE_PATH = "relative/path";
+    private static final ExecutorService EXECUTOR = MoreExecutors.sameThreadExecutor();
+    private static final RetryWithExponentialBackoff RETRY_WITH_EXPONENTIAL_BACKOFF = new RetryWithExponentialBackoff() {
+        @Override
+        public void sleep(final long sleepTimeMillis) {
+        }
+    };
 
     @Mock
-    private StoreFactory factory;
+    private Supplier<ProctorStore> supplier;
     @Mock
     private ProctorStore proctorStore;
     @Mock
     private ExecutorService executor;
-    @Mock
-    private Future<Optional<ProctorStore>> proctorStoreFuture;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
-        when(factory.createStore(RELATIVE_PATH)).thenReturn(proctorStore);
 
-        when(proctorStoreFuture.isDone()).thenReturn(true);
-        when(proctorStoreFuture.get()).thenReturn(Optional.of(proctorStore));
+        when(supplier.get()).thenReturn(proctorStore);
     }
 
     @Test
-    public void testAsyncProctorStoreConstructor() throws Exception {
-        when(executor.submit(Mockito.any(Callable.class))).thenAnswer((i) -> {
-            final Callable callable = (Callable) i.getArguments()[0];
-            callable.call();
-            return proctorStoreFuture;
-        });
+    public void testAsyncProctorStoreConstructor() {
+        new AsyncProctorStore(supplier, EXECUTOR, RETRY_WITH_EXPONENTIAL_BACKOFF);
 
-        new AsyncProctorStore(factory, RELATIVE_PATH, executor);
-
-        verify(factory, times(1)).createStore(RELATIVE_PATH);
+        verify(supplier).get();
     }
 
     @Test
-    public void testGetProctorStoreSuccess() throws Exception {
-        when(executor.submit(Mockito.any(Callable.class))).thenReturn(proctorStoreFuture);
-        when(proctorStoreFuture.isDone()).thenReturn(true);
-        when(proctorStoreFuture.get()).thenReturn(Optional.of(proctorStore));
-
-        final AsyncProctorStore asyncProctorStore = new AsyncProctorStore(factory, RELATIVE_PATH, executor);
-
+    public void testGetProctorStoreSuccess() {
+        final AsyncProctorStore asyncProctorStore = new AsyncProctorStore(supplier, EXECUTOR, RETRY_WITH_EXPONENTIAL_BACKOFF);
         final ProctorStore result = asyncProctorStore.getProctorStore();
 
         assertEquals(proctorStore, result);
@@ -69,10 +60,9 @@ public class AsyncProctorStoreTest {
 
     @Test
     public void testGetInitializationNotDoneProctorStore() {
-        when(executor.submit(Mockito.any(Callable.class))).thenReturn(proctorStoreFuture);
-        when(proctorStoreFuture.isDone()).thenReturn(false);
+        when(executor.submit(Mockito.any(Callable.class))).thenReturn(new CompletableFuture());
 
-        final AsyncProctorStore asyncProctorStore = new AsyncProctorStore(factory, RELATIVE_PATH, executor);
+        final AsyncProctorStore asyncProctorStore = new AsyncProctorStore(supplier, executor, RETRY_WITH_EXPONENTIAL_BACKOFF);
 
         try {
             asyncProctorStore.getProctorStore();
@@ -83,18 +73,16 @@ public class AsyncProctorStoreTest {
     }
 
     @Test
-    public void testGetNotInitializedProctorStore() throws Exception {
-        when(executor.submit(Mockito.any(Callable.class))).thenReturn(proctorStoreFuture);
-        when(proctorStoreFuture.isDone()).thenReturn(true);
-        when(proctorStoreFuture.get()).thenReturn(Optional.empty());
+    public void testGetNotInitializedProctorStore() {
+        when(executor.submit(Mockito.any(Callable.class))).thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
-        final AsyncProctorStore asyncProctorStore = new AsyncProctorStore(factory, RELATIVE_PATH, executor);
+        final AsyncProctorStore asyncProctorStore = new AsyncProctorStore(supplier, executor, RETRY_WITH_EXPONENTIAL_BACKOFF);
 
         try {
             asyncProctorStore.getProctorStore();
             fail("getProctorStore should throw");
-        } catch (final AsyncProctorStore.NotInitializedException e) {
-            assertEquals("Initializing process has unsuccessfully finished", e.getMessage());
+        } catch (final AsyncProctorStore.InitializationFailedException e) {
+            assertEquals("Initializing proctorStore process has finished but proctorStore is not initialized.", e.getMessage());
         }
     }
 }

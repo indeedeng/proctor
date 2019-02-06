@@ -1,14 +1,13 @@
 package com.indeed.proctor.store.async;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.indeed.proctor.common.model.TestDefinition;
 import com.indeed.proctor.common.model.TestMatrixVersion;
 import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.store.StoreException;
-import com.indeed.proctor.webapp.db.StoreFactory;
 import com.indeed.proctor.webapp.util.RetryWithExponentialBackoff;
-import org.apache.commons.configuration.ConfigurationException;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
@@ -18,6 +17,7 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.function.Supplier;
 
 /**
  * AsyncProctorStore is an implementation of ProctorStore.
@@ -25,28 +25,32 @@ import java.util.concurrent.Future;
  * This initializes the delegated proctorStore in a background job when the constructor is called.
  * Before finishing the initialization, this throws NotInitializedException if proctorStore is referred.
  *
- * If it fails to initialize proctorStore, it will retry to initialize up to MAX_RETRY_COUNT with 2^(retryCount - 1) seconds interval.
+ * If it fails to initialize proctorStore, it will retry to initialize up to MAX_ATTEMPT_COUNT with 2^(attemptCount - 1) seconds interval.
  */
 public class AsyncProctorStore implements ProctorStore {
     private static final Logger LOGGER = Logger.getLogger(AsyncProctorStore.class);
-    private static final int MAX_RETRY_COUNT = 10;
-    private static final long MAX_RETRY_INTERVAL_INCREASE = 8; // Max interval: (1L << MAX_RETRY_INTERVAL_INCREASE) * 1000
+    private static final int MAX_ATTEMPT_COUNT = 10;
+    private static final long MAX_ATTEMPT_INTERVAL_INCREASE = 8;
     private final Future<Optional<ProctorStore>> proctorStoreFuture;
     private ProctorStore proctorStore;
 
-    public AsyncProctorStore(final StoreFactory factory, final String relativePath, final ExecutorService executor) {
-        proctorStoreFuture = executor.submit(() -> RetryWithExponentialBackoff.retry(
-                () -> {
-                    try {
-                        return factory.createStore(relativePath);
-                    } catch (ConfigurationException e) {
-                        throw new InitializationFailedException(e);
-                    }
-                },
-                MAX_RETRY_COUNT,
-                MAX_RETRY_INTERVAL_INCREASE,
-                (e, retryCount) -> LOGGER.error(String.format("Failed to initialize ProctorStore %s times", ++retryCount), e)
+    @VisibleForTesting
+    AsyncProctorStore(
+            final Supplier<ProctorStore> storeSupplier,
+            final ExecutorService executor,
+            final RetryWithExponentialBackoff retryWithExponentialBackoff
+    ) {
+        Preconditions.checkNotNull(executor);
+        proctorStoreFuture = executor.submit(() -> retryWithExponentialBackoff.retry(
+                storeSupplier,
+                MAX_ATTEMPT_COUNT,
+                MAX_ATTEMPT_INTERVAL_INCREASE,
+                (e, attemptCount) -> LOGGER.error(String.format("Failed to initialize ProctorStore %s times", attemptCount + 1), e)
         ));
+    }
+
+    public AsyncProctorStore(final Supplier<ProctorStore> storeSupplier, final ExecutorService executor) {
+        this(storeSupplier, executor, new RetryWithExponentialBackoff());
     }
 
     @VisibleForTesting
@@ -55,15 +59,19 @@ public class AsyncProctorStore implements ProctorStore {
             if (!proctorStoreFuture.isDone()) {
                 throw new NotInitializedException("Still initializing");
             }
+
+            final Optional<ProctorStore> proctorStoreOptional;
+
             try {
-                final Optional<ProctorStore> proctorStoreOptional = proctorStoreFuture.get();
-                proctorStore = proctorStoreOptional.orElseThrow(() -> new NotInitializedException("Not initialized."));
+                proctorStoreOptional = proctorStoreFuture.get();
             } catch (final ExecutionException e) {
-                throw new RuntimeException(e.getCause());
+                throw new InitializationFailedException("Failed to initialize ProctorStore", e.getCause());
             } catch (final Exception e) {
-                LOGGER.warn("Initializing process has finished but proctorStore is not initialized.", e);
-                throw new NotInitializedException("Initializing process has unsuccessfully finished", e);
+                throw new InitializationFailedException("Failed to initialize ProctorStore", e);
             }
+
+            proctorStore = proctorStoreOptional.orElseThrow(() ->
+                    new InitializationFailedException("Initializing proctorStore process has finished but proctorStore is not initialized."));
         }
         return proctorStore;
     }
@@ -92,11 +100,7 @@ public class AsyncProctorStore implements ProctorStore {
 
     @Override
     public void verifySetup() throws StoreException {
-        if (!proctorStoreFuture.isDone()) {
-
-        } else {
-            getProctorStore().verifySetup();
-        }
+        getProctorStore().verifySetup();
     }
 
     @Override
@@ -223,15 +227,15 @@ public class AsyncProctorStore implements ProctorStore {
         NotInitializedException(final String message) {
             super(message);
         }
-
-        NotInitializedException(final String message, final Throwable throwable) {
-            super(message, throwable);
-        }
     }
 
     public static class InitializationFailedException extends RuntimeException {
-        InitializationFailedException(final Throwable throwable) {
-            super(throwable);
+        InitializationFailedException(final String message) {
+            super(message);
+        }
+
+        InitializationFailedException(final String message, final Throwable throwable) {
+            super(message, throwable);
         }
     }
 }

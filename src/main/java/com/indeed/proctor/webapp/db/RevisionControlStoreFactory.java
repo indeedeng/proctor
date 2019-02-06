@@ -11,8 +11,6 @@ import org.springframework.beans.factory.annotation.Value;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-/**
- */
 public class RevisionControlStoreFactory implements FactoryBean<StoreFactory> {
     private final Logger LOGGER = Logger.getLogger(RevisionControlStoreFactory.class);
 
@@ -58,7 +56,6 @@ public class RevisionControlStoreFactory implements FactoryBean<StoreFactory> {
                     testDefinitionsDirectory);
         } else if ("git".equals(revisionControlType)) {
             return new GitProctorStoreFactory(
-                    scheduledExecutorService,
                     scmPath,
                     scmUsername,
                     scmPassword,
@@ -68,7 +65,8 @@ public class RevisionControlStoreFactory implements FactoryBean<StoreFactory> {
                     gitPullPushTimeoutSeconds,
                     gitCloneTimeoutSeconds,
                     gitCleanInitialization,
-                    globalCacheStore);
+                    globalCacheStore,
+                    scheduledExecutorService);
         }
         return null;
     }
