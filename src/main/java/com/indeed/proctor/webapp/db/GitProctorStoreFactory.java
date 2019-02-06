@@ -20,7 +20,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.ScheduledExecutorService;
 
-public class GitProctorStoreFactory implements StoreFactory, TrunkQaProdStoresFactory {
+public class GitProctorStoreFactory implements TrunkQaProdStoresFactory {
     private static final Logger LOGGER = Logger.getLogger(GitProctorStoreFactory.class);
 
     private String gitUrl;

@@ -44,7 +44,7 @@ public class RetryWithExponentialBackoff {
                 }
                 return Optional.of(value);
             } catch (final Exception e) {
-                reportFailOnce.accept(e, attemptCount);
+                reportFailOnce.accept(e, attemptCount + 1);
             }
         }
         return Optional.empty();

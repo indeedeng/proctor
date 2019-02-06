@@ -20,22 +20,22 @@ import java.util.concurrent.Future;
 import java.util.function.Supplier;
 
 /**
- * AsyncProctorStore is an implementation of ProctorStore.
+ * AsyncInitializedProctorStore is an implementation of ProctorStore.
  * This is delegating all overridden methods to proctorStore.
  * This initializes the delegated proctorStore in a background job when the constructor is called.
  * Before finishing the initialization, this throws NotInitializedException if proctorStore is referred.
  *
  * If it fails to initialize proctorStore, it will retry to initialize up to MAX_ATTEMPT_COUNT with 2^(attemptCount - 1) seconds interval.
  */
-public class AsyncProctorStore implements ProctorStore {
-    private static final Logger LOGGER = Logger.getLogger(AsyncProctorStore.class);
+public class AsyncInitializedProctorStore implements ProctorStore {
+    private static final Logger LOGGER = Logger.getLogger(AsyncInitializedProctorStore.class);
     private static final int MAX_ATTEMPT_COUNT = 10;
     private static final long MAX_ATTEMPT_INTERVAL_INCREASE = 8;
     private final Future<Optional<ProctorStore>> proctorStoreFuture;
     private ProctorStore proctorStore;
 
     @VisibleForTesting
-    AsyncProctorStore(
+    AsyncInitializedProctorStore(
             final Supplier<ProctorStore> storeSupplier,
             final ExecutorService executor,
             final RetryWithExponentialBackoff retryWithExponentialBackoff
@@ -45,11 +45,11 @@ public class AsyncProctorStore implements ProctorStore {
                 storeSupplier,
                 MAX_ATTEMPT_COUNT,
                 MAX_ATTEMPT_INTERVAL_INCREASE,
-                (e, attemptCount) -> LOGGER.error(String.format("Failed to initialize ProctorStore %s times", attemptCount + 1), e)
+                (e, attemptCount) -> LOGGER.error(String.format("Failed to initialize ProctorStore %s times", attemptCount), e)
         ));
     }
 
-    public AsyncProctorStore(final Supplier<ProctorStore> storeSupplier, final ExecutorService executor) {
+    public AsyncInitializedProctorStore(final Supplier<ProctorStore> storeSupplier, final ExecutorService executor) {
         this(storeSupplier, executor, new RetryWithExponentialBackoff());
     }
 

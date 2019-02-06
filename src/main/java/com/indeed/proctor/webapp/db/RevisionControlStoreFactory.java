@@ -2,7 +2,7 @@ package com.indeed.proctor.webapp.db;
 
 import com.google.common.base.Preconditions;
 import com.indeed.proctor.store.ProctorStore;
-import com.indeed.proctor.store.async.AsyncProctorStoreFactory;
+import com.indeed.proctor.store.async.AsyncInitializedProctorStoreFactory;
 import com.indeed.proctor.webapp.extensions.GlobalCacheStore;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.log4j.Logger;
@@ -40,7 +40,7 @@ public class RevisionControlStoreFactory implements FactoryBean<StoreFactory> {
 
     @Override
     public StoreFactory getObject() throws Exception {
-        return new AsyncProctorStoreFactory(createFactory(), scheduledExecutorService);
+        return new AsyncInitializedProctorStoreFactory(createFactory(), scheduledExecutorService);
     }
 
     private TrunkQaProdStoresFactory createFactory() throws IOException, ConfigurationException {
