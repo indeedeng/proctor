@@ -17,7 +17,6 @@ import java.util.function.Supplier;
 
 import static org.assertj.core.api.Fail.fail;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class AsyncInitializedProctorStoreTest {
@@ -30,24 +29,15 @@ public class AsyncInitializedProctorStoreTest {
     };
 
     @Mock
-    private Supplier<ProctorStore> supplier;
-    @Mock
     private ProctorStore proctorStore;
     @Mock
-    private ExecutorService executor;
+    private ExecutorService executorMock;
+
+    private final Supplier<ProctorStore> supplier = () -> proctorStore;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
-
-        when(supplier.get()).thenReturn(proctorStore);
-    }
-
-    @Test
-    public void testAsyncInitializedProctorStoreConstructor() {
-        new AsyncInitializedProctorStore(supplier, EXECUTOR, RETRY_WITH_EXPONENTIAL_BACKOFF);
-
-        verify(supplier).get();
     }
 
     @Test
@@ -60,9 +50,9 @@ public class AsyncInitializedProctorStoreTest {
 
     @Test
     public void testGetInitializationNotDoneProctorStore() {
-        when(executor.submit(Mockito.any(Callable.class))).thenReturn(new CompletableFuture());
+        when(executorMock.submit(Mockito.any(Callable.class))).thenReturn(new CompletableFuture());
 
-        final AsyncInitializedProctorStore asyncInitializedProctorStore = new AsyncInitializedProctorStore(supplier, executor, RETRY_WITH_EXPONENTIAL_BACKOFF);
+        final AsyncInitializedProctorStore asyncInitializedProctorStore = new AsyncInitializedProctorStore(supplier, executorMock, RETRY_WITH_EXPONENTIAL_BACKOFF);
 
         try {
             asyncInitializedProctorStore.getProctorStore();
@@ -74,9 +64,9 @@ public class AsyncInitializedProctorStoreTest {
 
     @Test
     public void testGetNotInitializedProctorStore() {
-        when(executor.submit(Mockito.any(Callable.class))).thenReturn(CompletableFuture.completedFuture(Optional.empty()));
+        when(executorMock.submit(Mockito.any(Callable.class))).thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
-        final AsyncInitializedProctorStore asyncInitializedProctorStore = new AsyncInitializedProctorStore(supplier, executor, RETRY_WITH_EXPONENTIAL_BACKOFF);
+        final AsyncInitializedProctorStore asyncInitializedProctorStore = new AsyncInitializedProctorStore(supplier, executorMock, RETRY_WITH_EXPONENTIAL_BACKOFF);
 
         try {
             asyncInitializedProctorStore.getProctorStore();

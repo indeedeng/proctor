@@ -2,6 +2,7 @@ package com.indeed.proctor.webapp.util;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.AdditionalMatchers;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
@@ -85,5 +86,39 @@ public class RetryWithExponentialBackoffTest {
         verify(reportFailOnce, times(2)).accept(any(Exception.class), anyInt());
         verify(sleep).apply(1000L);
         verify(sleep).apply(2000L);
+    }
+
+    private void testRetryNeverSucceeds(final int maxAttemptCount, final int maxAttemptIntervalIncrease) {
+        when(supplier.get()).thenThrow(new RuntimeException("something went wrong"));
+
+        final Optional result = retryWithExponentialBackoff.retry(
+                supplier,
+                maxAttemptCount,
+                maxAttemptIntervalIncrease,
+                reportFailOnce
+        );
+
+        assertEquals(Optional.empty(), result);
+        verify(supplier, times(maxAttemptCount)).get();
+        verify(reportFailOnce, times(maxAttemptCount)).accept(any(Exception.class), anyInt());
+        verify(sleep, times(maxAttemptCount - 1))
+                .apply(AdditionalMatchers.leq((1L << maxAttemptIntervalIncrease) * 1000));
+        verify(sleep, never())
+                .apply(AdditionalMatchers.gt((1L << maxAttemptIntervalIncrease) * 1000));
+    }
+
+    @Test
+    public void testRetryNeverSucceeds() {
+        testRetryNeverSucceeds(MAX_ATTEMPT_COUNT, MAX_ATTEMPT_INTERVAL_INCREASE);
+    }
+
+    @Test
+    public void testRetryNeverSucceedsWithDifferentMaxAttemptIntervalIncrease() {
+        testRetryNeverSucceeds(MAX_ATTEMPT_COUNT, 4);
+    }
+
+    @Test
+    public void testRetryNeverSucceedsWithDifferentMaxAttemptCount() {
+        testRetryNeverSucceeds(15, MAX_ATTEMPT_INTERVAL_INCREASE);
     }
 }
