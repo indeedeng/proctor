@@ -13,7 +13,6 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.IOException;
-import java.util.concurrent.ScheduledExecutorService;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -27,9 +26,6 @@ public class GitProctorStoreFactoryTest {
 
     @Mock
     private ProctorStore proctorStore;
-
-    @Mock
-    private ScheduledExecutorService executor;
 
     private GitProctorStoreFactory gitProctorStoreFactory;
 
