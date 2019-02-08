@@ -1,5 +1,6 @@
 package com.indeed.proctor.common;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
@@ -97,13 +98,8 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
         if (newProctor == null) {
             // This should only happen if the versions of the matrix files are the same.
 
-            if (!dataLoadTimer.isLoadedDataSuccessfullyRecently()) {
-                // Clear healthcheck dependency status if the last load attempt failed but version has not changed.
-                dataLoadTimer.loadComplete();
-            }
-
             reportNoChange();
-            return false;
+            return true; // mark this cycle as success so that healthcheck recovers
         }
 
         reportReloaded(current, newProctor);
@@ -165,7 +161,7 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
 
         final Proctor proctor = Proctor.construct(testMatrix, loadResult, functionMapper);
         //  kind of lame to modify lastAudit here but current in load(), but the interface is a little constraining
-        this.lastAudit = newAudit;
+        setLastAudit(newAudit);
         return proctor;
     }
 
@@ -178,6 +174,11 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
     @Export(name = "last-audit")
     public Audit getLastAudit() {
         return lastAudit;
+    }
+
+    @VisibleForTesting
+    void setLastAudit(final Audit newAudit) {
+        lastAudit = newAudit;
     }
 
     @Nullable
