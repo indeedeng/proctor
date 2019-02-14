@@ -1,0 +1,4 @@
+<Context debug="5" reloadable="true" crossContext="true">
+    <Parameter name="contextConfigLocation" value="/WEB-INF/spring/applicationContext.xml" override="false"/>
+    <Parameter name="propertyPlaceholderResourceLocation" value="file://${config.dir}/proctor-config.properties" override="false"/>
+</Context>
