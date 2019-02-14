@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>proctor-pipet-core</artifactId>
+
+    <parent>
+        <groupId>com.indeed</groupId>
+        <artifactId>proctor-pipet-parent</artifactId>
+        <version>0.0.3-SNAPSHOT</version>
+    </parent>
+
+    <properties>
+        <proctor.version>1.1.31</proctor.version>
+        <util.version>1.0.23</util.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webmvc</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <version>${spring.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.5.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>15.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.indeed</groupId>
+            <artifactId>proctor-common</artifactId>
+            <version>${proctor.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.indeed</groupId>
+            <artifactId>proctor-consumer</artifactId>
+            <version>${proctor.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.indeed</groupId>
+            <artifactId>proctor-codegen</artifactId>
+            <version>${proctor.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.indeed</groupId>
+            <artifactId>util-core</artifactId>
+            <version>${util.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.indeed</groupId>
+            <artifactId>util-varexport</artifactId>
+            <version>${util.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.3.2</version>
+            </plugin>
+        </plugins>
+    </build>
+</project>

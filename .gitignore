@@ -14,3 +14,7 @@ _cache
 /buildlib
 /dist
 /classes
+/.classpath
+/.project
+/.settings
+/tomcat.*

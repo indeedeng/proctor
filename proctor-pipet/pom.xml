@@ -1,0 +1,23 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.indeed</groupId>
+        <artifactId>oss-parent</artifactId>
+        <version>22</version>
+    </parent>
+
+    <properties>
+        <spring.version>4.3.8.RELEASE</spring.version>
+    </properties>
+
+    <groupId>com.indeed</groupId>
+    <artifactId>proctor-pipet-parent</artifactId>
+    <version>0.0.3-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>proctor-pipet-core</module>
+        <module>proctor-pipet-deploy</module>
+    </modules>
+</project>
