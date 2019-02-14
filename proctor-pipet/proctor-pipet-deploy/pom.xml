@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.indeed</groupId>
         <artifactId>proctor-pipet-parent</artifactId>
-        <version>0.0.3-SNAPSHOT</version>
+        <version>9999-SNAPSHOT</version>
     </parent>
 
     <properties>
@@ -60,20 +60,15 @@
     <build>
         <plugins>
             <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
-            </plugin>
-            <plugin>
                 <artifactId>maven-war-plugin</artifactId>
-                <version>2.2</version>
                 <configuration>
                     <failOnMissingWebXml>false</failOnMissingWebXml>
+                    <attachClasses>true</attachClasses>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
-                <version>2.4</version>
                 <executions>
                     <execution>
                         <phase>package</phase>

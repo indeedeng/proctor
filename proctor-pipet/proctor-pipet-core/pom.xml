@@ -6,13 +6,8 @@
     <parent>
         <groupId>com.indeed</groupId>
         <artifactId>proctor-pipet-parent</artifactId>
-        <version>0.0.3-SNAPSHOT</version>
+        <version>9999-SNAPSHOT</version>
     </parent>
-
-    <properties>
-        <proctor.version>1.1.31</proctor.version>
-        <util.version>1.0.23</util.version>
-    </properties>
 
     <dependencies>
         <dependency>
@@ -34,32 +29,31 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>15.0</version>
         </dependency>
         <dependency>
             <groupId>com.indeed</groupId>
             <artifactId>proctor-common</artifactId>
-            <version>${proctor.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.indeed</groupId>
             <artifactId>proctor-consumer</artifactId>
-            <version>${proctor.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.indeed</groupId>
             <artifactId>proctor-codegen</artifactId>
-            <version>${proctor.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.indeed</groupId>
             <artifactId>util-core</artifactId>
-            <version>${util.version}</version>
+            <version>${indeed-util.version}</version>
         </dependency>
         <dependency>
             <groupId>com.indeed</groupId>
             <artifactId>util-varexport</artifactId>
-            <version>${util.version}</version>
+            <version>${indeed-util.version}</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -68,12 +62,4 @@
         </dependency>
     </dependencies>
 
-    <build>
-        <plugins>
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
-            </plugin>
-        </plugins>
-    </build>
 </project>

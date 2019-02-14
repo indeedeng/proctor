@@ -1,47 +1,20 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <prerequisites>
-        <maven>3.3.9</maven>
-    </prerequisites>
-
     <parent>
         <groupId>com.indeed</groupId>
-        <artifactId>common-parent</artifactId>
-        <version>19</version>
+        <artifactId>proctor-parent</artifactId>
+        <!--This version is not used in latest release. See https://mvnrepository.com/artifact/com.indeed/proctor-parent -->
+        <version>9999-SNAPSHOT</version>
     </parent>
 
-    <groupId>com.indeed</groupId>
     <artifactId>proctor-webapp-library</artifactId>
-    <!-- Dummy revision. Actual latest revision is set in tag commit outside master branch during release-->
-    <version>9999-SNAPSHOT</version>
 
-    <licenses>
-        <license>
-            <name>The Apache Software License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
-
-    <scm>
-        <url>https://github.com/indeedeng/proctor-webapp-library</url>
-        <connection>scm:git:https://github.com/indeedeng/proctor-webapp-library.git</connection>
-        <developerConnection>scm:git:git@github.com:indeedeng/proctor-webapp-library.git</developerConnection>
+    <scm> <!-- prevent Maven from trying to override with subproject suffix -->
+        <url>${project.parent.scm.url}</url>
+        <connection>${project.parent.scm.connection}</connection>
+        <developerConnection>${project.parent.scm.developerConnection}</developerConnection>
     </scm>
-
-    <pluginRepositories>
-        <pluginRepository>
-            <id>sonatype-oss-public</id>
-            <url>https://oss.sonatype.org/content/groups/public</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </pluginRepository>
-    </pluginRepositories>
 
     <build>
         <plugins>
@@ -255,22 +228,22 @@
         <dependency>
             <groupId>com.indeed</groupId>
             <artifactId>proctor-common</artifactId>
-            <version>${proctor.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.indeed</groupId>
             <artifactId>proctor-store</artifactId>
-            <version>${proctor.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.indeed</groupId>
             <artifactId>proctor-store-svn</artifactId>
-            <version>${proctor.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.indeed</groupId>
             <artifactId>proctor-store-git</artifactId>
-            <version>${proctor.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.indeed</groupId>

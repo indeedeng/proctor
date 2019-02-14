@@ -40,12 +40,3 @@ Two configuration files need to be provided to run Proctor-Webapp properly. The 
     </Context>
     ```
 
-# Discussion
-
-Join the [indeedeng-proctor-users](https://groups.google.com/d/forum/indeedeng-proctor-users) mailing list to ask questions and discuss use of Proctor-Webapp and/or Proctor.
-
-# Contributing
-
-# License
-
-[Apache License Version 2.0](https://github.com/indeedeng/proctor-webapp/blob/master/LICENSE)

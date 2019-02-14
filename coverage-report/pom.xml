@@ -66,6 +66,17 @@
         </dependency>
         <dependency>
             <groupId>com.indeed</groupId>
+            <artifactId>proctor-pipet-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.indeed</groupId>
+            <artifactId>proctor-pipet-deploy</artifactId>
+            <version>${project.version}</version>
+            <classifier>classes</classifier>
+        </dependency>
+        <dependency>
+            <groupId>com.indeed</groupId>
             <artifactId>proctor-store</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -77,6 +88,17 @@
         <dependency>
             <groupId>com.indeed</groupId>
             <artifactId>proctor-store-svn</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!--no code-->
+        <!--<dependency>-->
+            <!--<groupId>com.indeed</groupId>-->
+            <!--<artifactId>proctor-webapp</artifactId>-->
+            <!--<version>${project.version}</version>-->
+        <!--</dependency>-->
+        <dependency>
+            <groupId>com.indeed</groupId>
+            <artifactId>proctor-webapp-library</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
