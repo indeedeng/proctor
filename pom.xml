@@ -40,6 +40,9 @@
         <module>proctor-common</module>
         <module>proctor-common-el8-tests</module>
         <module>proctor-consumer</module>
+        <module>proctor-webapp-library</module>
+        <module>proctor-webapp</module>
+        <module>proctor-pipet</module>
         <module>proctor-maven-plugin</module>
         <module>proctor-store</module>
         <module>proctor-store-git</module>
@@ -49,6 +52,9 @@
     </modules>
 
     <properties>
+        <java.version>1.8</java.version>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
         <indeed-util.version>1.0.12</indeed-util.version>
         <apache-commons-pool2.version>2.2</apache-commons-pool2.version>
         <commons-lang3.version>3.3.2</commons-lang3.version>
