@@ -6,15 +6,23 @@ Proctor-Webapp is a Java web application that uses the [Proctor-Webapp-Library](
 - View commit history of Proctor definitions in trunk, qa, and production.
 - Promote Proctor definitions from trunk -> qa/production, or qa -> production
 
-# Requirements
-- [Proctor test-matrix](http://indeedeng.github.io/proctor/docs/matrix-schema/) must be accessible through SVN for trunk, qa, and production:
+# Test-matrix storage requirements
+
+
+[Proctor test-matrix](http://indeedeng.github.io/proctor/docs/matrix-schema/) must be accessible for trunk, qa, and production:
+
+For SVN:
     * https://YOURSVN.com/svn/repos/proctor-data/trunk/matrices/test-definitions/
     * https://YOURSVN.com/svn/repos/proctor-data/branches/deploy/qa/matrices/test-definitions/
     * https://YOURSVN.com/svn/repos/proctor-data/branches/deploy/production/matrices/test-definitions/
 
+For git:
+    * TODO: Create local repository with trunk/qa/prod branches and matrices root folder on each branch...
+
 # Deployment
-1. Use git to clone https://github.com/indeedeng/proctor-webapp, and run mvn package to build.
-3. Set up configuration (see below).
+1. Use git to clone https://github.com/indeedeng/proctor-webapp
+2. Set up configuration (see below).
+3. In root folder, run `mvn package -pl proctor-webapp -am` to build.
 4. Start the webapp runner. NOTE: The **config.dir** java variable is set to the example-apache-config, you will still need to update **proctor-config.properties** with the appropriate credentials:
 
     ```bash
@@ -26,10 +34,20 @@ Two configuration files need to be provided to run Proctor-Webapp properly. The 
 
 1. **${config.dir}/proctor-config.properties**
 
+When using SVN as storage:
+
     ```bash
+    revision.control=svn
     scm.path=https://YOURSVN.com/svn/repos/proctor-data/
     scm.login=REPLACE_WITH_USER
     scm.password=REPLACE_WITH_PASS
+    ```
+
+When using Git as storage:
+
+    ```bash
+    revision.control=git
+    # TODO
     ```
 
 2. **${config.dir}/proctor-webapp.xml**
@@ -39,4 +57,3 @@ Two configuration files need to be provided to run Proctor-Webapp properly. The 
         <Parameter name="propertyPlaceholderResourceLocation" value="file://${config.dir}/proctor-config.properties" override="false"/>
     </Context>
     ```
-

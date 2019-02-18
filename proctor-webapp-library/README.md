@@ -11,7 +11,8 @@ See [proctor-webapp](http://www.github.com/indeedeng/proctor-webapp)
 
 # Documentation
 
-Proctor-Webapp-Library assumes that users will have a trunk/qa/prod lifecycle for test definitions. Users can define tests in trunk, and promote them to qa, then prod. 
+Proctor-Webapp-Library assumes that users will have a trunk/qa/prod lifecycle for test definitions. Users can define tests in trunk, and promote them to qa, then prod.
+Users can modify the promotion behavior by implementing interfaces in com.indeed.proctor.webapp.extensions as spring beans. 
 
 ## Backend configuration
 
@@ -26,14 +27,6 @@ Based on this, 3 test matrix stores will be created based on applicationContext.
 * QA
 * PROD
 
-
-# Discussion
-
-Join the [indeedeng-proctor-users](https://groups.google.com/d/forum/indeedeng-proctor-users) mailing list to ask questions and discuss use of Proctor-Webapp and/or Proctor.
-
-# Deploying
-
-# Contributing
 
 # License
 
