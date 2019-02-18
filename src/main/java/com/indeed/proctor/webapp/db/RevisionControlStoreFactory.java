@@ -2,17 +2,18 @@ package com.indeed.proctor.webapp.db;
 
 import com.google.common.base.Preconditions;
 import com.indeed.proctor.store.ProctorStore;
+import com.indeed.proctor.store.async.AsyncInitializedProctorStoreFactory;
 import com.indeed.proctor.webapp.extensions.GlobalCacheStore;
+import org.apache.commons.configuration.ConfigurationException;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
+import java.io.IOException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-/**
- */
 public class RevisionControlStoreFactory implements FactoryBean<StoreFactory> {
     private final Logger LOGGER = Logger.getLogger(RevisionControlStoreFactory.class);
 
@@ -39,6 +40,10 @@ public class RevisionControlStoreFactory implements FactoryBean<StoreFactory> {
 
     @Override
     public StoreFactory getObject() throws Exception {
+        return new AsyncInitializedProctorStoreFactory(createFactory(), scheduledExecutorService);
+    }
+
+    private TrunkQaProdStoresFactory createFactory() throws IOException, ConfigurationException {
         if ("svn".equals(revisionControlType)) {
             Preconditions.checkArgument(
                     globalCacheStore == null,
@@ -56,7 +61,7 @@ public class RevisionControlStoreFactory implements FactoryBean<StoreFactory> {
                     scmUsername,
                     scmPassword,
                     testDefinitionsDirectory);
-        } else if ("git".equals(revisionControlType)) {
+        } else {
             return new GitProctorStoreFactory(
                     scmPath,
                     scmUsername,
@@ -69,7 +74,6 @@ public class RevisionControlStoreFactory implements FactoryBean<StoreFactory> {
                     gitCleanInitialization,
                     globalCacheStore);
         }
-        return null;
     }
 
     @Override

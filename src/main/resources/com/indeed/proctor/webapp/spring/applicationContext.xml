@@ -21,17 +21,17 @@
     </bean>
 
     <bean id="trunkStore" factory-bean="storeFactory"
-          factory-method="getAsyncTrunkStore" lazy-init="true"
+          factory-method="getTrunkStore" lazy-init="true"
           destroy-method="close">
         <qualifier value="trunk"/>
     </bean>
     <bean id="qaStore" factory-bean="storeFactory"
-          factory-method="getAsyncQaStore" lazy-init="true"
+          factory-method="getQaStore" lazy-init="true"
           destroy-method="close">
         <qualifier value="qa" />
     </bean>
     <bean id="prodStore" factory-bean="storeFactory"
-          factory-method="getAsyncProductionStore" lazy-init="true"
+          factory-method="getProductionStore" lazy-init="true"
           destroy-method="close">
         <qualifier value="production" />
     </bean>
