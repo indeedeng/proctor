@@ -107,6 +107,11 @@ indeed.proctor.editor.BucketsEditor.prototype.onAddBucketClick_ = function(e) {
   if (!this.bucketsRemoved) {  //add if any original bucket was not removed
     if (this.addBucket(bucket['value'], bucket['name'], bucket['description'], bucket['payload'])) {
       this.bucketsAdded = true;
+
+      // increment js-bucket-value in js-add-bucket-row
+      var previousValue = goog.dom.forms.getValue(this.dom_.getElementByClass('js-bucket-value', this.addBucketRow));
+      this.dom_.getElementByClass('js-bucket-value', this.addBucketRow).value = +previousValue + 1;
+
       if (this.originalBucketLength !== 0) {
         this.displayMessage_('You added a new bucket and can no longer delete any original bucket.');
       }
