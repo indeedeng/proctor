@@ -8,7 +8,7 @@ Through this API, other programming languages only need an HTTP client to use Pr
 
 1. ```git clone``` the repository or download the sources.
 
-2. Copy the three configuration files in proctor-pipet-deploy/src/main/webapp/WEB-INF/example/ to any directory.
+2. Copy the configuration files in proctor-pipet-deploy/src/main/webapp/WEB-INF/example/ to any directory.
 
     These contain some basic Proctor tests that let you quickly try out Proctor Pipet.
 
@@ -20,9 +20,9 @@ Through this API, other programming languages only need an HTTP client to use Pr
     proctor.pipet.reload.seconds=10
     ```
 
-4. Run ```mvn package``` to create a .war package.
+4. In root folder, run ```mvn package -pl proctor-pipet/proctor-pipet-deploy -am``` to create a .war package.
 
-5. Run ```java -jar proctor-pipet-deploy/target/dependency/webapp-runner.jar proctor-pipet-deploy/target/*.war```. This starts a local web server.
+5. Run ```java -jar proctor-pipet/proctor-pipet-deploy/target/dependency/webapp-runner.jar proctor-pipet/proctor-pipet-deploy/target/*.war```. This starts a local web server.
 
 6. Visit [http://localhost:8080/groups/identify?ctx.country=US&ctx.loggedIn=true&id.USER=pa5xq0lz4n80](http://localhost:8080/groups/identify?ctx.country=US&ctx.loggedIn=true&id.USER=pa5xq0lz4n80) in your browser.
 
