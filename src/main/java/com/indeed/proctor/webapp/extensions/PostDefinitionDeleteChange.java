@@ -2,8 +2,6 @@ package com.indeed.proctor.webapp.extensions;
 
 import java.util.Map;
 
-/**
- */
 public interface PostDefinitionDeleteChange {
-    public DefinitionChangeLog postDelete(final Map<String, String[]> extensionFields);
+    void postDelete(final Map<String, String[]> extensionFields, final DefinitionChangeLog changeLog);
 }
