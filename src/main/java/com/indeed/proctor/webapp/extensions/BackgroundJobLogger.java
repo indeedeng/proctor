@@ -2,10 +2,10 @@ package com.indeed.proctor.webapp.extensions;
 
 import com.indeed.proctor.webapp.jobs.BackgroundJob;
 
-public class BackgroundJobChangeLog implements DefinitionChangeLog {
+public class BackgroundJobLogger implements DefinitionChangeLogger {
     private final BackgroundJob backgroundJob;
 
-    public BackgroundJobChangeLog(final BackgroundJob backgroundJob) {
+    public BackgroundJobLogger(final BackgroundJob backgroundJob) {
         this.backgroundJob = backgroundJob;
     }
 

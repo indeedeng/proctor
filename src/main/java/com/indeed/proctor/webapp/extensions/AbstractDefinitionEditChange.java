@@ -10,7 +10,7 @@ public abstract class AbstractDefinitionEditChange implements PreDefinitionEditC
             final TestDefinition oldTestDefinition,
             final TestDefinition newTestDefinition,
             final Map<String, String[]> extensionFields,
-            final DefinitionChangeLog changeLog
+            final DefinitionChangeLogger logger
     ) {
     }
 
@@ -19,7 +19,7 @@ public abstract class AbstractDefinitionEditChange implements PreDefinitionEditC
             final TestDefinition existingTestDefinition,
             final TestDefinition testDefinitionToUpdate,
             final Map<String, String[]> extensionFields,
-            final DefinitionChangeLog changeLog
+            final DefinitionChangeLogger logger
     ) {
     }
 }

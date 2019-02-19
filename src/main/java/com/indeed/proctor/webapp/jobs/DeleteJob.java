@@ -8,8 +8,8 @@ import com.indeed.proctor.store.GitNoMasterAccessLevelException;
 import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.webapp.db.Environment;
-import com.indeed.proctor.webapp.extensions.BackgroundJobChangeLog;
-import com.indeed.proctor.webapp.extensions.DefinitionChangeLog;
+import com.indeed.proctor.webapp.extensions.BackgroundJobLogger;
+import com.indeed.proctor.webapp.extensions.DefinitionChangeLogger;
 import com.indeed.proctor.webapp.extensions.PostDefinitionDeleteChange;
 import com.indeed.proctor.webapp.extensions.PreDefinitionDeleteChange;
 import com.indeed.proctor.webapp.tags.UtilityFunctions;
@@ -140,9 +140,9 @@ public class DeleteJob extends AbstractJob {
 
         //PreDefinitionDeleteChanges
         job.log("Executing pre delete extension tasks.");
-        final DefinitionChangeLog definitionChangeLog = new BackgroundJobChangeLog(job);
+        final DefinitionChangeLogger logger = new BackgroundJobLogger(job);
         for (final PreDefinitionDeleteChange preDefinitionDeleteChange : preDefinitionDeleteChanges) {
-            preDefinitionDeleteChange.preDelete(definition, requestParameterMap, definitionChangeLog);
+            preDefinitionDeleteChange.preDelete(definition, requestParameterMap, logger);
         }
 
         job.log("(svn) delete " + testName);
@@ -166,7 +166,7 @@ public class DeleteJob extends AbstractJob {
         //PostDefinitionDeleteChanges
         job.log("Executing post delete extension tasks.");
         for (final PostDefinitionDeleteChange postDefinitionDeleteChange : postDefinitionDeleteChanges) {
-            postDefinitionDeleteChange.postDelete(requestParameterMap, definitionChangeLog);
+            postDefinitionDeleteChange.postDelete(requestParameterMap, logger);
         }
         return true;
     }

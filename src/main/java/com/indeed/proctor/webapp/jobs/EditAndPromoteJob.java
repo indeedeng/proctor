@@ -23,8 +23,8 @@ import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.webapp.db.Environment;
-import com.indeed.proctor.webapp.extensions.BackgroundJobChangeLog;
-import com.indeed.proctor.webapp.extensions.DefinitionChangeLog;
+import com.indeed.proctor.webapp.extensions.BackgroundJobLogger;
+import com.indeed.proctor.webapp.extensions.DefinitionChangeLogger;
 import com.indeed.proctor.webapp.extensions.PostDefinitionCreateChange;
 import com.indeed.proctor.webapp.extensions.PostDefinitionEditChange;
 import com.indeed.proctor.webapp.extensions.PostDefinitionPromoteChange;
@@ -274,17 +274,17 @@ public class EditAndPromoteJob extends AbstractJob {
         ProctorUtils.verifyInternallyConsistentDefinition(testName, "edit", consumableTestDefinition);
 
         //PreDefinitionEdit
-        final DefinitionChangeLog definitionChangeLog = new BackgroundJobChangeLog(job);
+        final DefinitionChangeLogger logger = new BackgroundJobLogger(job);
         if (isCreate) {
             job.log("Executing pre create extension tasks.");
             for (final PreDefinitionCreateChange preDefinitionCreateChange : preDefinitionCreateChanges) {
-                preDefinitionCreateChange.preCreate(testDefinitionToUpdate, requestParameterMap, definitionChangeLog);
+                preDefinitionCreateChange.preCreate(testDefinitionToUpdate, requestParameterMap, logger);
             }
         } else {
             job.log("Executing pre edit extension tasks.");
             for (final PreDefinitionEditChange preDefinitionEditChange : preDefinitionEditChanges) {
                 preDefinitionEditChange.preEdit(existingTestDefinition, testDefinitionToUpdate,
-                        requestParameterMap, definitionChangeLog);
+                        requestParameterMap, logger);
             }
         }
 
@@ -304,13 +304,13 @@ public class EditAndPromoteJob extends AbstractJob {
         if (isCreate) {
             job.log("Executing post create extension tasks.");
             for (final PostDefinitionCreateChange postDefinitionCreateChange : postDefinitionCreateChanges) {
-                postDefinitionCreateChange.postCreate(testDefinitionToUpdate, requestParameterMap, definitionChangeLog);
+                postDefinitionCreateChange.postCreate(testDefinitionToUpdate, requestParameterMap, logger);
             }
         } else {
             job.log("Executing post edit extension tasks.");
             for (final PostDefinitionEditChange postDefinitionEditChange : postDefinitionEditChanges) {
                 postDefinitionEditChange.postEdit(existingTestDefinition, testDefinitionToUpdate,
-                        requestParameterMap, definitionChangeLog);
+                        requestParameterMap, logger);
             }
         }
 
@@ -774,10 +774,10 @@ public class EditAndPromoteJob extends AbstractJob {
 
             //PreDefinitionPromoteChanges
             job.log("Executing pre promote extension tasks.");
-            final DefinitionChangeLog definitionChangeLog = new BackgroundJobChangeLog(job);
+            final DefinitionChangeLogger logger = new BackgroundJobLogger(job);
             for (final PreDefinitionPromoteChange preDefinitionPromoteChange : preDefinitionPromoteChanges) {
                 preDefinitionPromoteChange.prePromote(testDefintion, requestParameterMap, source, destination,
-                        isAutopromote, definitionChangeLog);
+                        isAutopromote, logger);
             }
 
             //Promote Change
@@ -787,7 +787,7 @@ public class EditAndPromoteJob extends AbstractJob {
             job.log("Executing post promote extension tasks.");
             for (final PostDefinitionPromoteChange postDefinitionPromoteChange : postDefinitionPromoteChanges) {
                 postDefinitionPromoteChange.postPromote(requestParameterMap, source, destination, isAutopromote,
-                        definitionChangeLog);
+                        logger);
             }
 
             job.log(String.format("Promoted %s from %s (%1.7s) to %s (%1.7s)", testName, source.getName(), srcRevision, destination.getName(), destRevision));

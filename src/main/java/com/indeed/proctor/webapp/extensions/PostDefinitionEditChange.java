@@ -11,6 +11,6 @@ public interface PostDefinitionEditChange {
             final TestDefinition oldTestDefinition,
             final TestDefinition newTestDefinition,
             final Map<String, String[]> extensionFields,
-            final DefinitionChangeLog changeLog
+            final DefinitionChangeLogger logger
     );
 }

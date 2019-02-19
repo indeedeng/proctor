@@ -8,7 +8,7 @@ public abstract class AbstractDefinitionDeleteChange implements PreDefinitionDel
     @Override
     public void postDelete(
             final Map<String, String[]> extensionFields,
-            final DefinitionChangeLog changeLog
+            final DefinitionChangeLogger logger
     ) {
     }
 
@@ -16,7 +16,7 @@ public abstract class AbstractDefinitionDeleteChange implements PreDefinitionDel
     public void preDelete(
             final TestDefinition testDefinition,
             final Map<String, String[]> extensionFields,
-            final DefinitionChangeLog changeLog
+            final DefinitionChangeLogger logger
     ) {
     }
 }

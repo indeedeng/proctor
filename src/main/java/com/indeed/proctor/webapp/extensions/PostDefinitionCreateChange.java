@@ -8,6 +8,6 @@ public interface PostDefinitionCreateChange {
     void postCreate(
             final TestDefinition testDefinition,
             final Map<String, String[]> extensionFields,
-            final DefinitionChangeLog changeLog
+            final DefinitionChangeLogger logger
     );
 }

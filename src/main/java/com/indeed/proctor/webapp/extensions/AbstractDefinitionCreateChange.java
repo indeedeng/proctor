@@ -9,7 +9,7 @@ public abstract class AbstractDefinitionCreateChange implements PreDefinitionCre
     public void postCreate(
             final TestDefinition testDefinition,
             final Map<String, String[]> extensionFields,
-            final DefinitionChangeLog changeLog
+            final DefinitionChangeLogger logger
     ) {
     }
 
@@ -17,7 +17,7 @@ public abstract class AbstractDefinitionCreateChange implements PreDefinitionCre
     public void preCreate(
             final TestDefinition testDefinition,
             final Map<String, String[]> extensionFields,
-            final DefinitionChangeLog changeLog
+            final DefinitionChangeLogger logger
     ) {
     }
 }
