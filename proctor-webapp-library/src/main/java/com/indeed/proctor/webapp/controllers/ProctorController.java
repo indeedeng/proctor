@@ -1,13 +1,14 @@
 package com.indeed.proctor.webapp.controllers;
 
-import com.fasterxml.jackson.core.util.MinimalPrettyPrinter;
 import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.core.util.MinimalPrettyPrinter;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
 import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -20,6 +21,7 @@ import com.indeed.proctor.common.ProctorSpecification;
 import com.indeed.proctor.common.ProctorUtils;
 import com.indeed.proctor.common.Serializers;
 import com.indeed.proctor.common.TestSpecification;
+import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.common.model.TestDefinition;
@@ -31,21 +33,21 @@ import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.webapp.ProctorSpecificationSource;
 import com.indeed.proctor.webapp.db.Environment;
-import com.indeed.proctor.webapp.jobs.BackgroundJob;
 import com.indeed.proctor.webapp.model.AppVersion;
-import com.indeed.proctor.webapp.model.ProctorClientApplication;
 import com.indeed.proctor.webapp.model.RemoteSpecificationResult;
 import com.indeed.proctor.webapp.model.SessionViewModel;
 import com.indeed.proctor.webapp.model.WebappConfiguration;
 import com.indeed.proctor.webapp.util.threads.LogOnUncaughtExceptionHandler;
 import com.indeed.proctor.webapp.views.JsonView;
 import io.swagger.annotations.ApiOperation;
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -54,9 +56,8 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -67,6 +68,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Controller
 @RequestMapping({"/", "/proctor"})
@@ -140,6 +143,161 @@ public class ProctorController extends AbstractController {
         final TestMatrixVersion testMatrixVersion = getCurrentMatrix(which);
         final TestMatrixArtifact testMatrixArtifact = ProctorUtils.convertToConsumableArtifact(testMatrixVersion);
         return new JsonView(testMatrixArtifact);
+    }
+
+    enum FilterType {
+        ALL,
+        TESTNAME,
+        DESCRIPTION,
+        RULE,
+        BUCKET,
+        BUCKETDESCRIPTION,
+    }
+
+    enum FilterActive {
+        ALL,
+        ACTIVE,
+        INACTIVE,
+    }
+
+    enum Sort {
+        FAVORITESFIRST,
+        TESTNAME,
+        UPDATEDDATE,
+    }
+
+    class TestsResponse {
+        private final List<TestNameAndDefinition> tests;
+        private final int totalTestCount;
+
+        TestsResponse(final List<TestNameAndDefinition> tests, final int totalTestCount) {
+            this.tests = tests;
+            this.totalTestCount = totalTestCount;
+        }
+
+        public List<TestNameAndDefinition> getTests() {
+            return tests;
+        }
+
+        public int getTotalTestCount() {
+            return totalTestCount;
+        }
+    }
+
+    class TestNameAndDefinition {
+        private final String name;
+        private final TestDefinition definition;
+
+        TestNameAndDefinition(final String name, final TestDefinition definition) {
+            this.name = name;
+            this.definition = definition;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public TestDefinition getDefinition() {
+            return definition;
+        }
+    }
+
+    private static String nullToEmpty(@Nullable final String string) {
+        return (string == null) ? "" : string;
+    }
+
+    private static boolean matchFilterType(final String testName, final TestDefinition definition,
+                                           final FilterType type, final String query) {
+        if (query.isEmpty()) {
+            return true;
+        }
+        final String lowerQuery = query.toLowerCase();
+        switch (type) {
+            case TESTNAME:
+                return testName.toLowerCase().contains(lowerQuery);
+            case DESCRIPTION:
+                return nullToEmpty(definition.getDescription()).toLowerCase().contains(lowerQuery);
+            case RULE:
+                return Stream.concat(Stream.of(nullToEmpty(definition.getRule())), definition.getAllocations().stream()
+                        .map(allocation -> nullToEmpty(allocation.getRule()).toLowerCase()))
+                        .anyMatch(rule -> rule.contains(lowerQuery));
+            case BUCKET:
+                return definition.getBuckets().stream()
+                        .map(testBucket -> testBucket.getName().toLowerCase())
+                        .anyMatch(name -> name.contains(lowerQuery));
+            case BUCKETDESCRIPTION:
+                return definition.getBuckets().stream()
+                        .map(testBucket -> nullToEmpty(testBucket.getDescription()).toLowerCase())
+                        .anyMatch(description -> description.contains(lowerQuery));
+            case ALL:
+                return Stream.of(
+                        Stream.of(testName, definition.getDescription(), definition.getTestType().toString(),
+                                definition.getSalt()),
+                        Stream.concat(Stream.of(nullToEmpty(definition.getRule())),
+                                definition.getAllocations().stream().map(allocation -> nullToEmpty(allocation.getRule()))),
+                        definition.getBuckets().stream().map(TestBucket::getName),
+                        definition.getBuckets().stream().map(testBucket -> nullToEmpty(testBucket.getDescription()))
+                )
+                        .flatMap(s -> s)
+                        .map(String::toLowerCase)
+                        .anyMatch(text -> text.contains(lowerQuery));
+            default:
+                throw new IllegalArgumentException("unknown filter type");
+        }
+    }
+
+    private static boolean matchFilterActive(final List<Allocation> allocations, final FilterActive filterActive) {
+        switch (filterActive) {
+            case ALL:
+                return true;
+            case ACTIVE:
+                return allocations.stream().anyMatch(allocation -> allocation.getRanges().stream().allMatch(range -> range.getLength() < 1));
+            case INACTIVE:
+                return allocations.stream().allMatch(allocation -> allocation.getRanges().stream().anyMatch(range -> range.getLength() == 1));
+            default:
+                throw new IllegalArgumentException("unknown filter type");
+        }
+    }
+
+    private static Comparator<Entry<String, TestDefinition>> getComparator(final Sort sort, final Set<String> favoriteTestNames) {
+        switch(sort) {
+            case TESTNAME:
+                return (a, b) -> 0; // don't touch
+            case FAVORITESFIRST:
+                return Comparator.<Entry<String, TestDefinition>, Boolean>comparing(entry->favoriteTestNames.contains(entry.getKey()))
+                        .reversed()
+                        .thenComparing(Entry::getKey);
+            case UPDATEDDATE:
+                throw new NotImplementedException("Updated date not implemented");
+            default:
+                throw new IllegalArgumentException();
+        }
+    }
+
+    @ApiOperation(value = "Proctor tests with filters", response = List.class)
+    @RequestMapping(value = "/matrix/tests", method = RequestMethod.GET)
+    public JsonView viewTestNames(
+            @RequestParam(defaultValue = "trunk") final String branch,
+            @RequestParam(defaultValue = "100") final int limit,
+            @RequestParam(defaultValue = "") final String q,
+            @RequestParam(defaultValue = "ALL") final FilterType filterType,
+            @RequestParam(defaultValue = "ALL") final FilterActive filterActive,
+            @RequestParam(defaultValue = "FAVORITESFIRST") final Sort sort,
+            @CookieValue(value = "FavoriteTests", defaultValue = "") final String favoriteTestsRaw,
+            final Model model) {
+        final Set<String> favoriteTestNames = Sets.newHashSet(Splitter.on(",").split(favoriteTestsRaw));
+
+        final Environment which = determineEnvironmentFromParameter(branch);
+        final Map<String, TestDefinition> tests = getCurrentMatrix(which).getTestMatrixDefinition().getTests();
+        final List<TestNameAndDefinition> result = tests.entrySet().stream()
+                    .filter(entry -> matchFilterType(entry.getKey(), entry.getValue(), filterType, q)
+                            && matchFilterActive(entry.getValue().getAllocations(), filterActive))
+                    .sorted(getComparator(sort, favoriteTestNames))
+                    .limit(limit)
+                    .map(entry -> new TestNameAndDefinition(entry.getKey(), entry.getValue()))
+                    .collect(Collectors.toList());
+
+        return new JsonView(new TestsResponse(result, tests.size()));
     }
 
     // not a @ApiOperation because it produces HTML
@@ -458,18 +616,6 @@ public class ProctorController extends AbstractController {
         }
         model.addAttribute("error", errorMessage);
         return View.ERROR.getName();
-    }
-
-    /**
-     * This needs to be moved to a separate checker class implementing some interface
-     */
-    private URL getSpecificationUrl(final ProctorClientApplication client) {
-        final String urlStr = client.getBaseApplicationUrl() + "/private/proctor";
-        try {
-            return new URL(urlStr);
-        } catch (final MalformedURLException e) {
-            throw new RuntimeException("Somehow created a malformed URL: " + urlStr, e);
-        }
     }
 
     private Map<String, List<Revision>> getAllHistories(final Environment branch) {
