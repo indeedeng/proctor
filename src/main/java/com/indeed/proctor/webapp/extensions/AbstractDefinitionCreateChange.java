@@ -4,15 +4,20 @@ import com.indeed.proctor.common.model.TestDefinition;
 
 import java.util.Map;
 
-/**
- */
 public abstract class AbstractDefinitionCreateChange implements PreDefinitionCreateChange, PostDefinitionCreateChange{
-    public DefinitionChangeLog preCreate(final TestDefinition testDefinition, final Map<String, String[]> extensionFields) {
-        return null;
+    @Override
+    public void postCreate(
+            final TestDefinition testDefinition,
+            final Map<String, String[]> extensionFields,
+            final DefinitionChangeLogger logger
+    ) {
     }
 
-
-    public DefinitionChangeLog postCreate(final TestDefinition testDefinition, final Map<String, String[]> extensionFields) {
-        return null;
+    @Override
+    public void preCreate(
+            final TestDefinition testDefinition,
+            final Map<String, String[]> extensionFields,
+            final DefinitionChangeLogger logger
+    ) {
     }
 }

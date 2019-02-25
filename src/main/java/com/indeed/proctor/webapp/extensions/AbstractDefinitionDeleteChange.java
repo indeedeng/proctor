@@ -4,15 +4,19 @@ import com.indeed.proctor.common.model.TestDefinition;
 
 import java.util.Map;
 
-/**
- */
 public abstract class AbstractDefinitionDeleteChange implements PreDefinitionDeleteChange, PostDefinitionDeleteChange{
-    public DefinitionChangeLog preDelete(final TestDefinition testDefinition, final Map<String, String[]> extensionFields) {
-        return null;
+    @Override
+    public void postDelete(
+            final Map<String, String[]> extensionFields,
+            final DefinitionChangeLogger logger
+    ) {
     }
 
-
-    public DefinitionChangeLog postDelete(final Map<String, String[]> extensionFields) {
-        return null;
+    @Override
+    public void preDelete(
+            final TestDefinition testDefinition,
+            final Map<String, String[]> extensionFields,
+            final DefinitionChangeLogger logger
+    ) {
     }
 }

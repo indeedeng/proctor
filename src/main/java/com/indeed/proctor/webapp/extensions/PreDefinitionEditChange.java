@@ -4,8 +4,11 @@ import com.indeed.proctor.common.model.TestDefinition;
 
 import java.util.Map;
 
-/**
- */
 public interface PreDefinitionEditChange {
-    public DefinitionChangeLog preEdit(final TestDefinition existingTestDefinition, final TestDefinition testDefinitionToUpdate, final Map<String, String[]> extensionFields);
+    void preEdit(
+            final TestDefinition existingTestDefinition,
+            final TestDefinition testDefinitionToUpdate,
+            final Map<String, String[]> extensionFields,
+            final DefinitionChangeLogger logger
+    );
 }

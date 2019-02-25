@@ -5,7 +5,6 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.webapp.db.Environment;
-import com.indeed.proctor.webapp.extensions.DefinitionChangeLog;
 
 import java.util.List;
 import java.util.Map;
@@ -30,28 +29,6 @@ public abstract class AbstractJob {
     protected static void validateComment(final String comment) throws IllegalArgumentException {
         if (CharMatcher.WHITESPACE.matchesAllOf(Strings.nullToEmpty(comment))) {
             throw new IllegalArgumentException("Comment is required.");
-        }
-    }
-
-    protected static void logDefinitionChangeLog(final DefinitionChangeLog definitionChangeLog, final String changeName, BackgroundJob backgroundJob) {
-        if (definitionChangeLog != null) {
-            final List<BackgroundJob.ResultUrl> urls = definitionChangeLog.getUrls();
-            if (urls != null) {
-                for (final BackgroundJob.ResultUrl url : urls) {
-                    backgroundJob.addUrl(url);
-                }
-            }
-
-            final List<String> changeLog = definitionChangeLog.getLog();
-            if (changeLog != null) {
-                for (final String logMessage : changeLog) {
-                    backgroundJob.log(logMessage);
-                }
-            }
-
-            if (definitionChangeLog.isErrorsFound()) {
-                throw new IllegalArgumentException(changeName + " failed with the following errors: " + definitionChangeLog.getErrors());
-            }
         }
     }
 
