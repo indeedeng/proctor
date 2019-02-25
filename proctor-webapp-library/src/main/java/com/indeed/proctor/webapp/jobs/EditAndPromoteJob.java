@@ -1,7 +1,9 @@
 package com.indeed.proctor.webapp.jobs;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Joiner;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
@@ -51,8 +53,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static com.indeed.proctor.webapp.util.AllocationIdUtil.ALLOCATION_ID_COMPARATOR;
 
@@ -336,10 +340,84 @@ public class EditAndPromoteJob extends AbstractJob {
             job.log("Not autopromoting because it wasn't requested by user.");
             return;
         }
+        final String currentRevision = getCurrentVersion(testName, previousRevision, trunkStore).getRevision();
+
         if (existingTestDefinition == null) {
-            job.log("Not autopromoting because there is no existing test definition.");
+            doPromoteInactiveTestToQaAndProd(testName, username, password, author, testDefinitionToUpdate,
+                    requestParameterMap, job, currentRevision, qaRevision, prodRevision);
+        } else {
+            doPromoteExistingTestToQaAndProd(testName, username, password, author, testDefinitionToUpdate,
+                    requestParameterMap, job, currentRevision, qaRevision, prodRevision, existingTestDefinition);
+        }
+    }
+
+    /**
+     * Promote a 100% inactive test to QA and Production
+     * @param testName the test name to promote
+     * @param username the username of the committer
+     * @param password the password of the committer
+     * @param author the author name who requests this promotion
+     * @param testDefinitionToUpdate the TestDefinition to promote
+     * @param requestParameterMap
+     * @param job the edit job which runs this promotion process
+     * @param qaRevision the revision of the test in QA store, this might be -1
+     * @param prodRevision the revision of the test in Production store, this might be -1
+     */
+    @VisibleForTesting
+    void doPromoteInactiveTestToQaAndProd(final String testName,
+                                          final String username,
+                                          final String password,
+                                          final String author,
+                                          final TestDefinition testDefinitionToUpdate,
+                                          final Map<String, String[]> requestParameterMap,
+                                          final BackgroundJob job,
+                                          final String currentRevision,
+                                          final String qaRevision,
+                                          final String prodRevision) throws Exception {
+        if (!isAllInactiveTest(testDefinitionToUpdate)) {
+            job.log("Not autopromoting because there is no existing test definition and test is not 100% inactive.");
             return;
         }
+
+        final boolean isQaPromoted = doPromoteInternal(testName, username, password, author, Environment.WORKING,
+                currentRevision, Environment.QA, qaRevision, requestParameterMap, job, true);
+
+        if (isQaPromoted) {
+            doPromoteInternal(testName, username, password, author, Environment.WORKING,
+                    currentRevision, Environment.PRODUCTION, prodRevision, requestParameterMap, job, true);
+        } else {
+            job.log("previous revision changes prevented auto-promote to PRODUCTION");
+        }
+    }
+
+    /**
+     * Promote an existing test to QA and Production
+     * @param testName the test name to promote
+     * @param username the username of the committer
+     * @param password the password of the committer
+     * @param author the author name who requests this promotion
+     * @param testDefinitionToUpdate the TestDefinition to promote
+     * @param requestParameterMap
+     * @param job the edit job which runs this promotion process
+     * @param qaRevision the revision of the test in QA store
+     * @param prodRevision the revision of the test in Production store
+     * @param existingTestDefinition the existing test definition before updating in Trunk store
+     * @throws Exception
+     */
+    @VisibleForTesting
+    void doPromoteExistingTestToQaAndProd(final String testName,
+                                          final String username,
+                                          final String password,
+                                          final String author,
+                                          final TestDefinition testDefinitionToUpdate,
+                                          final Map<String, String[]> requestParameterMap,
+                                          final BackgroundJob job,
+                                          final String currentRevision,
+                                          final String qaRevision,
+                                          final String prodRevision,
+                                          final TestDefinition existingTestDefinition) throws Exception {
+        Preconditions.checkArgument(existingTestDefinition != null);
+
         if (!isAllocationOnlyChange(existingTestDefinition, testDefinitionToUpdate)) {
             job.log("Not autopromoting because this isn't an allocation-only change.");
             return;
@@ -348,33 +426,63 @@ public class EditAndPromoteJob extends AbstractJob {
         job.log("allocation only change, checking against other branches for auto-promote capability for test " +
                 testName + "\nat QA revision " + qaRevision + " and PRODUCTION revision " + prodRevision);
 
-        final Revision currentVersion = getCurrentVersion(testName, previousRevision, trunkStore);
+        final TestDefinition qaTestDefinition = TestDefinitionUtil.getTestDefinition(
+                determineStoreFromEnvironment(Environment.QA),
+                promoter,
+                Environment.QA,
+                testName,
+                qaRevision
+        );
 
         final boolean isQaPromoted;
-        final boolean isQaPromotable = qaRevision != EnvironmentVersion.UNKNOWN_REVISION
-                && isAllocationOnlyChange(
-                TestDefinitionUtil.getTestDefinition(determineStoreFromEnvironment(Environment.QA), promoter,
-                        Environment.QA, testName, qaRevision), testDefinitionToUpdate);
+        final boolean isQaPromotable = !qaRevision.equals(EnvironmentVersion.UNKNOWN_REVISION)
+                && isAllocationOnlyChange(qaTestDefinition, testDefinitionToUpdate);
+
         if (isQaPromotable) {
             job.log("auto-promoting changes to QA");
             isQaPromoted = doPromoteInternal(testName, username, password, author, Environment.WORKING,
-                    currentVersion.getRevision(), Environment.QA, qaRevision, requestParameterMap, job, true);
+                    currentRevision, Environment.QA, qaRevision, requestParameterMap, job, true);
         } else {
             isQaPromoted = false;
             job.log("previous revision changes prevented auto-promote to QA");
         }
-        if (isQaPromotable && isQaPromoted
-                && prodRevision != EnvironmentVersion.UNKNOWN_REVISION
-                && isAllocationOnlyChange(
-                TestDefinitionUtil.getTestDefinition(determineStoreFromEnvironment(Environment.PRODUCTION), promoter,
-                        Environment.PRODUCTION, testName, prodRevision), testDefinitionToUpdate)) {
-            job.log("auto-promoting changes to PRODUCTION");
-            doPromoteInternal(testName, username, password, author, Environment.WORKING, currentVersion.getRevision(),
-                    Environment.PRODUCTION, prodRevision, requestParameterMap, job, true);
 
+        final TestDefinition prodTestDefinition = TestDefinitionUtil.getTestDefinition(
+                determineStoreFromEnvironment(Environment.PRODUCTION),
+                promoter,
+                Environment.PRODUCTION,
+                testName,
+                prodRevision
+        );
+
+        if (isQaPromotable && isQaPromoted
+                && !prodRevision.equals(EnvironmentVersion.UNKNOWN_REVISION)
+                && isAllocationOnlyChange(prodTestDefinition, testDefinitionToUpdate)) {
+            job.log("auto-promoting changes to PRODUCTION");
+
+            doPromoteInternal(testName, username, password, author, Environment.WORKING, currentRevision,
+                    Environment.PRODUCTION, prodRevision, requestParameterMap, job, true);
         } else {
             job.log("previous revision changes prevented auto-promote to PRODUCTION");
         }
+    }
+
+    private boolean isAllInactiveTest(final TestDefinition testDefinition) {
+        final List<Allocation> allocations = testDefinition.getAllocations();
+        final Map<Integer, TestBucket> valueToBucket = testDefinition.getBuckets()
+                .stream()
+                .collect(Collectors.toMap(TestBucket::getValue, Function.identity()));
+
+        for (final Allocation allocation : allocations) {
+            for (final Range range : allocation.getRanges()) {
+                final TestBucket bucket = valueToBucket.get(range.getBucketValue());
+                if (!"inactive".equals(bucket.getName()) && range.getLength() > 0.0) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -741,17 +849,18 @@ public class EditAndPromoteJob extends AbstractJob {
         return backgroundJob;
     }
 
-    private Boolean doPromoteInternal(final String testName,
-                                      final String username,
-                                      final String password,
-                                      final String author,
-                                      final Environment source,
-                                      final String srcRevision,
-                                      final Environment destination,
-                                      final String destRevision,
-                                      final Map<String, String[]> requestParameterMap,
-                                      final BackgroundJob job,
-                                      final boolean isAutopromote
+    @VisibleForTesting
+    Boolean doPromoteInternal(final String testName,
+                              final String username,
+                              final String password,
+                              final String author,
+                              final Environment source,
+                              final String srcRevision,
+                              final Environment destination,
+                              final String destRevision,
+                              final Map<String, String[]> requestParameterMap,
+                              final BackgroundJob job,
+                              final boolean isAutopromote
     ) throws Exception {
         final Map<String, String> metadata = Collections.emptyMap();
         validateUsernamePassword(username, password);
