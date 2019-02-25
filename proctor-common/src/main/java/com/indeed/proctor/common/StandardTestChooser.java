@@ -198,7 +198,7 @@ class StandardTestChooser implements TestChooser<String> {
     /**
      * @author matts
      */
-    private abstract static class AbstractMD5Hasher implements Hasher {
+    private static class AbstractMD5Hasher implements Hasher {
         private final byte[] bytes;
 
         public AbstractMD5Hasher(final String salt) {
@@ -207,7 +207,38 @@ class StandardTestChooser implements TestChooser<String> {
 
         @Override
         public int hash(@Nonnull final String identifier) {
-            final MessageDigest md = ProctorUtils.createMessageDigest();
+            final MessageDigest md = ProctorUtils.getMessageDigestInstance();
+
+            md.update(bytes);
+            md.update(identifier.getBytes(Charsets.UTF_8));
+
+            final byte[] digest = md.digest();
+
+            return convertToInt(digest);
+        }
+
+        private static int convertToInt(final byte[] digest) {
+            final int offset = 12;  //  arbitrary choice; changing this would reshuffle all groups just like changing the salt
+            return (0xff & digest[offset+0]) << 24 |
+                    (0xff & digest[offset+1]) << 16 |
+                    (0xff & digest[offset+2]) << 8 |
+                    (0xff & digest[offset+3]);
+        }
+    }
+
+    /**
+     * @author matts
+     */
+    private static class AbstractMD5SingletonHasher implements Hasher {
+        private final byte[] bytes;
+
+        public AbstractMD5SingletonHasher(final String salt) {
+            this.bytes = salt.getBytes(Charsets.UTF_8);
+        }
+
+        @Override
+        public int hash(@Nonnull final String identifier) {
+            final MessageDigest md = ProctorUtils.getMessageDigestInstance();
 
             md.update(bytes);
             md.update(identifier.getBytes(Charsets.UTF_8));
@@ -241,7 +272,7 @@ class StandardTestChooser implements TestChooser<String> {
     }
 
     // Modern salting technique, allowing multiple tests to be 'linked' through use of identical hashes
-    private static class TestSaltHasher extends AbstractMD5Hasher {
+    public static class TestSaltHasher extends AbstractMD5Hasher {
         private TestSaltHasher(@Nonnull final TestRangeSelector selector) {
             super(extractSalt(selector));
         }
@@ -251,5 +282,29 @@ class StandardTestChooser implements TestChooser<String> {
 
             return Strings.nullToEmpty(testDefinition.getSalt());
         }
+    }
+
+    // Modern salting technique, allowing multiple tests to be 'linked' through use of identical hashes
+    public static class TestSaltSingletonHasher extends AbstractMD5SingletonHasher {
+        private TestSaltSingletonHasher(@Nonnull final TestRangeSelector selector) {
+            super(extractSalt(selector));
+        }
+
+        private static String extractSalt(@Nonnull final TestRangeSelector selector) {
+            final ConsumableTestDefinition testDefinition = selector.getTestDefinition();
+
+            return Strings.nullToEmpty(testDefinition.getSalt());
+        }
+    }
+
+    public static void main(String[] args) {
+        final AbstractMD5Hasher tttt = new AbstractMD5Hasher("myproctortst");
+        final AbstractMD5SingletonHasher newHasher = new AbstractMD5SingletonHasher("myproctortst");
+        System.out.println(tttt.hash("ctk1"));
+        System.out.println(newHasher.hash("ctk1"));
+        System.out.println(tttt.hash("ctk2"));
+        System.out.println(newHasher.hash("ctk2"));
+        System.out.println(tttt.hash("ctk3"));
+        System.out.println(newHasher.hash("ctk3"));
     }
 }

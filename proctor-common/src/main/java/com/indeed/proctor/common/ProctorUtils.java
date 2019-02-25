@@ -62,11 +62,25 @@ public abstract class ProctorUtils {
     private static final ObjectMapper OBJECT_MAPPER = Serializers.lenient();
     private static final Logger LOGGER = Logger.getLogger(ProctorUtils.class);
 
+    private static ThreadLocal<MessageDigest> MD5 = new ThreadLocal<>();
+
     public static MessageDigest createMessageDigest() {
         try {
             return MessageDigest.getInstance("MD5");
         } catch (@Nonnull final NoSuchAlgorithmException e) {
             throw new RuntimeException("Impossible no MD5", e);
+        }
+    }
+
+    public static MessageDigest getMessageDigestInstance() {
+        final MessageDigest messageDigest = MD5.get();
+        if (messageDigest == null) {
+            final MessageDigest newMD5 = createMessageDigest();
+            MD5.set(newMD5);
+            return newMD5;
+        } else {
+            messageDigest.reset();
+            return messageDigest;
         }
     }
 
