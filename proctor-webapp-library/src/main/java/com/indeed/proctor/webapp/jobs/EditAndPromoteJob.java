@@ -340,12 +340,13 @@ public class EditAndPromoteJob extends AbstractJob {
             job.log("Not autopromoting because it wasn't requested by user.");
             return;
         }
-        final String currentRevision = getCurrentVersion(testName, previousRevision, trunkStore).getRevision();
 
         if (existingTestDefinition == null) {
+            final String currentRevision = getCurrentVersion(testName, previousRevision, trunkStore, true).getRevision();
             doPromoteInactiveTestToQaAndProd(testName, username, password, author, testDefinitionToUpdate,
                     requestParameterMap, job, currentRevision, qaRevision, prodRevision);
         } else {
+            final String currentRevision = getCurrentVersion(testName, previousRevision, trunkStore, false).getRevision();
             doPromoteExistingTestToQaAndProd(testName, username, password, author, testDefinitionToUpdate,
                     requestParameterMap, job, currentRevision, qaRevision, prodRevision, existingTestDefinition);
         }
@@ -490,17 +491,21 @@ public class EditAndPromoteJob extends AbstractJob {
      * for any modification since this edit process began.
      */
     @Nonnull
-    private Revision getCurrentVersion(final String testName, final String previousRevision, final ProctorStore store) {
-        final List<Revision> histories = TestDefinitionUtil.getTestHistory(store, testName, 2);
-        if (histories.size() <= 1) {
-            throw new IllegalStateException(
-                    "Test hasn't been updated since " + previousRevision +
-                            ". Failed to find the version for autopromote.");
+    private Revision getCurrentVersion(final String testName,
+                                       final String previousRevision,
+                                       final ProctorStore store,
+                                       final boolean isCreate) {
+        final int limit = isCreate ? 1 : 2;
+        final List<Revision> histories = TestDefinitionUtil.getTestHistory(store, testName, limit);
+
+        if (histories.size() < limit) {
+            throw new IllegalStateException("Test hasn't been "
+                    + (isCreate ? "created" : "updated since " + previousRevision) +
+                    ". Failed to find the version for autopromote.");
         }
-        if (!histories.get(1).getRevision().equals(previousRevision)) {
-            throw new IllegalStateException(
-                    "Test has been updated more than once since " + previousRevision +
-                            ". Failed to find the version for autopromote.");
+        if (limit > 1 && !histories.get(1).getRevision().equals(previousRevision)) {
+            throw new IllegalStateException("Test has been updated more than once since " + previousRevision +
+                    ". Failed to find the version for autopromote.");
         }
         return histories.get(0);
     }
