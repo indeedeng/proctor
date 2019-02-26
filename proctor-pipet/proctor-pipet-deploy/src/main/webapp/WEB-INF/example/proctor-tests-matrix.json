@@ -1,0 +1,175 @@
+{
+    "tests": {
+        "buttoncolortst" : {
+            "description" : "Test which button color has a higher click-through.",
+            "version" : 1,
+            "rule" : null,
+            "constants" : {
+            },
+            "salt" : "buttoncolortst",
+            "buckets" : [ {
+                "name" : "inactive",
+                "value" : -1,
+                "description" : "the inactive case",
+                "payload" : {
+                    "stringValue" : "#C0C0C0"
+                }
+            }, {
+                "name" : "control",
+                "value" : 0,
+                "description" : "the control case (stays grey)",
+                "payload" : {
+                    "stringValue" : "#C0C0C0"
+                }
+            }, {
+                "name" : "blue",
+                "value" : 1,
+                "description" : "royal blue",
+                "payload" : {
+                    "stringValue" : "#2B60DE"
+                }
+            }, {
+                "name" : "green",
+                "value" : 2,
+                "description" : "neon green to really get the user's attention",
+                "payload" : {
+                    "stringValue": "#3DFF33"
+                }
+            } ],
+            "allocations" : [ {
+                "rule" : null,
+                "ranges" : [ {
+                    "length" : 0.0,
+                    "bucketValue" : -1
+                }, {
+                    "length" : 0.3,
+                    "bucketValue" : 1
+                }, {
+                    "length" : 0.4,
+                    "bucketValue" : 0
+                }, {
+                    "length" : 0.3,
+                    "bucketValue" : 2
+                } ]
+            } ],
+            "testType" : "USER"
+        },
+        "newfeaturerollout" : {
+            "description" : "Incrementally roll out feature to new users. Only logged in users for now.",
+            "version" : 1,
+            "rule" : "${loggedIn}",
+            "constants" : {
+            },
+            "salt" : "newfeaturerollout",
+            "buckets" : [ {
+                "name" : "inactive",
+                "value" : -1,
+                "description" : "Do not show new feature"
+            }, {
+                "name" : "active",
+                "value" : 0,
+                "description" : "Show new feature"
+            } ],
+            "allocations" : [ {
+                "rule" : null,
+                "ranges" : [ {
+                    "length" : 0.6,
+                    "bucketValue" : -1
+                }, {
+                    "length" : 0.4,
+                    "bucketValue" : 0
+                } ]
+            } ],
+            "testType" : "USER"
+        },
+        "countryalgotst" : {
+            "description" : "Test algorithm constants with a larger test group in the US",
+            "version" : 1,
+            "rule" : null,
+            "constants" : {
+            },
+            "salt" : "countryalgotst",
+            "buckets" : [ {
+                "name" : "inactive",
+                "value" : -1,
+                "description" : "inactive",
+                "payload": {
+                    "longArray": [2, 3, 5]
+                }
+            }, {
+                "name" : "control",
+                "value" : 0,
+                "description" : "Old algorithm constants",
+                "payload": {
+                    "longArray": [2, 3, 5]
+                }
+            }, {
+                "name" : "new",
+                "value" : 1,
+                "description" : "New constants",
+                "payload": {
+                    "longArray": [42, 42, 42]
+                }
+            } ],
+            "allocations" : [ {
+                "rule" : "${country == 'US'}",
+                "ranges" : [ {
+                    "length" : 0.3,
+                    "bucketValue" : 0
+                }, {
+                    "length" : 0.4,
+                    "bucketValue" : -1
+                }, {
+                    "length" : 0.3,
+                    "bucketValue" : 1
+                } ]
+            }, {
+                "rule" : null,
+                "ranges" : [ {
+                    "length" : 0.1,
+                    "bucketValue" : 0
+                }, {
+                    "length" : 0.8,
+                    "bucketValue" : -1
+                }, {
+                    "length" : 0.1,
+                    "bucketValue" : 1
+                } ]
+            } ],
+            "testType" : "USER"
+        },
+        "mobileonly" : {
+            "description" : "Only show on mobile",
+            "version" : 1,
+            "rule" : "${userAgent.mobileDevice}",
+            "constants" : {
+            },
+            "salt" : "mobileonly",
+            "buckets" : [ {
+                "name" : "inactive",
+                "value" : -1,
+                "description" : "Do not show"
+            }, {
+                "name" : "active",
+                "value" : 0,
+                "description" : "Show"
+            } ],
+            "allocations" : [ {
+                "rule" : null,
+                "ranges" : [ {
+                    "length" : 0.0,
+                    "bucketValue" : -1
+                }, {
+                    "length" : 1.0,
+                    "bucketValue" : 0
+                } ]
+            } ],
+            "testType" : "USER"
+        }
+    },
+    "audit" : {
+        "version" : 1,
+        "updatedBy" : "example",
+        "updated" : 1
+    }
+}

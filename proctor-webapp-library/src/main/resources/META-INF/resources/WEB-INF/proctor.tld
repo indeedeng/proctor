@@ -1,0 +1,274 @@
+<taglib xmlns="http://java.sun.com/xml/ns/j2ee"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee
+    http://java.sun.com/xml/ns/j2ee/web-jsptaglibrary_2_0.xsd"
+    version="2.0">
+
+    <description>Proctor Webapp custom tag library</description>
+    <display-name>Proctor Webapp tags</display-name>
+    <tlib-version>1.0</tlib-version>
+    <short-name>proctor</short-name>
+    <uri>http://tags.indeed.com/proctor</uri>
+
+    <tag>
+        <description>Formats commit message if CommitMessageFormatter bean is found.</description>
+        <name>formatCommitMessageDisplay</name>
+        <tag-class>com.indeed.proctor.webapp.tags.FormatCommitMessageDisplayTagHandler</tag-class>
+        <body-content>empty</body-content>
+        <attribute>
+            <name>commitMessage</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+    </tag>
+
+    <tag>
+        <description>Returns definition revision URL if DefinitionRevisionURLFormatter bean is found.</description>
+        <name>formatRevisionDisplay</name>
+        <tag-class>com.indeed.proctor.webapp.tags.FormatDefinitionRevisionDisplayTagHandler</tag-class>
+        <body-content>empty</body-content>
+        <attribute>
+            <name>revision</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+    </tag>
+
+    <tag>
+        <description>Renders all edit page injection templates of correct location and injects HTML on page.</description>
+        <name>renderEditPageInjectionTemplates</name>
+        <tag-class>com.indeed.proctor.webapp.tags.RenderEditPageInjectionTemplatesTagHandler</tag-class>
+        <body-content>empty</body-content>
+        <attribute>
+            <name>position</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+        <attribute>
+            <name>testName</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+        <attribute>
+            <name>testDefinitionJson</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+        <attribute>
+            <name>isCreate</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+    </tag>
+
+    <tag>
+        <description>Renders a help button.</description>
+        <name>renderHelpButton</name>
+        <tag-class>com.indeed.proctor.webapp.tags.RenderHelpButtonTagHandler</tag-class>
+        <body-content>empty</body-content>
+        <attribute>
+            <name>helpType</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+    </tag>
+
+    <tag>
+        <description>Get versionzed filename</description>
+        <name>filenameMapper</name>
+        <tag-class>com.indeed.proctor.webapp.tags.FilenameMapperTagHandler</tag-class>
+        <body-content>empty</body-content>
+        <attribute>
+            <name>filename</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+    </tag>
+
+    <tag>
+        <description>Renders all matrix list page injection templates of correct location and injects HTML on page.</description>
+        <name>renderMatrixListPageInjectionTemplates</name>
+        <tag-class>com.indeed.proctor.webapp.tags.RenderMatrixListPageInjectionTemplatesHandler</tag-class>
+        <body-content>empty</body-content>
+        <attribute>
+            <name>position</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+        <attribute>
+            <name>testName</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+        <attribute>
+            <name>testMatrixVersion</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+        <attribute>
+            <name>testDefinition</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+    </tag>
+
+    <tag>
+        <description>Renders all base page injection templates of correct location and injects HTML on page.</description>
+        <name>renderBasePageInjectionTemplates</name>
+        <tag-class>com.indeed.proctor.webapp.tags.RenderBasePageInjectionTemplatesHandler</tag-class>
+        <body-content>empty</body-content>
+        <attribute>
+            <name>position</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+        <attribute>
+            <name>branch</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+    </tag>
+
+    <tag>
+        <description>Renders all test definition delete page injection templates of correct location and injects HTML on page.</description>
+        <name>renderDefinitionDeletePageInjectionTemplates</name>
+        <tag-class>com.indeed.proctor.webapp.tags.RenderDefinitionDeletePageInjectionTemplatesHandler</tag-class>
+        <body-content>empty</body-content>
+        <attribute>
+            <name>position</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+        <attribute>
+            <name>testName</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+    </tag>
+
+    <tag>
+        <description>Renders all test definition details page injection templates of correct location and injects HTML on page.</description>
+        <name>renderDefinitionDetailsPageInjectionTemplates</name>
+        <tag-class>com.indeed.proctor.webapp.tags.RenderDefinitionDetailsPageInjectionTemplatesHandler</tag-class>
+        <body-content>empty</body-content>
+        <attribute>
+            <name>position</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+        <attribute>
+            <name>testName</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+        <attribute>
+            <name>testDefinition</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+    </tag>
+
+    <tag>
+        <description>Renders all test definition history page injection templates of correct location and injects HTML on page.</description>
+        <name>renderDefinitionHistoryPageInjectionTemplates</name>
+        <tag-class>com.indeed.proctor.webapp.tags.RenderDefinitionHistoryPageInjectionTemplatesHandler</tag-class>
+        <body-content>empty</body-content>
+        <attribute>
+            <name>position</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+        <attribute>
+            <name>testName</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+        <attribute>
+            <name>testDefinitionVersion</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+        </attribute>
+    </tag>
+
+
+    <function>
+        <name>getTestBucketForRange</name>
+        <function-class>com.indeed.proctor.webapp.tags.TestDefinitionFunctions
+        </function-class>
+        <function-signature>com.indeed.proctor.common.model.TestBucket
+            getTestBucketForRange(com.indeed.proctor.common.model.TestDefinition,com.indeed.proctor.common.model.Range)
+        </function-signature>
+    </function>
+    <function>
+        <name>isCurrentVersionOnTrunk</name>
+        <function-class>com.indeed.proctor.webapp.tags.TestDefinitionFunctions
+        </function-class>
+        <function-signature>boolean
+            isCurrentVersionOnTrunk(com.indeed.proctor.webapp.db.Environment,com.indeed.proctor.store.Revision,com.indeed.proctor.common.EnvironmentVersion)</function-signature>
+    </function>
+    <function>
+        <name>isCurrentVersionOnQa</name>
+        <function-class>com.indeed.proctor.webapp.tags.TestDefinitionFunctions
+        </function-class>
+        <function-signature>boolean
+            isCurrentVersionOnQa(com.indeed.proctor.webapp.db.Environment,com.indeed.proctor.store.Revision,com.indeed.proctor.common.EnvironmentVersion)</function-signature>
+    </function>
+    <function>
+        <name>isCurrentVersionOnProduction</name>
+        <function-class>com.indeed.proctor.webapp.tags.TestDefinitionFunctions
+        </function-class>
+        <function-signature>boolean
+            isCurrentVersionOnProduction(com.indeed.proctor.webapp.db.Environment,com.indeed.proctor.store.Revision,com.indeed.proctor.common.EnvironmentVersion)</function-signature>
+    </function>
+    <function>
+        <name>formatRevision</name>
+        <function-class>com.indeed.proctor.webapp.tags.TestDefinitionFunctions
+        </function-class>
+        <function-signature>java.lang.String formatRevision(java.lang.String)</function-signature>
+    </function>
+    <function>
+        <name>prettyPrintJSON</name>
+        <function-class>com.indeed.proctor.webapp.tags.JSONFunctions
+        </function-class>
+        <function-signature>java.lang.String prettyPrintJSON(java.lang.Object)</function-signature>
+    </function>
+    <function>
+        <name>prettyPrintJSONPayloadContents</name>
+        <function-class>com.indeed.proctor.webapp.tags.PayloadFunctions
+        </function-class>
+        <function-signature>java.lang.String prettyPrintJSONPayloadContents(java.lang.Object)</function-signature>
+    </function>
+    <function>
+        <name>printPayloadType</name>
+        <function-class>com.indeed.proctor.webapp.tags.PayloadFunctions
+        </function-class>
+        <function-signature>java.lang.String printPayloadType(java.lang.Object)</function-signature>
+    </function>
+    <function>
+        <name>allPayloadTypeStrings</name>
+        <function-class>com.indeed.proctor.webapp.tags.PayloadFunctions
+        </function-class>
+        <function-signature>java.lang.String[] allPayloadTypeStrings()</function-signature>
+    </function>
+    <function>
+        <name>containsKey</name>
+        <function-class>com.indeed.proctor.webapp.tags.TestDefinitionFunctions
+        </function-class>
+        <function-signature>boolean containsKey(java.util.Map,java.lang.Object)</function-signature>
+    </function>
+    <function>
+        <name>containsAnyDev</name>
+        <function-class>com.indeed.proctor.webapp.tags.TestDefinitionFunctions</function-class>
+        <function-signature>boolean hasDevInstances(java.util.Collection)</function-signature>
+    </function>
+    <function>
+        <description>URL Encodes a String</description>
+        <name>urlencode</name>
+        <function-class>com.indeed.proctor.webapp.tags.UtilityFunctions</function-class>
+        <function-signature>java.lang.String urlEncode(java.lang.String)</function-signature>
+        <example>
+            ${util:urlencode(result.url)}
+        </example>
+    </function>
+
+</taglib>
