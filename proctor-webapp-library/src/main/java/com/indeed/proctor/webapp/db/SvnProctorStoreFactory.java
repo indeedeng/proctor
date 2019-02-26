@@ -10,7 +10,6 @@ import com.indeed.proctor.store.SvnDirectoryRefresher;
 import com.indeed.proctor.store.SvnPersisterCoreImpl;
 import com.indeed.proctor.store.SvnProctor;
 import com.indeed.proctor.store.SvnWorkspaceProviderImpl;
-import com.indeed.proctor.store.async.AsyncProctorStore;
 import com.indeed.util.varexport.VarExporter;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.log4j.Logger;
@@ -24,7 +23,7 @@ import java.util.concurrent.TimeUnit;
  * @author parker
  * Proctor webapp with svn is not actively supported
  */
-public class SvnProctorStoreFactory implements StoreFactory {
+public class SvnProctorStoreFactory implements TrunkQaProdStoresFactory {
     private static final Logger LOGGER = Logger.getLogger(SvnProctorStoreFactory.class);
 
     final ScheduledExecutorService executor;
@@ -72,29 +71,14 @@ public class SvnProctorStoreFactory implements StoreFactory {
         return createStore("/trunk/matrices");
     }
 
-    // Build ProctorStore which does initial proctor data downloading asynchronously which makes constructor returns early
-    public ProctorStore getAsyncTrunkStore() {
-        return new AsyncProctorStore(this, "/trunk/matrices");
-    }
-
     // Build ProctorStore which does initial proctor data downloading synchronously in constructor
     public ProctorStore getQaStore() {
         return createStore("/branches/deploy/qa/matrices");
     }
 
-    // Build ProctorStore which does initial proctor data downloading asynchronously which makes constructor returns early
-    public ProctorStore getAsyncQaStore() {
-        return new AsyncProctorStore(this, "/branches/deploy/qa/matrices");
-    }
-
     // Build ProctorStore which does initial proctor data downloading synchronously in constructor
     public ProctorStore getProductionStore() {
         return createStore("/branches/deploy/production/matrices");
-    }
-
-    // Build ProctorStore which does initial proctor data downloading asynchronously which makes constructor returns early
-    public ProctorStore getAsyncProductionStore() {
-        return new AsyncProctorStore(this, "/branches/deploy/production/matrices");
     }
 
     public ProctorStore createStore(final String relativePath) {

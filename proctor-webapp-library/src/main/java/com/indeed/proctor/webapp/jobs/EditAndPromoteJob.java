@@ -23,7 +23,8 @@ import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.webapp.db.Environment;
-import com.indeed.proctor.webapp.extensions.DefinitionChangeLog;
+import com.indeed.proctor.webapp.extensions.BackgroundJobLogger;
+import com.indeed.proctor.webapp.extensions.DefinitionChangeLogger;
 import com.indeed.proctor.webapp.extensions.PostDefinitionCreateChange;
 import com.indeed.proctor.webapp.extensions.PostDefinitionEditChange;
 import com.indeed.proctor.webapp.extensions.PostDefinitionPromoteChange;
@@ -273,17 +274,17 @@ public class EditAndPromoteJob extends AbstractJob {
         ProctorUtils.verifyInternallyConsistentDefinition(testName, "edit", consumableTestDefinition);
 
         //PreDefinitionEdit
+        final DefinitionChangeLogger logger = new BackgroundJobLogger(job);
         if (isCreate) {
             job.log("Executing pre create extension tasks.");
             for (final PreDefinitionCreateChange preDefinitionCreateChange : preDefinitionCreateChanges) {
-                final DefinitionChangeLog definitionChangeLog = preDefinitionCreateChange.preCreate(testDefinitionToUpdate, requestParameterMap);
-                logDefinitionChangeLog(definitionChangeLog, preDefinitionCreateChange.getClass().getSimpleName(), job);
+                preDefinitionCreateChange.preCreate(testDefinitionToUpdate, requestParameterMap, logger);
             }
         } else {
             job.log("Executing pre edit extension tasks.");
             for (final PreDefinitionEditChange preDefinitionEditChange : preDefinitionEditChanges) {
-                final DefinitionChangeLog definitionChangeLog = preDefinitionEditChange.preEdit(existingTestDefinition, testDefinitionToUpdate, requestParameterMap);
-                logDefinitionChangeLog(definitionChangeLog, preDefinitionEditChange.getClass().getSimpleName(), job);
+                preDefinitionEditChange.preEdit(existingTestDefinition, testDefinitionToUpdate,
+                        requestParameterMap, logger);
             }
         }
 
@@ -303,15 +304,13 @@ public class EditAndPromoteJob extends AbstractJob {
         if (isCreate) {
             job.log("Executing post create extension tasks.");
             for (final PostDefinitionCreateChange postDefinitionCreateChange : postDefinitionCreateChanges) {
-                final DefinitionChangeLog definitionChangeLog = postDefinitionCreateChange.postCreate(testDefinitionToUpdate, requestParameterMap);
-                logDefinitionChangeLog(definitionChangeLog, postDefinitionCreateChange.getClass().getSimpleName(), job);
-
+                postDefinitionCreateChange.postCreate(testDefinitionToUpdate, requestParameterMap, logger);
             }
         } else {
             job.log("Executing post edit extension tasks.");
             for (final PostDefinitionEditChange postDefinitionEditChange : postDefinitionEditChanges) {
-                final DefinitionChangeLog definitionChangeLog = postDefinitionEditChange.postEdit(existingTestDefinition, testDefinitionToUpdate, requestParameterMap);
-                logDefinitionChangeLog(definitionChangeLog, postDefinitionEditChange.getClass().getSimpleName(), job);
+                postDefinitionEditChange.postEdit(existingTestDefinition, testDefinitionToUpdate,
+                        requestParameterMap, logger);
             }
         }
 
@@ -775,9 +774,10 @@ public class EditAndPromoteJob extends AbstractJob {
 
             //PreDefinitionPromoteChanges
             job.log("Executing pre promote extension tasks.");
+            final DefinitionChangeLogger logger = new BackgroundJobLogger(job);
             for (final PreDefinitionPromoteChange preDefinitionPromoteChange : preDefinitionPromoteChanges) {
-                final DefinitionChangeLog definitionChangeLog = preDefinitionPromoteChange.prePromote(testDefintion, requestParameterMap, source, destination, isAutopromote);
-                logDefinitionChangeLog(definitionChangeLog, preDefinitionPromoteChange.getClass().getSimpleName(), job);
+                preDefinitionPromoteChange.prePromote(testDefintion, requestParameterMap, source, destination,
+                        isAutopromote, logger);
             }
 
             //Promote Change
@@ -786,8 +786,8 @@ public class EditAndPromoteJob extends AbstractJob {
             //PostDefinitionPromoteChanges
             job.log("Executing post promote extension tasks.");
             for (final PostDefinitionPromoteChange postDefinitionPromoteChange : postDefinitionPromoteChanges) {
-                final DefinitionChangeLog definitionChangeLog = postDefinitionPromoteChange.postPromote(requestParameterMap, source, destination, isAutopromote);
-                logDefinitionChangeLog(definitionChangeLog, postDefinitionPromoteChange.getClass().getSimpleName(), job);
+                postDefinitionPromoteChange.postPromote(requestParameterMap, source, destination, isAutopromote,
+                        logger);
             }
 
             job.log(String.format("Promoted %s from %s (%1.7s) to %s (%1.7s)", testName, source.getName(), srcRevision, destination.getName(), destRevision));

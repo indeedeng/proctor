@@ -8,7 +8,8 @@ import com.indeed.proctor.store.GitNoMasterAccessLevelException;
 import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.webapp.db.Environment;
-import com.indeed.proctor.webapp.extensions.DefinitionChangeLog;
+import com.indeed.proctor.webapp.extensions.BackgroundJobLogger;
+import com.indeed.proctor.webapp.extensions.DefinitionChangeLogger;
 import com.indeed.proctor.webapp.extensions.PostDefinitionDeleteChange;
 import com.indeed.proctor.webapp.extensions.PreDefinitionDeleteChange;
 import com.indeed.proctor.webapp.tags.UtilityFunctions;
@@ -67,7 +68,7 @@ public class DeleteJob extends AbstractJob {
                                   final Map<String, String[]> requestParameterMap
     ) {
         LOGGER.info(String.format("Deleting test %s branch: %s user: %s ", testName, source, username));
-        BackgroundJob<Object> backgroundJob = jobFactory.createBackgroundJob(
+        final BackgroundJob<Object> backgroundJob = jobFactory.createBackgroundJob(
                 String.format("(username:%s author:%s) deleting %s branch: %s ", username, author, testName, source),
                 author,
                 BackgroundJob.JobType.TEST_DELETION,
@@ -109,7 +110,7 @@ public class DeleteJob extends AbstractJob {
         final Revision prevVersion;
         job.log("(scm) getting history for '" + testName + "'");
         final List<Revision> history = TestDefinitionUtil.getTestHistory(store, testName, 1);
-        if (history.size() > 0) {
+        if (!history.isEmpty()) {
             prevVersion = history.get(0);
             if (!prevVersion.getRevision().equals(srcRevision)) {
                 throw new IllegalArgumentException("Test has been updated since " + srcRevision + " currently at " + prevVersion.getRevision());
@@ -139,9 +140,9 @@ public class DeleteJob extends AbstractJob {
 
         //PreDefinitionDeleteChanges
         job.log("Executing pre delete extension tasks.");
+        final DefinitionChangeLogger logger = new BackgroundJobLogger(job);
         for (final PreDefinitionDeleteChange preDefinitionDeleteChange : preDefinitionDeleteChanges) {
-            final DefinitionChangeLog definitionChangeLog = preDefinitionDeleteChange.preDelete(definition, requestParameterMap);
-            logDefinitionChangeLog(definitionChangeLog, preDefinitionDeleteChange.getClass().getSimpleName(), job);
+            preDefinitionDeleteChange.preDelete(definition, requestParameterMap, logger);
         }
 
         job.log("(svn) delete " + testName);
@@ -165,8 +166,7 @@ public class DeleteJob extends AbstractJob {
         //PostDefinitionDeleteChanges
         job.log("Executing post delete extension tasks.");
         for (final PostDefinitionDeleteChange postDefinitionDeleteChange : postDefinitionDeleteChanges) {
-            final DefinitionChangeLog definitionChangeLog = postDefinitionDeleteChange.postDelete(requestParameterMap);
-            logDefinitionChangeLog(definitionChangeLog, postDefinitionDeleteChange.getClass().getSimpleName(), job);
+            postDefinitionDeleteChange.postDelete(requestParameterMap, logger);
         }
         return true;
     }
