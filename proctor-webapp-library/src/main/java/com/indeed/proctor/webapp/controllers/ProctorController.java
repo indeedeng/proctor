@@ -271,6 +271,18 @@ public class ProctorController extends AbstractController {
         }
     }
 
+    /**
+     * API for proctor tests with filtering functionality
+     *
+     * @param branch           environment
+     * @param limit            number of tests to return
+     * @param q                query string to search
+     * @param filterType       {@link FilterType}
+     * @param filterActive     {@link FilterActive}
+     * @param sort             {@link Sort}
+     * @param favoriteTestsRaw comma-separated favorite tests saved in cookie
+     * @return JSON of TestsResponse
+     */
     @ApiOperation(value = "Proctor tests with filters", response = List.class)
     @RequestMapping(value = "/matrix/tests", method = RequestMethod.GET)
     public JsonView viewTestNames(
@@ -280,8 +292,7 @@ public class ProctorController extends AbstractController {
             @RequestParam(defaultValue = "ALL") final FilterType filterType,
             @RequestParam(defaultValue = "ALL") final FilterActive filterActive,
             @RequestParam(defaultValue = "FAVORITESFIRST") final Sort sort,
-            @CookieValue(value = "FavoriteTests", defaultValue = "") final String favoriteTestsRaw,
-            final Model model) {
+            @CookieValue(value = "FavoriteTests", defaultValue = "") final String favoriteTestsRaw) {
         final Set<String> favoriteTestNames = Sets.newHashSet(Splitter.on(",").split(favoriteTestsRaw));
 
         final Environment which = determineEnvironmentFromParameter(branch);
