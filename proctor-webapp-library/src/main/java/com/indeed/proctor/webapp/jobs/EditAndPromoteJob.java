@@ -465,7 +465,7 @@ public class EditAndPromoteJob extends AbstractJob {
         for (final Allocation allocation : allocations) {
             for (final Range range : allocation.getRanges()) {
                 final TestBucket bucket = valueToBucket.get(range.getBucketValue());
-                if (!"inactive".equals(bucket.getName()) && range.getLength() > 0.0) {
+                if (bucket.getValue() != -1 && range.getLength() > 0.0) {
                     return false;
                 }
             }
