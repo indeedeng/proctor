@@ -199,7 +199,17 @@ public class EditAndPromoteJob extends AbstractJob {
      * Creates/updates test with given {@code testName} in trunk store to new state from {@code testDefinitionToUpdate}.
      * {@code isCreate} is set if this is a new test definition. {@code isAutopromote} Is set if the users requested the
      * test be autopromoted.
-     *
+     * @param testName the test name to promote
+     * @param username the username of the committer
+     * @param password the password of the committer
+     * @param author the author name who requests this promotion
+     * @param isCreate the flag whether this job is for a test creation
+     * @param comment the comment to be added in the commit comment
+     * @param testDefinitionToUpdate the TestDefinition to update
+     * @param previousRevision
+     * @param isAutopromote the flag whether this job promotes the test to QA and Production
+     * @param requestParameterMap
+     * @param job the edit job which runs this edit process
      * @return true, else throws an exception.
      * @throws Exception
      */
@@ -352,18 +362,6 @@ public class EditAndPromoteJob extends AbstractJob {
         }
     }
 
-    /**
-     * Promote a 100% inactive test to QA and Production
-     * @param testName the test name to promote
-     * @param username the username of the committer
-     * @param password the password of the committer
-     * @param author the author name who requests this promotion
-     * @param testDefinitionToUpdate the TestDefinition to promote
-     * @param requestParameterMap
-     * @param job the edit job which runs this promotion process
-     * @param qaRevision the revision of the test in QA store, this might be -1
-     * @param prodRevision the revision of the test in Production store, this might be -1
-     */
     @VisibleForTesting
     void doPromoteInactiveTestToQaAndProd(final String testName,
                                           final String username,
@@ -391,20 +389,6 @@ public class EditAndPromoteJob extends AbstractJob {
         }
     }
 
-    /**
-     * Promote an existing test to QA and Production
-     * @param testName the test name to promote
-     * @param username the username of the committer
-     * @param password the password of the committer
-     * @param author the author name who requests this promotion
-     * @param testDefinitionToUpdate the TestDefinition to promote
-     * @param requestParameterMap
-     * @param job the edit job which runs this promotion process
-     * @param qaRevision the revision of the test in QA store
-     * @param prodRevision the revision of the test in Production store
-     * @param existingTestDefinition the existing test definition before updating in Trunk store
-     * @throws Exception
-     */
     @VisibleForTesting
     void doPromoteExistingTestToQaAndProd(final String testName,
                                           final String username,
