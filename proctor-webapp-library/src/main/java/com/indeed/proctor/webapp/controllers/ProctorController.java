@@ -9,6 +9,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Functions;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -145,7 +146,7 @@ public class ProctorController extends AbstractController {
         return new JsonView(testMatrixArtifact);
     }
 
-    enum FilterType {
+    private enum FilterType {
         ALL,
         TESTNAME,
         DESCRIPTION,
@@ -154,19 +155,19 @@ public class ProctorController extends AbstractController {
         BUCKETDESCRIPTION,
     }
 
-    enum FilterActive {
+    private enum FilterActive {
         ALL,
         ACTIVE,
         INACTIVE,
     }
 
-    enum Sort {
+    private enum Sort {
         FAVORITESFIRST,
         TESTNAME,
         UPDATEDDATE,
     }
 
-    class TestsResponse {
+    private static class TestsResponse {
         private final List<TestNameAndDefinition> tests;
         private final int totalTestCount;
 
@@ -184,7 +185,7 @@ public class ProctorController extends AbstractController {
         }
     }
 
-    class TestNameAndDefinition {
+    private static class TestNameAndDefinition {
         private final String name;
         private final TestDefinition definition;
 
@@ -202,10 +203,6 @@ public class ProctorController extends AbstractController {
         }
     }
 
-    private static String nullToEmpty(@Nullable final String string) {
-        return (string == null) ? "" : string;
-    }
-
     private static boolean matchFilterType(final String testName, final TestDefinition definition,
                                            final FilterType type, final String query) {
         if (query.isEmpty()) {
@@ -216,10 +213,10 @@ public class ProctorController extends AbstractController {
             case TESTNAME:
                 return testName.toLowerCase().contains(lowerQuery);
             case DESCRIPTION:
-                return nullToEmpty(definition.getDescription()).toLowerCase().contains(lowerQuery);
+                return Strings.nullToEmpty(definition.getDescription()).toLowerCase().contains(lowerQuery);
             case RULE:
-                return Stream.concat(Stream.of(nullToEmpty(definition.getRule())), definition.getAllocations().stream()
-                        .map(allocation -> nullToEmpty(allocation.getRule()).toLowerCase()))
+                return Stream.concat(Stream.of(Strings.nullToEmpty(definition.getRule())), definition.getAllocations().stream()
+                        .map(allocation -> Strings.nullToEmpty(allocation.getRule()).toLowerCase()))
                         .anyMatch(rule -> rule.contains(lowerQuery));
             case BUCKET:
                 return definition.getBuckets().stream()
@@ -227,16 +224,16 @@ public class ProctorController extends AbstractController {
                         .anyMatch(name -> name.contains(lowerQuery));
             case BUCKETDESCRIPTION:
                 return definition.getBuckets().stream()
-                        .map(testBucket -> nullToEmpty(testBucket.getDescription()).toLowerCase())
+                        .map(testBucket -> Strings.nullToEmpty(testBucket.getDescription()).toLowerCase())
                         .anyMatch(description -> description.contains(lowerQuery));
             case ALL:
                 return Stream.of(
                         Stream.of(testName, definition.getDescription(), definition.getTestType().toString(),
                                 definition.getSalt()),
-                        Stream.concat(Stream.of(nullToEmpty(definition.getRule())),
-                                definition.getAllocations().stream().map(allocation -> nullToEmpty(allocation.getRule()))),
+                        Stream.concat(Stream.of(Strings.nullToEmpty(definition.getRule())),
+                                definition.getAllocations().stream().map(allocation -> Strings.nullToEmpty(allocation.getRule()))),
                         definition.getBuckets().stream().map(TestBucket::getName),
-                        definition.getBuckets().stream().map(testBucket -> nullToEmpty(testBucket.getDescription()))
+                        definition.getBuckets().stream().map(testBucket -> Strings.nullToEmpty(testBucket.getDescription()))
                 )
                         .flatMap(s -> s)
                         .map(String::toLowerCase)
