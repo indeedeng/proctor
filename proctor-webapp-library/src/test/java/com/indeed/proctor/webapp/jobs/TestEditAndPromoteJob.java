@@ -254,40 +254,70 @@ public class TestEditAndPromoteJob {
         }
     }
 
-    public TestDefinition createTestDefinition(String bucketsString, double[] ranges) {
+    private TestDefinition createTestDefinition(final String bucketsString, final double[] ranges) {
         return createTestDefinition(bucketsString, TestType.RANDOM, "salt", ranges);
     }
 
-    public TestDefinition createTestDefinition(String bucketsString, TestType testType, double[] ranges) {
+    private TestDefinition createTestDefinition(
+            final String bucketsString,
+            final TestType testType,
+            final double[] ranges
+    ) {
         return createTestDefinition(bucketsString, testType, "salt", ranges);
     }
 
-    public TestDefinition createTestDefinition(String bucketsString, TestType testType, String salt, double[] ranges) {
+    private TestDefinition createTestDefinition(
+            final String bucketsString,
+            final TestType testType,
+            final String salt,
+            final double[] ranges
+    ) {
         return createTestDefinition(bucketsString, testType, salt, ranges, null);
     }
 
-    public TestDefinition createTestDefinition(String bucketsString, TestType testType, String salt, double[] ranges, Payload[] payloads) {
+    private TestDefinition createTestDefinition(
+            final String bucketsString,
+            final TestType testType,
+            final String salt,
+            final double[] ranges,
+            final Payload[] payloads
+    ) {
         return createTestDefinition(bucketsString, testType, salt, ranges, payloads, null);
     }
 
-    public TestDefinition createTestDefinition(String bucketsString, double[] ranges, List<String> allocationIds) {
+    private TestDefinition createTestDefinition(
+            final String bucketsString,
+            final double[] ranges,
+            final List<String> allocationIds
+    ) {
         return createTestDefinition(bucketsString, TestType.RANDOM, "salt", ranges, null, allocationIds);
     }
 
-    public TestDefinition createTestDefinition(String bucketsString, TestType testType, String salt, double[] ranges, Payload[] payloads, List<String> allocationIds) {
+    private TestDefinition createTestDefinition(
+            final String bucketsString,
+            final TestType testType,
+            final String salt,
+            final double[] ranges,
+            final Payload[] payloads,
+            final List<String> allocationIds
+    ) {
         final List<Range> rangeList = new ArrayList<Range>();
-        for (int i = 0; i < ranges.length; i++) {
-            final Range newRange = new Range(i, ranges[i]);
-            rangeList.add(newRange);
-        }
-        String[] buckets = bucketsString.split(",");
-        List<TestBucket> buckList = new ArrayList<TestBucket>();
+        final String[] buckets = bucketsString.split(",");
+        final List<TestBucket> buckList = new ArrayList<TestBucket>();
+
         for (int i = 0; i < buckets.length; i++) {
             String bucket = buckets[i];
             final int colonInd = bucket.indexOf(':');
-            final TestBucket tempBucket = new TestBucket(bucket.substring(0, colonInd), Integer.parseInt(bucket.substring(colonInd + 1)), "description", (payloads == null) ? null : payloads[i]);
+            final int bucketValue = Integer.parseInt(bucket.substring(colonInd + 1));
+            final TestBucket tempBucket = new TestBucket(
+                    bucket.substring(0, colonInd),
+                    bucketValue,
+                    "description",
+                    (payloads == null) ? null : payloads[i]
+            );
             buckList.add(tempBucket);
-
+            final double range = i >= ranges.length ? 0 : ranges[i];
+            rangeList.add(new Range(bucketValue, range));
         }
 
         final List<Allocation> allocList = new ArrayList<Allocation>();
@@ -376,43 +406,14 @@ public class TestEditAndPromoteJob {
             }
         };
 
-        { // testing isAllInvalidTest is false
-            // Arrange
-            final double[] range = {.7, .3};
-            final TestDefinition testDefinition = createTestDefinition(
-                    "control:0,test:1",
-                    range,
-                    ImmutableList.of("#A1234", "#C1")
-            );
-
-            mockDoPromoteInternal.accept(false, true);
-            mockDoPromoteInternal.accept(false, false);
-
-            // Action
-            editAndPromoteJob.doPromoteInactiveTestToQaAndProd(testName, username, password, author, testDefinition,
-                    requestParameterMap, backgroundJob, currentRevision, qaRevision, prodRevision);
-
-            // Assert
-            verify(editAndPromoteJob, Mockito.never()).doPromoteInternal(testName, username, password, author, Environment.WORKING,
-                    currentRevision, Environment.QA, qaRevision, requestParameterMap, backgroundJob, true);
-            verify(editAndPromoteJob, Mockito.never()).doPromoteInternal(testName, username, password, author, Environment.WORKING,
-                    currentRevision, Environment.PRODUCTION, prodRevision, requestParameterMap, backgroundJob, true);
-            Mockito.reset(editAndPromoteJob);
-        }
-
         { // testing promoting QA fails
             // Arrange
             final double[] range = {1.0, 0.0};
-            final TestDefinition testDefinition = createTestDefinition(
-                    "inactive:0,control:1",
-                    range,
-                    ImmutableList.of("#A1234", "#C1")
-            );
             mockDoPromoteInternal.accept(false, true);
             mockDoPromoteInternal.accept(false, false);
 
             // Action
-            editAndPromoteJob.doPromoteInactiveTestToQaAndProd(testName, username, password, author, testDefinition,
+            editAndPromoteJob.doPromoteInactiveTestToQaAndProd(testName, username, password, author,
                     requestParameterMap, backgroundJob, currentRevision, qaRevision, prodRevision);
 
             // Assert
@@ -427,16 +428,11 @@ public class TestEditAndPromoteJob {
         { // testing promoting QA succeeds
             // Arrange
             final double[] range = {1.0, 0.0};
-            final TestDefinition testDefinition = createTestDefinition(
-                    "inactive:0,control:1",
-                    range,
-                    ImmutableList.of("#A1234", "#C1")
-            );
             mockDoPromoteInternal.accept(true, true);
             mockDoPromoteInternal.accept(true, false);
 
             // Action
-            editAndPromoteJob.doPromoteInactiveTestToQaAndProd(testName, username, password, author, testDefinition,
+            editAndPromoteJob.doPromoteInactiveTestToQaAndProd(testName, username, password, author,
                     requestParameterMap, backgroundJob, currentRevision, qaRevision, prodRevision);
 
             // Assert
@@ -590,6 +586,52 @@ public class TestEditAndPromoteJob {
                     currentRevision, Environment.PRODUCTION, prodRevision, requestParameterMap, backgroundJob, true);
             Mockito.reset(editAndPromoteJob);
         }
+    }
 
+    @Test
+    public void testIsAllInactiveTest() {
+        { // testing isAllInactiveTest is false
+            final double[] range = {.7, .3};
+            final TestDefinition testDefinition = createTestDefinition(
+                    "control:0,test:1",
+                    range,
+                    ImmutableList.of("#A1234", "#C1")
+            );
+
+            assertFalse(EditAndPromoteJob.isAllInactiveTest(testDefinition));
+        }
+
+        { // testing isAllInactiveTest is false
+            final double[] range = {.7, .3};
+            final TestDefinition testDefinition = createTestDefinition(
+                    "inactive:-1,control:0",
+                    range,
+                    ImmutableList.of("#A1234", "#C1")
+            );
+
+            assertFalse(EditAndPromoteJob.isAllInactiveTest(testDefinition));
+        }
+
+        { // testing isAllInactiveTest is true
+            final double[] range = {1.0};
+            final TestDefinition testDefinition = createTestDefinition(
+                    "inactive:-1",
+                    range,
+                    ImmutableList.of("#A1234", "#C1")
+            );
+
+            assertTrue(EditAndPromoteJob.isAllInactiveTest(testDefinition));
+        }
+
+        { // testing isAllInactiveTest is true
+            final double[] range = {1.0, 0.0};
+            final TestDefinition testDefinition = createTestDefinition(
+                    "inactive:-1,control:0",
+                    range,
+                    ImmutableList.of("#A1234", "#C1")
+            );
+
+            assertTrue(EditAndPromoteJob.isAllInactiveTest(testDefinition));
+        }
     }
 }
