@@ -465,13 +465,18 @@ public class EditAndPromoteJob extends AbstractJob {
         for (final Allocation allocation : allocations) {
             for (final Range range : allocation.getRanges()) {
                 final TestBucket bucket = valueToBucket.get(range.getBucketValue());
-                if (bucket.getValue() != -1 && range.getLength() > 0.0) {
+                if (!isInactiveBucket(bucket) && range.getLength() > 0.0) {
                     return false;
                 }
             }
         }
 
         return true;
+    }
+
+    private static boolean isInactiveBucket(final TestBucket bucket) {
+        return bucket.getValue() == -1 &&
+                ("inactive".equalsIgnoreCase(bucket.getName()) || "disabled".equalsIgnoreCase(bucket.getName()));
     }
 
     /**

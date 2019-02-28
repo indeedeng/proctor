@@ -612,10 +612,43 @@ public class TestEditAndPromoteJob {
             assertFalse(EditAndPromoteJob.isAllInactiveTest(testDefinition));
         }
 
+        { // testing isAllInactiveTest is false
+            final double[] range = {1.0};
+            final TestDefinition testDefinition = createTestDefinition(
+                    "inactive:0",
+                    range,
+                    ImmutableList.of("#A1234", "#C1")
+            );
+
+            assertFalse(EditAndPromoteJob.isAllInactiveTest(testDefinition));
+        }
+
+        { // testing isAllInactiveTest is false
+            final double[] range = {1.0};
+            final TestDefinition testDefinition = createTestDefinition(
+                    "evitcani:-1",
+                    range,
+                    ImmutableList.of("#A1234", "#C1")
+            );
+
+            assertFalse(EditAndPromoteJob.isAllInactiveTest(testDefinition));
+        }
+
         { // testing isAllInactiveTest is true
             final double[] range = {1.0};
             final TestDefinition testDefinition = createTestDefinition(
                     "inactive:-1",
+                    range,
+                    ImmutableList.of("#A1234", "#C1")
+            );
+
+            assertTrue(EditAndPromoteJob.isAllInactiveTest(testDefinition));
+        }
+
+        { // testing isAllInactiveTest is true
+            final double[] range = {1.0};
+            final TestDefinition testDefinition = createTestDefinition(
+                    "disabled:-1",
                     range,
                     ImmutableList.of("#A1234", "#C1")
             );
