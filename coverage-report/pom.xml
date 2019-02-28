@@ -5,7 +5,7 @@
         <groupId>com.indeed</groupId>
         <artifactId>proctor-parent</artifactId>
         <!--This version is not used in latest release. See https://mvnrepository.com/artifact/com.indeed/proctor-parent -->
-        <version>9999-SNAPSHOT</version>
+        <version>1.2.0-experimental-1</version>
     </parent>
 
     <artifactId>coverage-report</artifactId>
