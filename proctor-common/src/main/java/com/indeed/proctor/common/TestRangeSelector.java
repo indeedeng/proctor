@@ -21,8 +21,8 @@ import java.util.Map.Entry;
 
 /**
  * This is perhaps not the greatest abstraction the world has seen; is meant to consolidate common functionality needed for different types of choosers WITHOUT using inheritance
- * @author ketan
  *
+ * @author ketan
  */
 public class TestRangeSelector {
     private static final Logger LOGGER = Logger.getLogger(TestRangeSelector.class);
@@ -76,15 +76,24 @@ public class TestRangeSelector {
 
     public int findMatchingRule(@Nonnull final Map<String, Object> values) {
         try {
+            final long start = System.currentTimeMillis();
             @Nullable final String rule = testDefinition.getRule();
             if (rule != null) {
-                if (! evaluateRule(rule, values)) {
+                if (!evaluateRule(rule, values)) {
+                    final long end = System.currentTimeMillis();
+                    if (end - start > 500) {
+                        LOGGER.info(String.format("End evaluate for test: '%s' with %dms", testName, (end - start)));
+                    }
                     return -1;
                 }
             }
 
             for (int i = 0; i < rules.length; i++) {
                 if (evaluateRule(rules[i], values)) {
+                    final long end = System.currentTimeMillis();
+                    if (end - start > 500) {
+                        LOGGER.info(String.format("End evaluate for test: '%s' with %dms", testName, (end - start)));
+                    }
                     return i;
                 }
             }
@@ -99,7 +108,6 @@ public class TestRangeSelector {
     private boolean evaluateRule(final String rule, @Nonnull final Map<String, Object> values) throws InvalidRuleException {
         try {
             return ruleEvaluator.evaluateBooleanRule(rule, values);
-
         } catch (@Nonnull final RuntimeException e) {
             throw new InvalidRuleException(e, String.format(
                     "Error evaluating rule '%s' for test '%s': '%s'. Failing evaluation and continuing.",
