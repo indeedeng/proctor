@@ -475,6 +475,10 @@ public class EditAndPromoteJob extends AbstractJob {
     }
 
     private static boolean isInactiveBucket(final TestBucket bucket) {
+        // Proctor does not define inactive buckets,
+        // so we only assume a bucket is the inactive group
+        // if it has value value -1 and one of the 2 typical names "inactive" or "disabled".
+        // See further discussion in the ticket. https://bugs.indeed.com/browse/PROW-518
         return bucket.getValue() == -1 &&
                 ("inactive".equalsIgnoreCase(bucket.getName()) || "disabled".equalsIgnoreCase(bucket.getName()));
     }
