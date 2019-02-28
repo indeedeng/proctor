@@ -357,7 +357,7 @@ public class EditAndPromoteJob extends AbstractJob {
                 return;
             }
 
-            final String currentRevision = getCurrentVersionIfDirectlyFollowing(testName, trunkStore).getRevision();
+            final String currentRevision = getCurrentVersion(testName, trunkStore).getRevision();
             doPromoteInactiveTestToQaAndProd(testName, username, password, author,
                     requestParameterMap, job, currentRevision, qaRevision, prodRevision);
         } else {
@@ -519,7 +519,7 @@ public class EditAndPromoteJob extends AbstractJob {
      * @throws IllegalStateException no history exists
      */
     @Nonnull
-    private static Revision getCurrentVersionIfDirectlyFollowing(final String testName, final ProctorStore store) {
+    private static Revision getCurrentVersion(final String testName, final ProctorStore store) {
         final List<Revision> histories = TestDefinitionUtil.getTestHistory(store, testName, 1);
 
         if (histories.size() == 0) {
