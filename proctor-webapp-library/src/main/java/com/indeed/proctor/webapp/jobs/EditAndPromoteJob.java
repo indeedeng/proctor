@@ -357,11 +357,11 @@ public class EditAndPromoteJob extends AbstractJob {
                 return;
             }
 
-            final String currentRevision = getCurrentVersion(testName, trunkStore).getRevision();
+            final String currentRevision = getCurrentVersionIfDirectlyFollowing(testName, trunkStore).getRevision();
             doPromoteInactiveTestToQaAndProd(testName, username, password, author,
                     requestParameterMap, job, currentRevision, qaRevision, prodRevision);
         } else {
-            final String currentRevision = getCurrentVersion(testName, previousRevision, trunkStore).getRevision();
+            final String currentRevision = getCurrentVersionIfDirectlyFollowing(testName, previousRevision, trunkStore).getRevision();
             doPromoteExistingTestToQaAndProd(testName, username, password, author, testDefinitionToUpdate,
                     requestParameterMap, job, currentRevision, qaRevision, prodRevision, existingTestDefinition);
         }
@@ -481,22 +481,30 @@ public class EditAndPromoteJob extends AbstractJob {
 
     /**
      * Get current revision of the test which has been updated in the edit job.
+     * This method assumes that the test is updated exactly once after {@code previousRevision}
      * @param testName the name of the test
      * @param previousRevision the latest revision before updating this test
      * @param store the ProctorStore for the environment
      * @return Gets the current revision of {@code testName} to autopromote. {@code previousRevision} is used to check
      * for any modification since this edit process began.
+     * @throws IllegalStateException the number of history is less than 2 or {@code previousRevision} is not the same
+     * as the revision of the second latest history.
      */
     @Nonnull
-    private Revision getCurrentVersion(final String testName, final String previousRevision, final ProctorStore store) {
+    private static Revision getCurrentVersionIfDirectlyFollowing(
+            final String testName,
+            final String previousRevision,
+            final ProctorStore store
+    ) {
         final List<Revision> histories = TestDefinitionUtil.getTestHistory(store, testName, 2);
 
         if (histories.size() < 2) {
-            throw new IllegalStateException("Test hasn't been updated since " + previousRevision +
-                    ". Failed to find the version for autopromote.");
+            throw new IllegalStateException("Test history should have at least 2 versions for edit and promote. " +
+                    "Actually only has " + histories.size() + " versions");
         }
         if (!histories.get(1).getRevision().equals(previousRevision)) {
-            throw new IllegalStateException("Test has been updated more than once since " + previousRevision +
+            throw new IllegalStateException("The passed previous revision was" + previousRevision +
+                    " but the previous revision from the history is " + histories.get(1) +
                     ". Failed to find the version for autopromote.");
         }
         return histories.get(0);
@@ -504,12 +512,14 @@ public class EditAndPromoteJob extends AbstractJob {
 
     /**
      * Get current revision of the test.
+     * This method is used after saving the new test.
      * @param testName the name of the test
      * @param store the ProctorStore for the environment
      * @return the current revision of the test to autopromote.
+     * @throws IllegalStateException no history exists
      */
     @Nonnull
-    private Revision getCurrentVersion(final String testName, final ProctorStore store) {
+    private static Revision getCurrentVersionIfDirectlyFollowing(final String testName, final ProctorStore store) {
         final List<Revision> histories = TestDefinitionUtil.getTestHistory(store, testName, 1);
 
         if (histories.size() == 0) {
