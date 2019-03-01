@@ -4,12 +4,12 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.util.MinimalPrettyPrinter;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -38,6 +38,7 @@ import com.indeed.proctor.webapp.model.AppVersion;
 import com.indeed.proctor.webapp.model.RemoteSpecificationResult;
 import com.indeed.proctor.webapp.model.SessionViewModel;
 import com.indeed.proctor.webapp.model.WebappConfiguration;
+import com.indeed.proctor.webapp.util.TestSearchUtil;
 import com.indeed.proctor.webapp.util.threads.LogOnUncaughtExceptionHandler;
 import com.indeed.proctor.webapp.views.JsonView;
 import io.swagger.annotations.ApiOperation;
@@ -70,7 +71,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Controller
 @RequestMapping({"/", "/proctor"})
@@ -203,41 +203,28 @@ public class ProctorController extends AbstractController {
         }
     }
 
-    private static boolean matchFilterType(final String testName, final TestDefinition definition,
-                                           final FilterType type, final String query) {
+    private static boolean matchFilterType(
+            final String testName,
+            final TestDefinition definition,
+            final FilterType type,
+            final String query) {
         if (query.isEmpty()) {
             return true;
         }
         final String lowerQuery = query.toLowerCase();
         switch (type) {
             case TESTNAME:
-                return testName.toLowerCase().contains(lowerQuery);
+                return TestSearchUtil.matchTestName(testName, lowerQuery);
             case DESCRIPTION:
-                return Strings.nullToEmpty(definition.getDescription()).toLowerCase().contains(lowerQuery);
+                return TestSearchUtil.matchDescription(definition, lowerQuery);
             case RULE:
-                return Stream.concat(Stream.of(Strings.nullToEmpty(definition.getRule())), definition.getAllocations().stream()
-                        .map(allocation -> Strings.nullToEmpty(allocation.getRule()).toLowerCase()))
-                        .anyMatch(rule -> rule.contains(lowerQuery));
+                return TestSearchUtil.matchRule(definition, lowerQuery);
             case BUCKET:
-                return definition.getBuckets().stream()
-                        .map(testBucket -> testBucket.getName().toLowerCase())
-                        .anyMatch(name -> name.contains(lowerQuery));
+                return TestSearchUtil.matchBucket(definition, lowerQuery);
             case BUCKETDESCRIPTION:
-                return definition.getBuckets().stream()
-                        .map(testBucket -> Strings.nullToEmpty(testBucket.getDescription()).toLowerCase())
-                        .anyMatch(description -> description.contains(lowerQuery));
+                return TestSearchUtil.matchBucketDescription(definition, lowerQuery);
             case ALL:
-                return Stream.of(
-                        Stream.of(testName, definition.getDescription(), definition.getTestType().toString(),
-                                definition.getSalt()),
-                        Stream.concat(Stream.of(Strings.nullToEmpty(definition.getRule())),
-                                definition.getAllocations().stream().map(allocation -> Strings.nullToEmpty(allocation.getRule()))),
-                        definition.getBuckets().stream().map(TestBucket::getName),
-                        definition.getBuckets().stream().map(testBucket -> Strings.nullToEmpty(testBucket.getDescription()))
-                )
-                        .flatMap(s -> s)
-                        .map(String::toLowerCase)
-                        .anyMatch(text -> text.contains(lowerQuery));
+                return TestSearchUtil.matchAll(testName, definition, lowerQuery);
             default:
                 throw new IllegalArgumentException("unknown filter type");
         }
@@ -248,22 +235,21 @@ public class ProctorController extends AbstractController {
             case ALL:
                 return true;
             case ACTIVE:
-                return allocations.stream().anyMatch(allocation -> allocation.getRanges().stream().allMatch(range -> range.getLength() < 1));
+                return TestSearchUtil.matchActiveAllocation(allocations);
             case INACTIVE:
-                return allocations.stream().allMatch(allocation -> allocation.getRanges().stream().anyMatch(range -> range.getLength() == 1));
+                return !TestSearchUtil.matchActiveAllocation(allocations);
             default:
                 throw new IllegalArgumentException("unknown filter type");
         }
     }
 
-    private static Comparator<Entry<String, TestDefinition>> getComparator(final Sort sort, final Set<String> favoriteTestNames) {
+    @VisibleForTesting
+    static Comparator<Entry<String, TestDefinition>> getComparator(final Sort sort, final Set<String> favoriteTestNames) {
         switch(sort) {
             case TESTNAME:
                 return (a, b) -> 0; // don't touch
             case FAVORITESFIRST:
-                return Comparator.<Entry<String, TestDefinition>, Boolean>comparing(entry->favoriteTestNames.contains(entry.getKey()))
-                        .reversed()
-                        .thenComparing(Entry::getKey);
+                return Comparator.comparing(Entry::getKey, TestSearchUtil.givenSetFirstComparator(favoriteTestNames));
             case UPDATEDDATE:
                 throw new NotImplementedException("Updated date not implemented");
             default:
