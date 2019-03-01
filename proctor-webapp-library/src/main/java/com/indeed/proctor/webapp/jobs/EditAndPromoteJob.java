@@ -1,7 +1,9 @@
 package com.indeed.proctor.webapp.jobs;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Joiner;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
@@ -51,8 +53,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static com.indeed.proctor.webapp.util.AllocationIdUtil.ALLOCATION_ID_COMPARATOR;
 
@@ -195,7 +199,17 @@ public class EditAndPromoteJob extends AbstractJob {
      * Creates/updates test with given {@code testName} in trunk store to new state from {@code testDefinitionToUpdate}.
      * {@code isCreate} is set if this is a new test definition. {@code isAutopromote} Is set if the users requested the
      * test be autopromoted.
-     *
+     * @param testName the test name to promote
+     * @param username the username of the committer
+     * @param password the password of the committer
+     * @param author the author name who requests this promotion
+     * @param isCreate the flag whether this job is for a test creation
+     * @param comment the comment to be added in the commit comment
+     * @param testDefinitionToUpdate the TestDefinition to update
+     * @param previousRevision
+     * @param isAutopromote the flag whether this job promotes the test to QA and Production
+     * @param requestParameterMap
+     * @param job the edit job which runs this edit process
      * @return true, else throws an exception.
      * @throws Exception
      */
@@ -336,10 +350,62 @@ public class EditAndPromoteJob extends AbstractJob {
             job.log("Not autopromoting because it wasn't requested by user.");
             return;
         }
+
         if (existingTestDefinition == null) {
-            job.log("Not autopromoting because there is no existing test definition.");
-            return;
+            if (!isAllInactiveTest(testDefinitionToUpdate)) {
+                job.log("Not autopromoting because there is no existing test definition and test is not 100% inactive.");
+                return;
+            }
+
+            final String currentRevision = getCurrentVersion(testName, trunkStore).getRevision();
+            doPromoteInactiveTestToQaAndProd(testName, username, password, author,
+                    requestParameterMap, job, currentRevision, qaRevision, prodRevision);
+        } else {
+            final String currentRevision = getCurrentVersionIfDirectlyFollowing(testName, previousRevision, trunkStore).getRevision();
+            doPromoteExistingTestToQaAndProd(testName, username, password, author, testDefinitionToUpdate,
+                    requestParameterMap, job, currentRevision, qaRevision, prodRevision, existingTestDefinition);
         }
+    }
+
+    @VisibleForTesting
+    void doPromoteInactiveTestToQaAndProd(
+            final String testName,
+            final String username,
+            final String password,
+            final String author,
+            final Map<String, String[]> requestParameterMap,
+            final BackgroundJob job,
+            final String currentRevision,
+            final String qaRevision,
+            final String prodRevision
+    ) throws Exception {
+        final boolean isQaPromoted = doPromoteInternal(testName, username, password, author, Environment.WORKING,
+                currentRevision, Environment.QA, qaRevision, requestParameterMap, job, true);
+
+        if (isQaPromoted) {
+            doPromoteInternal(testName, username, password, author, Environment.WORKING,
+                    currentRevision, Environment.PRODUCTION, prodRevision, requestParameterMap, job, true);
+        } else {
+            job.log("previous revision changes prevented auto-promote to PRODUCTION");
+        }
+    }
+
+    @VisibleForTesting
+    void doPromoteExistingTestToQaAndProd(
+            final String testName,
+            final String username,
+            final String password,
+            final String author,
+            final TestDefinition testDefinitionToUpdate,
+            final Map<String, String[]> requestParameterMap,
+            final BackgroundJob job,
+            final String currentRevision,
+            final String qaRevision,
+            final String prodRevision,
+            final TestDefinition existingTestDefinition
+    ) throws Exception {
+        Preconditions.checkArgument(existingTestDefinition != null);
+
         if (!isAllocationOnlyChange(existingTestDefinition, testDefinitionToUpdate)) {
             job.log("Not autopromoting because this isn't an allocation-only change.");
             return;
@@ -348,51 +414,120 @@ public class EditAndPromoteJob extends AbstractJob {
         job.log("allocation only change, checking against other branches for auto-promote capability for test " +
                 testName + "\nat QA revision " + qaRevision + " and PRODUCTION revision " + prodRevision);
 
-        final Revision currentVersion = getCurrentVersion(testName, previousRevision, trunkStore);
+        final TestDefinition qaTestDefinition = TestDefinitionUtil.getTestDefinition(
+                determineStoreFromEnvironment(Environment.QA),
+                promoter,
+                Environment.QA,
+                testName,
+                qaRevision
+        );
 
         final boolean isQaPromoted;
-        final boolean isQaPromotable = qaRevision != EnvironmentVersion.UNKNOWN_REVISION
-                && isAllocationOnlyChange(
-                TestDefinitionUtil.getTestDefinition(determineStoreFromEnvironment(Environment.QA), promoter,
-                        Environment.QA, testName, qaRevision), testDefinitionToUpdate);
+        final boolean isQaPromotable = !qaRevision.equals(EnvironmentVersion.UNKNOWN_REVISION)
+                && isAllocationOnlyChange(qaTestDefinition, testDefinitionToUpdate);
+
         if (isQaPromotable) {
             job.log("auto-promoting changes to QA");
             isQaPromoted = doPromoteInternal(testName, username, password, author, Environment.WORKING,
-                    currentVersion.getRevision(), Environment.QA, qaRevision, requestParameterMap, job, true);
+                    currentRevision, Environment.QA, qaRevision, requestParameterMap, job, true);
         } else {
             isQaPromoted = false;
             job.log("previous revision changes prevented auto-promote to QA");
         }
-        if (isQaPromotable && isQaPromoted
-                && prodRevision != EnvironmentVersion.UNKNOWN_REVISION
-                && isAllocationOnlyChange(
-                TestDefinitionUtil.getTestDefinition(determineStoreFromEnvironment(Environment.PRODUCTION), promoter,
-                        Environment.PRODUCTION, testName, prodRevision), testDefinitionToUpdate)) {
-            job.log("auto-promoting changes to PRODUCTION");
-            doPromoteInternal(testName, username, password, author, Environment.WORKING, currentVersion.getRevision(),
-                    Environment.PRODUCTION, prodRevision, requestParameterMap, job, true);
 
+        final TestDefinition prodTestDefinition = TestDefinitionUtil.getTestDefinition(
+                determineStoreFromEnvironment(Environment.PRODUCTION),
+                promoter,
+                Environment.PRODUCTION,
+                testName,
+                prodRevision
+        );
+
+        if (isQaPromotable && isQaPromoted
+                && !prodRevision.equals(EnvironmentVersion.UNKNOWN_REVISION)
+                && isAllocationOnlyChange(prodTestDefinition, testDefinitionToUpdate)) {
+            job.log("auto-promoting changes to PRODUCTION");
+
+            doPromoteInternal(testName, username, password, author, Environment.WORKING, currentRevision,
+                    Environment.PRODUCTION, prodRevision, requestParameterMap, job, true);
         } else {
             job.log("previous revision changes prevented auto-promote to PRODUCTION");
         }
     }
 
+    @VisibleForTesting
+    static boolean isAllInactiveTest(final TestDefinition testDefinition) {
+        final List<Allocation> allocations = testDefinition.getAllocations();
+        final Map<Integer, TestBucket> valueToBucket = testDefinition.getBuckets()
+                .stream()
+                .collect(Collectors.toMap(TestBucket::getValue, Function.identity()));
+
+        for (final Allocation allocation : allocations) {
+            for (final Range range : allocation.getRanges()) {
+                final TestBucket bucket = valueToBucket.get(range.getBucketValue());
+                if (!isInactiveBucket(bucket) && range.getLength() > 0.0) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    private static boolean isInactiveBucket(final TestBucket bucket) {
+        // Proctor does not define inactive buckets,
+        // so we only assume a bucket is the inactive group
+        // if it has value value -1 and one of the 2 typical names "inactive" or "disabled".
+        // See further discussion in the ticket. https://bugs.indeed.com/browse/PROW-518
+        return bucket.getValue() == -1 &&
+                ("inactive".equalsIgnoreCase(bucket.getName()) || "disabled".equalsIgnoreCase(bucket.getName()));
+    }
+
     /**
+     * Get current revision of the test which has been updated in the edit job.
+     * This method assumes that the test is updated exactly once after {@code previousRevision}
+     * @param testName the name of the test
+     * @param previousRevision the latest revision before updating this test
+     * @param store the ProctorStore for the environment
      * @return Gets the current revision of {@code testName} to autopromote. {@code previousRevision} is used to check
      * for any modification since this edit process began.
+     * @throws IllegalStateException the number of history is less than 2 or {@code previousRevision} is not the same
+     * as the revision of the second latest history.
      */
     @Nonnull
-    private Revision getCurrentVersion(final String testName, final String previousRevision, final ProctorStore store) {
+    private static Revision getCurrentVersionIfDirectlyFollowing(
+            final String testName,
+            final String previousRevision,
+            final ProctorStore store
+    ) {
         final List<Revision> histories = TestDefinitionUtil.getTestHistory(store, testName, 2);
-        if (histories.size() <= 1) {
-            throw new IllegalStateException(
-                    "Test hasn't been updated since " + previousRevision +
-                            ". Failed to find the version for autopromote.");
+
+        if (histories.size() < 2) {
+            throw new IllegalStateException("Test history should have at least 2 versions for edit and promote. " +
+                    "Actually only has " + histories.size() + " versions");
         }
         if (!histories.get(1).getRevision().equals(previousRevision)) {
-            throw new IllegalStateException(
-                    "Test has been updated more than once since " + previousRevision +
-                            ". Failed to find the version for autopromote.");
+            throw new IllegalStateException("The passed previous revision was" + previousRevision +
+                    " but the previous revision from the history is " + histories.get(1) +
+                    ". Failed to find the version for autopromote.");
+        }
+        return histories.get(0);
+    }
+
+    /**
+     * Get current revision of the test.
+     * This method is used after saving the new test.
+     * @param testName the name of the test
+     * @param store the ProctorStore for the environment
+     * @return the current revision of the test to autopromote.
+     * @throws IllegalStateException no history exists
+     */
+    @Nonnull
+    private static Revision getCurrentVersion(final String testName, final ProctorStore store) {
+        final List<Revision> histories = TestDefinitionUtil.getTestHistory(store, testName, 1);
+
+        if (histories.size() == 0) {
+            throw new IllegalStateException("Test hasn't been created. Failed to find the version for autopromote.");
         }
         return histories.get(0);
     }
@@ -741,17 +876,18 @@ public class EditAndPromoteJob extends AbstractJob {
         return backgroundJob;
     }
 
-    private Boolean doPromoteInternal(final String testName,
-                                      final String username,
-                                      final String password,
-                                      final String author,
-                                      final Environment source,
-                                      final String srcRevision,
-                                      final Environment destination,
-                                      final String destRevision,
-                                      final Map<String, String[]> requestParameterMap,
-                                      final BackgroundJob job,
-                                      final boolean isAutopromote
+    @VisibleForTesting
+    Boolean doPromoteInternal(final String testName,
+                              final String username,
+                              final String password,
+                              final String author,
+                              final Environment source,
+                              final String srcRevision,
+                              final Environment destination,
+                              final String destRevision,
+                              final Map<String, String[]> requestParameterMap,
+                              final BackgroundJob job,
+                              final boolean isAutopromote
     ) throws Exception {
         final Map<String, String> metadata = Collections.emptyMap();
         validateUsernamePassword(username, password);
