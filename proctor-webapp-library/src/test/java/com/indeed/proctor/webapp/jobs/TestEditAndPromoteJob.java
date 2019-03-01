@@ -651,7 +651,7 @@ public class TestEditAndPromoteJob {
         final List<TestBucket> buckList = new ArrayList<TestBucket>();
 
         for (int i = 0; i < buckets.length; i++) {
-            String bucket = buckets[i];
+            final String bucket = buckets[i];
             final int colonInd = bucket.indexOf(':');
             final int bucketValue = Integer.parseInt(bucket.substring(colonInd + 1));
             final TestBucket tempBucket = new TestBucket(
