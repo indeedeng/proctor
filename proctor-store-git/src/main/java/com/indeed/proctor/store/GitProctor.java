@@ -43,6 +43,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
+
 public class GitProctor extends FileBasedProctorStore {
     private static final Logger LOGGER = Logger.getLogger(GitProctor.class);
 
@@ -270,18 +272,18 @@ public class GitProctor extends FileBasedProctorStore {
          * @return a map of testnames and git commits making changes to given tests
          */
         public Map<String, List<Revision>> parseFromHead(final ObjectId head) throws IOException {
-            final Map<String, List<Revision>> histories = new HashMap<>(7000);
+            final Map<String, List<Revision>> histories = newHashMapWithExpectedSize(7000);
             final Set<ObjectId> visited = Sets.newHashSet();
             final Queue<RevCommit> queue = new LinkedList<RevCommit>();
             queue.add(revWalk.parseCommit(head));
+            final long start = System.currentTimeMillis();
             while (!queue.isEmpty()) {
                 parseCommit(queue.poll(), histories, visited, queue);
             }
-
-            final long start = System.currentTimeMillis();
+            final long middle = System.currentTimeMillis();
             sortByDate(histories);
             final long end = System.currentTimeMillis();
-            LOGGER.info(String.format("Took %d ms to sort revisions in chronological order", end - start));
+            LOGGER.info(String.format("Took %d ms to parse, %d ms to sort revisions in chronological order", middle - start, end - middle));
             return histories;
         }
 
