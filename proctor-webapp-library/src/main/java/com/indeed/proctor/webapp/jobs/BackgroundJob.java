@@ -1,15 +1,19 @@
 package com.indeed.proctor.webapp.jobs;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import com.indeed.proctor.webapp.extensions.AfterBackgroundJobExecute;
 import com.indeed.proctor.webapp.extensions.BeforeBackgroundJobExecute;
 import org.apache.log4j.Logger;
 
 import javax.annotation.Nonnull;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /**
  */
@@ -23,7 +27,7 @@ public abstract class BackgroundJob<T> implements Callable<T> {
     private Long id;
     private UUID uuid;
 
-    private final long createdTime = System.currentTimeMillis();
+    private final JobTiming jobTiming = new JobTiming();
 
     // URL to direct users to upon completion
     private final List<ResultUrl> urls = Lists.newArrayList();
@@ -35,6 +39,17 @@ public abstract class BackgroundJob<T> implements Callable<T> {
 
     public void log(final String message) {
         logBuilder.append(message).append('\n');
+    }
+
+    public void logComplete() {
+        logWithTiming("COMPLETE", "end");
+    }
+
+    public void logWithTiming(final String message, final String timingKey) {
+        final String messageWithTime = String.format("%5sms %s", jobTiming.getEllapsedMillis(), message );
+        log(message);
+        LOGGER.info(messageWithTime + " for job " + getTitle());
+        jobTiming.notifyStart(timingKey);
     }
 
     public String getLog() {
@@ -115,7 +130,11 @@ public abstract class BackgroundJob<T> implements Callable<T> {
     }
 
     public long getCreatedTime() {
-        return createdTime;
+        return jobTiming.getCreatedTime();
+    }
+
+    public Map<String, Long> getTimings() {
+        return jobTiming.getTimings();
     }
 
     public String toString() {
@@ -135,7 +154,7 @@ public abstract class BackgroundJob<T> implements Callable<T> {
     }
 
     public void logFailedJob(final Throwable t) {
-        log("Failed:");
+        logWithTiming("Failed:", "Failed");
         Throwable cause = t;
         final StringBuilder level = new StringBuilder(10);
         while (cause != null) {
@@ -322,6 +341,39 @@ public abstract class BackgroundJob<T> implements Callable<T> {
 
         public String getEndMessage() {
             return endMessage;
+        }
+    }
+
+    /**
+     * Helps to keep track of how long each part of the background job took.
+     */
+    private static class JobTiming {
+
+        private final long createdTime = System.currentTimeMillis();
+        private final Stopwatch stopwatch = Stopwatch.createStarted();
+        private final Map<String, Long> stageTimings = new LinkedHashMap<>();
+        private String ongoingTask = "init";
+        private long lastTick = 0;
+
+        public long getCreatedTime() {
+            return createdTime;
+        }
+
+        public long getEllapsedMillis() {
+            return stopwatch.elapsed(TimeUnit.MILLISECONDS);
+        }
+
+        public void notifyStart(final String timingKey) {
+            stageTimings.put(ongoingTask, getEllapsedMillis() - lastTick);
+            lastTick = getEllapsedMillis();
+            ongoingTask = timingKey;
+        }
+
+        /**
+         * returns recorded timings without last timingKey (to simplify implementation)
+         */
+        public Map<String, Long> getTimings() {
+            return stageTimings;
         }
     }
 }

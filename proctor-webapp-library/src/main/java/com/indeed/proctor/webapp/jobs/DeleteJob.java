@@ -108,7 +108,7 @@ public class DeleteJob extends AbstractJob {
         validateUsernamePassword(username, password);
 
         final Revision prevVersion;
-        job.log("(scm) getting history for '" + testName + "'");
+        job.logWithTiming("(scm) getting history for '" + testName + "'", "getHistory");
         final List<Revision> history = TestDefinitionUtil.getTestHistory(store, testName, 1);
         if (!history.isEmpty()) {
             prevVersion = history.get(0);
@@ -139,12 +139,13 @@ public class DeleteJob extends AbstractJob {
         }
 
         //PreDefinitionDeleteChanges
-        job.log("Executing pre delete extension tasks.");
+        job.logWithTiming("Executing pre delete extension tasks.", "preDeleteExtension");
         final DefinitionChangeLogger logger = new BackgroundJobLogger(job);
         for (final PreDefinitionDeleteChange preDefinitionDeleteChange : preDefinitionDeleteChanges) {
             preDefinitionDeleteChange.preDelete(definition, requestParameterMap, logger);
         }
 
+        job.logWithTiming("Deleting", "Delete");
         job.log("(svn) delete " + testName);
         store.deleteTestDefinition(username, password, author, srcRevision, testName, definition, fullComment);
 
@@ -164,10 +165,11 @@ public class DeleteJob extends AbstractJob {
         }
 
         //PostDefinitionDeleteChanges
-        job.log("Executing post delete extension tasks.");
+        job.logWithTiming("Executing post delete extension tasks.", "PostDeleteExtension");
         for (final PostDefinitionDeleteChange postDefinitionDeleteChange : postDefinitionDeleteChanges) {
             postDefinitionDeleteChange.postDelete(requestParameterMap, logger);
         }
+        job.logComplete();
         return true;
     }
 
