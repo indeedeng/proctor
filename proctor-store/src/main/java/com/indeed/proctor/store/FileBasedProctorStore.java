@@ -37,8 +37,7 @@ public abstract class FileBasedProctorStore implements ProctorStore {
     }
 
     protected FileBasedProctorStore(final FileBasedPersisterCore core) {
-        this.core = core;
-        this.testDefinitionsDirectory = DEFAULT_TEST_DEFINITIONS_DIRECTORY;
+        this(core, DEFAULT_TEST_DEFINITIONS_DIRECTORY);
     }
 
     /**
@@ -89,15 +88,15 @@ public abstract class FileBasedProctorStore implements ProctorStore {
     public final TestMatrixVersion getTestMatrix(final String fetchRevision) throws StoreException {
         long start = System.currentTimeMillis();
         final TestVersionResult result = core.determineVersions(fetchRevision);
-        if(LOGGER.isDebugEnabled()) {
+        if (LOGGER.isDebugEnabled()) {
             final long elapsed = System.currentTimeMillis() - start;
             LOGGER.debug(String.format("Took %d ms to identify %d potential tests", elapsed, result.getTests().size()));
         }
-        if(result == null) {
+        if (result == null) {
             LOGGER.error("Unable to determine tests for " + core.toString());
             return null;
         }
-        TestMatrixVersion tmv = new TestMatrixVersion();
+        final TestMatrixVersion tmv = new TestMatrixVersion();
 
         final Map<String, TestDefinition> testDefinitions = Maps.newLinkedHashMap();
         start = System.currentTimeMillis();
@@ -106,7 +105,7 @@ public abstract class FileBasedProctorStore implements ProctorStore {
             final TestDefinition testDefinition = getTestDefinition(testDefFile.getTestName(), testDefFile.getRevision());
             if(LOGGER.isTraceEnabled()) {
                 final long elapsed = System.currentTimeMillis() - startForTest;
-                LOGGER.debug(String.format("Took %d ms to load %s (r%s) %s", elapsed, testDefFile.getTestName(), testDefFile.getRevision(), testDefinition == null ? "unsuccessfully" : "successfully"));
+                LOGGER.trace(String.format("Took %d ms to load %s (r%s) %s", elapsed, testDefFile.getTestName(), testDefFile.getRevision(), testDefinition == null ? "unsuccessfully" : "successfully"));
             }
             if(testDefinition == null) {
                 LOGGER.info("Returning null TestMatrix because " + testDefFile.getTestName() + " returned null test-definition.");
@@ -114,7 +113,7 @@ public abstract class FileBasedProctorStore implements ProctorStore {
             }
             testDefinitions.put(testDefFile.getTestName(), testDefinition);
         }
-        if(LOGGER.isDebugEnabled()) {
+        if (LOGGER.isDebugEnabled()) {
             final long elapsed = System.currentTimeMillis() - start;
             LOGGER.debug(String.format("Took %d ms to load all %d tests", elapsed, testDefinitions.size()));
         }
@@ -190,13 +189,14 @@ public abstract class FileBasedProctorStore implements ProctorStore {
             public boolean doInWorkingDirectory(final RcsClient rcsClient, final File workingDir) throws Exception {
                 final File testDefinitionDirectory = getTestDefinitionDirectoryForTest(testName, workingDir);
                 final File testDefinitionFile = new File(testDefinitionDirectory + File.separator + TEST_DEFINITION_FILENAME);
-                final File metaDataFile = new File(testDefinitionDirectory + File.separator + TEST_METADATA_FILENAME);
+
                 if (!testDefinitionFile.exists()) {
                     throw new StoreException.TestUpdateException("Attempting to update non-existent test " + testName);
                 }
-
                 //  this is easier than trying to get svnKit to do a useful diff
                 boolean thingsChanged = updateThing(rcsClient, testDefinitionFile, testDefinition);
+
+                final File metaDataFile = new File(testDefinitionDirectory + File.separator + TEST_METADATA_FILENAME);
                 thingsChanged = updateThing(rcsClient, metaDataFile, metadata) || thingsChanged;
                 if (!thingsChanged) {
                     throw new StoreException.TestUpdateException("Attempting to save test definition without changes for test " + testName);

@@ -54,7 +54,7 @@ public class BackgroundJobManager {
                 .setNameFormat(BackgroundJobManager.class.getSimpleName() + "-Thread-%d")
                 .setUncaughtExceptionHandler(new LogOnUncaughtExceptionHandler())
                 .build();
-        return new ThreadPoolExecutor(3, 3, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(), threadFactory);
+        return new ThreadPoolExecutor(3, 3, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), threadFactory);
     }
 
     @Autowired(required = false)
@@ -62,12 +62,12 @@ public class BackgroundJobManager {
         this.jobInfoStore = jobInfoStore;
     }
 
-    public <T> void submit(BackgroundJob<T> job) {
+    public <T> void submit(final BackgroundJob<T> job) {
         final long id = lastId.incrementAndGet();
         final UUID uuid = UUID.randomUUID();
         job.setId(id);
         job.setUUID(uuid);
-        Future<T> future = service.submit(job);
+        final Future<T> future = service.submit(job);
         job.setFuture(future);
         backgroundJobs.add(job);
         history.put(uuid, job);
@@ -78,10 +78,10 @@ public class BackgroundJobManager {
     }
 
     public List<BackgroundJob> getRecentJobs() {
-        List<BackgroundJob> recent = Lists.newArrayListWithCapacity(backgroundJobs.size());
-        ListIterator<BackgroundJob> jobs = backgroundJobs.listIterator();
+        final List<BackgroundJob> recent = Lists.newArrayListWithCapacity(backgroundJobs.size());
+        final ListIterator<BackgroundJob> jobs = backgroundJobs.listIterator();
         while (jobs.hasNext()) {
-            BackgroundJob job = jobs.next();
+            final BackgroundJob job = jobs.next();
             recent.add(job); // inactive jobs get to be returned once...
             if (job.getFuture().isDone() || job.getFuture().isCancelled()) {
                 jobs.remove();

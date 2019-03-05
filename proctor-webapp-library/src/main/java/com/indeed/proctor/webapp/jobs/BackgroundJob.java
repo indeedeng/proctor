@@ -34,7 +34,7 @@ public abstract class BackgroundJob<T> implements Callable<T> {
     private boolean executeFinished = false;
 
     public void log(final String message) {
-        logBuilder.append(message).append("\n");
+        logBuilder.append(message).append('\n');
     }
 
     public String getLog() {
@@ -263,7 +263,7 @@ public abstract class BackgroundJob<T> implements Callable<T> {
         }
     }
 
-    public class JobInfo {
+    public static class JobInfo {
         private final UUID jobId;
         private final JobStatus status;
         private final String log;

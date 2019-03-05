@@ -5,7 +5,6 @@ import com.google.common.base.Throwables;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.io.Files;
 import org.apache.log4j.Logger;
@@ -30,15 +29,15 @@ import org.eclipse.jgit.util.io.DisabledOutputStream;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -182,7 +181,7 @@ public class GitProctor extends FileBasedProctorStore {
                     .setMaxCount(limit);
             return getHistoryFromLogCommand(logCommand);
 
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new StoreException("Could not get history for " + test + " starting at " + getGitCore().getRefName(), e);
         }
     }
@@ -210,10 +209,10 @@ public class GitProctor extends FileBasedProctorStore {
         final Iterable<RevCommit> commits;
         try {
             commits = command.call();
-        } catch (GitAPIException e) {
+        } catch (final GitAPIException e) {
             throw new StoreException("Could not get history", e);
         }
-        for (RevCommit commit : commits) {
+        for (final RevCommit commit : commits) {
             versions.add(new Revision(
                     commit.getName(),
                     commit.getAuthorIdent().toExternalString(),
@@ -240,35 +239,38 @@ public class GitProctor extends FileBasedProctorStore {
 
     public static class HistoryParser {
         final RevWalk revWalk;
-        final DiffFormatter df;
+        final DiffFormatter diffFormatter;
         final Pattern testNamePattern;
         @Nullable
         final Set<String> activeTests;
 
-        final static private Cache<String, List<DiffEntry>> diffEntriesCache = CacheBuilder
+        private static final Cache<String, List<DiffEntry>> DIFF_ENTRIES_CACHE = CacheBuilder
                 .newBuilder()
                 .expireAfterAccess(1, TimeUnit.DAYS)
                 .maximumSize(1_000_000)
                 .build();
 
         public HistoryParser(final RevWalk revWalk,
-                             final DiffFormatter df,
+                             final DiffFormatter diffFormatter,
                              final String definitionDirectory,
                              @Nullable final Set<String> activeTests) {
             this.revWalk = revWalk;
-            this.df = df;
+            this.diffFormatter = diffFormatter;
             testNamePattern = compileTestNamePattern(definitionDirectory);
             this.activeTests = activeTests;
         }
 
         public HistoryParser(final RevWalk revWalk,
-                             final DiffFormatter df,
+                             final DiffFormatter diffFormatter,
                              final String definitionDirectory) {
-            this(revWalk, df, definitionDirectory, null);
+            this(revWalk, diffFormatter, definitionDirectory, null);
         }
 
+        /**
+         * @return a map of testnames and git commits making changes to given tests
+         */
         public Map<String, List<Revision>> parseFromHead(final ObjectId head) throws IOException {
-            final Map<String, List<Revision>> histories = Maps.newHashMap();
+            final Map<String, List<Revision>> histories = new HashMap<>(7000);
             final Set<ObjectId> visited = Sets.newHashSet();
             final Queue<RevCommit> queue = new LinkedList<RevCommit>();
             queue.add(revWalk.parseCommit(head));
@@ -283,18 +285,21 @@ public class GitProctor extends FileBasedProctorStore {
             return histories;
         }
 
+        /**
+         * Add a commit to all histories of all tests modified by this commit
+         */
         private void parseCommit(final RevCommit commit,
                                  final Map<String, List<Revision>> histories,
                                  final Set<ObjectId> visited,
                                  final Queue<RevCommit> queue) throws IOException {
-            if (visited.contains(commit.getId())) {
+            if (!visited.add(commit.getId())) {
                 return;
             }
-            visited.add(commit.getId());
 
             final RevCommit[] parents = commit.getParents();
             if (parents.length == 1) {
                 final RevCommit parent = revWalk.parseCommit(parents[0].getId());
+                // get diff of this commit to its parent, as list of paths
                 final List<DiffEntry> diffs = getDiffEntries(commit, parent);
                 for (final DiffEntry diff : diffs) {
                     final String changePath = diff.getChangeType().equals(ChangeType.DELETE) ? diff.getOldPath() : diff.getNewPath();
@@ -303,11 +308,7 @@ public class GitProctor extends FileBasedProctorStore {
                     if (testNameMatcher.matches()) {
                         final String testName = testNameMatcher.group(1);
                         if ((activeTests == null) || activeTests.contains(testName)) {
-                            List<Revision> history = histories.get(testName);
-                            if (history == null) {
-                                history = Lists.newArrayList();
-                                histories.put(testName, history);
-                            }
+                            final List<Revision> history = histories.computeIfAbsent(testName, x -> new ArrayList<>());
 
                             history.add(new Revision(
                                     commit.getName(),
@@ -321,7 +322,7 @@ public class GitProctor extends FileBasedProctorStore {
 
                 queue.add(parent);
             } else if (parents.length == 2) {
-                /** this is a merge commit, should be skipped **/
+                /* this is a merge commit, should be skipped **/
                 for (final RevCommit parent : parents) {
                     queue.add(revWalk.parseCommit(parent.getId()));
                 }
@@ -330,12 +331,7 @@ public class GitProctor extends FileBasedProctorStore {
 
         private List<DiffEntry> getDiffEntries(final RevCommit commit, final RevCommit parent) throws IOException {
             try {
-                return diffEntriesCache.get(commit.getName(), new Callable<List<DiffEntry>>() {
-                    @Override
-                    public List<DiffEntry> call() throws Exception {
-                        return df.scan(parent.getTree(), commit.getTree());
-                    }
-                });
+                return DIFF_ENTRIES_CACHE.get(commit.getName(), () -> diffFormatter.scan(parent.getTree(), commit.getTree()));
             } catch (final ExecutionException e) {
                 Throwables.propagateIfInstanceOf(e.getCause(), IOException.class);
                 throw Throwables.propagate(e.getCause());
@@ -344,17 +340,15 @@ public class GitProctor extends FileBasedProctorStore {
 
         @VisibleForTesting
         static void sortByDate(final Map<String, List<Revision>> histories) {
-            final Comparator<Revision> comparator = new Comparator<Revision>() {
-                @Override
-                public int compare(final Revision o1, final Revision o2) {
-                    return o2.getDate().compareTo(o1.getDate());
-                }
-            };
+            final Comparator<Revision> comparator = (o1, o2) -> o2.getDate().compareTo(o1.getDate());
             for (final List<Revision> revisions : histories.values()) {
-                Collections.sort(revisions, comparator);
+                revisions.sort(comparator);
             }
         }
 
+        /**
+         * @return a pattern that if it matches contains the testname in the first group of the matcher
+         */
         @VisibleForTesting
         public static Pattern compileTestNamePattern(final String definitionDirectory) {
             return Pattern.compile(definitionDirectory +

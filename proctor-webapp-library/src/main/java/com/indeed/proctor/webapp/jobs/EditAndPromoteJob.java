@@ -136,7 +136,7 @@ public class EditAndPromoteJob extends AbstractJob {
                                 final boolean isAutopromote,
                                 final Map<String, String[]> requestParameterMap
     ) {
-        BackgroundJob<Object> backgroundJob = jobFactory.createBackgroundJob(
+        final BackgroundJob<Object> backgroundJob = jobFactory.createBackgroundJob(
                 createJobTitle(testName, username, author, isCreate, isAutopromote),
                 author,
                 createJobType(isCreate, isAutopromote),
@@ -151,7 +151,7 @@ public class EditAndPromoteJob extends AbstractJob {
                     } catch (final GitNoAuthorizationException | GitNoDevelperAccessLevelException | IllegalArgumentException | IncompatibleTestMatrixException exp) {
                         job.logFailedJob(exp);
                         LOGGER.info("Edit Failed: " + job.getTitle(), exp);
-                    } catch (Exception exp) {
+                    } catch (final Exception exp) {
                         job.logFailedJob(exp);
                         LOGGER.error("Edit Failed: " + job.getTitle(), exp);
                     }
@@ -174,7 +174,7 @@ public class EditAndPromoteJob extends AbstractJob {
                                 final Map<String, String[]> requestParameterMap
     ) {
 
-        BackgroundJob<Object> backgroundJob = jobFactory.createBackgroundJob(
+        final BackgroundJob<Object> backgroundJob = jobFactory.createBackgroundJob(
                 createJobTitle(testName, username, author, isCreate, isAutopromote),
                 author,
                 createJobType(isCreate, isAutopromote),
@@ -1047,6 +1047,10 @@ public class EditAndPromoteJob extends AbstractJob {
     };
 
     private final Map<Environment, Map<Environment, PromoteAction>> PROMOTE_ACTIONS = ImmutableMap.<Environment, Map<Environment, PromoteAction>>builder()
-            .put(Environment.WORKING, ImmutableMap.of(Environment.QA, TRUNK_TO_QA, Environment.PRODUCTION, TRUNK_TO_PRODUCTION))
-            .put(Environment.QA, ImmutableMap.of(Environment.PRODUCTION, QA_TO_PRODUCTION)).build();
+            .put(Environment.WORKING, ImmutableMap.of(
+                    Environment.QA, TRUNK_TO_QA,
+                    Environment.PRODUCTION, TRUNK_TO_PRODUCTION))
+            .put(Environment.QA, ImmutableMap.of(
+                    Environment.PRODUCTION, QA_TO_PRODUCTION))
+            .build();
 }

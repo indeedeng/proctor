@@ -79,15 +79,12 @@ public class MatrixChecker {
         final Map<AppVersion, Future<ProctorLoadResult>> futures = Maps.newLinkedHashMap();
 
         final Map<AppVersion, ProctorSpecification> toVerify = specificationSource.loadAllSuccessfulSpecifications(checkAgainst);
-        for (Map.Entry<AppVersion, ProctorSpecification> entry : toVerify.entrySet()) {
+        for (final Map.Entry<AppVersion, ProctorSpecification> entry : toVerify.entrySet()) {
             final AppVersion appVersion = entry.getKey();
             final ProctorSpecification specification = entry.getValue();
-            futures.put(appVersion, verifierExecutor.submit(new Callable<ProctorLoadResult>() {
-                @Override
-                public ProctorLoadResult call() throws Exception {
-                    LOGGER.info("Verifying artifact against : cached " + appVersion + " for " + testName);
-                    return verify(specification, artifact, testName, appVersion.toString());
-                }
+            futures.put(appVersion, verifierExecutor.submit(() -> {
+                LOGGER.info("Verifying artifact against : cached " + appVersion + " for " + testName);
+                return verify(specification, artifact, testName, appVersion.toString());
             }));
 
         }

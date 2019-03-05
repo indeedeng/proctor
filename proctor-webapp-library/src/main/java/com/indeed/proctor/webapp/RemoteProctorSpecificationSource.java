@@ -105,7 +105,7 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
     }
 
     @Override
-    public Map<AppVersion, RemoteSpecificationResult> loadAllSpecifications(Environment environment) {
+    public Map<AppVersion, RemoteSpecificationResult> loadAllSpecifications(final Environment environment) {
         final ImmutableMap<AppVersion, RemoteSpecificationResult> cache = cache_.get(environment);
         if (cache == null) {
             return Collections.emptyMap();
@@ -115,7 +115,7 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
     }
 
     @Override
-    public Map<AppVersion, ProctorSpecification> loadAllSuccessfulSpecifications(Environment environment) {
+    public Map<AppVersion, ProctorSpecification> loadAllSuccessfulSpecifications(final Environment environment) {
         final ImmutableMap<AppVersion, RemoteSpecificationResult> cache = cache_.get(environment);
         if (cache == null) {
             return Collections.emptyMap();
@@ -200,7 +200,7 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
         return devSuccess && qaSuccess && productionSuccess;
     }
 
-    private boolean refreshInternalCache(Environment environment) {
+    private boolean refreshInternalCache(final Environment environment) {
         LOGGER.info("Refreshing internal list of ProctorSpecifications");
 
         final List<ProctorClientApplication> clients = clientSource.loadClients(environment);
