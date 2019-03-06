@@ -21,6 +21,7 @@ import javax.el.ValueExpression;
 import javax.el.VariableMapper;
 import javax.servlet.jsp.el.ScopedAttributeELResolver;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * A nice tidy packaging of javax.el stuff.
@@ -138,9 +139,7 @@ public class RuleEvaluator {
         @Override
         public Object getValue(final ELContext context, final Object base, final Object property)
                 throws NullPointerException, ELException {
-            if (context == null) {
-                throw new NullPointerException();
-            }
+            Objects.requireNonNull(context);
 
             if (base == null) {
                 context.setPropertyResolved(true);
