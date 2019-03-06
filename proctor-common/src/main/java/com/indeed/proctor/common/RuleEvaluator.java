@@ -144,6 +144,7 @@ public class RuleEvaluator {
 
             if (base == null) {
                 context.setPropertyResolved(true);
+                LOGGER.info("Resolved as null for the property: " + property);
             }
 
             return null;
