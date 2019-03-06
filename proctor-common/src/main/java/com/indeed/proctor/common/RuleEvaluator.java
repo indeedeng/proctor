@@ -1,7 +1,5 @@
 package com.indeed.proctor.common;
 
-import com.google.common.base.CharMatcher;
-import com.google.common.base.Strings;
 import com.indeed.proctor.common.el.LibraryFunctionMapperBuilder;
 import com.indeed.proctor.common.el.MulticontextReadOnlyVariableMapper;
 import org.apache.el.ExpressionFactoryImpl;
@@ -9,11 +7,11 @@ import org.apache.log4j.Logger;
 import org.apache.taglibs.standard.functions.Functions;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.el.ArrayELResolver;
 import javax.el.BeanELResolver;
 import javax.el.CompositeELResolver;
 import javax.el.ELContext;
+import javax.el.ELException;
 import javax.el.ELResolver;
 import javax.el.ExpressionFactory;
 import javax.el.FunctionMapper;
@@ -21,6 +19,7 @@ import javax.el.ListELResolver;
 import javax.el.MapELResolver;
 import javax.el.ValueExpression;
 import javax.el.VariableMapper;
+import javax.servlet.jsp.el.ScopedAttributeELResolver;
 import java.util.Map;
 
 /**
@@ -67,6 +66,7 @@ public class RuleEvaluator {
         elResolver.add(new ListELResolver());
         elResolver.add(new BeanELResolver());
         elResolver.add(new MapELResolver());
+        elResolver.add(new UndefinedIdentifierELResolver());
         return elResolver;
     }
 
@@ -129,5 +129,24 @@ public class RuleEvaluator {
         }
 
         throw new IllegalArgumentException("Received non-boolean return value: " + result.getClass().getCanonicalName() + " from rule " + rule);
+    }
+
+    /**
+     * An ELResolver for resolving undefined variables as null without checking static field and method reference
+     */
+    private static class UndefinedIdentifierELResolver extends ScopedAttributeELResolver {
+        @Override
+        public Object getValue(final ELContext context, final Object base, final Object property)
+                throws NullPointerException, ELException {
+            if (context == null) {
+                throw new NullPointerException();
+            }
+
+            if (base == null) {
+                context.setPropertyResolved(true);
+            }
+
+            return null;
+        }
     }
 }

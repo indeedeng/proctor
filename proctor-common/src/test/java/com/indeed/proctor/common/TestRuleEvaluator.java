@@ -65,6 +65,24 @@ public class TestRuleEvaluator {
     }
 
     @Test
+    public void testUndefinedVariablesShouldBeNull() {
+        final Map<String, Object> values = Collections.emptyMap();
+        {
+            final String rule = "${country == null}";
+            Assert.assertTrue("rule '" + rule + "' should be true for " + values, ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+        {
+            final String rule = "${country == 'us'}";
+            Assert.assertFalse("rule '" + rule + "' should be false for " + values, ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+        {
+            final String rule = "${country}";
+            System.out.println(ruleEvaluator.evaluateBooleanRule(rule, values));
+            Assert.assertFalse("rule '" + rule + "' should be false for " + values, ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+    }
+
+    @Test
     public void testUtilTagFunctionsShouldBeAvailable() {
         final String rule = "${proctor:contains(LANGUAGES_ENABLED, lang)}";
         {
