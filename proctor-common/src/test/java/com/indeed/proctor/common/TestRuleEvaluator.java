@@ -9,6 +9,8 @@ import org.junit.Test;
 import java.util.Collections;
 import java.util.Map;
 
+import static java.util.Collections.emptyMap;
+
 /**
  * @author parker
  */
@@ -66,19 +68,20 @@ public class TestRuleEvaluator {
 
     @Test
     public void testUndefinedVariablesShouldBeNull() {
-        final Map<String, Object> values = Collections.emptyMap();
         {
             final String rule = "${country == null}";
-            Assert.assertTrue("rule '" + rule + "' should be true for " + values, ruleEvaluator.evaluateBooleanRule(rule, values));
+            Assert.assertTrue("rule '" + rule + "' should be true for " + emptyMap(),
+                    ruleEvaluator.evaluateBooleanRule(rule, emptyMap()));
         }
         {
             final String rule = "${country == 'us'}";
-            Assert.assertFalse("rule '" + rule + "' should be false for " + values, ruleEvaluator.evaluateBooleanRule(rule, values));
+            Assert.assertFalse("rule '" + rule + "' should be false for " + emptyMap(),
+                    ruleEvaluator.evaluateBooleanRule(rule, emptyMap()));
         }
         {
             final String rule = "${country}";
-            System.out.println(ruleEvaluator.evaluateBooleanRule(rule, values));
-            Assert.assertFalse("rule '" + rule + "' should be false for " + values, ruleEvaluator.evaluateBooleanRule(rule, values));
+            Assert.assertFalse("rule '" + rule + "' should be false for " + emptyMap(),
+                    ruleEvaluator.evaluateBooleanRule(rule, emptyMap()));
         }
     }
 

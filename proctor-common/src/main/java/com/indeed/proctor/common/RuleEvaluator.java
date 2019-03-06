@@ -7,6 +7,7 @@ import org.apache.log4j.Logger;
 import org.apache.taglibs.standard.functions.Functions;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.el.ArrayELResolver;
 import javax.el.BeanELResolver;
 import javax.el.CompositeELResolver;
@@ -134,10 +135,13 @@ public class RuleEvaluator {
 
     /**
      * An ELResolver for resolving undefined variables as null without checking static field and method reference
+     * This is for a performance improve experiment for PROC-528.
+     * This should not be merged to master unless we're sure that this improve the performance issue.
      */
     private static class UndefinedIdentifierELResolver extends ScopedAttributeELResolver {
         @Override
-        public Object getValue(final ELContext context, final Object base, final Object property)
+        @Nullable
+        public Object getValue(@Nullable final ELContext context, @Nullable final Object base, @Nullable final Object property)
                 throws NullPointerException, ELException {
             Objects.requireNonNull(context);
 
