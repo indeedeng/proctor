@@ -134,6 +134,18 @@ public class GitProctorCore implements FileBasedPersisterCore {
                 pullPushTimeoutSeconds, cloneTimeoutSeconds, cleanInitialization, null);
     }
 
+    /**
+     * clones from the git URL to local workspace
+     * @param gitUrl remote git url from which to clone
+     * @param username
+     * @param password
+     * @param testDefinitionsDirectory typically matrices/test-definitions
+     * @param workspaceProvider where local non-bare copy will be cloned to (unless exists)
+     * @param pullPushTimeoutSeconds
+     * @param cloneTimeoutSeconds
+     * @param cleanInitialization
+     * @param branchName
+     */
     public GitProctorCore(final String gitUrl,
                           final String username,
                           final String password,

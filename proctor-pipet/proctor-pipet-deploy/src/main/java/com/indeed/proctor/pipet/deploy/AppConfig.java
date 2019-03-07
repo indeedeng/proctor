@@ -1,5 +1,6 @@
 package com.indeed.proctor.pipet.deploy;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.indeed.proctor.common.AbstractProctorLoader;
 import com.indeed.proctor.pipet.core.config.CoreConfig;
@@ -7,7 +8,6 @@ import com.indeed.proctor.pipet.core.config.JsonPipetConfig;
 import com.indeed.proctor.pipet.core.config.VariableConfigurationJsonParser;
 import com.indeed.proctor.pipet.core.var.VariableConfiguration;
 import com.indeed.proctor.pipet.deploy.useragent.UserAgentValueConverter;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

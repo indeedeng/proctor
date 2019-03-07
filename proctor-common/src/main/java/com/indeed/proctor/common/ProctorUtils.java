@@ -315,8 +315,10 @@ public abstract class ProctorUtils {
      * @param matrixSource a {@link String} of the source of proctor artifact. For example a path of proctor artifact file.
      * @return a {@link ProctorLoadResult} to describe the result of verification. It contains errors of verification and a list of missing test.
      */
-    public static ProctorLoadResult verifyWithoutSpecification(@Nonnull final TestMatrixArtifact testMatrix,
-                                                               final String matrixSource) {
+    public static ProctorLoadResult verifyWithoutSpecification(
+            @Nonnull final TestMatrixArtifact testMatrix,
+            final String matrixSource
+    ) {
         final ProctorLoadResult.Builder resultBuilder = ProctorLoadResult.newBuilder();
 
         for (final Entry<String, ConsumableTestDefinition> entry : testMatrix.getTests().entrySet()) {
@@ -443,7 +445,7 @@ public abstract class ProctorUtils {
             try {
                 verifyTest(testName, testDefinition, specification, knownBuckets, matrixSource, functionMapper, providedContext);
 
-            } catch (IncompatibleTestMatrixException e) {
+            } catch (final IncompatibleTestMatrixException e) {
                 if (isRequired) {
                     LOGGER.error(String.format("Unable to load test matrix for a required test %s", testName), e);
                     resultBuilder.recordError(testName, e);
@@ -512,7 +514,7 @@ public abstract class ProctorUtils {
                 }
             }
 
-            if (unknownBuckets.size() > 0) {
+            if (!unknownBuckets.isEmpty()) {
                 throw new IncompatibleTestMatrixException("Allocation range in " + testName + " from " + matrixSource + " refers to unknown bucket value(s) " + unknownBuckets + " with length > 0");
             }
         }
@@ -520,7 +522,7 @@ public abstract class ProctorUtils {
         // TODO(pwp): add some test constants?
         final RuleEvaluator ruleEvaluator = makeRuleEvaluator(RuleEvaluator.EXPRESSION_FACTORY, functionMapper);
 
-        PayloadSpecification payloadSpec = testSpecification.getPayload();
+        final PayloadSpecification payloadSpec = testSpecification.getPayload();
         if (payloadSpec != null) {
             final String specifiedPayloadTypeName = Preconditions.checkNotNull(payloadSpec.getType(), "Missing payload spec type");
             final PayloadType specifiedPayloadType = PayloadType.payloadTypeForName(specifiedPayloadTypeName);
@@ -539,7 +541,7 @@ public abstract class ProctorUtils {
             final String payloadValidatorRule = payloadSpec.getValidator();
             final List<TestBucket> buckets = testDefinition.getBuckets();
             for (final TestBucket bucket : buckets) {
-                Payload payload = bucket.getPayload();
+                final Payload payload = bucket.getPayload();
                 if (payload != null) {
                     if (!specifiedPayloadType.payloadHasThisType(payload)) {
                         throw new IncompatibleTestMatrixException("For test " + testName + " from " + matrixSource + " expected payload of type " + specifiedPayloadType.payloadTypeName + " but matrix has a test bucket payload with wrong type: " + bucket);
@@ -708,7 +710,10 @@ public abstract class ProctorUtils {
     }
 
     @Nonnull
-    private static ConsumableTestDefinition defaultFor(final String testName, @Nonnull final TestSpecification testSpecification) {
+    private static ConsumableTestDefinition defaultFor(
+            final String testName,
+            @Nonnull final TestSpecification testSpecification
+    ) {
         final String missingTestSoleBucketName = "inactive";
         final String missingTestSoleBucketDescription = "inactive";
         final Allocation allocation = new Allocation();
@@ -733,7 +738,10 @@ public abstract class ProctorUtils {
         return convertContextToTestableMap(providedContext, Collections.<String, Object>emptyMap());
     }
 
-    public static ProvidedContext convertContextToTestableMap(final Map<String, String> providedContext, final Map<String, Object> ruleVerificationContext) {
+    public static ProvidedContext convertContextToTestableMap(
+            final Map<String, String> providedContext,
+            final Map<String, Object> ruleVerificationContext
+    ) {
         final ExpressionFactory expressionFactory = new ExpressionFactoryImpl();
         final Map<String, Object> primitiveVals = new HashMap<String, Object>();
         primitiveVals.put("int", 0);
@@ -797,11 +805,20 @@ public abstract class ProctorUtils {
         return new ProvidedContext(ProvidedContext.EMPTY_CONTEXT, false);
     }
 
-    public static void verifyInternallyConsistentDefinition(final String testName, final String matrixSource, @Nonnull final ConsumableTestDefinition testDefinition) throws IncompatibleTestMatrixException {
+    public static void verifyInternallyConsistentDefinition(
+            final String testName, final String matrixSource,
+            @Nonnull final ConsumableTestDefinition testDefinition
+    ) throws IncompatibleTestMatrixException {
         verifyInternallyConsistentDefinition(testName, matrixSource, testDefinition, RuleEvaluator.FUNCTION_MAPPER, new ProvidedContext(ProvidedContext.EMPTY_CONTEXT,false));
     }
 
-    public static void verifyInternallyConsistentDefinition(final String testName, final String matrixSource, @Nonnull final ConsumableTestDefinition testDefinition, final FunctionMapper functionMapper, final ProvidedContext providedContext) throws IncompatibleTestMatrixException {
+    public static void verifyInternallyConsistentDefinition(
+            final String testName,
+            final String matrixSource,
+            @Nonnull final ConsumableTestDefinition testDefinition,
+            final FunctionMapper functionMapper,
+            final ProvidedContext providedContext
+    ) throws IncompatibleTestMatrixException {
         final List<Allocation> allocations = testDefinition.getAllocations();
         ExpressionFactory expressionFactory = new ExpressionFactoryImpl();
         //verify test rule is valid EL
