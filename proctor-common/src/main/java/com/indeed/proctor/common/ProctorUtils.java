@@ -450,7 +450,13 @@ public abstract class ProctorUtils {
                     LOGGER.error(String.format("Unable to load test matrix for a required test %s", testName), e);
                     resultBuilder.recordError(testName, e);
                 } else {
-                    LOGGER.info(String.format("Unable to load test matrix for a dynamic test %s", testName), e);
+                    // Intentionally not adding stack trace to log, to reduce log size, message contains all the information that is valuable.
+                    LOGGER.warn(String.format(
+                            "Unable to load test matrix for a dynamic test %s. Cause: %s Message: %s",
+                            testName,
+                            e.getCause(),
+                            e.getMessage()
+                    ));
                     resultBuilder.recordIncompatibleDynamicTest(testName, e);
                 }
             }
