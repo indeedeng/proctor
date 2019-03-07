@@ -134,12 +134,13 @@ public class EditAndPromoteJob extends AbstractJob {
                                 final String testDefinitionJson,
                                 final String previousRevision,
                                 final boolean isAutopromote,
+                                final boolean isAutopromoteToQA,
                                 final Map<String, String[]> requestParameterMap
     ) {
         final BackgroundJob<Object> backgroundJob = jobFactory.createBackgroundJob(
-                createJobTitle(testName, username, author, isCreate, isAutopromote),
+                createJobTitle(testName, username, author, isCreate, isAutopromote, isAutopromoteToQA),
                 author,
-                createJobType(isCreate, isAutopromote),
+                createJobType(isCreate, isAutopromote, isAutopromoteToQA),
                 job -> {
                     try {
                         if (CharMatcher.WHITESPACE.matchesAllOf(Strings.nullToEmpty(testDefinitionJson))) {
@@ -147,7 +148,7 @@ public class EditAndPromoteJob extends AbstractJob {
                         }
                         job.logWithTiming("Parsing test definition json", "parsing");
                         final TestDefinition testDefinitionToUpdate = TestDefinitionFunctions.parseTestDefinition(testDefinitionJson);
-                        doEditInternal(testName, username, password, author, isCreate, comment, testDefinitionToUpdate, previousRevision, isAutopromote, requestParameterMap, job);
+                        doEditInternal(testName, username, password, author, isCreate, comment, testDefinitionToUpdate, previousRevision, isAutopromote, isAutopromoteToQA, requestParameterMap, job);
                     } catch (final GitNoAuthorizationException | GitNoDevelperAccessLevelException | IllegalArgumentException | IncompatibleTestMatrixException exp) {
                         job.logFailedJob(exp);
                         LOGGER.info("Edit Failed: " + job.getTitle(), exp);
@@ -171,16 +172,17 @@ public class EditAndPromoteJob extends AbstractJob {
                                 final TestDefinition testDefinitionToUpdate,
                                 final String previousRevision,
                                 final boolean isAutopromote,
+                                final boolean isAutopromoteToQA,
                                 final Map<String, String[]> requestParameterMap
     ) {
 
         final BackgroundJob<Object> backgroundJob = jobFactory.createBackgroundJob(
-                createJobTitle(testName, username, author, isCreate, isAutopromote),
+                createJobTitle(testName, username, author, isCreate, isAutopromote, isAutopromoteToQA),
                 author,
-                createJobType(isCreate, isAutopromote),
+                createJobType(isCreate, isAutopromote, isAutopromoteToQA),
                 job -> {
                     try {
-                        doEditInternal(testName, username, password, author, isCreate, comment, testDefinitionToUpdate, previousRevision, isAutopromote, requestParameterMap, job);
+                        doEditInternal(testName, username, password, author, isCreate, comment, testDefinitionToUpdate, previousRevision, isAutopromote, isAutopromoteToQA, requestParameterMap, job);
                     } catch (final GitNoAuthorizationException | GitNoDevelperAccessLevelException | IllegalArgumentException | IncompatibleTestMatrixException exp) {
                         job.logFailedJob(exp);
                         LOGGER.info("Edit Failed: " + job.getTitle(), exp);
@@ -208,6 +210,7 @@ public class EditAndPromoteJob extends AbstractJob {
      * @param testDefinitionToUpdate the TestDefinition to update
      * @param previousRevision
      * @param isAutopromote the flag whether this job promotes the test to QA and Production
+     * @param isAutopromoteToQA the flag whether this job promotes the test to QA (not to Production)
      * @param requestParameterMap
      * @param job the edit job which runs this edit process
      * @return true, else throws an exception.
@@ -222,6 +225,7 @@ public class EditAndPromoteJob extends AbstractJob {
                                    final TestDefinition testDefinitionToUpdate,
                                    final String previousRevision,
                                    final boolean isAutopromote,
+                                   final boolean isAutopromoteToQA,
                                    final Map<String, String[]> requestParameterMap,
                                    final BackgroundJob job
     ) throws Exception {
@@ -330,7 +334,7 @@ public class EditAndPromoteJob extends AbstractJob {
 
         //Autopromote if necessary
         maybeAutoPromote(testName, username, password, author, testDefinitionToUpdate, previousRevision, isAutopromote,
-                requestParameterMap, job, trunkStore, qaRevision, prodRevision, existingTestDefinition);
+                isAutopromoteToQA, requestParameterMap, job, trunkStore, qaRevision, prodRevision, existingTestDefinition);
 
         job.logComplete();
         job.addUrl("/proctor/definition/" + UtilityFunctions.urlEncode(testName) + "?branch=" + theEnvironment.getName(), "View Result");
@@ -340,17 +344,59 @@ public class EditAndPromoteJob extends AbstractJob {
     /**
      * Attempts to promote {@code test} and logs the result.
      */
-    private void maybeAutoPromote(final String testName, final String username, final String password,
-                                  final String author, final TestDefinition testDefinitionToUpdate,
-                                  final String previousRevision, final boolean isAutopromote,
-                                  final Map<String, String[]> requestParameterMap, final BackgroundJob job,
-                                  final ProctorStore trunkStore, final String qaRevision, final String prodRevision,
+    private void maybeAutoPromote(final String testName,
+                                  final String username,
+                                  final String password,
+                                  final String author,
+                                  final TestDefinition testDefinitionToUpdate,
+                                  final String previousRevision,
+                                  final boolean isAutopromote,
+                                  final boolean isAutopromoteToQa,
+                                  final Map<String, String[]> requestParameterMap,
+                                  final BackgroundJob job,
+                                  final ProctorStore trunkStore,
+                                  final String qaRevision,
+                                  final String prodRevision,
                                   final TestDefinition existingTestDefinition) throws Exception {
-        if (!isAutopromote) {
-            job.log("Not autopromoting because it wasn't requested by user.");
-            return;
+        if (isAutopromote) {
+            doPromoteTestToQaAndProd(testName, username, password, author, testDefinitionToUpdate, previousRevision,
+                    requestParameterMap, job, trunkStore, qaRevision, prodRevision, existingTestDefinition);
+        } else if (isAutopromoteToQa) {
+            doPromoteTestToQa(testName, username, password, author, requestParameterMap, job, trunkStore, qaRevision);
         }
 
+        job.log("Not autopromoting because it wasn't requested by user.");
+    }
+
+    void doPromoteTestToQa(final String testName,
+                           final String username,
+                           final String password,
+                           final String author,
+                           final Map<String, String[]> requestParameterMap,
+                           final BackgroundJob job,
+                           final ProctorStore trunkStore,
+                           final String qaRevision) throws Exception {
+        final String currentRevision = getCurrentVersion(testName, trunkStore).getRevision();
+        final boolean isQaPromoted = doPromoteInternal(testName, username, password, author, Environment.WORKING,
+                currentRevision, Environment.QA, qaRevision, requestParameterMap, job, true);
+
+        if (!isQaPromoted) {
+            job.log("Failed to promote the test to QA.");
+        }
+    }
+
+    void doPromoteTestToQaAndProd(final String testName,
+                                  final String username,
+                                  final String password,
+                                  final String author,
+                                  final TestDefinition testDefinitionToUpdate,
+                                  final String previousRevision,
+                                  final Map<String, String[]> requestParameterMap,
+                                  final BackgroundJob job,
+                                  final ProctorStore trunkStore,
+                                  final String qaRevision,
+                                  final String prodRevision,
+                                  final TestDefinition existingTestDefinition) throws Exception {
         if (existingTestDefinition == null) {
             if (!isAllInactiveTest(testDefinitionToUpdate)) {
                 job.log("Not autopromoting because there is no existing test definition and test is not 100% inactive.");
@@ -805,38 +851,62 @@ public class EditAndPromoteJob extends AbstractJob {
         return comment;
     }
 
-    private String createJobTitle(final String testName,
-                                  final String username,
-                                  final String author,
-                                  final boolean isCreate,
-                                  final boolean isAutopromote
+    private String createJobTitle(
+            final String testName,
+            final String username,
+            final String author,
+            final boolean isCreate,
+            final boolean isAutopromote,
+            final boolean isAutopromoteToQA
     ) {
         return String.format(
                 "(username:%s author:%s) %s %s",
-                username, author, createJobTypeString(isCreate, isAutopromote), testName
+                username, author, createJobTypeString(isCreate, isAutopromote, isAutopromoteToQA), testName
         );
     }
 
-    private String createJobTypeString(final boolean isCreate,
-                                       final boolean isAutopromote
+    private String createJobTypeString(
+            final boolean isCreate,
+            final boolean isAutopromote,
+            final boolean isAutopromoteToQA
     ) {
-        if (isAutopromote) {
-            return "Editing and promoting";
-        }
+        final StringBuilder messageBuilder = new StringBuilder();
+
         if (isCreate) {
-            return "Creating";
+            messageBuilder.append("Creating");
+        } else {
+            messageBuilder.append("Editing");
         }
-        return "Editing";
+
+        if (isAutopromoteToQA) {
+            messageBuilder.append(" and promoting to QA");
+        } else if (isAutopromote) {
+            messageBuilder.append(" and promoting to QA and Prod");
+        }
+
+        return messageBuilder.toString();
     }
 
-    private BackgroundJob.JobType createJobType(final boolean isCreate, final boolean isAutopromote) {
-        if (isAutopromote) {
-            return BackgroundJob.JobType.TEST_EDIT_PROMOTION;
-        }
+    private BackgroundJob.JobType createJobType(
+            final boolean isCreate,
+            final boolean isAutopromote,
+            final boolean isAutopromoteToQA
+    ) {
+        final StringBuilder jobTypeNameBuilder = new StringBuilder("TEST");
+
         if (isCreate) {
-            return BackgroundJob.JobType.TEST_CREATION;
+            jobTypeNameBuilder.append("_CREATION");
+        } else {
+            jobTypeNameBuilder.append("_EDIT");
         }
-        return BackgroundJob.JobType.TEST_EDIT;
+
+        if (isAutopromoteToQA) {
+            jobTypeNameBuilder.append("_PROMOTION_QA");
+        } else if (isAutopromote) {
+            jobTypeNameBuilder.append("_PROMOTION");
+        }
+
+        return BackgroundJob.JobType.valueOf(jobTypeNameBuilder.toString());
     }
 
     public BackgroundJob doPromote(final String testName,

@@ -317,6 +317,7 @@ public class ProctorTestDefinitionController extends AbstractController {
             @RequestParam(required = false) final String testDefinition, // testDefinition is JSON representation of test-definition
             @RequestParam(required = false, defaultValue = "") final String previousRevision,
             @RequestParam(required = false, defaultValue = "false") final boolean isAutopromote,
+            @RequestParam(required = false, defaultValue = "false") final boolean isAutopromoteToQA,
             final HttpServletRequest request
     ) {
         final BackgroundJob job = editAndPromoteJob.doEdit(
@@ -329,6 +330,7 @@ public class ProctorTestDefinitionController extends AbstractController {
                 testDefinition,
                 previousRevision,
                 isAutopromote,
+                isAutopromoteToQA,
                 new HashMap<>(request.getParameterMap())
         );
         if (isAJAXRequest(request)) {

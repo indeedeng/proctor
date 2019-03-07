@@ -247,7 +247,10 @@ public abstract class BackgroundJob<T> implements Callable<T> {
         TEST_EDIT_PROMOTION("test-edit-promotion"),
         WORKING_DIRECTORY_CLEANING("working-directory-cleaning"),
         JOB_TEST("job-test"),
-        UNKNOWN("unknown");
+        UNKNOWN("unknown"),
+        TEST_CREATION_PROMOTION("test-creation-promotion"),
+        TEST_CREATION_PROMOTION_QA("test-creation-promotion-qa"),
+        TEST_EDIT_PROMOTION_QA("test-edit-promotion-qa");
 
         private final String name;
 
