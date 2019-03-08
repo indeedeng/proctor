@@ -568,7 +568,7 @@ public class EditAndPromoteJob extends AbstractJob {
                     "Actually only has " + histories.size() + " versions");
         }
         if (!histories.get(1).getRevision().equals(previousRevision)) {
-            throw new IllegalStateException("The passed previous revision was" + previousRevision +
+            throw new IllegalStateException("The passed previous revision was " + previousRevision +
                     " but the previous revision from the history is " + histories.get(1) +
                     ". Failed to find the version for autopromote.");
         }
@@ -883,7 +883,7 @@ public class EditAndPromoteJob extends AbstractJob {
         );
     }
 
-    private String createJobTypeString(
+    private static String createJobTypeString(
             final boolean isCreate,
             final boolean isAutopromote,
             final boolean isAutopromoteToQA
@@ -905,7 +905,8 @@ public class EditAndPromoteJob extends AbstractJob {
         return messageBuilder.toString();
     }
 
-    private BackgroundJob.JobType createJobType(
+    @VisibleForTesting
+    static BackgroundJob.JobType createJobType(
             final boolean isCreate,
             final boolean isAutopromote,
             final boolean isAutopromoteToQA
