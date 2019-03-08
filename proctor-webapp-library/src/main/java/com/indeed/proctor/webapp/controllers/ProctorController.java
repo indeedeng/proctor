@@ -247,9 +247,12 @@ public class ProctorController extends AbstractController {
     static Comparator<Entry<String, TestDefinition>> getComparator(final Sort sort, final Set<String> favoriteTestNames) {
         switch(sort) {
             case TESTNAME:
-                return (a, b) -> 0; // don't touch
+                return Comparator.comparing(Entry::getKey, String::compareToIgnoreCase);
             case FAVORITESFIRST:
-                return Comparator.comparing(Entry::getKey, TestSearchUtil.givenSetFirstComparator(favoriteTestNames));
+                return Comparator.comparing(
+                        Entry::getKey,
+                        TestSearchUtil.givenSetFirstComparator(favoriteTestNames)
+                                .thenComparing(String::compareToIgnoreCase));
             case UPDATEDDATE:
                 throw new NotImplementedException("Updated date not implemented");
             default:

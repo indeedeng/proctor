@@ -145,10 +145,21 @@ public class TestTestSearchUtil {
 
     @Test
     public void testGivenSetFirstComparator() {
+        final ImmutableSet<String> favorites = ImmutableSet.of("WEIRD_test", "example_test", "nonexistent_test",
+                "GOOD_TEST" /*case sensitive check*/);
         final Comparator<String> comparator = TestSearchUtil.givenSetFirstComparator(
-                ImmutableSet.of("weird_test", "example_test", "nonexistent_test"));
-        final Object[] sorted = Stream.of("weird_test", "good_test", "example_test", "super_test", "a_test")
-                .sorted(comparator).toArray();
-        assertArrayEquals(new String[]{"example_test", "weird_test", "a_test", "good_test", "super_test"}, sorted);
+                favorites);
+
+        String[] sorted = Stream.of("WEIRD_test", "good_test", "example_test", "super_test", "A_test")
+                .sorted(comparator).toArray(String[]::new);
+        assertTrue(favorites.contains(sorted[0]));
+        assertTrue(favorites.contains(sorted[1]));
+        assertFalse(favorites.contains(sorted[2]));
+        assertFalse(favorites.contains(sorted[3]));
+        assertFalse(favorites.contains(sorted[4]));
+
+        sorted = Stream.of("WEIRD_test", "good_test", "example_test", "super_test", "A_test")
+                .sorted(comparator.thenComparing(String::compareToIgnoreCase)).toArray(String[]::new);
+        assertArrayEquals(new String[]{"example_test", "WEIRD_test", "A_test", "good_test", "super_test"}, sorted);
     }
 }

@@ -65,8 +65,6 @@ public class TestSearchUtil {
      * @return a comparator of an entry of map
      */
     public static Comparator<String> givenSetFirstComparator(final Set<String> testNames) {
-        return Comparator.<String, Boolean>comparing(testNames::contains)
-                .reversed()
-                .thenComparing(Comparator.naturalOrder());
+        return Comparator.<String, Boolean>comparing(testNames::contains).reversed();
     }
 }
