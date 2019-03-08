@@ -57,9 +57,12 @@
         <indeed-util.version>1.0.12</indeed-util.version>
         <apache-commons-pool2.version>2.2</apache-commons-pool2.version>
         <commons-lang3.version>3.3.2</commons-lang3.version>
-        <google-guava.version>18.0</google-guava.version>
+        <!--
+        the version defined in javadev
+        -->
+        <google-guava.version>16.0.1</google-guava.version>
         <slf4j.version>1.7.2</slf4j.version>
-        <log4j.version>1.2.17</log4j.version>
+        <log4j.version>1.2.14</log4j.version>
         <!--
         jackson.core and jackson-databind version can be unified when moving to >2.8.0
         $jackson.version defined in parent pom for old codehaus jackson
