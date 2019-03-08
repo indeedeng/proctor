@@ -84,14 +84,15 @@ public class EditAndPromoteJob extends AbstractJob {
     private final MatrixChecker matrixChecker;
 
     @Autowired
-    public EditAndPromoteJob(@Qualifier("trunk") final ProctorStore trunkStore,
-                             @Qualifier("qa") final ProctorStore qaStore,
-                             @Qualifier("production") final ProctorStore productionStore,
-                             final BackgroundJobManager jobManager,
-                             final BackgroundJobFactory jobFactory,
-                             final ProctorPromoter promoter,
-                             final CommentFormatter commentFormatter,
-                             final MatrixChecker matrixChecker
+    public EditAndPromoteJob(
+            @Qualifier("trunk") final ProctorStore trunkStore,
+            @Qualifier("qa") final ProctorStore qaStore,
+            @Qualifier("production") final ProctorStore productionStore,
+            final BackgroundJobManager jobManager,
+            final BackgroundJobFactory jobFactory,
+            final ProctorPromoter promoter,
+            final CommentFormatter commentFormatter,
+            final MatrixChecker matrixChecker
     ) {
         super(trunkStore, qaStore, productionStore);
         this.jobManager = jobManager;
@@ -102,40 +103,44 @@ public class EditAndPromoteJob extends AbstractJob {
     }
 
     @Autowired(required = false)
-    public void setDefinitionEditChanges(final List<PreDefinitionEditChange> preDefinitionEditChanges,
-                                         final List<PostDefinitionEditChange> postDefinitionEditChanges
+    public void setDefinitionEditChanges(
+            final List<PreDefinitionEditChange> preDefinitionEditChanges,
+            final List<PostDefinitionEditChange> postDefinitionEditChanges
     ) {
         this.preDefinitionEditChanges = preDefinitionEditChanges;
         this.postDefinitionEditChanges = postDefinitionEditChanges;
     }
 
     @Autowired(required = false)
-    public void setDefinitionCreateChanges(final List<PreDefinitionCreateChange> preDefinitionCreateChanges,
-                                           final List<PostDefinitionCreateChange> postDefinitionCreateChanges
+    public void setDefinitionCreateChanges(
+            final List<PreDefinitionCreateChange> preDefinitionCreateChanges,
+            final List<PostDefinitionCreateChange> postDefinitionCreateChanges
     ) {
         this.preDefinitionCreateChanges = preDefinitionCreateChanges;
         this.postDefinitionCreateChanges = postDefinitionCreateChanges;
     }
 
     @Autowired(required = false)
-    public void setDefinitionPromoteChanges(final List<PreDefinitionPromoteChange> preDefinitionPromoteChanges,
-                                            final List<PostDefinitionPromoteChange> postDefinitionPromoteChanges
+    public void setDefinitionPromoteChanges(
+            final List<PreDefinitionPromoteChange> preDefinitionPromoteChanges,
+            final List<PostDefinitionPromoteChange> postDefinitionPromoteChanges
     ) {
         this.preDefinitionPromoteChanges = preDefinitionPromoteChanges;
         this.postDefinitionPromoteChanges = postDefinitionPromoteChanges;
     }
 
-    public BackgroundJob doEdit(final String testName,
-                                final String username,
-                                final String password,
-                                final String author,
-                                final boolean isCreate,
-                                final String comment,
-                                final String testDefinitionJson,
-                                final String previousRevision,
-                                final boolean isAutopromote,
-                                final boolean isAutopromoteToQA,
-                                final Map<String, String[]> requestParameterMap
+    public BackgroundJob doEdit(
+            final String testName,
+            final String username,
+            final String password,
+            final String author,
+            final boolean isCreate,
+            final String comment,
+            final String testDefinitionJson,
+            final String previousRevision,
+            final boolean isAutopromote,
+            final boolean isAutopromoteToQA,
+            final Map<String, String[]> requestParameterMap
     ) {
         final BackgroundJob<Object> backgroundJob = jobFactory.createBackgroundJob(
                 createJobTitle(testName, username, author, isCreate, isAutopromote, isAutopromoteToQA),
@@ -163,17 +168,18 @@ public class EditAndPromoteJob extends AbstractJob {
         return backgroundJob;
     }
 
-    public BackgroundJob doEdit(final String testName,
-                                final String username,
-                                final String password,
-                                final String author,
-                                final boolean isCreate,
-                                final String comment,
-                                final TestDefinition testDefinitionToUpdate,
-                                final String previousRevision,
-                                final boolean isAutopromote,
-                                final boolean isAutopromoteToQA,
-                                final Map<String, String[]> requestParameterMap
+    public BackgroundJob doEdit(
+            final String testName,
+            final String username,
+            final String password,
+            final String author,
+            final boolean isCreate,
+            final String comment,
+            final TestDefinition testDefinitionToUpdate,
+            final String previousRevision,
+            final boolean isAutopromote,
+            final boolean isAutopromoteToQA,
+            final Map<String, String[]> requestParameterMap
     ) {
 
         final BackgroundJob<Object> backgroundJob = jobFactory.createBackgroundJob(
@@ -216,18 +222,19 @@ public class EditAndPromoteJob extends AbstractJob {
      * @return true, else throws an exception.
      * @throws Exception
      */
-    private Boolean doEditInternal(final String testName,
-                                   final String username,
-                                   final String password,
-                                   final String author,
-                                   final boolean isCreate,
-                                   final String comment,
-                                   final TestDefinition testDefinitionToUpdate,
-                                   final String previousRevision,
-                                   final boolean isAutopromote,
-                                   final boolean isAutopromoteToQA,
-                                   final Map<String, String[]> requestParameterMap,
-                                   final BackgroundJob job
+    private Boolean doEditInternal(
+            final String testName,
+            final String username,
+            final String password,
+            final String author,
+            final boolean isCreate,
+            final String comment,
+            final TestDefinition testDefinitionToUpdate,
+            final String previousRevision,
+            final boolean isAutopromote,
+            final boolean isAutopromoteToQA,
+            final Map<String, String[]> requestParameterMap,
+            final BackgroundJob job
     ) throws Exception {
         final Environment theEnvironment = Environment.WORKING; // only allow editing of TRUNK!
         final ProctorStore trunkStore = determineStoreFromEnvironment(theEnvironment);
@@ -344,20 +351,22 @@ public class EditAndPromoteJob extends AbstractJob {
     /**
      * Attempts to promote {@code test} and logs the result.
      */
-    private void maybeAutoPromote(final String testName,
-                                  final String username,
-                                  final String password,
-                                  final String author,
-                                  final TestDefinition testDefinitionToUpdate,
-                                  final String previousRevision,
-                                  final boolean isAutopromote,
-                                  final boolean isAutopromoteToQa,
-                                  final Map<String, String[]> requestParameterMap,
-                                  final BackgroundJob job,
-                                  final ProctorStore trunkStore,
-                                  final String qaRevision,
-                                  final String prodRevision,
-                                  final TestDefinition existingTestDefinition) throws Exception {
+    private void maybeAutoPromote(
+            final String testName,
+            final String username,
+            final String password,
+            final String author,
+            final TestDefinition testDefinitionToUpdate,
+            final String previousRevision,
+            final boolean isAutopromote,
+            final boolean isAutopromoteToQa,
+            final Map<String, String[]> requestParameterMap,
+            final BackgroundJob job,
+            final ProctorStore trunkStore,
+            final String qaRevision,
+            final String prodRevision,
+            final TestDefinition existingTestDefinition
+    ) throws Exception {
         if (isAutopromote) {
             doPromoteTestToQaAndProd(testName, username, password, author, testDefinitionToUpdate, previousRevision,
                     requestParameterMap, job, trunkStore, qaRevision, prodRevision, existingTestDefinition);
@@ -368,14 +377,16 @@ public class EditAndPromoteJob extends AbstractJob {
         job.log("Not autopromoting because it wasn't requested by user.");
     }
 
-    void doPromoteTestToQa(final String testName,
-                           final String username,
-                           final String password,
-                           final String author,
-                           final Map<String, String[]> requestParameterMap,
-                           final BackgroundJob job,
-                           final ProctorStore trunkStore,
-                           final String qaRevision) throws Exception {
+    void doPromoteTestToQa(
+            final String testName,
+            final String username,
+            final String password,
+            final String author,
+            final Map<String, String[]> requestParameterMap,
+            final BackgroundJob job,
+            final ProctorStore trunkStore,
+            final String qaRevision
+    ) throws Exception {
         final String currentRevision = getCurrentVersion(testName, trunkStore).getRevision();
         final boolean isQaPromoted = doPromoteInternal(testName, username, password, author, Environment.WORKING,
                 currentRevision, Environment.QA, qaRevision, requestParameterMap, job, true);
@@ -385,18 +396,20 @@ public class EditAndPromoteJob extends AbstractJob {
         }
     }
 
-    void doPromoteTestToQaAndProd(final String testName,
-                                  final String username,
-                                  final String password,
-                                  final String author,
-                                  final TestDefinition testDefinitionToUpdate,
-                                  final String previousRevision,
-                                  final Map<String, String[]> requestParameterMap,
-                                  final BackgroundJob job,
-                                  final ProctorStore trunkStore,
-                                  final String qaRevision,
-                                  final String prodRevision,
-                                  final TestDefinition existingTestDefinition) throws Exception {
+    void doPromoteTestToQaAndProd(
+            final String testName,
+            final String username,
+            final String password,
+            final String author,
+            final TestDefinition testDefinitionToUpdate,
+            final String previousRevision,
+            final Map<String, String[]> requestParameterMap,
+            final BackgroundJob job,
+            final ProctorStore trunkStore,
+            final String qaRevision,
+            final String prodRevision,
+            final TestDefinition existingTestDefinition
+    ) throws Exception {
         if (existingTestDefinition == null) {
             if (!isAllInactiveTest(testDefinitionToUpdate)) {
                 job.log("Not autopromoting because there is no existing test definition and test is not 100% inactive.");
@@ -716,8 +729,9 @@ public class EditAndPromoteJob extends AbstractJob {
         return true;
     }
 
-    private static boolean isNewBucketAdded(final List<Range> existingAllocationRanges,
-                                            final List<Range> allocationToUpdateRanges
+    private static boolean isNewBucketAdded(
+            final List<Range> existingAllocationRanges,
+            final List<Range> allocationToUpdateRanges
     ) {
         final Map<Integer, Double> existingAllocRangeMap = generateAllocationRangeMap(existingAllocationRanges);
         final Map<Integer, Double> allocToUpdateRangeMap = generateAllocationRangeMap(allocationToUpdateRanges);
@@ -741,8 +755,10 @@ public class EditAndPromoteJob extends AbstractJob {
         return bucketToTotalAllocationMap;
     }
 
-    private void validateBasicInformation(final TestDefinition definition,
-                                          final BackgroundJob backgroundJob) throws IllegalArgumentException {
+    private void validateBasicInformation(
+            final TestDefinition definition,
+            final BackgroundJob backgroundJob
+    ) throws IllegalArgumentException {
         if (CharMatcher.WHITESPACE.matchesAllOf(Strings.nullToEmpty(definition.getDescription()))) {
             throw new IllegalArgumentException("Description is required.");
         }
@@ -909,15 +925,16 @@ public class EditAndPromoteJob extends AbstractJob {
         return BackgroundJob.JobType.valueOf(jobTypeNameBuilder.toString());
     }
 
-    public BackgroundJob doPromote(final String testName,
-                                   final String username,
-                                   final String password,
-                                   final String author,
-                                   final Environment source,
-                                   final String srcRevision,
-                                   final Environment destination,
-                                   final String destRevision,
-                                   final Map<String, String[]> requestParameterMap
+    public BackgroundJob doPromote(
+            final String testName,
+            final String username,
+            final String password,
+            final String author,
+            final Environment source,
+            final String srcRevision,
+            final Environment destination,
+            final String destRevision,
+            final Map<String, String[]> requestParameterMap
     ) {
         BackgroundJob<Object> backgroundJob = jobFactory.createBackgroundJob(
                 String.format("(username:%s author:%s) promoting %s %s %1.7s to %s", username, author, testName, source, srcRevision, destination),
@@ -947,17 +964,18 @@ public class EditAndPromoteJob extends AbstractJob {
     }
 
     @VisibleForTesting
-    Boolean doPromoteInternal(final String testName,
-                              final String username,
-                              final String password,
-                              final String author,
-                              final Environment source,
-                              final String srcRevision,
-                              final Environment destination,
-                              final String destRevision,
-                              final Map<String, String[]> requestParameterMap,
-                              final BackgroundJob job,
-                              final boolean isAutopromote
+    Boolean doPromoteInternal(
+            final String testName,
+            final String username,
+            final String password,
+            final String author,
+            final Environment source,
+            final String srcRevision,
+            final Environment destination,
+            final String destRevision,
+            final Map<String, String[]> requestParameterMap,
+            final BackgroundJob job,
+            final boolean isAutopromote
     ) throws Exception {
         final Map<String, String> metadata = Collections.emptyMap();
         validateUsernamePassword(username, password);
@@ -1008,14 +1026,15 @@ public class EditAndPromoteJob extends AbstractJob {
 
         Environment getDestination();
 
-        boolean promoteTest(BackgroundJob job,
-                            final String testName,
-                            final String srcRevision,
-                            final String destRevision,
-                            final String username,
-                            final String password,
-                            final String author,
-                            final Map<String, String> metadata
+        boolean promoteTest(
+                final BackgroundJob job,
+                final String testName,
+                final String srcRevision,
+                final String destRevision,
+                final String username,
+                final String password,
+                final String author,
+                final Map<String, String> metadata
         ) throws IllegalArgumentException, ProctorPromoter.TestPromotionException, StoreException.TestUpdateException;
     }
 
@@ -1031,14 +1050,15 @@ public class EditAndPromoteJob extends AbstractJob {
         }
 
         @Override
-        public boolean promoteTest(final BackgroundJob job,
-                                   final String testName,
-                                   final String srcRevision,
-                                   final String destRevision,
-                                   final String username,
-                                   final String password,
-                                   final String author,
-                                   final Map<String, String> metadata
+        public boolean promoteTest(
+                final BackgroundJob job,
+                final String testName,
+                final String srcRevision,
+                final String destRevision,
+                final String username,
+                final String password,
+                final String author,
+                final Map<String, String> metadata
         ) throws IllegalArgumentException, ProctorPromoter.TestPromotionException, StoreException.TestUpdateException, StoreException.TestUpdateException {
             try {
                 doPromotion(job, testName, srcRevision, destRevision, username, password, author, metadata);
@@ -1068,16 +1088,16 @@ public class EditAndPromoteJob extends AbstractJob {
     private final PromoteAction TRUNK_TO_QA = new PromoteActionBase(Environment.WORKING,
             Environment.QA) {
         @Override
-        void doPromotion(final BackgroundJob job,
-                         final String testName,
-                         final String srcRevision,
-                         final String destRevision,
-                         final String username,
-                         final String password,
-                         final String author,
-                         final Map<String, String> metadata
-        )
-                throws ProctorPromoter.TestPromotionException, StoreException {
+        void doPromotion(
+                final BackgroundJob job,
+                final String testName,
+                final String srcRevision,
+                final String destRevision,
+                final String username,
+                final String password,
+                final String author,
+                final Map<String, String> metadata
+        ) throws ProctorPromoter.TestPromotionException, StoreException {
             job.log(String.format("(scm) promote %s %1.7s (trunk to qa)", testName, srcRevision));
             promoter.promoteTrunkToQa(testName, srcRevision, destRevision, username, password, author, metadata);
         }
@@ -1086,14 +1106,15 @@ public class EditAndPromoteJob extends AbstractJob {
     private final PromoteAction TRUNK_TO_PRODUCTION = new PromoteActionBase(Environment.WORKING,
             Environment.PRODUCTION) {
         @Override
-        void doPromotion(final BackgroundJob job,
-                         final String testName,
-                         final String srcRevision,
-                         final String destRevision,
-                         final String username,
-                         final String password,
-                         final String author,
-                         final Map<String, String> metadata
+        void doPromotion(
+                final BackgroundJob job,
+                final String testName,
+                final String srcRevision,
+                final String destRevision,
+                final String username,
+                final String password,
+                final String author,
+                final Map<String, String> metadata
         ) throws ProctorPromoter.TestPromotionException, StoreException {
             job.log(String.format("(scm) promote %s %1.7s (trunk to production)", testName, srcRevision));
             promoter.promoteTrunkToProduction(testName, srcRevision, destRevision, username, password, author, metadata);
@@ -1103,14 +1124,15 @@ public class EditAndPromoteJob extends AbstractJob {
     private final PromoteAction QA_TO_PRODUCTION = new PromoteActionBase(Environment.QA,
             Environment.PRODUCTION) {
         @Override
-        void doPromotion(final BackgroundJob job,
-                         final String testName,
-                         final String srcRevision,
-                         final String destRevision,
-                         final String username,
-                         final String password,
-                         final String author,
-                         final Map<String, String> metadata
+        void doPromotion(
+                final BackgroundJob job,
+                final String testName,
+                final String srcRevision,
+                final String destRevision,
+                final String username,
+                final String password,
+                final String author,
+                final Map<String, String> metadata
         ) throws ProctorPromoter.TestPromotionException, StoreException {
             job.log(String.format("(scm) promote %s %1.7s (qa to production)", testName, srcRevision));
             promoter.promoteQaToProduction(testName, srcRevision, destRevision, username, password, author, metadata);
