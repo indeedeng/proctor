@@ -377,6 +377,7 @@ public class EditAndPromoteJob extends AbstractJob {
         job.log("Not autopromoting because it wasn't requested by user.");
     }
 
+    @VisibleForTesting
     void doPromoteTestToQa(
             final String testName,
             final String username,
@@ -396,6 +397,7 @@ public class EditAndPromoteJob extends AbstractJob {
         }
     }
 
+    @VisibleForTesting
     void doPromoteTestToQaAndProd(
             final String testName,
             final String username,
