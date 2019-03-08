@@ -29,7 +29,10 @@ public class FilenameMapperTagHandler extends TagSupport {
     }
 
     public static String getVersionizedFilename(final PageContext pageContext, final String filename) {
-        final HttpServletRequest httpServletRequest = (HttpServletRequest) pageContext.getRequest();
+        return getVersionizedFilename((HttpServletRequest) pageContext.getRequest(), filename);
+    }
+
+    public static String getVersionizedFilename(final HttpServletRequest httpServletRequest, final String filename) {
         Object mapperObject = httpServletRequest.getAttribute(FILENAME_MAPPER);
         if (mapperObject instanceof Map) {
             Map mapper = (Map) mapperObject;
