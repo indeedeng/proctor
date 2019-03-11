@@ -16,6 +16,10 @@
         <developerConnection>${project.parent.scm.developerConnection}</developerConnection>
     </scm>
 
+    <properties>
+        <jgit.version>3.4.1.201406201815-r</jgit.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -31,12 +35,12 @@
         <dependency>
             <groupId>org.eclipse.jgit</groupId>
             <artifactId>org.eclipse.jgit</artifactId>
-            <version>5.2.0.201812061821-r</version>
+            <version>${jgit.version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jgit</groupId>
             <artifactId>org.eclipse.jgit.junit</artifactId>
-            <version>5.2.0.201812061821-r</version>
+            <version>${jgit.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

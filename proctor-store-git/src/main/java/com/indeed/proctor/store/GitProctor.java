@@ -74,7 +74,7 @@ public class GitProctor extends FileBasedProctorStore {
                       final String password,
                       final String testDefinitionsDirectory,
                       final String branchName) {
-        this(new GitProctorCore(gitPath, username, password, testDefinitionsDirectory, Files.createTempDir(), branchName),
+        this(new GitProctorCore(gitPath, username, password, testDefinitionsDirectory, Files.createTempDir()),
                 testDefinitionsDirectory, branchName);
     }
 
@@ -132,7 +132,7 @@ public class GitProctor extends FileBasedProctorStore {
     @Override
     public String getLatestVersion() throws StoreException {
         try {
-            final Ref branch = git.getRepository().findRef(getGitCore().getRefName());
+            final Ref branch = git.getRepository().getRef(getGitCore().getRefName());
             return branch.getObjectId().name();
         } catch (IOException e) {
             throw new StoreException(e);
