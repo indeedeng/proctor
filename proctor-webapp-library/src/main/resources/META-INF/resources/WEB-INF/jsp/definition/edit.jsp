@@ -205,13 +205,30 @@
                     <ui:grid-columns width="nine"><input placeholder="(optional) description of change" type="text" name="comment" /></ui:grid-columns>
                 </ui:grid-row>
                 <proctor:renderEditPageInjectionTemplates position="<%=EditPageRenderer.EditPagePosition.BOTTOM_FORM%>" testName="${testName}" testDefinitionJson="${testDefinitionJson}" isCreate="${isCreate}"/>
+                <ui:grid-row extraCssClass="ui-radio-buttons">
+                    <ui:grid-columns width="three"><!-- This column is for spacing to follow Comment field. --></ui:grid-columns>
+                    <ui:grid-columns width="nine">
+                        <div>
+                            <label>
+                                <input name="save-type-select" id="save-trunk" type="radio" value="autopromote">Save to trunk
+                            </label>
+                        </div>
+                        <div>
+                            <label>
+                                <input name="save-type-select" id="autopromote-qa" type="radio" value="autopromote-qa" checked>Save to trunk and Promote to QA
+                            </label>
+                        </div>
+                        <div>
+                            <label>
+                                <input name="save-type-select" id="autopromote-prod" type="radio" value="autopromote-prod">Save to trunk and Promote to QA and Prod
+                            </label>
+                        </div>
+                    </ui:grid-columns>
+                </ui:grid-row>
                 <div class="ui-form-buttons">
                     <input type="submit" class="button js-save-form" value="Save">
                     <span class="button tiny secondary js-clean-workspace">clean workspace</span>
                     <div style="display:none;" class="mam save-msg-container alert-box"></div>
-                    <label for="autopromote-checkbox">
-                        <input id="autopromote-checkbox" type="checkbox" class="mrs mts" value="autopromote">Enable Autopromote
-                    </label>
                 </div>
             </div>
         </ui:grid-columns>

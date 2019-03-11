@@ -1,6 +1,10 @@
 /* foundation.css additions start */
 span.inline, select.inline  { line-height: 32px; margin: 0 0 12px 0; }
 .ui-form-buttons { text-align: center; }
+.ui-radio-buttons {
+    margin: 0 0 10px 0;
+}
+
 div.ui-panel-buttons { background-color: #FFF; border-color: #2BA6CB }
 
 div.alert-box.warning { background-color: #FF6C3C; border-color: #FF4609; color: #FFF; }

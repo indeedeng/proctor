@@ -218,7 +218,8 @@ indeed.proctor.app.editor.DefinitionEditor.prototype.save_ = function() {
     'comment': goog.dom.forms.getValue(this.svninfo.comment),
     'previousRevision': this.prevRevision,
     'isCreate' : this.isCreate,
-    'isAutopromote' : goog.dom.getElement("autopromote-checkbox").checked
+    'isAutopromote' : goog.dom.getElement("autopromote-prod").checked,
+    'isAutopromoteToQa' : goog.dom.getElement("autopromote-qa").checked
   };
   if (this.svninfo.username && this.svninfo.password) {
     jsData['username'] = goog.dom.forms.getValue(this.svninfo.username);
