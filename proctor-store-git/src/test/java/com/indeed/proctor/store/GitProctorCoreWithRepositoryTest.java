@@ -80,8 +80,7 @@ public class GitProctorCoreWithRepositoryTest extends RepositoryTestCase {
                 GIT_USERNAME,
                 GIT_PASSWORD,
                 TEST_DEFINITION_DIRECTORY,
-                workingDir,
-                branchName
+                workingDir
         );
 
         final Git git = gitProctorCore.getGit();

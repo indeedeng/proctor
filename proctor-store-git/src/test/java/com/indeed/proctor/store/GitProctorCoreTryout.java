@@ -29,8 +29,7 @@ public class GitProctorCoreTryout {
                 GIT_USERNAME,
                 GIT_PASSWORD,
                 TEST_DEFINITION_DIRECTORY,
-                tempDir,
-                "trunk"
+                tempDir
         );
         try (final FileBasedProctorStore store = new GitProctor(gitProctorCore, TEST_DEFINITION_DIRECTORY)) {
             LOGGER.debug("Created store, getting history...");
