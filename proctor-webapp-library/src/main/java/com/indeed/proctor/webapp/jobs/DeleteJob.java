@@ -146,7 +146,7 @@ public class DeleteJob extends AbstractJob {
         }
 
         job.logWithTiming("Deleting", "Delete");
-        job.log("(svn) delete " + testName);
+        job.log("(scm) delete " + testName);
         store.deleteTestDefinition(username, password, author, srcRevision, testName, definition, fullComment);
 
         boolean testExistsInOtherEnvironments = false;

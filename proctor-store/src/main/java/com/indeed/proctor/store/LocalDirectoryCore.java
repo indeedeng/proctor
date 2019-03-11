@@ -26,13 +26,13 @@ public class LocalDirectoryCore implements FileBasedPersisterCore {
     private final File baseDir;
     private final String testDefinitionsDirectory;
 
-    public LocalDirectoryCore(final File baseDir, String testDefinitionsDirectory) {
+    public LocalDirectoryCore(final File baseDir, final String testDefinitionsDirectory) {
         this.baseDir = baseDir;
         this.testDefinitionsDirectory = testDefinitionsDirectory;
     }
 
     @Override
-    public <C> C getFileContents(Class<C> c, String[] path_parts, C defaultValue, String revision) throws StoreException.ReadException, JsonProcessingException {
+    public <C> C getFileContents(final Class<C> c, final String[] path_parts, final C defaultValue, final String revision) throws StoreException.ReadException, JsonProcessingException {
         final String path = Joiner.on(File.separator).join(path_parts);
         FileReader reader = null;
 
@@ -48,7 +48,7 @@ public class LocalDirectoryCore implements FileBasedPersisterCore {
                 }
                 return defaultValue;
             }
-        } catch (IOException e) {
+        } catch (final IOException e) {
             Throwables.propagateIfInstanceOf(e, JsonProcessingException.class);
             throw new StoreException.ReadException("Error reading " + path, e);
         } finally {
@@ -69,11 +69,11 @@ public class LocalDirectoryCore implements FileBasedPersisterCore {
 
     static class LocalRcsClient implements FileBasedProctorStore.RcsClient {
         @Override
-        public void add(File file) throws Exception {
+        public void add(final File file) throws Exception {
         }
 
         @Override
-        public void delete(File testDefinitionDirectory) throws Exception {
+        public void delete(final File testDefinitionDirectory) throws Exception {
             testDefinitionDirectory.delete();
         }
 
@@ -85,23 +85,23 @@ public class LocalDirectoryCore implements FileBasedPersisterCore {
 
 
     @Override
-    public void doInWorkingDirectory(String username, String password, String author, String comment, String previousVersion, FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException {
+    public void doInWorkingDirectory(final String username, final String password, final String author, final String comment, final String previousVersion, final FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException {
         try {
             final FileBasedProctorStore.RcsClient rcsClient = new LocalRcsClient();
             final boolean thingsChanged = updater.doInWorkingDirectory(rcsClient, baseDir);
         } catch (final Exception e) {
-            throw new StoreException.TestUpdateException("Unable to perform operation", e);
+            throw new StoreException.TestUpdateException("LocalCore: Unable to perform operation: " + e.getMessage(), e);
         } finally {
         }
     }
 
     @Override
-    public void doInWorkingDirectory(String username, String password, String comment, String previousVersion, FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException {
+    public void doInWorkingDirectory(final String username, final String password, final String comment, final String previousVersion, final FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException {
         doInWorkingDirectory(username, password, username, comment, previousVersion, updater);
     }
 
     @Override
-    public TestVersionResult determineVersions(String fetchRevision) throws StoreException.ReadException {
+    public TestVersionResult determineVersions(final String fetchRevision) throws StoreException.ReadException {
         final File testDir = new File(baseDir + File.separator + testDefinitionsDirectory);
         // List all of the directories, excluding the directories created by svn (implementation is ignoring directories named '.svn'
         final File[] testDefFiles = testDir.listFiles( (FileFilter) FileFilterUtils.makeSVNAware(FileFilterUtils.directoryFileFilter()) );

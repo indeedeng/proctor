@@ -60,7 +60,8 @@ public class GitProctor extends FileBasedProctorStore {
     */
 
     private final Git git;
-    private String branchName;
+    @Nullable
+    private final String branchName;
 
     public GitProctor(final String gitPath,
                       final String username,
@@ -134,7 +135,7 @@ public class GitProctor extends FileBasedProctorStore {
         try {
             final Ref branch = git.getRepository().getRef(getGitCore().getRefName());
             return branch.getObjectId().name();
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new StoreException(e);
         }
     }
@@ -225,7 +226,7 @@ public class GitProctor extends FileBasedProctorStore {
         return versions;
     }
 
-    public void checkoutBranch(String branchName) {
+    public void checkoutBranch(final String branchName) {
         getGitCore().checkoutBranch(branchName);
     }
 

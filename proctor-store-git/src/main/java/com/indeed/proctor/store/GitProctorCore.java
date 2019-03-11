@@ -79,13 +79,6 @@ public class GitProctorCore implements FileBasedPersisterCore {
         this(gitUrl, username, password, testDefinitionsDirectory, new GitWorkspaceProviderImpl(tempDir));
     }
 
-    /**
-     * @param gitUrl
-     * @param username
-     * @param password
-     * @param testDefinitionsDirectory
-     * @param workspaceProvider
-     */
     public GitProctorCore(final String gitUrl,
                           final String username,
                           final String password,
@@ -214,7 +207,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
                     .setCredentialsProvider(user)
                     .setTimeout(pullPushTimeoutSeconds)
                     .call();
-        } catch (GitAPIException e) {
+        } catch (final GitAPIException e) {
             LOGGER.error("Unable to fetch from " + gitUrl, e);
         }
         gcExecutor.scheduleAtFixedRate(new GitGcTask(), GC_INTERVAL_IN_DAY, GC_INTERVAL_IN_DAY, TimeUnit.DAYS);
@@ -222,7 +215,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
 
     @Override
     public <C> C getFileContents(final Class<C> c,
-            final java.lang.String[] path,
+            final String[] path,
             final C defaultValue,
             final String revision) throws StoreException.ReadException, JsonProcessingException {
         try {
@@ -254,7 +247,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
             } else {
                 throw new StoreException.ReadException("Invalid Object Type " + loader.getType() + " for id " + revision);
             }
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new StoreException.ReadException(e);
         }
     }
@@ -275,7 +268,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
      * Replaced by {@link #createRefresherTask()}
      */
     @Deprecated
-    public GitDirectoryRefresher createRefresherTask(String username, String password) {
+    public GitDirectoryRefresher createRefresherTask(final String username, final String password) {
         return new GitDirectoryRefresher(workspaceProvider, this, username, password);
     }
 
@@ -304,8 +297,8 @@ public class GitProctorCore implements FileBasedPersisterCore {
         }
 
         @Override
-        public void delete(File testDefinitionDirectory) throws Exception {
-            for (File file : testDefinitionDirectory.listFiles()) {
+        public void delete(final File testDefinitionDirectory) throws Exception {
+            for (final File file : testDefinitionDirectory.listFiles()) {
                 git.rm().addFilepattern(testDefinitionsDirectory + "/" + testDefinitionDirectory.getName()
                         + "/" + file.getName()).call();
             }
@@ -482,7 +475,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
 
             // now use a TreeWalk to iterate over all files in the Tree recursively
             // you can set Filters to narrow down the results if needed
-            TreeWalk treeWalk = new TreeWalk(git.getRepository());
+            final TreeWalk treeWalk = new TreeWalk(git.getRepository());
             treeWalk.addTree(tree);
             treeWalk.setFilter(AndTreeFilter
                 .create(PathFilter.create(testDefinitionsDirectory), PathSuffixFilter.create("definition.json")));
@@ -511,7 +504,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
                     headTree.toObjectId().getName(),
                     headTree.getFullMessage()
             );
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new StoreException.ReadException(e);
         }
     }
@@ -586,11 +579,11 @@ public class GitProctorCore implements FileBasedPersisterCore {
             @Override
             public Void call() {
                 try {
-                    /** git pull is preferable since it's more efficient **/
+                    /* git pull is preferable since it's more efficient */
                     LOGGER.debug("Started refresh with git pull");
                     final PullResult result = getGit().pull().setProgressMonitor(PROGRESS_MONITOR).setRebase(true).setCredentialsProvider(user).call();
                     if (!result.isSuccessful()) {
-                        /** if git pull failed, use git reset **/
+                        /* if git pull failed, use git reset */
                         LOGGER.info("refresh failed. Running undo local changes");
                         undoLocalChanges();
                     }

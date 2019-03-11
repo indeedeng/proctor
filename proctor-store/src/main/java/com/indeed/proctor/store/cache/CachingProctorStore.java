@@ -51,7 +51,7 @@ public class CachingProctorStore implements ProctorStore {
         this.delegate = delegate;
         cacheHolder = new CacheHolder();
         try {
-            /**
+            /*
              * We assume local repository is initialized, so we can call cacheHolder#start in constructor
              */
             cacheHolder.start();

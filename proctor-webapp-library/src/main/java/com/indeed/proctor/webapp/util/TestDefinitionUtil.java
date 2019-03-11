@@ -23,13 +23,13 @@ public class TestDefinitionUtil {
         final List<Revision> history = getTestHistory(store, testName, startRevision);
         final List<RevisionDefinition> revisionDefinitions = new ArrayList<>();
         if (useDefinitions) {
-            for (Revision revision : history) {
+            for (final Revision revision : history) {
                 final String revisionName = revision.getRevision();
                 final TestDefinition definition = getTestDefinition(store, testName, revisionName);
                 revisionDefinitions.add(new RevisionDefinition(revision, definition));
             }
         } else {
-            for (Revision revision : history) {
+            for (final Revision revision : history) {
                 revisionDefinitions.add(new RevisionDefinition(revision, null));
             }
         }
@@ -40,8 +40,9 @@ public class TestDefinitionUtil {
     public static TestDefinition getTestDefinition(final ProctorStore store, final String testName) {
         try {
             return store.getCurrentTestDefinition(testName);
-        } catch (StoreException e) {
-            LOGGER.info("Failed to get current test definition for: " + testName, e);
+        } catch (final StoreException e) {
+            // don't care about exception cause stacktrace for INFO level message
+            LOGGER.info("Failed to get current test definition for: " + testName + ": " + e.getMessage());
             return null;
         }
     }
@@ -54,8 +55,9 @@ public class TestDefinitionUtil {
                 return null;
             }
             return store.getTestDefinition(testName, revision);
-        } catch (StoreException e) {
-            LOGGER.info("Failed to get current test definition for: " + testName, e);
+        } catch (final StoreException e) {
+            // don't care about exception cause stacktrace for INFO level message
+            LOGGER.info("Failed to get current test definition for: " + testName + ": " + e.getMessage());
             return null;
         }
     }
@@ -92,12 +94,13 @@ public class TestDefinitionUtil {
             } else {
                 history = store.getHistory(testName, startRevision, 0, limit);
             }
-            if (history.size() == 0) {
+            if (history.isEmpty()) {
                 LOGGER.info("No version history for [" + testName + "]");
             }
             return history;
-        } catch (StoreException e) {
-            LOGGER.info("Failed to get current test history for: " + testName, e);
+        } catch (final StoreException e) {
+            // don't care about exception cause stacktrace for INFO level message
+            LOGGER.info("Failed to get current test history for: " + testName + ": " + e.getMessage());
             return null;
         }
     }

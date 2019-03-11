@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 /**
- * The sole entry point for client applications determining the test buckets for a particular client.  See {@link #determineTestGroups(Identifiers, java.util.Map, java.util.Map)}
+ * The sole entry point for client applications determining the test buckets for a particular client.  See {@link #determineTestGroups(Identifiers, Map, Map)}
  * @author ketan
  */
 public class Proctor {
@@ -43,7 +43,10 @@ public class Proctor {
      * @return constructed Proctor object
      */
     @Nonnull
-    public static Proctor construct(@Nonnull final TestMatrixArtifact matrix, ProctorLoadResult loadResult, FunctionMapper functionMapper) {
+    public static Proctor construct(
+            @Nonnull final TestMatrixArtifact matrix,
+            final ProctorLoadResult loadResult,
+            final FunctionMapper functionMapper) {
         final ExpressionFactory expressionFactory = RuleEvaluator.EXPRESSION_FACTORY;
 
         final Map<String, TestChooser<?>> testChoosers = Maps.newLinkedHashMap();
@@ -95,7 +98,7 @@ public class Proctor {
     Proctor(
             final TestMatrixArtifact matrix,
             final ProctorLoadResult loadResult,
-            @Nonnull Map<String, TestChooser<?>> testChoosers
+            @Nonnull final Map<String, TestChooser<?>> testChoosers
     ) {
         this.matrix = matrix;
         this.loadResult = loadResult;
@@ -108,8 +111,8 @@ public class Proctor {
         VarExporter.forNamespace(DetailedExport.class.getSimpleName()).export(new DetailedExport(), "");  //  intentionally not in global
     }
 
-    class DetailedExport {
-        /**
+    private static class DetailedExport {
+        /*
          * TODO: export useful details about the parsed test matrix
          */
     }
@@ -125,7 +128,7 @@ public class Proctor {
      * @param forceGroups a {@link Map} from a String test name to an Integer bucket value. For the specified test allocate the specified bucket (if valid) regardless
      *                    of the standard logic
      * @return a {@link ProctorResult} containing the test buckets that apply to this client as well as the versions of the tests that were executed
-     * @deprecated use {@link Proctor#determineTestGroups(Identifiers, java.util.Map, java.util.Map)} instead
+     * @deprecated use {@link Proctor#determineTestGroups(Identifiers, Map, Map)} instead
      */
     @SuppressWarnings("UnusedDeclaration") // TODO Remove deprecated
     @Nonnull
@@ -190,10 +193,12 @@ public class Proctor {
                 final TestType testType = testChooser.getTestDefinition().getTestType();
                 identifier = identifiers.getIdentifier(testType);
                 if (identifier == null) {
+                    // No identifier for the testType of this chooser, nothing to do
                     continue;
                 }
             } else {
                 if (! identifiers.isRandomEnabled()) {
+                    // test wants random chooser, but client disabled random, nothing to do
                     continue;
                 }
                 identifier = null;
@@ -202,6 +207,7 @@ public class Proctor {
                 final TestBucket forcedTestBucket = testChooser.getTestBucket(forceGroupBucket);
                 if (forcedTestBucket != null) {
                     testGroups.put(testName, forcedTestBucket);
+                    // use forced group
                     continue;
                 }
             }

@@ -57,7 +57,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 
 /**
- * @author parker
+ * Regularly reloads specifications from applications where proctor client is deployed.
  */
 public class RemoteProctorSpecificationSource extends DataLoadingTimerTask implements ProctorSpecificationSource {
     private static final Logger LOGGER = Logger.getLogger(RemoteProctorSpecificationSource.class);
@@ -65,12 +65,12 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
     private static final ObjectMapper OBJECT_MAPPER = Serializers.strict();
 
     @Autowired(required = false)
-    private ProctorClientSource clientSource = new DefaultClientSource();
+    private final ProctorClientSource clientSource = new DefaultClientSource();
 
     private final int httpTimeout;
     private final ExecutorService httpExecutor;
 
-    private volatile Map<Environment, ImmutableMap<AppVersion, RemoteSpecificationResult>> cache_ = Maps.newConcurrentMap();
+    private final Map<Environment, ImmutableMap<AppVersion, RemoteSpecificationResult>> cache_ = Maps.newConcurrentMap();
 
     private final Map<Environment, ProctorReader> proctorReaderMap;
 
@@ -143,7 +143,7 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
         }
         final Set<AppVersion> clients = Sets.newHashSet();
         final ConsumableTestDefinition testDefinition = getCurrentConsumableTestDefinition(environment, testName);
-        for (Map.Entry<AppVersion, RemoteSpecificationResult> entry : specifications.entrySet()) {
+        for (final Map.Entry<AppVersion, RemoteSpecificationResult> entry : specifications.entrySet()) {
             final AppVersion version = entry.getKey();
             final RemoteSpecificationResult rr = entry.getValue();
             if (rr.isSuccess()) {
@@ -194,9 +194,9 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
 
     private boolean refreshInternalCache() {
         // TODO (parker) 9/6/12 - run all of these in parallel instead of in series
-        boolean devSuccess = refreshInternalCache(Environment.WORKING);
-        boolean qaSuccess = refreshInternalCache(Environment.QA);
-        boolean productionSuccess = refreshInternalCache(Environment.PRODUCTION);
+        final boolean devSuccess = refreshInternalCache(Environment.WORKING);
+        final boolean qaSuccess = refreshInternalCache(Environment.QA);
+        final boolean productionSuccess = refreshInternalCache(Environment.PRODUCTION);
         return devSuccess && qaSuccess && productionSuccess;
     }
 
@@ -325,7 +325,7 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
 
         final Pair<Integer, SpecificationResult> apiSpec = fetchSpecificationFromApi(client, timeout);
         if (fetchSpecificationFailed(apiSpec.getSecond())) {
-            return fetchSpecificationFromExportedVaraible(client, timeout);
+            return fetchSpecificationFromExportedVariable(client, timeout);
         }
         return apiSpec;
     }
@@ -409,9 +409,9 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
     }
 
     private static Pair<Integer, SpecificationResult> fetchSpecificationFromApi(final ProctorClientApplication client, final int timeout) {
-        /**
+        /*
          * This needs to be moved to a separate checker class implementing some interface
-         **/
+         */
         final String apiUrl = client.getBaseApplicationUrl() + "/private/proctor/specification";
         return fetchSpecification(apiUrl, timeout, new SpecificationParser() {
             @Override
@@ -421,10 +421,10 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
         });
     }
 
-    private static Pair<Integer, SpecificationResult> fetchSpecificationFromExportedVaraible(final ProctorClientApplication client, final int timeout) {
-        /**
+    private static Pair<Integer, SpecificationResult> fetchSpecificationFromExportedVariable(final ProctorClientApplication client, final int timeout) {
+        /*
          * This needs to be moved to a separate checker class implementing some interface
-         **/
+         */
         final String urlStr = client.getBaseApplicationUrl() + "/private/v?ns=JsonProctorLoaderFactory&v=specification";
         return fetchSpecification(urlStr, timeout, EXPORTED_VARIABLE_PARSER);
     }

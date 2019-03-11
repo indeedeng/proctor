@@ -262,7 +262,7 @@ public class SvnPersisterCoreImpl implements SvnPersisterCore, Closeable {
                 final C testDefinition = objectMapper.readValue(baos.toByteArray(), c);
                 try {
                     baos.close();
-                } catch (IOException e) { /* ignore */ }
+                } catch (final IOException e) { /* ignore */ }
                 return testDefinition;
             }
 
@@ -286,7 +286,7 @@ public class SvnPersisterCoreImpl implements SvnPersisterCore, Closeable {
         }
 
         @Override
-        public void delete(File testDefinitionDirectory) throws Exception {
+        public void delete(final File testDefinitionDirectory) throws Exception {
             wcClient.doDelete(testDefinitionDirectory, true, false);
         }
 
@@ -312,11 +312,11 @@ public class SvnPersisterCoreImpl implements SvnPersisterCore, Closeable {
         } catch (final SVNAuthenticationException e) {
             throw new StoreException.TestUpdateException("Invalid credentials provided for " + username, e);
         } catch (final SVNException e) {
-            throw new StoreException.TestUpdateException("Unable to check out to working directory", e);
+            throw new StoreException.TestUpdateException("SvnCore: Unable to check out to working directory", e);
         } catch (final IOException e) {
-            throw new StoreException.TestUpdateException("Unable to perform operation", e);
+            throw new StoreException.TestUpdateException("SvnCore: Unable to perform operation", e);
         } catch (final Exception e) {
-            throw new StoreException.TestUpdateException("Unable to perform operation", e);
+            throw new StoreException.TestUpdateException("SvnCore: Unable to perform operation", e);
         }
     }
 
@@ -343,7 +343,7 @@ public class SvnPersisterCoreImpl implements SvnPersisterCore, Closeable {
                     LOGGER.warn("skipping copying from base directory (" + templateSvnDir + ") because it does not exist");
                 }
             }
-        } catch (IOException e) {
+        } catch (final IOException e) {
             LOGGER.error("Exception during copy from (svn base) " + templateSvnDir + " to (" + username + ") " + userDirectory, e);
         }
         return userDirectory;
@@ -392,7 +392,7 @@ public class SvnPersisterCoreImpl implements SvnPersisterCore, Closeable {
     public void shutdown() {
         try {
             close();
-        } catch (IOException e) {
+        } catch (final IOException e) {
             LOGGER.error("Ignored exception during close", e);
         }
     }
@@ -422,7 +422,7 @@ public class SvnPersisterCoreImpl implements SvnPersisterCore, Closeable {
                 throw new StoreException.ReadException("Invalid SVN revision " + revision);
             }
             return rev;
-        } catch (NumberFormatException e) {
+        } catch (final NumberFormatException e) {
             throw new StoreException.ReadException("Invalid SVN revision " + revision);
         }
     }
@@ -430,7 +430,7 @@ public class SvnPersisterCoreImpl implements SvnPersisterCore, Closeable {
     private <T> T doReadWithClientAndRepository(final SvnOperation<T> operation) throws StoreException.ReadException {
         try {
             return doWithClientAndRepository(operation);
-        } catch (StoreException e) {
+        } catch (final StoreException e) {
             Throwables.propagateIfInstanceOf(e, StoreException.ReadException.class);
             throw new StoreException.ReadException(e);
         }
@@ -449,14 +449,14 @@ public class SvnPersisterCoreImpl implements SvnPersisterCore, Closeable {
             final SVNRepository repository = clientManager.createRepository(svnUrl, true);
 
             return operation.execute(repository, clientManager);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             Throwables.propagateIfInstanceOf(e, StoreException.class);
             throw operation.handleException(e);
         } finally {
             if (clientManager != null) {
                 try {
                     clientManagerPool.returnObject(clientManager);
-                } catch (Exception e) {
+                } catch (final Exception e) {
                     LOGGER.fatal("Failed to return SVNClientManager", e);
                 }
             }

@@ -90,7 +90,9 @@ class RandomTestChooser implements TestChooser<Void> {
 
     @Nonnull
     @Override
-    public TestChooser.Result choose(@Nullable Void identifier, @Nonnull Map<String, Object> values) {
+    public TestChooser.Result choose(
+            @Nullable final Void identifier,
+            @Nonnull final Map<String, Object> values) {
         final int matchingRuleIndex = testRangeSelector.findMatchingRule(values);
         if (matchingRuleIndex < 0) {
             return TestChooser.Result.EMPTY;
@@ -124,7 +126,7 @@ class RandomTestChooser implements TestChooser<Void> {
     }
 
     static TestBucket getBucketForValue(final int matchingBucketValue, @Nonnull final TestBucket[] matchingBucketRange) {
-        for (TestBucket bucket : matchingBucketRange) {
+        for (final TestBucket bucket : matchingBucketRange) {
             if (matchingBucketValue == bucket.getValue()) {
                 return bucket;
             }
