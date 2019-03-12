@@ -226,7 +226,7 @@ public class ProctorController extends AbstractController {
             case ALL:
                 return TestSearchUtil.matchAll(testName, definition, lowerQuery);
             default:
-                throw new IllegalArgumentException("unknown filter type");
+                throw new IllegalArgumentException("unknown filter type: " + type);
         }
     }
 
@@ -239,7 +239,7 @@ public class ProctorController extends AbstractController {
             case INACTIVE:
                 return !TestSearchUtil.matchActiveAllocation(allocations);
             default:
-                throw new IllegalArgumentException("unknown filter type");
+                throw new IllegalArgumentException("unknown filter type: " + filterActive);
         }
     }
 
@@ -284,8 +284,8 @@ public class ProctorController extends AbstractController {
             @CookieValue(value = "FavoriteTests", defaultValue = "") final String favoriteTestsRaw) {
         final Set<String> favoriteTestNames = Sets.newHashSet(Splitter.on(",").split(favoriteTestsRaw));
 
-        final Environment which = determineEnvironmentFromParameter(branch);
-        final Map<String, TestDefinition> tests = getCurrentMatrix(which).getTestMatrixDefinition().getTests();
+        final Environment environment = determineEnvironmentFromParameter(branch);
+        final Map<String, TestDefinition> tests = getCurrentMatrix(environment).getTestMatrixDefinition().getTests();
         final List<TestNameAndDefinition> result = tests.entrySet().stream()
                     .filter(entry -> matchFilterType(entry.getKey(), entry.getValue(), filterType, q)
                             && matchFilterActive(entry.getValue().getAllocations(), filterActive))
