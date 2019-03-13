@@ -1,5 +1,6 @@
 package com.indeed.proctor.webapp.jobs;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -86,7 +87,6 @@ public class MatrixChecker {
                 LOGGER.info("Verifying artifact against : cached " + appVersion + " for " + testName);
                 return verify(specification, artifact, testName, appVersion.toString());
             }));
-
         }
 
         final ImmutableList.Builder<String> errorsBuilder = ImmutableList.builder();
@@ -143,14 +143,17 @@ public class MatrixChecker {
         }
     }
 
-    private static String getErrorMessage(final AppVersion appVersion, final ProctorLoadResult proctorLoadResult) {
+    @VisibleForTesting
+    static String getErrorMessage(final AppVersion appVersion, final ProctorLoadResult proctorLoadResult) {
         final Map<String, IncompatibleTestMatrixException> testsWithErrors = proctorLoadResult.getTestErrorMap();
         final Set<String> missingTests = proctorLoadResult.getMissingTests();
 
         // We expect at most one test to have a problem because we limited the verification to a single test
-        if (testsWithErrors.size() > 0) {
-            return testsWithErrors.values().iterator().next().getMessage();
-        } else if (missingTests.size() > 0) {
+        if (!testsWithErrors.isEmpty()) {
+            final String testName = testsWithErrors.keySet().iterator().next();
+            final String errorMessage = testsWithErrors.get(testName).getMessage();
+            return String.format("%s cannot load test '%s': %s", appVersion, testName, errorMessage);
+        } else if (!missingTests.isEmpty()) {
             return String.format("%s requires test '%s'", appVersion, missingTests.iterator().next());
         } else {
             return "";

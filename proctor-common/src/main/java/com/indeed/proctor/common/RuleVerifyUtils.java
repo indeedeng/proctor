@@ -37,7 +37,7 @@ public class RuleVerifyUtils {
             try {
                 valueExpression = expressionFactory.createValueExpression(elContext, testRule, Boolean.class);
             } catch (final ELException e) {
-                throw new InvalidRuleException(e, String.format("Rule %s has invalid syntax.", testRule));
+                throw new InvalidRuleException(e, String.format("Rule %s has invalid syntax or unknown function.", testRule));
             }
 
             assertNoAssignmentsInRule(testRule);
@@ -61,7 +61,7 @@ public class RuleVerifyUtils {
                 // Check identifiers in the AST and verify variable names
                 final Node undefinedIdentifier = checkUndefinedIdentifier(root, elContext, absentIdentifiers);
                 if (undefinedIdentifier != null) {
-                    throw new InvalidRuleException(String.format("Rule %s contains undefined identifier : %s", testRule, undefinedIdentifier.getImage()));
+                    throw new InvalidRuleException(String.format("Rule %s contains undefined identifier '%s'", testRule, undefinedIdentifier.getImage()));
                 }
 
                 // Evaluate rule with given context
@@ -85,34 +85,31 @@ public class RuleVerifyUtils {
     private static void assertNoAssignmentsInRule(final String testRule) throws InvalidRuleException {
         final Node rootNode = ExpressionBuilder.createNode(testRule);
         try {
-            rootNode.accept(new NodeVisitor() {
-                @Override
-                public void visit(final Node node) throws InvalidRuleException {
-                    // Classes org.apache.el.AstAssign, AstMapData, AstListData... were only introduced in apache-el:8, so cannot use instanceOf
-                    if ("Assign".equalsIgnoreCase(node.toString())) {
-                        throw new InvalidRuleException(String.format("Rule %s has invalid syntax: be sure to use '==' for comparisons.", testRule));
-                    }
-                    if ("Concatenation".equalsIgnoreCase(node.toString())) {
-                        throw new InvalidRuleException(String.format("Rule %s has invalid syntax: do not use '+='.", testRule));
-                    }
-                    if ("Arrow".equalsIgnoreCase(node.toString())) {
-                        throw new InvalidRuleException(String.format("Rule %s has invalid syntax: do not use '->'.", testRule));
-                    }
-                    if ("ListData".equalsIgnoreCase(node.toString())) {
-                        throw new InvalidRuleException(String.format("Rule %s has invalid syntax: do not use [] Lists.", testRule));
-                    }
-                    if ("MapData".equalsIgnoreCase(node.toString())) {
-                        throw new InvalidRuleException(String.format("Rule %s has invalid syntax: do not use {:} Maps.", testRule));
-                    }
-                    if ("SetData".equalsIgnoreCase(node.toString())) {
-                        throw new InvalidRuleException(String.format("Rule %s has invalid syntax: do not use {} Sets.", testRule));
-                    }
-                    if ("Semicolon".equalsIgnoreCase(node.toString())) {
-                        throw new InvalidRuleException(String.format("Rule %s has invalid syntax: do not use Semicolon.", testRule));
-                    }
-                    if (node.getClass().getName().contains("AstLambda")) {
-                        throw new InvalidRuleException(String.format("Rule %s has invalid syntax: do not use -> Lambdas.", testRule));
-                    }
+            rootNode.accept(node -> {
+                // Classes org.apache.el.AstAssign, AstMapData, AstListData... were only introduced in apache-el:8, so cannot use instanceOf
+                if ("Assign".equalsIgnoreCase(node.toString())) {
+                    throw new InvalidRuleException(String.format("Rule %s has invalid syntax: be sure to use '==' for comparisons.", testRule));
+                }
+                if ("Concatenation".equalsIgnoreCase(node.toString())) {
+                    throw new InvalidRuleException(String.format("Rule %s has invalid syntax: do not use '+='.", testRule));
+                }
+                if ("Arrow".equalsIgnoreCase(node.toString())) {
+                    throw new InvalidRuleException(String.format("Rule %s has invalid syntax: do not use '->'.", testRule));
+                }
+                if ("ListData".equalsIgnoreCase(node.toString())) {
+                    throw new InvalidRuleException(String.format("Rule %s has invalid syntax: do not use [] Lists.", testRule));
+                }
+                if ("MapData".equalsIgnoreCase(node.toString())) {
+                    throw new InvalidRuleException(String.format("Rule %s has invalid syntax: do not use {:} Maps.", testRule));
+                }
+                if ("SetData".equalsIgnoreCase(node.toString())) {
+                    throw new InvalidRuleException(String.format("Rule %s has invalid syntax: do not use {} Sets.", testRule));
+                }
+                if ("Semicolon".equalsIgnoreCase(node.toString())) {
+                    throw new InvalidRuleException(String.format("Rule %s has invalid syntax: do not use Semicolon.", testRule));
+                }
+                if (node.getClass().getName().contains("AstLambda")) {
+                    throw new InvalidRuleException(String.format("Rule %s has invalid syntax: do not use -> Lambdas.", testRule));
                 }
             });
         } catch (final InvalidRuleException e) {
