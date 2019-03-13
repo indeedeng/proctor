@@ -826,7 +826,7 @@ public abstract class ProctorUtils {
             final ProvidedContext providedContext
     ) throws IncompatibleTestMatrixException {
         final List<Allocation> allocations = testDefinition.getAllocations();
-        ExpressionFactory expressionFactory = new ExpressionFactoryImpl();
+        final ExpressionFactory expressionFactory = new ExpressionFactoryImpl();
         //verify test rule is valid EL
         final String testRule = testDefinition.getRule();
 
@@ -838,7 +838,8 @@ public abstract class ProctorUtils {
         try {
             RuleVerifyUtils.verifyRule(testRule, providedContext.shouldEvaluate(), expressionFactory, elContext, providedContext.getUninstantiatedIdentifiers());
         } catch (final InvalidRuleException e) {
-            throw new IncompatibleTestMatrixException("Unable to evaluate rule ${" + testRule + "} in " + testName, e);
+            throw new IncompatibleTestMatrixException(
+                    String.format("Invalid rule %s in %s: %s", testRule, testName, e.getMessage()) , e);
         }
 
         if (allocations.isEmpty()) {
@@ -886,7 +887,8 @@ public abstract class ProctorUtils {
             try {
                 RuleVerifyUtils.verifyRule(rule, providedContext.shouldEvaluate(), expressionFactory, elContext, providedContext.getUninstantiatedIdentifiers());
             }  catch (final InvalidRuleException e) {
-                throw new IncompatibleTestMatrixException("Unable to evaluate rule ${" + rule + "} in allocations of " + testName, e);
+                throw new IncompatibleTestMatrixException(
+                        String.format("Invalid allocation rule %s in %s: %s", rule, testName, e.getMessage()), e);
             }
 
         }
