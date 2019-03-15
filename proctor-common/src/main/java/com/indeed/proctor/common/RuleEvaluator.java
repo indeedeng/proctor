@@ -3,6 +3,7 @@ package com.indeed.proctor.common;
 import com.indeed.proctor.common.el.LibraryFunctionMapperBuilder;
 import com.indeed.proctor.common.el.MulticontextReadOnlyVariableMapper;
 import org.apache.el.ExpressionFactoryImpl;
+import org.apache.el.lang.ELSupport;
 import org.apache.log4j.Logger;
 import org.apache.taglibs.standard.functions.Functions;
 
@@ -12,7 +13,6 @@ import javax.el.ArrayELResolver;
 import javax.el.BeanELResolver;
 import javax.el.CompositeELResolver;
 import javax.el.ELContext;
-import javax.el.ELException;
 import javax.el.ELResolver;
 import javax.el.ExpressionFactory;
 import javax.el.FunctionMapper;
@@ -20,7 +20,6 @@ import javax.el.ListELResolver;
 import javax.el.MapELResolver;
 import javax.el.ValueExpression;
 import javax.el.VariableMapper;
-import javax.servlet.jsp.el.ScopedAttributeELResolver;
 import java.util.Map;
 import java.util.Objects;
 
@@ -63,12 +62,11 @@ public class RuleEvaluator {
 
     @Nonnull
     private static CompositeELResolver constructStandardElResolver() {
-        final CompositeELResolver elResolver = new CompositeELResolver();
+        final CompositeELResolver elResolver = new LoggingCompositeELResolver();
         elResolver.add(new ArrayELResolver());
         elResolver.add(new ListELResolver());
         elResolver.add(new BeanELResolver());
         elResolver.add(new MapELResolver());
-        elResolver.add(new UndefinedIdentifierELResolver());
         return elResolver;
     }
 
@@ -101,6 +99,11 @@ public class RuleEvaluator {
             public VariableMapper getVariableMapper() {
                 return variableMapper;
             }
+
+            @Override
+            public Object convertToType(Object obj, Class<?> type) {
+                return ELSupport.coerceToType(null, obj, type);
+            }
         };
     }
 
@@ -125,7 +128,17 @@ public class RuleEvaluator {
         final ELContext elContext = createELContext(variableMapper);
 
         final ValueExpression ve = expressionFactory.createValueExpression(elContext, rule, Boolean.class);
+
+        final long start = System.currentTimeMillis();
+
         final Object result = ve.getValue(elContext);
+
+        final long end = System.currentTimeMillis();
+        final long diff = end - start;
+        if (diff > 500) {
+            LOGGER.info(String.format("Tomcat 8: end evaluation for rule: %s, values: %s in %dms", rule, values, diff));
+        }
+
         if (result instanceof Boolean) {
             return ((Boolean) result);
         }
@@ -133,21 +146,40 @@ public class RuleEvaluator {
         throw new IllegalArgumentException("Received non-boolean return value: " + result.getClass().getCanonicalName() + " from rule " + rule);
     }
 
-    /**
-     * An ELResolver for resolving undefined variables as null without checking static field and method reference
-     * This is for a performance improve experiment for PROC-528.
-     * This should not be merged to master unless we're sure that this improve the performance issue.
-     */
-    private static class UndefinedIdentifierELResolver extends ScopedAttributeELResolver {
+    private static class LoggingCompositeELResolver extends CompositeELResolver {
+        private int size = 0;
+        private ELResolver[] resolvers = new ELResolver[8];
+
+        public LoggingCompositeELResolver() {
+        }
+
+        @Override
+        public void add(ELResolver elResolver) {
+            Objects.requireNonNull(elResolver);
+            if (this.size >= this.resolvers.length) {
+                ELResolver[] nr = new ELResolver[this.size * 2];
+                System.arraycopy(this.resolvers, 0, nr, 0, this.size);
+                this.resolvers = nr;
+            }
+
+            this.resolvers[this.size++] = elResolver;
+        }
+
         @Override
         @Nullable
-        public Object getValue(@Nullable final ELContext context, @Nullable final Object base, @Nullable final Object property)
-                throws NullPointerException, ELException {
-            Objects.requireNonNull(context);
+        public Object getValue(@Nullable final ELContext context, @Nullable final Object base, @Nullable final Object property) {
+            context.setPropertyResolved(false);
+            int sz = this.size;
 
-            if (base == null) {
-                context.setPropertyResolved(true);
-                LOGGER.info("Resolved as null for the property: " + property);
+            for(int i = 0; i < sz; ++i) {
+                final long start = System.currentTimeMillis();
+                Object result = this.resolvers[i].getValue(context, base, property);
+                final long end = System.currentTimeMillis();
+                final long diff = end - start;
+                //LOGGER.info(String.format("Resolver: %s ends resolving for base: %s, property: %s in %dms", this.resolvers[i].getClass().getSimpleName(), base, property, diff));
+                if (context.isPropertyResolved()) {
+                    return result;
+                }
             }
 
             return null;

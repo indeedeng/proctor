@@ -1,15 +1,13 @@
 package com.indeed.proctor.common;
 
-import com.indeed.util.core.ReleaseVersion;
 import com.google.common.collect.Lists;
+import com.indeed.util.core.ReleaseVersion;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Collections;
 import java.util.Map;
-
-import static java.util.Collections.emptyMap;
 
 /**
  * @author parker
@@ -67,6 +65,25 @@ public class TestRuleEvaluator {
     }
 
     @Test
+    public void testEvaluateBooleanRuleTime() {
+        final int NUM = 10000;
+        final long start = System.currentTimeMillis();
+        int count = 0;
+        for (int i = 0; i < NUM; i++) {
+            final String var = "var" + i;
+            final Map<String, Object> values = Collections.<String, Object>singletonMap(var, "en");
+            if (ruleEvaluator.evaluateBooleanRule(String.format("${%s == 'en'}", var), values)) {
+                count++;
+            }
+        }
+        final long end = System.currentTimeMillis();
+
+        System.out.println(String.format("Time: %dms", end - start));
+        Assert.assertEquals(count, NUM);
+    }
+
+    /*
+    @Test
     public void testUndefinedVariablesShouldBeNull() {
         {
             final String rule = "${country == null}";
@@ -84,6 +101,7 @@ public class TestRuleEvaluator {
                     ruleEvaluator.evaluateBooleanRule(rule, emptyMap()));
         }
     }
+    */
 
     @Test
     public void testUtilTagFunctionsShouldBeAvailable() {

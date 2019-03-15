@@ -78,13 +78,27 @@ public class TestRangeSelector {
         try {
             @Nullable final String rule = testDefinition.getRule();
             if (rule != null) {
-                if (! evaluateRule(rule, values)) {
+                final long start = System.currentTimeMillis();
+                //LOGGER.info(String.format("Start base rule evaluateRule(%s, %s)", rule, values));
+                final boolean val = evaluateRule(rule, values);
+                final long end = System.currentTimeMillis();
+                if (end - start > 100) {
+                    LOGGER.info(String.format("Tomcat 8: base rule evaluateRule(%s, %s) for test: %s in %dms", rule, values, testName, end - start));
+                }
+                if (!val) {
                     return -1;
                 }
             }
 
             for (int i = 0; i < rules.length; i++) {
-                if (evaluateRule(rules[i], values)) {
+                final long start = System.currentTimeMillis();
+                //LOGGER.info(String.format("Start allocation rule evaluateRule(%s, %s)", rule, values));
+                final boolean val = evaluateRule(rules[i], values);
+                final long end = System.currentTimeMillis();
+                if (end - start > 100) {
+                    LOGGER.info(String.format("Tomcat 8: allocation rule evaluateRule(%s, %s) for test: %s in %dms", rule, values, testName, end - start));
+                }
+                if (val) {
                     return i;
                 }
             }
