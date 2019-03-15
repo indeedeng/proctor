@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Controller
 @RequestMapping(value = {"/proctor/matrix/tests", "/matrix/tests"})
@@ -62,10 +63,12 @@ public class TestSearchApiController extends AbstractController {
     private static class TestsResponse {
         private final List<TestNameAndDefinition> tests;
         private final int totalTestCount;
+        private final int matchingTestCount;
 
-        TestsResponse(final List<TestNameAndDefinition> tests, final int totalTestCount) {
+        TestsResponse(final List<TestNameAndDefinition> tests, final int totalTestCount, final int matchingTestCount) {
             this.tests = tests;
             this.totalTestCount = totalTestCount;
+            this.matchingTestCount = matchingTestCount;
         }
 
         public List<TestNameAndDefinition> getTests() {
@@ -74,6 +77,10 @@ public class TestSearchApiController extends AbstractController {
 
         public int getTotalTestCount() {
             return totalTestCount;
+        }
+
+        public int getMatchingTestCount() {
+            return matchingTestCount;
         }
     }
 
@@ -179,15 +186,17 @@ public class TestSearchApiController extends AbstractController {
         final Set<String> favoriteTestNames = Sets.newHashSet(Splitter.on(",").split(favoriteTestsRaw));
 
         final Environment environment = determineEnvironmentFromParameter(branch);
-        final Map<String, TestDefinition> tests = getCurrentMatrix(environment).getTestMatrixDefinition().getTests();
-        final List<TestNameAndDefinition> result = tests.entrySet().stream()
+        final Map<String, TestDefinition> allTests = getCurrentMatrix(environment).getTestMatrixDefinition().getTests();
+        final List<Map.Entry<String, TestDefinition>> matchingTests = allTests.entrySet().stream()
                 .filter(entry -> matchFilterType(entry.getKey(), entry.getValue(), filterType, q)
                         && matchFilterActive(entry.getValue().getAllocations(), filterActive))
                 .sorted(getComparator(sort, favoriteTestNames))
+                .collect(Collectors.toList());
+        final List<TestNameAndDefinition> result = matchingTests.stream()
                 .limit(limit)
                 .map(entry -> new TestNameAndDefinition(entry.getKey(), entry.getValue()))
                 .collect(Collectors.toList());
 
-        return new JsonView(new TestsResponse(result, tests.size()));
+        return new JsonView(new TestsResponse(result, allTests.size(), matchingTests.size()));
     }
 }
