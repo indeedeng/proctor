@@ -1,7 +1,7 @@
 package com.indeed.proctor.webapp.controllers;
 
-import com.fasterxml.jackson.core.util.MinimalPrettyPrinter;
 import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.core.util.MinimalPrettyPrinter;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
@@ -31,9 +31,7 @@ import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.webapp.ProctorSpecificationSource;
 import com.indeed.proctor.webapp.db.Environment;
-import com.indeed.proctor.webapp.jobs.BackgroundJob;
 import com.indeed.proctor.webapp.model.AppVersion;
-import com.indeed.proctor.webapp.model.ProctorClientApplication;
 import com.indeed.proctor.webapp.model.RemoteSpecificationResult;
 import com.indeed.proctor.webapp.model.SessionViewModel;
 import com.indeed.proctor.webapp.model.WebappConfiguration;
@@ -54,8 +52,6 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -458,18 +454,6 @@ public class ProctorController extends AbstractController {
         }
         model.addAttribute("error", errorMessage);
         return View.ERROR.getName();
-    }
-
-    /**
-     * This needs to be moved to a separate checker class implementing some interface
-     */
-    private URL getSpecificationUrl(final ProctorClientApplication client) {
-        final String urlStr = client.getBaseApplicationUrl() + "/private/proctor";
-        try {
-            return new URL(urlStr);
-        } catch (final MalformedURLException e) {
-            throw new RuntimeException("Somehow created a malformed URL: " + urlStr, e);
-        }
     }
 
     private Map<String, List<Revision>> getAllHistories(final Environment branch) {
