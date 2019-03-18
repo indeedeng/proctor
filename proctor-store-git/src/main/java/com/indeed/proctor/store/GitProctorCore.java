@@ -3,13 +3,9 @@ package com.indeed.proctor.store;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicates;
 import com.google.common.base.Strings;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.indeed.proctor.common.Serializers;
 import org.apache.commons.lang.StringUtils;
@@ -44,12 +40,15 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class GitProctorCore implements FileBasedPersisterCore {
     private static final Logger LOGGER = Logger.getLogger(GitProctorCore.class);
@@ -420,21 +419,15 @@ public class GitProctorCore implements FileBasedPersisterCore {
     private Set<String> parseStagedTestNames() {
         try {
             final Status status = git.status().call();
-            final Iterable<String> stagedFileNames = Iterables.concat(
+            return Stream.of(
                     status.getAdded(),
                     status.getChanged(),
-                    status.getRemoved()
-            );
-            return FluentIterable.from(stagedFileNames)
-                    .transform(new Function<String, String>() {
-                        @Nullable
-                        @Override
-                        public String apply(@Nullable final String s) {
-                            return parseTestName(testDefinitionsDirectory, s);
-                        }
-                    })
-                    .filter(Predicates.notNull())
-                    .toSet();
+                    status.getRemoved())
+                    .flatMap(Set::stream)
+                    .distinct()
+                    .map(s -> parseTestName(testDefinitionsDirectory, s))
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toSet());
         } catch (final GitAPIException | NoWorkTreeException e) {
             LOGGER.warn("Failed to call git status", e);
             return null;
