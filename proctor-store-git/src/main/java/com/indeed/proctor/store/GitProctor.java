@@ -15,9 +15,6 @@ import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffEntry.ChangeType;
 import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.diff.RawTextComparator;
-import org.eclipse.jgit.errors.AmbiguousObjectException;
-import org.eclipse.jgit.errors.IncorrectObjectTypeException;
-import org.eclipse.jgit.errors.MissingObjectException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
@@ -136,7 +133,7 @@ public class GitProctor extends FileBasedProctorStore {
     @Override
     public String getLatestVersion() throws StoreException {
         try {
-            final Ref branch = git.getRepository().getRef(getGitCore().getRefName());
+            final Ref branch = git.getRepository().findRef(getGitCore().getRefName());
             return branch.getObjectId().name();
         } catch (final IOException e) {
             throw new StoreException(e);

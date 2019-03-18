@@ -2,11 +2,13 @@ package com.indeed.proctor.store;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.junit.RepositoryTestCase;
+import org.eclipse.jgit.lib.Ref;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.File;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -60,4 +62,39 @@ public class GitProctorCoreWithRepositoryTest extends RepositoryTestCase {
         assertEquals(COMMIT_MESSAGE, localCommitMessage);
     }
 
+    @Test
+    public void testCloneRepositoryWithSingleBranch() throws Exception {
+        final File workingDir = temporaryFolder.newFolder("testCloneRepositoryWithSingleBranch");
+        final String branchName = "test";
+
+        remoteGit.checkout().setCreateBranch(true).setName(branchName).call();
+        writeTrashFile(TEST_FILE_NAME, "test");
+        remoteGit.add().addFilepattern(TEST_FILE_NAME).call();
+
+        final String commitMessage = "Create a new branch";
+        remoteGit.commit().setMessage(commitMessage).call();
+
+        // Run cloneRepository with single branch
+        final GitProctorCore gitProctorCore = new GitProctorCore(
+                gitUrl,
+                GIT_USERNAME,
+                GIT_PASSWORD,
+                TEST_DEFINITION_DIRECTORY,
+                workingDir,
+                branchName
+        );
+
+        final Git git = gitProctorCore.getGit();
+
+        assertNotNull(git);
+        final List<Ref> branchList = git.branchList().call();
+        assertEquals(1, branchList.size());
+        assertEquals("refs/heads/" + branchName, branchList.get(0).getName());
+
+        final String localCommitMessage = git.log().call().iterator().next().getFullMessage();
+        assertEquals(commitMessage, localCommitMessage);
+
+        // should not throw any exceptions
+        gitProctorCore.checkoutBranch(branchName);
+    }
 }
