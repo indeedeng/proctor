@@ -33,11 +33,22 @@ class RandomTestChooser implements TestChooser<Void> {
     @Nonnull
     private final List<Allocation> allocations;
 
-    public RandomTestChooser(final ExpressionFactory expressionFactory, final FunctionMapper functionMapper, final String testName, @Nonnull final ConsumableTestDefinition testDefinition) {
+    public RandomTestChooser(
+            final ExpressionFactory expressionFactory,
+            final FunctionMapper functionMapper,
+            final String testName,
+            @Nonnull final ConsumableTestDefinition testDefinition
+    ) {
         this(System.nanoTime(), expressionFactory, functionMapper, testName, testDefinition);
     }
 
-    public RandomTestChooser(final long seed, final ExpressionFactory expressionFactory, final FunctionMapper functionMapper, final String testName, @Nonnull final ConsumableTestDefinition testDefinition) {
+    public RandomTestChooser(
+            final long seed,
+            final ExpressionFactory expressionFactory,
+            final FunctionMapper functionMapper,
+            final String testName,
+            @Nonnull final ConsumableTestDefinition testDefinition
+    ) {
         testRangeSelector = new TestRangeSelector(expressionFactory, functionMapper, testName, testDefinition);
         allocations = testDefinition.getAllocations();
         random = new Random(seed);
@@ -92,7 +103,8 @@ class RandomTestChooser implements TestChooser<Void> {
     @Override
     public TestChooser.Result choose(
             @Nullable final Void identifier,
-            @Nonnull final Map<String, Object> values) {
+            @Nonnull final Map<String, Object> values
+    ) {
         final int matchingRuleIndex = testRangeSelector.findMatchingRule(values);
         if (matchingRuleIndex < 0) {
             return TestChooser.Result.EMPTY;

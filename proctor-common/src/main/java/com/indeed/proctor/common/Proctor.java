@@ -46,7 +46,8 @@ public class Proctor {
     public static Proctor construct(
             @Nonnull final TestMatrixArtifact matrix,
             final ProctorLoadResult loadResult,
-            final FunctionMapper functionMapper) {
+            final FunctionMapper functionMapper
+    ) {
         final ExpressionFactory expressionFactory = RuleEvaluator.EXPRESSION_FACTORY;
 
         final Map<String, TestChooser<?>> testChoosers = Maps.newLinkedHashMap();
@@ -175,7 +176,8 @@ public class Proctor {
     public ProctorResult determineTestGroups(@Nonnull final Identifiers identifiers,
                                              @Nonnull final Map<String, Object> inputContext,
                                              @Nonnull final Map<String, Integer> forceGroups,
-                                             @Nonnull final Collection<String> testNameFilter) {
+                                             @Nonnull final Collection<String> testNameFilter
+    ) {
         final Map<String, TestBucket> testGroups = Maps.newLinkedHashMap();
         final Map<String, Allocation> testAllocations = Maps.newLinkedHashMap();
 
