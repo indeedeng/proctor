@@ -25,6 +25,7 @@ import org.eclipse.jgit.errors.NoWorkTreeException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectLoader;
+import org.eclipse.jgit.lib.StoredConfig;
 import org.eclipse.jgit.lib.TextProgressMonitor;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevTree;
@@ -231,6 +232,19 @@ public class GitProctorCore implements FileBasedPersisterCore {
                 return null;
             }
         });
+
+        /*
+         Modify default options (writes to .git/config),
+         to avoid performance problem (see PROW-874)
+         */
+        final StoredConfig config = git.getRepository().getConfig();
+        // this packs a single file. For yet unknown reasons, packing 2 files causes massive jgit push slowdown
+        config.setBoolean("pack", null, "singlePack", true);
+        try {
+            config.save();
+        } catch (final IOException e) {
+            LOGGER.error("Could not write .git/config", e);
+        }
 
         try {
             git.fetch()
