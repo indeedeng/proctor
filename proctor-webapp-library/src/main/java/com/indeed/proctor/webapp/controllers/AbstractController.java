@@ -75,9 +75,11 @@ public abstract class AbstractController {
      */
     @Nonnull
     protected ProctorStore determineStoreFromEnvironment(final Environment branch) {
-        return stores.computeIfAbsent(branch, key -> {
-            throw new IllegalArgumentException("Unknown store for branch " + key);
-        });
+        final ProctorStore result = stores.get(branch);
+        if (result == null) {
+            throw new IllegalArgumentException("Unknown store for branch " + branch);
+        }
+        return result;
     }
 
     protected TestMatrixVersion getCurrentMatrix(final Environment branch) {
