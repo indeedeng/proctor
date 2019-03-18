@@ -335,12 +335,14 @@ public class GitProctorCore implements FileBasedPersisterCore {
                         LOGGER.info("Failed to pull from the remote repository. Running undo local changes");
                         undoLocalChanges();
                     }
-                    final FileBasedProctorStore.RcsClient rcsClient = new GitProctorCore.GitRcsClient(git, testDefinitionsDirectory);
+                    final FileBasedProctorStore.RcsClient rcsClient = new GitRcsClient(git, testDefinitionsDirectory);
                     final boolean thingsChanged;
                     thingsChanged = updater.doInWorkingDirectory(rcsClient, workingDir);
                     if (thingsChanged) {
                         final Set<String> stagedTests = parseStagedTestNames();
-                        LOGGER.debug("Staged tests are " + Joiner.on(",").join(stagedTests));
+                        if (LOGGER.isDebugEnabled()) {
+                            LOGGER.debug("Staged tests are " + Joiner.on(",").join(stagedTests));
+                        }
                         if (stagedTests != null && stagedTests.size() >= 2) {
                             LOGGER.error("Multiple tests are going to be modified at the one commit : " + Joiner.on(",").join(stagedTests));
                             throw new IllegalStateException("Another test are staged unintentionally due to invalid local git state");
@@ -348,8 +350,14 @@ public class GitProctorCore implements FileBasedPersisterCore {
                             LOGGER.warn("Failed to parse staged test names or no test files aren't staged");
                         }
 
-                        git.commit().setCommitter(username, username).setAuthor(author, author).setMessage(comment).call();
-                        final Iterable<PushResult> pushResults = git.push().setProgressMonitor(PROGRESS_MONITOR).setCredentialsProvider(user)
+                        git.commit()
+                                .setCommitter(username, username)
+                                .setAuthor(author, author)
+                                .setMessage(comment)
+                                .call();
+                        final Iterable<PushResult> pushResults = git.push()
+                                .setProgressMonitor(PROGRESS_MONITOR)
+                                .setCredentialsProvider(user)
                                 .setTimeout(pullPushTimeoutSeconds)
                                 .call();
                         // jgit doesn't throw an exception for certain kinds of push failures - explicitly check the result
@@ -374,13 +382,13 @@ public class GitProctorCore implements FileBasedPersisterCore {
                     }
                 } catch (final GitAPIException e) {
                     undoLocalChanges();
-                    throw gitAPIExceptionWrapper.wrapException(new StoreException.TestUpdateException("Unable to commit/push changes", e));
+                    throw gitAPIExceptionWrapper.wrapException(new StoreException.TestUpdateException("Core: Unable to commit/push changes: " + e.getMessage(), e));
                 } catch (final IllegalStateException e) {
                     undoLocalChanges();
-                    throw gitAPIExceptionWrapper.wrapException(new StoreException.TestUpdateException("Unable to push changes", e));
+                    throw gitAPIExceptionWrapper.wrapException(new StoreException.TestUpdateException("Core: Unable to push changes: " + e.getMessage(), e));
                 } catch (final Exception e) {
                     undoLocalChanges();
-                    throw new StoreException.TestUpdateException("Unable to perform operation", e);
+                    throw new StoreException.TestUpdateException("Core: Unable to perform operation: " + e.getMessage(), e);
                 }
                 return null;
             }
