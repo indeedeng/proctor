@@ -33,11 +33,22 @@ class RandomTestChooser implements TestChooser<Void> {
     @Nonnull
     private final List<Allocation> allocations;
 
-    public RandomTestChooser(final ExpressionFactory expressionFactory, final FunctionMapper functionMapper, final String testName, @Nonnull final ConsumableTestDefinition testDefinition) {
+    public RandomTestChooser(
+            final ExpressionFactory expressionFactory,
+            final FunctionMapper functionMapper,
+            final String testName,
+            @Nonnull final ConsumableTestDefinition testDefinition
+    ) {
         this(System.nanoTime(), expressionFactory, functionMapper, testName, testDefinition);
     }
 
-    public RandomTestChooser(final long seed, final ExpressionFactory expressionFactory, final FunctionMapper functionMapper, final String testName, @Nonnull final ConsumableTestDefinition testDefinition) {
+    public RandomTestChooser(
+            final long seed,
+            final ExpressionFactory expressionFactory,
+            final FunctionMapper functionMapper,
+            final String testName,
+            @Nonnull final ConsumableTestDefinition testDefinition
+    ) {
         testRangeSelector = new TestRangeSelector(expressionFactory, functionMapper, testName, testDefinition);
         allocations = testDefinition.getAllocations();
         random = new Random(seed);
@@ -90,7 +101,10 @@ class RandomTestChooser implements TestChooser<Void> {
 
     @Nonnull
     @Override
-    public TestChooser.Result choose(@Nullable Void identifier, @Nonnull Map<String, Object> values) {
+    public TestChooser.Result choose(
+            @Nullable final Void identifier,
+            @Nonnull final Map<String, Object> values
+    ) {
         final int matchingRuleIndex = testRangeSelector.findMatchingRule(values);
         if (matchingRuleIndex < 0) {
             return TestChooser.Result.EMPTY;
@@ -124,7 +138,7 @@ class RandomTestChooser implements TestChooser<Void> {
     }
 
     static TestBucket getBucketForValue(final int matchingBucketValue, @Nonnull final TestBucket[] matchingBucketRange) {
-        for (TestBucket bucket : matchingBucketRange) {
+        for (final TestBucket bucket : matchingBucketRange) {
             if (matchingBucketValue == bucket.getValue()) {
                 return bucket;
             }

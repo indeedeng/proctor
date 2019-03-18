@@ -76,7 +76,7 @@ public class ProctorController extends AbstractController {
     private final ExecutorService executor;
     private final ProctorSpecificationSource specificationSource;
 
-    private static enum View {
+    private enum View {
         MATRIX_LIST("matrix/list"),
         MATRIX_USAGE("matrix/usage"),
         MATRIX_COMPATIBILITY("matrix/compatibility"),

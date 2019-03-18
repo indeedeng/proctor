@@ -32,7 +32,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -60,22 +59,22 @@ public class GitProctor extends FileBasedProctorStore {
     */
 
     private final Git git;
-    private String branchName;
+    @Nullable
+    private final String branchName;
 
     public GitProctor(final String gitPath,
                       final String username,
                       final String password,
                       final String testDefinitionsDirectory) {
-        this(new GitProctorCore(gitPath, username, password, testDefinitionsDirectory, Files.createTempDir()), testDefinitionsDirectory);
+        this(gitPath, username, password, testDefinitionsDirectory, null);
     }
 
     public GitProctor(final String gitPath,
                       final String username,
                       final String password,
                       final String testDefinitionsDirectory,
-                      final String branchName) {
-        this(new GitProctorCore(gitPath, username, password, testDefinitionsDirectory, Files.createTempDir()),
-                testDefinitionsDirectory, branchName);
+                      @Nullable final String branchName) {
+        this(new GitProctorCore(gitPath, username, password, testDefinitionsDirectory, Files.createTempDir()), testDefinitionsDirectory, branchName);
     }
 
     public GitProctor(final String gitPath,
@@ -89,15 +88,22 @@ public class GitProctor extends FileBasedProctorStore {
     }
 
     public GitProctor(final GitProctorCore core, final String testDefinitionsDirectory) {
-        super(core, testDefinitionsDirectory);
-        this.git = core.getGit();
+        this(core, testDefinitionsDirectory, null);
     }
 
-    public GitProctor(final GitProctorCore core, final String testDefinitionsDirectory, final String branchName) {
+    /**
+     *
+     * @param core a core with a defined remote and defined local working directory
+     * @param testDefinitionsDirectory where test definitions are located inside the local git repository
+     * @param branchName stay on this branch if not null, else default branch from remote
+     */
+    public GitProctor(final GitProctorCore core, final String testDefinitionsDirectory, @Nullable final String branchName) {
         super(core, testDefinitionsDirectory);
-        this.git = core.getGit();
+        git = core.getGit();
         this.branchName = branchName;
-        checkoutBranch(branchName);
+        if (branchName != null) {
+            checkoutBranch(branchName);
+        }
     }
 
     @Override
@@ -108,11 +114,7 @@ public class GitProctor extends FileBasedProctorStore {
             if (branchHead == null) {
                 throw new StoreException("git repository couldn't resolve " + refName);
             }
-        } catch (IncorrectObjectTypeException e) {
-            throw new StoreException("Could get resolve " + refName);
-        } catch (AmbiguousObjectException e) {
-            throw new StoreException("Could get resolve " + refName);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new StoreException("Could get resolve " + refName);
         }
     }
@@ -125,7 +127,9 @@ public class GitProctor extends FileBasedProctorStore {
     public boolean cleanUserWorkspace(final String username) {
         getGitCore().undoLocalChanges();
         getGitCore().initializeRepository(false);
-        checkoutBranch(this.branchName);
+        if (this.branchName != null) {
+            checkoutBranch(this.branchName);
+        }
         return true;
     }
 
@@ -134,7 +138,7 @@ public class GitProctor extends FileBasedProctorStore {
         try {
             final Ref branch = git.getRepository().getRef(getGitCore().getRefName());
             return branch.getObjectId().name();
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new StoreException(e);
         }
     }
@@ -150,13 +154,7 @@ public class GitProctor extends FileBasedProctorStore {
                     .setSkip(start)
                     .setMaxCount(limit);
             return getHistoryFromLogCommand(logCommand);
-        } catch (MissingObjectException e) {
-            throw new StoreException("Could not get history for starting at " + getGitCore().getRefName(), e);
-        } catch (IncorrectObjectTypeException e) {
-            throw new StoreException("Could not get history for starting at " + getGitCore().getRefName(), e);
-        } catch (AmbiguousObjectException e) {
-            throw new StoreException("Could not get history for starting at " + getGitCore().getRefName(), e);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new StoreException("Could not get history for starting at " + getGitCore().getRefName(), e);
         }
     }
@@ -225,7 +223,7 @@ public class GitProctor extends FileBasedProctorStore {
         return versions;
     }
 
-    public void checkoutBranch(String branchName) {
+    public void checkoutBranch(final String branchName) {
         getGitCore().checkoutBranch(branchName);
     }
 
@@ -240,6 +238,7 @@ public class GitProctor extends FileBasedProctorStore {
     }
 
     public static class HistoryParser {
+        private static final int EXPECTED_NUMBER_ACTIVE_TESTS = 7000;
         final RevWalk revWalk;
         final DiffFormatter diffFormatter;
         final Pattern testNamePattern;
@@ -272,9 +271,9 @@ public class GitProctor extends FileBasedProctorStore {
          * @return a map of testnames and git commits making changes to given tests
          */
         public Map<String, List<Revision>> parseFromHead(final ObjectId head) throws IOException {
-            final Map<String, List<Revision>> histories = newHashMapWithExpectedSize(7000);
+            final Map<String, List<Revision>> histories = newHashMapWithExpectedSize(EXPECTED_NUMBER_ACTIVE_TESTS);
             final Set<ObjectId> visited = Sets.newHashSet();
-            final Queue<RevCommit> queue = new LinkedList<RevCommit>();
+            final Queue<RevCommit> queue = new LinkedList<>();
             queue.add(revWalk.parseCommit(head));
             final long start = System.currentTimeMillis();
             while (!queue.isEmpty()) {

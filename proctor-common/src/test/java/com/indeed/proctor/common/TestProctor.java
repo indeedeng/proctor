@@ -155,7 +155,7 @@ public class TestProctor {
         assertEquals(0, tests.size());
     }
 
-    private JsonNode appendTestMatrixFiltered_processAndGetRoot(Collection<String> names) throws IOException
+    private JsonNode appendTestMatrixFiltered_processAndGetRoot(final Collection<String> names) throws IOException
     {
         final TestMatrixArtifact matrix = createThreeFakeTests();
         final Proctor proctor = Proctor.construct(matrix, null, RuleEvaluator.FUNCTION_MAPPER);
@@ -229,7 +229,7 @@ public class TestProctor {
     }
 
     // Helper function to get the output from appendTestsNameFiltered
-    private List<String> appendTestsNameFiltered_process(Collection<String> names)
+    private List<String> appendTestsNameFiltered_process(final Collection<String> names)
     {
         final TestMatrixArtifact matrix = createThreeFakeTests();
         final Proctor proctor = Proctor.construct(matrix, null, RuleEvaluator.FUNCTION_MAPPER);

@@ -57,7 +57,7 @@ class StandardTestChooser implements TestChooser<String> {
         }
 
         final List<Allocation> allocations = testDefinition.getAllocations();
-        this.cutoffs = new int[allocations.size()][];
+        cutoffs = new int[allocations.size()][];
         for (int i = 0; i < allocations.size(); i++) {
             final Allocation allocation = allocations.get(i);
             final List<Range> ranges = allocation.getRanges();
@@ -191,8 +191,8 @@ class StandardTestChooser implements TestChooser<String> {
     /**
      * @author matts
      */
-    private static interface Hasher {
-        public int hash(@Nonnull String identifier);
+    private interface Hasher {
+        int hash(@Nonnull String identifier);
     }
 
     /**

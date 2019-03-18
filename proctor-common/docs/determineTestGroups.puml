@@ -1,0 +1,48 @@
+@startuml
+participant GroupsManager
+participant ProctorLoader
+participant Proctor
+collections TestChooser
+participant TestRangeSelector
+
+-> ProctorLoader: reload()
+activate ProctorLoader
+  create TestChooser
+  ProctorLoader -> TestChooser: new
+  activate TestChooser
+    create TestRangeSelector
+    TestChooser -> TestRangeSelector:new
+  deactivate TestChooser
+  <- ProctorLoader
+deactivate ProctorLoader
+
+-> GroupsManager
+activate GroupsManager
+GroupsManager -> ProctorLoader:get()
+GroupsManager -> Proctor:determineTestGroups()
+
+activate Proctor
+  loop for TestChooser
+    Proctor -> TestChooser:choose()
+    activate TestChooser
+      TestChooser -> TestRangeSelector:findMatchingRule()
+      activate TestRangeSelector
+        TestRangeSelector -> TestRangeSelector: evaluateRule(testDefinition.rule)
+        loop for this.rules
+          TestRangeSelector -> TestRangeSelector: evaluateRule()
+        end
+        TestChooser <- TestRangeSelector: ruleIndex
+      deactivate TestRangeSelector
+      alt isRandomChooser
+        TestChooser -> TestChooser:allocateRandomGroup()
+      else isStandardChooser
+      TestChooser -> TestChooser:chooseBucket()
+      end
+      Proctor <- TestChooser: chooseResult
+    deactivate TestChooser
+  end
+  GroupsManager <- Proctor: proctorResult
+deactivate Proctor
+deactivate GroupsManager
+
+@enduml

@@ -1,0 +1,74 @@
+@startuml
+participant HandlerInterceptorAdapter
+participant XYZController
+
+note over HandlerInterceptorAdapter, XYZController
+  client code
+  invoked by Spring
+end note
+
+participant XYZProctorContext
+participant XYZProctorGroupsManager
+participant XYZProctorGroups
+
+note over XYZProctorContext, XYZProctorGroups
+  generated client code
+end note
+
+-> ProctorLoader: WebappConfig.createBean()
+-> XYZProctorGroupsManager: WebappConfig.createBean()
+
+
+participant Proctor
+-> HandlerInterceptorAdapter: preHandle()
+activate HandlerInterceptorAdapter
+
+  create XYZProctorContext
+  HandlerInterceptorAdapter ->> XYZProctorContext:new
+  HandlerInterceptorAdapter -> XYZProctorContext:getProctorResult
+
+  activate XYZProctorContext
+    XYZProctorContext -> XYZProctorGroupsManager: determineBucketsInternal()
+    activate XYZProctorGroupsManager
+
+      XYZProctorGroupsManager -> ProctorLoader:get()
+      XYZProctorGroupsManager -> Proctor:determineTestGroups()
+
+
+      activate Proctor
+        note over Proctor
+          See determineTestGroups diagram
+          Creates LinkedHashmap of Buckets
+          Copies to TreeMap of Buckets in Proctor Result
+        end note
+
+        XYZProctorGroupsManager <- Proctor: proctorResult
+      deactivate Proctor
+
+      XYZProctorContext <- XYZProctorGroupsManager: proctorResult
+    deactivate XYZProctorGroupsManager
+
+    HandlerInterceptorAdapter <- XYZProctorContext:proctorResult
+  deactivate XYZProctorContext
+
+  create XYZProctorGroups
+  HandlerInterceptorAdapter -> XYZProctorGroups:new(proctorContext)
+  note over XYZProctorGroups
+      Contains ProctorContext and Buckets
+      Copies Buckets to LinkedHashMap
+    end note
+
+  HandlerInterceptorAdapter -> HandlerInterceptorAdapter: request.setAttribute(proctorGroups)
+  <- HandlerInterceptorAdapter
+deactivate HandlerInterceptorAdapter
+
+
+-> XYZController:handle()
+
+activate XYZController
+  XYZController -> XYZProctorGroups:isXYZ()
+  <- XYZController
+deactivate XYZController
+
+
+@enduml

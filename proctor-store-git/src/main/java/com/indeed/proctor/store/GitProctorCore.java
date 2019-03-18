@@ -3,13 +3,9 @@ package com.indeed.proctor.store;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicates;
 import com.google.common.base.Strings;
-import com.google.common.collect.FluentIterable;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.indeed.proctor.common.Serializers;
 import org.apache.commons.lang.StringUtils;
@@ -44,12 +40,15 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class GitProctorCore implements FileBasedPersisterCore {
     private static final Logger LOGGER = Logger.getLogger(GitProctorCore.class);
@@ -79,13 +78,6 @@ public class GitProctorCore implements FileBasedPersisterCore {
         this(gitUrl, username, password, testDefinitionsDirectory, new GitWorkspaceProviderImpl(tempDir));
     }
 
-    /**
-     * @param gitUrl
-     * @param username
-     * @param password
-     * @param testDefinitionsDirectory
-     * @param workspaceProvider
-     */
     public GitProctorCore(final String gitUrl,
                           final String username,
                           final String password,
@@ -214,7 +206,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
                     .setCredentialsProvider(user)
                     .setTimeout(pullPushTimeoutSeconds)
                     .call();
-        } catch (GitAPIException e) {
+        } catch (final GitAPIException e) {
             LOGGER.error("Unable to fetch from " + gitUrl, e);
         }
         gcExecutor.scheduleAtFixedRate(new GitGcTask(), GC_INTERVAL_IN_DAY, GC_INTERVAL_IN_DAY, TimeUnit.DAYS);
@@ -222,7 +214,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
 
     @Override
     public <C> C getFileContents(final Class<C> c,
-            final java.lang.String[] path,
+            final String[] path,
             final C defaultValue,
             final String revision) throws StoreException.ReadException, JsonProcessingException {
         try {
@@ -254,7 +246,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
             } else {
                 throw new StoreException.ReadException("Invalid Object Type " + loader.getType() + " for id " + revision);
             }
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new StoreException.ReadException(e);
         }
     }
@@ -275,7 +267,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
      * Replaced by {@link #createRefresherTask()}
      */
     @Deprecated
-    public GitDirectoryRefresher createRefresherTask(String username, String password) {
+    public GitDirectoryRefresher createRefresherTask(final String username, final String password) {
         return new GitDirectoryRefresher(workspaceProvider, this, username, password);
     }
 
@@ -304,8 +296,8 @@ public class GitProctorCore implements FileBasedPersisterCore {
         }
 
         @Override
-        public void delete(File testDefinitionDirectory) throws Exception {
-            for (File file : testDefinitionDirectory.listFiles()) {
+        public void delete(final File testDefinitionDirectory) throws Exception {
+            for (final File file : testDefinitionDirectory.listFiles()) {
                 git.rm().addFilepattern(testDefinitionsDirectory + "/" + testDefinitionDirectory.getName()
                         + "/" + file.getName()).call();
             }
@@ -342,12 +334,14 @@ public class GitProctorCore implements FileBasedPersisterCore {
                         LOGGER.info("Failed to pull from the remote repository. Running undo local changes");
                         undoLocalChanges();
                     }
-                    final FileBasedProctorStore.RcsClient rcsClient = new GitProctorCore.GitRcsClient(git, testDefinitionsDirectory);
+                    final FileBasedProctorStore.RcsClient rcsClient = new GitRcsClient(git, testDefinitionsDirectory);
                     final boolean thingsChanged;
                     thingsChanged = updater.doInWorkingDirectory(rcsClient, workingDir);
                     if (thingsChanged) {
                         final Set<String> stagedTests = parseStagedTestNames();
-                        LOGGER.debug("Staged tests are " + Joiner.on(",").join(stagedTests));
+                        if (LOGGER.isDebugEnabled()) {
+                            LOGGER.debug("Staged tests are " + Joiner.on(",").join(stagedTests));
+                        }
                         if (stagedTests != null && stagedTests.size() >= 2) {
                             LOGGER.error("Multiple tests are going to be modified at the one commit : " + Joiner.on(",").join(stagedTests));
                             throw new IllegalStateException("Another test are staged unintentionally due to invalid local git state");
@@ -355,8 +349,14 @@ public class GitProctorCore implements FileBasedPersisterCore {
                             LOGGER.warn("Failed to parse staged test names or no test files aren't staged");
                         }
 
-                        git.commit().setCommitter(username, username).setAuthor(author, author).setMessage(comment).call();
-                        final Iterable<PushResult> pushResults = git.push().setProgressMonitor(PROGRESS_MONITOR).setCredentialsProvider(user)
+                        git.commit()
+                                .setCommitter(username, username)
+                                .setAuthor(author, author)
+                                .setMessage(comment)
+                                .call();
+                        final Iterable<PushResult> pushResults = git.push()
+                                .setProgressMonitor(PROGRESS_MONITOR)
+                                .setCredentialsProvider(user)
                                 .setTimeout(pullPushTimeoutSeconds)
                                 .call();
                         // jgit doesn't throw an exception for certain kinds of push failures - explicitly check the result
@@ -381,13 +381,13 @@ public class GitProctorCore implements FileBasedPersisterCore {
                     }
                 } catch (final GitAPIException e) {
                     undoLocalChanges();
-                    throw gitAPIExceptionWrapper.wrapException(new StoreException.TestUpdateException("Unable to commit/push changes", e));
+                    throw gitAPIExceptionWrapper.wrapException(new StoreException.TestUpdateException("Core: Unable to commit/push changes: " + e.getMessage(), e));
                 } catch (final IllegalStateException e) {
                     undoLocalChanges();
-                    throw gitAPIExceptionWrapper.wrapException(new StoreException.TestUpdateException("Unable to push changes", e));
+                    throw gitAPIExceptionWrapper.wrapException(new StoreException.TestUpdateException("Core: Unable to push changes: " + e.getMessage(), e));
                 } catch (final Exception e) {
                     undoLocalChanges();
-                    throw new StoreException.TestUpdateException("Unable to perform operation", e);
+                    throw new StoreException.TestUpdateException("Core: Unable to perform operation: " + e.getMessage(), e);
                 }
                 return null;
             }
@@ -419,21 +419,15 @@ public class GitProctorCore implements FileBasedPersisterCore {
     private Set<String> parseStagedTestNames() {
         try {
             final Status status = git.status().call();
-            final Iterable<String> stagedFileNames = Iterables.concat(
+            return Stream.of(
                     status.getAdded(),
                     status.getChanged(),
-                    status.getRemoved()
-            );
-            return FluentIterable.from(stagedFileNames)
-                    .transform(new Function<String, String>() {
-                        @Nullable
-                        @Override
-                        public String apply(@Nullable final String s) {
-                            return parseTestName(testDefinitionsDirectory, s);
-                        }
-                    })
-                    .filter(Predicates.notNull())
-                    .toSet();
+                    status.getRemoved())
+                    .flatMap(Set::stream)
+                    .distinct()
+                    .map(s -> parseTestName(testDefinitionsDirectory, s))
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toSet());
         } catch (final GitAPIException | NoWorkTreeException e) {
             LOGGER.warn("Failed to call git status", e);
             return null;
@@ -482,7 +476,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
 
             // now use a TreeWalk to iterate over all files in the Tree recursively
             // you can set Filters to narrow down the results if needed
-            TreeWalk treeWalk = new TreeWalk(git.getRepository());
+            final TreeWalk treeWalk = new TreeWalk(git.getRepository());
             treeWalk.addTree(tree);
             treeWalk.setFilter(AndTreeFilter
                 .create(PathFilter.create(testDefinitionsDirectory), PathSuffixFilter.create("definition.json")));
@@ -511,7 +505,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
                     headTree.toObjectId().getName(),
                     headTree.getFullMessage()
             );
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new StoreException.ReadException(e);
         }
     }
@@ -586,11 +580,11 @@ public class GitProctorCore implements FileBasedPersisterCore {
             @Override
             public Void call() {
                 try {
-                    /** git pull is preferable since it's more efficient **/
+                    /* git pull is preferable since it's more efficient */
                     LOGGER.debug("Started refresh with git pull");
                     final PullResult result = getGit().pull().setProgressMonitor(PROGRESS_MONITOR).setRebase(true).setCredentialsProvider(user).call();
                     if (!result.isSuccessful()) {
-                        /** if git pull failed, use git reset **/
+                        /* if git pull failed, use git reset */
                         LOGGER.info("refresh failed. Running undo local changes");
                         undoLocalChanges();
                     }

@@ -87,7 +87,7 @@ public class RevisionControlStoreFactory implements FactoryBean<StoreFactory> {
     }
 
     @Value("${revision.control}")
-    public void setRevisionControlType(String revisionControlType) {
+    public void setRevisionControlType(final String revisionControlType) {
         this.revisionControlType = revisionControlType;
     }
 
@@ -95,7 +95,7 @@ public class RevisionControlStoreFactory implements FactoryBean<StoreFactory> {
         return revisionControlType;
     }
 
-    public void setScheduledExecutorService(ScheduledExecutorService scheduledExecutorService) {
+    public void setScheduledExecutorService(final ScheduledExecutorService scheduledExecutorService) {
         this.scheduledExecutorService = scheduledExecutorService;
     }
 
@@ -104,26 +104,26 @@ public class RevisionControlStoreFactory implements FactoryBean<StoreFactory> {
     }
 
     @Value("${svn.cache:true}")
-    public void setCache(boolean cache) {
+    public void setCache(final boolean cache) {
         this.cache = cache;
     }
 
     @Value("${svn.tempdir.max.age.minutes:1440}")
-    public void setTempDirCleanupAgeMinutes(long tempDirCleanupAgeMinutes) {
+    public void setTempDirCleanupAgeMinutes(final long tempDirCleanupAgeMinutes) {
         this.tempDirCleanupAgeMinutes = tempDirCleanupAgeMinutes;
     }
 
     @Deprecated
     @Value("${scm.refresh.period.minutes:-1}")
-    /**
+    /*
      * @deprecated use scm.refresh.period.seconds instead
      */
-    public void setScmRefreshMinutes(long scmRefreshMinutes) {
+    public void setScmRefreshMinutes(final long scmRefreshMinutes) {
         this.scmRefreshMinutes = scmRefreshMinutes;
     }
 
     @Value("${scm.refresh.period.seconds:300}")
-    public void setScmRefreshSeconds(long scmRefreshSeconds) {
+    public void setScmRefreshSeconds(final long scmRefreshSeconds) {
         this.scmRefreshSeconds = scmRefreshSeconds;
     }
 
