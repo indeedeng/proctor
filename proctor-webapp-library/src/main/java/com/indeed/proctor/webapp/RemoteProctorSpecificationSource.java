@@ -2,10 +2,8 @@ package com.indeed.proctor.webapp;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -49,7 +47,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -120,18 +117,8 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
         if (cache == null) {
             return Collections.emptyMap();
         } else {
-            final Map<AppVersion, RemoteSpecificationResult> success = Maps.filterEntries(cache, new Predicate<Map.Entry<AppVersion, RemoteSpecificationResult>>() {
-                @Override
-                public boolean apply(@Nullable Map.Entry<AppVersion, RemoteSpecificationResult> input) {
-                    return input.getValue().isSuccess();
-                }
-            });
-            return Maps.transformValues(success, new Function<RemoteSpecificationResult, ProctorSpecification>() {
-                @Override
-                public ProctorSpecification apply(@Nullable RemoteSpecificationResult input) {
-                    return input.getSpecificationResult().getSpecification();
-                }
-            });
+            final Map<AppVersion, RemoteSpecificationResult> success = Maps.filterEntries(cache, input -> input.getValue().isSuccess());
+            return Maps.transformValues(success, input -> input.getSpecificationResult().getSpecification());
         }
     }
 
@@ -223,13 +210,9 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
         for (final AppVersion appVersion : apps.keySet()) {
             appVersionsToCheck.add(appVersion);
             final List<ProctorClientApplication> callableClients = apps.get(appVersion);
-            assert callableClients.size() > 0;
-            futures.put(appVersion, httpExecutor.submit(new Callable<RemoteSpecificationResult>() {
-                @Override
-                public RemoteSpecificationResult call() throws Exception {
-                    return internalGet(appVersion, callableClients, httpTimeout);
-                }
-            }));
+            assert !callableClients.isEmpty();
+            futures.put(appVersion, httpExecutor.submit(
+                    () -> internalGet(appVersion, callableClients, httpTimeout)));
 
         }
         while (!futures.isEmpty()) {
