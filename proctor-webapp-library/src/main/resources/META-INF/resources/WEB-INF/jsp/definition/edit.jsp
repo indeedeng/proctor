@@ -206,21 +206,21 @@
                 </ui:grid-row>
                 <proctor:renderEditPageInjectionTemplates position="<%=EditPageRenderer.EditPagePosition.BOTTOM_FORM%>" testName="${testName}" testDefinitionJson="${testDefinitionJson}" isCreate="${isCreate}"/>
                 <ui:grid-row extraCssClass="ui-radio-buttons">
-                    <ui:grid-columns width="three"><!-- This column is for spacing to follow Comment field. --></ui:grid-columns>
+                    <ui:grid-columns width="three">
+                        <label class="right inline">Promotion Options</label>
+                    </ui:grid-columns>
                     <ui:grid-columns width="nine">
                         <div>
-                            <label>
-                                <input name="save-type-select" id="save-trunk" type="radio" value="autopromote">Save to trunk
+                            <label class="inline">
+                                Choose where to promote <proctor:renderHelpButton helpType="<%=RenderHelpButtonTagHandler.HelpType.AUTO_PROMOTION%>" />
                             </label>
                         </div>
                         <div>
                             <label>
-                                <input name="save-type-select" id="autopromote-qa" type="radio" value="autopromote-qa" checked>Save to trunk and Promote to QA
+                                <input name="save-type-select" id="autopromote-qa" type="checkbox" value="autopromote-qa" checked> QA
                             </label>
-                        </div>
-                        <div>
                             <label>
-                                <input name="save-type-select" id="autopromote-prod" type="radio" value="autopromote-prod">Save to trunk and Promote to QA and Prod
+                                <input name="save-type-select" id="autopromote-prod" type="checkbox" value="autopromote-prod"> Prod
                             </label>
                         </div>
                     </ui:grid-columns>

@@ -124,6 +124,9 @@ indeed.proctor.app.editor.DefinitionEditor.prototype.bind_ = function() {
                          this.onSaveClick_);
   }
 
+  var prodPromotionCheckbox = goog.dom.getElement('autopromote-prod');
+  this.handler_.listen(prodPromotionCheckbox, goog.events.EventType.CLICK, this.onProdPromotionClick_);
+
   var saveinfo = goog.dom.getElementByClass('js-save-info', this.container);
   this.svninfo = new indeed.proctor.editor.SvnInfoEditor(saveinfo, false);
 
@@ -164,6 +167,23 @@ indeed.proctor.app.editor.DefinitionEditor.prototype.onSaveClick_ =
     function(ev) {
   ev.preventDefault();
   this.save_();
+};
+
+/**
+ *
+ * @param ev {goog.events.BrowserEvent} ev Event Facade/.
+ * @private
+ */
+indeed.proctor.app.editor.DefinitionEditor.prototype.onProdPromotionClick_ = function(ev) {
+  var prodCheckbox = ev.target;
+  var qaCheckbox = goog.dom.getElement("autopromote-qa");
+
+  if (prodCheckbox.checked) {
+    qaCheckbox.checked = true;
+    qaCheckbox.disabled = true;
+  } else {
+    qaCheckbox.disabled = false;
+  }
 };
 
 
