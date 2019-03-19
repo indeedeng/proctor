@@ -4,6 +4,7 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.ListBranchCommand;
 import org.eclipse.jgit.junit.RepositoryTestCase;
 import org.eclipse.jgit.lib.Ref;
+import org.eclipse.jgit.lib.StoredConfig;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -58,6 +59,9 @@ public class GitProctorCoreWithRepositoryTest extends RepositoryTestCase {
 
         assertNotNull(git);
         assertThat(git.getRepository().getBranch()).isEqualTo("master");
+
+        final StoredConfig config = git.getRepository().getConfig();
+        assertThat(config.getBoolean("pack", "singlePack", false)).isTrue();
 
         final String localCommitMessage = git.log().call().iterator().next().getFullMessage();
         assertThat(localCommitMessage).isEqualTo(COMMIT_MESSAGE);
