@@ -38,6 +38,8 @@ indeed.proctor.filter.Filter = function (models, container, updateCallback) {
     goog.events.listen(this.filterActiveNode, goog.events.EventType.CHANGE, function(){
         delay.start(100);
     });
+    // Perform a search with the current criteria after the tests have loaded.
+    delay.fire();
 };
 indeed.proctor.filter.Filter.prototype.refreshFilter = function () {
     var radios = this.filterActiveNode.querySelectorAll("input");
