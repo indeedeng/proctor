@@ -17,7 +17,7 @@
     </scm>
 
     <properties>
-        <jgit.version>3.4.1.201406201815-r</jgit.version>
+        <jgit.version>5.2.0.201812061821-r</jgit.version>
     </properties>
 
     <dependencies>
