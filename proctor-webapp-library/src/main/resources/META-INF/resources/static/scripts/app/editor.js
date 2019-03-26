@@ -235,6 +235,13 @@ indeed.proctor.app.editor.DefinitionEditor.prototype.save_ = function() {
 
   var promoteToQA = goog.dom.getElement("autopromote-qa").checked;
   var promoteToProd = goog.dom.getElement("autopromote-prod").checked;
+  var autopromoteTarget = "none";
+
+  if (promoteToProd) {
+    autopromoteTarget = "qa-and-prod";
+  } else if (promoteToQA) {
+    autopromoteTarget = "qa";
+  }
 
   var jsData = {
     'testDefinition': serializer.serialize(json),
@@ -242,7 +249,7 @@ indeed.proctor.app.editor.DefinitionEditor.prototype.save_ = function() {
     'previousRevision': this.prevRevision,
     'isCreate' : this.isCreate,
     'isAutopromote' : promoteToQA || promoteToProd,
-    'autopromoteTarget' : promoteToQA ? "qa" : "qa-and-prod"
+    'autopromoteTarget' : autopromoteTarget
   };
   if (this.svninfo.username && this.svninfo.password) {
     jsData['username'] = goog.dom.forms.getValue(this.svninfo.username);
