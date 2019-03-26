@@ -318,14 +318,14 @@ public class ProctorTestDefinitionController extends AbstractController {
             @RequestParam(required = false) final String testDefinition, // testDefinition is JSON representation of test-definition
             @RequestParam(required = false, defaultValue = "") final String previousRevision,
             @RequestParam(required = false, defaultValue = "false") final boolean isAutopromote,
-            @RequestParam(required = false, defaultValue = "qa-and-prod") final String autopromoteTargetName,
+            @RequestParam(required = false, defaultValue = "qa-and-prod") final String autopromoteTarget,
             final HttpServletRequest request
     ) {
-        final AutopromoteTarget autopromoteTarget;
+        final AutopromoteTarget autopromoteTargetEnum;
         if (isAutopromote) {
-            autopromoteTarget = AutopromoteTarget.fromName(autopromoteTargetName);
+            autopromoteTargetEnum = AutopromoteTarget.fromName(autopromoteTarget);
         } else {
-            autopromoteTarget = null;
+            autopromoteTargetEnum = null;
         }
 
         final BackgroundJob job = editAndPromoteJob.doEdit(
@@ -338,7 +338,7 @@ public class ProctorTestDefinitionController extends AbstractController {
                 testDefinition,
                 previousRevision,
                 isAutopromote,
-                autopromoteTarget,
+                autopromoteTargetEnum,
                 new HashMap<>(request.getParameterMap())
         );
         if (isAJAXRequest(request)) {
