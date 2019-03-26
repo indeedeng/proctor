@@ -372,7 +372,7 @@ public class EditAndPromoteJob extends AbstractJob {
             job.log("Not autopromoting because it wasn't requested by user.");
             return;
         }
-        Preconditions.checkState(autopromoteTarget != AutopromoteTarget.UNKNOWN,
+        Preconditions.checkState(autopromoteTarget != AutopromoteTarget.NONE,
                 "AutopromoteTarget is invalid. It must be qa or qa-and-prod.");
 
         switch (autopromoteTarget) {

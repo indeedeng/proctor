@@ -7,7 +7,7 @@ import com.google.common.collect.Maps;
 import java.util.Map;
 
 public enum AutopromoteTarget {
-    UNKNOWN("unknown"),
+    NONE("none"),
     QA("qa"),
     QA_AND_PROD("qa-and-prod");
 
@@ -27,9 +27,9 @@ public enum AutopromoteTarget {
 
     public static AutopromoteTarget fromName(String name) {
         if(name == null) {
-            return UNKNOWN;
+            return NONE;
         } else {
-            return LOOKUP.getOrDefault(name.toLowerCase(), UNKNOWN);
+            return LOOKUP.getOrDefault(name.toLowerCase(), NONE);
         }
     }
 
