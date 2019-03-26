@@ -15,6 +15,8 @@ import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.webapp.db.Environment;
+import com.indeed.proctor.webapp.jobs.BackgroundJob.JobType;
+import com.indeed.proctor.webapp.model.AutopromoteTarget;
 import com.indeed.proctor.webapp.model.RevisionDefinition;
 import org.junit.Before;
 import org.junit.Test;
@@ -352,12 +354,12 @@ public class TestEditAndPromoteJob {
 
         @Test
         public void testCreateJobType() {
-            assertEquals(BackgroundJob.JobType.TEST_CREATION, EditAndPromoteJob.createJobType(true, false, false));
-            assertEquals(BackgroundJob.JobType.TEST_CREATION_PROMOTION, EditAndPromoteJob.createJobType(true, true, false));
-            assertEquals(BackgroundJob.JobType.TEST_CREATION_PROMOTION_QA, EditAndPromoteJob.createJobType(true, false, true));
-            assertEquals(BackgroundJob.JobType.TEST_EDIT, EditAndPromoteJob.createJobType(false, false, false));
-            assertEquals(BackgroundJob.JobType.TEST_EDIT_PROMOTION, EditAndPromoteJob.createJobType(false, true, false));
-            assertEquals(BackgroundJob.JobType.TEST_EDIT_PROMOTION_QA, EditAndPromoteJob.createJobType(false, false, true));
+            assertEquals(JobType.TEST_CREATION, EditAndPromoteJob.createJobType(true, false, AutopromoteTarget.UNKNOWN));
+            assertEquals(JobType.TEST_CREATION_PROMOTION, EditAndPromoteJob.createJobType(true, true, AutopromoteTarget.QA_AND_PROD));
+            assertEquals(JobType.TEST_CREATION_PROMOTION_QA, EditAndPromoteJob.createJobType(true, true, AutopromoteTarget.QA));
+            assertEquals(JobType.TEST_EDIT, EditAndPromoteJob.createJobType(false, false, AutopromoteTarget.UNKNOWN));
+            assertEquals(JobType.TEST_EDIT_PROMOTION, EditAndPromoteJob.createJobType(false, true, AutopromoteTarget.QA_AND_PROD));
+            assertEquals(JobType.TEST_EDIT_PROMOTION_QA, EditAndPromoteJob.createJobType(false, true, AutopromoteTarget.QA));
         }
     }
 
@@ -454,7 +456,7 @@ public class TestEditAndPromoteJob {
 
                 // Act
                 editAndPromoteJob.doPromoteTestToQa(TEST_NAME, USERNAME, PASSWORD, AUTHOR, REQUEST_PARAMETER_MAP,
-                        backgroundJob, trunkStore, QA_REVISION);
+                        backgroundJob, TRUNK_REVISION, QA_REVISION);
 
                 // Assert
                 verify(editAndPromoteJob).doPromoteInternal(TEST_NAME, USERNAME, PASSWORD, AUTHOR, Environment.WORKING,
@@ -471,7 +473,7 @@ public class TestEditAndPromoteJob {
 
                 // Act
                 editAndPromoteJob.doPromoteTestToQa(TEST_NAME, USERNAME, PASSWORD, AUTHOR, REQUEST_PARAMETER_MAP,
-                        backgroundJob, trunkStore, QA_REVISION);
+                        backgroundJob, TRUNK_REVISION, QA_REVISION);
 
                 // Assert
                 verify(editAndPromoteJob).doPromoteInternal(TEST_NAME, USERNAME, PASSWORD, AUTHOR, Environment.WORKING,

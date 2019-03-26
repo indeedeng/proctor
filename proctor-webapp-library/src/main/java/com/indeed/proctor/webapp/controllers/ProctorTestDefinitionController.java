@@ -28,6 +28,7 @@ import com.indeed.proctor.webapp.jobs.DeleteJob;
 import com.indeed.proctor.webapp.jobs.EditAndPromoteJob;
 import com.indeed.proctor.webapp.jobs.MatrixChecker;
 import com.indeed.proctor.webapp.model.AppVersion;
+import com.indeed.proctor.webapp.model.AutopromoteTarget;
 import com.indeed.proctor.webapp.model.BackgroundJobResponseModel;
 import com.indeed.proctor.webapp.model.ProctorClientApplication;
 import com.indeed.proctor.webapp.model.RevisionDefinition;
@@ -317,9 +318,16 @@ public class ProctorTestDefinitionController extends AbstractController {
             @RequestParam(required = false) final String testDefinition, // testDefinition is JSON representation of test-definition
             @RequestParam(required = false, defaultValue = "") final String previousRevision,
             @RequestParam(required = false, defaultValue = "false") final boolean isAutopromote,
-            @RequestParam(required = false, defaultValue = "false") final boolean isAutopromoteToQA,
+            @RequestParam(required = false, defaultValue = "qa-and-prod") final String autopromoteTargetName,
             final HttpServletRequest request
     ) {
+        final AutopromoteTarget autopromoteTarget;
+        if (isAutopromote) {
+            autopromoteTarget = AutopromoteTarget.fromName(autopromoteTargetName);
+        } else {
+            autopromoteTarget = null;
+        }
+
         final BackgroundJob job = editAndPromoteJob.doEdit(
                 testName,
                 username,
@@ -330,7 +338,7 @@ public class ProctorTestDefinitionController extends AbstractController {
                 testDefinition,
                 previousRevision,
                 isAutopromote,
-                isAutopromoteToQA,
+                autopromoteTarget,
                 new HashMap<>(request.getParameterMap())
         );
         if (isAJAXRequest(request)) {
