@@ -321,12 +321,7 @@ public class ProctorTestDefinitionController extends AbstractController {
             @RequestParam(required = false, defaultValue = "qa-and-prod") final String autopromoteTarget,
             final HttpServletRequest request
     ) {
-        final AutopromoteTarget autopromoteTargetEnum;
-        if (isAutopromote) {
-            autopromoteTargetEnum = AutopromoteTarget.fromName(autopromoteTarget);
-        } else {
-            autopromoteTargetEnum = null;
-        }
+        final AutopromoteTarget autopromoteTargetEnum = AutopromoteTarget.fromName(autopromoteTarget);
 
         final BackgroundJob job = editAndPromoteJob.doEdit(
                 testName,
