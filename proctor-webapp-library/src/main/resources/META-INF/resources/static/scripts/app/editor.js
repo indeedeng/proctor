@@ -235,10 +235,10 @@ indeed.proctor.app.editor.DefinitionEditor.prototype.save_ = function() {
 
   var promoteToQA = goog.dom.getElement("autopromote-qa").checked;
   var promoteToProd = goog.dom.getElement("autopromote-prod").checked;
-  var autopromoteTarget = "none";
+  var autopromoteTarget = "trunk";
 
   if (promoteToProd) {
-    autopromoteTarget = "qa-and-prod";
+    autopromoteTarget = "production";
   } else if (promoteToQA) {
     autopromoteTarget = "qa";
   }

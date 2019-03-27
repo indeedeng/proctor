@@ -16,7 +16,6 @@ import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.webapp.db.Environment;
 import com.indeed.proctor.webapp.jobs.BackgroundJob.JobType;
-import com.indeed.proctor.webapp.model.AutopromoteTarget;
 import com.indeed.proctor.webapp.model.RevisionDefinition;
 import org.junit.Before;
 import org.junit.Test;
@@ -354,12 +353,12 @@ public class TestEditAndPromoteJob {
 
         @Test
         public void testCreateJobType() {
-            assertEquals(JobType.TEST_CREATION, EditAndPromoteJob.createJobType(true, false, AutopromoteTarget.NONE));
-            assertEquals(JobType.TEST_CREATION_PROMOTION, EditAndPromoteJob.createJobType(true, true, AutopromoteTarget.QA_AND_PROD));
-            assertEquals(JobType.TEST_CREATION_PROMOTION_QA, EditAndPromoteJob.createJobType(true, true, AutopromoteTarget.QA));
-            assertEquals(JobType.TEST_EDIT, EditAndPromoteJob.createJobType(false, false, AutopromoteTarget.NONE));
-            assertEquals(JobType.TEST_EDIT_PROMOTION, EditAndPromoteJob.createJobType(false, true, AutopromoteTarget.QA_AND_PROD));
-            assertEquals(JobType.TEST_EDIT_PROMOTION_QA, EditAndPromoteJob.createJobType(false, true, AutopromoteTarget.QA));
+            assertEquals(JobType.TEST_CREATION, EditAndPromoteJob.createJobType(true, Environment.WORKING));
+            assertEquals(JobType.TEST_CREATION_PROMOTION, EditAndPromoteJob.createJobType(true, Environment.PRODUCTION));
+            assertEquals(JobType.TEST_CREATION_PROMOTION_QA, EditAndPromoteJob.createJobType(true, Environment.QA));
+            assertEquals(JobType.TEST_EDIT, EditAndPromoteJob.createJobType(false, Environment.WORKING));
+            assertEquals(JobType.TEST_EDIT_PROMOTION, EditAndPromoteJob.createJobType(false, Environment.PRODUCTION));
+            assertEquals(JobType.TEST_EDIT_PROMOTION_QA, EditAndPromoteJob.createJobType(false, Environment.QA));
         }
     }
 

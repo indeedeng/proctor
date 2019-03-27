@@ -33,7 +33,6 @@ import com.indeed.proctor.webapp.extensions.PostDefinitionPromoteChange;
 import com.indeed.proctor.webapp.extensions.PreDefinitionCreateChange;
 import com.indeed.proctor.webapp.extensions.PreDefinitionEditChange;
 import com.indeed.proctor.webapp.extensions.PreDefinitionPromoteChange;
-import com.indeed.proctor.webapp.model.AutopromoteTarget;
 import com.indeed.proctor.webapp.model.RevisionDefinition;
 import com.indeed.proctor.webapp.tags.TestDefinitionFunctions;
 import com.indeed.proctor.webapp.tags.UtilityFunctions;
@@ -139,14 +138,13 @@ public class EditAndPromoteJob extends AbstractJob {
             final String comment,
             final String testDefinitionJson,
             final String previousRevision,
-            final boolean isAutopromote,
-            final AutopromoteTarget autopromoteTarget,
+            final Environment autopromoteTarget,
             final Map<String, String[]> requestParameterMap
     ) {
         final BackgroundJob<Object> backgroundJob = jobFactory.createBackgroundJob(
-                createJobTitle(testName, username, author, isCreate, isAutopromote, autopromoteTarget),
+                createJobTitle(testName, username, author, isCreate, autopromoteTarget),
                 author,
-                createJobType(isCreate, isAutopromote, autopromoteTarget),
+                createJobType(isCreate, autopromoteTarget),
                 job -> {
                     try {
                         if (CharMatcher.WHITESPACE.matchesAllOf(Strings.nullToEmpty(testDefinitionJson))) {
@@ -154,7 +152,7 @@ public class EditAndPromoteJob extends AbstractJob {
                         }
                         job.logWithTiming("Parsing test definition json", "parsing");
                         final TestDefinition testDefinitionToUpdate = TestDefinitionFunctions.parseTestDefinition(testDefinitionJson);
-                        doEditInternal(testName, username, password, author, isCreate, comment, testDefinitionToUpdate, previousRevision, isAutopromote, autopromoteTarget, requestParameterMap, job);
+                        doEditInternal(testName, username, password, author, isCreate, comment, testDefinitionToUpdate, previousRevision, autopromoteTarget, requestParameterMap, job);
                     } catch (final GitNoAuthorizationException | GitNoDevelperAccessLevelException | IllegalArgumentException | IncompatibleTestMatrixException exp) {
                         job.logFailedJob(exp);
                         LOGGER.info("Edit Failed: " + job.getTitle(), exp);
@@ -178,18 +176,17 @@ public class EditAndPromoteJob extends AbstractJob {
             final String comment,
             final TestDefinition testDefinitionToUpdate,
             final String previousRevision,
-            final boolean isAutopromote,
-            final AutopromoteTarget autopromoteTarget,
+            final Environment autopromoteTarget,
             final Map<String, String[]> requestParameterMap
     ) {
 
         final BackgroundJob<Object> backgroundJob = jobFactory.createBackgroundJob(
-                createJobTitle(testName, username, author, isCreate, isAutopromote, autopromoteTarget),
+                createJobTitle(testName, username, author, isCreate, autopromoteTarget),
                 author,
-                createJobType(isCreate, isAutopromote, autopromoteTarget),
+                createJobType(isCreate, autopromoteTarget),
                 job -> {
                     try {
-                        doEditInternal(testName, username, password, author, isCreate, comment, testDefinitionToUpdate, previousRevision, isAutopromote, autopromoteTarget, requestParameterMap, job);
+                        doEditInternal(testName, username, password, author, isCreate, comment, testDefinitionToUpdate, previousRevision, autopromoteTarget, requestParameterMap, job);
                     } catch (final GitNoAuthorizationException | GitNoDevelperAccessLevelException | IllegalArgumentException | IncompatibleTestMatrixException exp) {
                         job.logFailedJob(exp);
                         LOGGER.info("Edit Failed: " + job.getTitle(), exp);
@@ -206,8 +203,8 @@ public class EditAndPromoteJob extends AbstractJob {
 
     /**
      * Creates/updates test with given {@code testName} in trunk store to new state from {@code testDefinitionToUpdate}.
-     * {@code isCreate} is set if this is a new test definition. {@code isAutopromote} Is set if the users requested the
-     * test be autopromoted.
+     * {@code isCreate} is set if this is a new test definition. {@code autopromoteTarget} is set if the users requested the
+     * test be autopromoted to the environment.
      * @param testName the test name to promote
      * @param username the username of the committer
      * @param password the password of the committer
@@ -216,8 +213,7 @@ public class EditAndPromoteJob extends AbstractJob {
      * @param comment the comment to be added in the commit comment
      * @param testDefinitionToUpdate the TestDefinition to update
      * @param previousRevision
-     * @param isAutopromote the flag whether this job promotes the test to QA and Production
-     * @param autopromoteTarget the environment(s) to promote
+     * @param autopromoteTarget the environment to promote
      * @param requestParameterMap
      * @param job the edit job which runs this edit process
      * @return true, else throws an exception.
@@ -232,8 +228,7 @@ public class EditAndPromoteJob extends AbstractJob {
             final String comment,
             final TestDefinition testDefinitionToUpdate,
             final String previousRevision,
-            final boolean isAutopromote,
-            final AutopromoteTarget autopromoteTarget,
+            final Environment autopromoteTarget,
             final Map<String, String[]> requestParameterMap,
             final BackgroundJob job
     ) throws Exception {
@@ -341,7 +336,7 @@ public class EditAndPromoteJob extends AbstractJob {
         }
 
         //Autopromote if necessary
-        maybeAutoPromote(testName, username, password, author, testDefinitionToUpdate, previousRevision, isAutopromote,
+        maybeAutoPromote(testName, username, password, author, testDefinitionToUpdate, previousRevision,
                 autopromoteTarget, requestParameterMap, job, trunkStore, qaRevision, prodRevision, existingTestDefinition);
 
         job.logComplete();
@@ -359,8 +354,7 @@ public class EditAndPromoteJob extends AbstractJob {
             final String author,
             final TestDefinition testDefinitionToUpdate,
             final String previousRevision,
-            final boolean isAutopromote,
-            final AutopromoteTarget autopromoteTarget,
+            final Environment autopromoteTarget,
             final Map<String, String[]> requestParameterMap,
             final BackgroundJob job,
             final ProctorStore trunkStore,
@@ -368,21 +362,21 @@ public class EditAndPromoteJob extends AbstractJob {
             final String prodRevision,
             final TestDefinition existingTestDefinition
     ) throws Exception {
+        final boolean isAutopromote = autopromoteTarget != Environment.WORKING;
         if (!isAutopromote) {
             job.log("Not autopromoting because it wasn't requested by user.");
             return;
         }
-        Preconditions.checkState(autopromoteTarget != AutopromoteTarget.NONE,
-                "AutopromoteTarget is invalid. It must be qa or qa-and-prod.");
 
         switch (autopromoteTarget) {
             case QA:
                 final String currentRevision = getCurrentVersion(testName, trunkStore).getRevision();
                 doPromoteTestToQa(testName, username, password, author, requestParameterMap, job, currentRevision, qaRevision);
                 break;
-            case QA_AND_PROD:
+            case PRODUCTION:
                 doPromoteTestToQaAndProd(testName, username, password, author, testDefinitionToUpdate, previousRevision,
                         requestParameterMap, job, trunkStore, qaRevision, prodRevision, existingTestDefinition);
+                break;
         }
     }
 
@@ -896,20 +890,15 @@ public class EditAndPromoteJob extends AbstractJob {
             final String username,
             final String author,
             final boolean isCreate,
-            final boolean isAutopromote,
-            final AutopromoteTarget autopromoteTarget
+            final Environment autopromoteTarget
     ) {
         return String.format(
                 "(username:%s author:%s) %s %s",
-                username, author, createJobTypeString(isCreate, isAutopromote, autopromoteTarget), testName
+                username, author, createJobTitleString(isCreate, autopromoteTarget), testName
         );
     }
 
-    private static String createJobTypeString(
-            final boolean isCreate,
-            final boolean isAutopromote,
-            final AutopromoteTarget autopromoteTarget
-    ) {
+    private static String createJobTitleString(final boolean isCreate, final Environment autopromoteTarget) {
         final StringBuilder messageBuilder = new StringBuilder();
 
         if (isCreate) {
@@ -918,14 +907,15 @@ public class EditAndPromoteJob extends AbstractJob {
             messageBuilder.append("Editing");
         }
 
-        if (isAutopromote) {
-            switch (autopromoteTarget) {
-                case QA:
-                    messageBuilder.append(" and promoting to QA");
-                    break;
-                case QA_AND_PROD:
-                    messageBuilder.append(" and promoting to QA and Prod");
-            }
+        switch (autopromoteTarget) {
+            case QA:
+                messageBuilder.append(" and promoting to QA");
+                break;
+            case PRODUCTION:
+                messageBuilder.append(" and promoting to QA and Prod");
+                break;
+            default:
+                break;
         }
 
         return messageBuilder.toString();
@@ -934,29 +924,27 @@ public class EditAndPromoteJob extends AbstractJob {
     @VisibleForTesting
     static BackgroundJob.JobType createJobType(
             final boolean isCreate,
-            final boolean isAutopromote,
-            final AutopromoteTarget autopromoteTarget
+            final Environment autopromoteTarget
     ) {
-        final StringBuilder jobTypeNameBuilder = new StringBuilder("TEST");
-
         if (isCreate) {
-            jobTypeNameBuilder.append("_CREATION");
-        } else {
-            jobTypeNameBuilder.append("_EDIT");
-        }
-
-        if (isAutopromote) {
-            assert autopromoteTarget != null;
             switch (autopromoteTarget) {
                 case QA:
-                    jobTypeNameBuilder.append("_PROMOTION_QA");
-                    break;
-                case QA_AND_PROD:
-                    jobTypeNameBuilder.append("_PROMOTION");
+                    return BackgroundJob.JobType.TEST_CREATION_PROMOTION_QA;
+                case PRODUCTION:
+                    return BackgroundJob.JobType.TEST_CREATION_PROMOTION;
+                default:
+                    return BackgroundJob.JobType.TEST_CREATION;
             }
         }
 
-        return BackgroundJob.JobType.valueOf(jobTypeNameBuilder.toString());
+        switch (autopromoteTarget) {
+            case QA:
+                return BackgroundJob.JobType.TEST_EDIT_PROMOTION_QA;
+            case PRODUCTION:
+                return BackgroundJob.JobType.TEST_EDIT_PROMOTION;
+            default:
+                return BackgroundJob.JobType.TEST_EDIT;
+        }
     }
 
     public BackgroundJob doPromote(

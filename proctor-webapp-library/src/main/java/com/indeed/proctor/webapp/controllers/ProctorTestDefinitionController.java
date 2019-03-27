@@ -28,7 +28,6 @@ import com.indeed.proctor.webapp.jobs.DeleteJob;
 import com.indeed.proctor.webapp.jobs.EditAndPromoteJob;
 import com.indeed.proctor.webapp.jobs.MatrixChecker;
 import com.indeed.proctor.webapp.model.AppVersion;
-import com.indeed.proctor.webapp.model.AutopromoteTarget;
 import com.indeed.proctor.webapp.model.BackgroundJobResponseModel;
 import com.indeed.proctor.webapp.model.ProctorClientApplication;
 import com.indeed.proctor.webapp.model.RevisionDefinition;
@@ -67,6 +66,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -317,11 +317,10 @@ public class ProctorTestDefinitionController extends AbstractController {
             @RequestParam(required = false, defaultValue = "") final String comment,
             @RequestParam(required = false) final String testDefinition, // testDefinition is JSON representation of test-definition
             @RequestParam(required = false, defaultValue = "") final String previousRevision,
-            @RequestParam(required = false, defaultValue = "false") final boolean isAutopromote,
-            @RequestParam(required = false, defaultValue = "qa-and-prod") final String autopromoteTarget,
+            @RequestParam(required = false, defaultValue = "trunk") final String autopromoteTarget,
             final HttpServletRequest request
     ) {
-        final AutopromoteTarget autopromoteTargetEnum = AutopromoteTarget.fromName(autopromoteTarget);
+        final Environment autopromoteTargetEnv = Optional.ofNullable(Environment.fromName(autopromoteTarget)).orElse(Environment.WORKING);
 
         final BackgroundJob job = editAndPromoteJob.doEdit(
                 testName,
@@ -332,8 +331,7 @@ public class ProctorTestDefinitionController extends AbstractController {
                 comment,
                 testDefinition,
                 previousRevision,
-                isAutopromote,
-                autopromoteTargetEnum,
+                autopromoteTargetEnv,
                 new HashMap<>(request.getParameterMap())
         );
         if (isAJAXRequest(request)) {
