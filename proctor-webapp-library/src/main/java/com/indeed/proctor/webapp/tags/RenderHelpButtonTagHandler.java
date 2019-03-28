@@ -1,5 +1,6 @@
 package com.indeed.proctor.webapp.tags;
 
+import com.google.common.base.Strings;
 import com.indeed.proctor.webapp.extensions.HelpURLInformation;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.BeanFactoryUtils;
@@ -17,7 +18,8 @@ import java.util.Map;
 public class RenderHelpButtonTagHandler extends TagSupport {
     public enum HelpType {
         TEST_TYPE,
-        RULE
+        RULE,
+        AUTO_PROMOTION
     }
 
     private static final String TEST_TYPE_DEFAULT_URL = "http://opensource.indeedeng.io/proctor/docs/terminology/#test-type";
@@ -37,7 +39,11 @@ public class RenderHelpButtonTagHandler extends TagSupport {
     }
 
     public String helpButton(final HelpType helpType) {
-        return String.format("<a class=\"ui-help-button\" target=\"_blank\" href=\"%s\">?</a>", getHelpURL(helpType));
+        final String helpURL = getHelpURL(helpType);
+        if (Strings.isNullOrEmpty(helpURL)) {
+            return "";
+        }
+        return String.format("<a class=\"ui-help-button\" target=\"_blank\" href=\"%s\">?</a>", helpURL);
     }
 
     public String getHelpURL(final HelpType helpType) {
@@ -51,6 +57,8 @@ public class RenderHelpButtonTagHandler extends TagSupport {
                     return helpURLInformation.getTestTypeHelpURL();
                 case RULE:
                     return helpURLInformation.getRuleHelpURL();
+                case AUTO_PROMOTION:
+                    return helpURLInformation.getAutoPromotionHelpURL();
                 default:
                     return "";
             }

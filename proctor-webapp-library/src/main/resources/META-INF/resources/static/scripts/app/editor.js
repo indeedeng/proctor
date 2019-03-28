@@ -124,6 +124,9 @@ indeed.proctor.app.editor.DefinitionEditor.prototype.bind_ = function() {
                          this.onSaveClick_);
   }
 
+  var prodPromotionCheckbox = goog.dom.getElement('autopromote-prod');
+  this.handler_.listen(prodPromotionCheckbox, goog.events.EventType.CLICK, this.onProdPromotionClick_);
+
   var saveinfo = goog.dom.getElementByClass('js-save-info', this.container);
   this.svninfo = new indeed.proctor.editor.SvnInfoEditor(saveinfo, false);
 
@@ -164,6 +167,23 @@ indeed.proctor.app.editor.DefinitionEditor.prototype.onSaveClick_ =
     function(ev) {
   ev.preventDefault();
   this.save_();
+};
+
+/**
+ *
+ * @param ev {goog.events.BrowserEvent} ev Event Facade/.
+ * @private
+ */
+indeed.proctor.app.editor.DefinitionEditor.prototype.onProdPromotionClick_ = function(ev) {
+  var prodCheckbox = ev.target;
+  var qaCheckbox = goog.dom.getElement("autopromote-qa");
+
+  if (prodCheckbox.checked) {
+    qaCheckbox.checked = true;
+    qaCheckbox.disabled = true;
+  } else {
+    qaCheckbox.disabled = false;
+  }
 };
 
 
@@ -213,12 +233,23 @@ indeed.proctor.app.editor.DefinitionEditor.prototype.save_ = function() {
       formData[formElementsArray[i].name] = formElementsArray[i].value;
   }
 
+  var promoteToQA = goog.dom.getElement("autopromote-qa").checked;
+  var promoteToProd = goog.dom.getElement("autopromote-prod").checked;
+  var autopromoteTarget = "trunk";
+
+  if (promoteToProd) {
+    autopromoteTarget = "production";
+  } else if (promoteToQA) {
+    autopromoteTarget = "qa";
+  }
+
   var jsData = {
     'testDefinition': serializer.serialize(json),
     'comment': goog.dom.forms.getValue(this.svninfo.comment),
     'previousRevision': this.prevRevision,
     'isCreate' : this.isCreate,
-    'isAutopromote' : goog.dom.getElement("autopromote-checkbox").checked
+    'isAutopromote' : promoteToQA || promoteToProd,
+    'autopromoteTarget' : autopromoteTarget
   };
   if (this.svninfo.username && this.svninfo.password) {
     jsData['username'] = goog.dom.forms.getValue(this.svninfo.username);

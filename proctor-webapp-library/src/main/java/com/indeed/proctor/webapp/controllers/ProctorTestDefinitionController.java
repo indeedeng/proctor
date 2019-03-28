@@ -66,6 +66,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -316,9 +317,11 @@ public class ProctorTestDefinitionController extends AbstractController {
             @RequestParam(required = false, defaultValue = "") final String comment,
             @RequestParam(required = false) final String testDefinition, // testDefinition is JSON representation of test-definition
             @RequestParam(required = false, defaultValue = "") final String previousRevision,
-            @RequestParam(required = false, defaultValue = "false") final boolean isAutopromote,
+            @RequestParam(required = false, defaultValue = "trunk") final String autopromoteTarget,
             final HttpServletRequest request
     ) {
+        final Environment autopromoteTargetEnv = Optional.ofNullable(Environment.fromName(autopromoteTarget)).orElse(Environment.WORKING);
+
         final BackgroundJob job = editAndPromoteJob.doEdit(
                 testName,
                 username,
@@ -328,7 +331,7 @@ public class ProctorTestDefinitionController extends AbstractController {
                 comment,
                 testDefinition,
                 previousRevision,
-                isAutopromote,
+                autopromoteTargetEnv,
                 new HashMap<>(request.getParameterMap())
         );
         if (isAJAXRequest(request)) {

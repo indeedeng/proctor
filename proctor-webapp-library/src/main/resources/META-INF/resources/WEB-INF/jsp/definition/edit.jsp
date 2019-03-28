@@ -205,13 +205,30 @@
                     <ui:grid-columns width="nine"><input placeholder="(optional) description of change" type="text" name="comment" /></ui:grid-columns>
                 </ui:grid-row>
                 <proctor:renderEditPageInjectionTemplates position="<%=EditPageRenderer.EditPagePosition.BOTTOM_FORM%>" testName="${testName}" testDefinitionJson="${testDefinitionJson}" isCreate="${isCreate}"/>
+                <ui:grid-row extraCssClass="ui-radio-buttons">
+                    <ui:grid-columns width="three">
+                        <label class="right inline">Promotion Options</label>
+                    </ui:grid-columns>
+                    <ui:grid-columns width="nine">
+                        <div>
+                            <label class="inline">
+                                Choose where to promote <proctor:renderHelpButton helpType="<%=RenderHelpButtonTagHandler.HelpType.AUTO_PROMOTION%>" />
+                            </label>
+                        </div>
+                        <div>
+                            <label>
+                                <input name="save-type-select" id="autopromote-qa" type="checkbox" value="autopromote-qa" checked> QA
+                            </label>
+                            <label>
+                                <input name="save-type-select" id="autopromote-prod" type="checkbox" value="autopromote-prod"> Prod
+                            </label>
+                        </div>
+                    </ui:grid-columns>
+                </ui:grid-row>
                 <div class="ui-form-buttons">
                     <input type="submit" class="button js-save-form" value="Save">
                     <span class="button tiny secondary js-clean-workspace">clean workspace</span>
                     <div style="display:none;" class="mam save-msg-container alert-box"></div>
-                    <label for="autopromote-checkbox">
-                        <input id="autopromote-checkbox" type="checkbox" class="mrs mts" value="autopromote">Enable Autopromote
-                    </label>
                 </div>
             </div>
         </ui:grid-columns>
