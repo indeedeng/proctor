@@ -36,7 +36,7 @@
         <dependency>
             <groupId>com.indeed</groupId>
             <artifactId>proctor-shaded-el</artifactId>
-            <version>9999-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.indeed</groupId>

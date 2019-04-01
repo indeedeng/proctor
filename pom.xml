@@ -48,6 +48,7 @@
         <module>proctor-store-svn</module>
         <module>proctor-tomcat-deps</module>
         <module>proctor-tomcat-deps-provided</module>
+        <module>proctor-shaded-el</module>
     </modules>
 
     <properties>
