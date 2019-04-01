@@ -1,7 +1,7 @@
 package com.indeed.proctor.common.el;
 
 import com.google.common.collect.Maps;
-import com.indeed.proctor.shaded.javax.el.FunctionMapper;
+import com.indeed.shaded.javax.el7.FunctionMapper;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

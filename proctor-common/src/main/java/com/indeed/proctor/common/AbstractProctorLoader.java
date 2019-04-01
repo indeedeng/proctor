@@ -7,7 +7,7 @@ import com.google.common.collect.ImmutableList;
 import com.indeed.proctor.common.dynamic.DynamicFilters;
 import com.indeed.proctor.common.model.Audit;
 import com.indeed.proctor.common.model.TestMatrixArtifact;
-import com.indeed.proctor.shaded.javax.el.FunctionMapper;
+import com.indeed.shaded.javax.el7.FunctionMapper;
 import com.indeed.util.core.DataLoadingTimerTask;
 import com.indeed.util.varexport.Export;
 import com.indeed.util.varexport.ManagedVariable;

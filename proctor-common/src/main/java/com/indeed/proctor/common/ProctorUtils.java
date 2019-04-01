@@ -27,12 +27,12 @@ import com.indeed.proctor.common.model.TestMatrixArtifact;
 import com.indeed.proctor.common.model.TestMatrixDefinition;
 import com.indeed.proctor.common.model.TestMatrixVersion;
 import com.indeed.proctor.common.model.TestType;
-import com.indeed.proctor.shaded.javax.el.ELContext;
-import com.indeed.proctor.shaded.javax.el.ExpressionFactory;
-import com.indeed.proctor.shaded.javax.el.FunctionMapper;
-import com.indeed.proctor.shaded.javax.el.ValueExpression;
-import com.indeed.proctor.shaded.javax.el.VariableMapper;
-import com.indeed.proctor.shaded.org.apache.el.ExpressionFactoryImpl;
+import com.indeed.shaded.javax.el7.ELContext;
+import com.indeed.shaded.javax.el7.ExpressionFactory;
+import com.indeed.shaded.javax.el7.FunctionMapper;
+import com.indeed.shaded.javax.el7.ValueExpression;
+import com.indeed.shaded.javax.el7.VariableMapper;
+import com.indeed.shaded.org.apache.el7.ExpressionFactoryImpl;
 import org.apache.log4j.Logger;
 
 import javax.annotation.Nonnull;

@@ -1,13 +1,13 @@
 package com.indeed.proctor.common;
 
 import com.google.common.collect.Lists;
-import com.indeed.proctor.shaded.javax.el.ELContext;
-import com.indeed.proctor.shaded.javax.el.ELException;
-import com.indeed.proctor.shaded.javax.el.ExpressionFactory;
-import com.indeed.proctor.shaded.javax.el.ValueExpression;
-import com.indeed.proctor.shaded.org.apache.el.lang.ExpressionBuilder;
-import com.indeed.proctor.shaded.org.apache.el.parser.AstIdentifier;
-import com.indeed.proctor.shaded.org.apache.el.parser.Node;
+import com.indeed.shaded.javax.el7.ELContext;
+import com.indeed.shaded.javax.el7.ELException;
+import com.indeed.shaded.javax.el7.ExpressionFactory;
+import com.indeed.shaded.javax.el7.ValueExpression;
+import com.indeed.shaded.org.apache.el7.lang.ExpressionBuilder;
+import com.indeed.shaded.org.apache.el7.parser.AstIdentifier;
+import com.indeed.shaded.org.apache.el7.parser.Node;
 import org.apache.log4j.Logger;
 
 import java.util.List;

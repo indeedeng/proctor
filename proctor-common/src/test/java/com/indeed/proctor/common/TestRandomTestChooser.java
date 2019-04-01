@@ -5,9 +5,9 @@ import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.Range;
 import com.indeed.proctor.common.model.TestBucket;
-import com.indeed.proctor.shaded.javax.el.ExpressionFactory;
-import com.indeed.proctor.shaded.javax.el.FunctionMapper;
-import com.indeed.proctor.shaded.org.apache.el.ExpressionFactoryImpl;
+import com.indeed.shaded.javax.el7.ExpressionFactory;
+import com.indeed.shaded.javax.el7.FunctionMapper;
+import com.indeed.shaded.org.apache.el7.ExpressionFactoryImpl;
 import org.junit.Test;
 
 import java.util.Collections;

@@ -3,7 +3,7 @@ package com.indeed.proctor.common;
 import com.indeed.proctor.common.model.Audit;
 import com.indeed.proctor.common.model.TestMatrixArtifact;
 import com.indeed.util.core.DataLoadTimer;
-import com.indeed.proctor.shaded.org.apache.el.lang.FunctionMapperImpl;
+import com.indeed.shaded.org.apache.el7.lang.FunctionMapperImpl;
 import org.junit.Before;
 import org.junit.Test;
 

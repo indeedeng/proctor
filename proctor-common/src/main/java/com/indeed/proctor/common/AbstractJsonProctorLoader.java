@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.indeed.proctor.common.model.TestMatrixArtifact;
-import com.indeed.proctor.shaded.javax.el.FunctionMapper;
+import com.indeed.shaded.javax.el7.FunctionMapper;
 import org.apache.log4j.Logger;
 
 import javax.annotation.Nonnull;

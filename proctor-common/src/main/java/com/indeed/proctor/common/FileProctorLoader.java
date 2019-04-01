@@ -4,7 +4,7 @@ import com.indeed.proctor.common.model.TestMatrixArtifact;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import com.indeed.proctor.shaded.javax.el.FunctionMapper;
+import com.indeed.shaded.javax.el7.FunctionMapper;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;

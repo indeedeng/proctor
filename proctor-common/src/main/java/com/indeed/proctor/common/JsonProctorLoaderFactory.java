@@ -12,7 +12,7 @@ import org.springframework.core.io.Resource;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import com.indeed.proctor.shaded.javax.el.FunctionMapper;
+import com.indeed.shaded.javax.el7.FunctionMapper;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
