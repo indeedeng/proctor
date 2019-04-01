@@ -12,11 +12,11 @@ import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.common.model.TestMatrixArtifact;
 import com.indeed.proctor.common.model.TestType;
+import com.indeed.proctor.shaded.javax.el.ExpressionFactory;
+import com.indeed.proctor.shaded.javax.el.FunctionMapper;
 import com.indeed.util.varexport.VarExporter;
 
 import javax.annotation.Nonnull;
-import javax.el.ExpressionFactory;
-import javax.el.FunctionMapper;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;

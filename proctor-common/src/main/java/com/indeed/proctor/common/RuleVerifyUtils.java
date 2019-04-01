@@ -1,16 +1,15 @@
 package com.indeed.proctor.common;
 
 import com.google.common.collect.Lists;
-import org.apache.el.lang.ExpressionBuilder;
-import org.apache.el.parser.AstIdentifier;
-import org.apache.el.parser.Node;
-import org.apache.el.parser.NodeVisitor;
+import com.indeed.proctor.shaded.javax.el.ELContext;
+import com.indeed.proctor.shaded.javax.el.ELException;
+import com.indeed.proctor.shaded.javax.el.ExpressionFactory;
+import com.indeed.proctor.shaded.javax.el.ValueExpression;
+import com.indeed.proctor.shaded.org.apache.el.lang.ExpressionBuilder;
+import com.indeed.proctor.shaded.org.apache.el.parser.AstIdentifier;
+import com.indeed.proctor.shaded.org.apache.el.parser.Node;
 import org.apache.log4j.Logger;
 
-import javax.el.ELContext;
-import javax.el.ELException;
-import javax.el.ExpressionFactory;
-import javax.el.ValueExpression;
 import java.util.List;
 import java.util.Set;
 

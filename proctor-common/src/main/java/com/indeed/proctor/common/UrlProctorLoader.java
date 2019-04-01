@@ -1,12 +1,12 @@
 package com.indeed.proctor.common;
 
 import com.indeed.proctor.common.model.TestMatrixArtifact;
+import com.indeed.proctor.shaded.javax.el.FunctionMapper;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.el.FunctionMapper;
-import java.io.IOException;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.MalformedURLException;

@@ -2,22 +2,22 @@ package com.indeed.proctor.common;
 
 import com.indeed.proctor.common.el.LibraryFunctionMapperBuilder;
 import com.indeed.proctor.common.el.MulticontextReadOnlyVariableMapper;
-import org.apache.el.ExpressionFactoryImpl;
+import com.indeed.proctor.shaded.javax.el.ArrayELResolver;
+import com.indeed.proctor.shaded.javax.el.BeanELResolver;
+import com.indeed.proctor.shaded.javax.el.CompositeELResolver;
+import com.indeed.proctor.shaded.javax.el.ELContext;
+import com.indeed.proctor.shaded.javax.el.ELResolver;
+import com.indeed.proctor.shaded.javax.el.ExpressionFactory;
+import com.indeed.proctor.shaded.javax.el.FunctionMapper;
+import com.indeed.proctor.shaded.javax.el.ListELResolver;
+import com.indeed.proctor.shaded.javax.el.MapELResolver;
+import com.indeed.proctor.shaded.javax.el.ValueExpression;
+import com.indeed.proctor.shaded.javax.el.VariableMapper;
+import com.indeed.proctor.shaded.org.apache.el.ExpressionFactoryImpl;
 import org.apache.log4j.Logger;
 import org.apache.taglibs.standard.functions.Functions;
 
 import javax.annotation.Nonnull;
-import javax.el.ArrayELResolver;
-import javax.el.BeanELResolver;
-import javax.el.CompositeELResolver;
-import javax.el.ELContext;
-import javax.el.ELResolver;
-import javax.el.ExpressionFactory;
-import javax.el.FunctionMapper;
-import javax.el.ListELResolver;
-import javax.el.MapELResolver;
-import javax.el.ValueExpression;
-import javax.el.VariableMapper;
 import java.util.Map;
 
 /**

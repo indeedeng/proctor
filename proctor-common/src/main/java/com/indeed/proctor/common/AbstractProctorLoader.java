@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableList;
 import com.indeed.proctor.common.dynamic.DynamicFilters;
 import com.indeed.proctor.common.model.Audit;
 import com.indeed.proctor.common.model.TestMatrixArtifact;
+import com.indeed.proctor.shaded.javax.el.FunctionMapper;
 import com.indeed.util.core.DataLoadingTimerTask;
 import com.indeed.util.varexport.Export;
 import com.indeed.util.varexport.ManagedVariable;
@@ -15,7 +16,6 @@ import org.apache.log4j.Logger;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.el.FunctionMapper;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;

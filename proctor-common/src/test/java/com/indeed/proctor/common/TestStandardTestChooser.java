@@ -7,14 +7,13 @@ import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.Range;
 import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.common.model.TestType;
-import org.apache.el.ExpressionFactoryImpl;
+import com.indeed.proctor.shaded.javax.el.ExpressionFactory;
+import com.indeed.proctor.shaded.javax.el.FunctionMapper;
+import com.indeed.proctor.shaded.org.apache.el.ExpressionFactoryImpl;
 import org.easymock.classextension.EasyMock;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.el.ExpressionFactory;
-import javax.el.FunctionMapper;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;

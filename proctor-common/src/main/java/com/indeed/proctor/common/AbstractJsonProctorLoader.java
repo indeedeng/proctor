@@ -4,14 +4,13 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.indeed.proctor.common.model.TestMatrixArtifact;
+import com.indeed.proctor.shaded.javax.el.FunctionMapper;
 import org.apache.log4j.Logger;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.el.FunctionMapper;
 import java.io.IOException;
 import java.io.Reader;
-import java.util.Objects;
 
 public abstract class AbstractJsonProctorLoader extends AbstractProctorLoader {
     private static final Logger LOGGER = Logger.getLogger(AbstractJsonProctorLoader.class);

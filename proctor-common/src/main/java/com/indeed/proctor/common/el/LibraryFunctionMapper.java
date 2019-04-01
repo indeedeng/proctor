@@ -1,15 +1,14 @@
 package com.indeed.proctor.common.el;
 
+import com.google.common.collect.Maps;
+import com.indeed.proctor.shaded.javax.el.FunctionMapper;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.el.FunctionMapper;
-
-import com.google.common.collect.Maps;
 
 /**
  * Unified Expression Language support class for importing public static library functions for use in a UEL expression

@@ -1,7 +1,7 @@
 package com.indeed.proctor.common;
 
 
-import javax.el.ValueExpression;
+import com.indeed.proctor.shaded.javax.el.ValueExpression;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;

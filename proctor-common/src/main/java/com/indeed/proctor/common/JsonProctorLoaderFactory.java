@@ -12,7 +12,7 @@ import org.springframework.core.io.Resource;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.el.FunctionMapper;
+import com.indeed.proctor.shaded.javax.el.FunctionMapper;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -119,7 +119,7 @@ public class JsonProctorLoaderFactory {
     }
 
     /**
-     * @param diffReporter a reporter to report changes of new proctor 
+     * @param diffReporter a reporter to report changes of new proctor
      * @deprecated use {@link JsonProctorLoaderFactory#setLoadReporters} instead
      */
     @Deprecated
