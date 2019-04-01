@@ -5,7 +5,7 @@
         <groupId>com.indeed</groupId>
         <artifactId>proctor-parent</artifactId>
         <!--This version is not used in latest release. See https://mvnrepository.com/artifact/com.indeed/proctor-parent -->
-        <version>9999-SNAPSHOT</version>
+        <version>1.2.9-experimental-2</version>
     </parent>
 
     <artifactId>proctor-common-el8-tests</artifactId>
