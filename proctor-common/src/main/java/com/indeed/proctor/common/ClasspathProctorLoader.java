@@ -3,7 +3,7 @@ package com.indeed.proctor.common;
 import com.indeed.proctor.common.model.TestMatrixArtifact;
 
 import javax.annotation.Nonnull;
-import com.indeed.shaded.javax.el7.FunctionMapper;
+import javax.el.FunctionMapper;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;

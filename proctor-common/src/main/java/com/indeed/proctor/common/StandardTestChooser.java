@@ -9,8 +9,8 @@ import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.Range;
 import com.indeed.proctor.common.model.TestBucket;
-import com.indeed.shaded.javax.el7.ExpressionFactory;
-import com.indeed.shaded.javax.el7.FunctionMapper;
+import javax.el.ExpressionFactory;
+import javax.el.FunctionMapper;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

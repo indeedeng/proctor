@@ -12,8 +12,8 @@ import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.common.model.TestMatrixArtifact;
 import com.indeed.proctor.common.model.TestType;
-import com.indeed.shaded.javax.el7.ExpressionFactory;
-import com.indeed.shaded.javax.el7.FunctionMapper;
+import javax.el.ExpressionFactory;
+import javax.el.FunctionMapper;
 import com.indeed.util.varexport.VarExporter;
 
 import javax.annotation.Nonnull;

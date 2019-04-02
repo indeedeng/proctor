@@ -1,8 +1,8 @@
 package com.indeed.proctor.common.el;
 
 
-import com.indeed.shaded.javax.el7.ValueExpression;
-import com.indeed.shaded.javax.el7.VariableMapper;
+import javax.el.ValueExpression;
+import javax.el.VariableMapper;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

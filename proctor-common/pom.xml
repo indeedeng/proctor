@@ -29,21 +29,14 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+            </plugin>
         </plugins>
     </build>
 
     <dependencies>
-        <dependency>
-            <!--
-                proctor-common uses the shaded Tomcat7 el library which has better performance than Tomcat8 one.
-                To avoid the performance issue on Tomcat8, proctor-common should be independent of the version of the apeche-el.
-                This shaded el library doesn't allow to use Tomcat8 el syntax like assign, concat, arrows, maps.
-                See the performance issue investigation ticket: PROC-519, PROC-540
-            -->
-            <groupId>com.indeed</groupId>
-            <artifactId>apache-el-shaded</artifactId>
-            <version>${project.version}</version>
-        </dependency>
         <dependency>
             <groupId>com.indeed</groupId>
             <artifactId>proctor-tomcat-deps</artifactId>

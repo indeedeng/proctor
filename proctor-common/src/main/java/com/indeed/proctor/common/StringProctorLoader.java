@@ -1,7 +1,7 @@
 package com.indeed.proctor.common;
 
 import com.indeed.proctor.common.model.TestMatrixArtifact;
-import com.indeed.shaded.javax.el7.FunctionMapper;
+import javax.el.FunctionMapper;
 
 import javax.annotation.Nonnull;
 import java.io.IOException;

@@ -5,13 +5,13 @@ import com.indeed.proctor.common.el.MulticontextReadOnlyVariableMapper;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.TestBucket;
 import junit.framework.AssertionFailedError;
-import com.indeed.shaded.org.apache.el7.ExpressionFactoryImpl;
+import org.apache.el.ExpressionFactoryImpl;
 import org.junit.Test;
 
-import com.indeed.shaded.javax.el7.ELContext;
-import com.indeed.shaded.javax.el7.ExpressionFactory;
-import com.indeed.shaded.javax.el7.ValueExpression;
-import com.indeed.shaded.javax.el7.VariableMapper;
+import javax.el.ELContext;
+import javax.el.ExpressionFactory;
+import javax.el.ValueExpression;
+import javax.el.VariableMapper;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
