@@ -1,10 +1,10 @@
 package com.indeed.proctor.common.el;
 
 import com.google.common.collect.Maps;
-import javax.el.FunctionMapper;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.el.FunctionMapper;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Map;

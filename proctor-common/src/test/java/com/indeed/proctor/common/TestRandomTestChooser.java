@@ -5,11 +5,11 @@ import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.Range;
 import com.indeed.proctor.common.model.TestBucket;
-import javax.el.ExpressionFactory;
-import javax.el.FunctionMapper;
 import org.apache.el.ExpressionFactoryImpl;
 import org.junit.Test;
 
+import javax.el.ExpressionFactory;
+import javax.el.FunctionMapper;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;

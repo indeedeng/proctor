@@ -5,12 +5,12 @@ import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.Range;
 import com.indeed.proctor.common.model.TestBucket;
-import javax.el.ExpressionFactory;
-import javax.el.FunctionMapper;
 import org.apache.log4j.Logger;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.el.ExpressionFactory;
+import javax.el.FunctionMapper;
 import java.io.PrintWriter;
 import java.text.NumberFormat;
 import java.util.Iterator;

@@ -1,15 +1,15 @@
 package com.indeed.proctor.common;
 
 import com.google.common.collect.Lists;
-import javax.el.ELContext;
-import javax.el.ELException;
-import javax.el.ExpressionFactory;
-import javax.el.ValueExpression;
 import org.apache.el.lang.ExpressionBuilder;
 import org.apache.el.parser.AstIdentifier;
 import org.apache.el.parser.Node;
 import org.apache.log4j.Logger;
 
+import javax.el.ELContext;
+import javax.el.ELException;
+import javax.el.ExpressionFactory;
+import javax.el.ValueExpression;
 import java.util.List;
 import java.util.Set;
 

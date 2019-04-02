@@ -4,6 +4,8 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.indeed.proctor.common.el.LibraryFunctionMapperBuilder;
 import com.indeed.proctor.common.el.MulticontextReadOnlyVariableMapper;
+import org.apache.el.ExpressionFactoryImpl;
+
 import javax.el.ArrayELResolver;
 import javax.el.BeanELResolver;
 import javax.el.CompositeELResolver;
@@ -15,8 +17,6 @@ import javax.el.ListELResolver;
 import javax.el.MapELResolver;
 import javax.el.ValueExpression;
 import javax.el.VariableMapper;
-import org.apache.el.ExpressionFactoryImpl;
-
 import java.util.Map;
 
 public class BenchmarkEl {

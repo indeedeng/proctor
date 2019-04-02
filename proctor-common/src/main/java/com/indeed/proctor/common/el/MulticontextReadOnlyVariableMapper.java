@@ -1,11 +1,9 @@
 package com.indeed.proctor.common.el;
 
-
-import javax.el.ValueExpression;
-import javax.el.VariableMapper;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.el.ValueExpression;
+import javax.el.VariableMapper;
 import java.util.Map;
 
 /**
