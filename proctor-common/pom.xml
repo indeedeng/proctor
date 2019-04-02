@@ -34,6 +34,12 @@
 
     <dependencies>
         <dependency>
+            <!--
+                proctor-common uses the shaded Tomcat7 el library which has better performance than Tomcat8 one.
+                To avoid the performance issue on Tomcat8, proctor-common should be independent of the version of the apeche-el.
+                This shaded el library doesn't allow to use Tomcat8 el syntax like assign, concat, arrows, maps.
+                See the performance issue investigation ticket: PROC-519, PROC-540
+            -->
             <groupId>com.indeed</groupId>
             <artifactId>proctor-shaded-el</artifactId>
             <version>${project.version}</version>
