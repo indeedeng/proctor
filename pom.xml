@@ -31,6 +31,7 @@
     </scm>
 
     <modules>
+        <module>apache-el-shaded</module>
         <module>coverage-report</module>
         <module>proctor-ant-plugin</module>
         <module>proctor-builder</module>
@@ -48,7 +49,6 @@
         <module>proctor-store-svn</module>
         <module>proctor-tomcat-deps</module>
         <module>proctor-tomcat-deps-provided</module>
-        <module>proctor-shaded-el</module>
     </modules>
 
     <properties>

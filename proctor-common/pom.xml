@@ -41,7 +41,7 @@
                 See the performance issue investigation ticket: PROC-519, PROC-540
             -->
             <groupId>com.indeed</groupId>
-            <artifactId>proctor-shaded-el</artifactId>
+            <artifactId>apache-el-shaded</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

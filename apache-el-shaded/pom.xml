@@ -8,7 +8,7 @@
         <version>9999-SNAPSHOT</version>
     </parent>
 
-    <artifactId>proctor-shaded-el</artifactId>
+    <artifactId>apache-el-shaded</artifactId>
     <description>This project shades Tomcat7 el library. It enables proctor-common to use the same el library to have consistent behavior and performance in Tomcat7 and Tomcat8 environment.</description>
 
     <scm> <!-- prevent Maven from trying to override with subproject suffix -->
