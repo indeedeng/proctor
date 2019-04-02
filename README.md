@@ -17,6 +17,12 @@ Proctor consists of data-model, client specification, client loader, matrix buil
 # Installation
 See [Quick Start](http://indeedeng.github.io/proctor/docs/quick-start) guide
 
+# Testing
+```
+mvn package test
+```
+`mvn test` doesn't work because it doesn't shade `proctor-shaded-el`.
+
 # Example
 See [proctor demo](http://www.github.com/indeedeng/proctor-demo)
 
