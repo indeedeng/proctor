@@ -115,6 +115,11 @@
         <pluginManagement>
             <plugins>
                 <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-war-plugin</artifactId>
+                    <version>2.6</version>
+                </plugin>
+                <plugin>
                     <!--
                         Tomcat7 el library has better performance than Tomcat8 one.
                         To avoid the performance issue on Tomcat8, proctor-common and related libraries should be independent of the version of the apache-el of the running environment.
