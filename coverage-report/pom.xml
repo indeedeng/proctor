@@ -48,12 +48,6 @@
             <artifactId>proctor-codegen-test</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <!-- duplicate tests -->
-        <!--<dependency>-->
-            <!--<groupId>com.indeed</groupId>-->
-            <!--<artifactId>proctor-common-el8-tests</artifactId>-->
-            <!--<version>${project.version}</version>-->
-        <!--</dependency>-->
         <dependency>
             <groupId>com.indeed</groupId>
             <artifactId>proctor-consumer</artifactId>

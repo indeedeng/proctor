@@ -39,8 +39,6 @@ public class RuleVerifyUtils {
                 throw new InvalidRuleException(e, String.format("Rule %s has invalid syntax or unknown function.", testRule));
             }
 
-            assertNoAssignmentsInRule(testRule);
-
             if (shouldEvaluate) {
                 /*
                  * must have a context to test against, even if it's "Collections.emptyMap()", how to
@@ -74,48 +72,6 @@ public class RuleVerifyUtils {
                     }
                 }
             }
-        }
-    }
-
-    /**
-     * assert that rule expression contains no assignments.
-     * In apache-el:8, assignments in ValueExpression do not cause Exception, so we need to manually check
-     */
-    private static void assertNoAssignmentsInRule(final String testRule) throws InvalidRuleException {
-        final Node rootNode = ExpressionBuilder.createNode(testRule);
-        try {
-            rootNode.accept(node -> {
-                // Classes org.apache.el.AstAssign, AstMapData, AstListData... were only introduced in apache-el:8, so cannot use instanceOf
-                if ("Assign".equalsIgnoreCase(node.toString())) {
-                    throw new InvalidRuleException(String.format("Rule %s has invalid syntax: be sure to use '==' for comparisons.", testRule));
-                }
-                if ("Concatenation".equalsIgnoreCase(node.toString())) {
-                    throw new InvalidRuleException(String.format("Rule %s has invalid syntax: do not use '+='.", testRule));
-                }
-                if ("Arrow".equalsIgnoreCase(node.toString())) {
-                    throw new InvalidRuleException(String.format("Rule %s has invalid syntax: do not use '->'.", testRule));
-                }
-                if ("ListData".equalsIgnoreCase(node.toString())) {
-                    throw new InvalidRuleException(String.format("Rule %s has invalid syntax: do not use [] Lists.", testRule));
-                }
-                if ("MapData".equalsIgnoreCase(node.toString())) {
-                    throw new InvalidRuleException(String.format("Rule %s has invalid syntax: do not use {:} Maps.", testRule));
-                }
-                if ("SetData".equalsIgnoreCase(node.toString())) {
-                    throw new InvalidRuleException(String.format("Rule %s has invalid syntax: do not use {} Sets.", testRule));
-                }
-                if ("Semicolon".equalsIgnoreCase(node.toString())) {
-                    throw new InvalidRuleException(String.format("Rule %s has invalid syntax: do not use Semicolon.", testRule));
-                }
-                if (node.getClass().getName().contains("AstLambda")) {
-                    throw new InvalidRuleException(String.format("Rule %s has invalid syntax: do not use -> Lambdas.", testRule));
-                }
-            });
-        } catch (final InvalidRuleException e) {
-            throw e;
-        } catch (final Exception e) {
-            // should never happen
-            throw new RuntimeException("Unexpected Exception", e);
         }
     }
 

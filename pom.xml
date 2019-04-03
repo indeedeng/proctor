@@ -37,7 +37,6 @@
         <module>proctor-codegen</module>
         <module>proctor-codegen-test</module>
         <module>proctor-common</module>
-        <module>proctor-common-el8-tests</module>
         <module>proctor-consumer</module>
         <module>proctor-webapp-library</module>
         <module>proctor-webapp</module>
