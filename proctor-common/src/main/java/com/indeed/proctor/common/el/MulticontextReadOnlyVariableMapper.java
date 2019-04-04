@@ -1,12 +1,10 @@
 package com.indeed.proctor.common.el;
 
-
-import java.util.Map;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.el.ValueExpression;
 import javax.el.VariableMapper;
+import java.util.Map;
 
 /**
  * Provides services for the Unified Expression Language to look up variables in priority order given the input contexts.

@@ -9,7 +9,6 @@ import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.common.model.TestType;
 import org.apache.el.ExpressionFactoryImpl;
 import org.easymock.classextension.EasyMock;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 

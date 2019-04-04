@@ -17,29 +17,37 @@
         <developerConnection>${project.parent.scm.developerConnection}</developerConnection>
     </scm>
 
-
     <build>
         <plugins>
-          <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-dependency-plugin</artifactId>
-              <executions>
-                  <execution>
-                      <phase>package</phase>
-                      <goals><goal>copy</goal></goals>
-                      <configuration>
-                          <artifactItems>
-                              <artifactItem>
-                                  <groupId>com.github.jsimone</groupId>
-                                  <artifactId>webapp-runner</artifactId>
-                                  <version>7.0.40.0</version>
-                                  <destFileName>webapp-runner.jar</destFileName>
-                              </artifactItem>
-                          </artifactItems>
-                      </configuration>
-                  </execution>
-              </executions>
-          </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals><goal>copy</goal></goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>com.github.jsimone</groupId>
+                                    <artifactId>webapp-runner</artifactId>
+                                    <version>7.0.40.0</version>
+                                    <destFileName>webapp-runner.jar</destFileName>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <!-- try shading usages of apache-el even if module currently does not use, in case it is used in the future -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+            </plugin>
         </plugins>
     </build>
 

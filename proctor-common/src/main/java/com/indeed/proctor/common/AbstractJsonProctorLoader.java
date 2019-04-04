@@ -11,7 +11,6 @@ import javax.annotation.Nullable;
 import javax.el.FunctionMapper;
 import java.io.IOException;
 import java.io.Reader;
-import java.util.Objects;
 
 public abstract class AbstractJsonProctorLoader extends AbstractProctorLoader {
     private static final Logger LOGGER = Logger.getLogger(AbstractJsonProctorLoader.class);

@@ -17,6 +17,16 @@
         <developerConnection>${project.parent.scm.developerConnection}</developerConnection>
     </scm>
 
+    <build>
+        <plugins>
+            <plugin>
+                <!-- try shading usages of apache-el even if module currently does not use, in case it is used in the future -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
     <dependencies>
         <dependency>
             <groupId>org.apache.tomcat</groupId>

@@ -1,25 +1,22 @@
 package com.indeed.proctor.common;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
+import com.google.common.collect.Lists;
 import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.Range;
 import com.indeed.proctor.common.model.TestBucket;
+import org.apache.el.ExpressionFactoryImpl;
+import org.junit.Test;
 
+import javax.el.ExpressionFactory;
+import javax.el.FunctionMapper;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import javax.el.ExpressionFactory;
-import javax.el.FunctionMapper;
-
-import org.apache.el.ExpressionFactoryImpl;
-import org.junit.Test;
-
-import com.google.common.collect.Lists;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class TestRandomTestChooser {
     @Test

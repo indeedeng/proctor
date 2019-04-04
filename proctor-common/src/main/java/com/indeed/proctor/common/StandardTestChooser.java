@@ -10,16 +10,16 @@ import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.Range;
 import com.indeed.proctor.common.model.TestBucket;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.el.ExpressionFactory;
+import javax.el.FunctionMapper;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.security.MessageDigest;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.el.ExpressionFactory;
-import javax.el.FunctionMapper;
 
 
 /**
