@@ -30,14 +30,6 @@
                             <goal>generate-test</goal>
                         </goals>
                     </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>${project.groupId}</groupId>
-                <artifactId>proctor-maven-plugin</artifactId>
-                <version>${project.version}</version>
-
-                <executions>
                     <execution>
                         <id>proctor-generate-test-js</id>
                         <goals>
