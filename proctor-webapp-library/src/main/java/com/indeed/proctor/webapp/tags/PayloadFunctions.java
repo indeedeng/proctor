@@ -20,9 +20,9 @@ public class PayloadFunctions {
     /**
      * If o is a proctor Payload object, then print just the contents of the payload, otherwise just pretty print the object.
      */
-    public static String prettyPrintJSONPayloadContents(Object o) throws IOException, JsonGenerationException, JsonMappingException {
+    public static String prettyPrintJSONPayloadContents(final Object o) throws IOException, JsonGenerationException, JsonMappingException {
         if (o != null && o instanceof Payload) {
-            Payload p = (Payload) o;
+            final Payload p = (Payload) o;
             return OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(p.fetchAValue());
         } else {
             return OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(o);
@@ -32,9 +32,9 @@ public class PayloadFunctions {
     /**
      * If o is a proctor Payload object, then return its type as a string, otherwise return "none".
      */
-    public static String printPayloadType(Object o) throws IOException, JsonGenerationException, JsonMappingException {
+    public static String printPayloadType(final Object o) throws IOException, JsonGenerationException, JsonMappingException {
         if (o != null && o instanceof Payload) {
-            Payload p = (Payload) o;
+            final Payload p = (Payload) o;
             return p.fetchType();
         } else {
             return "none";

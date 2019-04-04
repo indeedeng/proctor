@@ -103,11 +103,11 @@ public class BackgroundJobRpcController {
                     public Boolean execute(final BackgroundJob job) throws Exception {
                         final long endms = start + ms;
                         while (true) {
-                            long now = System.currentTimeMillis();
-                            long sleepms = Math.min(interval, endms - now);
+                            final long now = System.currentTimeMillis();
+                            final long sleepms = Math.min(interval, endms - now);
                             if (sleepms > 0) {
-                                final double elapsed_sec = (now - start) / 1000.0;
-                                job.log(String.format("Elapsed = %.3f seconds, sleeping for %s ms", elapsed_sec, sleepms));
+                                final double elapsedSec = (now - start) / 1000.0;
+                                job.log(String.format("Elapsed = %.3f seconds, sleeping for %s ms", elapsedSec, sleepms));
                                 Thread.sleep(sleepms);
                             } else {
                                 break;

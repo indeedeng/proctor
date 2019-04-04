@@ -847,13 +847,13 @@ public class EditAndPromoteJob extends AbstractJob {
             backgroundJob.log("WARNING: You should have a zero bucket (control).");
         }
 
-        for (TestBucket bucket : definition.getBuckets()) {
+        for (final TestBucket bucket : definition.getBuckets()) {
             if (testType == TestType.PAGE && bucket.getValue() < 0) {
                 throw new IllegalArgumentException("PAGE tests cannot contain negative buckets.");
             }
         }
 
-        for (TestBucket bucket : definition.getBuckets()) {
+        for (final TestBucket bucket : definition.getBuckets()) {
             final String name = bucket.getName();
             if (!isValidBucketName(name)) {
                 throw new IllegalArgumentException("Bucket name must be alpha-numeric underscore and not start with a number, found: '" + name + "'");
@@ -958,7 +958,7 @@ public class EditAndPromoteJob extends AbstractJob {
             final String destRevision,
             final Map<String, String[]> requestParameterMap
     ) {
-        BackgroundJob<Object> backgroundJob = jobFactory.createBackgroundJob(
+        final BackgroundJob<Object> backgroundJob = jobFactory.createBackgroundJob(
                 String.format("(username:%s author:%s) promoting %s %s %1.7s to %s", username, author, testName, source, srcRevision, destination),
                 author,
                 BackgroundJob.JobType.TEST_PROMOTION,
@@ -974,7 +974,7 @@ public class EditAndPromoteJob extends AbstractJob {
                     } catch (final GitNoAuthorizationException | GitNoMasterAccessLevelException | GitNoDevelperAccessLevelException | IllegalArgumentException exp) {
                         job.logFailedJob(exp);
                         LOGGER.info("Promotion Failed: " + job.getTitle(), exp);
-                    } catch (Exception exp) {
+                    } catch (final Exception exp) {
                         job.logFailedJob(exp);
                         LOGGER.error("Promotion Failed: " + job.getTitle(), exp);
                     }
@@ -1085,7 +1085,7 @@ public class EditAndPromoteJob extends AbstractJob {
             try {
                 doPromotion(job, testName, srcRevision, destRevision, username, password, author, metadata);
                 return true;
-            } catch (Exception t) {
+            } catch (final Exception t) {
                 Throwables.propagateIfInstanceOf(t, ProctorPromoter.TestPromotionException.class);
                 Throwables.propagateIfInstanceOf(t, StoreException.TestUpdateException.class);
                 throw Throwables.propagate(t);

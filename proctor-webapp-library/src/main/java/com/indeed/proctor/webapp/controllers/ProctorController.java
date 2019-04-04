@@ -61,7 +61,9 @@ public class ProctorController extends AbstractController {
 
     private static final long FALLBACK_UPDATED_TIME = 0L;
 
-    private final ObjectMapper objectMapper = Serializers.strict();
+
+    private static final ObjectMapper OBJECT_MAPPER = Serializers.strict();
+
     private final ProctorSpecificationSource specificationSource;
 
     private enum View {
@@ -411,7 +413,7 @@ public class ProctorController extends AbstractController {
 
         final String errorMessage = "Apparently not impossible exception generating JSON";
         try {
-            final String testMatrixJson = objectMapper.writer(new MinimalPrettyPrinter()).writeValueAsString(testMatrixDefinition);
+            final String testMatrixJson = OBJECT_MAPPER.writer(new MinimalPrettyPrinter()).writeValueAsString(testMatrixDefinition);
             model.addAttribute("testMatrixDefinition", testMatrixJson);
 
             final Map<String, Map<String, String>> colors = Maps.newHashMap();

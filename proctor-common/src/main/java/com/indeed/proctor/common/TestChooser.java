@@ -35,7 +35,7 @@ interface TestChooser<IdentifierType> {
         /**
          * Empty result for the case when all allocation rules aren't matched to a context
          */
-        public static Result EMPTY = new Result(null, null);
+        public static final Result EMPTY = new Result(null, null);
 
         @Nullable
         private final TestBucket testBucket;

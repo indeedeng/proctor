@@ -11,10 +11,10 @@ public class SpecialConstantsBuilder {
 
     public static String build(final Map<String, Object> definitionSpecialConstants, final Set<String> supportedConstants, final String specialConstantsName){
         final List<String> selectedSpecialConstants = definitionSpecialConstants != null &&
-                definitionSpecialConstants.containsKey(specialConstantsName) ? ((List<String>)definitionSpecialConstants.get(specialConstantsName)) : Collections.<String>emptyList();
+                definitionSpecialConstants.containsKey(specialConstantsName) ? ((List<String>)definitionSpecialConstants.get(specialConstantsName)) : Collections.emptyList();
 
 
-        final StringBuilder specialConstantsHtml = new StringBuilder();
+        final StringBuilder specialConstantsHtml = new StringBuilder(300);
         specialConstantsHtml.append("<div class='row  '>");
         specialConstantsHtml.append("<div class='three columns'><h6>" + specialConstantsName  +"</h6></div>");
         specialConstantsHtml.append("<div class='three columns'></div>");
@@ -26,7 +26,7 @@ public class SpecialConstantsBuilder {
             for (int step = columnNum; step < supportedConstantsArray.length; step +=9) {
                 final String constant = (String) supportedConstantsArray[step];
                 specialConstantsHtml.append("<label for='special_constants_" + specialConstantsName + "_" + step + "'>");
-                String checked = selectedSpecialConstants.contains(constant) ? "checked='checked'" : "";
+                final String checked = selectedSpecialConstants.contains(constant) ? "checked='checked'" : "";
                 specialConstantsHtml.append("<input id='special_constants_" + specialConstantsName + "_" + step + "' name='specialConstants." + specialConstantsName + "[]' class='mrs json' type='checkbox' value='" + constant + "'" + checked + ">" + constant);
                 specialConstantsHtml.append("</label>");
             }

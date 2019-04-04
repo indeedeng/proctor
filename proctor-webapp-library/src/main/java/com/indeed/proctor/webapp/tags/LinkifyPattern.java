@@ -12,14 +12,14 @@ public class LinkifyPattern {
     private final String replacement;
 
 
-    LinkifyPattern(String name, String pattern, String replacement) {
+    LinkifyPattern(final String name, final String pattern, final String replacement) {
         this.name = name;
         this.pattern = Pattern.compile(pattern);
         this.replacement = replacement;
     }
 
-    public String apply(String s) {
-        Matcher m = pattern.matcher(s);
+    public String apply(final String s) {
+        final Matcher m = pattern.matcher(s);
         return m.replaceAll(replacement);
     }
 
@@ -35,13 +35,13 @@ public class LinkifyPattern {
         return replacement;
     }
 
-    public boolean matches(String s) {
-        Matcher m = pattern.matcher(s);
+    public boolean matches(final String s) {
+        final Matcher m = pattern.matcher(s);
         return m.matches();
     }
 
-    public boolean presentIn(String s) {
-        Matcher m = pattern.matcher(s);
+    public boolean presentIn(final String s) {
+        final Matcher m = pattern.matcher(s);
         return m.find();
     }
 

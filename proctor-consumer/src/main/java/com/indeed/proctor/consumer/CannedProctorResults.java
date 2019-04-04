@@ -18,20 +18,20 @@ import java.util.Map;
  */
 public class CannedProctorResults {
     public static ProctorResult of(
-            Bucket<?>... results
+            final Bucket<?>... results
     ) {
-        Map<String, TestBucket> buckets = Maps.newHashMapWithExpectedSize(results.length);
-        Map<String, ConsumableTestDefinition> testVersions = Maps.newHashMap();
+        final Map<String, TestBucket> buckets = Maps.newHashMapWithExpectedSize(results.length);
+        final Map<String, ConsumableTestDefinition> testVersions = Maps.newHashMap();
 
         for (final Bucket<?> result: results) {
             final String testName = result.getClass().getSimpleName().toLowerCase();
             final int testValue = result.getValue();
 
-            TestBucket testBucket = new TestBucket(testName, testValue, testName);
+            final TestBucket testBucket = new TestBucket(testName, testValue, testName);
 
             Preconditions.checkState(!buckets.containsKey(testName), "Attempted to provide two values for dummy test bucket %s", testName);
             buckets.put(testName, testBucket);
-            ConsumableTestDefinition testDefinition = addTestDefinition(testName, testVersions);
+            final ConsumableTestDefinition testDefinition = addTestDefinition(testName, testVersions);
 
             testDefinition.getBuckets().add(testBucket);
         }
@@ -40,16 +40,16 @@ public class CannedProctorResults {
     }
 
     public static ProctorResult of(
-            CannedProctorResult<?>... results
+            final CannedProctorResult<?>... results
     ) {
-        Map<String, TestBucket> buckets = Maps.newHashMapWithExpectedSize(results.length);
-        Map<String, ConsumableTestDefinition> testVersions = Maps.newHashMap();
+        final Map<String, TestBucket> buckets = Maps.newHashMapWithExpectedSize(results.length);
+        final Map<String, ConsumableTestDefinition> testVersions = Maps.newHashMap();
 
         for (final CannedProctorResult<?> result: results) {
             final String testName = result.testVal.getClass().getSimpleName().toLowerCase();
             final int testValue = result.testVal.getValue();
 
-            TestBucket testBucket = new TestBucket(testName, testValue, testName);
+            final TestBucket testBucket = new TestBucket(testName, testValue, testName);
             if (result.payload != null) {
                 testBucket.setPayload(result.payload);
             }
@@ -58,7 +58,7 @@ public class CannedProctorResults {
             buckets.put(testName, testBucket);
 
             // add a minimal test definition for each test
-            ConsumableTestDefinition testDefinition = addTestDefinition(testName, testVersions);
+            final ConsumableTestDefinition testDefinition = addTestDefinition(testName, testVersions);
 
             testDefinition.getBuckets().add(testBucket);
         }

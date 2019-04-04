@@ -85,7 +85,7 @@ public abstract class AbstractController {
     protected TestMatrixVersion getCurrentMatrix(final Environment branch) {
         try {
             return determineStoreFromEnvironment(branch).getCurrentTestMatrix();
-        } catch (StoreException e) {
+        } catch (final StoreException e) {
             return null;
         }
     }

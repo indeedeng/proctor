@@ -12,7 +12,7 @@ public final class JSONFunctions {
 
     private static final ObjectMapper OBJECT_MAPPER = Serializers.strict();
 
-    public static String prettyPrintJSON(Object o) throws IOException, JsonGenerationException, JsonMappingException {
+    public static String prettyPrintJSON(final Object o) throws IOException, JsonGenerationException, JsonMappingException {
         return OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(o);
     }
 }
