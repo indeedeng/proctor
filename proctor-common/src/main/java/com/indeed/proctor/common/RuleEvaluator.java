@@ -6,6 +6,7 @@ import org.apache.el.ExpressionFactoryImpl;
 import org.apache.log4j.Logger;
 import org.apache.taglibs.standard.functions.Functions;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.el.ArrayELResolver;
 import javax.el.BeanELResolver;
@@ -55,6 +56,10 @@ public class RuleEvaluator {
         elResolver = constructStandardElResolver();
 
         testConstants = ProctorUtils.convertToValueExpressionMap(expressionFactory, testConstantsMap);
+    }
+
+    public static RuleEvaluator createDefaultRuleEvaluator(final Map<String, Object> testConstantsMap) {
+        return new RuleEvaluator(EXPRESSION_FACTORY, FUNCTION_MAPPER, testConstantsMap);
     }
 
     @Nonnull
@@ -114,17 +119,30 @@ public class RuleEvaluator {
         if ("false".equalsIgnoreCase(bareRule)) {
             return false;
         }
-        final Map<String, ValueExpression> localContext = ProctorUtils.convertToValueExpressionMap(expressionFactory, values);
-        //noinspection unchecked
-        final VariableMapper variableMapper = new MulticontextReadOnlyVariableMapper(testConstants, localContext);
-        final ELContext elContext = createELContext(variableMapper);
 
-        final ValueExpression ve = expressionFactory.createValueExpression(elContext, rule, Boolean.class);
-        final Object result = ve.getValue(elContext);
+        final Object result = evaluateRule(rule, values, Boolean.class);
+
         if (result instanceof Boolean) {
             return ((Boolean) result);
         }
+        // this should never happen, evaluateRule throws ELException when it cannot coerce to Boolean
+        throw new IllegalArgumentException("Received non-boolean return value: "
+                + (result == null ? "null" : result.getClass().getCanonicalName())
+                + " from rule " + rule);
+    }
 
-        throw new IllegalArgumentException("Received non-boolean return value: " + result.getClass().getCanonicalName() + " from rule " + rule);
+    /**
+     * @return null or a Boolean value representing the expression evaluation result
+     * @throws RuntimeException: E.g. PropertyNotFound or other ELException when not of expectedType
+     */
+    @CheckForNull
+    public Object evaluateRule(final String rule, final Map<String, Object> values, final Class expectedType) {
+        final Map<String, ValueExpression> localContext = ProctorUtils.convertToValueExpressionMap(expressionFactory, values);
+        @SuppressWarnings("unchecked")
+        final VariableMapper variableMapper = new MulticontextReadOnlyVariableMapper(testConstants, localContext);
+        final ELContext elContext = createELContext(variableMapper);
+
+        final ValueExpression ve = expressionFactory.createValueExpression(elContext, rule, expectedType);
+        return ve.getValue(elContext);
     }
 }
