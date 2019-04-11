@@ -71,7 +71,8 @@ public class Proctor {
     }
 
     @Nonnull
-    private static Proctor createEmptyProctor() {
+    @VisibleForTesting
+    static Proctor createEmptyProctor() {
         final Audit audit = new Audit();
         audit.setUpdated(0);
         audit.setUpdatedBy("nobody");
