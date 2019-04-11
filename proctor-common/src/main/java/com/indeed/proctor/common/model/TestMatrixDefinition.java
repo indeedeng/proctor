@@ -10,7 +10,6 @@ public class TestMatrixDefinition {
 
     public TestMatrixDefinition() { /* intentionally empty */ }
 
-    @SuppressWarnings("UnusedDeclaration") // TODO Remove?
     public TestMatrixDefinition(@Nonnull final Map<String, TestDefinition> tests) {
         this.tests = tests;
     }
