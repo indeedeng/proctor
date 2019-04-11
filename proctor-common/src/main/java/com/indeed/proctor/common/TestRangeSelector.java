@@ -7,6 +7,7 @@ import com.indeed.proctor.common.model.Range;
 import com.indeed.proctor.common.model.TestBucket;
 import org.apache.log4j.Logger;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.el.ExpressionFactory;
@@ -124,7 +125,7 @@ public class TestRangeSelector {
      * @param value bucket number
      * @return a {@link TestBucket} with the specified value or null if none exists
      */
-    @Nullable
+    @CheckForNull
     public TestBucket getTestBucket(final int value) {
         for (final TestBucket testBucket : testDefinition.getBuckets()) {
             if (testBucket.getValue() == value) {
