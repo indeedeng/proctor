@@ -1,7 +1,7 @@
 package com.indeed.proctor.common;
 
-import com.indeed.util.core.ReleaseVersion;
 import com.google.common.collect.Lists;
+import com.indeed.util.core.ReleaseVersion;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -25,6 +25,11 @@ public class TestRuleEvaluator {
     @Test
     public void testNullRule() {
         Assert.assertTrue("null rule should be true", ruleEvaluator.evaluateBooleanRule(null, Collections.<String, Object>emptyMap()));
+    }
+
+    @Test
+    public void testNullReferenceRule() {
+        Assert.assertFalse("null rule should be true", ruleEvaluator.evaluateBooleanRule("${null}", Collections.<String, Object>emptyMap()));
     }
 
     @Test
@@ -345,5 +350,4 @@ public class TestRuleEvaluator {
             Assert.assertFalse("0.9 not in range", ruleEvaluator.evaluateBooleanRule(rule, values));
         }
     }
-
 }
