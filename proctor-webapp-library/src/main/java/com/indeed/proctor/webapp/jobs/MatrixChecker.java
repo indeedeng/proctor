@@ -30,6 +30,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -163,12 +164,12 @@ public class MatrixChecker {
                                      final TestMatrixArtifact testMatrix,
                                      final String testName,
                                      final String matrixSource) {
-        final Map<String, TestSpecification> requiredTests;
-        if (spec.getTests().containsKey(testName)) {
-            requiredTests = ImmutableMap.of(testName, spec.getTests().get(testName));
-        } else {
-            requiredTests = Collections.emptyMap();
-        }
+        final Map<String, TestSpecification> requiredTests =
+                Optional.ofNullable(spec.getTests())
+                        .map(map -> map.get(testName))
+                        .map(s -> (Map<String, TestSpecification>) ImmutableMap.of(testName, s))
+                        .orElse(Collections.emptyMap());
+
         return ProctorUtils.verify(
                 testMatrix,
                 matrixSource,

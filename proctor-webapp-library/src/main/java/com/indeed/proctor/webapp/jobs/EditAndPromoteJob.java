@@ -760,14 +760,14 @@ public class EditAndPromoteJob extends AbstractJob {
     }
 
     private static Map<Integer, Double> generateAllocationRangeMap(final List<Range> ranges) {
-        Map<Integer, Double> bucketToTotalAllocationMap = new HashMap<>();
-        for (Range range : ranges) {
+        final Map<Integer, Double> bucketToTotalAllocationMap = new HashMap<>();
+        for (final Range range : ranges) {
             final int bucketVal = range.getBucketValue();
-            double sum = 0;
-            if (bucketToTotalAllocationMap.containsKey(bucketVal)) {
-                sum += bucketToTotalAllocationMap.get(bucketVal);
+            double sum = range.getLength();
+            final Double allocationValue = bucketToTotalAllocationMap.get(bucketVal);
+            if (allocationValue != null) {
+                sum += allocationValue;
             }
-            sum += range.getLength();
             bucketToTotalAllocationMap.put(bucketVal, sum);
         }
         return bucketToTotalAllocationMap;
@@ -804,22 +804,14 @@ public class EditAndPromoteJob extends AbstractJob {
         final TestType testType = definition.getTestType();
         final int controlBucketValue = 0;
 
-        final Map<Integer, Double> totalTestAllocationMap = new HashMap<Integer, Double>();
-        for (Range range : ranges) {
-            final int bucketValue = range.getBucketValue();
-            double bucketAllocation = range.getLength();
-            if (totalTestAllocationMap.containsKey(bucketValue)) {
-                bucketAllocation += totalTestAllocationMap.get(bucketValue);
-            }
-            totalTestAllocationMap.put(bucketValue, bucketAllocation);
-        }
+        final Map<Integer, Double> totalTestAllocationMap = generateAllocationRangeMap(ranges);
 
         final boolean hasControlBucket = totalTestAllocationMap.containsKey(controlBucketValue);
         /* The number of buckets with allocation greater than zero */
         int numActiveBuckets = 0;
 
-        for (Integer bucketValue : totalTestAllocationMap.keySet()) {
-            final double totalBucketAllocation = totalTestAllocationMap.get(bucketValue);
+        for (final Map.Entry<Integer, Double> integerDoubleEntry : totalTestAllocationMap.entrySet()) {
+            final double totalBucketAllocation = integerDoubleEntry.getValue();
             if (totalBucketAllocation > 0) {
                 numActiveBuckets++;
             }
@@ -830,14 +822,14 @@ public class EditAndPromoteJob extends AbstractJob {
         */
         if (numActiveBuckets > 1 && hasControlBucket) {
             final double totalControlBucketAllocation = totalTestAllocationMap.get(controlBucketValue);
-            for (Integer bucketValue : totalTestAllocationMap.keySet()) {
-                final double totalBucketAllocation = totalTestAllocationMap.get(bucketValue);
+            for (final Map.Entry<Integer, Double> integerDoubleEntry : totalTestAllocationMap.entrySet()) {
+                final double totalBucketAllocation = integerDoubleEntry.getValue();
                 if (totalBucketAllocation > 0) {
                     numActiveBuckets++;
                 }
                 final double difference = totalBucketAllocation - totalControlBucketAllocation;
-                if (bucketValue > 0 && totalBucketAllocation > 0 && Math.abs(difference) >= TOLERANCE) {
-                    backgroundJob.log("WARNING: Positive bucket total allocation size not same as control bucket total allocation size. \nBucket #" + bucketValue + "=" + totalBucketAllocation + ", Zero Bucket=" + totalControlBucketAllocation);
+                if (integerDoubleEntry.getKey() > 0 && totalBucketAllocation > 0 && Math.abs(difference) >= TOLERANCE) {
+                    backgroundJob.log("WARNING: Positive bucket total allocation size not same as control bucket total allocation size. \nBucket #" + integerDoubleEntry.getKey() + "=" + totalBucketAllocation + ", Zero Bucket=" + totalControlBucketAllocation);
                 }
             }
         }
