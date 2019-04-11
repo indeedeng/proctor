@@ -50,13 +50,15 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class GitProctorCore implements FileBasedPersisterCore {
     private static final Logger LOGGER = Logger.getLogger(GitProctorCore.class);
     private static final TextProgressMonitor PROGRESS_MONITOR = new TextProgressMonitor(new LoggerPrintWriter(LOGGER, Level.DEBUG));
-    private static final long GC_INTERVAL_IN_DAY = 1;
+    private static final long GC_INTERVAL_IN_HOURS = 24;
+    private static final AtomicInteger INITIAL_DELAY_SCHEDULE = new AtomicInteger();
     private static final boolean DEFAULT_CLEAN_INITIALIZATION = false;
 
     private final String username;
@@ -255,7 +257,10 @@ public class GitProctorCore implements FileBasedPersisterCore {
         } catch (final GitAPIException e) {
             LOGGER.error("Unable to fetch from " + gitUrl, e);
         }
-        gcExecutor.scheduleAtFixedRate(new GitGcTask(), GC_INTERVAL_IN_DAY, GC_INTERVAL_IN_DAY, TimeUnit.DAYS);
+        gcExecutor.scheduleAtFixedRate(new GitGcTask(),
+                // when multiple stores are used, schedule GC with 1 hour difference to reduce memory usage
+                GC_INTERVAL_IN_HOURS + INITIAL_DELAY_SCHEDULE.getAndIncrement(),
+                GC_INTERVAL_IN_HOURS, TimeUnit.HOURS);
     }
 
     @Override
