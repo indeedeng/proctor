@@ -36,6 +36,7 @@ import com.indeed.proctor.webapp.model.WebappConfiguration;
 import com.indeed.proctor.webapp.tags.UtilityFunctions;
 import com.indeed.proctor.webapp.util.TestDefinitionUtil;
 import com.indeed.proctor.webapp.views.JsonView;
+import com.indeed.proctor.webapp.views.ProctorView;
 import io.swagger.annotations.ApiOperation;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,7 +73,17 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * @author parker
+ * HTML/Json serving controller driving the Proctor webapp UI
+ *
+ * Endpoints:
+ * - GET  /definition/create                                 # Show test creation page
+ * - GET  /definition/{testname}                             # Show test details
+ * - GET  /definition/{testname}/edit                        # Show test edit page
+ * - GET  /definition/{testname}/specification               # Return test JSON specification
+ * - GET  /definition/{testname}/verify                      # Return ASCII text with log messages for verification output
+ * - POST /definition/{testname}/edit?username=&password=    # Submit changed test to start background job
+ * - POST /definition/{testname}/promote                     # Submit test promotion to start background job
+ * - POST /definition/{testname}/delete                      # Submit test deletion to start background job
  */
 @Controller
 @RequestMapping({"/definition", "/proctor/definition"})
@@ -87,21 +98,7 @@ public class ProctorTestDefinitionController extends AbstractController {
     private final EditAndPromoteJob editAndPromoteJob;
     private final boolean requireAuth;
 
-    private static enum Views {
-        DETAILS("definition/details"),
-        EDIT("definition/edit"),
-        CREATE("definition/edit");
 
-        private final String name;
-
-        private Views(final String name) {
-            this.name = name;
-        }
-
-        public String getName() {
-            return name;
-        }
-    }
 
     @Autowired
     public ProctorTestDefinitionController(final WebappConfiguration configuration,
@@ -126,7 +123,10 @@ public class ProctorTestDefinitionController extends AbstractController {
         Preconditions.checkArgument(verificationTimeout > 0, "verificationTimeout > 0");
     }
 
-
+    /**
+     * Show the test creation page
+     * @return spring view name
+     */
     @RequestMapping(value = "/create", method = RequestMethod.GET)
     public String create(final Model model) {
 
@@ -145,9 +145,12 @@ public class ProctorTestDefinitionController extends AbstractController {
         );
         final List<RevisionDefinition> history = Collections.emptyList();
         final EnvironmentVersion version = null;
-        return doView(Environment.WORKING, Views.CREATE, "", definition, history, version, requireAuth, model);
+        return doView(Environment.WORKING, ProctorView.CREATE, "", definition, history, version, requireAuth, model);
     }
 
+    /**
+     * @return spring view name
+     */
     @RequestMapping(value = "/{testName}", method = RequestMethod.GET)
     public String show(
             HttpServletResponse response,
@@ -184,13 +187,13 @@ public class ProctorTestDefinitionController extends AbstractController {
                 final String errorMsg = "Test \"" + testName + "\" " +
                         (revision.isEmpty() ? "" : "of revision " + revision + " ") +
                         "does not exist in " + branch + " branch! Please check other branches.";
-                return doView(theEnvironment, Views.DETAILS, errorMsg, new TestDefinition(), new ArrayList<>(), version, requireAuth, model);
+                return doView(theEnvironment, ProctorView.DETAILS, errorMsg, new TestDefinition(), new ArrayList<>(), version, requireAuth, model);
             }
             final boolean loadAllocHistory = shouldLoadAllocationHistory(loadAllocHistParam, loadAllocHistCookie, response);
             history = TestDefinitionUtil.makeRevisionDefinitionList(store, testName, version.getRevision(theEnvironment), loadAllocHistory);
         }
 
-        return doView(theEnvironment, Views.DETAILS, testName, definition, history, version, requireAuth, model);
+        return doView(theEnvironment, ProctorView.DETAILS, testName, definition, history, version, requireAuth, model);
     }
 
     private boolean testNotExistsInAnyEnvs(final Environment theEnvironment, final String testName, final String revision) {
@@ -222,6 +225,10 @@ public class ProctorTestDefinitionController extends AbstractController {
         }
     }
 
+    /**
+     * Modify a test and show the definition page
+     * @return spring view name
+     */
     @RequestMapping(value = "/{testName}/edit", method = RequestMethod.GET)
     public String doEditGet(
             @PathVariable String testName,
@@ -239,11 +246,13 @@ public class ProctorTestDefinitionController extends AbstractController {
             return doErrorView("Test " + testName + " does not exist in TRUNK", null, HttpServletResponse.SC_NOT_FOUND, response, model);
         }
 
-        return doView(theEnvironment, Views.EDIT, testName, definition, Collections.<RevisionDefinition>emptyList(), version, requireAuth, model);
+        return doView(theEnvironment, ProctorView.EDIT, testName, definition, Collections.<RevisionDefinition>emptyList(), version, requireAuth, model);
     }
 
-    @ApiOperation(value = "Delete proctor test")
-    @RequestMapping(value = "/{testName}/delete", method = RequestMethod.POST, params = {"username, password"})
+    /**
+     * Delete a test and show the definition page if not AJAX else return background status Json
+     */
+    @RequestMapping(value = "/{testName}/delete", method = RequestMethod.POST, params = {"username", "password"})
     public View doDeletePost(
             @PathVariable final String testName,
             @RequestParam final String username,
@@ -274,8 +283,10 @@ public class ProctorTestDefinitionController extends AbstractController {
 
     }
 
-    @ApiOperation(value = "Promote proctor test")
-    @RequestMapping(value = "/{testName}/promote", method = RequestMethod.POST, params = {"username, password"})
+    /**
+     * Promote a test and show the definition page if not AJAX else return background status Json
+     */
+    @RequestMapping(value = "/{testName}/promote", method = RequestMethod.POST, params = {"username", "password"})
     public View doPromotePost(
             @PathVariable final String testName,
             @RequestParam final String username,
@@ -307,8 +318,10 @@ public class ProctorTestDefinitionController extends AbstractController {
         }
     }
 
-    @ApiOperation(value = "Edit proctor test")
-    @RequestMapping(value = "/{testName}/edit", method = RequestMethod.POST, params = {"username, password"})
+    /**
+     * Modify a test and show the definition page if not AJAX else return background status Json
+     */
+    @RequestMapping(value = "/{testName}/edit", method = RequestMethod.POST, params = {"username", "password"})
     public View doEditPost(
             @PathVariable final String testName,
             @RequestParam final String username,
@@ -343,6 +356,10 @@ public class ProctorTestDefinitionController extends AbstractController {
         }
     }
 
+    /**
+     * Debug endpoint to run checks
+     * @return A (non-Json, non-HTML) string with the check result
+     */
     @RequestMapping(value = "/{testName}/verify", method = RequestMethod.GET)
     @ResponseBody
     public String doVerifyGet
@@ -374,10 +391,13 @@ public class ProctorTestDefinitionController extends AbstractController {
         }
     }
 
+    /**
+     * return json of test
+     */
     @ApiOperation(value = "Proctor test specification", response = TestSpecification.class)
     @RequestMapping(value = "/{testName}/specification", method = RequestMethod.GET)
     public View doSpecificationGet(
-            @PathVariable String testName,
+            @PathVariable final String testName,
             @RequestParam(required = false) final String branch
     ) {
         final Environment theEnvironment = determineEnvironmentFromParameter(branch);
@@ -394,7 +414,7 @@ public class ProctorTestDefinitionController extends AbstractController {
         try {
             final TestSpecification specification = ProctorUtils.generateSpecification(definition);
             view = new JsonView(specification);
-        } catch (IllegalArgumentException e) {
+        } catch (final IllegalArgumentException e) {
             LOGGER.error("Could not generate Test Specification", e);
             view = new JsonView(new JsonResponse(e.getMessage(), false, "Could not generate Test Specification"));
         }
@@ -402,7 +422,7 @@ public class ProctorTestDefinitionController extends AbstractController {
     }
 
     private String doView(final Environment b,
-                          final Views view,
+                          final ProctorView view,
                           final String testName,
                           // TODO (parker) 7/27/12 - add Revisioned (that has Revision + testName)
                           final TestDefinition definition,
@@ -412,7 +432,7 @@ public class ProctorTestDefinitionController extends AbstractController {
                           Model model) {
         model.addAttribute("testName", testName);
         model.addAttribute("testDefinition", definition);
-        model.addAttribute("isCreate", view == Views.CREATE);
+        model.addAttribute("isCreate", view == ProctorView.CREATE);
         model.addAttribute("branch", b);
         model.addAttribute("version", version);
         model.addAttribute("requireAuth", requireAuth);
