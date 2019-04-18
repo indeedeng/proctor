@@ -95,8 +95,11 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
     public RemoteSpecificationResult getRemoteResult(final Environment environment,
                                                      final AppVersion version) {
         final ImmutableMap<AppVersion, RemoteSpecificationResult> results = cache_.get(environment);
-        if (results != null && results.containsKey(version)) {
-            return results.get(version);
+        if (results != null) {
+            final RemoteSpecificationResult result = results.get(version);
+            if (result != null) {
+                return result;
+            }
         }
         return RemoteSpecificationResult.newBuilder(version).build(Collections.<ProctorClientApplication>emptyList());
     }

@@ -32,7 +32,7 @@ public class RenderBasePageInjectionTemplatesHandler extends TagSupport {
     public int doStartTag() {
         try {
             pageContext.getOut().print(renderTemplates());
-        } catch (IOException e) {
+        } catch (final IOException e) {
             LOGGER.error("Failed to write rendered html to page context", e);
         }
 
@@ -51,7 +51,7 @@ public class RenderBasePageInjectionTemplatesHandler extends TagSupport {
                     renderedHTML.append(renderer.getRenderedHtml(pageContext, branch));
                 }
             }
-        } catch (Exception e) {
+        } catch (final Exception e) {
             LOGGER.error("An error occurred when attempting to inject template.", e);
         }
         return renderedHTML.toString();

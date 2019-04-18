@@ -10,6 +10,7 @@ import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.webapp.db.Environment;
 import com.indeed.proctor.webapp.model.WebappConfiguration;
 import com.indeed.proctor.webapp.util.TestDefinitionUtil;
+import com.indeed.proctor.webapp.views.ProctorView;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.ui.Model;
@@ -85,7 +86,7 @@ public abstract class AbstractController {
     protected TestMatrixVersion getCurrentMatrix(final Environment branch) {
         try {
             return determineStoreFromEnvironment(branch).getCurrentTestMatrix();
-        } catch (StoreException e) {
+        } catch (final StoreException e) {
             return null;
         }
     }
@@ -117,7 +118,7 @@ public abstract class AbstractController {
         if (throwable != null) {
             model.addAttribute("exception", throwable);
         }
-        return "error";
+        return ProctorView.ERROR.getName();
     }
 
     /**

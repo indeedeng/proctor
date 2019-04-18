@@ -33,9 +33,9 @@ public class FilenameMapperTagHandler extends TagSupport {
     }
 
     public static String getVersionizedFilename(final HttpServletRequest httpServletRequest, final String filename) {
-        Object mapperObject = httpServletRequest.getAttribute(FILENAME_MAPPER);
+        final Object mapperObject = httpServletRequest.getAttribute(FILENAME_MAPPER);
         if (mapperObject instanceof Map) {
-            Map mapper = (Map) mapperObject;
+            final Map mapper = (Map) mapperObject;
             if (mapper.containsKey(filename)) {
                 return httpServletRequest.getContextPath() + mapper.get(filename).toString();
             }

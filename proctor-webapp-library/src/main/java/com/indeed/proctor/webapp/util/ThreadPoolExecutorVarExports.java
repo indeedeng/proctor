@@ -10,7 +10,7 @@ import java.util.concurrent.TimeUnit;
  * Common VarExports for ThreadPoolExecutor
 */
 public class ThreadPoolExecutorVarExports {
-    public ThreadPoolExecutor executor;
+    private final ThreadPoolExecutor executor;
 
     public ThreadPoolExecutorVarExports(final ThreadPoolExecutor executor) {
         this.executor = executor;

@@ -2,6 +2,7 @@ package com.indeed.proctor.common;
 
 import com.indeed.proctor.common.model.TestMatrixArtifact;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.el.FunctionMapper;
@@ -24,7 +25,7 @@ public class UrlProctorLoader extends AbstractJsonProctorLoader {
         this(specification, new URL(inputUrl));
     }
 
-    public UrlProctorLoader(@Nonnull final ProctorSpecification specification, @Nonnull final String inputUrl, FunctionMapper functionMapper) throws MalformedURLException {
+    public UrlProctorLoader(@Nonnull final ProctorSpecification specification, @Nonnull final String inputUrl, final FunctionMapper functionMapper) throws MalformedURLException {
         this(specification, new URL(inputUrl), functionMapper);
     }
 
@@ -33,7 +34,7 @@ public class UrlProctorLoader extends AbstractJsonProctorLoader {
         this.inputURL = inputUrl;
     }
 
-    public UrlProctorLoader(@Nonnull final ProctorSpecification specification, @Nonnull final URL inputUrl, FunctionMapper functionMapper) {
+    public UrlProctorLoader(@Nonnull final ProctorSpecification specification, @Nonnull final URL inputUrl, final FunctionMapper functionMapper) {
         super(UrlProctorLoader.class, specification, functionMapper);
         this.inputURL = inputUrl;
     }
@@ -44,7 +45,7 @@ public class UrlProctorLoader extends AbstractJsonProctorLoader {
         return inputURL.toString();
     }
 
-    @Nullable
+    @CheckForNull
     @Override
     protected TestMatrixArtifact loadTestMatrix() throws IOException, MissingTestMatrixException {
         final Reader reader = new BufferedReader(new InputStreamReader(inputURL.openStream()));

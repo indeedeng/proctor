@@ -31,6 +31,7 @@ import com.indeed.proctor.webapp.model.RemoteSpecificationResult;
 import com.indeed.proctor.webapp.model.SessionViewModel;
 import com.indeed.proctor.webapp.model.WebappConfiguration;
 import com.indeed.proctor.webapp.views.JsonView;
+import com.indeed.proctor.webapp.views.ProctorView;
 import io.swagger.annotations.ApiOperation;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,26 +62,10 @@ public class ProctorController extends AbstractController {
 
     private static final long FALLBACK_UPDATED_TIME = 0L;
 
-    private final ObjectMapper objectMapper = Serializers.strict();
+
+    private static final ObjectMapper OBJECT_MAPPER = Serializers.strict();
+
     private final ProctorSpecificationSource specificationSource;
-
-    private enum View {
-        MATRIX_LIST("matrix/list"),
-        MATRIX_USAGE("matrix/usage"),
-        MATRIX_COMPATIBILITY("matrix/compatibility"),
-        ERROR("error"),
-        ;
-
-        private final String name;
-
-        View(final String name) {
-            this.name = name;
-        }
-
-        public String getName() {
-            return name;
-        }
-    }
 
     @Autowired
     public ProctorController(
@@ -112,12 +97,12 @@ public class ProctorController extends AbstractController {
         }
         model.addAttribute("emptyClients", emptyClients);
         model.addAttribute("testsPerPage", testsPerPage);
-        return getArtifactForView(model, which, View.MATRIX_LIST);
+        return getArtifactForView(model, which, ProctorView.MATRIX_LIST);
     }
 
     @ApiOperation(value = "Proctor test matrix", response = TestMatrixArtifact.class)
     @RequestMapping(value = "/matrix/raw", method = RequestMethod.GET)
-    public JsonView viewRawTestMatrix(final String branch, final Model model) {
+    public JsonView viewRawTestMatrix(final String branch) {
         final Environment which = determineEnvironmentFromParameter(branch);
         final TestMatrixVersion testMatrixVersion = getCurrentMatrix(which);
         final TestMatrixArtifact testMatrixArtifact = ProctorUtils.convertToConsumableArtifact(testMatrixVersion);
@@ -150,7 +135,7 @@ public class ProctorController extends AbstractController {
                         // todo get the appropriate js compile / non-compile url
                         .build());
 
-        return View.MATRIX_USAGE.getName();
+        return ProctorView.MATRIX_USAGE.getName();
     }
 
     @ApiOperation(value = "Proctor test specification", response = TestMatrixArtifact.class)
@@ -239,7 +224,7 @@ public class ProctorController extends AbstractController {
                         .setUseCompiledJavaScript(getConfiguration().isUseCompiledJavaScript())
                         // todo get the appropriate js compile / non-compile url
                         .build());
-        return View.MATRIX_COMPATIBILITY.getName();
+        return ProctorView.MATRIX_COMPATIBILITY.getName();
     }
 
     private void populateCompatibilityRow(final Map<Environment, CompatibilityRow> rows, final Environment rowEnv) {
@@ -379,7 +364,11 @@ public class ProctorController extends AbstractController {
         return revisions.get(0).getDate();
     }
 
-    private String getArtifactForView(final Model model, final Environment branch, final View view) {
+    /**
+     * set spring Model attribute for view
+     * @return view spring name
+     */
+    private String getArtifactForView(final Model model, final Environment branch, final ProctorView view) {
         final TestMatrixVersion testMatrix = getCurrentMatrix(branch);
         final TestMatrixDefinition testMatrixDefinition;
         if (testMatrix == null || testMatrix.getTestMatrixDefinition() == null) {
@@ -411,7 +400,7 @@ public class ProctorController extends AbstractController {
 
         final String errorMessage = "Apparently not impossible exception generating JSON";
         try {
-            final String testMatrixJson = objectMapper.writer(new MinimalPrettyPrinter()).writeValueAsString(testMatrixDefinition);
+            final String testMatrixJson = OBJECT_MAPPER.writer(new MinimalPrettyPrinter()).writeValueAsString(testMatrixDefinition);
             model.addAttribute("testMatrixDefinition", testMatrixJson);
 
             final Map<String, Map<String, String>> colors = Maps.newHashMap();
@@ -432,7 +421,7 @@ public class ProctorController extends AbstractController {
             model.addAttribute("exception", toString(e));
         }
         model.addAttribute("error", errorMessage);
-        return View.ERROR.getName();
+        return ProctorView.ERROR.getName();
     }
 
     private Map<String, List<Revision>> getAllHistories(final Environment branch) {

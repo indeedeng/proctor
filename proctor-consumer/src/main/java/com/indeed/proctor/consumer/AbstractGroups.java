@@ -139,8 +139,8 @@ public abstract class AbstractGroups {
      * @param targetBucket target bucket
      * @return the TestBucket. Return null if not found.
      */
-    protected @Nullable
-    TestBucket getTestBucketForBucket(final String testName, Bucket<?> targetBucket) {
+    @Nullable
+    protected TestBucket getTestBucketForBucket(final String testName, final Bucket<?> targetBucket) {
         final @Nullable Map<String, ConsumableTestDefinition> testDefinitions = proctorResult.getTestDefinitions();
         if (testDefinitions != null) {
             final @Nullable ConsumableTestDefinition testDefinition = testDefinitions.get(testName);
@@ -221,7 +221,7 @@ public abstract class AbstractGroups {
      * @param sb        a string builder
      * @param separator a char used as separator
      */
-    public void appendTestGroups(final StringBuilder sb, char separator) {
+    public void appendTestGroups(final StringBuilder sb, final char separator) {
         final List<String> testNames = getLoggingTestNames();
         appendTestGroupsWithoutAllocations(sb, separator, testNames);
         appendTestGroupsWithAllocations(sb, separator, testNames);
@@ -248,7 +248,7 @@ public abstract class AbstractGroups {
     /**
      * Appends test groups in the form without allocation ids as [test name + bucket value] for given test names.
      */
-    protected final void appendTestGroupsWithoutAllocations(final StringBuilder sb, char separator, final List<String> testNames) {
+    protected final void appendTestGroupsWithoutAllocations(final StringBuilder sb, final char separator, final List<String> testNames) {
         for (final String testName : testNames) {
             final TestBucket testBucket = proctorResult.getBuckets().get(testName);
             if (testBucket != null) {
@@ -260,7 +260,7 @@ public abstract class AbstractGroups {
     /**
      * Appends test groups in the form with allocation ids as [allocation id + ":" + test name + bucket value] for given test names.
      */
-    protected final void appendTestGroupsWithAllocations(final StringBuilder sb, char separator, final List<String> testNames) {
+    protected final void appendTestGroupsWithAllocations(final StringBuilder sb, final char separator, final List<String> testNames) {
         for (final String testName : testNames) {
             final TestBucket testBucket = proctorResult.getBuckets().get(testName);
             final Allocation allocation = proctorResult.getAllocations().get(testName);

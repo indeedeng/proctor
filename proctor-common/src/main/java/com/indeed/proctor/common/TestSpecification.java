@@ -1,8 +1,9 @@
 package com.indeed.proctor.common;
 
-import com.google.common.base.Preconditions;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.base.Preconditions;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collections;
@@ -44,7 +45,7 @@ public class TestSpecification {
         this.description = description;
     }
 
-    @Nullable
+    @CheckForNull
     public PayloadSpecification getPayload() {
         return payload;
     }

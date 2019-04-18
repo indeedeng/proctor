@@ -13,6 +13,7 @@ import com.indeed.util.varexport.ManagedVariable;
 import com.indeed.util.varexport.VarExporter;
 import org.apache.log4j.Logger;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.el.FunctionMapper;
@@ -77,7 +78,7 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
         return ProctorUtils.convertContextToTestableMap(specification.getProvidedContext(), getRuleVerificationContext());
     }
 
-    @Nullable
+    @CheckForNull
     abstract TestMatrixArtifact loadTestMatrix() throws IOException, MissingTestMatrixException;
 
     @Nonnull
@@ -112,7 +113,7 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
         return true;
     }
 
-    @Nullable
+    @CheckForNull
     public Proctor doLoad() throws IOException, MissingTestMatrixException {
         final TestMatrixArtifact testMatrix = loadTestMatrix();
         if (testMatrix == null) {
@@ -165,12 +166,12 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
         return proctor;
     }
 
-    @Nullable
+    @CheckForNull
     public Proctor get() {
         return current;
     }
 
-    @Nullable
+    @CheckForNull
     @Export(name = "last-audit")
     public Audit getLastAudit() {
         return lastAudit;
@@ -181,7 +182,7 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
         lastAudit = newAudit;
     }
 
-    @Nullable
+    @CheckForNull
     @Export(name = "last-error", doc = "The last error message thrown by the loader. null indicates a successful load.")
     public String getLastLoadErrorMessage() {
         return lastLoadErrorMessage;

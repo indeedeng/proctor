@@ -8,6 +8,7 @@ import com.indeed.proctor.webapp.model.BackgroundJobResponseModel;
 import com.indeed.proctor.webapp.model.SessionViewModel;
 import com.indeed.proctor.webapp.model.WebappConfiguration;
 import com.indeed.proctor.webapp.views.JsonView;
+import com.indeed.proctor.webapp.views.ProctorView;
 import io.swagger.annotations.ApiOperation;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +25,13 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * @author parker
+ * Endpoints to query background job status/
+ *
+ * Endpoints:
+ * - GET /rpc/jobs/list
+ * - GET /rpc/jobs/status?id=
+ * - GET /rpc/jobs/cancel?id=
+ * - GET /rpc/jobs/test
  */
 @Controller
 @RequestMapping({"/rpc/jobs", "/proctor/rpc/jobs"})
@@ -58,7 +65,10 @@ public class BackgroundJobRpcController {
         }
     }
 
-    @ApiOperation(value = "List background jobs")
+    /**
+     * sets spring model jobs attribute
+     * @return new spring view name
+     */
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public String doGetJobList(final Model model) {
         final List<BackgroundJob> jobs = manager.getRecentJobs();
@@ -68,7 +78,7 @@ public class BackgroundJobRpcController {
                         .setUseCompiledJavaScript(configuration.isUseCompiledJavaScript())
                         .build());
         model.addAttribute("jobs", jobs);
-        return "jobs";
+        return ProctorView.JOBS.getName();
     }
 
     @ApiOperation(value = "Cancel a background job")
@@ -103,11 +113,11 @@ public class BackgroundJobRpcController {
                     public Boolean execute(final BackgroundJob job) throws Exception {
                         final long endms = start + ms;
                         while (true) {
-                            long now = System.currentTimeMillis();
-                            long sleepms = Math.min(interval, endms - now);
+                            final long now = System.currentTimeMillis();
+                            final long sleepms = Math.min(interval, endms - now);
                             if (sleepms > 0) {
-                                final double elapsed_sec = (now - start) / 1000.0;
-                                job.log(String.format("Elapsed = %.3f seconds, sleeping for %s ms", elapsed_sec, sleepms));
+                                final double elapsedSec = (now - start) / 1000.0;
+                                job.log(String.format("Elapsed = %.3f seconds, sleeping for %s ms", elapsedSec, sleepms));
                                 Thread.sleep(sleepms);
                             } else {
                                 break;

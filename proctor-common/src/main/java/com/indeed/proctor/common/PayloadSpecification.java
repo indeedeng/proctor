@@ -2,6 +2,7 @@ package com.indeed.proctor.common;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
 import java.util.Map;
 
@@ -19,7 +20,7 @@ public class PayloadSpecification {
     @Nullable
     private Map<String,String> schema;
 
-    @Nullable
+    @CheckForNull
     public String getType() {
         return type;
     }
@@ -31,12 +32,12 @@ public class PayloadSpecification {
     public Map<String,String> getSchema() {
         return schema;
     }
-    @Nullable
+
     public void setSchema(@Nullable final Map<String,String> schema) {
         this.schema = schema;
     }
 
-    @Nullable
+    @CheckForNull
     public String getValidator() {
         return validator;
     }

@@ -3,8 +3,8 @@ package com.indeed.proctor.common;
 import com.google.common.collect.ImmutableMap;
 import com.indeed.proctor.common.model.TestType;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
@@ -50,33 +50,33 @@ public class Identifiers {
         return randomEnabled;
     }
 
-    @Nullable
+    @CheckForNull
     public String getIdentifier(final TestType testType) {
         return identifierMap.get(testType);
     }
 
-    @Nullable
+    @CheckForNull
     public String getUserId() {
         return getIdentifier(TestType.USER);
     }
 
     @SuppressWarnings("UnusedDeclaration")
-    @Nullable
+    @CheckForNull
     public String getPageId() {
         return getIdentifier(TestType.PAGE);
     }
 
-    @Nullable
+    @CheckForNull
     public String getCompanyId() {
         return getIdentifier(TestType.COMPANY);
     }
 
-    @Nullable
+    @CheckForNull
     public String getEmail() {
         return getIdentifier(TestType.EMAIL);
     }
 
-    @Nullable
+    @CheckForNull
     public String getAccountId() {
         return getIdentifier(TestType.ACCOUNT);
     }

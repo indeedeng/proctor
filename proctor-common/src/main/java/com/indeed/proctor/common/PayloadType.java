@@ -103,7 +103,7 @@ public enum PayloadType {
     @Nonnull
     public static PayloadType payloadTypeForName(@Nonnull final String payloadTypeName)
             throws IllegalArgumentException {
-        for (PayloadType p : PayloadType.values()) {
+        for (final PayloadType p : PayloadType.values()) {
             if (payloadTypeName.equals(p.payloadTypeName)) {
                 return p;
             }
@@ -120,8 +120,8 @@ public enum PayloadType {
      */
     @Nonnull
     public static PayloadType payloadTypeForValue(@Nonnull final Object payloadValue) throws IllegalArgumentException {
-        if(payloadValue instanceof List) {
-            if(((List)payloadValue).size() > 0) {
+        if (payloadValue instanceof List) {
+            if (((List)payloadValue).size() > 0) {
                 final Object firstValue = ((List) payloadValue).get(0);
                 if (firstValue instanceof Long || firstValue instanceof Integer) {
                     return PayloadType.LONG_ARRAY;
@@ -160,7 +160,7 @@ public enum PayloadType {
     @Nonnull
     public static List<String> allTypeNames() {
         final List<String> names = new ArrayList<String>();
-        for (PayloadType p : PayloadType.values()) {
+        for (final PayloadType p : PayloadType.values()) {
             names.add(p.payloadTypeName);
         }
         return names;

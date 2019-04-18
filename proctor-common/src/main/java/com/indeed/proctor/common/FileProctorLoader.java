@@ -2,6 +2,7 @@ package com.indeed.proctor.common;
 
 import com.indeed.proctor.common.model.TestMatrixArtifact;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.el.FunctionMapper;
@@ -33,7 +34,7 @@ public class FileProctorLoader extends AbstractJsonProctorLoader {
         return inputFile.getAbsolutePath();
     }
 
-    @Nullable
+    @CheckForNull
     @Override
     protected TestMatrixArtifact loadTestMatrix() throws IOException, MissingTestMatrixException {
         if (! inputFile.exists()) {

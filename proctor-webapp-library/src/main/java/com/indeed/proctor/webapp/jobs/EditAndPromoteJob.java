@@ -760,14 +760,14 @@ public class EditAndPromoteJob extends AbstractJob {
     }
 
     private static Map<Integer, Double> generateAllocationRangeMap(final List<Range> ranges) {
-        Map<Integer, Double> bucketToTotalAllocationMap = new HashMap<>();
-        for (Range range : ranges) {
+        final Map<Integer, Double> bucketToTotalAllocationMap = new HashMap<>();
+        for (final Range range : ranges) {
             final int bucketVal = range.getBucketValue();
-            double sum = 0;
-            if (bucketToTotalAllocationMap.containsKey(bucketVal)) {
-                sum += bucketToTotalAllocationMap.get(bucketVal);
+            double sum = range.getLength();
+            final Double allocationValue = bucketToTotalAllocationMap.get(bucketVal);
+            if (allocationValue != null) {
+                sum += allocationValue;
             }
-            sum += range.getLength();
             bucketToTotalAllocationMap.put(bucketVal, sum);
         }
         return bucketToTotalAllocationMap;
@@ -804,22 +804,14 @@ public class EditAndPromoteJob extends AbstractJob {
         final TestType testType = definition.getTestType();
         final int controlBucketValue = 0;
 
-        final Map<Integer, Double> totalTestAllocationMap = new HashMap<Integer, Double>();
-        for (Range range : ranges) {
-            final int bucketValue = range.getBucketValue();
-            double bucketAllocation = range.getLength();
-            if (totalTestAllocationMap.containsKey(bucketValue)) {
-                bucketAllocation += totalTestAllocationMap.get(bucketValue);
-            }
-            totalTestAllocationMap.put(bucketValue, bucketAllocation);
-        }
+        final Map<Integer, Double> totalTestAllocationMap = generateAllocationRangeMap(ranges);
 
         final boolean hasControlBucket = totalTestAllocationMap.containsKey(controlBucketValue);
         /* The number of buckets with allocation greater than zero */
         int numActiveBuckets = 0;
 
-        for (Integer bucketValue : totalTestAllocationMap.keySet()) {
-            final double totalBucketAllocation = totalTestAllocationMap.get(bucketValue);
+        for (final Map.Entry<Integer, Double> integerDoubleEntry : totalTestAllocationMap.entrySet()) {
+            final double totalBucketAllocation = integerDoubleEntry.getValue();
             if (totalBucketAllocation > 0) {
                 numActiveBuckets++;
             }
@@ -830,14 +822,14 @@ public class EditAndPromoteJob extends AbstractJob {
         */
         if (numActiveBuckets > 1 && hasControlBucket) {
             final double totalControlBucketAllocation = totalTestAllocationMap.get(controlBucketValue);
-            for (Integer bucketValue : totalTestAllocationMap.keySet()) {
-                final double totalBucketAllocation = totalTestAllocationMap.get(bucketValue);
+            for (final Map.Entry<Integer, Double> integerDoubleEntry : totalTestAllocationMap.entrySet()) {
+                final double totalBucketAllocation = integerDoubleEntry.getValue();
                 if (totalBucketAllocation > 0) {
                     numActiveBuckets++;
                 }
                 final double difference = totalBucketAllocation - totalControlBucketAllocation;
-                if (bucketValue > 0 && totalBucketAllocation > 0 && Math.abs(difference) >= TOLERANCE) {
-                    backgroundJob.log("WARNING: Positive bucket total allocation size not same as control bucket total allocation size. \nBucket #" + bucketValue + "=" + totalBucketAllocation + ", Zero Bucket=" + totalControlBucketAllocation);
+                if (integerDoubleEntry.getKey() > 0 && totalBucketAllocation > 0 && Math.abs(difference) >= TOLERANCE) {
+                    backgroundJob.log("WARNING: Positive bucket total allocation size not same as control bucket total allocation size. \nBucket #" + integerDoubleEntry.getKey() + "=" + totalBucketAllocation + ", Zero Bucket=" + totalControlBucketAllocation);
                 }
             }
         }
@@ -847,13 +839,13 @@ public class EditAndPromoteJob extends AbstractJob {
             backgroundJob.log("WARNING: You should have a zero bucket (control).");
         }
 
-        for (TestBucket bucket : definition.getBuckets()) {
+        for (final TestBucket bucket : definition.getBuckets()) {
             if (testType == TestType.PAGE && bucket.getValue() < 0) {
                 throw new IllegalArgumentException("PAGE tests cannot contain negative buckets.");
             }
         }
 
-        for (TestBucket bucket : definition.getBuckets()) {
+        for (final TestBucket bucket : definition.getBuckets()) {
             final String name = bucket.getName();
             if (!isValidBucketName(name)) {
                 throw new IllegalArgumentException("Bucket name must be alpha-numeric underscore and not start with a number, found: '" + name + "'");
@@ -958,7 +950,7 @@ public class EditAndPromoteJob extends AbstractJob {
             final String destRevision,
             final Map<String, String[]> requestParameterMap
     ) {
-        BackgroundJob<Object> backgroundJob = jobFactory.createBackgroundJob(
+        final BackgroundJob<Object> backgroundJob = jobFactory.createBackgroundJob(
                 String.format("(username:%s author:%s) promoting %s %s %1.7s to %s", username, author, testName, source, srcRevision, destination),
                 author,
                 BackgroundJob.JobType.TEST_PROMOTION,
@@ -974,7 +966,7 @@ public class EditAndPromoteJob extends AbstractJob {
                     } catch (final GitNoAuthorizationException | GitNoMasterAccessLevelException | GitNoDevelperAccessLevelException | IllegalArgumentException exp) {
                         job.logFailedJob(exp);
                         LOGGER.info("Promotion Failed: " + job.getTitle(), exp);
-                    } catch (Exception exp) {
+                    } catch (final Exception exp) {
                         job.logFailedJob(exp);
                         LOGGER.error("Promotion Failed: " + job.getTitle(), exp);
                     }
@@ -1085,7 +1077,7 @@ public class EditAndPromoteJob extends AbstractJob {
             try {
                 doPromotion(job, testName, srcRevision, destRevision, username, password, author, metadata);
                 return true;
-            } catch (Exception t) {
+            } catch (final Exception t) {
                 Throwables.propagateIfInstanceOf(t, ProctorPromoter.TestPromotionException.class);
                 Throwables.propagateIfInstanceOf(t, StoreException.TestUpdateException.class);
                 throw Throwables.propagate(t);

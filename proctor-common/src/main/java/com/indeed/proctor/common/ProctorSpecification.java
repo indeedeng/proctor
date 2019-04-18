@@ -3,6 +3,7 @@ package com.indeed.proctor.common;
 import com.indeed.proctor.common.dynamic.DynamicFilter;
 import com.indeed.proctor.common.dynamic.DynamicFilters;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -52,7 +53,7 @@ public class ProctorSpecification {
      * @return the test specification for each named test.
      * If null, tests is intentionally omitted. All tests in the test matrix should be considered.
      */
-    @Nullable
+    @CheckForNull
     public Map<String, TestSpecification> getTests() {
         return tests;
     }

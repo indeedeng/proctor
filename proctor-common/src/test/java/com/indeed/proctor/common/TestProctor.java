@@ -33,7 +33,7 @@ public class TestProctor {
         // Very simplistically test the appendTestMatrix output.
         // Just check that the general structure is correct (tests and audit) for an empty Proctor.
         final Writer writer = new StringWriter();
-        Proctor.EMPTY.appendTestMatrix(writer);
+        Proctor.createEmptyProctor().appendTestMatrix(writer);
 
         // If JSON processing fails, readTree should throw an exception and fail the test.
         final JsonNode root = new ObjectMapper().readTree(writer.toString());
