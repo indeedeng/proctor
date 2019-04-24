@@ -70,6 +70,12 @@ public class HistoryUtilTest {
         assertEquals(Collections.emptyList(), result);
     }
 
+    @Test
+    public void testSelectRevisionHistorySetFromNullHistories() {
+        final List<Revision> result = selectRevisionHistorySetFrom(null, "1", 0, 3);
+        assertEquals(Collections.emptyList(), result);
+    }
+
     private static Revision makeRevision(final String revision) {
         return new Revision(revision, "author", new Date(), "revision message");
     }
