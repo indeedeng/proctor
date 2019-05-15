@@ -41,17 +41,17 @@ public class JsonView implements View {
             JSON_WRITER.writeValue(response.getWriter(), data);
         } catch (final IOException e) {
             if (isDisconnectedClientError(e)) {
-                LOGGER.warn("Client disconnected", e);
-                return;
+                LOGGER.warn("Client disconnected. " + e.getMessage());
+            } else {
+                throw e;
             }
-            throw e;
         }
     }
 
     /**
      * True if the throwable is caused because client disconnected during process
      */
-    private static boolean isDisconnectedClientError(final Throwable e) {
+    private static boolean isDisconnectedClientError(final IOException e) {
         final Throwable cause = ExceptionUtils.getRootCause(e);
         return cause instanceof IOException && "broken pipe".equalsIgnoreCase(cause.getMessage());
     }
