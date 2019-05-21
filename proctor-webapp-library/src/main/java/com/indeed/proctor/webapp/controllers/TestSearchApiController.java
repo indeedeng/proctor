@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -47,13 +47,32 @@ public class TestSearchApiController extends AbstractController {
         super(configuration, trunkStore, qaStore, productionStore);
     }
 
-    private enum FilterType {
-        ALL,
-        TESTNAME,
-        DESCRIPTION,
-        RULE,
-        BUCKET,
-        BUCKETDESCRIPTION,
+    @VisibleForTesting
+    enum FilterType {
+        ALL(TestSearchUtil::matchAll),
+        TESTNAME((testName, definition, query) -> TestSearchUtil.matchTestName(testName, query)),
+        DESCRIPTION(((testName, definition, query) -> TestSearchUtil.matchDescription(definition, query))),
+        RULE((testName, definition, query) -> TestSearchUtil.matchRule(definition, query)),
+        BUCKET((testName, definition, query) -> TestSearchUtil.matchBucket(definition, query)),
+        BUCKETDESCRIPTION((testName, definition, query) -> TestSearchUtil.matchBucketDescription(definition, query)),
+        ;
+
+        private final TestFilter testFilter;
+
+        FilterType(final TestFilter testFilter) {
+            this.testFilter = testFilter;
+        }
+
+        private interface TestFilter {
+            boolean matches(String testName, TestDefinition definition, String query);
+        }
+
+        private boolean matchesIgnoreCase(final String testName, final TestDefinition definition, final String query) {
+            if (query.isEmpty()) {
+                return true;
+            }
+            return this.testFilter.matches(testName, definition, query.toLowerCase());
+        }
     }
 
     private enum FilterActive {
@@ -118,35 +137,19 @@ public class TestSearchApiController extends AbstractController {
         }
     }
 
-    private static boolean matchFilterType(
+    @VisibleForTesting
+    static boolean matchesAllIgnoreCase(
             final String testName,
             final TestDefinition definition,
             final FilterType type,
-            final String query
+            final List<String> queries
     ) {
-        if (query.isEmpty()) {
-            return true;
-        }
-        final String lowerQuery = query.toLowerCase();
-        switch (type) {
-            case TESTNAME:
-                return TestSearchUtil.matchTestName(testName, lowerQuery);
-            case DESCRIPTION:
-                return TestSearchUtil.matchDescription(definition, lowerQuery);
-            case RULE:
-                return TestSearchUtil.matchRule(definition, lowerQuery);
-            case BUCKET:
-                return TestSearchUtil.matchBucket(definition, lowerQuery);
-            case BUCKETDESCRIPTION:
-                return TestSearchUtil.matchBucketDescription(definition, lowerQuery);
-            case ALL:
-                return TestSearchUtil.matchAll(testName, definition, lowerQuery);
-            default:
-                throw new IllegalArgumentException("unknown filter type: " + type);
-        }
+        return queries.stream().allMatch(q ->
+                type.matchesIgnoreCase(testName, definition, q)
+        );
     }
 
-    private static boolean matchFilterActive(final List<Allocation> allocations, final FilterActive filterActive) {
+    private static boolean matchesFilterActive(final List<Allocation> allocations, final FilterActive filterActive) {
         switch (filterActive) {
             case ALL:
                 return true;
@@ -236,9 +239,10 @@ public class TestSearchApiController extends AbstractController {
                 ? testMatrixDefinition.getTests()
                 : Collections.emptyMap();
 
+        final List<String> queries = Arrays.asList(q.split("\\s+"));
         final Map<String, TestDefinition> matchingTestMatrix = Maps.filterEntries(allTestMatrix,
-                e -> e != null && matchFilterType(e.getKey(), e.getValue(), filterType, q)
-                        && matchFilterActive(e.getValue().getAllocations(), filterActive)
+                e -> e != null && matchesAllIgnoreCase(e.getKey(), e.getValue(), filterType, queries)
+                        && matchesFilterActive(e.getValue().getAllocations(), filterActive)
         );
 
         final List<ProctorTest> searchResult =
