@@ -1,0 +1,27 @@
+# require the environment of Ruby 2.3.x
+image: ruby:2.3
+     
+# Cache gems in between builds
+cache:
+  paths:
+    - vendor/ruby
+     
+before_script:
+  - ruby -v                       # Print out ruby version for debugging
+  - gem install bundler
+  - bundler -v                    # Print out bundler version for debugging
+  - gem install jekyll
+  - bundle install --path vendor  # Install dependencies into ./vendor/ruby
+ 
+# the 'pages' job will deploy and build your site to the 'public' path
+pages:
+  stage: deploy
+  tags:
+    - pages
+  script:
+    - bundle exec jekyll build -d public/
+  artifacts:
+    paths:
+      - public
+  only:
+    - gh-pages # this job will affect only the 'gh-pages' branch
