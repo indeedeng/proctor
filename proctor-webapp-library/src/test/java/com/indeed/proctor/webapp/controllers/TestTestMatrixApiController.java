@@ -1,6 +1,5 @@
 package com.indeed.proctor.webapp.controllers;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -9,6 +8,7 @@ import com.indeed.proctor.common.model.TestMatrixVersion;
 import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.webapp.db.Environment;
+import com.indeed.proctor.webapp.model.TestHistoriesResponseModel;
 import com.indeed.proctor.webapp.model.WebappConfiguration;
 import com.indeed.proctor.webapp.testutil.InMemoryProctorStore;
 import com.indeed.proctor.webapp.views.JsonView;
@@ -271,6 +271,46 @@ public class TestTestMatrixApiController {
                         .containsEntry("author", expected.getAuthor())
                         .containsEntry("message", expected.getMessage())
                         .containsEntry("revision", expected.getRevision()));
+    }
+
+
+    @Test
+    public void testGetTestHistories() throws Exception {
+        final String branch = "trunk";
+        final int limit = 2;
+
+        final Revision revision1 = new Revision("1234", "user", new Date(), "message");
+        final Revision revision2 = new Revision("2345", "user", new Date(), "message");
+        final Revision revision3 = new Revision("3456", "user", new Date(), "message");
+
+        final Map<String, List<Revision>> histories = ImmutableMap.of(
+                "test1", ImmutableList.of(revision1),
+                "test2", ImmutableList.of(revision2),
+                "test3", ImmutableList.of(revision3)
+        );
+        when(trunkStore.getAllHistories()).thenReturn(histories);
+
+        final TestHistoriesResponseModel expected = new TestHistoriesResponseModel(
+                histories.size(),
+                ImmutableList.of(
+                        new TestHistoriesResponseModel.TestHistory("test1", ImmutableList.of(revision1)),
+                        new TestHistoriesResponseModel.TestHistory("test2", ImmutableList.of(revision2))
+                )
+        );
+
+        final JsonView jsonView = controller.getTestHistories(branch, limit);
+        final TestHistoriesResponseModel actual = parsedRenderedJson(jsonView, TestHistoriesResponseModel.class);
+
+        assertThat(actual).isEqualTo(expected);
+    }
+
+    @Test
+    public void testGetTestHistoriesThrowsNotFoundException() {
+        final String branch = "wrongBranch";
+        final int limit = 2;
+
+        assertThatThrownBy(() -> controller.getTestHistories(branch, limit))
+                .isInstanceOf(TestMatrixApiController.ResourceNotFoundException.class);
     }
 
     private static <T> T parsedRenderedJson(final JsonView jsonView, final Class<T> clazz) throws Exception {

@@ -95,6 +95,10 @@ public abstract class AbstractController {
         return determineStoreFromEnvironment(branch).getMatrixHistory(start, limit);
     }
 
+    protected Map<String, List<Revision>> queryHistories(final Environment branch) throws StoreException {
+        return determineStoreFromEnvironment(branch).getAllHistories();
+    }
+
     protected TestMatrixVersion queryMatrixFromBranchOrRevision(final String branchOrRevision) throws StoreException {
         final BranchOrRevisionRef bor = getBranchOrRevision(branchOrRevision);
         return bor.queryTestMatrixVersion();

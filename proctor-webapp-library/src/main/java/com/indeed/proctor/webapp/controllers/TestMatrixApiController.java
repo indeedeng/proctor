@@ -1,5 +1,6 @@
 package com.indeed.proctor.webapp.controllers;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.indeed.proctor.common.model.TestDefinition;
@@ -8,6 +9,7 @@ import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.webapp.db.Environment;
+import com.indeed.proctor.webapp.model.TestHistoriesResponseModel;
 import com.indeed.proctor.webapp.model.WebappConfiguration;
 import com.indeed.proctor.webapp.views.JsonView;
 import io.swagger.annotations.ApiOperation;
@@ -18,6 +20,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -26,6 +29,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.servlet.View;
 
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping({"/api/v1", "/proctor/api/v1"})
@@ -106,10 +110,43 @@ public class TestMatrixApiController extends AbstractController {
         return new JsonView(revisions);
     }
 
+    @ApiOperation(
+            value = "Show histories of all tests",
+            response = Revision.class,
+            responseContainer = "Map",
+            produces = "application/json"
+    )
+    @GetMapping("/{branch}/matrix/testHistories")
+    public JsonView getTestHistories(
+            @ApiParam(allowableValues = "trunk,qa,production") @PathVariable final String branch,
+            @RequestParam(required = false, value = "limit", defaultValue = "100") final int limit
+    ) throws StoreException, ResourceNotFoundException {
+        final Environment environment = Environment.fromName(branch);
+        if (environment == null) {
+            throw new ResourceNotFoundException("Branch " + branch + " is not a correct branch name. It must be on of (trunk, qa, production).");
+        }
+        final Map<String, List<Revision>> histories = queryHistories(environment);
+        return new JsonView(new TestHistoriesResponseModel(histories, limit));
+    }
+
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     @ExceptionHandler(value = {Exception.class})
     public View handleStoreException(final Exception e) {
-        LOGGER.error(e);
+        LOGGER.warn(e);
         return new JsonView(ImmutableMap.of("error", e.getLocalizedMessage()));
+    }
+
+    @ResponseStatus(value = HttpStatus.NOT_FOUND)
+    @ExceptionHandler(value = {ResourceNotFoundException.class})
+    public JsonView handleNotFoundException(final ResourceNotFoundException e) {
+        LOGGER.warn(e);
+        return new JsonView(ImmutableMap.of("error", e.getLocalizedMessage()));
+    }
+
+    @VisibleForTesting
+    static class ResourceNotFoundException extends Exception {
+        ResourceNotFoundException(final String message) {
+            super(message);
+        }
     }
 }
