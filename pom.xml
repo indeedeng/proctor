@@ -62,12 +62,7 @@
         <google-guava.version>16.0.1</google-guava.version>
         <slf4j.version>1.7.2</slf4j.version>
         <log4j.version>1.2.14</log4j.version>
-        <!--
-        jackson.core and jackson-databind version can be unified when moving to >2.8.0
-        $jackson.version defined in parent pom for old codehaus jackson
-        -->
-        <jackson.core.version>2.7.9</jackson.core.version>
-        <jackson-databind.version>2.7.9.5</jackson-databind.version>
+        <jackson.core.version>2.9.8</jackson.core.version>
         <junit.version>4.12</junit.version>
         <mockito.version>1.9.5</mockito.version>
         <assertj.version>3.6.2</assertj.version>
@@ -163,8 +158,16 @@
                 <plugin>
                     <!--
                         Tomcat7 el library has better performance than Tomcat8 one.
-                        To avoid the performance issue on Tomcat8, proctor-common and related libraries should be independent of the version of the apache-el of the running environment.
+                        To avoid the performance issue on Tomcat8, proctor-common and related libraries should be
+                        independent of the version of the apache-el of the running environment.
                         This shaded el library doesn't allow to use Tomcat8 el syntax like assign, concat, arrows, maps.
+
+                        The current approach shades the classes in all proctor packages during packaging,
+                        which sadly causes jvm crashes when running mvn test twice without clean.
+                        Shading one module only in a maven multi-module project does not work cleanly.
+                        The clean way to use the shade plugin would be to package javax-el7 in a separate maven project,
+                        and use it as a library.
+                        Since maven has no incremental testing anyway, running mvn clean test is ok as workaround.
                     -->
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-shade-plugin</artifactId>
@@ -280,7 +283,7 @@
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
-                <version>${jackson-databind.version}</version>
+                <version>${jackson.core.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
