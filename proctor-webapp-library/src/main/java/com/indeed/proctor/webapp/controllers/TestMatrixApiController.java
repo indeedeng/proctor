@@ -14,6 +14,8 @@ import com.indeed.proctor.webapp.model.WebappConfiguration;
 import com.indeed.proctor.webapp.views.JsonView;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -65,14 +67,19 @@ public class TestMatrixApiController extends AbstractController {
             responseContainer = "List",
             produces = "application/json"
     )
+    @ApiResponses(value = {
+            @ApiResponse(code = 404, message = "Branch not found")
+    })
     @RequestMapping(value = "/{branch}/matrix/history", method = RequestMethod.GET)
     public JsonView getTestMatrixHistory(
             @ApiParam(allowableValues = "trunk,qa,production") @PathVariable final String branch,
             @RequestParam(required = false, value = "start", defaultValue = "0") final int start,
             @RequestParam(required = false, value = "limit", defaultValue = "32") final int limit
-    ) throws StoreException {
+    ) throws StoreException, ResourceNotFoundException {
         final Environment environment = Environment.fromName(branch);
-        Preconditions.checkNotNull(environment, String.format("Branch %s not correct", branch));
+        if (environment == null) {
+            throw new ResourceNotFoundException("Branch " + branch + " is not a correct branch name. It must be one of (trunk, qa, production).");
+        }
         return new JsonView(queryMatrixHistory(environment, start, limit));
     }
 
@@ -115,6 +122,9 @@ public class TestMatrixApiController extends AbstractController {
             response = TestHistoriesResponseModel.class,
             produces = "application/json"
     )
+    @ApiResponses(value = {
+            @ApiResponse(code = 404, message = "Branch not found")
+    })
     @GetMapping("/{branch}/matrix/testHistories")
     public JsonView getTestHistories(
             @ApiParam(allowableValues = "trunk,qa,production") @PathVariable final String branch,
@@ -122,7 +132,7 @@ public class TestMatrixApiController extends AbstractController {
     ) throws StoreException, ResourceNotFoundException {
         final Environment environment = Environment.fromName(branch);
         if (environment == null) {
-            throw new ResourceNotFoundException("Branch " + branch + " is not a correct branch name. It must be on of (trunk, qa, production).");
+            throw new ResourceNotFoundException("Branch " + branch + " is not a correct branch name. It must be one of (trunk, qa, production).");
         }
         final Map<String, List<Revision>> histories = queryHistories(environment);
         return new JsonView(new TestHistoriesResponseModel(histories, limit));

@@ -102,8 +102,7 @@ public class TestTestMatrixApiController {
         addStubTest(prodStore, prodVersions);
 
         assertThatThrownBy(() -> controller.getTestMatrixHistory("1234", 1, 100))
-                .isInstanceOf(NullPointerException.class)
-                .hasMessageContaining("Branch 1234 not correct");
+                .isInstanceOf(TestMatrixApiController.ResourceNotFoundException.class);
     }
 
     @Test
