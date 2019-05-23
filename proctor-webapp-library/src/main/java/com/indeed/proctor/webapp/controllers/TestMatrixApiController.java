@@ -127,8 +127,8 @@ public class TestMatrixApiController extends AbstractController {
     })
     @GetMapping("/{branch}/matrix/testHistories")
     public JsonView getTestHistories(
-            @ApiParam(allowableValues = "trunk,qa,production") @PathVariable final String branch,
-            @RequestParam(required = false, value = "limit", defaultValue = "100") final int limit
+            @ApiParam(allowableValues = "trunk,qa,production", required = true) @PathVariable final String branch,
+            @ApiParam(value = "number of tests to show, -1 for unlimited") @RequestParam(required = false, value = "limit", defaultValue = "100") final int limit
     ) throws StoreException, ResourceNotFoundException {
         final Environment environment = Environment.fromName(branch);
         if (environment == null) {
