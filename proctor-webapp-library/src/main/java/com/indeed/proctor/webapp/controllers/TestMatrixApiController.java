@@ -112,8 +112,7 @@ public class TestMatrixApiController extends AbstractController {
 
     @ApiOperation(
             value = "Show histories of all tests",
-            response = Revision.class,
-            responseContainer = "Map",
+            response = TestHistoriesResponseModel.class,
             produces = "application/json"
     )
     @GetMapping("/{branch}/matrix/testHistories")
