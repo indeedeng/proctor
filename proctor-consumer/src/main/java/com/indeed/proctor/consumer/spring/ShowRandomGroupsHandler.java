@@ -34,12 +34,12 @@ public class ShowRandomGroupsHandler implements HttpRequestHandler{
 
         final PrintWriter writer = response.getWriter();
 
-        if(proctorSuppliers.isEmpty()) {
+        if (proctorSuppliers.isEmpty()) {
             writer.print("No Proctor instances found.");
             return;
         }
 
-        for(final Supplier<Proctor> proctorSupplier : proctorSuppliers) {
+        for (final Supplier<Proctor> proctorSupplier : proctorSuppliers) {
             final Proctor proctor = proctorSupplier.get();
             if (proctor == null) {
                 writer.println("Did not determine a Proctor instance");

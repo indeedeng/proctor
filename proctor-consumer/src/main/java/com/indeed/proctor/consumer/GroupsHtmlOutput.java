@@ -9,7 +9,7 @@ import com.indeed.proctor.common.model.TestBucket;
 import java.util.Arrays;
 import java.util.Map;
 
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 
 public class GroupsHtmlOutput {
     private final String output;
@@ -74,7 +74,7 @@ public class GroupsHtmlOutput {
             }
             sb.append("<li class=\"testBucket\"");
             if (title != null) {
-                sb.append(" title=\"").append(StringEscapeUtils.escapeHtml(title).replaceAll("\"", "\\\"")).append("\"");
+                sb.append(" title=\"").append(StringEscapeUtils.escapeHtml4(title).replaceAll("\"", "\\\"")).append("\"");
             }
             sb.append(">").append(group).append(",</li>");
         }

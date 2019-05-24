@@ -2,7 +2,7 @@ package com.indeed.proctor.webapp.tags;
 
 import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.webapp.extensions.DefinitionRevisionDisplayFormatter;
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.web.context.WebApplicationContext;
@@ -27,7 +27,7 @@ public class FormatDefinitionRevisionDisplayTagHandler extends TagSupport {
     public int doStartTag() {
         try {
             pageContext.getOut().print(formatRevisionDisplay(revision));
-        } catch (IOException e) {
+        } catch (final IOException e) {
             LOGGER.error("Failed to write formatted revision to page context", e);
         }
 
@@ -43,14 +43,14 @@ public class FormatDefinitionRevisionDisplayTagHandler extends TagSupport {
 
             if (formatterBeans.isEmpty()) {
                 //No bean found, which is acceptable.
-                return StringEscapeUtils.escapeHtml(defaultFormattedRevision);
+                return StringEscapeUtils.escapeHtml4(defaultFormattedRevision);
             } else if (formatterBeans.size() == 1) {
-                DefinitionRevisionDisplayFormatter formatter = formatterBeans.values().iterator().next();
+                final DefinitionRevisionDisplayFormatter formatter = formatterBeans.values().iterator().next();
                 return formatter.formatRevision(revision);
             } else {
                 throw new IllegalArgumentException("Multiple beans of type " + DefinitionRevisionDisplayFormatter.class.getSimpleName()  + " found, expected 0 or 1.");
             }
-        } catch (Exception e) {
+        } catch (final Exception e) {
             LOGGER.error("An error occurred when retrieving revision url.", e);
             return defaultFormattedRevision;
         }

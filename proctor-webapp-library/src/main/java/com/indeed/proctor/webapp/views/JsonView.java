@@ -2,7 +2,7 @@ package com.indeed.proctor.webapp.views;
 
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.indeed.proctor.common.Serializers;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.log4j.Logger;
 import org.springframework.web.servlet.View;
 

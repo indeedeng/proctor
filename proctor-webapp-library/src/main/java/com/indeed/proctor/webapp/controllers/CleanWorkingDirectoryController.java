@@ -67,7 +67,7 @@ public class CleanWorkingDirectoryController extends AbstractController {
                     @Override
                     public Boolean execute(final BackgroundJob job) {
                         boolean success = true;
-                        for(final Environment env : new Environment[] { Environment.WORKING, Environment.QA, Environment.PRODUCTION }) {
+                        for (final Environment env : new Environment[] { Environment.WORKING, Environment.QA, Environment.PRODUCTION }) {
                             success &= cleanUserWorkspace(env, determineStoreFromEnvironment(env), job);
                         }
                         return success;

@@ -137,7 +137,7 @@ public class Payload {
         // careful of the autoboxing...
         if (map != null) {
             s.append(" map : [");
-            for(Map.Entry<String,Object> Entry : map.entrySet()) {
+            for (Map.Entry<String,Object> Entry : map.entrySet()) {
                 s.append("(" + Entry.getKey() + "," + Entry.getValue() + ")");
             }
             s.append("]");

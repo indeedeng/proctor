@@ -38,7 +38,7 @@ import com.indeed.proctor.webapp.tags.TestDefinitionFunctions;
 import com.indeed.proctor.webapp.tags.UtilityFunctions;
 import com.indeed.proctor.webapp.util.AllocationIdUtil;
 import com.indeed.proctor.webapp.util.TestDefinitionUtil;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -999,7 +999,7 @@ public class EditAndPromoteJob extends AbstractJob {
 
         // TODO (parker) 9/5/12 - Verify that promoting to the destination branch won't cause issues
         final TestDefinition testDefintion = TestDefinitionUtil.getTestDefinition(determineStoreFromEnvironment(source), promoter, source, testName, srcRevision);
-        //            if(d == null) {
+        //            if (d == null) {
         //                return "could not find " + testName + " on " + source + " with revision " + srcRevision;
         //            }
         job.logWithTiming("Validating Matrix.", "matrixCheck");

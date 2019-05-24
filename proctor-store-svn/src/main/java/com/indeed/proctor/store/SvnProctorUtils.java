@@ -47,11 +47,11 @@ class SvnProctorUtils {
                                   final SVNURL svnUrl,
                                   final SVNClientManager userClientManager) throws SVNException, IOException {
         Preconditions.checkNotNull(userDir, "user dir should not be null");
-        if(userDir.exists()) {
+        if (userDir.exists()) {
             Preconditions.checkArgument(userDir.isDirectory(), "user dir (%s) should be a directory if it exists", userDir.getAbsolutePath());
             Files.touch(userDir);
         } else {
-            if(!userDir.mkdir()) {
+            if (!userDir.mkdir()) {
                 throw new IOException("Could not create directory " + userDir);
             }
         }

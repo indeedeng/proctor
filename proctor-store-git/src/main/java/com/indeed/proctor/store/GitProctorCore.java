@@ -9,7 +9,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.indeed.proctor.common.Serializers;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.eclipse.jgit.api.CloneCommand;
@@ -41,6 +41,7 @@ import org.eclipse.jgit.treewalk.filter.PathSuffixFilter;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -214,7 +215,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
                     if (!gitDirectory.exists()) {
                         LOGGER.info("Local repository not found, creating a new clone...");
                         git = cloneRepository(workingDir);
-                    } else if(cleanInitialization) {
+                    } else if (cleanInitialization) {
                         LOGGER.info("Existing local repository found, but creating a new clone to clean up working directory...");
                         workspaceProvider.cleanWorkingDirectory();
                         git = cloneRepository(workingDir);
@@ -341,13 +342,13 @@ public class GitProctorCore implements FileBasedPersisterCore {
         }
 
         @Override
-        public void add(final File file) throws Exception {
+        public void add(final File file) throws GitAPIException {
             git.add().addFilepattern(testDefinitionsDirectory + "/" + file.getAbsoluteFile().getParentFile().getName() + "/" +
                     file.getName()).call();
         }
 
         @Override
-        public void delete(final File testDefinitionDirectory) throws Exception {
+        public void delete(final File testDefinitionDirectory) throws GitAPIException {
             for (final File file : testDefinitionDirectory.listFiles()) {
                 git.rm().addFilepattern(testDefinitionsDirectory + "/" + testDefinitionDirectory.getName()
                         + "/" + file.getName()).call();

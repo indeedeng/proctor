@@ -34,24 +34,24 @@ public class TestRuleEvaluator {
 
     @Test
     public void testEmptyRule() {
-        for(final String rule : new String[] { "", " ", "${}", "${   }"}) {
+        for (final String rule : new String[] { "", " ", "${}", "${   }"}) {
             Assert.assertTrue("empty rule '" + rule + "' should be true", ruleEvaluator.evaluateBooleanRule(rule, Collections.<String, Object>emptyMap()));
         }
     }
 
     @Test
     public void testLiteralRule() {
-        for(final String rule : new String[] { "${true}", "${TRUE}", "${ TRUE }" }) {
+        for (final String rule : new String[] { "${true}", "${TRUE}", "${ TRUE }" }) {
             Assert.assertTrue("rule '" + rule + "' should be true", ruleEvaluator.evaluateBooleanRule(rule, Collections.<String, Object>emptyMap()));
         }
-        for(final String rule : new String[] { "${false}", "${FALSE}", "${ FALSE }" }) {
+        for (final String rule : new String[] { "${false}", "${FALSE}", "${ FALSE }" }) {
             Assert.assertFalse("rule '" + rule + "' should be false", ruleEvaluator.evaluateBooleanRule(rule, Collections.<String, Object>emptyMap()));
         }
     }
 
     @Test
     public void testMalformedRuleShouldBeFalse() {
-        for(final String rule : new String[] { "true", "TRUE", "FALSE", "false", " ${true} ", " ${ true } " }) {
+        for (final String rule : new String[] { "true", "TRUE", "FALSE", "false", " ${true} ", " ${ true } " }) {
             Assert.assertFalse("malformed rule '" + rule + "' should be false", ruleEvaluator.evaluateBooleanRule(rule, Collections.<String, Object>emptyMap()));
         }
     }

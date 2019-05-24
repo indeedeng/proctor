@@ -54,7 +54,7 @@ public abstract class AbstractGroupsPayload {
      */
     private Double[] convertObjectArrToDoubleArr(final Object[] list) {
         final Double[] toReturn = new Double[list.length];
-        for(int i = 0; i < list.length; i++) {
+        for (int i = 0; i < list.length; i++) {
             toReturn[i] = ((Number)list[i]).doubleValue();
         }
         return toReturn;
@@ -66,7 +66,7 @@ public abstract class AbstractGroupsPayload {
      */
     private Long[] convertObjectArrToLongArr(final Object[] list) {
         final Long[] toReturn = new Long[list.length];
-        for(int i = 0; i < list.length; i++) {
+        for (int i = 0; i < list.length; i++) {
             toReturn[i] = ((Number)list[i]).longValue();
         }
         return toReturn;
@@ -74,7 +74,7 @@ public abstract class AbstractGroupsPayload {
 
     private String[] convertObjectArrToStringArr(final Object[] list) {
         final String[] toReturn = new String[list.length];
-        for(int i = 0; i < list.length; i++) {
+        for (int i = 0; i < list.length; i++) {
             toReturn[i] = (String)list[i];
         }
         return toReturn;

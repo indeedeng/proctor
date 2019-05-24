@@ -4,6 +4,7 @@ import com.google.common.base.Functions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 
+import java.util.Arrays;
 import java.util.Map;
 
 public enum Environment {
@@ -26,9 +27,11 @@ public enum Environment {
         return precedence;
     }
 
-    private static final Map<String, Environment> LOOKUP = Maps.uniqueIndex(ImmutableList.copyOf(Environment.values()), Functions.toStringFunction());
-    public static Environment fromName(String name) {
-        if(name == null) {
+    private static final Map<String, Environment> LOOKUP = Maps.uniqueIndex(
+            Arrays.asList(Environment.values()), Functions.toStringFunction());
+
+    public static Environment fromName(final String name) {
+        if (name == null) {
             return null;
         } else {
             return LOOKUP.get(name.toLowerCase());

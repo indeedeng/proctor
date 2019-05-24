@@ -17,13 +17,13 @@ public class ProctorBuilder {
     private final String author;
     private String version;
 
-    public ProctorBuilder(final ProctorReader proctorReader, Writer outputSink) {
+    public ProctorBuilder(final ProctorReader proctorReader, final Writer outputSink) {
         this(proctorReader, outputSink, null);
     }
-    public ProctorBuilder(final ProctorReader proctorReader, Writer outputSink, String author) {
+    public ProctorBuilder(final ProctorReader proctorReader, final Writer outputSink, final String author) {
         this(proctorReader, outputSink, author, "");
     }
-    public ProctorBuilder(final ProctorReader proctorReader, Writer outputSink, String author, String version) {
+    public ProctorBuilder(final ProctorReader proctorReader, final Writer outputSink, final String author, final String version) {
         this.proctorReader = proctorReader;
         this.outputSink = outputSink;
         this.author = author;

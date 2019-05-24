@@ -32,7 +32,7 @@ public class LocalProctorBuilderTask extends Task {
         return destdir;
     }
 
-    public void setDestdir(String destdir) {
+    public void setDestdir(final String destdir) {
         this.destdir = destdir;
     }
 
@@ -40,7 +40,7 @@ public class LocalProctorBuilderTask extends Task {
         return srcdir;
     }
 
-    public void setSrcdir(String srcdir) {
+    public void setSrcdir(final String srcdir) {
         this.srcdir = srcdir;
     }
 
@@ -48,7 +48,7 @@ public class LocalProctorBuilderTask extends Task {
         return destfile;
     }
 
-    public void setDestfile(String destfile) {
+    public void setDestfile(final String destfile) {
         this.destfile = destfile;
     }
 
@@ -56,7 +56,7 @@ public class LocalProctorBuilderTask extends Task {
         return author;
     }
 
-    public void setAuthor(String author) {
+    public void setAuthor(final String author) {
         this.author = author;
     }
 
@@ -64,17 +64,17 @@ public class LocalProctorBuilderTask extends Task {
         return version;
     }
 
-    public void setVersion(String version) {
+    public void setVersion(final String version) {
         this.version = version;
     }
 
     @Override
     public void execute() throws BuildException {
         try {
-            if(srcdir == null) {
+            if (srcdir == null) {
                 throw new BuildException("srcdir is required");
             }
-            if(destdir == null) {
+            if (destdir == null) {
                 throw new BuildException("destdir is required");
             }
             new LocalProctorBuilder(
@@ -84,8 +84,8 @@ public class LocalProctorBuilderTask extends Task {
                         new FileWriter(new File(destdir, destfile)),
                     author,
                     version).execute();
-        } catch (Exception e) {
-            if(e instanceof BuildException) {
+        } catch (final Exception e) {
+            if (e instanceof BuildException) {
                 throw (BuildException) e;
             }
             throw new BuildException("Failed to create test matrix: " + e.getMessage(), e);
