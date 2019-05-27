@@ -1,18 +1,15 @@
 package com.indeed.proctor.common;
 
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
-
-import com.indeed.proctor.common.IncompatibleTestMatrixException;
-import com.indeed.proctor.common.model.TestMatrixArtifact;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author matts
@@ -116,12 +113,9 @@ public class ProctorLoadResult {
     }
 
     private static Map<String, IncompatibleTestMatrixException> makeTestErrorMap(final Set<String> testsWithErrors) {
-        return Maps.asMap(testsWithErrors, new Function<String, IncompatibleTestMatrixException>() {
-            @Override
-            public IncompatibleTestMatrixException apply(final String testName) {
-                return new IncompatibleTestMatrixException(testName + " has an invalid specification");
-            }
-        });
+        return testsWithErrors.stream()
+                .collect(Collectors.toMap(Function.identity(),
+                        testName -> new IncompatibleTestMatrixException(testName + " has an invalid specification")));
     }
 
     @SuppressWarnings("UnusedDeclaration")

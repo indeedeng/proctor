@@ -1,7 +1,5 @@
 package com.indeed.proctor.webapp.db;
 
-import com.google.common.base.Functions;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 
 import java.util.Arrays;
@@ -14,7 +12,7 @@ public enum Environment {
 
     private final String name;
     private final int precedence;
-    private Environment(final String name, final int precedence) {
+    Environment(final String name, final int precedence) {
         this.name = name;
         this.precedence = precedence;
     }
@@ -28,8 +26,7 @@ public enum Environment {
     }
 
     private static final Map<String, Environment> LOOKUP = Maps.uniqueIndex(
-            Arrays.asList(Environment.values()), Functions.toStringFunction());
-
+            Arrays.asList(Environment.values()), Environment::getName);
     public static Environment fromName(final String name) {
         if (name == null) {
             return null;
