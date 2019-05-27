@@ -1,6 +1,5 @@
 package com.indeed.proctor.groups;
 
-import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.CharStreams;
 import com.indeed.proctor.common.Identifiers;
@@ -40,12 +39,7 @@ public class TestSplitSpecificationTestWithFiltersGroupsManager {
     }
 
     private void setUp(final Proctor proctor) {
-        manager = new SplitSpecificationTestWithFiltersGroupsManager(new Supplier<Proctor>() {
-            @Override
-            public Proctor get() {
-                return proctor;
-            }
-        });
+        manager = new SplitSpecificationTestWithFiltersGroupsManager(() -> proctor);
     }
 
     private Proctor getProctor() throws IOException {
