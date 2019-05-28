@@ -469,7 +469,7 @@ public class TestEditAndPromoteJob {
         }
 
         @Test
-        public void testDoPromoteTestToQa() throws Exception {
+        public void testDoPromoteTestToQaWithoutValidation() throws Exception {
             { // testing promoting QA successes
                 // Arrange
                 mockDoPromoteInternal(true, true, true);
