@@ -371,7 +371,7 @@ public class EditAndPromoteJob extends AbstractJob {
         switch (autopromoteTarget) {
             case QA:
                 final String currentRevision = getCurrentVersion(testName, trunkStore).getRevision();
-                doPromoteTestToQaWithoutValidation(testName, username, password, author, requestParameterMap, job, currentRevision, qaRevision);
+                doPromoteTestToQa(testName, username, password, author, requestParameterMap, job, currentRevision, qaRevision);
                 break;
             case PRODUCTION:
                 doPromoteTestToQaAndProd(testName, username, password, author, testDefinitionToUpdate, previousRevision,
@@ -381,10 +381,12 @@ public class EditAndPromoteJob extends AbstractJob {
     }
 
     /**
-     * Promote a test to QA without checking changes
+     * Promote a test to QA
+     * This skips isAllocationOnlyChange validation.
+     * This promotion logic is only for a 100% inactive test or a test being promoted to only QA.
      */
     @VisibleForTesting
-    void doPromoteTestToQaWithoutValidation(
+    void doPromoteTestToQa(
             final String testName,
             final String username,
             final String password,
@@ -452,7 +454,7 @@ public class EditAndPromoteJob extends AbstractJob {
             final String prodRevision
     ) throws Exception {
         try {
-            doPromoteTestToQaWithoutValidation(testName, username, password, author, requestParameterMap, job, currentRevision, qaRevision);
+            doPromoteTestToQa(testName, username, password, author, requestParameterMap, job, currentRevision, qaRevision);
         } catch (final Exception e) {
             job.log("previous revision changes prevented auto-promote to PRODUCTION");
             throw e;
@@ -483,7 +485,7 @@ public class EditAndPromoteJob extends AbstractJob {
         Preconditions.checkArgument(existingTestDefinition != null);
 
         if (!isAllocationOnlyChange(existingTestDefinition, testDefinitionToUpdate)) {
-            throw new IllegalArgumentException("Not auto-promoting because it isn't an allocation-only change.");
+            throw new IllegalArgumentException("auto-promote is prevented because it isn't an allocation-only change.");
         }
 
         job.log("allocation only change, checking against other branches for auto-promote capability for test " +

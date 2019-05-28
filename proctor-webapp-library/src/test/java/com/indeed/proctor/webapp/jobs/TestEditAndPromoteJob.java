@@ -469,14 +469,14 @@ public class TestEditAndPromoteJob {
         }
 
         @Test
-        public void testDoPromoteTestToQaWithoutValidation() throws Exception {
+        public void testDoPromoteTestToQa() throws Exception {
             { // testing promoting QA successes
                 // Arrange
                 mockDoPromoteInternal(true, true, true);
                 doNothing().when(backgroundJob).log(anyString());
 
                 // Act
-                editAndPromoteJob.doPromoteTestToQaWithoutValidation(TEST_NAME, USERNAME, PASSWORD, AUTHOR, REQUEST_PARAMETER_MAP,
+                editAndPromoteJob.doPromoteTestToQa(TEST_NAME, USERNAME, PASSWORD, AUTHOR, REQUEST_PARAMETER_MAP,
                         backgroundJob, TRUNK_REVISION, QA_REVISION);
 
                 // Assert
@@ -494,7 +494,7 @@ public class TestEditAndPromoteJob {
 
                 // Act
                 try {
-                    editAndPromoteJob.doPromoteTestToQaWithoutValidation(TEST_NAME, USERNAME, PASSWORD, AUTHOR, REQUEST_PARAMETER_MAP,
+                    editAndPromoteJob.doPromoteTestToQa(TEST_NAME, USERNAME, PASSWORD, AUTHOR, REQUEST_PARAMETER_MAP,
                             backgroundJob, TRUNK_REVISION, QA_REVISION);
                     fail();
                 } catch (final IllegalArgumentException expected) {
