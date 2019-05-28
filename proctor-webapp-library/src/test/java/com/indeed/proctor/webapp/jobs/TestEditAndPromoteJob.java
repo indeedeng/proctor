@@ -469,47 +469,6 @@ public class TestEditAndPromoteJob {
         }
 
         @Test
-        public void testDoPromoteTestToQa() throws Exception {
-            { // testing promoting QA successes
-                // Arrange
-                mockDoPromoteInternal(true, true, true);
-                doNothing().when(backgroundJob).log(anyString());
-
-                // Act
-                editAndPromoteJob.doPromoteTestToQa(TEST_NAME, USERNAME, PASSWORD, AUTHOR, REQUEST_PARAMETER_MAP,
-                        backgroundJob, TRUNK_REVISION, QA_REVISION);
-
-                // Assert
-                verify(editAndPromoteJob).doPromoteInternal(TEST_NAME, USERNAME, PASSWORD, AUTHOR, Environment.WORKING,
-                        TRUNK_REVISION, Environment.QA, QA_REVISION, REQUEST_PARAMETER_MAP, backgroundJob, true);
-                verify(backgroundJob, never()).log(anyString());
-                Mockito.reset(editAndPromoteJob);
-                Mockito.reset(backgroundJob);
-            }
-
-            { // testing promoting QA fails
-                // Arrange
-                mockDoPromoteInternal(false, true, true);
-                doNothing().when(backgroundJob).log(anyString());
-
-                // Act
-                try {
-                    editAndPromoteJob.doPromoteTestToQa(TEST_NAME, USERNAME, PASSWORD, AUTHOR, REQUEST_PARAMETER_MAP,
-                            backgroundJob, TRUNK_REVISION, QA_REVISION);
-                    fail();
-                } catch (final IllegalArgumentException expected) {
-                }
-
-                // Assert
-                verify(editAndPromoteJob).doPromoteInternal(TEST_NAME, USERNAME, PASSWORD, AUTHOR, Environment.WORKING,
-                        TRUNK_REVISION, Environment.QA, QA_REVISION, REQUEST_PARAMETER_MAP, backgroundJob, true);
-                verify(backgroundJob).log(anyString());
-                Mockito.reset(editAndPromoteJob);
-                Mockito.reset(backgroundJob);
-            }
-        }
-
-        @Test
         public void testDoPromoteTestToQaAndProd() throws Exception {
             { // testing existingTestDefinition is null and test is active
                 // Arrange
@@ -744,6 +703,28 @@ public class TestEditAndPromoteJob {
         }
 
         @Test
+        public void testDoPromoteTestToEnvironmentWithoutIsAllocationOnlyChangeValidation() throws Exception {
+            // Arrange
+            final double[] rangeOne = {.7, .3};
+            final double[] rangeTwo = {.8, .2};
+            final TestDefinition testDefinitionToUpdate = createTestDefinition("testbuck:0,control:1", rangeOne);
+            final TestDefinition existingTestDefinition = createTestDefinition("testbuck2:0,control:1", rangeTwo);
+
+            doNothing().when(backgroundJob).log(anyString());
+            when(qaStore.getCurrentTestDefinition(TEST_NAME)).thenReturn(existingTestDefinition);
+            mockDoPromoteInternal(true, true, true);
+
+            // Act
+            editAndPromoteJob.doPromoteTestToEnvironment(Environment.QA, TEST_NAME, USERNAME, PASSWORD, AUTHOR,
+                    testDefinitionToUpdate, REQUEST_PARAMETER_MAP, backgroundJob, TRUNK_REVISION, QA_REVISION, false);
+
+            // Assert
+            verify(backgroundJob).log(anyString());
+            verify(editAndPromoteJob).doPromoteInternal(TEST_NAME, USERNAME, PASSWORD, AUTHOR, Environment.WORKING,
+                    TRUNK_REVISION, Environment.QA, QA_REVISION, REQUEST_PARAMETER_MAP, backgroundJob, true);
+        }
+
+        @Test
         public void testDoPromoteTestToEnvFailToPromoteToTrunk() throws Exception {
             // Arrange
             final double[] rangeOne = {.7, .3};
@@ -758,7 +739,7 @@ public class TestEditAndPromoteJob {
             // Act
             try {
                 editAndPromoteJob.doPromoteTestToEnvironment(targetEnv, TEST_NAME, USERNAME, PASSWORD, AUTHOR,
-                        testDefinitionToUpdate, REQUEST_PARAMETER_MAP, backgroundJob, TRUNK_REVISION, TRUNK_REVISION);
+                        testDefinitionToUpdate, REQUEST_PARAMETER_MAP, backgroundJob, TRUNK_REVISION, TRUNK_REVISION, true);
                 fail();
             } catch (final IllegalArgumentException expected) {
             }
@@ -783,7 +764,7 @@ public class TestEditAndPromoteJob {
             // Act
             try {
                 editAndPromoteJob.doPromoteTestToEnvironment(Environment.QA, TEST_NAME, USERNAME, PASSWORD, AUTHOR,
-                        testDefinitionToUpdate, REQUEST_PARAMETER_MAP, backgroundJob, TRUNK_REVISION, QA_REVISION);
+                        testDefinitionToUpdate, REQUEST_PARAMETER_MAP, backgroundJob, TRUNK_REVISION, QA_REVISION, true);
                 fail();
             } catch (final IllegalArgumentException expected) {
             }
@@ -808,7 +789,8 @@ public class TestEditAndPromoteJob {
             // Act
             try {
                 editAndPromoteJob.doPromoteTestToEnvironment(Environment.QA, TEST_NAME, USERNAME, PASSWORD, AUTHOR,
-                        testDefinitionToUpdate, REQUEST_PARAMETER_MAP, backgroundJob, TRUNK_REVISION, EnvironmentVersion.UNKNOWN_REVISION);
+                        testDefinitionToUpdate, REQUEST_PARAMETER_MAP, backgroundJob, TRUNK_REVISION,
+                        EnvironmentVersion.UNKNOWN_REVISION, true);
                 fail();
             } catch (final IllegalArgumentException expected) {
             }
@@ -837,7 +819,7 @@ public class TestEditAndPromoteJob {
 
             // Act
             editAndPromoteJob.doPromoteTestToEnvironment(targetEnv, TEST_NAME, USERNAME, PASSWORD, AUTHOR,
-                    testDefinitionToUpdate, REQUEST_PARAMETER_MAP, backgroundJob, TRUNK_REVISION, targetRevision);
+                    testDefinitionToUpdate, REQUEST_PARAMETER_MAP, backgroundJob, TRUNK_REVISION, targetRevision, true);
 
             // Assert
             verify(backgroundJob).log(anyString());
