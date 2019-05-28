@@ -364,7 +364,7 @@ public class EditAndPromoteJob extends AbstractJob {
     ) throws Exception {
         final boolean isAutopromote = autopromoteTarget != Environment.WORKING;
         if (!isAutopromote) {
-            job.log("Not autopromoting because it wasn't requested by user.");
+            job.log("Not auto-promote because it wasn't requested by user.");
             return;
         }
 
@@ -528,14 +528,14 @@ public class EditAndPromoteJob extends AbstractJob {
         );
 
         if (!isAllocationOnlyChange(targetTestDefinition, testDefinitionToUpdate)) {
-            throw new IllegalArgumentException("Not auto-promoting to " + targetEnv.getName() + " because it isn't an allocation-only change.");
+            throw new IllegalArgumentException("Not auto-promote to " + targetEnv.getName() + " because it isn't an allocation-only change.");
         }
-
-        job.log("auto-promoting changes to " + targetEnv.getName());
 
         switch (targetEnv) {
             case QA:
             case PRODUCTION:
+                job.log("auto-promote changes to " + targetEnv.getName());
+
                 try {
                     doPromoteInternal(testName, username, password, author, Environment.WORKING, currentRevision,
                             targetEnv, targetRevision, requestParameterMap, job, true);

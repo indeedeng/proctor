@@ -761,7 +761,7 @@ public class TestEditAndPromoteJob {
                 }
 
                 // Assert
-                verify(backgroundJob).log(anyString());
+                verify(backgroundJob, never()).log(anyString());
                 verify(editAndPromoteJob, never()).doPromoteInternal(TEST_NAME, USERNAME, PASSWORD, AUTHOR, Environment.WORKING,
                         TRUNK_REVISION, targetEnv, TRUNK_REVISION, REQUEST_PARAMETER_MAP, backgroundJob, true);
                 Mockito.reset(backgroundJob);
