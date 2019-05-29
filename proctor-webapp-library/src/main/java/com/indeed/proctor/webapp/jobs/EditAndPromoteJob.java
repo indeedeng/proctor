@@ -507,7 +507,10 @@ public class EditAndPromoteJob extends AbstractJob {
 
         if (verifyAllocationOnlyChange) {
             if (testDefinitionToUpdate == null) {
-                throw new IllegalArgumentException("Failed to verify if the test change is allocation only change due to lack of test definition to update.");
+                // This should never happen
+                LOGGER.error("Failed to verify if the test change is allocation only change due to lack of test definition to update.");
+                LOGGER.error(String.format("testName: %s,targetEnv: %s", testName, targetEnv.getName()));
+                throw new IllegalStateException("Bug: Failed to verify if the test change is allocation only change due to lack of test definition to update.");
             }
             if (!isAllocationOnlyChange(targetTestDefinition, testDefinitionToUpdate)) {
                 throw new IllegalArgumentException("Not auto-promote to " + targetEnv.getName() + " because it isn't an allocation-only change.");
