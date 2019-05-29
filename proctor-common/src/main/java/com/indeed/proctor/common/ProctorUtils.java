@@ -29,6 +29,7 @@ import com.indeed.proctor.common.model.TestMatrixVersion;
 import com.indeed.proctor.common.model.TestType;
 import org.apache.el.ExpressionFactoryImpl;
 import org.apache.log4j.Logger;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -56,6 +57,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.joining;
 
 /**
  * Helper functions mostly to verify TestMatrix instances.
@@ -165,16 +168,7 @@ public abstract class ProctorUtils {
         if (ruleComponents.isEmpty()) {
             rule = null;
         } else {
-            final StringBuilder ruleBuilder = new StringBuilder("${");
-            for (int i = 0; i < ruleComponents.size(); i++) {
-                if (i != 0) {
-                    ruleBuilder.append(" && ");
-                }
-                ruleBuilder.append(ruleComponents.get(i));
-            }
-            ruleBuilder.append("}");
-
-            rule = ruleBuilder.toString();
+            rule = "${" + String.join(" && ", ruleComponents) + '}';
         }
 
         final List<Allocation> allocations = td.getAllocations();
@@ -902,6 +896,9 @@ public abstract class ProctorUtils {
         for (int i = 0; i < allocations.size(); i++) {
             final Allocation allocation = allocations.get(i);
             final List<Range> ranges = allocation.getRanges();
+            if (CollectionUtils.isEmpty(ranges)) {
+                throw new IncompatibleTestMatrixException("Allocation range has no buckets, needs to add up to 1.");
+            }
             //  ensure that each range refers to a known bucket
             double bucketTotal = 0;
             for (final Range range : ranges) {
@@ -913,12 +910,11 @@ public abstract class ProctorUtils {
             }
             //  I hate floating points.  TODO: extract a required precision constant/parameter?
             if (bucketTotal < 0.9999 || bucketTotal > 1.0001) { //  compensate for FP imprecision.  TODO: determine what these bounds really should be by testing stuff
-                final StringBuilder sb = new StringBuilder(testName + " range with rule " + allocation.getRule() + " does not add up to 1 : ").append(ranges.get(0).getLength());
-                for (int r = 1; r < ranges.size(); r++) {
-                    sb.append(" + ").append(ranges.get(r).getLength());
-                }
-                sb.append(" = ").append(bucketTotal);
-                throw new IncompatibleTestMatrixException(sb.toString());
+                throw new IncompatibleTestMatrixException(
+                        testName + " range with rule " + allocation.getRule() + " does not add up to 1 : "
+                                + ranges.stream().map(r -> Double.toString(r.getLength())).collect(joining(" + "))
+                                + " = " + bucketTotal
+                );
             }
             final String rule = allocation.getRule();
             final boolean lastAllocation = i == (allocations.size() - 1);

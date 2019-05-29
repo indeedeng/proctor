@@ -2,13 +2,14 @@ package com.indeed.proctor.pipet.core.var;
 
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import com.google.common.collect.Iterators;
 import com.indeed.proctor.pipet.core.config.ConfigurationException;
 import com.indeed.proctor.pipet.core.config.ExtractorSource;
 
-import java.util.Iterator;
-import java.util.List;
 import javax.servlet.http.HttpServletRequest;
+import java.util.Arrays;
+import java.util.List;
+
+import static java.util.stream.Collectors.joining;
 
 /**
  * Holds classes for all the different extraction sources in the ExtractorSource enum.
@@ -79,18 +80,9 @@ public final class ValueExtractors {
 
         @Override
         public String toString() {
-            final StringBuilder sb = new StringBuilder("ChainedValueExtractor{");
-            sb.append("chained(");
-            final Iterator<ValueExtractor> iter = Iterators.forArray(extractors);
-            while(iter.hasNext()) {
-                final ValueExtractor extractor = iter.next();
-                sb.append(extractor);
-                if (iter.hasNext()) {
-                    sb.append(", ");
-                }
-            }
-            sb.append(')');
-            return sb.toString();
+            return "ChainedValueExtractor{chained("
+                    + Arrays.stream(extractors).map(Object::toString).collect(joining(", "))
+                    + ")}";
         }
     }
 
