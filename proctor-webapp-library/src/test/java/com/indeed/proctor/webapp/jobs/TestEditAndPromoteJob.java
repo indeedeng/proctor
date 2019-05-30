@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -420,15 +421,15 @@ public class TestEditAndPromoteJob {
         }
 
         private void mockDoPromoteInternal(
-                final boolean returnValue,
+                final boolean isSuccess,
                 final boolean isPromoteToQa,
                 final boolean isAutopromote
-        ) {
+        ) throws Exception {
             final Environment destEnvironment = isPromoteToQa ? Environment.QA : Environment.PRODUCTION;
             final String destRevision = isPromoteToQa ? QA_REVISION : PROD_REVISION;
 
-            try {
-                Mockito.doReturn(returnValue).when(editAndPromoteJob).doPromoteInternal(
+            if (isSuccess) {
+                Mockito.doReturn(true).when(editAndPromoteJob).doPromoteInternal(
                         TEST_NAME,
                         USERNAME,
                         PASSWORD,
@@ -441,45 +442,20 @@ public class TestEditAndPromoteJob {
                         backgroundJob,
                         isAutopromote
                 );
-            } catch (final Exception e) {
-                // do nothing
-            }
-        }
-
-        @Test
-        public void testDoPromoteTestToQa() throws Exception {
-            { // testing promoting QA successes
-                // Arrange
-                mockDoPromoteInternal(true, true, true);
-                doNothing().when(backgroundJob).log(anyString());
-
-                // Act
-                editAndPromoteJob.doPromoteTestToQa(TEST_NAME, USERNAME, PASSWORD, AUTHOR, REQUEST_PARAMETER_MAP,
-                        backgroundJob, TRUNK_REVISION, QA_REVISION);
-
-                // Assert
-                verify(editAndPromoteJob).doPromoteInternal(TEST_NAME, USERNAME, PASSWORD, AUTHOR, Environment.WORKING,
-                        TRUNK_REVISION, Environment.QA, QA_REVISION, REQUEST_PARAMETER_MAP, backgroundJob, true);
-                verify(backgroundJob, never()).log(anyString());
-                Mockito.reset(editAndPromoteJob);
-                Mockito.reset(backgroundJob);
-            }
-
-            { // testing promoting QA fails
-                // Arrange
-                mockDoPromoteInternal(false, true, true);
-                doNothing().when(backgroundJob).log(anyString());
-
-                // Act
-                editAndPromoteJob.doPromoteTestToQa(TEST_NAME, USERNAME, PASSWORD, AUTHOR, REQUEST_PARAMETER_MAP,
-                        backgroundJob, TRUNK_REVISION, QA_REVISION);
-
-                // Assert
-                verify(editAndPromoteJob).doPromoteInternal(TEST_NAME, USERNAME, PASSWORD, AUTHOR, Environment.WORKING,
-                        TRUNK_REVISION, Environment.QA, QA_REVISION, REQUEST_PARAMETER_MAP, backgroundJob, true);
-                verify(backgroundJob).log(anyString());
-                Mockito.reset(editAndPromoteJob);
-                Mockito.reset(backgroundJob);
+            } else {
+                Mockito.doThrow(new IllegalArgumentException("invalid")).when(editAndPromoteJob).doPromoteInternal(
+                        TEST_NAME,
+                        USERNAME,
+                        PASSWORD,
+                        AUTHOR,
+                        Environment.WORKING,
+                        TRUNK_REVISION,
+                        destEnvironment,
+                        destRevision,
+                        REQUEST_PARAMETER_MAP,
+                        backgroundJob,
+                        isAutopromote
+                );
             }
         }
 
@@ -492,13 +468,13 @@ public class TestEditAndPromoteJob {
                 final TestDefinition existingTestDefinition = null;
                 doNothing().when(backgroundJob).log(anyString());
 
-                // Act
-                editAndPromoteJob.doPromoteTestToQaAndProd(TEST_NAME, USERNAME, PASSWORD, AUTHOR, testDefinitionToUpdate,
-                        PREVIOUS_REVISION, REQUEST_PARAMETER_MAP, backgroundJob, trunkStore, QA_REVISION, PROD_REVISION,
-                        existingTestDefinition);
-
-                // Assert
-                verify(backgroundJob).log(anyString());
+                // Act / Assert
+                assertThatThrownBy(() ->
+                        editAndPromoteJob.doPromoteTestToQaAndProd(TEST_NAME, USERNAME, PASSWORD, AUTHOR, testDefinitionToUpdate,
+                                PREVIOUS_REVISION, REQUEST_PARAMETER_MAP, backgroundJob, trunkStore, QA_REVISION, PROD_REVISION,
+                                existingTestDefinition)
+                ).isInstanceOf(IllegalArgumentException.class);
+                verify(backgroundJob, never()).log(anyString());
                 Mockito.reset(editAndPromoteJob);
                 Mockito.reset(backgroundJob);
             }
@@ -557,11 +533,11 @@ public class TestEditAndPromoteJob {
                 mockDoPromoteInternal(false, true, true);
                 mockDoPromoteInternal(false, false, true);
 
-                // Act
-                editAndPromoteJob.doPromoteInactiveTestToQaAndProd(TEST_NAME, USERNAME, PASSWORD, AUTHOR,
-                        REQUEST_PARAMETER_MAP, backgroundJob, TRUNK_REVISION, QA_REVISION, PROD_REVISION);
-
-                // Assert
+                // Act / Assert
+                assertThatThrownBy(() ->
+                        editAndPromoteJob.doPromoteInactiveTestToQaAndProd(TEST_NAME, USERNAME, PASSWORD, AUTHOR,
+                                REQUEST_PARAMETER_MAP, backgroundJob, TRUNK_REVISION, QA_REVISION, PROD_REVISION)
+                ).isInstanceOf(IllegalArgumentException.class);
                 verify(editAndPromoteJob).doPromoteInternal(TEST_NAME, USERNAME, PASSWORD, AUTHOR, Environment.WORKING,
                         TRUNK_REVISION, Environment.QA, QA_REVISION, REQUEST_PARAMETER_MAP, backgroundJob, true);
                 verify(editAndPromoteJob, never()).doPromoteInternal(TEST_NAME, USERNAME, PASSWORD, AUTHOR, Environment.WORKING,
@@ -599,11 +575,11 @@ public class TestEditAndPromoteJob {
                 mockDoPromoteInternal(false, true, true);
                 mockDoPromoteInternal(false, false, true);
 
-                // Act
-                editAndPromoteJob.doPromoteExistingTestToQaAndProd(TEST_NAME, USERNAME, PASSWORD, AUTHOR, testDefinitionToUpdate,
-                        REQUEST_PARAMETER_MAP, backgroundJob, TRUNK_REVISION, QA_REVISION, PROD_REVISION, existingTestDefinition);
-
-                // Assert
+                // Act / Assert
+                assertThatThrownBy(() ->
+                        editAndPromoteJob.doPromoteExistingTestToQaAndProd(TEST_NAME, USERNAME, PASSWORD, AUTHOR, testDefinitionToUpdate,
+                                REQUEST_PARAMETER_MAP, backgroundJob, TRUNK_REVISION, QA_REVISION, PROD_REVISION, existingTestDefinition)
+                ).isInstanceOf(IllegalArgumentException.class);
                 verify(editAndPromoteJob, never()).doPromoteInternal(TEST_NAME, USERNAME, PASSWORD, AUTHOR, Environment.WORKING,
                         TRUNK_REVISION, Environment.QA, QA_REVISION, REQUEST_PARAMETER_MAP, backgroundJob, true);
                 verify(editAndPromoteJob, never()).doPromoteInternal(TEST_NAME, USERNAME, PASSWORD, AUTHOR, Environment.WORKING,
@@ -625,11 +601,11 @@ public class TestEditAndPromoteJob {
 
                 when(qaStore.getCurrentTestDefinition(TEST_NAME)).thenReturn(existingQaTestDefinition);
 
-                // Act
-                editAndPromoteJob.doPromoteExistingTestToQaAndProd(TEST_NAME, USERNAME, PASSWORD, AUTHOR, testDefinitionToUpdate,
-                        REQUEST_PARAMETER_MAP, backgroundJob, TRUNK_REVISION, QA_REVISION, PROD_REVISION, existingTestDefinition);
-
-                // Assert
+                // Act / Assert
+                assertThatThrownBy(() ->
+                        editAndPromoteJob.doPromoteExistingTestToQaAndProd(TEST_NAME, USERNAME, PASSWORD, AUTHOR, testDefinitionToUpdate,
+                                REQUEST_PARAMETER_MAP, backgroundJob, TRUNK_REVISION, QA_REVISION, PROD_REVISION, existingTestDefinition)
+                ).isInstanceOf(IllegalArgumentException.class);
                 verify(editAndPromoteJob, never()).doPromoteInternal(TEST_NAME, USERNAME, PASSWORD, AUTHOR, Environment.WORKING,
                         TRUNK_REVISION, Environment.QA, QA_REVISION, REQUEST_PARAMETER_MAP, backgroundJob, true);
                 verify(editAndPromoteJob, never()).doPromoteInternal(TEST_NAME, USERNAME, PASSWORD, AUTHOR, Environment.WORKING,
@@ -649,11 +625,11 @@ public class TestEditAndPromoteJob {
 
                 when(qaStore.getCurrentTestDefinition(TEST_NAME)).thenReturn(existingTestDefinition);
 
-                // Act
-                editAndPromoteJob.doPromoteExistingTestToQaAndProd(TEST_NAME, USERNAME, PASSWORD, AUTHOR, testDefinitionToUpdate,
-                        REQUEST_PARAMETER_MAP, backgroundJob, TRUNK_REVISION, QA_REVISION, PROD_REVISION, existingTestDefinition);
-
-                // Assert
+                // Act / Assert
+                assertThatThrownBy(() ->
+                        editAndPromoteJob.doPromoteExistingTestToQaAndProd(TEST_NAME, USERNAME, PASSWORD, AUTHOR, testDefinitionToUpdate,
+                                REQUEST_PARAMETER_MAP, backgroundJob, TRUNK_REVISION, QA_REVISION, PROD_REVISION, existingTestDefinition)
+                ).isInstanceOf(IllegalArgumentException.class);
                 verify(editAndPromoteJob).doPromoteInternal(TEST_NAME, USERNAME, PASSWORD, AUTHOR, Environment.WORKING,
                         TRUNK_REVISION, Environment.QA, QA_REVISION, REQUEST_PARAMETER_MAP, backgroundJob, true);
                 verify(editAndPromoteJob, never()).doPromoteInternal(TEST_NAME, USERNAME, PASSWORD, AUTHOR, Environment.WORKING,
@@ -685,6 +661,131 @@ public class TestEditAndPromoteJob {
                         TRUNK_REVISION, Environment.PRODUCTION, PROD_REVISION, REQUEST_PARAMETER_MAP, backgroundJob, true);
                 Mockito.reset(editAndPromoteJob);
             }
+        }
+
+        @Test
+        public void testDoPromoteTestToEnvSuccess() throws Exception {
+            { // Succeed to promote to QA
+                assertDoPromoteTestToEnvironment(Environment.QA, QA_REVISION, qaStore);
+            }
+            { // Succeed to promote to Prod
+                assertDoPromoteTestToEnvironment(Environment.PRODUCTION, PROD_REVISION, productionStore);
+            }
+        }
+
+        @Test
+        public void testDoPromoteTestToEnvironmentWithoutIsAllocationOnlyChangeValidation() throws Exception {
+            // Arrange
+            final double[] rangeOne = {.7, .3};
+            final double[] rangeTwo = {.8, .2};
+            final TestDefinition testDefinitionToUpdate = createTestDefinition("testbuck:0,control:1", rangeOne);
+            final TestDefinition existingTestDefinition = createTestDefinition("testbuck2:0,control:1", rangeTwo);
+
+            doNothing().when(backgroundJob).log(anyString());
+            when(qaStore.getCurrentTestDefinition(TEST_NAME)).thenReturn(existingTestDefinition);
+            mockDoPromoteInternal(true, true, true);
+
+            // Act
+            editAndPromoteJob.doPromoteTestToEnvironment(Environment.QA, TEST_NAME, USERNAME, PASSWORD, AUTHOR,
+                    testDefinitionToUpdate, REQUEST_PARAMETER_MAP, backgroundJob, TRUNK_REVISION, QA_REVISION, false);
+
+            // Assert
+            verify(backgroundJob).log(anyString());
+            verify(editAndPromoteJob).doPromoteInternal(TEST_NAME, USERNAME, PASSWORD, AUTHOR, Environment.WORKING,
+                    TRUNK_REVISION, Environment.QA, QA_REVISION, REQUEST_PARAMETER_MAP, backgroundJob, true);
+        }
+
+        @Test
+        public void testDoPromoteTestToEnvFailToPromoteToTrunk() throws Exception {
+            // Arrange
+            final double[] rangeOne = {.7, .3};
+            final double[] rangeTwo = {.8, .2};
+            final TestDefinition testDefinitionToUpdate = createTestDefinition("testbuck:0,control:1", rangeOne);
+            final TestDefinition existingTestDefinition = createTestDefinition("testbuck:0,control:1", rangeTwo);
+            final Environment targetEnv = Environment.WORKING;
+
+            doNothing().when(backgroundJob).log(anyString());
+            when(trunkStore.getCurrentTestDefinition(TEST_NAME)).thenReturn(existingTestDefinition);
+
+            // Act / Assert
+            assertThatThrownBy(() ->
+                    editAndPromoteJob.doPromoteTestToEnvironment(targetEnv, TEST_NAME, USERNAME, PASSWORD, AUTHOR,
+                            testDefinitionToUpdate, REQUEST_PARAMETER_MAP, backgroundJob, TRUNK_REVISION, TRUNK_REVISION, true)
+            ).isInstanceOf(IllegalArgumentException.class);
+            verify(backgroundJob, never()).log(anyString());
+            verify(editAndPromoteJob, never()).doPromoteInternal(TEST_NAME, USERNAME, PASSWORD, AUTHOR, Environment.WORKING,
+                    TRUNK_REVISION, targetEnv, TRUNK_REVISION, REQUEST_PARAMETER_MAP, backgroundJob, true);
+        }
+
+        @Test
+        public void testDoPromoteTestToEnvFailToPromoteNonAllocationChange() throws Exception {
+            // Arrange
+            final double[] rangeOne = {.7, .3};
+            final double[] rangeTwo = {.8, .2};
+            final TestDefinition testDefinitionToUpdate = createTestDefinition("testbuck:0,control:1", rangeOne);
+            final TestDefinition existingTestDefinition = createTestDefinition("testbuck2:0,control:1", rangeTwo);
+
+            doNothing().when(backgroundJob).log(anyString());
+            when(qaStore.getCurrentTestDefinition(TEST_NAME)).thenReturn(existingTestDefinition);
+
+            // Act / Assert
+            assertThatThrownBy(() ->
+                    editAndPromoteJob.doPromoteTestToEnvironment(Environment.QA, TEST_NAME, USERNAME, PASSWORD, AUTHOR,
+                            testDefinitionToUpdate, REQUEST_PARAMETER_MAP, backgroundJob, TRUNK_REVISION, QA_REVISION, true)
+            ).isInstanceOf(IllegalArgumentException.class);
+            verify(backgroundJob, never()).log(anyString());
+            verify(editAndPromoteJob, never()).doPromoteInternal(TEST_NAME, USERNAME, PASSWORD, AUTHOR, Environment.WORKING,
+                    TRUNK_REVISION, Environment.QA, QA_REVISION, REQUEST_PARAMETER_MAP, backgroundJob, true);
+        }
+
+        @Test
+        public void testDoPromoteTestToEnvFailToPromoteToUnknownRevision() throws Exception {
+            // Arrange
+            final double[] rangeOne = {.7, .3};
+            final double[] rangeTwo = {.8, .2};
+            final TestDefinition testDefinitionToUpdate = createTestDefinition("testbuck:0,control:1", rangeOne);
+            final TestDefinition existingTestDefinition = createTestDefinition("testbuck:0,control:1", rangeTwo);
+
+            doNothing().when(backgroundJob).log(anyString());
+            when(qaStore.getCurrentTestDefinition(TEST_NAME)).thenReturn(existingTestDefinition);
+
+            // Act / Assert
+            assertThatThrownBy(() ->
+                    editAndPromoteJob.doPromoteTestToEnvironment(Environment.QA, TEST_NAME, USERNAME, PASSWORD, AUTHOR,
+                            testDefinitionToUpdate, REQUEST_PARAMETER_MAP, backgroundJob, TRUNK_REVISION,
+                            EnvironmentVersion.UNKNOWN_REVISION, true)
+            ).isInstanceOf(IllegalArgumentException.class);
+            verify(backgroundJob, never()).log(anyString());
+            verify(editAndPromoteJob, never()).doPromoteInternal(TEST_NAME, USERNAME, PASSWORD, AUTHOR, Environment.WORKING,
+                        TRUNK_REVISION, Environment.QA, EnvironmentVersion.UNKNOWN_REVISION, REQUEST_PARAMETER_MAP, backgroundJob, true);
+        }
+
+        private void assertDoPromoteTestToEnvironment(
+                final Environment targetEnv,
+                final String targetRevision,
+                final ProctorStore targetStore
+        ) throws Exception {
+            // Arrange
+            final boolean isPromoteToQa = targetEnv == Environment.QA;
+            final double[] rangeOne = {.7, .3};
+            final double[] rangeTwo = {.8, .2};
+            final TestDefinition testDefinitionToUpdate = createTestDefinition("testbuck:0,control:1", rangeOne);
+            final TestDefinition existingTestDefinition = createTestDefinition("testbuck:0,control:1", rangeTwo);
+
+            doNothing().when(backgroundJob).log(anyString());
+            when(targetStore.getCurrentTestDefinition(TEST_NAME)).thenReturn(existingTestDefinition);
+            mockDoPromoteInternal(true, isPromoteToQa, true);
+
+            // Act
+            editAndPromoteJob.doPromoteTestToEnvironment(targetEnv, TEST_NAME, USERNAME, PASSWORD, AUTHOR,
+                    testDefinitionToUpdate, REQUEST_PARAMETER_MAP, backgroundJob, TRUNK_REVISION, targetRevision, true);
+
+            // Assert
+            verify(backgroundJob).log(anyString());
+            verify(editAndPromoteJob).doPromoteInternal(TEST_NAME, USERNAME, PASSWORD, AUTHOR, Environment.WORKING,
+                    TRUNK_REVISION, targetEnv, targetRevision, REQUEST_PARAMETER_MAP, backgroundJob, true);
+            Mockito.reset(backgroundJob);
+            Mockito.reset(editAndPromoteJob);
         }
     }
 

@@ -364,44 +364,21 @@ public class EditAndPromoteJob extends AbstractJob {
     ) throws Exception {
         final boolean isAutopromote = autopromoteTarget != Environment.WORKING;
         if (!isAutopromote) {
-            job.log("Not autopromoting because it wasn't requested by user.");
+            job.log("Not auto-promote because it wasn't requested by user.");
             return;
         }
 
         switch (autopromoteTarget) {
             case QA:
                 final String currentRevision = getCurrentVersion(testName, trunkStore).getRevision();
-                doPromoteTestToQa(testName, username, password, author, requestParameterMap, job, currentRevision, qaRevision);
+                doPromoteTestToEnvironment(Environment.QA, testName, username, password, author, null,
+                        requestParameterMap, job, currentRevision, qaRevision, false);
                 break;
             case PRODUCTION:
                 doPromoteTestToQaAndProd(testName, username, password, author, testDefinitionToUpdate, previousRevision,
                         requestParameterMap, job, trunkStore, qaRevision, prodRevision, existingTestDefinition);
                 break;
         }
-    }
-
-    /**
-     * Promote a test to QA without checking changes
-     */
-    @VisibleForTesting
-    boolean doPromoteTestToQa(
-            final String testName,
-            final String username,
-            final String password,
-            final String author,
-            final Map<String, String[]> requestParameterMap,
-            final BackgroundJob job,
-            final String currentRevision,
-            final String qaRevision
-    ) throws Exception {
-        final boolean isQaPromoted = doPromoteInternal(testName, username, password, author, Environment.WORKING,
-                currentRevision, Environment.QA, qaRevision, requestParameterMap, job, true);
-
-        if (!isQaPromoted) {
-            job.log("Failed to promote the test to QA.");
-        }
-
-        return isQaPromoted;
     }
 
     /**
@@ -424,8 +401,7 @@ public class EditAndPromoteJob extends AbstractJob {
     ) throws Exception {
         if (existingTestDefinition == null) {
             if (!isAllInactiveTest(testDefinitionToUpdate)) {
-                job.log("Not autopromoting because there is no existing test definition and test is not 100% inactive.");
-                return;
+                throw new IllegalArgumentException("auto-promote is prevented because there is no existing test definition and the test is not 100% inactive.");
             }
 
             final String currentRevision = getCurrentVersion(testName, trunkStore).getRevision();
@@ -453,15 +429,16 @@ public class EditAndPromoteJob extends AbstractJob {
             final String qaRevision,
             final String prodRevision
     ) throws Exception {
-        final boolean isQaPromoted = doPromoteTestToQa(testName, username, password, author, requestParameterMap, job,
-                currentRevision, qaRevision);
-
-        if (isQaPromoted) {
-            doPromoteInternal(testName, username, password, author, Environment.WORKING,
-                    currentRevision, Environment.PRODUCTION, prodRevision, requestParameterMap, job, true);
-        } else {
+        try {
+            doPromoteTestToEnvironment(Environment.QA, testName, username, password, author, null,
+                    requestParameterMap, job, currentRevision, qaRevision, false);
+        } catch (final Exception e) {
             job.log("previous revision changes prevented auto-promote to PRODUCTION");
+            throw e;
         }
+
+        doPromoteInternal(testName, username, password, author, Environment.WORKING,
+                currentRevision, Environment.PRODUCTION, prodRevision, requestParameterMap, job, true);
     }
 
     /**
@@ -485,50 +462,76 @@ public class EditAndPromoteJob extends AbstractJob {
         Preconditions.checkArgument(existingTestDefinition != null);
 
         if (!isAllocationOnlyChange(existingTestDefinition, testDefinitionToUpdate)) {
-            job.log("Not autopromoting because this isn't an allocation-only change.");
-            return;
+            throw new IllegalArgumentException("auto-promote is prevented because it isn't an allocation-only change.");
         }
 
         job.log("allocation only change, checking against other branches for auto-promote capability for test " +
                 testName + "\nat QA revision " + qaRevision + " and PRODUCTION revision " + prodRevision);
 
-        final TestDefinition qaTestDefinition = TestDefinitionUtil.getTestDefinition(
-                determineStoreFromEnvironment(Environment.QA),
-                promoter,
-                Environment.QA,
-                testName,
-                qaRevision
-        );
+        doPromoteTestToEnvironment(Environment.QA, testName, username, password, author, testDefinitionToUpdate,
+                requestParameterMap, job, currentRevision, qaRevision, true);
 
-        final boolean isQaPromoted;
-        final boolean isQaPromotable = !qaRevision.equals(EnvironmentVersion.UNKNOWN_REVISION)
-                && isAllocationOnlyChange(qaTestDefinition, testDefinitionToUpdate);
+        doPromoteTestToEnvironment(Environment.PRODUCTION, testName, username, password, author, testDefinitionToUpdate,
+                requestParameterMap, job, currentRevision, prodRevision, true);
+    }
 
-        if (isQaPromotable) {
-            isQaPromoted = doPromoteTestToQa(testName, username, password, author, requestParameterMap, job,
-                    currentRevision, qaRevision);
-        } else {
-            isQaPromoted = false;
-            job.log("previous revision changes prevented auto-promote to QA");
+    /**
+     * Promote a test to QA or Prod
+     * If verifyAllocationOnlyChange is false, testDefinitionToUpdate is not required.
+     */
+    @VisibleForTesting
+    void doPromoteTestToEnvironment(
+            final Environment targetEnv,
+            final String testName,
+            final String username,
+            final String password,
+            final String author,
+            @Nullable final TestDefinition testDefinitionToUpdate,
+            final Map<String, String[]> requestParameterMap,
+            final BackgroundJob job,
+            final String currentRevision,
+            final String targetRevision,
+            final boolean verifyAllocationOnlyChange
+    ) throws Exception {
+        if (targetRevision.equals(EnvironmentVersion.UNKNOWN_REVISION)) {
+            throw new IllegalArgumentException(targetEnv.getName() + " revision is unknown");
         }
 
-        final TestDefinition prodTestDefinition = TestDefinitionUtil.getTestDefinition(
-                determineStoreFromEnvironment(Environment.PRODUCTION),
+        final TestDefinition targetTestDefinition = TestDefinitionUtil.getTestDefinition(
+                determineStoreFromEnvironment(targetEnv),
                 promoter,
-                Environment.PRODUCTION,
+                targetEnv,
                 testName,
-                prodRevision
+                targetRevision
         );
 
-        if (isQaPromotable && isQaPromoted
-                && !prodRevision.equals(EnvironmentVersion.UNKNOWN_REVISION)
-                && isAllocationOnlyChange(prodTestDefinition, testDefinitionToUpdate)) {
-            job.log("auto-promoting changes to PRODUCTION");
+        if (verifyAllocationOnlyChange) {
+            if (testDefinitionToUpdate == null) {
+                // This should never happen
+                LOGGER.error("Failed to verify if the test change is allocation only change due to lack of test definition to update.");
+                LOGGER.error(String.format("testName: %s,targetEnv: %s", testName, targetEnv.getName()));
+                throw new IllegalStateException("Bug: Failed to verify if the test change is allocation only change due to lack of test definition to update.");
+            }
+            if (!isAllocationOnlyChange(targetTestDefinition, testDefinitionToUpdate)) {
+                throw new IllegalArgumentException("Not auto-promote to " + targetEnv.getName() + " because it isn't an allocation-only change.");
+            }
+        }
 
-            doPromoteInternal(testName, username, password, author, Environment.WORKING, currentRevision,
-                    Environment.PRODUCTION, prodRevision, requestParameterMap, job, true);
-        } else {
-            job.log("previous revision changes prevented auto-promote to PRODUCTION");
+        switch (targetEnv) {
+            case QA:
+            case PRODUCTION:
+                job.log("auto-promote changes to " + targetEnv.getName());
+
+                try {
+                    doPromoteInternal(testName, username, password, author, Environment.WORKING, currentRevision,
+                            targetEnv, targetRevision, requestParameterMap, job, true);
+                } catch (final Exception e) {
+                    job.log("Failed to promote the test to " + targetEnv.getName());
+                    throw e;
+                }
+                break;
+            default:
+                throw new IllegalArgumentException("Promotion target environment " + targetEnv.getName() + " is invalid.");
         }
     }
 
