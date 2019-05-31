@@ -263,7 +263,7 @@ public class ProctorTestDefinitionController extends AbstractController {
             final HttpServletRequest request
     ) {
         final Environment theEnvironment = determineEnvironmentFromParameter(src);
-        final BackgroundJob job = deleteJob.doDelete(
+        final BackgroundJob<> job = deleteJob.doDelete(
                 testName,
                 username,
                 password,
@@ -299,7 +299,7 @@ public class ProctorTestDefinitionController extends AbstractController {
     ) {
         final Environment source = determineEnvironmentFromParameter(src);
         final Environment destination = determineEnvironmentFromParameter(dest);
-        final BackgroundJob job = editAndPromoteJob.doPromote(
+        final BackgroundJob<?> job = editAndPromoteJob.doPromote(
                 testName,
                 username,
                 password,
@@ -335,7 +335,7 @@ public class ProctorTestDefinitionController extends AbstractController {
     ) {
         final Environment autopromoteTargetEnv = Optional.ofNullable(Environment.fromName(autopromoteTarget)).orElse(Environment.WORKING);
 
-        final BackgroundJob job = editAndPromoteJob.doEdit(
+        final BackgroundJob<?> job = editAndPromoteJob.doEdit(
                 testName,
                 username,
                 password,

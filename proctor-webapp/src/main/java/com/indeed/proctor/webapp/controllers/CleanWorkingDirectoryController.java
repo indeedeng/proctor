@@ -64,7 +64,7 @@ public class CleanWorkingDirectoryController extends AbstractController {
                 BackgroundJob.JobType.WORKING_DIRECTORY_CLEANING,
                 new BackgroundJobFactory.Executor<Boolean>() {
                     @Override
-                    public Boolean execute(final BackgroundJob job) {
+                    public Boolean execute(final BackgroundJob<Boolean> job) {
                         boolean success = true;
                         for (final Environment env : new Environment[] { Environment.WORKING, Environment.QA, Environment.PRODUCTION }) {
                             success &= cleanUserWorkspace(env, determineStoreFromEnvironment(env), job);
@@ -73,7 +73,7 @@ public class CleanWorkingDirectoryController extends AbstractController {
                     }
                     private boolean cleanUserWorkspace(final Environment environment,
                                                        final ProctorStore store,
-                                                       final BackgroundJob job) {
+                                                       final BackgroundJob<Boolean> job) {
                         job.log(String.format("Cleaning %s workspace for user %s", environment.getName(), username));
                         return store.cleanUserWorkspace(username);
                     }
