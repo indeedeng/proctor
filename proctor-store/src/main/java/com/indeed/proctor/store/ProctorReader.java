@@ -30,6 +30,8 @@ public interface ProctorReader {
 
     List<Revision> getHistory(String test, String revision, int start, int limit) throws StoreException;
 
+    RevisionDetail getRevisionDetail(String revision) throws StoreException;
+
     Map<String, List<Revision>> getAllHistories() throws StoreException;
 
     void refresh() throws StoreException;

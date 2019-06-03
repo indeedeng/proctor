@@ -7,8 +7,10 @@ import com.indeed.proctor.common.model.TestDefinition;
 import com.indeed.proctor.common.model.TestMatrixVersion;
 import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.store.Revision;
+import com.indeed.proctor.store.RevisionDetail;
 import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.webapp.db.Environment;
+import com.indeed.proctor.webapp.model.RevisionDetailResponseModel;
 import com.indeed.proctor.webapp.model.TestHistoriesResponseModel;
 import com.indeed.proctor.webapp.model.WebappConfiguration;
 import com.indeed.proctor.webapp.views.JsonView;
@@ -136,6 +138,27 @@ public class TestMatrixApiController extends AbstractController {
         }
         final Map<String, List<Revision>> histories = queryHistories(environment);
         return new JsonView(new TestHistoriesResponseModel(histories, limit));
+    }
+
+    @ApiOperation(
+            value = "Show revision detail of a single revision",
+            response = RevisionDetailResponseModel.class,
+            produces = "application/json"
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 404, message = "Branch not found")
+    })
+    @GetMapping("/{branch}/revision/{revisionId}")
+    public JsonView getRevisionDetail(
+            @ApiParam(allowableValues = "trunk,qa,production", required = true) @PathVariable final String branch,
+            @ApiParam(value = "revision id", required = true) @PathVariable final String revisionId
+    ) throws StoreException, ResourceNotFoundException {
+        final Environment environment = Environment.fromName(branch);
+        if (environment == null) {
+            throw new ResourceNotFoundException("Branch " + branch + " is not a correct branch name. It must be one of (trunk, qa, production).");
+        }
+        final RevisionDetail revisionDetail = queryRevisionDetail(environment, revisionId);
+        return new JsonView(new RevisionDetailResponseModel(revisionDetail.getModifiedTests()));
     }
 
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
