@@ -20,17 +20,17 @@ public interface ProctorReader {
 
     String getLatestVersion() throws StoreException;
 
-    TestMatrixVersion getTestMatrix(String fetchRevision) throws StoreException;
+    TestMatrixVersion getTestMatrix(String fetchRevisionId) throws StoreException;
 
-    TestDefinition getTestDefinition(String test, String fetchRevision) throws StoreException;
+    TestDefinition getTestDefinition(String test, String fetchRevisionId) throws StoreException;
 
     List<Revision> getMatrixHistory(int start, int limit) throws StoreException;
 
     List<Revision> getHistory(String test, int start, int limit) throws StoreException;
 
-    List<Revision> getHistory(String test, String revision, int start, int limit) throws StoreException;
+    List<Revision> getHistory(String test, String revisionId, int start, int limit) throws StoreException;
 
-    RevisionDetail getRevisionDetail(String revision) throws StoreException;
+    RevisionDetails getRevisionDetails(String revisionId) throws StoreException;
 
     Map<String, List<Revision>> getAllHistories() throws StoreException;
 

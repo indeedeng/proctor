@@ -6,11 +6,20 @@ import java.util.Objects;
 /**
  * Details of a revision that are hard to compute in History method.
  */
-public class RevisionDetail {
+public class RevisionDetails {
+    private final Revision revision;
     private final List<String> modifiedTests;
 
-    public RevisionDetail(final List<String> modifiedTests) {
+    public RevisionDetails(
+            final Revision revision,
+            final List<String> modifiedTests
+    ) {
+        this.revision = revision;
         this.modifiedTests = modifiedTests;
+    }
+
+    public Revision getRevision() {
+        return revision;
     }
 
     public List<String> getModifiedTests() {
@@ -25,7 +34,7 @@ public class RevisionDetail {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        final RevisionDetail that = (RevisionDetail) o;
+        final RevisionDetails that = (RevisionDetails) o;
         return Objects.equals(modifiedTests, that.modifiedTests);
     }
 

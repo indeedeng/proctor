@@ -7,11 +7,12 @@ import com.indeed.proctor.common.model.TestDefinition;
 import com.indeed.proctor.common.model.TestMatrixVersion;
 import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.store.Revision;
-import com.indeed.proctor.store.RevisionDetail;
+import com.indeed.proctor.store.RevisionDetails;
 import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.webapp.db.Environment;
-import com.indeed.proctor.webapp.model.RevisionDetailResponseModel;
-import com.indeed.proctor.webapp.model.TestHistoriesResponseModel;
+import com.indeed.proctor.webapp.model.api.RevisionDetailResponseModel;
+import com.indeed.proctor.webapp.model.api.RevisionResponseModel;
+import com.indeed.proctor.webapp.model.api.TestHistoriesResponseModel;
 import com.indeed.proctor.webapp.model.WebappConfiguration;
 import com.indeed.proctor.webapp.views.JsonView;
 import io.swagger.annotations.ApiOperation;
@@ -34,6 +35,7 @@ import org.springframework.web.servlet.View;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping({"/api/v1", "/proctor/api/v1"})
@@ -65,7 +67,7 @@ public class TestMatrixApiController extends AbstractController {
 
     @ApiOperation(
             value = "Show a history of all tests starting at a branch or revision",
-            response = Revision.class,
+            response = RevisionResponseModel.class,
             responseContainer = "List",
             produces = "application/json"
     )
@@ -82,7 +84,11 @@ public class TestMatrixApiController extends AbstractController {
         if (environment == null) {
             throw new ResourceNotFoundException("Branch " + branch + " is not a correct branch name. It must be one of (trunk, qa, production).");
         }
-        return new JsonView(queryMatrixHistory(environment, start, limit));
+        final List<Revision> revisions = queryMatrixHistory(environment, start, limit);
+        final List<RevisionResponseModel> responseModels = revisions.stream()
+                .map(RevisionResponseModel::new)
+                .collect(Collectors.toList());
+        return new JsonView(responseModels);
     }
 
     @ApiOperation(
@@ -103,7 +109,7 @@ public class TestMatrixApiController extends AbstractController {
 
     @ApiOperation(
             value = "Show a history of a test starting at a branch or revision",
-            response = Revision.class,
+            response = RevisionResponseModel.class,
             responseContainer = "List",
             produces = "application/json"
     )
@@ -116,7 +122,11 @@ public class TestMatrixApiController extends AbstractController {
     ) throws StoreException {
         final List<Revision> revisions = queryTestDefinitionHistory(branchOrRevision, testName, start, limit);
         Preconditions.checkState(!revisions.isEmpty(), String.format("Branch or revision %s not correct, or test %s not found", branchOrRevision, testName));
-        return new JsonView(revisions);
+
+        final List<RevisionResponseModel> responseModels = revisions.stream()
+                .map(RevisionResponseModel::new)
+                .collect(Collectors.toList());
+        return new JsonView(responseModels);
     }
 
     @ApiOperation(
@@ -146,7 +156,7 @@ public class TestMatrixApiController extends AbstractController {
             produces = "application/json"
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 404, message = "Branch not found")
+            @ApiResponse(code = 404, message = "branch or revision not found")
     })
     @GetMapping("/{branch}/revision/{revisionId}")
     public JsonView getRevisionDetail(
@@ -157,8 +167,13 @@ public class TestMatrixApiController extends AbstractController {
         if (environment == null) {
             throw new ResourceNotFoundException("Branch " + branch + " is not a correct branch name. It must be one of (trunk, qa, production).");
         }
-        final RevisionDetail revisionDetail = queryRevisionDetail(environment, revisionId);
-        return new JsonView(new RevisionDetailResponseModel(revisionDetail.getModifiedTests()));
+
+        final RevisionDetails revisionDetails = getRevisionDetails(environment, revisionId);
+        if (revisionDetails == null) {
+            throw new ResourceNotFoundException("Revesion " + revisionId + " is not found.");
+        }
+
+        return new JsonView(new RevisionDetailResponseModel(revisionDetails));
     }
 
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)

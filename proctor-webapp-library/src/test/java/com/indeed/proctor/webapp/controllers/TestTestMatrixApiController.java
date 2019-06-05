@@ -8,7 +8,7 @@ import com.indeed.proctor.common.model.TestMatrixVersion;
 import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.webapp.db.Environment;
-import com.indeed.proctor.webapp.model.TestHistoriesResponseModel;
+import com.indeed.proctor.webapp.model.api.TestHistoriesResponseModel;
 import com.indeed.proctor.webapp.model.WebappConfiguration;
 import com.indeed.proctor.webapp.testutil.InMemoryProctorStore;
 import com.indeed.proctor.webapp.views.JsonView;

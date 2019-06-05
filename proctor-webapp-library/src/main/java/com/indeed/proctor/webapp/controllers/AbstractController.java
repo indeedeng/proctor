@@ -6,7 +6,7 @@ import com.indeed.proctor.common.model.TestDefinition;
 import com.indeed.proctor.common.model.TestMatrixVersion;
 import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.store.Revision;
-import com.indeed.proctor.store.RevisionDetail;
+import com.indeed.proctor.store.RevisionDetails;
 import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.webapp.db.Environment;
 import com.indeed.proctor.webapp.model.WebappConfiguration;
@@ -92,16 +92,16 @@ public abstract class AbstractController {
         }
     }
 
+    protected RevisionDetails getRevisionDetails(final Environment branch, final String revisionId) throws StoreException {
+        return determineStoreFromEnvironment(branch).getRevisionDetails(revisionId);
+    }
+
     protected List<Revision> queryMatrixHistory(final Environment branch, final int start, final int limit) throws StoreException {
         return determineStoreFromEnvironment(branch).getMatrixHistory(start, limit);
     }
 
     protected Map<String, List<Revision>> queryHistories(final Environment branch) throws StoreException {
         return determineStoreFromEnvironment(branch).getAllHistories();
-    }
-
-    protected RevisionDetail queryRevisionDetail(final Environment branch, final String revision) throws StoreException {
-        return determineStoreFromEnvironment(branch).getRevisionDetail(revision);
     }
 
     protected TestMatrixVersion queryMatrixFromBranchOrRevision(final String branchOrRevision) throws StoreException {
