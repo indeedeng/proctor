@@ -59,7 +59,7 @@ public final class ValueExtractors {
         private final ValueExtractor[] extractors;
 
         private ChainedValueExtractor(final ValueExtractor[] extractors) {
-            for( ValueExtractor extractor : extractors) {
+            for ( ValueExtractor extractor : extractors) {
                 Preconditions.checkNotNull(extractor, "each of the chained ValueExtractors should be non-null");
             }
             this.extractors = extractors;

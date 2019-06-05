@@ -11,7 +11,7 @@ import com.indeed.proctor.webapp.db.Environment;
 import com.indeed.proctor.webapp.model.WebappConfiguration;
 import com.indeed.proctor.webapp.util.TestDefinitionUtil;
 import com.indeed.proctor.webapp.views.ProctorView;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.ui.Model;
 

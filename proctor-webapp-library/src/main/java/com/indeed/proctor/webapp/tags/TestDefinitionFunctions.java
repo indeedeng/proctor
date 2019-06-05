@@ -15,7 +15,7 @@ import com.indeed.proctor.store.GitProctorUtils;
 import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.webapp.controllers.ProctorController;
 import com.indeed.proctor.webapp.db.Environment;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -30,8 +30,8 @@ public final class TestDefinitionFunctions {
     private TestDefinitionFunctions() { throw new UnsupportedOperationException("Static class"); }
 
     public static TestBucket getTestBucketForRange(final TestDefinition definition, final Range range) {
-        for(TestBucket tb : definition.getBuckets()) {
-            if(tb.getValue() == range.getBucketValue()) {
+        for (TestBucket tb : definition.getBuckets()) {
+            if (tb.getValue() == range.getBucketValue()) {
                 return tb;
             }
         }
@@ -48,7 +48,7 @@ public final class TestDefinitionFunctions {
     public static boolean isCurrentVersionOnTrunk(final Environment viewing,
                                                   final Revision history,
                                                   final EnvironmentVersion version) {
-        if(version == null) { return false; }
+        if (version == null) { return false; }
         switch (viewing) {
             case QA:
             case PRODUCTION:
@@ -64,7 +64,7 @@ public final class TestDefinitionFunctions {
     public static boolean isCurrentVersionOnQa(final Environment viewing,
                                                final Revision history,
                                                final EnvironmentVersion version) {
-        if(version == null) { return false; }
+        if (version == null) { return false; }
         switch (viewing) {
             case WORKING:
                 // trunk.revision gets set to qa.version during promotion
@@ -85,7 +85,7 @@ public final class TestDefinitionFunctions {
     public static boolean isCurrentVersionOnProduction(final Environment viewing,
                                                        final Revision history,
                                                        final EnvironmentVersion version) {
-        if(version == null) { return false; }
+        if (version == null) { return false; }
         switch (viewing) {
             case WORKING:
                 // trunk.revision gets set to production.version during promotion

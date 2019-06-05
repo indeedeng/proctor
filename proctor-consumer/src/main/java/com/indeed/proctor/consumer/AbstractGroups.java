@@ -51,6 +51,9 @@ public abstract class AbstractGroups {
         return ((testBucket != null) && (value == testBucket.getValue()));
     }
 
+    /**
+     * @return true if testname exists and resolved bucket has given value, else if value is defaultValue
+     */
     protected boolean isBucketActive(final String testName, final int value, final int defaultValue) {
         final TestBucket testBucket = buckets.get(testName);
         if (null == testBucket) {

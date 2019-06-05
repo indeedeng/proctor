@@ -64,8 +64,8 @@ public class TestProctorUtils {
         final Map<String, Object> specialConstants = Collections.emptyMap();
         final String description = "test description";
 
-        for(final String tdRule : emptyRules) {
-            for(final String allocRule : emptyRules) {
+        for (final String tdRule : emptyRules) {
+            for (final String allocRule : emptyRules) {
                 final Allocation allocation = new Allocation(allocRule, Collections.singletonList(range));
                 final TestDefinition testDefinition = new TestDefinition(
                     version,
@@ -118,7 +118,7 @@ public class TestProctorUtils {
         final String description = "test description";
 
 
-        for(final String rule : new String[] { "lang == 'en'", "${lang == 'en'}"})
+        for (final String rule : new String[] { "lang == 'en'", "${lang == 'en'}"})
         {
             final Allocation allocation = new Allocation(rule, Collections.singletonList(range));
             final TestDefinition testDefinition = new TestDefinition(
@@ -165,7 +165,7 @@ public class TestProctorUtils {
 
         final Allocation allocation = new Allocation(null, Collections.singletonList(range));
 
-        for(final String tdRule : new String[] { "lang == 'en'", "${lang == 'en'}"})
+        for (final String tdRule : new String[] { "lang == 'en'", "${lang == 'en'}"})
         {
             final TestDefinition testDefinition = new TestDefinition(
                 version,
@@ -1815,7 +1815,7 @@ public class TestProctorUtils {
 
     public static List<Allocation> fromCompactAllocationFormat(final String ... allocations) {
         final List<String> allocationList = Lists.newArrayListWithExpectedSize(allocations.length);
-        for(final String s : allocations) {
+        for (final String s : allocations) {
             allocationList.add(s);
         }
         return fromCompactAllocationFormat(allocationList);
@@ -1823,11 +1823,11 @@ public class TestProctorUtils {
     public static List<Allocation> fromCompactAllocationFormat(final List<String> allocations) {
         final List<Allocation> allocationList = Lists.newArrayListWithExpectedSize(allocations.size());
         // rule|0:0,0:.0.1,0:.2
-        for(final String allocation : allocations) {
+        for (final String allocation : allocations) {
             final int separatorPosition = allocation.lastIndexOf('|');
             final String rule;
             final String sRanges;
-            if(separatorPosition < 0) {
+            if (separatorPosition < 0) {
                 rule = null;
                 sRanges = allocation;
             } else {
@@ -1836,7 +1836,7 @@ public class TestProctorUtils {
             }
             final String[] allRanges = sRanges.split(",");
             final List<Range> ranges = Lists.newArrayListWithCapacity(allRanges.length);
-            for(final String sRange : allRanges) {
+            for (final String sRange : allRanges) {
                 // Could handle index-out of bounds + number formatting exception better.
                 final String[] rangeParts = sRange.split(":");
                 ranges.add(new Range(Integer.parseInt(rangeParts[0], 10), Double.parseDouble(rangeParts[1])));
@@ -1849,7 +1849,7 @@ public class TestProctorUtils {
     public static List<TestBucket> fromCompactBucketFormat(final String sBuckets){
         final String[] bucketParts = sBuckets.split(",");
         final List<TestBucket> buckets = Lists.newArrayListWithCapacity(bucketParts.length);
-        for(int i = 0; i < bucketParts.length; i++) {
+        for (int i = 0; i < bucketParts.length; i++) {
             // Could handle index-out of bounds + number formatting exception better.
             final String[] nameAndValue = bucketParts[i].split(":");
             buckets.add(new TestBucket(nameAndValue[0], Integer.parseInt(nameAndValue[1]), "bucket " + i, null));
@@ -1860,7 +1860,7 @@ public class TestProctorUtils {
     private TestSpecification transformTestBuckets(final List<TestBucket> testBuckets) {
         final TestSpecification testSpec = new TestSpecification();
         final Map<String, Integer> buckets = Maps.newLinkedHashMap();
-        for(final TestBucket b : testBuckets) {
+        for (final TestBucket b : testBuckets) {
             buckets.put(b.getName(), b.getValue());
         }
         testSpec.setBuckets(buckets);

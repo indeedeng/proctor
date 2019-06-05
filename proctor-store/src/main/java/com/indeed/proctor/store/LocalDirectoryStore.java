@@ -57,13 +57,13 @@ public class LocalDirectoryStore extends FileBasedProctorStore {
 
     @Override
     public void verifySetup() throws StoreException {
-        if(!this.baseDir.isDirectory()) {
+        if (!this.baseDir.isDirectory()) {
             throw new RuntimeException("Base dir (" + this.baseDir.getPath() + ") is not a directory.");
         }
-        if(!this.baseDir.canRead()) {
+        if (!this.baseDir.canRead()) {
             throw new RuntimeException("Cannot read from " + this.baseDir.getPath());
         }
-        if(!this.baseDir.canWrite()) {
+        if (!this.baseDir.canWrite()) {
             throw new RuntimeException("Cannot write to " + this.baseDir.getPath());
         }
     }

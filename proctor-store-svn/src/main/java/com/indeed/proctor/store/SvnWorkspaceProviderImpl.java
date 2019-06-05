@@ -82,7 +82,7 @@ public class SvnWorkspaceProviderImpl extends TimerTask implements SvnWorkspaceP
     @Override
     public void run() {
         try {
-            if(!shutdown.get()) {
+            if (!shutdown.get()) {
                 LOGGER.info("Actively cleaning up directories older than " + TimeUnit.MILLISECONDS.toHours(cleanupAgeMillis) + " hours");
                 final IOFileFilter olderThanFilter = FileFilterUtils.asFileFilter(olderThanFileFilter(cleanupAgeMillis));
                 final IOFileFilter tempDirFilter =
@@ -144,7 +144,7 @@ public class SvnWorkspaceProviderImpl extends TimerTask implements SvnWorkspaceP
                                         final boolean deleteIfExists) throws IOException {
         final File dir = getUserDirectory(prefix, suffix, parent);
         if (dir.exists()) {
-            if(!dir.isDirectory()) {
+            if (!dir.isDirectory()) {
                 throw new IOException("File " + dir + " exists but is not a directory");
             }
             if (deleteIfExists) {

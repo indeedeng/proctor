@@ -12,7 +12,7 @@ import com.indeed.proctor.store.cache.CachingProctorStore;
 import com.indeed.proctor.store.cache.GlobalCachingProctorStore;
 import com.indeed.proctor.webapp.extensions.GlobalCacheStore;
 import com.indeed.util.varexport.VarExporter;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import javax.annotation.Nullable;

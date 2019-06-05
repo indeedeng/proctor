@@ -38,12 +38,12 @@ public class LocalDirectoryCore implements FileBasedPersisterCore {
 
         try {
             final File file = new File(baseDir + File.separator + path);
-            if(file.exists()) {
+            if (file.exists()) {
                 reader = new FileReader(file);
                 final C testDefinition = objectMapper.readValue(reader, c);
                 return testDefinition;
             } else {
-                if(LOGGER.isInfoEnabled()) {
+                if (LOGGER.isInfoEnabled()) {
                     LOGGER.info(file + " does not exists, returning defaultValue.");
                 }
                 return defaultValue;
@@ -52,7 +52,7 @@ public class LocalDirectoryCore implements FileBasedPersisterCore {
             Throwables.propagateIfInstanceOf(e, JsonProcessingException.class);
             throw new StoreException.ReadException("Error reading " + path, e);
         } finally {
-            if(reader != null) {
+            if (reader != null) {
                 try {
                     reader.close();
                 } catch (final IOException e) {

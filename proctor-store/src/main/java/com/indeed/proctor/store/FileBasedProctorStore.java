@@ -103,11 +103,11 @@ public abstract class FileBasedProctorStore implements ProctorStore {
         for (final TestVersionResult.Test testDefFile : result.getTests()) {
             final long startForTest = System.currentTimeMillis();
             final TestDefinition testDefinition = getTestDefinition(testDefFile.getTestName(), testDefFile.getRevision());
-            if(LOGGER.isTraceEnabled()) {
+            if (LOGGER.isTraceEnabled()) {
                 final long elapsed = System.currentTimeMillis() - startForTest;
                 LOGGER.trace(String.format("Took %d ms to load %s (r%s) %s", elapsed, testDefFile.getTestName(), testDefFile.getRevision(), testDefinition == null ? "unsuccessfully" : "successfully"));
             }
-            if(testDefinition == null) {
+            if (testDefinition == null) {
                 LOGGER.info("Returning null TestMatrix because " + testDefFile.getTestName() + " returned null test-definition.");
                 return null;
             }
@@ -135,7 +135,7 @@ public abstract class FileBasedProctorStore implements ProctorStore {
     public TestDefinition getCurrentTestDefinition(final String testName) throws StoreException {
         // Get the first test history
         final List<Revision> tdvList = this.getHistory(testName, 0, 1);
-        if(tdvList.size() == 1) {
+        if (tdvList.size() == 1) {
             final Revision tdv = tdvList.get(0);
             return getTestDefinition(testName, tdv.getRevision());
         } else {

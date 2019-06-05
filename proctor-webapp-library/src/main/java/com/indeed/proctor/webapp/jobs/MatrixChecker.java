@@ -129,7 +129,7 @@ public class MatrixChecker {
         final boolean isValid;
         final List<String> errors;
 
-        private CheckMatrixResult(boolean valid, List<String> errors) {
+        private CheckMatrixResult(final boolean valid, final List<String> errors) {
             isValid = valid;
             this.errors = errors;
         }

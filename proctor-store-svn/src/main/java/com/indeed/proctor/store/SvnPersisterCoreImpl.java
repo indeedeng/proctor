@@ -333,7 +333,7 @@ public class SvnPersisterCoreImpl implements SvnPersisterCore, Closeable {
         final File userDirectory = workspaceProvider.createWorkspace(username, false);
         try {
             if (userDirectory.list().length == 0) {
-                if(templateSvnDir.exists()) {
+                if (templateSvnDir.exists()) {
                     if (LOGGER.isDebugEnabled()) {
                         LOGGER.debug("copying base svn directory (" + templateSvnDir + ") into user " + username + " directory (" + userDirectory + ")");
                     }
@@ -401,7 +401,7 @@ public class SvnPersisterCoreImpl implements SvnPersisterCore, Closeable {
     public void close() throws IOException{
         if (shutdown.compareAndSet(false, true)) {
             LOGGER.info("[close] Deleting working directories");
-            if(this.shutdownProvider) {
+            if (this.shutdownProvider) {
                 LOGGER.info("[close] workspaceProvider.close()");
                 workspaceProvider.close();
             }
