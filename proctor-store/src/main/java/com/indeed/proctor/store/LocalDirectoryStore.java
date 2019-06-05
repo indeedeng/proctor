@@ -40,6 +40,12 @@ public class LocalDirectoryStore extends FileBasedProctorStore {
     public List<Revision> getHistory(String test, String revision, int start, int limit) throws StoreException {
         throw new UnsupportedOperationException("Not implemented yet");
     }
+
+    @Override
+    public RevisionDetails getRevisionDetails(final String revisionId) throws StoreException {
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
     @Override
     public List<Revision> getMatrixHistory(final int start, final int limit) throws StoreException {
         throw new UnsupportedOperationException("Not implemented yet");

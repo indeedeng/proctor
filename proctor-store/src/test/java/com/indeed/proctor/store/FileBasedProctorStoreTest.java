@@ -174,6 +174,11 @@ public class FileBasedProctorStoreTest {
         }
 
         @Override
+        public RevisionDetails getRevisionDetails(final String revisionId) throws StoreException {
+            return null;
+        }
+
+        @Override
         public Map<String, List<Revision>> getAllHistories() throws StoreException {
             return null;
         }

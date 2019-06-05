@@ -10,6 +10,7 @@ import com.indeed.proctor.common.model.TestMatrixDefinition;
 import com.indeed.proctor.common.model.TestMatrixVersion;
 import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.store.Revision;
+import com.indeed.proctor.store.RevisionDetails;
 import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.store.utils.HistoryUtil;
 import org.apache.log4j.Logger;
@@ -123,6 +124,11 @@ public class CachingProctorStore implements ProctorStore {
     @Override
     public List<Revision> getHistory(final String test, final String revision, final int start, final int limit) throws StoreException {
         return HistoryUtil.selectRevisionHistorySetFrom(cacheHolder.getCachedHistory().get(test), revision, start, limit);
+    }
+
+    @Override
+    public RevisionDetails getRevisionDetails(final String revisionId) throws StoreException {
+        return delegate.getRevisionDetails(revisionId);
     }
 
     @Override

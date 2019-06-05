@@ -2,7 +2,6 @@ package com.indeed.proctor.store;
 
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
 import com.google.common.base.Throwables;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Lists;
@@ -10,9 +9,11 @@ import com.google.common.collect.Maps;
 import com.indeed.proctor.common.model.TestDefinition;
 import com.indeed.proctor.common.model.TestMatrixDefinition;
 import com.indeed.proctor.common.model.TestMatrixVersion;
+import com.indeed.proctor.store.cache.CachingProctorStore;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -23,9 +24,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import static com.indeed.proctor.store.utils.HistoryUtil.selectHistorySet;
-import static com.indeed.proctor.store.utils.HistoryUtil.selectRevisionHistorySetFrom;
-
 /**
  * This class is an in-memory implementation of ProctorStore.
  * It is basically used for testing.
@@ -33,6 +31,9 @@ import static com.indeed.proctor.store.utils.HistoryUtil.selectRevisionHistorySe
  * @author yiqing
  */
 public class InMemoryProctorStore implements ProctorStore {
+
+    public static final String REVISION_PREFIX = "revision-";
+
     private final ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
     private final Lock readLock = readWriteLock.readLock();
     private final Lock writeLock = readWriteLock.writeLock();
@@ -41,18 +42,23 @@ public class InMemoryProctorStore implements ProctorStore {
      * This field stores all TestMatrixVersions in historical order.
      * A new version will be added in head.
      */
-    final LinkedList<TestMatrixVersion> matrixVersionStorage = Lists.newLinkedList();
+    private final LinkedList<TestMatrixVersion> matrixVersionStorage = Lists.newLinkedList();
 
     /**
      * This field stores a mapping of a revision string to a TestMatrixVersion
      */
-    final Map<String, TestMatrixVersion> revisionMap = Maps.newHashMap();
+    private final Map<String, TestMatrixVersion> revisionMap = Maps.newHashMap();
+
+    /**
+     * This field stores a mapping of a revision string to a RevisionDetail
+     */
+    private final Map<String, RevisionDetails> revisionDetailMap = Maps.newHashMap();
 
     /**
      * This field stores all Revision information in historical order like matrixVersionStorage.
      * New revision will be added in head.
      */
-    final LinkedList<RevisionAndTest> revisionStorage = Lists.newLinkedList();
+    private final LinkedList<RevisionAndTest> revisionStorage = Lists.newLinkedList();
 
     public InMemoryProctorStore() {
         final TestMatrixVersion firstVersion = new TestMatrixVersion();
@@ -77,29 +83,23 @@ public class InMemoryProctorStore implements ProctorStore {
 
     @Override
     public TestMatrixVersion getCurrentTestMatrix() throws StoreException {
-        return synchronizedRead(new Callable<TestMatrixVersion>() {
-            @Override
-            public TestMatrixVersion call() throws Exception {
-                if (matrixVersionStorage.isEmpty()) {
-                    return null;
-                } else {
-                    return matrixVersionStorage.getFirst();
-                }
+        return synchronizedRead(() -> {
+            if (matrixVersionStorage.isEmpty()) {
+                return null;
+            } else {
+                return matrixVersionStorage.getFirst();
             }
         });
     }
 
     @Override
     public TestDefinition getCurrentTestDefinition(final String test) throws StoreException {
-        return synchronizedRead(new Callable<TestDefinition>() {
-            @Override
-            public TestDefinition call() throws Exception {
-                final TestMatrixVersion currentTestMatrix = getCurrentTestMatrix();
-                if (currentTestMatrix == null) {
-                    return null;
-                }
-                return currentTestMatrix.getTestMatrixDefinition().getTests().get(test);
+        return synchronizedRead(() -> {
+            final TestMatrixVersion currentTestMatrix = getCurrentTestMatrix();
+            if (currentTestMatrix == null) {
+                return null;
             }
+            return currentTestMatrix.getTestMatrixDefinition().getTests().get(test);
         });
     }
 
@@ -118,22 +118,19 @@ public class InMemoryProctorStore implements ProctorStore {
     public void updateTestDefinition(final String username, final String password, final String author, final String previousVersion,
                                      final String testName, final TestDefinition testDefinition,
                                      final Map<String, String> metadata, final String comment) throws StoreException.TestUpdateException {
-        synchronizedWrite(new Callable<Void>() {
-            @Override
-            public Void call() throws Exception {
-                try {
-                    final TestMatrixVersion currentTestMatrix = getCurrentTestMatrix();
-                    final String currentVersion = currentTestMatrix.getVersion();
-                    Preconditions.checkState(previousVersion.equals(currentVersion), "Previous version doesn't match");
-                    final String newVersion = testDefinition.getVersion();
-                    final TestMatrixDefinition newTestMatrixDefinition = cloneTestMatrixDefinition(currentTestMatrix.getTestMatrixDefinition());
-                    newTestMatrixDefinition.getTests().put(testName, testDefinition);
-                    commitTestMatrixVersion(username, newVersion, newTestMatrixDefinition, comment, testName);
-                } catch (final Exception e) {
-                    throw new StoreException.TestUpdateException("", e);
-                }
-                return null;
+        synchronizedWrite((Callable<Void>) () -> {
+            try {
+                final TestMatrixVersion currentTestMatrix = getCurrentTestMatrix();
+                final String currentVersion = currentTestMatrix.getVersion();
+                Preconditions.checkState(previousVersion.equals(currentVersion), "Previous version doesn't match");
+                final String newVersion = testDefinition.getVersion();
+                final TestMatrixDefinition newTestMatrixDefinition = cloneTestMatrixDefinition(currentTestMatrix.getTestMatrixDefinition());
+                newTestMatrixDefinition.getTests().put(testName, testDefinition);
+                commitTestMatrixVersion(username, newVersion, newTestMatrixDefinition, comment, testName);
+            } catch (final Exception e) {
+                throw new StoreException.TestUpdateException("", e);
             }
+            return null;
         });
     }
 
@@ -146,28 +143,25 @@ public class InMemoryProctorStore implements ProctorStore {
 
     @Override
     public void deleteTestDefinition(final String username, final String password, final String author, final String previousVersion, final String testName, final TestDefinition testDefinition, final String comment) throws StoreException.TestUpdateException {
-        synchronizedWrite(new Callable<Void>() {
-            @Override
-            public Void call() throws Exception {
+        synchronizedWrite((Callable<Void>) () -> {
 
-                try {
-                    final TestMatrixVersion currentTestMatrix = getCurrentTestMatrix();
-                    final String currentVersion = currentTestMatrix.getVersion();
+            try {
+                final TestMatrixVersion currentTestMatrix = getCurrentTestMatrix();
+                final String currentVersion = currentTestMatrix.getVersion();
 
-                    Preconditions.checkState(previousVersion.equals(currentVersion), "Previous version doesn't match");
+                Preconditions.checkState(previousVersion.equals(currentVersion), "Previous version doesn't match");
 
-                    final TestMatrixDefinition newTestMatrixDefinition = cloneTestMatrixDefinition(currentTestMatrix.getTestMatrixDefinition());
+                final TestMatrixDefinition newTestMatrixDefinition = cloneTestMatrixDefinition(currentTestMatrix.getTestMatrixDefinition());
 
-                    if (newTestMatrixDefinition.getTests().containsKey(testName)) {
-                        final String newVersion = testDefinition.getVersion();
-                        newTestMatrixDefinition.getTests().remove(testName);
-                        commitTestMatrixVersion(username, newVersion, newTestMatrixDefinition, comment, testName);
-                    }
-                } catch (final Exception e) {
-                    throw new StoreException.TestUpdateException("Failed to delete test", e);
+                if (newTestMatrixDefinition.getTests().containsKey(testName)) {
+                    final String newVersion = testDefinition.getVersion();
+                    newTestMatrixDefinition.getTests().remove(testName);
+                    commitTestMatrixVersion(username, newVersion, newTestMatrixDefinition, comment, testName);
                 }
-                return null;
+            } catch (final Exception e) {
+                throw new StoreException.TestUpdateException("Failed to delete test", e);
             }
+            return null;
         });
     }
 
@@ -178,21 +172,18 @@ public class InMemoryProctorStore implements ProctorStore {
 
     @Override
     public void addTestDefinition(final String username, final String password, final String author, final String testName, final TestDefinition testDefinition, final Map<String, String> metadata, final String comment) throws StoreException.TestUpdateException {
-        synchronizedWrite(new Callable<Void>() {
-            @Override
-            public Void call() throws Exception {
-                try {
-                    final TestMatrixVersion currentTestMatrix = getCurrentTestMatrix();
-                    final TestMatrixDefinition newTestMatrixDefinition = cloneTestMatrixDefinition(currentTestMatrix.getTestMatrixDefinition());
-                    Preconditions.checkState(!newTestMatrixDefinition.getTests().containsKey(testName), "Test already exists");
-                    newTestMatrixDefinition.getTests().put(testName, testDefinition);
-                    final String newVersion = testDefinition.getVersion();
-                    commitTestMatrixVersion(username, newVersion, newTestMatrixDefinition, comment, testName);
-                } catch (final Exception e) {
-                    throw new StoreException.TestUpdateException("Failed to add ", e);
-                }
-                return null;
+        synchronizedWrite((Callable<Void>) () -> {
+            try {
+                final TestMatrixVersion currentTestMatrix = getCurrentTestMatrix();
+                final TestMatrixDefinition newTestMatrixDefinition = cloneTestMatrixDefinition(currentTestMatrix.getTestMatrixDefinition());
+                Preconditions.checkState(!newTestMatrixDefinition.getTests().containsKey(testName), "Test already exists");
+                newTestMatrixDefinition.getTests().put(testName, testDefinition);
+                final String newVersion = testDefinition.getVersion();
+                commitTestMatrixVersion(username, newVersion, newTestMatrixDefinition, comment, testName);
+            } catch (final Exception e) {
+                throw new StoreException.TestUpdateException("Failed to add ", e);
             }
+            return null;
         });
     }
 
@@ -203,94 +194,76 @@ public class InMemoryProctorStore implements ProctorStore {
 
     @Override
     public String getLatestVersion() throws StoreException {
-        return synchronizedRead(new Callable<String>() {
-            @Override
-            public String call() throws Exception {
-                final TestMatrixVersion currentTestMatrix = getCurrentTestMatrix();
-                if (currentTestMatrix == null) {
-                    return "-1";
-                }
-                return currentTestMatrix.getVersion();
+        return synchronizedRead(() -> {
+            final TestMatrixVersion currentTestMatrix = getCurrentTestMatrix();
+            if (currentTestMatrix == null) {
+                return "-1";
             }
+            return currentTestMatrix.getVersion();
         });
     }
 
     @Override
     public TestMatrixVersion getTestMatrix(final String fetchRevision) throws StoreException {
-        return synchronizedRead(new Callable<TestMatrixVersion>() {
-            @Override
-            public TestMatrixVersion call() throws Exception {
-                return revisionMap.get(fetchRevision);
-            }
-        });
+        return synchronizedRead(() -> revisionMap.get(fetchRevision));
     }
 
     @Override
     public TestDefinition getTestDefinition(final String test, final String fetchRevision) throws StoreException {
-        return synchronizedRead(new Callable<TestDefinition>() {
-            @Override
-            public TestDefinition call() throws Exception {
-                final TestMatrixVersion testMatrix = getTestMatrix(fetchRevision);
-                if (testMatrix == null) {
-                    return null;
-                }
-
-                final TestMatrixDefinition testMatrixDefinition = testMatrix.getTestMatrixDefinition();
-                Preconditions.checkNotNull(testMatrixDefinition, "TestMatrixDefinition must not be null");
-                return testMatrixDefinition.getTests().get(test);
+        return synchronizedRead(() -> {
+            final TestMatrixVersion testMatrix = getTestMatrix(fetchRevision);
+            if (testMatrix == null) {
+                return null;
             }
+
+            final TestMatrixDefinition testMatrixDefinition = testMatrix.getTestMatrixDefinition();
+            Preconditions.checkNotNull(testMatrixDefinition, "TestMatrixDefinition must not be null");
+            return testMatrixDefinition.getTests().get(test);
         });
     }
 
     @Override
     public List<Revision> getMatrixHistory(final int start, final int limit) throws StoreException {
-        return synchronizedRead(new Callable<List<Revision>>() {
-            @Override
-            public List<Revision> call() throws Exception {
-                final List<RevisionAndTest> result = selectHistorySet(revisionStorage, start, limit);
-                return castToRevisionList(result);
-            }
+        return synchronizedRead(() -> {
+            final List<RevisionAndTest> result = CachingProctorStore.selectHistorySet(revisionStorage, start, limit);
+            return castToRevisionList(result);
         });
     }
 
     @Override
     public List<Revision> getHistory(final String test, final int start, final int limit) throws StoreException {
-        return synchronizedRead(new Callable<List<Revision>>() {
-            @Override
-            public List<Revision> call() throws Exception {
-                final List<Revision> revisions = filterRevisionByTest(revisionStorage, test);
-                return selectHistorySet(revisions, start, limit);
-            }
+        return synchronizedRead(() -> {
+            final List<Revision> revisions = filterRevisionByTest(revisionStorage, test);
+            return CachingProctorStore.selectHistorySet(revisions, start, limit);
         });
     }
 
     @Override
     public List<Revision> getHistory(final String test, final String revision, final int start, final int limit) throws StoreException {
-        return synchronizedRead(new Callable<List<Revision>>() {
-            @Override
-            public List<Revision> call() throws Exception {
-                final List<Revision> revisions = filterRevisionByTest(revisionStorage, test);
-                return selectRevisionHistorySetFrom(revisions, revision, start, limit);
-            }
+        return synchronizedRead(() -> {
+            final List<Revision> revisions = filterRevisionByTest(revisionStorage, test);
+            return CachingProctorStore.selectRevisionHistorySetFrom(revisions, revision, start, limit);
         });
     }
 
     @Override
-    public Map<String, List<Revision>> getAllHistories() throws StoreException {
-        return synchronizedRead(new Callable<Map<String, List<Revision>>>() {
-            @Override
-            public Map<String, List<Revision>> call() throws Exception {
-                final Map<String, List<Revision>> result = Maps.newHashMap();
+    public RevisionDetails getRevisionDetails(final String revisionId) throws StoreException {
+        return synchronizedRead(() -> revisionDetailMap.get(revisionId));
+    }
 
-                for (final RevisionAndTest revisionAndTest : revisionStorage) {
-                    final String testName = revisionAndTest.getTestName();
-                    if (!result.containsKey(testName)) {
-                        result.put(testName, Lists.<Revision>newArrayList());
-                    }
-                    result.get(testName).add(revisionAndTest);
+    @Override
+    public Map<String, List<Revision>> getAllHistories() throws StoreException {
+        return synchronizedRead(() -> {
+            final Map<String, List<Revision>> result = Maps.newHashMap();
+
+            for (final RevisionAndTest revisionAndTest : revisionStorage) {
+                final String testName = revisionAndTest.getTestName();
+                if (!result.containsKey(testName)) {
+                    result.put(testName, Lists.<Revision>newArrayList());
                 }
-                return result;
+                result.get(testName).add(revisionAndTest);
             }
+            return result;
         });
     }
 
@@ -307,13 +280,15 @@ public class InMemoryProctorStore implements ProctorStore {
         newTestMatrixVersion.setPublished(now);
         newTestMatrixVersion.setTestMatrixDefinition(testMatrixDefinition);
         newTestMatrixVersion.setDescription(comment);
+        final RevisionDetails revisionDetails = new RevisionDetails(Collections.singletonList(testName));
 
-        final String revisionString = "revision-" + newVersion;
+        final String revisionString = REVISION_PREFIX + newVersion;
         final RevisionAndTest revision = new RevisionAndTest(revisionString, username, now, comment, testName);
         if (revisionMap.containsKey(revisionString)) {
             throw new RuntimeException("Revision conflict! " + revisionString);
         }
         revisionMap.put(revisionString, newTestMatrixVersion);
+        revisionDetailMap.put(revisionString, revisionDetails);
         matrixVersionStorage.addFirst(newTestMatrixVersion);
         revisionStorage.addFirst(revision);
     }
@@ -343,12 +318,7 @@ public class InMemoryProctorStore implements ProctorStore {
 
     private static List<Revision> filterRevisionByTest(final List<RevisionAndTest> revisionHistory, final String test) {
         return FluentIterable.from(revisionHistory)
-                .filter(new Predicate<RevisionAndTest>() {
-                    @Override
-                    public boolean apply(@Nullable final RevisionAndTest revisionAndTest) {
-                        return revisionAndTest.getTestName().equals(test);
-                    }
-                })
+                .filter(revisionAndTest -> revisionAndTest.getTestName().equals(test))
                 .transform(castToRevision)
                 .toList();
     }
