@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableMap;
 import com.indeed.proctor.common.model.TestDefinition;
 import com.indeed.proctor.common.model.TestMatrixVersion;
 import com.indeed.proctor.store.Revision;
+import com.indeed.proctor.store.RevisionDetails;
 import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.store.utils.test.InMemoryProctorStore;
 import com.indeed.proctor.webapp.db.Environment;
@@ -18,6 +19,7 @@ import org.junit.Test;
 import javax.servlet.http.HttpServletResponse;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -309,6 +311,37 @@ public class TestTestMatrixApiController {
         final int limit = 2;
 
         assertThatThrownBy(() -> controller.getTestHistories(branch, limit))
+                .isInstanceOf(TestMatrixApiController.ResourceNotFoundException.class);
+    }
+
+    @Test
+    public void testGetRevisionDetails() throws Exception {
+        when(trunkStore.getRevisionDetails("123")).thenReturn(new RevisionDetails(
+                new Revision("123", "author1", new Date(0), "edit a super test"),
+                singletonList("super_tst")
+        ));
+
+        final JsonView jsonView = controller.getRevisionDetails("trunk", "123");
+
+        final Map actual = parsedRenderedJson(jsonView, Map.class);
+        final Map expected = ImmutableMap.of(
+                "revision", ImmutableMap.of(
+                        "revision", "123",
+                        "author", "author1",
+                        "date", "1970-01-01T00:00:00.000+0000",
+                        "message", "edit a super test"
+                ),
+                "modifiedTests", singletonList("super_tst")
+        );
+
+        assertThat(actual).isEqualTo(expected);
+    }
+
+    @Test
+    public void testGetRevisionDetailsThrowsNotFoundException() {
+        assertThatThrownBy(() -> controller.getRevisionDetails("new_branch", "123"))
+                .isInstanceOf(TestMatrixApiController.ResourceNotFoundException.class);
+        assertThatThrownBy(() -> controller.getRevisionDetails("trunk", "007"))
                 .isInstanceOf(TestMatrixApiController.ResourceNotFoundException.class);
     }
 
