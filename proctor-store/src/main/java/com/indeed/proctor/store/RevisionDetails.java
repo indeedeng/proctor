@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Details of a revision that are hard to compute in History method.
+ * Details of a single revision
  */
 public class RevisionDetails {
     private final Revision revision;
