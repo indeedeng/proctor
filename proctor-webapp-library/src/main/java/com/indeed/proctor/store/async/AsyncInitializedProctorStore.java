@@ -6,6 +6,7 @@ import com.indeed.proctor.common.model.TestDefinition;
 import com.indeed.proctor.common.model.TestMatrixVersion;
 import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.store.Revision;
+import com.indeed.proctor.store.RevisionDetails;
 import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.webapp.util.RetryWithExponentialBackoff;
 import org.apache.log4j.Logger;
@@ -132,6 +133,12 @@ public class AsyncInitializedProctorStore implements ProctorStore {
     public List<Revision> getHistory(final String test, final String revision, final int start, final int limit) throws StoreException {
         return getProctorStore().getHistory(test, revision, start, limit);
     }
+
+    @Override
+    public RevisionDetails getRevisionDetails(final String revisionId) throws StoreException {
+        return getProctorStore().getRevisionDetails(revisionId);
+    }
+
 
     @Override
     public Map<String, List<Revision>> getAllHistories() throws StoreException {

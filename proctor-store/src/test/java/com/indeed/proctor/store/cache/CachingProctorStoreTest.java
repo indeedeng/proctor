@@ -1,7 +1,7 @@
 package com.indeed.proctor.store.cache;
 
 import com.indeed.proctor.common.model.TestDefinition;
-import com.indeed.proctor.store.InMemoryProctorStore;
+import com.indeed.proctor.store.utils.test.InMemoryProctorStore;
 import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.store.StoreException.TestUpdateException;
@@ -13,7 +13,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 
-import static com.indeed.proctor.store.InMemoryProctorStoreTest.createDummyTestDefinition;
+import static com.indeed.proctor.store.utils.test.InMemoryProctorStoreTest.createDummyTestDefinition;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;

@@ -1,4 +1,4 @@
-package com.indeed.proctor.store;
+package com.indeed.proctor.store.utils.test;
 
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
@@ -9,6 +9,10 @@ import com.google.common.collect.Maps;
 import com.indeed.proctor.common.model.TestDefinition;
 import com.indeed.proctor.common.model.TestMatrixDefinition;
 import com.indeed.proctor.common.model.TestMatrixVersion;
+import com.indeed.proctor.store.ProctorStore;
+import com.indeed.proctor.store.Revision;
+import com.indeed.proctor.store.RevisionDetails;
+import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.store.cache.CachingProctorStore;
 
 import javax.annotation.Nullable;
@@ -26,7 +30,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * This class is an in-memory implementation of ProctorStore.
- * It is basically used for testing.
+ * It's for testing purpose and not production ready.
  *
  * @author yiqing
  */
@@ -280,9 +284,11 @@ public class InMemoryProctorStore implements ProctorStore {
         newTestMatrixVersion.setPublished(now);
         newTestMatrixVersion.setTestMatrixDefinition(testMatrixDefinition);
         newTestMatrixVersion.setDescription(comment);
-        final RevisionDetails revisionDetails = new RevisionDetails(Collections.singletonList(testName));
-
         final String revisionString = REVISION_PREFIX + newVersion;
+        final RevisionDetails revisionDetails = new RevisionDetails(
+                new Revision(revisionString, username, now, comment),
+                Collections.singletonList(testName)
+        );
         final RevisionAndTest revision = new RevisionAndTest(revisionString, username, now, comment, testName);
         if (revisionMap.containsKey(revisionString)) {
             throw new RuntimeException("Revision conflict! " + revisionString);

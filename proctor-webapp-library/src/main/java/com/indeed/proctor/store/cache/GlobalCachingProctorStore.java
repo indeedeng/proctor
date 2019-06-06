@@ -4,6 +4,7 @@ import com.indeed.proctor.common.model.TestDefinition;
 import com.indeed.proctor.common.model.TestMatrixVersion;
 import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.store.Revision;
+import com.indeed.proctor.store.RevisionDetails;
 import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.store.utils.HistoryUtil;
 import com.indeed.proctor.webapp.db.Environment;
@@ -130,6 +131,11 @@ public class GlobalCachingProctorStore implements ProctorStore {
         return globalCacheStore.getCachedHistory(environment, test).map(
                 history -> HistoryUtil.selectRevisionHistorySetFrom(history, revision, start, limit)
         ).orElse(delegate.getHistory(test, revision, start, limit));
+    }
+
+    @Override
+    public RevisionDetails getRevisionDetails(final String revisionId) throws StoreException {
+        return delegate.getRevisionDetails(revisionId);
     }
 
     @Override
