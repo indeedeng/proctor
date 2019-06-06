@@ -6,7 +6,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 public class GitProctorCoreTest {
-
     @Test
     public void testParseTestName() {
         assertEquals(

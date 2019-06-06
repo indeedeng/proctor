@@ -159,7 +159,7 @@ class GitHistoryParser {
     static Revision createRevisionFromCommit(final RevCommit commit) {
         return new Revision(
                 commit.getName(),
-                commit.getAuthorIdent().toExternalString(),
+                commit.getAuthorIdent().getName(),
                 new Date((long) commit.getCommitTime() * 1000 /* convert seconds to milliseconds */),
                 commit.getFullMessage()
         );

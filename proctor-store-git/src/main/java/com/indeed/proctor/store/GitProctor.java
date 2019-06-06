@@ -8,6 +8,7 @@ import org.eclipse.jgit.api.LogCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.diff.RawTextComparator;
+import org.eclipse.jgit.errors.MissingObjectException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
@@ -175,6 +176,9 @@ public class GitProctor extends FileBasedProctorStore {
             }
             final GitHistoryParser historyParser = getHistoryParser();
             return historyParser.parseRevisionDetails(objectId);
+        } catch (final MissingObjectException e) {
+            LOGGER.debug("unknown revision " + revisionId, e);
+            return null;
         } catch (final IOException e) {
             throw new StoreException("Could not get detail for " + revisionId, e);
         }
@@ -203,7 +207,7 @@ public class GitProctor extends FileBasedProctorStore {
         for (final RevCommit commit : commits) {
             versions.add(new Revision(
                     commit.getName(),
-                    commit.getAuthorIdent().toExternalString(),
+                    commit.getAuthorIdent().getName(),
                     new Date((long) commit.getCommitTime() * 1000 /* convert seconds to milliseconds */),
                     commit.getFullMessage()
             ));
@@ -217,7 +221,6 @@ public class GitProctor extends FileBasedProctorStore {
         final DiffFormatter df = new DiffFormatter(DisabledOutputStream.INSTANCE);
         df.setRepository(git.getRepository());
         df.setDiffComparator(RawTextComparator.DEFAULT);
-
         return new GitHistoryParser(revWalk, df, getTestDefinitionsDirectory());
     }
 
