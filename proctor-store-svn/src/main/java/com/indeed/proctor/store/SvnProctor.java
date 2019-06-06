@@ -15,7 +15,9 @@ import org.tmatesoft.svn.core.wc.SVNClientManager;
 import org.tmatesoft.svn.core.wc.SVNLogClient;
 import org.tmatesoft.svn.core.wc.SVNRevision;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -105,6 +107,30 @@ public class SvnProctor extends FileBasedProctorStore {
         });
     }
 
+    @Nullable
+    @Override
+    public RevisionDetails getRevisionDetails(final String revisionId) throws StoreException {
+        // TODO: This is not very efficient because it's reading the whole history.
+        final Map<String, List<Revision>> histories = getAllHistories();
+        Revision revision = null;
+        final List<String> modifiedTests = new ArrayList<>();
+
+        for (final String testName : histories.keySet()) {
+            for (final Revision r : histories.get(testName)) {
+                if (r.getRevision().equals(revisionId)) {
+                    revision = r;
+                    modifiedTests.add(testName);
+                }
+            }
+        }
+
+        if (revision == null) {
+            return null;
+        }
+
+        return new RevisionDetails(revision, modifiedTests);
+    }
+
     @Override
     public Map<String, List<Revision>> getAllHistories() throws StoreException {
         final TestMatrixDefinition testMatrixDefinition = getCurrentTestMatrix().getTestMatrixDefinition();
@@ -151,7 +177,7 @@ public class SvnProctor extends FileBasedProctorStore {
     }
 
     @Override
-    public boolean cleanUserWorkspace(String username) {
+    public boolean cleanUserWorkspace(final String username) {
         return getSvnCore().cleanUserWorkspace(username);
     }
 

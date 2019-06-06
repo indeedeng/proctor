@@ -3,6 +3,7 @@ package com.indeed.proctor.store;
 import com.indeed.proctor.common.model.TestDefinition;
 import com.indeed.proctor.common.model.TestMatrixVersion;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 
@@ -76,7 +77,9 @@ public interface ProctorReader {
     /**
      * Returns a details of a single revision.
      * @param revisionId id of the revision
+     * @return details of the revision. null if the id is not found in the database.
      */
+    @Nullable
     RevisionDetails getRevisionDetails(String revisionId) throws StoreException;
 
     /**
