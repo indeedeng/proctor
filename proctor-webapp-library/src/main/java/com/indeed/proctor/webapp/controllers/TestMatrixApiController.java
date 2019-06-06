@@ -151,7 +151,7 @@ public class TestMatrixApiController extends AbstractController {
     }
 
     @ApiOperation(
-            value = "Show revision detail of a single revision",
+            value = "Show details of a single revision",
             response = RevisionDetailResponseModel.class,
             produces = "application/json"
     )
@@ -159,7 +159,7 @@ public class TestMatrixApiController extends AbstractController {
             @ApiResponse(code = 404, message = "branch or revision not found")
     })
     @GetMapping("/{branch}/revision/{revisionId}")
-    public JsonView getRevisionDetail(
+    public JsonView getRevisionDetails(
             @ApiParam(allowableValues = "trunk,qa,production", required = true) @PathVariable final String branch,
             @ApiParam(value = "revision id", required = true) @PathVariable final String revisionId
     ) throws StoreException, ResourceNotFoundException {
@@ -170,7 +170,7 @@ public class TestMatrixApiController extends AbstractController {
 
         final RevisionDetails revisionDetails = getRevisionDetails(environment, revisionId);
         if (revisionDetails == null) {
-            throw new ResourceNotFoundException("Revesion " + revisionId + " is not found.");
+            throw new ResourceNotFoundException("Revision " + revisionId + " is not found.");
         }
 
         return new JsonView(new RevisionDetailResponseModel(revisionDetails));
