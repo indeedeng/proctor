@@ -10,6 +10,7 @@ import com.indeed.proctor.common.model.TestMatrixVersion;
 import com.indeed.proctor.common.model.TestType;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.assertj.core.groups.Tuple;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -274,7 +275,7 @@ public class GitProctorTest {
         return revision;
     }
 
-    private static final String UNKNOWN_GIT_REVISION = RandomStringUtils.random(40, "0123456789abcdef");
+    private static final String UNKNOWN_GIT_REVISION = StringUtils.repeat('0', 40);
 
     private static final TestDefinition DEFINITION_A = createStubTestDefinition();
     private static final TestDefinition DEFINITION_B = createStubTestDefinition();
