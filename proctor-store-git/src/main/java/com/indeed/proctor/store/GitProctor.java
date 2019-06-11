@@ -174,7 +174,8 @@ public class GitProctor extends FileBasedProctorStore {
             if (objectId == null) {
                 return null;
             }
-            final GitHistoryParser historyParser = getHistoryParser();
+            final GitHistoryParser historyParser =
+                    GitHistoryParser.fromRepository(git.getRepository(), getTestDefinitionsDirectory());
             return historyParser.parseRevisionDetails(objectId);
         } catch (final MissingObjectException e) {
             LOGGER.debug("unknown revision " + revisionId, e);
@@ -189,7 +190,8 @@ public class GitProctor extends FileBasedProctorStore {
         final Repository repository = git.getRepository();
         try {
             final ObjectId head = repository.resolve(Constants.HEAD);
-            final GitHistoryParser historyParser = getHistoryParser();
+            final GitHistoryParser historyParser =
+                    GitHistoryParser.fromRepository(git.getRepository(), getTestDefinitionsDirectory());
             return historyParser.parseFromHead(head);
         } catch (final IOException e) {
             throw new StoreException("Could not get history " + getGitCore().getRefName(), e);
@@ -213,15 +215,6 @@ public class GitProctor extends FileBasedProctorStore {
             ));
         }
         return versions;
-    }
-
-    private GitHistoryParser getHistoryParser() {
-        final Repository repository = git.getRepository();
-        final RevWalk revWalk = new RevWalk(repository);
-        final DiffFormatter df = new DiffFormatter(DisabledOutputStream.INSTANCE);
-        df.setRepository(git.getRepository());
-        df.setDiffComparator(RawTextComparator.DEFAULT);
-        return new GitHistoryParser(revWalk, df, getTestDefinitionsDirectory());
     }
 
     public void checkoutBranch(final String branchName) {

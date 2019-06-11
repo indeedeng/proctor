@@ -6,11 +6,15 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Sets;
 import org.apache.log4j.Logger;
+import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
+import org.eclipse.jgit.diff.RawTextComparator;
 import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
+import org.eclipse.jgit.util.io.DisabledOutputStream;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -43,7 +47,7 @@ class GitHistoryParser {
             .newBuilder()
             .build();
 
-    GitHistoryParser(
+    private GitHistoryParser(
             final RevWalk revWalk,
             final DiffFormatter diffFormatter,
             final String definitionDirectory
@@ -164,5 +168,13 @@ class GitHistoryParser {
                 new Date((long) commit.getCommitTime() * 1000 /* convert seconds to milliseconds */),
                 commit.getFullMessage()
         );
+    }
+
+    static GitHistoryParser fromRepository(final Repository repository, final String testDefinitionDirectory) {
+        final RevWalk revWalk = new RevWalk(repository);
+        final DiffFormatter df = new DiffFormatter(DisabledOutputStream.INSTANCE);
+        df.setRepository(repository);
+        df.setDiffComparator(RawTextComparator.DEFAULT);
+        return new GitHistoryParser(revWalk, df, testDefinitionDirectory);
     }
 }
