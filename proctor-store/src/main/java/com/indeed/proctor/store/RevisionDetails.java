@@ -1,18 +1,18 @@
 package com.indeed.proctor.store;
 
-import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Details of a single revision
  */
 public class RevisionDetails {
     private final Revision revision;
-    private final List<String> modifiedTests;
+    private final Set<String> modifiedTests;
 
     public RevisionDetails(
             final Revision revision,
-            final List<String> modifiedTests
+            final Set<String> modifiedTests
     ) {
         this.revision = revision;
         this.modifiedTests = modifiedTests;
@@ -22,7 +22,7 @@ public class RevisionDetails {
         return revision;
     }
 
-    public List<String> getModifiedTests() {
+    public Set<String> getModifiedTests() {
         return modifiedTests;
     }
 
@@ -35,11 +35,20 @@ public class RevisionDetails {
             return false;
         }
         final RevisionDetails that = (RevisionDetails) o;
-        return Objects.equals(modifiedTests, that.modifiedTests);
+        return Objects.equals(revision, that.revision) &&
+                Objects.equals(modifiedTests, that.modifiedTests);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(modifiedTests);
+        return Objects.hash(revision, modifiedTests);
+    }
+
+    @Override
+    public String toString() {
+        return com.google.common.base.Objects.toStringHelper(this)
+                .add("revision", revision)
+                .add("modifiedTests", modifiedTests)
+                .toString();
     }
 }
