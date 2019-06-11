@@ -553,7 +553,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
             return new TestVersionResult(
                     tests,
                     new Date(Long.valueOf(headTree.getCommitTime()) * 1000 /* convert seconds to milliseconds */),
-                    headTree.getAuthorIdent().toExternalString(),
+                    headTree.getAuthorIdent().getName(),
                     headTree.toObjectId().getName(),
                     headTree.getFullMessage()
             );
