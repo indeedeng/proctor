@@ -15,7 +15,9 @@ import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.store.utils.HistoryUtil;
 import org.apache.log4j.Logger;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -84,6 +86,7 @@ public class CachingProctorStore implements ProctorStore {
         delegate.verifySetup();
     }
 
+    @Nonnull
     @Override
     public String getLatestVersion() throws StoreException {
         return cacheHolder.getCachedLatestVersion();
@@ -129,6 +132,7 @@ public class CachingProctorStore implements ProctorStore {
         return HistoryUtil.selectRevisionHistorySetFrom(cacheHolder.getCachedHistory().get(test), revision, start, limit);
     }
 
+    @CheckForNull
     @Override
     public RevisionDetails getRevisionDetails(final String revisionId) throws StoreException {
         return delegate.getRevisionDetails(revisionId);

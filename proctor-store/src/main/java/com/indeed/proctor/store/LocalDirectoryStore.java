@@ -1,6 +1,8 @@
 package com.indeed.proctor.store;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +23,7 @@ public class LocalDirectoryStore extends FileBasedProctorStore {
         this.baseDir = baseDir;
     }
 
+    @Nonnull
     @Override
     public String getLatestVersion() throws StoreException {
         return "";
@@ -44,6 +47,7 @@ public class LocalDirectoryStore extends FileBasedProctorStore {
         throw new UnsupportedOperationException("Not implemented yet");
     }
 
+    @CheckForNull
     @Override
     public RevisionDetails getRevisionDetails(final String revisionId) throws StoreException {
         throw new UnsupportedOperationException("Not implemented yet");

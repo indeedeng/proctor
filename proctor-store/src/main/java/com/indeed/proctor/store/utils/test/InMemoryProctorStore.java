@@ -15,6 +15,7 @@ import com.indeed.proctor.store.RevisionDetails;
 import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.store.cache.CachingProctorStore;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -197,6 +198,7 @@ public class InMemoryProctorStore implements ProctorStore {
         addTestDefinition(username, password, username, testName, testDefinition, metadata, comment);
     }
 
+    @Nonnull
     @Override
     public String getLatestVersion() throws StoreException {
         return synchronizedRead(() -> {
@@ -254,6 +256,7 @@ public class InMemoryProctorStore implements ProctorStore {
         });
     }
 
+    @CheckForNull
     @Override
     public RevisionDetails getRevisionDetails(final String revisionId) throws StoreException {
         return synchronizedRead(() -> revisionDetailMap.get(revisionId));

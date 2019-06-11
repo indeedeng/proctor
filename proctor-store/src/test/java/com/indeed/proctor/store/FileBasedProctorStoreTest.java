@@ -13,7 +13,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
@@ -154,6 +156,7 @@ public class FileBasedProctorStoreTest {
             return false;
         }
 
+        @Nonnull
         @Override
         public String getLatestVersion() throws StoreException {
             return null;
@@ -177,6 +180,7 @@ public class FileBasedProctorStoreTest {
             return null;
         }
 
+        @CheckForNull
         @Override
         public RevisionDetails getRevisionDetails(final String revisionId) throws StoreException {
             return null;

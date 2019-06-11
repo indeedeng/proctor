@@ -11,7 +11,9 @@ import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.webapp.util.RetryWithExponentialBackoff;
 import org.apache.log4j.Logger;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -105,6 +107,7 @@ public class AsyncInitializedProctorStore implements ProctorStore {
         getProctorStore().verifySetup();
     }
 
+    @Nonnull
     @Override
     public String getLatestVersion() throws StoreException {
         return getProctorStore().getLatestVersion();
@@ -138,6 +141,7 @@ public class AsyncInitializedProctorStore implements ProctorStore {
         return getProctorStore().getHistory(test, revision, start, limit);
     }
 
+    @CheckForNull
     @Override
     public RevisionDetails getRevisionDetails(final String revisionId) throws StoreException {
         return getProctorStore().getRevisionDetails(revisionId);

@@ -15,6 +15,7 @@ import org.tmatesoft.svn.core.wc.SVNClientManager;
 import org.tmatesoft.svn.core.wc.SVNLogClient;
 import org.tmatesoft.svn.core.wc.SVNRevision;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -139,6 +140,7 @@ public class SvnProctor extends FileBasedProctorStore {
         /* do nothing */
     }
 
+    @Nonnull
     @Override
     public String getLatestVersion() throws StoreException {
         return getSvnCore().doWithClientAndRepository(new SvnPersisterCore.SvnOperation<String>() {

@@ -11,6 +11,7 @@ import com.indeed.proctor.webapp.db.Environment;
 import com.indeed.proctor.webapp.extensions.GlobalCacheStore;
 import org.apache.log4j.Logger;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
@@ -99,6 +100,7 @@ public class GlobalCachingProctorStore implements ProctorStore {
         updateGlobalCache(testName, testDefinition);
     }
 
+    @Nonnull
     @Override
     public String getLatestVersion() throws StoreException {
         return delegate.getLatestVersion();
@@ -137,6 +139,7 @@ public class GlobalCachingProctorStore implements ProctorStore {
         ).orElse(delegate.getHistory(test, revision, start, limit));
     }
 
+    @CheckForNull
     @Override
     public RevisionDetails getRevisionDetails(final String revisionId) throws StoreException {
         return delegate.getRevisionDetails(revisionId);

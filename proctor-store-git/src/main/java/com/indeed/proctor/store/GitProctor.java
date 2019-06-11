@@ -17,6 +17,7 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.util.io.DisabledOutputStream;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
@@ -114,6 +115,7 @@ public class GitProctor extends FileBasedProctorStore {
         return true;
     }
 
+    @Nonnull
     @Override
     public String getLatestVersion() throws StoreException {
         try {
@@ -170,7 +172,7 @@ public class GitProctor extends FileBasedProctorStore {
         }
     }
 
-    @Nullable
+    @CheckForNull
     @Override
     public RevisionDetails getRevisionDetails(final String revisionId) throws StoreException {
         try {
