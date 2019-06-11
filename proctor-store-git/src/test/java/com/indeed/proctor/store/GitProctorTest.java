@@ -27,13 +27,16 @@ public class GitProctorTest {
 
     private GitProctor gitProctor;
     private Git git;
+    private String initialCommitHash;
 
     @Before
     public void setUp() throws IOException, GitAPIException {
         git = Git.init().setDirectory(testFolder.getRoot()).call();
+
+        // initial commit is required to initialize GitProctor
         testFolder.newFile(".gitkeep");
         git.add().addFilepattern(".gitkeep").call();
-        git.commit().setMessage("initial").call();
+        initialCommitHash = git.commit().setMessage("initial commit").call().getId().getName();
 
         gitProctor = new GitProctor(testFolder.getRoot().getPath(), "", "");
     }
@@ -62,12 +65,13 @@ public class GitProctorTest {
                         Tuple.tuple(revisionB, "author2", "add a new test b")
                 );
 
-        assertThat(gitProctor.getMatrixHistory(0, 3))
-                .extracting(Revision::getRevision, Revision::getAuthor, Revision::getMessage)
+        assertThat(gitProctor.getMatrixHistory(0, 10))
+                .extracting(Revision::getRevision, Revision::getMessage)
                 .containsExactly(
-                        Tuple.tuple(revisionC, "author3", "edit a test a"),
-                        Tuple.tuple(revisionB, "author2", "add a new test b"),
-                        Tuple.tuple(revisionA, "author1", "add a new test a")
+                        Tuple.tuple(revisionC, "edit a test a"),
+                        Tuple.tuple(revisionB, "add a new test b"),
+                        Tuple.tuple(revisionA, "add a new test a"),
+                        Tuple.tuple(initialCommitHash, "initial commit")
                 );
 
         assertThat(gitProctor.getMatrixHistory(1, 1))
