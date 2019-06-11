@@ -1,5 +1,7 @@
 package com.indeed.proctor.store;
 
+import com.google.common.collect.ImmutableSet;
+
 import javax.annotation.Nonnull;
 import java.util.Objects;
 import java.util.Set;
@@ -18,7 +20,7 @@ public class RevisionDetails {
             @Nonnull final Set<String> modifiedTests
     ) {
         this.revision = revision;
-        this.modifiedTests = modifiedTests;
+        this.modifiedTests = ImmutableSet.copyOf(modifiedTests);
     }
 
     @Nonnull

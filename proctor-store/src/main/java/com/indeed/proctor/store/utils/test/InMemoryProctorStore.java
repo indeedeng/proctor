@@ -287,7 +287,7 @@ public class InMemoryProctorStore implements ProctorStore {
         final String revisionString = REVISION_PREFIX + newVersion;
         final RevisionDetails revisionDetails = new RevisionDetails(
                 new Revision(revisionString, username, now, comment),
-                Collections.singletonList(testName)
+                Collections.singleton(testName)
         );
         final RevisionAndTest revision = new RevisionAndTest(revisionString, username, now, comment, testName);
         if (revisionMap.containsKey(revisionString)) {
