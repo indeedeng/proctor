@@ -1,5 +1,6 @@
 package com.indeed.proctor.store;
 
+import javax.annotation.Nonnull;
 import java.util.Objects;
 import java.util.Set;
 
@@ -7,21 +8,25 @@ import java.util.Set;
  * Details of a single revision
  */
 public class RevisionDetails {
+    @Nonnull
     private final Revision revision;
+    @Nonnull
     private final Set<String> modifiedTests;
 
     public RevisionDetails(
-            final Revision revision,
-            final Set<String> modifiedTests
+            @Nonnull final Revision revision,
+            @Nonnull final Set<String> modifiedTests
     ) {
         this.revision = revision;
         this.modifiedTests = modifiedTests;
     }
 
+    @Nonnull
     public Revision getRevision() {
         return revision;
     }
 
+    @Nonnull
     public Set<String> getModifiedTests() {
         return modifiedTests;
     }
