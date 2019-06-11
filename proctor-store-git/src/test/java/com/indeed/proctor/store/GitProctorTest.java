@@ -162,16 +162,17 @@ public class GitProctorTest {
                 );
 
         assertThat(gitProctor.getAllHistories())
-                .containsOnlyKeys("proc_a_tst", "proc_b_tst");
-
-        assertThat(gitProctor.getAllHistories().get("proc_a_tst"))
-                .extracting(Revision::getRevision)
-                .containsExactly(revisionC, revisionA);
-
-        assertThat(gitProctor.getAllHistories().get("proc_b_tst"))
-                .extracting(Revision::getRevision)
-                .containsExactly(revisionB);
-
+                .hasSize(2)
+                .hasEntrySatisfying("proc_a_tst", l ->
+                        assertThat(l)
+                                .extracting(Revision::getRevision)
+                                .containsExactly(revisionC, revisionA)
+                )
+                .hasEntrySatisfying("proc_b_tst", l ->
+                        assertThat(l)
+                                .extracting(Revision::getRevision)
+                                .containsExactly(revisionB)
+                );
     }
 
     @Test
