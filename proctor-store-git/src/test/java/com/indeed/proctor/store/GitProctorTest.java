@@ -47,37 +47,37 @@ public class GitProctorTest {
 
     @Test
     public void testGetDefinition() throws StoreException, IOException, GitAPIException {
-        final String revisionA =
+        final String revision1 =
                 addTestDefinition("proc_tst", "author", "add a new test", DEFINITION_A);
-        final String revisionB =
+        final String revision2 =
                 addTestDefinition("proc_another_tst", "author", "add a another", DEFINITION_B);
-        final String revisionC =
+        final String revision3 =
                 updateTestDefinition("proc_tst", "author", "edit a test", DEFINITION_B);
-        final String revisionD =
+        final String revision4 =
                 deleteAllTestDefinitions("delete tests");
-        final String revisionE =
+        final String revision5 =
                 addTestDefinition("proc_new_tst", "author", "add a new test", DEFINITION_A);
 
-        assertThat(gitProctor.getTestDefinition("proc_tst", revisionA))
+        assertThat(gitProctor.getTestDefinition("proc_tst", revision1))
                 .isEqualTo(DEFINITION_A);
-        assertThat(gitProctor.getTestDefinition("proc_tst", revisionB))
+        assertThat(gitProctor.getTestDefinition("proc_tst", revision2))
                 .isEqualTo(DEFINITION_A);
-        assertThat(gitProctor.getTestDefinition("proc_tst", revisionC))
+        assertThat(gitProctor.getTestDefinition("proc_tst", revision3))
                 .isEqualTo(DEFINITION_B);
-        assertThatThrownBy(() -> gitProctor.getTestDefinition("proc_tst", revisionD))
+        assertThatThrownBy(() -> gitProctor.getTestDefinition("proc_tst", revision4))
                 .isInstanceOf(StoreException.class);
-        assertThatThrownBy(() -> gitProctor.getTestDefinition("proc_tst", revisionE))
+        assertThatThrownBy(() -> gitProctor.getTestDefinition("proc_tst", revision5))
                 .isInstanceOf(StoreException.class);
 
-        assertThatThrownBy(() -> gitProctor.getTestDefinition("proc_another_tst", revisionA))
+        assertThatThrownBy(() -> gitProctor.getTestDefinition("proc_another_tst", revision1))
                 .isInstanceOf(StoreException.class);
-        assertThat(gitProctor.getTestDefinition("proc_another_tst", revisionB))
+        assertThat(gitProctor.getTestDefinition("proc_another_tst", revision2))
                 .isEqualTo(DEFINITION_B);
-        assertThat(gitProctor.getTestDefinition("proc_another_tst", revisionC))
+        assertThat(gitProctor.getTestDefinition("proc_another_tst", revision3))
                 .isEqualTo(DEFINITION_B);
-        assertThatThrownBy(() -> gitProctor.getTestDefinition("proc_another_tst", revisionD))
+        assertThatThrownBy(() -> gitProctor.getTestDefinition("proc_another_tst", revision4))
                 .isInstanceOf(StoreException.class);
-        assertThatThrownBy(() -> gitProctor.getTestDefinition("proc_another_tst", revisionE))
+        assertThatThrownBy(() -> gitProctor.getTestDefinition("proc_another_tst", revision5))
                 .isInstanceOf(StoreException.class);
 
         assertThatThrownBy(() -> gitProctor.getCurrentTestDefinition("proc_tst"))
@@ -91,74 +91,74 @@ public class GitProctorTest {
 
     @Test
     public void testGetMatrix() throws StoreException, IOException, GitAPIException {
-        final String revisionA =
+        final String revision1 =
                 addTestDefinition("proc_tst", "author", "add a new test", DEFINITION_A);
-        final String revisionB =
+        final String revision2 =
                 addTestDefinition("proc_another_tst", "author", "add a another", DEFINITION_B);
-        final String revisionC =
+        final String revision3 =
                 deleteAllTestDefinitions("delete tests");
 
-        assertThat(gitProctor.getTestMatrix(revisionA).getTestMatrixDefinition().getTests())
+        assertThat(gitProctor.getTestMatrix(revision1).getTestMatrixDefinition().getTests())
                 .hasSize(1)
                 .containsEntry("proc_tst", DEFINITION_A);
-        assertThat(gitProctor.getTestMatrix(revisionA))
+        assertThat(gitProctor.getTestMatrix(revision1))
                 .extracting(TestMatrixVersion::getAuthor, TestMatrixVersion::getDescription, TestMatrixVersion::getVersion)
-                .containsExactly("author", "add a new test", revisionA);
+                .containsExactly("author", "add a new test", revision1);
 
-        assertThat(gitProctor.getTestMatrix(revisionB).getTestMatrixDefinition().getTests())
+        assertThat(gitProctor.getTestMatrix(revision2).getTestMatrixDefinition().getTests())
                 .hasSize(2)
                 .containsEntry("proc_tst", DEFINITION_A)
                 .containsEntry("proc_another_tst", DEFINITION_B);
-        assertThat(gitProctor.getTestMatrix(revisionB))
+        assertThat(gitProctor.getTestMatrix(revision2))
                 .extracting(TestMatrixVersion::getAuthor, TestMatrixVersion::getDescription, TestMatrixVersion::getVersion)
-                .containsExactly("author", "add a another", revisionB);
+                .containsExactly("author", "add a another", revision2);
 
-        assertThat(gitProctor.getTestMatrix(revisionC).getTestMatrixDefinition().getTests())
+        assertThat(gitProctor.getTestMatrix(revision3).getTestMatrixDefinition().getTests())
                 .isEmpty();
         assertThat(gitProctor.getCurrentTestMatrix().getTestMatrixDefinition().getTests())
                 .isEmpty();
         assertThat(gitProctor.getCurrentTestMatrix())
                 .extracting(TestMatrixVersion::getDescription, TestMatrixVersion::getVersion)
-                .containsExactly("delete tests", revisionC);
+                .containsExactly("delete tests", revision3);
     }
 
     @Test
     public void testHistories() throws StoreException {
-        final String revisionA =
+        final String revision1 =
                 addTestDefinition("proc_a_tst", "author1", "add a new test a", DEFINITION_A);
-        final String revisionB =
+        final String revision2 =
                 addTestDefinition("proc_b_tst", "author2", "add a new test b", DEFINITION_B);
-        final String revisionC =
+        final String revision3 =
                 updateTestDefinition("proc_a_tst", "author3", "edit a test a", DEFINITION_B);
 
-        assertThat(gitProctor.getLatestVersion()).isEqualTo(revisionC);
+        assertThat(gitProctor.getLatestVersion()).isEqualTo(revision3);
 
         assertThat(gitProctor.getHistory("proc_a_tst", 0, 10))
                 .extracting(Revision::getRevision, Revision::getAuthor, Revision::getMessage)
                 .containsExactly(
-                        Tuple.tuple(revisionC, "author3", "edit a test a"),
-                        Tuple.tuple(revisionA, "author1", "add a new test a")
+                        Tuple.tuple(revision3, "author3", "edit a test a"),
+                        Tuple.tuple(revision1, "author1", "add a new test a")
                 );
 
         assertThat(gitProctor.getHistory("proc_b_tst", 0, 10))
                 .extracting(Revision::getRevision, Revision::getAuthor, Revision::getMessage)
                 .containsExactly(
-                        Tuple.tuple(revisionB, "author2", "add a new test b")
+                        Tuple.tuple(revision2, "author2", "add a new test b")
                 );
 
         assertThat(gitProctor.getMatrixHistory(0, 10))
                 .extracting(Revision::getRevision, Revision::getMessage)
                 .containsExactly(
-                        Tuple.tuple(revisionC, "edit a test a"),
-                        Tuple.tuple(revisionB, "add a new test b"),
-                        Tuple.tuple(revisionA, "add a new test a"),
+                        Tuple.tuple(revision3, "edit a test a"),
+                        Tuple.tuple(revision2, "add a new test b"),
+                        Tuple.tuple(revision1, "add a new test a"),
                         Tuple.tuple(initialCommitHash, "initial commit")
                 );
 
         assertThat(gitProctor.getMatrixHistory(1, 1))
                 .extracting(Revision::getRevision, Revision::getAuthor, Revision::getMessage)
                 .containsExactly(
-                        Tuple.tuple(revisionB, "author2", "add a new test b")
+                        Tuple.tuple(revision2, "author2", "add a new test b")
                 );
 
         assertThat(gitProctor.getAllHistories())
@@ -166,42 +166,42 @@ public class GitProctorTest {
                 .hasEntrySatisfying("proc_a_tst", l ->
                         assertThat(l)
                                 .extracting(Revision::getRevision)
-                                .containsExactly(revisionC, revisionA)
+                                .containsExactly(revision3, revision1)
                 )
                 .hasEntrySatisfying("proc_b_tst", l ->
                         assertThat(l)
                                 .extracting(Revision::getRevision)
-                                .containsExactly(revisionB)
+                                .containsExactly(revision2)
                 );
     }
 
     @Test
     public void testRevisionDetails() throws StoreException, IOException, GitAPIException {
-        final String revisionA =
+        final String revision1 =
                 addTestDefinition("proc_a_tst", "author1", "add a new test a", DEFINITION_A);
         addTestDefinition("proc_b_tst", "author2", "add a new test b", DEFINITION_B);
-        final String revisionC = deleteAllTestDefinitions("delete all");
+        final String revision3 = deleteAllTestDefinitions("delete all");
 
-        assertThat(gitProctor.getRevisionDetails(revisionA))
+        assertThat(gitProctor.getRevisionDetails(revision1))
                 .extracting(
                         r -> r.getRevision().getRevision(),
                         r -> r.getRevision().getAuthor(),
                         RevisionDetails::getModifiedTests
                 )
                 .containsExactly(
-                        revisionA,
+                        revision1,
                         "author1",
                         Collections.singletonList("proc_a_tst")
                 );
 
-        assertThat(gitProctor.getRevisionDetails(revisionC))
+        assertThat(gitProctor.getRevisionDetails(revision3))
                 .extracting(
                         r -> r.getRevision().getRevision(),
                         r -> r.getRevision().getMessage(),
                         RevisionDetails::getModifiedTests
                 )
                 .containsExactly(
-                        revisionC,
+                        revision3,
                         "delete all",
                         Arrays.asList("proc_a_tst", "proc_b_tst")
                 );
