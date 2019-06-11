@@ -15,6 +15,7 @@ import com.indeed.proctor.store.RevisionDetails;
 import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.store.cache.CachingProctorStore;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.Collections;
@@ -226,6 +227,7 @@ public class InMemoryProctorStore implements ProctorStore {
         });
     }
 
+    @Nonnull
     @Override
     public List<Revision> getMatrixHistory(final int start, final int limit) throws StoreException {
         return synchronizedRead(() -> {
@@ -234,6 +236,7 @@ public class InMemoryProctorStore implements ProctorStore {
         });
     }
 
+    @Nonnull
     @Override
     public List<Revision> getHistory(final String test, final int start, final int limit) throws StoreException {
         return synchronizedRead(() -> {
@@ -242,6 +245,7 @@ public class InMemoryProctorStore implements ProctorStore {
         });
     }
 
+    @Nonnull
     @Override
     public List<Revision> getHistory(final String test, final String revision, final int start, final int limit) throws StoreException {
         return synchronizedRead(() -> {
@@ -255,6 +259,7 @@ public class InMemoryProctorStore implements ProctorStore {
         return synchronizedRead(() -> revisionDetailMap.get(revisionId));
     }
 
+    @Nonnull
     @Override
     public Map<String, List<Revision>> getAllHistories() throws StoreException {
         return synchronizedRead(() -> {

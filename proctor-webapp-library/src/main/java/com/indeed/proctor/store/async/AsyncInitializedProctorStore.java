@@ -11,6 +11,7 @@ import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.webapp.util.RetryWithExponentialBackoff;
 import org.apache.log4j.Logger;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -119,16 +120,19 @@ public class AsyncInitializedProctorStore implements ProctorStore {
         return getProctorStore().getTestDefinition(test, fetchRevision);
     }
 
+    @Nonnull
     @Override
     public List<Revision> getMatrixHistory(final int start, final int limit) throws StoreException {
         return getProctorStore().getMatrixHistory(start, limit);
     }
 
+    @Nonnull
     @Override
     public List<Revision> getHistory(final String test, final int start, final int limit) throws StoreException {
         return getProctorStore().getHistory(test, start, limit);
     }
 
+    @Nonnull
     @Override
     public List<Revision> getHistory(final String test, final String revision, final int start, final int limit) throws StoreException {
         return getProctorStore().getHistory(test, revision, start, limit);
@@ -140,6 +144,7 @@ public class AsyncInitializedProctorStore implements ProctorStore {
     }
 
 
+    @Nonnull
     @Override
     public Map<String, List<Revision>> getAllHistories() throws StoreException {
         return getProctorStore().getAllHistories();

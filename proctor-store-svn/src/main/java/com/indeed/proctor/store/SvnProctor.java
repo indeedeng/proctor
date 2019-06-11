@@ -15,6 +15,7 @@ import org.tmatesoft.svn.core.wc.SVNClientManager;
 import org.tmatesoft.svn.core.wc.SVNLogClient;
 import org.tmatesoft.svn.core.wc.SVNRevision;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -60,6 +61,7 @@ public class SvnProctor extends FileBasedProctorStore {
         this.svnUrl = core.getSvnUrl();
     }
 
+    @Nonnull
     @Override
     public List<Revision> getHistory(final String test, final int start, final int limit) throws StoreException {
         return getSvnCore().doWithClientAndRepository(new SvnPersisterCore.SvnOperation<List<Revision>>() {
@@ -76,6 +78,7 @@ public class SvnProctor extends FileBasedProctorStore {
         });
     }
 
+    @Nonnull
     @Override
     public List<Revision> getHistory(final String test,
                                      final String version,
@@ -116,6 +119,7 @@ public class SvnProctor extends FileBasedProctorStore {
         throw new UnsupportedOperationException("revision details is not supported in SVN store");
     }
 
+    @Nonnull
     @Override
     public Map<String, List<Revision>> getAllHistories() throws StoreException {
         final TestMatrixDefinition testMatrixDefinition = getCurrentTestMatrix().getTestMatrixDefinition();
@@ -166,6 +170,7 @@ public class SvnProctor extends FileBasedProctorStore {
         return getSvnCore().cleanUserWorkspace(username);
     }
 
+    @Nonnull
     @Override
     public List<Revision> getMatrixHistory(final int start, final int limit) throws StoreException {
         final String[] targetPaths = {};

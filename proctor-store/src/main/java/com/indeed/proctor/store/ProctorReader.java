@@ -3,6 +3,7 @@ package com.indeed.proctor.store;
 import com.indeed.proctor.common.model.TestDefinition;
 import com.indeed.proctor.common.model.TestMatrixVersion;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
@@ -56,6 +57,7 @@ public interface ProctorReader {
      * @param start offset of the first revision (0-indexed)
      * @param limit limit of the number of revisions
      */
+    @Nonnull
     List<Revision> getMatrixHistory(int start, int limit) throws StoreException;
 
     /**
@@ -64,6 +66,7 @@ public interface ProctorReader {
      * @param start offset of the first revision (0-indexed)
      * @param limit limit of the number of revisions
      */
+    @Nonnull
     List<Revision> getHistory(String testName, int start, int limit) throws StoreException;
 
     /**
@@ -72,6 +75,7 @@ public interface ProctorReader {
      * @param start offset of the first revision (0-indexed)
      * @param limit limit of the number of revisions
      */
+    @Nonnull
     List<Revision> getHistory(String testName, String revisionId, int start, int limit) throws StoreException;
 
     /**
@@ -87,6 +91,7 @@ public interface ProctorReader {
      * Same revision may appear in two or more lists if multiple tests are modified in the revision.
      * @return Map from test name to a list of revision.
      */
+    @Nonnull
     Map<String, List<Revision>> getAllHistories() throws StoreException;
 
     /**

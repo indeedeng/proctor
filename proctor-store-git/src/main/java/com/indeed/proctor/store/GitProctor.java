@@ -17,6 +17,7 @@ import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.util.io.DisabledOutputStream;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
@@ -123,6 +124,7 @@ public class GitProctor extends FileBasedProctorStore {
         }
     }
 
+    @Nonnull
     @Override
     public List<Revision> getMatrixHistory(final int start,
                                            final int limit) throws StoreException {
@@ -139,6 +141,7 @@ public class GitProctor extends FileBasedProctorStore {
         }
     }
 
+    @Nonnull
     @Override
     public List<Revision> getHistory(final String test,
                                      final int start,
@@ -146,6 +149,7 @@ public class GitProctor extends FileBasedProctorStore {
         return getHistory(test, getLatestVersion(), start, limit);
     }
 
+    @Nonnull
     @Override
     public List<Revision> getHistory(final String test,
                                      final String revision,
@@ -185,6 +189,7 @@ public class GitProctor extends FileBasedProctorStore {
         }
     }
 
+    @Nonnull
     @Override
     public Map<String, List<Revision>> getAllHistories() throws StoreException {
         final Repository repository = git.getRepository();

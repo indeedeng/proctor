@@ -1,5 +1,6 @@
 package com.indeed.proctor.store;
 
+import javax.annotation.Nonnull;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
@@ -31,11 +32,13 @@ public class LocalDirectoryStore extends FileBasedProctorStore {
         return true;
     }
 
+    @Nonnull
     @Override
     public List<Revision> getHistory(final String test, final int ignoredStart, final int limit) throws StoreException {
         throw new UnsupportedOperationException("Not implemented yet");
     }
 
+    @Nonnull
     @Override
     public List<Revision> getHistory(String test, String revision, int start, int limit) throws StoreException {
         throw new UnsupportedOperationException("Not implemented yet");
@@ -46,11 +49,13 @@ public class LocalDirectoryStore extends FileBasedProctorStore {
         throw new UnsupportedOperationException("Not implemented yet");
     }
 
+    @Nonnull
     @Override
     public List<Revision> getMatrixHistory(final int start, final int limit) throws StoreException {
         throw new UnsupportedOperationException("Not implemented yet");
     }
 
+    @Nonnull
     @Override
     public Map<String, List<Revision>> getAllHistories() throws StoreException {
         throw new UnsupportedOperationException("Not implemented yet");

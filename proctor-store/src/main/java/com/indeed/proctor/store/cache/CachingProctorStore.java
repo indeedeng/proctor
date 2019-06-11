@@ -111,16 +111,19 @@ public class CachingProctorStore implements ProctorStore {
     /**
      * caching is not supported for this method
      **/
+    @Nonnull
     @Override
     public List<Revision> getMatrixHistory(final int start, final int limit) throws StoreException {
         return delegate.getMatrixHistory(start, limit);
     }
 
+    @Nonnull
     @Override
     public List<Revision> getHistory(final String test, final int start, final int limit) throws StoreException {
         return HistoryUtil.selectHistorySet(cacheHolder.getCachedHistory().get(test), start, limit);
     }
 
+    @Nonnull
     @Override
     public List<Revision> getHistory(final String test, final String revision, final int start, final int limit) throws StoreException {
         return HistoryUtil.selectRevisionHistorySetFrom(cacheHolder.getCachedHistory().get(test), revision, start, limit);
@@ -131,6 +134,7 @@ public class CachingProctorStore implements ProctorStore {
         return delegate.getRevisionDetails(revisionId);
     }
 
+    @Nonnull
     @Override
     public Map<String, List<Revision>> getAllHistories() throws StoreException {
         return cacheHolder.getCachedHistory();

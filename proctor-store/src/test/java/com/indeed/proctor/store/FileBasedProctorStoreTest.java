@@ -13,6 +13,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
@@ -158,16 +159,19 @@ public class FileBasedProctorStoreTest {
             return null;
         }
 
+        @Nonnull
         @Override
         public List<Revision> getMatrixHistory(final int start, final int limit) throws StoreException {
             return null;
         }
 
+        @Nonnull
         @Override
         public List<Revision> getHistory(final String test, final int start, final int limit) throws StoreException {
             return null;
         }
 
+        @Nonnull
         @Override
         public List<Revision> getHistory(final String test, final String revision, final int start, final int limit) throws StoreException {
             return null;
@@ -178,6 +182,7 @@ public class FileBasedProctorStoreTest {
             return null;
         }
 
+        @Nonnull
         @Override
         public Map<String, List<Revision>> getAllHistories() throws StoreException {
             return null;

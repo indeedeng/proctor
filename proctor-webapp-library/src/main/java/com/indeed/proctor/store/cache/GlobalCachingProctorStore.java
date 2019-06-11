@@ -11,6 +11,7 @@ import com.indeed.proctor.webapp.db.Environment;
 import com.indeed.proctor.webapp.extensions.GlobalCacheStore;
 import org.apache.log4j.Logger;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.List;
@@ -114,11 +115,13 @@ public class GlobalCachingProctorStore implements ProctorStore {
                 .orElse(delegate.getTestDefinition(test, fetchRevision));
     }
 
+    @Nonnull
     @Override
     public List<Revision> getMatrixHistory(final int start, final int limit) throws StoreException {
         return delegate.getMatrixHistory(start, limit);
     }
 
+    @Nonnull
     @Override
     public List<Revision> getHistory(final String test, final int start, final int limit) throws StoreException {
         return globalCacheStore.getCachedHistory(environment, test).map(
@@ -126,6 +129,7 @@ public class GlobalCachingProctorStore implements ProctorStore {
         ).orElse(delegate.getHistory(test, start, limit));
     }
 
+    @Nonnull
     @Override
     public List<Revision> getHistory(final String test, final String revision, final int start, final int limit) throws StoreException {
         return globalCacheStore.getCachedHistory(environment, test).map(
@@ -138,6 +142,7 @@ public class GlobalCachingProctorStore implements ProctorStore {
         return delegate.getRevisionDetails(revisionId);
     }
 
+    @Nonnull
     @Override
     public Map<String, List<Revision>> getAllHistories() throws StoreException {
         return delegate.getAllHistories();
