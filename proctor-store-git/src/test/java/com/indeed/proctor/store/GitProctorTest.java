@@ -8,6 +8,7 @@ import com.indeed.proctor.common.model.TestDefinition;
 import com.indeed.proctor.common.model.TestMatrixVersion;
 import com.indeed.proctor.common.model.TestType;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.assertj.core.groups.Tuple;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -19,6 +20,7 @@ import org.junit.rules.TemporaryFolder;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -262,34 +264,35 @@ public class GitProctorTest {
         return revision;
     }
 
-    private static final TestDefinition DEFINITION_A = new TestDefinition(
-            "-1",
-            null,
-            TestType.ANONYMOUS_USER,
-            "&test_a",
-            ImmutableList.of(new TestBucket("active", 1, "")),
-            ImmutableList.of(
-                    new Allocation(null, ImmutableList.of(new Range(1, 1.0)), "#A1")
-            ),
-            false,
-            Collections.emptyMap(),
-            Collections.emptyMap(),
-            "Create test a"
-    );
+    private static final TestDefinition DEFINITION_A = createStubTestDefinition();
+    private static final TestDefinition DEFINITION_B = createStubTestDefinition();
 
-    private static final TestDefinition DEFINITION_B = new TestDefinition(
-            "-1",
-            null,
-            TestType.AUTHENTICATED_USER,
-            "&test_b",
-            ImmutableList.of(new TestBucket("inactive", -1, "")),
-            ImmutableList.of(
-                    new Allocation(null, ImmutableList.of(new Range(-1, 1.0)), "#A1")
-            ),
-            false,
-            Collections.emptyMap(),
-            Collections.emptyMap(),
-            "Create test b"
-    );
+    private static TestDefinition createStubTestDefinition() {
+        final double activeRatio = ThreadLocalRandom.current().nextInt(100) / 100.0;
+        return new TestDefinition(
+                "-1",
+                null,
+                TestType.ANONYMOUS_USER,
+                "&" + RandomStringUtils.randomAlphabetic(8),
+                ImmutableList.of(
+                        new TestBucket("inactive", -1, ""),
+                        new TestBucket("active", 1, "")
+                ),
+                ImmutableList.of(
+                        new Allocation(
+                                null,
+                                ImmutableList.of(
+                                        new Range(-1, 1.0 - activeRatio),
+                                        new Range(1, activeRatio)
+                                ),
+                                "#A1"
+                        )
+                ),
+                false,
+                Collections.emptyMap(),
+                Collections.emptyMap(),
+                RandomStringUtils.randomAlphabetic(8)
+        );
+    }
 
 }
