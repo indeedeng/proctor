@@ -12,6 +12,7 @@ import java.util.Map;
 /**
  * Read interface of Proctor Store.
  * It provides read access to test definitions and their histories in the database.
+ * Each store has a single global linear history of states, each having a unique revision id.
  *
  * All methods throws {@link StoreException} when it failed to handle request because of errors in the database.
  *
