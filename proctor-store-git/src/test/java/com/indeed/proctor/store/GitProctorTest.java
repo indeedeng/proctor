@@ -1,6 +1,7 @@
 package com.indeed.proctor.store;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.Range;
 import com.indeed.proctor.common.model.TestBucket;
@@ -18,9 +19,8 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.Locale;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -140,11 +140,20 @@ public class GitProctorTest {
                         Tuple.tuple(revision1, "author1", "add a new test a")
                 );
 
+        assertThat(gitProctor.getHistory("proc_a_tst", revision1, 0, 10))
+                .extracting(Revision::getRevision, Revision::getAuthor, Revision::getMessage)
+                .containsExactly(
+                        Tuple.tuple(revision1, "author1", "add a new test a")
+                );
+
         assertThat(gitProctor.getHistory("proc_b_tst", 0, 10))
                 .extracting(Revision::getRevision, Revision::getAuthor, Revision::getMessage)
                 .containsExactly(
                         Tuple.tuple(revision2, "author2", "add a new test b")
                 );
+
+        assertThatThrownBy(() -> gitProctor.getHistory("proc_a_tst", UNKNOWN_GIT_REVISION, 0, 10))
+                .isInstanceOf(StoreException.class);
 
         assertThat(gitProctor.getMatrixHistory(0, 10))
                 .extracting(Revision::getRevision, Revision::getMessage)
@@ -191,7 +200,7 @@ public class GitProctorTest {
                 .containsExactly(
                         revision1,
                         "author1",
-                        Collections.singletonList("proc_a_tst")
+                        Collections.singleton("proc_a_tst")
                 );
 
         assertThat(gitProctor.getRevisionDetails(revision3))
@@ -203,7 +212,7 @@ public class GitProctorTest {
                 .containsExactly(
                         revision3,
                         "delete all",
-                        Arrays.asList("proc_a_tst", "proc_b_tst")
+                        ImmutableSet.of("proc_a_tst", "proc_b_tst")
                 );
 
         assertThat(gitProctor.getRevisionDetails("invalidrevisionid"))
@@ -265,26 +274,25 @@ public class GitProctorTest {
         return revision;
     }
 
+    private static final String UNKNOWN_GIT_REVISION = RandomStringUtils.random(40, "0123456789abcdef");
+
     private static final TestDefinition DEFINITION_A = createStubTestDefinition();
     private static final TestDefinition DEFINITION_B = createStubTestDefinition();
 
     private static TestDefinition createStubTestDefinition() {
-        final double activeRatio = ThreadLocalRandom.current().nextInt(100) / 100.0;
         return new TestDefinition(
                 "-1",
                 null,
                 TestType.ANONYMOUS_USER,
-                "&" + RandomStringUtils.randomAlphabetic(8),
+                "&" + RandomStringUtils.randomAlphabetic(8).toLowerCase(Locale.ENGLISH),
                 ImmutableList.of(
-                        new TestBucket("inactive", -1, ""),
-                        new TestBucket("active", 1, "")
+                        new TestBucket("inactive", -1, "")
                 ),
                 ImmutableList.of(
                         new Allocation(
                                 null,
                                 ImmutableList.of(
-                                        new Range(-1, 1.0 - activeRatio),
-                                        new Range(1, activeRatio)
+                                        new Range(-1, 1.0)
                                 ),
                                 "#A1"
                         )

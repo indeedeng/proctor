@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -83,7 +84,7 @@ class GitHistoryParser {
     RevisionDetails parseRevisionDetails(final ObjectId revisionId) throws IOException {
         final RevCommit commit = revWalk.parseCommit(revisionId);
         final Revision revision = createRevisionFromCommit(commit);
-        final List<String> modifiedTests = getModifiedTests(commit);
+        final Set<String> modifiedTests = getModifiedTests(commit);
         return new RevisionDetails(
                 revision,
                 modifiedTests
@@ -103,7 +104,7 @@ class GitHistoryParser {
             return;
         }
 
-        final List<String> modifiedTests = getModifiedTests(commit);
+        final Set<String> modifiedTests = getModifiedTests(commit);
         for (final String testName : modifiedTests) {
             final List<Revision> history = histories.computeIfAbsent(testName, x -> new ArrayList<>());
             history.add(createRevisionFromCommit(commit));
@@ -115,9 +116,9 @@ class GitHistoryParser {
         }
     }
 
-    private List<String> getModifiedTests(final RevCommit commit) throws IOException {
+    private Set<String> getModifiedTests(final RevCommit commit) throws IOException {
         final RevCommit[] parents = commit.getParents();
-        final List<String> result = new ArrayList<>();
+        final Set<String> result = new HashSet<>();
         if (parents.length == 1) { // merge commit if length > 1
             final RevCommit parent = revWalk.parseCommit(parents[0].getId());
             // get diff of this commit to its parent, as list of paths
