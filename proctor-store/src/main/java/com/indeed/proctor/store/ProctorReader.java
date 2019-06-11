@@ -31,6 +31,7 @@ public interface ProctorReader {
 
     /**
      * Verifies the data store object is ready to operate.
+     * Throwing an exception allows the implementer to signal bad health status.
      * @throws StoreException if it's not ready to operate.
      */
     void verifySetup() throws StoreException;
