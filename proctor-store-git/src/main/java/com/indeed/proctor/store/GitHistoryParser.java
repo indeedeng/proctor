@@ -12,6 +12,7 @@ import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
@@ -74,7 +75,7 @@ class GitHistoryParser {
     /**
      * @return a revision details for a single revision
      */
-    @Nullable
+    @Nonnull
     RevisionDetails parseRevisionDetails(final ObjectId revisionId) throws IOException {
         final RevCommit commit = revWalk.parseCommit(revisionId);
         final Revision revision = createRevisionFromCommit(commit);
