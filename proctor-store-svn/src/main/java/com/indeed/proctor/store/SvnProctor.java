@@ -107,28 +107,13 @@ public class SvnProctor extends FileBasedProctorStore {
         });
     }
 
-    @Nullable
+    /**
+     * @deprecated Unsupported operation.
+     */
+    @Deprecated
     @Override
-    public RevisionDetails getRevisionDetails(final String revisionId) throws StoreException {
-        // TODO: This is not very efficient because it's reading the whole history.
-        final Map<String, List<Revision>> histories = getAllHistories();
-        Revision revision = null;
-        final List<String> modifiedTests = new ArrayList<>();
-
-        for (final String testName : histories.keySet()) {
-            for (final Revision r : histories.get(testName)) {
-                if (r.getRevision().equals(revisionId)) {
-                    revision = r;
-                    modifiedTests.add(testName);
-                }
-            }
-        }
-
-        if (revision == null) {
-            return null;
-        }
-
-        return new RevisionDetails(revision, modifiedTests);
+    public RevisionDetails getRevisionDetails(final String revisionId) {
+        throw new UnsupportedOperationException("revision details is not supported in SVN store");
     }
 
     @Override
