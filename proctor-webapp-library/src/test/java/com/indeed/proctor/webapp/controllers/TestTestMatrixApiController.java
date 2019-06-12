@@ -26,6 +26,7 @@ import java.util.Map;
 
 import static com.indeed.proctor.store.utils.test.InMemoryProctorStore.REVISION_PREFIX;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -318,7 +319,7 @@ public class TestTestMatrixApiController {
     public void testGetRevisionDetails() throws Exception {
         when(trunkStore.getRevisionDetails("123")).thenReturn(new RevisionDetails(
                 new Revision("123", "author1", new Date(0), "edit a super test"),
-                singletonList("super_tst")
+                singleton("super_tst")
         ));
 
         final JsonView jsonView = controller.getRevisionDetails("trunk", "123");

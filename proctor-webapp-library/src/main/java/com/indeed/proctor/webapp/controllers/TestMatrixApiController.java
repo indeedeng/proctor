@@ -10,7 +10,7 @@ import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.store.RevisionDetails;
 import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.webapp.db.Environment;
-import com.indeed.proctor.webapp.model.api.RevisionDetailResponseModel;
+import com.indeed.proctor.webapp.model.api.RevisionDetailsResponseModel;
 import com.indeed.proctor.webapp.model.api.RevisionResponseModel;
 import com.indeed.proctor.webapp.model.api.TestHistoriesResponseModel;
 import com.indeed.proctor.webapp.model.WebappConfiguration;
@@ -86,7 +86,7 @@ public class TestMatrixApiController extends AbstractController {
         }
         final List<Revision> revisions = queryMatrixHistory(environment, start, limit);
         final List<RevisionResponseModel> responseModels = revisions.stream()
-                .map(RevisionResponseModel::new)
+                .map(RevisionResponseModel::fromRevision)
                 .collect(Collectors.toList());
         return new JsonView(responseModels);
     }
@@ -124,7 +124,7 @@ public class TestMatrixApiController extends AbstractController {
         Preconditions.checkState(!revisions.isEmpty(), String.format("Branch or revision %s not correct, or test %s not found", branchOrRevision, testName));
 
         final List<RevisionResponseModel> responseModels = revisions.stream()
-                .map(RevisionResponseModel::new)
+                .map(RevisionResponseModel::fromRevision)
                 .collect(Collectors.toList());
         return new JsonView(responseModels);
     }
@@ -152,7 +152,7 @@ public class TestMatrixApiController extends AbstractController {
 
     @ApiOperation(
             value = "Show details of a single revision",
-            response = RevisionDetailResponseModel.class,
+            response = RevisionDetailsResponseModel.class,
             produces = "application/json"
     )
     @ApiResponses(value = {
@@ -173,7 +173,7 @@ public class TestMatrixApiController extends AbstractController {
             throw new ResourceNotFoundException("Revision " + revisionId + " is not found.");
         }
 
-        return new JsonView(new RevisionDetailResponseModel(revisionDetails));
+        return new JsonView(RevisionDetailsResponseModel.fromRevisionDetails(revisionDetails));
     }
 
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
