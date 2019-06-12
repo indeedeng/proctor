@@ -406,7 +406,7 @@ public class EditAndPromoteJob extends AbstractJob {
 
             final String currentRevision = getCurrentVersion(testName, trunkStore).getRevision();
             doPromoteInactiveTestToQaAndProd(testName, username, password, author,
-                    requestParameterMap, job, currentRevision, qaRevision, prodRevision);
+                    requestParameterMap, job, currentRevision);
         } else {
             final String currentRevision = getCurrentVersionIfDirectlyFollowing(testName, previousRevision, trunkStore).getRevision();
             doPromoteExistingTestToQaAndProd(testName, username, password, author, testDefinitionToUpdate,
@@ -416,6 +416,7 @@ public class EditAndPromoteJob extends AbstractJob {
 
     /**
      * Promote a test to QA and Prod without checking changes
+     * This promotion logic is only for test creation
      */
     @VisibleForTesting
     void doPromoteInactiveTestToQaAndProd(
@@ -425,20 +426,18 @@ public class EditAndPromoteJob extends AbstractJob {
             final String author,
             final Map<String, String[]> requestParameterMap,
             final BackgroundJob job,
-            final String currentRevision,
-            final String qaRevision,
-            final String prodRevision
+            final String currentRevision
     ) throws Exception {
         try {
             doPromoteTestToEnvironment(Environment.QA, testName, username, password, author, null,
-                    requestParameterMap, job, currentRevision, qaRevision, false);
+                    requestParameterMap, job, currentRevision, EnvironmentVersion.UNKNOWN_REVISION, false);
         } catch (final Exception e) {
             job.log("previous revision changes prevented auto-promote to PRODUCTION");
             throw e;
         }
 
         doPromoteInternal(testName, username, password, author, Environment.WORKING,
-                currentRevision, Environment.PRODUCTION, prodRevision, requestParameterMap, job, true);
+                currentRevision, Environment.PRODUCTION, EnvironmentVersion.UNKNOWN_REVISION, requestParameterMap, job, true);
     }
 
     /**
@@ -493,7 +492,7 @@ public class EditAndPromoteJob extends AbstractJob {
             final String targetRevision,
             final boolean verifyAllocationOnlyChange
     ) throws Exception {
-        if (targetRevision.equals(EnvironmentVersion.UNKNOWN_REVISION)) {
+        if (verifyAllocationOnlyChange && targetRevision.equals(EnvironmentVersion.UNKNOWN_REVISION)) {
             throw new IllegalArgumentException(targetEnv.getName() + " revision is unknown");
         }
 
