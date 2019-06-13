@@ -485,7 +485,7 @@ public class TestEditAndPromoteJob {
                 final TestDefinition testDefinitionToUpdate = createTestDefinition("inactive:-1", range);
                 final TestDefinition existingTestDefinition = null;
                 doNothing().when(backgroundJob).log(anyString());
-                doNothing().when(editAndPromoteJob).doPromoteInactiveTestToQaAndProd(TEST_NAME, USERNAME, PASSWORD, AUTHOR,
+                doNothing().when(editAndPromoteJob).doPromoteNewlyCreatedInactiveTestToQaAndProd(TEST_NAME, USERNAME, PASSWORD, AUTHOR,
                         REQUEST_PARAMETER_MAP, backgroundJob, TRUNK_REVISION);
 
                 // Act
@@ -495,7 +495,7 @@ public class TestEditAndPromoteJob {
 
                 // Assert
                 verify(backgroundJob, never()).log(anyString());
-                verify(editAndPromoteJob).doPromoteInactiveTestToQaAndProd(TEST_NAME, USERNAME, PASSWORD, AUTHOR,
+                verify(editAndPromoteJob).doPromoteNewlyCreatedInactiveTestToQaAndProd(TEST_NAME, USERNAME, PASSWORD, AUTHOR,
                         REQUEST_PARAMETER_MAP, backgroundJob, TRUNK_REVISION);
                 Mockito.reset(editAndPromoteJob);
                 Mockito.reset(backgroundJob);
@@ -527,7 +527,7 @@ public class TestEditAndPromoteJob {
         }
 
         @Test
-        public void testDoPromoteInactiveTestToQaAndProd() throws Exception {
+        public void testDoPromoteNewlyCreatedInactiveTestToQaAndProd() throws Exception {
             { // testing promoting QA fails
                 // Arrange
                 mockDoPromoteInternal(false, true, true, EnvironmentVersion.UNKNOWN_REVISION);
@@ -535,7 +535,7 @@ public class TestEditAndPromoteJob {
 
                 // Act / Assert
                 assertThatThrownBy(() ->
-                        editAndPromoteJob.doPromoteInactiveTestToQaAndProd(TEST_NAME, USERNAME, PASSWORD, AUTHOR,
+                        editAndPromoteJob.doPromoteNewlyCreatedInactiveTestToQaAndProd(TEST_NAME, USERNAME, PASSWORD, AUTHOR,
                                 REQUEST_PARAMETER_MAP, backgroundJob, TRUNK_REVISION)
                 ).isInstanceOf(IllegalArgumentException.class);
                 verify(editAndPromoteJob).doPromoteInternal(TEST_NAME, USERNAME, PASSWORD, AUTHOR, Environment.WORKING,
@@ -553,7 +553,7 @@ public class TestEditAndPromoteJob {
                 mockDoPromoteInternal(true, false, true, EnvironmentVersion.UNKNOWN_REVISION);
 
                 // Act
-                editAndPromoteJob.doPromoteInactiveTestToQaAndProd(TEST_NAME, USERNAME, PASSWORD, AUTHOR,
+                editAndPromoteJob.doPromoteNewlyCreatedInactiveTestToQaAndProd(TEST_NAME, USERNAME, PASSWORD, AUTHOR,
                         REQUEST_PARAMETER_MAP, backgroundJob, TRUNK_REVISION);
 
                 // Assert

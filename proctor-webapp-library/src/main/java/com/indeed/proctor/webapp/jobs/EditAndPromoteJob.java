@@ -405,7 +405,7 @@ public class EditAndPromoteJob extends AbstractJob {
             }
 
             final String currentRevision = getCurrentVersion(testName, trunkStore).getRevision();
-            doPromoteInactiveTestToQaAndProd(testName, username, password, author,
+            doPromoteNewlyCreatedInactiveTestToQaAndProd(testName, username, password, author,
                     requestParameterMap, job, currentRevision);
         } else {
             final String currentRevision = getCurrentVersionIfDirectlyFollowing(testName, previousRevision, trunkStore).getRevision();
@@ -419,7 +419,7 @@ public class EditAndPromoteJob extends AbstractJob {
      * This promotion logic is only for test creation
      */
     @VisibleForTesting
-    void doPromoteInactiveTestToQaAndProd(
+    void doPromoteNewlyCreatedInactiveTestToQaAndProd(
             final String testName,
             final String username,
             final String password,
@@ -476,7 +476,21 @@ public class EditAndPromoteJob extends AbstractJob {
 
     /**
      * Promote a test to QA or Prod
-     * If verifyAllocationOnlyChange is false, testDefinitionToUpdate is not required.
+     *
+     * @param targetEnv target environment. Environment.QA orEnvironment.PRODUCTION
+     * @param testName the test name to promote
+     * @param username the username of the committer
+     * @param password the password of the committer
+     * @param author the author name who requests this promotion
+     * @param testDefinitionToUpdate for checking allocation only change condition.
+     *                              This can be null iff verifyAllocationOnly is false.
+     * @param requestParameterMap
+     * @param job the edit job which runs this edit process
+     * @param currentRevision the revision of the source environment
+     * @param targetRevision the target revision to get the target test definition to check allocation only change condition.
+     *                      This can be EnvironmentVersion.UNKNOWN_REVISION iff verifyAllocationOnly is false.
+     * @param verifyAllocationOnlyChange a flag to check allocation only change.
+     * @throws Exception
      */
     @VisibleForTesting
     void doPromoteTestToEnvironment(
@@ -492,6 +506,7 @@ public class EditAndPromoteJob extends AbstractJob {
             final String targetRevision,
             final boolean verifyAllocationOnlyChange
     ) throws Exception {
+        // targetRevision is required only for verification of the allocation only change condition
         if (verifyAllocationOnlyChange && targetRevision.equals(EnvironmentVersion.UNKNOWN_REVISION)) {
             throw new IllegalArgumentException(targetEnv.getName() + " revision is unknown");
         }
