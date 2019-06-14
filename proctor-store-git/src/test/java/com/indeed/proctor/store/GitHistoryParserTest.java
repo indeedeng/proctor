@@ -15,7 +15,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class TestHistoryParser {
+public class GitHistoryParserTest {
 
     private static int revisionCount = 1;
 
@@ -31,7 +31,7 @@ public class TestHistoryParser {
                 makeRandomRevision(10)
         ));
 
-        GitProctor.HistoryParser.sortByDate(testee);
+        GitHistoryParser.sortByDate(testee);
 
         /** assert order is correct **/
         for (final List<Revision> revisions : testee.values()) {
@@ -45,7 +45,7 @@ public class TestHistoryParser {
 
     @Test
     public void testTestNamePattern() {
-        final Pattern pattern = GitProctor.HistoryParser.compileTestNamePattern("matrices/test-definitions");
+        final Pattern pattern = GitHistoryParser.compileTestNamePattern("matrices/test-definitions");
         Matcher matcher = pattern.matcher("matrices/test-definitions/testname/definition.json");
         assertTrue(matcher.matches());
         assertEquals("testname", matcher.group(1));

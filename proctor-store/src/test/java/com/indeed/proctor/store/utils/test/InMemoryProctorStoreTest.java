@@ -1,4 +1,4 @@
-package com.indeed.proctor.webapp.testutil;
+package com.indeed.proctor.store.utils.test;
 
 import com.google.common.collect.Lists;
 import com.indeed.proctor.common.model.Allocation;
@@ -9,6 +9,7 @@ import com.indeed.proctor.common.model.TestMatrixVersion;
 import com.indeed.proctor.common.model.TestType;
 import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.store.StoreException;
+import com.indeed.proctor.store.utils.test.InMemoryProctorStore;
 import org.junit.Before;
 import org.junit.Test;
 

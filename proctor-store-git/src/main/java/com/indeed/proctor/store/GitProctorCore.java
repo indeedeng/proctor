@@ -8,6 +8,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
+import com.google.common.io.Files;
 import com.indeed.proctor.common.Serializers;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Level;
@@ -41,7 +42,6 @@ import org.eclipse.jgit.treewalk.filter.PathSuffixFilter;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -553,7 +553,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
             return new TestVersionResult(
                     tests,
                     new Date(Long.valueOf(headTree.getCommitTime()) * 1000 /* convert seconds to milliseconds */),
-                    headTree.getAuthorIdent().toExternalString(),
+                    headTree.getAuthorIdent().getName(),
                     headTree.toObjectId().getName(),
                     headTree.getFullMessage()
             );

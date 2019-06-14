@@ -10,11 +10,14 @@ import com.indeed.proctor.common.model.TestMatrixDefinition;
 import com.indeed.proctor.common.model.TestMatrixVersion;
 import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.store.Revision;
+import com.indeed.proctor.store.RevisionDetails;
 import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.store.utils.HistoryUtil;
 import org.apache.log4j.Logger;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -83,6 +86,7 @@ public class CachingProctorStore implements ProctorStore {
         delegate.verifySetup();
     }
 
+    @Nonnull
     @Override
     public String getLatestVersion() throws StoreException {
         return cacheHolder.getCachedLatestVersion();
@@ -110,21 +114,31 @@ public class CachingProctorStore implements ProctorStore {
     /**
      * caching is not supported for this method
      **/
+    @Nonnull
     @Override
     public List<Revision> getMatrixHistory(final int start, final int limit) throws StoreException {
         return delegate.getMatrixHistory(start, limit);
     }
 
+    @Nonnull
     @Override
     public List<Revision> getHistory(final String test, final int start, final int limit) throws StoreException {
         return HistoryUtil.selectHistorySet(cacheHolder.getCachedHistory().get(test), start, limit);
     }
 
+    @Nonnull
     @Override
     public List<Revision> getHistory(final String test, final String revision, final int start, final int limit) throws StoreException {
         return HistoryUtil.selectRevisionHistorySetFrom(cacheHolder.getCachedHistory().get(test), revision, start, limit);
     }
 
+    @CheckForNull
+    @Override
+    public RevisionDetails getRevisionDetails(final String revisionId) throws StoreException {
+        return delegate.getRevisionDetails(revisionId);
+    }
+
+    @Nonnull
     @Override
     public Map<String, List<Revision>> getAllHistories() throws StoreException {
         return cacheHolder.getCachedHistory();

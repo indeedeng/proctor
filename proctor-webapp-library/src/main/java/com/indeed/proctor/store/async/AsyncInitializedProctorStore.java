@@ -6,10 +6,14 @@ import com.indeed.proctor.common.model.TestDefinition;
 import com.indeed.proctor.common.model.TestMatrixVersion;
 import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.store.Revision;
+import com.indeed.proctor.store.RevisionDetails;
 import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.webapp.util.RetryWithExponentialBackoff;
 import org.apache.log4j.Logger;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -103,6 +107,7 @@ public class AsyncInitializedProctorStore implements ProctorStore {
         getProctorStore().verifySetup();
     }
 
+    @Nonnull
     @Override
     public String getLatestVersion() throws StoreException {
         return getProctorStore().getLatestVersion();
@@ -118,21 +123,32 @@ public class AsyncInitializedProctorStore implements ProctorStore {
         return getProctorStore().getTestDefinition(test, fetchRevision);
     }
 
+    @Nonnull
     @Override
     public List<Revision> getMatrixHistory(final int start, final int limit) throws StoreException {
         return getProctorStore().getMatrixHistory(start, limit);
     }
 
+    @Nonnull
     @Override
     public List<Revision> getHistory(final String test, final int start, final int limit) throws StoreException {
         return getProctorStore().getHistory(test, start, limit);
     }
 
+    @Nonnull
     @Override
     public List<Revision> getHistory(final String test, final String revision, final int start, final int limit) throws StoreException {
         return getProctorStore().getHistory(test, revision, start, limit);
     }
 
+    @CheckForNull
+    @Override
+    public RevisionDetails getRevisionDetails(final String revisionId) throws StoreException {
+        return getProctorStore().getRevisionDetails(revisionId);
+    }
+
+
+    @Nonnull
     @Override
     public Map<String, List<Revision>> getAllHistories() throws StoreException {
         return getProctorStore().getAllHistories();

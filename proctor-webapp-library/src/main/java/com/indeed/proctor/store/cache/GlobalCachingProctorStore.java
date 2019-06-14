@@ -4,12 +4,15 @@ import com.indeed.proctor.common.model.TestDefinition;
 import com.indeed.proctor.common.model.TestMatrixVersion;
 import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.store.Revision;
+import com.indeed.proctor.store.RevisionDetails;
 import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.store.utils.HistoryUtil;
 import com.indeed.proctor.webapp.db.Environment;
 import com.indeed.proctor.webapp.extensions.GlobalCacheStore;
 import org.apache.log4j.Logger;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.List;
@@ -97,6 +100,7 @@ public class GlobalCachingProctorStore implements ProctorStore {
         updateGlobalCache(testName, testDefinition);
     }
 
+    @Nonnull
     @Override
     public String getLatestVersion() throws StoreException {
         return delegate.getLatestVersion();
@@ -113,11 +117,13 @@ public class GlobalCachingProctorStore implements ProctorStore {
                 .orElse(delegate.getTestDefinition(test, fetchRevision));
     }
 
+    @Nonnull
     @Override
     public List<Revision> getMatrixHistory(final int start, final int limit) throws StoreException {
         return delegate.getMatrixHistory(start, limit);
     }
 
+    @Nonnull
     @Override
     public List<Revision> getHistory(final String test, final int start, final int limit) throws StoreException {
         return globalCacheStore.getCachedHistory(environment, test).map(
@@ -125,6 +131,7 @@ public class GlobalCachingProctorStore implements ProctorStore {
         ).orElse(delegate.getHistory(test, start, limit));
     }
 
+    @Nonnull
     @Override
     public List<Revision> getHistory(final String test, final String revision, final int start, final int limit) throws StoreException {
         return globalCacheStore.getCachedHistory(environment, test).map(
@@ -132,6 +139,13 @@ public class GlobalCachingProctorStore implements ProctorStore {
         ).orElse(delegate.getHistory(test, revision, start, limit));
     }
 
+    @CheckForNull
+    @Override
+    public RevisionDetails getRevisionDetails(final String revisionId) throws StoreException {
+        return delegate.getRevisionDetails(revisionId);
+    }
+
+    @Nonnull
     @Override
     public Map<String, List<Revision>> getAllHistories() throws StoreException {
         return delegate.getAllHistories();

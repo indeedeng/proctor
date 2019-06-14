@@ -28,7 +28,7 @@ import com.indeed.proctor.webapp.jobs.DeleteJob;
 import com.indeed.proctor.webapp.jobs.EditAndPromoteJob;
 import com.indeed.proctor.webapp.jobs.MatrixChecker;
 import com.indeed.proctor.webapp.model.AppVersion;
-import com.indeed.proctor.webapp.model.BackgroundJobResponseModel;
+import com.indeed.proctor.webapp.model.api.BackgroundJobResponseModel;
 import com.indeed.proctor.webapp.model.ProctorClientApplication;
 import com.indeed.proctor.webapp.model.RevisionDefinition;
 import com.indeed.proctor.webapp.model.SessionViewModel;

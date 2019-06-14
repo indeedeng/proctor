@@ -1,4 +1,4 @@
-package com.indeed.proctor.webapp.model;
+package com.indeed.proctor.webapp.model.api;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;

@@ -5,7 +5,7 @@ import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.webapp.jobs.BackgroundJob;
 import com.indeed.proctor.webapp.jobs.BackgroundJobFactory;
 import com.indeed.proctor.webapp.jobs.BackgroundJobManager;
-import com.indeed.proctor.webapp.model.BackgroundJobResponseModel;
+import com.indeed.proctor.webapp.model.api.BackgroundJobResponseModel;
 import com.indeed.proctor.webapp.model.WebappConfiguration;
 import com.indeed.proctor.webapp.views.JsonView;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.view.RedirectView;
 
-import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 
 /**

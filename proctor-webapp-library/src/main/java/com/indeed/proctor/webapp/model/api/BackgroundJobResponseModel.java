@@ -1,4 +1,4 @@
-package com.indeed.proctor.webapp.model;
+package com.indeed.proctor.webapp.model.api;
 
 import com.indeed.proctor.webapp.jobs.BackgroundJob;
 import io.swagger.annotations.ApiModel;
