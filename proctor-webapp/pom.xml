@@ -20,6 +20,10 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+            <plugin>
                 <groupId>org.sonatype.plugins</groupId>
                 <artifactId>yuicompressor-maven-plugin</artifactId>
                 <version>1.0.0</version>
@@ -195,6 +199,10 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
+                <configuration>
+                    <!-- Else jsimone web-runner fails to find classes in WAR -->
+                    <archiveClasses>true</archiveClasses>
+                </configuration>
             </plugin>
             <plugin>
                 <!-- try shading usages of apache-el even if module currently does not use, in case it is used in the future -->

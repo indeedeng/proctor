@@ -26,7 +26,7 @@ For git:
 4. Start the webapp runner. NOTE: The **config.dir** java variable is set to the example-apache-config, you will still need to update **proctor-config.properties** with the appropriate credentials:
 
     ```bash
-    java -Dconfig.dir="$PWD/example-apache-config"  -jar target/dependency/webapp-runner.jar --context-xml example-apache-config/proctor-webapp.xml --expand-war target/proctor-webapp-1.0.0-SNAPSHOT.war
+    java -Dconfig.dir="$PWD/proctor-webapp/example-apache-config"  -jar proctor-webapp/target/dependency/webapp-runner.jar --context-xml proctor-webapp/example-apache-config/proctor-webapp.xml --expand-war proctor-webapp/target/proctor-webapp-9999-SNAPSHOT.war
     ```
 
 # Configuration
