@@ -264,8 +264,8 @@
     <function>
         <description>URL Encodes a String</description>
         <name>urlencode</name>
-        <function-class>com.indeed.proctor.webapp.tags.UtilityFunctions</function-class>
-        <function-signature>java.lang.String urlEncode(java.lang.String)</function-signature>
+        <function-class>com.indeed.proctor.webapp.util.EncodingUtil</function-class>
+        <function-signature>java.lang.String urlEncodeUtf8(java.lang.String)</function-signature>
         <example>
             ${util:urlencode(result.url)}
         </example>
