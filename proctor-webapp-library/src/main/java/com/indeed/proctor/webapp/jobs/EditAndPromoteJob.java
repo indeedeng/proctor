@@ -1,5 +1,8 @@
 package com.indeed.proctor.webapp.jobs;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Joiner;
@@ -11,6 +14,7 @@ import com.indeed.proctor.common.EnvironmentVersion;
 import com.indeed.proctor.common.IncompatibleTestMatrixException;
 import com.indeed.proctor.common.ProctorPromoter;
 import com.indeed.proctor.common.ProctorUtils;
+import com.indeed.proctor.common.Serializers;
 import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.Payload;
@@ -34,8 +38,7 @@ import com.indeed.proctor.webapp.extensions.PreDefinitionCreateChange;
 import com.indeed.proctor.webapp.extensions.PreDefinitionEditChange;
 import com.indeed.proctor.webapp.extensions.PreDefinitionPromoteChange;
 import com.indeed.proctor.webapp.model.RevisionDefinition;
-import com.indeed.proctor.webapp.tags.TestDefinitionFunctions;
-import com.indeed.proctor.webapp.tags.UtilityFunctions;
+import com.indeed.proctor.webapp.util.EncodingUtil;
 import com.indeed.proctor.webapp.util.AllocationIdUtil;
 import com.indeed.proctor.webapp.util.TestDefinitionUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -46,6 +49,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -69,6 +73,8 @@ public class EditAndPromoteJob extends AbstractJob {
     private static final Pattern VALID_TEST_NAME_PATTERN = ALPHA_NUMERIC_END_RESTRICTION_JAVA_IDENTIFIER_PATTERN;
     private static final Pattern VALID_BUCKET_NAME_PATTERN = ALPHA_NUMERIC_JAVA_IDENTIFIER_PATTERN;
     private static final double TOLERANCE = 1E-6;
+
+    private static final ObjectMapper OBJECT_MAPPER = Serializers.strict();
 
     private List<PreDefinitionEditChange> preDefinitionEditChanges = Collections.emptyList();
     private List<PostDefinitionEditChange> postDefinitionEditChanges = Collections.emptyList();
@@ -151,7 +157,7 @@ public class EditAndPromoteJob extends AbstractJob {
                             throw new IllegalArgumentException("No new test definition given");
                         }
                         job.logWithTiming("Parsing test definition json", "parsing");
-                        final TestDefinition testDefinitionToUpdate = TestDefinitionFunctions.parseTestDefinition(testDefinitionJson);
+                        final TestDefinition testDefinitionToUpdate = parseTestDefinition(testDefinitionJson);
                         doEditInternal(testName, username, password, author, isCreate, comment, testDefinitionToUpdate, previousRevision, autopromoteTarget, requestParameterMap, job);
                     } catch (final GitNoAuthorizationException | GitNoDevelperAccessLevelException | IllegalArgumentException | IncompatibleTestMatrixException exp) {
                         job.logFailedJob(exp);
@@ -165,6 +171,20 @@ public class EditAndPromoteJob extends AbstractJob {
         );
         jobManager.submit(backgroundJob);
         return backgroundJob;
+    }
+
+    private static TestDefinition parseTestDefinition(final String testDefinition) throws IOException, JsonParseException, JsonMappingException {
+        final TestDefinition td = OBJECT_MAPPER.readValue(testDefinition, TestDefinition.class);
+        // Until (PROC-72) is resolved, all of the 'empty' rules should get saved as NULL rules.
+        if (CharMatcher.WHITESPACE.matchesAllOf(Strings.nullToEmpty(td.getRule()))) {
+            td.setRule(null);
+        }
+        for (final Allocation ac : td.getAllocations()) {
+            if (CharMatcher.WHITESPACE.matchesAllOf(Strings.nullToEmpty(ac.getRule()))) {
+                ac.setRule(null);
+            }
+        }
+        return td;
     }
 
     public BackgroundJob doEdit(
@@ -340,7 +360,7 @@ public class EditAndPromoteJob extends AbstractJob {
                 autopromoteTarget, requestParameterMap, job, trunkStore, qaRevision, prodRevision, existingTestDefinition);
 
         job.logComplete();
-        job.addUrl("/proctor/definition/" + UtilityFunctions.urlEncode(testName) + "?branch=" + theEnvironment.getName(), "View Result");
+        job.addUrl("/proctor/definition/" + EncodingUtil.urlEncodeUtf8(testName) + "?branch=" + theEnvironment.getName(), "View Result");
         return true;
     }
 
@@ -1047,7 +1067,7 @@ public class EditAndPromoteJob extends AbstractJob {
             }
 
             job.log(String.format("Promoted %s from %s (%1.7s) to %s (%1.7s)", testName, source.getName(), srcRevision, destination.getName(), destRevision));
-            job.addUrl("/proctor/definition/" + UtilityFunctions.urlEncode(testName) + "?branch=" + destination.getName(), "view " + testName + " on " + destination.getName());
+            job.addUrl("/proctor/definition/" + EncodingUtil.urlEncodeUtf8(testName) + "?branch=" + destination.getName(), "view " + testName + " on " + destination.getName());
             return success;
         }
     }

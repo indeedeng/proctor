@@ -21,6 +21,163 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>yuicompressor-maven-plugin</artifactId>
+                <version>1.0.0</version>
+                <executions>
+                    <execution>
+                        <id>combine-css</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>aggregate-css</goal>
+                        </goals>
+                        <configuration>
+                            <sourceDirectory>../proctor-webapp/src/main/resources/META-INF/resources/static/</sourceDirectory>
+                            <includes>
+                                <include>lib/normalize/normalize.css</include>
+                                <include>lib/normalize/normalize.css</include>
+                                <include>lib/foundation/stylesheets/foundation.css</include>
+                                <include>lib/oocss/mod.css</include>
+                                <include>lib/oocss/media.css</include>
+                                <include>lib/oocss/space.css</include>
+                                <include>styles/app.css</include>
+                            </includes>
+                            <output>${project.build.outputDirectory}/META-INF/resources/static/styles/styles-compiled.css</output>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.7</version>
+                <executions>
+                    <execution>
+                        <phase>generate-resources</phase>
+                        <configuration>
+                            <target name="prepare-compile-js-closure">
+                                <taskdef resource="net/sf/antcontrib/antlib.xml" classpathref="maven.plugin.classpath" />
+                                <if>
+                                    <not>
+                                        <available file="${basedir}/target/compiler.jar" />
+                                    </not>
+                                    <then>
+                                        <get src="${closure-compiler-url}" dest="${basedir}/target" />
+                                        <unzip src="${basedir}/target/${closure-compiler-zip}" dest="${basedir}/target/">
+                                            <patternset>
+                                                <include name="*.jar" />
+                                            </patternset>
+                                        </unzip>
+                                    </then>
+                                </if>
+                                <if>
+                                    <not>
+                                        <available file="${basedir}/target/closure-library/" />
+                                    </not>
+                                    <then>
+                                        <get src="${closure-library-url}" dest="${basedir}/target" />
+                                        <unzip src="${basedir}/target/${closure-library-zip}" dest="${basedir}/target/closure-library">
+                                        </unzip>
+                                    </then>
+                                </if>
+                            </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>ant-contrib</groupId>
+                        <artifactId>ant-contrib</artifactId>
+                        <version>1.0b3</version>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>ant</groupId>
+                                <artifactId>ant</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.apache.ant</groupId>
+                        <artifactId>ant-nodeps</artifactId>
+                        <version>1.8.1</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.2</version>
+                <executions>
+                    <execution>
+                        <configuration>
+                            <executable>python</executable>
+                            <workingDirectory>${closure-library-dir}/closure/bin/build</workingDirectory>
+                            <arguments>
+                                <argument>closurebuilder.py</argument>
+                                <argument>--root=${basedir}/src/main/resources/META-INF/resources/static/scripts/app/</argument>
+                                <argument>--root=${basedir}/target/closure-library/</argument>
+                                <argument>--namespace=indeed.proctor.app.editor</argument>
+                                <argument>--output_mode=compiled</argument>
+                                <argument>--compiler_jar=${basedir}/target/compiler.jar</argument>
+                                <argument>--output_file=${project.build.outputDirectory}/META-INF/resources/static/scripts/app/editor-compiled.js</argument>
+                            </arguments>
+                        </configuration>
+                        <id>compile editor.js</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <configuration>
+                            <executable>python</executable>
+                            <workingDirectory>${closure-library-dir}/closure/bin/build</workingDirectory>
+                            <arguments>
+                                <argument>closurebuilder.py</argument>
+                                <argument>--root=${basedir}/src/main/resources/META-INF/resources/static/scripts/app/</argument>
+                                <argument>--root=${basedir}/target/closure-library/</argument>
+                                <argument>--namespace=indeed.proctor.app.details</argument>
+                                <argument>--output_mode=compiled</argument>
+                                <argument>--compiler_jar=${basedir}/target/compiler.jar</argument>
+                                <argument>--output_file=${project.build.outputDirectory}/META-INF/resources/static/scripts/app/details-compiled.js</argument>
+                            </arguments>
+                        </configuration>
+                        <id>compile details.js</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <configuration>
+                            <executable>python</executable>
+                            <workingDirectory>${closure-library-dir}/closure/bin/build</workingDirectory>
+                            <arguments>
+                                <argument>closurebuilder.py</argument>
+                                <argument>--root=${basedir}/src/main/resources/META-INF/resources/static/scripts/app/</argument>
+                                <argument>--root=${basedir}/target/closure-library/</argument>
+                                <argument>--namespace=indeed.proctor.app.matrix.list</argument>
+                                <argument>--output_mode=compiled</argument>
+                                <argument>--compiler_jar=${basedir}/target/compiler.jar</argument>
+                                <argument>--output_file=${project.build.outputDirectory}/META-INF/resources/static/scripts/app/matrix-list-compiled.js</argument>
+                            </arguments>
+                        </configuration>
+                        <id>compile matrix-list.js</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
                     <execution>
@@ -42,6 +199,10 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
+                <configuration>
+                    <!-- Else jsimone web-runner fails to find classes in WAR -->
+                    <archiveClasses>true</archiveClasses>
+                </configuration>
             </plugin>
             <plugin>
                 <!-- try shading usages of apache-el even if module currently does not use, in case it is used in the future -->
@@ -76,6 +237,28 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
+        <!--Servlet-Container provided dependencies-->
+        <dependency>
+            <groupId>org.apache.tomcat</groupId>
+            <artifactId>tomcat-jsp-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tomcat</groupId>
+            <artifactId>tomcat-servlet-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tomcat</groupId>
+            <artifactId>tomcat-jasper-el</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tomcat</groupId>
+            <artifactId>tomcat-el-api</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-webmvc</artifactId>
@@ -87,4 +270,14 @@
             <version>${spring.version}</version>
         </dependency>
     </dependencies>
+
+    <properties>
+        <closure-library.version>20160106</closure-library.version>
+        <closure-library-zip>v${closure-library.version}.zip</closure-library-zip>
+        <closure-library-url>https://github.com/google/closure-library/archive/${closure-library-zip}</closure-library-url>
+        <closure-library-dir>${basedir}/target/closure-library/closure-library-${closure-library.version}</closure-library-dir>
+        <closure-compiler.version>20160315</closure-compiler.version>
+        <closure-compiler-zip>compiler-${closure-compiler.version}.zip</closure-compiler-zip>
+        <closure-compiler-url>http://dl.google.com/closure-compiler/${closure-compiler-zip}</closure-compiler-url>
+    </properties>
 </project>

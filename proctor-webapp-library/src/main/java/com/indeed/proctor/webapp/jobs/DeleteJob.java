@@ -12,7 +12,7 @@ import com.indeed.proctor.webapp.extensions.BackgroundJobLogger;
 import com.indeed.proctor.webapp.extensions.DefinitionChangeLogger;
 import com.indeed.proctor.webapp.extensions.PostDefinitionDeleteChange;
 import com.indeed.proctor.webapp.extensions.PreDefinitionDeleteChange;
-import com.indeed.proctor.webapp.tags.UtilityFunctions;
+import com.indeed.proctor.webapp.util.EncodingUtil;
 import com.indeed.proctor.webapp.util.TestDefinitionUtil;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -156,7 +156,7 @@ public class DeleteJob extends AbstractJob {
                 final TestDefinition otherDefinition = TestDefinitionUtil.getTestDefinition(otherStore, testName);
                 if (otherDefinition != null) {
                     testExistsInOtherEnvironments = true;
-                    job.addUrl("/proctor/definition/" + UtilityFunctions.urlEncode(testName) + "?branch=" + otherEnvironment.getName(), "view " + testName + " on " + otherEnvironment.getName());
+                    job.addUrl("/proctor/definition/" + EncodingUtil.urlEncodeUtf8(testName) + "?branch=" + otherEnvironment.getName(), "view " + testName + " on " + otherEnvironment.getName());
                 }
             }
         }

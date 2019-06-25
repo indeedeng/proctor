@@ -1,31 +1,20 @@
 package com.indeed.proctor.webapp.tags;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.CharMatcher;
-import com.google.common.base.Strings;
 import com.indeed.proctor.common.EnvironmentVersion;
-import com.indeed.proctor.common.Serializers;
-import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.Range;
 import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.common.model.TestDefinition;
 import com.indeed.proctor.store.GitProctorUtils;
 import com.indeed.proctor.store.Revision;
-import com.indeed.proctor.webapp.controllers.ProctorController;
 import com.indeed.proctor.webapp.db.Environment;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.IOException;
-import java.util.Collection;
 import java.util.Map;
 
 /**
  * @author parker
  */
 public final class TestDefinitionFunctions {
-    private static final ObjectMapper objectMapper = Serializers.strict();
 
     private TestDefinitionFunctions() { throw new UnsupportedOperationException("Static class"); }
 
@@ -128,33 +117,9 @@ public final class TestDefinitionFunctions {
         return history.getMessage().startsWith(needle);
     }
 
-
     // Annoyingly there isn't a way to check map.contains via jsp, you cannot even access the keys Collection directly
     public static boolean containsKey(Map m, Object key) {
         return m.containsKey(key);
-    }
-
-    public static boolean hasDevInstances(final Collection<ProctorController.CompatibilityRow> rows) {
-        for (final ProctorController.CompatibilityRow row : rows) {
-            if (!row.getDev().isEmpty()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public static TestDefinition parseTestDefinition(final String testDefinition) throws IOException, JsonParseException, JsonMappingException {
-        final TestDefinition td = objectMapper.readValue(testDefinition, TestDefinition.class);
-        // Until (PROC-72) is resolved, all of the 'empty' rules should get saved as NULL rules.
-            if (CharMatcher.WHITESPACE.matchesAllOf(Strings.nullToEmpty(td.getRule()))) {
-                td.setRule(null);
-            }
-        for (final Allocation ac : td.getAllocations()) {
-            if (CharMatcher.WHITESPACE.matchesAllOf(Strings.nullToEmpty(ac.getRule()))) {
-                ac.setRule(null);
-            }
-        }
-        return td;
     }
 
     /**

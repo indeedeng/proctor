@@ -33,7 +33,7 @@ import com.indeed.proctor.webapp.model.ProctorClientApplication;
 import com.indeed.proctor.webapp.model.RevisionDefinition;
 import com.indeed.proctor.webapp.model.SessionViewModel;
 import com.indeed.proctor.webapp.model.WebappConfiguration;
-import com.indeed.proctor.webapp.tags.UtilityFunctions;
+import com.indeed.proctor.webapp.util.EncodingUtil;
 import com.indeed.proctor.webapp.util.TestDefinitionUtil;
 import com.indeed.proctor.webapp.views.JsonView;
 import com.indeed.proctor.webapp.views.ProctorView;
@@ -314,7 +314,7 @@ public class ProctorTestDefinitionController extends AbstractController {
             final JsonResponse<BackgroundJobResponseModel> response = new JsonResponse<>(new BackgroundJobResponseModel(job), true, job.getTitle());
             return new JsonView(response);
         } else {
-            return new RedirectView("/proctor/definition/" + UtilityFunctions.urlEncode(testName) + "?branch=" + destination.getName());
+            return new RedirectView("/proctor/definition/" + EncodingUtil.urlEncodeUtf8(testName) + "?branch=" + destination.getName());
         }
     }
 
