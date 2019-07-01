@@ -155,7 +155,7 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
         }
 
         final TestMatrixArtifact testMatrixArtifact = getCurrentTestMatrixArtifact(environment);
-        Preconditions.checkNotNull(testMatrixArtifact, "Failed to get the current test matrix artifact");
+        Preconditions.checkNotNull(testMatrixArtifact, "Failed to get the current test matrix artifact from Envirronment " + environment);
         final Map<String, ConsumableTestDefinition> definedTests = testMatrixArtifact.getTests();
 
         final Set<String> tests = Sets.newHashSet();
@@ -191,7 +191,7 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
     }
 
     private boolean refreshInternalCache(final Environment environment) {
-        LOGGER.info("Refreshing internal list of ProctorSpecifications");
+        LOGGER.info("Refreshing internal list of ProctorSpecifications for environment " + environment);
 
         final List<ProctorClientApplication> clients = clientSource.loadClients(environment);
 
@@ -263,7 +263,7 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
             LOGGER.info("Skipped checking specification for the following AppVersions (/private/proctor/specification returned 404): " + Joiner.on(",").join(skippedAppVersions));
         }
 
-        LOGGER.info("Finish refreshing internal list of ProctorSpecifications");
+        LOGGER.info("Finish refreshing internal list of ProctorSpecifications for " + environment);
         return appVersionsToCheck.isEmpty();
     }
 
@@ -290,7 +290,7 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
                 }
 
                 // Don't yell too load, the error is handled
-                LOGGER.info("Failed to read specification from: " + client.getBaseApplicationUrl() + " : " + specificationResult.getError());
+                LOGGER.info("Failed to read specification from: " + client.getBaseApplicationUrl() + " : " + statusCode + ", " + specificationResult.getError());
                 results.failed(client, specificationResult);
             } else {
                 results.success(client, specificationResult);
