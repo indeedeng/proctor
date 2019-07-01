@@ -1,5 +1,8 @@
 # Proctor
-Proctor is a A/B testing framework written in Java that enables [data-driven product design](http://engineering.indeed.com/blog/2013/05/indeedeng-data-driven-product-design-slides-video/) at Indeed. 
+
+![Lifecycle](https://img.shields.io/osslifecycle/indeedeng/proctor.svg)
+
+Proctor is a A/B testing framework written in Java that enables [data-driven product design](http://engineering.indeed.com/blog/2013/05/indeedeng-data-driven-product-design-slides-video/) at Indeed.
 
 Proctor consists of data-model, client specification, client loader, matrix builder, java code generator.
 
@@ -47,10 +50,9 @@ Use the [indeedeng-proctor-users](https://groups.google.com/d/forum/indeedeng-pr
 - [maccman/abba](https://github.com/maccman/abba)
 - [assaf/vanity](https://github.com/assaf/vanity)
 
+# Code of Conduct
+This project is governed by the [Contributor Covenant v 1.4.1](CODE_OF_CONDUCT.md)
+
 # License
 
 [Apache License Version 2.0](https://github.com/indeedeng/proctor/blob/master/LICENSE)
-
-
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/indeedeng/proctor/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
-
