@@ -137,16 +137,22 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
             );
         }
 
-        if (!loadResult.getTestErrorMap().isEmpty()) {
-            for (final Map.Entry<String, IncompatibleTestMatrixException> errorTest : loadResult.getTestErrorMap().entrySet()) {
-                final String testName = errorTest.getKey();
-                if (requiredTests.containsKey(testName)) {
-                    LOGGER.error(String.format("Unable to load test matrix for %s in a specification", testName), errorTest.getValue());
-                } else {
-                    LOGGER.warn(String.format("Unable to load test matrix for %s matching dynamic filters", testName), errorTest.getValue());
-                }
-            }
-        }
+        loadResult.getTestErrorMap().forEach((testName, exception) -> {
+            LOGGER.error(String.format("Unable to load test matrix for a required test %s", testName), exception);
+        });
+        loadResult.getMissingTests().forEach((testName) ->
+            LOGGER.error(String.format("A required test %s is missing from test matrix", testName))
+        );
+        loadResult.getDynamicTestErrorMap().forEach((testName, exception) -> {
+            // Intentionally not adding stack trace to log, to reduce log size,
+            // message contains all the information that is valuable.
+            LOGGER.warn(String.format(
+                    "Unable to load test matrix for a dynamic test %s. Cause: %s Message: %s",
+                    testName,
+                    exception.getCause(),
+                    exception.getMessage()
+            ));
+        });
 
         final Audit newAudit = testMatrix.getAudit();
         if (lastAudit != null) {
