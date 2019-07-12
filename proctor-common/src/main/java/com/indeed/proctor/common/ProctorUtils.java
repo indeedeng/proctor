@@ -57,6 +57,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Helper functions mostly to verify TestMatrix instances.
+ */
 public abstract class ProctorUtils {
     private static final ObjectMapper OBJECT_MAPPER_NON_AUTOCLOSE = Serializers.lenient().configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
     private static final ObjectMapper OBJECT_MAPPER = Serializers.lenient();
@@ -334,6 +337,9 @@ public abstract class ProctorUtils {
         return resultBuilder.build();
     }
 
+    /**
+     * verify with default function mapper and empty context and no dynamic tests
+     */
     public static ProctorLoadResult verify(
             @Nonnull final TestMatrixArtifact testMatrix,
             final String matrixSource,
@@ -349,6 +355,9 @@ public abstract class ProctorUtils {
         );
     }
 
+    /**
+     * verify with default function mapper and empty context
+     */
     public static ProctorLoadResult verify(
             @Nonnull final TestMatrixArtifact testMatrix,
             final String matrixSource,
@@ -365,6 +374,9 @@ public abstract class ProctorUtils {
         );
     }
 
+    /**
+     * verify with default function mapper and no dynamic tests
+     */
     public static ProctorLoadResult verify(
             @Nonnull final TestMatrixArtifact testMatrix,
             final String matrixSource,
@@ -669,6 +681,9 @@ public abstract class ProctorUtils {
         }
     }
 
+    /**
+     * minimizes TestMatrix by removing non-required test definitions, also add definitions fro missing tests
+     */
     private static void consolidate(
             @Nonnull final TestMatrixArtifact testMatrix,
             @Nonnull final Map<String, TestSpecification> requiredTests,
