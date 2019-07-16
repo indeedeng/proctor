@@ -35,10 +35,7 @@ public class StringProctorLoader extends AbstractJsonProctorLoader {
             @Nonnull final String source,
             @Nonnull final String testMatrixJson
     ) {
-        super(StringProctorLoader.class, specification, RuleEvaluator.FUNCTION_MAPPER);
-
-        this.source = source;
-        this.testMatrixJson = testMatrixJson;
+        this(specification, source, testMatrixJson, RuleEvaluator.FUNCTION_MAPPER);
     }
 
     @Nonnull
@@ -49,7 +46,8 @@ public class StringProctorLoader extends AbstractJsonProctorLoader {
 
     @Override
     protected TestMatrixArtifact loadTestMatrix() throws IOException {
-        final Reader reader = new StringReader(testMatrixJson);
-        return loadJsonTestMatrix(reader);
+        try (Reader reader = new StringReader(testMatrixJson)) {
+            return loadJsonTestMatrix(reader);
+        }
     }
 }
