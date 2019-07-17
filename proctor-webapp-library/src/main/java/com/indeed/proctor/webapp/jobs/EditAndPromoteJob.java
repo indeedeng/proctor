@@ -135,7 +135,7 @@ public class EditAndPromoteJob extends AbstractJob {
         this.postDefinitionPromoteChanges = postDefinitionPromoteChanges;
     }
 
-    public BackgroundJob doEdit(
+    public BackgroundJob<Void> doEdit(
             final String testName,
             final String username,
             final String password,
@@ -147,7 +147,7 @@ public class EditAndPromoteJob extends AbstractJob {
             final Environment autopromoteTarget,
             final Map<String, String[]> requestParameterMap
     ) {
-        final BackgroundJob<Object> backgroundJob = jobFactory.createBackgroundJob(
+        final BackgroundJob<Void> backgroundJob = jobFactory.createBackgroundJob(
                 createJobTitle(testName, username, author, isCreate, autopromoteTarget),
                 author,
                 createJobType(isCreate, autopromoteTarget),
@@ -187,7 +187,7 @@ public class EditAndPromoteJob extends AbstractJob {
         return td;
     }
 
-    public BackgroundJob doEdit(
+    public BackgroundJob<Void> doEdit(
             final String testName,
             final String username,
             final String password,
@@ -200,7 +200,7 @@ public class EditAndPromoteJob extends AbstractJob {
             final Map<String, String[]> requestParameterMap
     ) {
 
-        final BackgroundJob<Object> backgroundJob = jobFactory.createBackgroundJob(
+        final BackgroundJob<Void> backgroundJob = jobFactory.createBackgroundJob(
                 createJobTitle(testName, username, author, isCreate, autopromoteTarget),
                 author,
                 createJobType(isCreate, autopromoteTarget),
@@ -250,7 +250,7 @@ public class EditAndPromoteJob extends AbstractJob {
             final String previousRevision,
             final Environment autopromoteTarget,
             final Map<String, String[]> requestParameterMap,
-            final BackgroundJob job
+            final BackgroundJob<Void> job
     ) throws Exception {
         final Environment theEnvironment = Environment.WORKING; // only allow editing of TRUNK!
         final ProctorStore trunkStore = determineStoreFromEnvironment(theEnvironment);
@@ -376,7 +376,7 @@ public class EditAndPromoteJob extends AbstractJob {
             final String previousRevision,
             final Environment autopromoteTarget,
             final Map<String, String[]> requestParameterMap,
-            final BackgroundJob job,
+            final BackgroundJob<Void> job,
             final ProctorStore trunkStore,
             final String qaRevision,
             final String prodRevision,
@@ -413,7 +413,7 @@ public class EditAndPromoteJob extends AbstractJob {
             final TestDefinition testDefinitionToUpdate,
             final String previousRevision,
             final Map<String, String[]> requestParameterMap,
-            final BackgroundJob job,
+            final BackgroundJob<Void> job,
             final ProctorStore trunkStore,
             final String qaRevision,
             final String prodRevision,
@@ -445,7 +445,7 @@ public class EditAndPromoteJob extends AbstractJob {
             final String password,
             final String author,
             final Map<String, String[]> requestParameterMap,
-            final BackgroundJob job,
+            final BackgroundJob<Void> job,
             final String currentRevision
     ) throws Exception {
         try {
@@ -472,7 +472,7 @@ public class EditAndPromoteJob extends AbstractJob {
             final String author,
             final TestDefinition testDefinitionToUpdate,
             final Map<String, String[]> requestParameterMap,
-            final BackgroundJob job,
+            final BackgroundJob<Void> job,
             final String currentRevision,
             final String qaRevision,
             final String prodRevision,
@@ -812,7 +812,7 @@ public class EditAndPromoteJob extends AbstractJob {
 
     private void validateBasicInformation(
             final TestDefinition definition,
-            final BackgroundJob backgroundJob
+            final BackgroundJob<Void> backgroundJob
     ) throws IllegalArgumentException {
         if (CharMatcher.WHITESPACE.matchesAllOf(Strings.nullToEmpty(definition.getDescription()))) {
             throw new IllegalArgumentException("Description is required.");
@@ -835,7 +835,10 @@ public class EditAndPromoteJob extends AbstractJob {
         validateAllocationsAndBuckets(definition, backgroundJob);
     }
 
-    private void validateAllocationsAndBuckets(final TestDefinition definition, final BackgroundJob backgroundJob) throws IllegalArgumentException {
+    private void validateAllocationsAndBuckets(
+            final TestDefinition definition,
+            final BackgroundJob<Void> backgroundJob
+    ) throws IllegalArgumentException {
         final Allocation allocation = definition.getAllocations().get(0);
         final List<Range> ranges = allocation.getRanges();
         final TestType testType = definition.getTestType();
@@ -976,7 +979,7 @@ public class EditAndPromoteJob extends AbstractJob {
         }
     }
 
-    public BackgroundJob doPromote(
+    public BackgroundJob<Void> doPromote(
             final String testName,
             final String username,
             final String password,
@@ -987,7 +990,7 @@ public class EditAndPromoteJob extends AbstractJob {
             final String destRevision,
             final Map<String, String[]> requestParameterMap
     ) {
-        final BackgroundJob<Object> backgroundJob = jobFactory.createBackgroundJob(
+        final BackgroundJob<Void> backgroundJob = jobFactory.createBackgroundJob(
                 String.format("(username:%s author:%s) promoting %s %s %1.7s to %s", username, author, testName, source, srcRevision, destination),
                 author,
                 BackgroundJob.JobType.TEST_PROMOTION,
@@ -1025,7 +1028,7 @@ public class EditAndPromoteJob extends AbstractJob {
             final Environment destination,
             final String destRevision,
             final Map<String, String[]> requestParameterMap,
-            final BackgroundJob job,
+            final BackgroundJob<Void> job,
             final boolean isAutopromote
     ) throws Exception {
         final Map<String, String> metadata = Collections.emptyMap();
@@ -1078,7 +1081,7 @@ public class EditAndPromoteJob extends AbstractJob {
         Environment getDestination();
 
         boolean promoteTest(
-                final BackgroundJob job,
+                final BackgroundJob<Void> job,
                 final String testName,
                 final String srcRevision,
                 final String destRevision,
@@ -1102,7 +1105,7 @@ public class EditAndPromoteJob extends AbstractJob {
 
         @Override
         public boolean promoteTest(
-                final BackgroundJob job,
+                final BackgroundJob<Void> job,
                 final String testName,
                 final String srcRevision,
                 final String destRevision,
@@ -1131,7 +1134,7 @@ public class EditAndPromoteJob extends AbstractJob {
             return destination;
         }
 
-        abstract void doPromotion(BackgroundJob job, String testName, String srcRevision, String destRevision,
+        abstract void doPromotion(BackgroundJob<Void> job, String testName, String srcRevision, String destRevision,
                                   String username, String password, String author, Map<String, String> metadata)
                 throws ProctorPromoter.TestPromotionException, StoreException;
     }
@@ -1140,7 +1143,7 @@ public class EditAndPromoteJob extends AbstractJob {
             Environment.QA) {
         @Override
         void doPromotion(
-                final BackgroundJob job,
+                final BackgroundJob<Void> job,
                 final String testName,
                 final String srcRevision,
                 final String destRevision,
@@ -1158,7 +1161,7 @@ public class EditAndPromoteJob extends AbstractJob {
             Environment.PRODUCTION) {
         @Override
         void doPromotion(
-                final BackgroundJob job,
+                final BackgroundJob<Void> job,
                 final String testName,
                 final String srcRevision,
                 final String destRevision,
@@ -1176,7 +1179,7 @@ public class EditAndPromoteJob extends AbstractJob {
             Environment.PRODUCTION) {
         @Override
         void doPromotion(
-                final BackgroundJob job,
+                final BackgroundJob<Void> job,
                 final String testName,
                 final String srcRevision,
                 final String destRevision,

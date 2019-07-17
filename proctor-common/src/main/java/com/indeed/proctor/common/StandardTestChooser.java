@@ -21,6 +21,7 @@ import java.security.MessageDigest;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.stream.Collectors.joining;
 
 /**
  * Embodies the logic for a single test, including applicability rule and distribution.  {@link #choose(String, Map)} is the only useful entry point.
@@ -82,12 +83,11 @@ class StandardTestChooser implements TestChooser<String> {
 
         //  I hate floating points.  TODO: extract a required precision constant/parameter?
         if (bucketTotal < 0.9999 || bucketTotal > 1.0001) { //  compensate for FP imprecision.  TODO: determine what these bounds really should be by testing stuff
-            final StringBuilder sb = new StringBuilder("Buckets with rule " + rule + " don't add up to 1: ").append(ranges.get(0).getLength());
-            for (int i = 1; i < ranges.size(); i++) {
-                sb.append(" + ").append(ranges.get(i).getLength());
-            }
-            sb.append(" = ").append(bucketTotal);
-            throw new IllegalArgumentException(sb.toString());
+            throw new IllegalArgumentException(
+                    "Buckets with rule " + rule + " don't add up to 1: "
+                            + ranges.stream().map(r -> Double.toString(r.getLength())).collect(joining(" + "))
+                            + " = " + bucketTotal
+            );
         }
         return cutoffs;
     }

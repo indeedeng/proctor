@@ -14,7 +14,7 @@ public class BackgroundJobFactory {
     private List<AfterBackgroundJobExecute> afterBackgroundJobExecutes = Collections.emptyList();
 
     public interface Executor<T> {
-        T execute(BackgroundJob job) throws Exception;
+        T execute(BackgroundJob<T> job) throws Exception;
     }
 
     public <T> BackgroundJob<T> createBackgroundJob(final String jobTitle,

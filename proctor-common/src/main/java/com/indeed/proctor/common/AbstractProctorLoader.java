@@ -81,6 +81,9 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
     @CheckForNull
     abstract TestMatrixArtifact loadTestMatrix() throws IOException, MissingTestMatrixException;
 
+    /**
+     * @return informative String for log/error messages
+     */
     @Nonnull
     abstract String getSource();
 

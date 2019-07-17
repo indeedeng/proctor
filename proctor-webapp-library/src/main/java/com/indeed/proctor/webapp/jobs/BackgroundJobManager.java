@@ -29,9 +29,9 @@ import java.util.concurrent.atomic.AtomicLong;
 public class BackgroundJobManager {
     private static final Logger LOGGER = Logger.getLogger(BackgroundJobManager.class);
 
-    private final List<BackgroundJob> backgroundJobs = Lists.newLinkedList();
+    private final List<BackgroundJob<?>> backgroundJobs = Lists.newLinkedList();
     private final ExecutorService service;
-    private final Map<UUID, BackgroundJob> history = new MapMaker()
+    private final Map<UUID, BackgroundJob<?>> history = new MapMaker()
             .softValues()
             .makeMap();
     private final AtomicLong lastId = new AtomicLong(0);
@@ -77,11 +77,11 @@ public class BackgroundJobManager {
         LOGGER.info("a background job was submitted : id=" + id + " uuid=" + uuid + " title=" + job.getTitle());
     }
 
-    public List<BackgroundJob> getRecentJobs() {
-        final List<BackgroundJob> recent = Lists.newArrayListWithCapacity(backgroundJobs.size());
-        final ListIterator<BackgroundJob> jobs = backgroundJobs.listIterator();
+    public List<BackgroundJob<?>> getRecentJobs() {
+        final List<BackgroundJob<?>> recent = Lists.newArrayListWithCapacity(backgroundJobs.size());
+        final ListIterator<BackgroundJob<?>> jobs = backgroundJobs.listIterator();
         while (jobs.hasNext()) {
-            final BackgroundJob job = jobs.next();
+            final BackgroundJob<?> job = jobs.next();
             recent.add(job); // inactive jobs get to be returned once...
             if (job.getFuture().isDone() || job.getFuture().isCancelled()) {
                 jobs.remove();
@@ -90,14 +90,13 @@ public class BackgroundJobManager {
         return recent;
     }
 
-    @SuppressWarnings("unchecked")
-    public <T> BackgroundJob<T> getJobForId(final UUID id) {
+    public BackgroundJob<?> getJobForId(final UUID id) {
         return history.get(id);
     }
 
     @Nullable
     public BackgroundJob.JobInfo getJobInfo(final UUID jobId) {
-        final BackgroundJob job = getJobForId(jobId);
+        final BackgroundJob<?> job = getJobForId(jobId);
         if (job != null) {
             return job.getJobInfo();
         } else if (jobInfoStore != null) {

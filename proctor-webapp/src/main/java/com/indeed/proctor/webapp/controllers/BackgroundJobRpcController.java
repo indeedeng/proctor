@@ -84,7 +84,7 @@ public class BackgroundJobRpcController {
     @ApiOperation(value = "Cancel a background job")
     @RequestMapping(value = "/cancel", method = RequestMethod.GET)
     public View doCancelJob(@RequestParam("id") final UUID jobId) {
-        final BackgroundJob job = manager.getJobForId(jobId);
+        final BackgroundJob<?> job = manager.getJobForId(jobId);
         if (job == null) {
             final String msg = "Failed to identify job for " + jobId;
             final JsonResponse<String> err = new JsonResponse<String>(msg, false, msg);
@@ -110,7 +110,7 @@ public class BackgroundJobRpcController {
                 BackgroundJob.JobType.JOB_TEST,
                 new BackgroundJobFactory.Executor<Boolean>() {
                     @Override
-                    public Boolean execute(final BackgroundJob job) throws Exception {
+                    public Boolean execute(final BackgroundJob<Boolean> job) throws Exception {
                         final long endms = start + ms;
                         while (true) {
                             final long now = System.currentTimeMillis();
@@ -140,7 +140,7 @@ public class BackgroundJobRpcController {
      * @deprecated Use
      */
     @Deprecated
-    public static Map<String, Object> buildJobJson(final BackgroundJob job) {
+    public static Map<String, Object> buildJobJson(final BackgroundJob<?> job) {
         final ImmutableMap.Builder<String, Object> builder = ImmutableMap.builder();
 
         builder.put("jobId", job.getUUID())

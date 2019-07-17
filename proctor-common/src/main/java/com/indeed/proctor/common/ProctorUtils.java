@@ -29,6 +29,7 @@ import com.indeed.proctor.common.model.TestMatrixVersion;
 import com.indeed.proctor.common.model.TestType;
 import org.apache.el.ExpressionFactoryImpl;
 import org.apache.log4j.Logger;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -57,6 +58,11 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.joining;
+
+/**
+ * Helper functions mostly to verify TestMatrix instances.
+ */
 public abstract class ProctorUtils {
     private static final ObjectMapper OBJECT_MAPPER_NON_AUTOCLOSE = Serializers.lenient().configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
     private static final ObjectMapper OBJECT_MAPPER = Serializers.lenient();
@@ -162,16 +168,7 @@ public abstract class ProctorUtils {
         if (ruleComponents.isEmpty()) {
             rule = null;
         } else {
-            final StringBuilder ruleBuilder = new StringBuilder("${");
-            for (int i = 0; i < ruleComponents.size(); i++) {
-                if (i != 0) {
-                    ruleBuilder.append(" && ");
-                }
-                ruleBuilder.append(ruleComponents.get(i));
-            }
-            ruleBuilder.append("}");
-
-            rule = ruleBuilder.toString();
+            rule = "${" + String.join(" && ", ruleComponents) + '}';
         }
 
         final List<Allocation> allocations = td.getAllocations();
@@ -334,6 +331,9 @@ public abstract class ProctorUtils {
         return resultBuilder.build();
     }
 
+    /**
+     * verify with default function mapper and empty context and no dynamic tests
+     */
     public static ProctorLoadResult verify(
             @Nonnull final TestMatrixArtifact testMatrix,
             final String matrixSource,
@@ -349,6 +349,9 @@ public abstract class ProctorUtils {
         );
     }
 
+    /**
+     * verify with default function mapper and empty context
+     */
     public static ProctorLoadResult verify(
             @Nonnull final TestMatrixArtifact testMatrix,
             final String matrixSource,
@@ -365,6 +368,9 @@ public abstract class ProctorUtils {
         );
     }
 
+    /**
+     * verify with default function mapper and no dynamic tests
+     */
     public static ProctorLoadResult verify(
             @Nonnull final TestMatrixArtifact testMatrix,
             final String matrixSource,
@@ -669,6 +675,9 @@ public abstract class ProctorUtils {
         }
     }
 
+    /**
+     * minimizes TestMatrix by removing non-required test definitions, also add definitions fro missing tests
+     */
     private static void consolidate(
             @Nonnull final TestMatrixArtifact testMatrix,
             @Nonnull final Map<String, TestSpecification> requiredTests,
@@ -887,6 +896,9 @@ public abstract class ProctorUtils {
         for (int i = 0; i < allocations.size(); i++) {
             final Allocation allocation = allocations.get(i);
             final List<Range> ranges = allocation.getRanges();
+            if (CollectionUtils.isEmpty(ranges)) {
+                throw new IncompatibleTestMatrixException("Allocation range has no buckets, needs to add up to 1.");
+            }
             //  ensure that each range refers to a known bucket
             double bucketTotal = 0;
             for (final Range range : ranges) {
@@ -898,12 +910,11 @@ public abstract class ProctorUtils {
             }
             //  I hate floating points.  TODO: extract a required precision constant/parameter?
             if (bucketTotal < 0.9999 || bucketTotal > 1.0001) { //  compensate for FP imprecision.  TODO: determine what these bounds really should be by testing stuff
-                final StringBuilder sb = new StringBuilder(testName + " range with rule " + allocation.getRule() + " does not add up to 1 : ").append(ranges.get(0).getLength());
-                for (int r = 1; r < ranges.size(); r++) {
-                    sb.append(" + ").append(ranges.get(r).getLength());
-                }
-                sb.append(" = ").append(bucketTotal);
-                throw new IncompatibleTestMatrixException(sb.toString());
+                throw new IncompatibleTestMatrixException(
+                        testName + " range with rule " + allocation.getRule() + " does not add up to 1 : "
+                                + ranges.stream().map(r -> Double.toString(r.getLength())).collect(joining(" + "))
+                                + " = " + bucketTotal
+                );
             }
             final String rule = allocation.getRule();
             final boolean lastAllocation = i == (allocations.size() - 1);

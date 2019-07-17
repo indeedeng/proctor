@@ -10,9 +10,9 @@ import java.util.UUID;
 @ApiModel(value = "Background Job status", description = "For asynchronous requests starting background jobs, returns data to poll status.")
 public class BackgroundJobResponseModel {
 
-    private final BackgroundJob job;
+    private final BackgroundJob<?> job;
 
-    public BackgroundJobResponseModel(final BackgroundJob job) {
+    public BackgroundJobResponseModel(final BackgroundJob<?> job) {
         this.job = job;
     }
 

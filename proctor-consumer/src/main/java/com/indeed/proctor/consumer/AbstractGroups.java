@@ -18,6 +18,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+/**
+ * Gives access to experiment groups of one request.
+ */
 public abstract class AbstractGroups {
     private final ProctorResult proctorResult;
     private final LinkedHashMap<String, TestBucket> buckets;
@@ -27,6 +30,9 @@ public abstract class AbstractGroups {
      */
     protected static final char ALLOCATION_GROUP_SEPARATOR = ':';
 
+    /**
+     * Setup fields based on eagerly computed bucket allocations in ProctorResult.
+     */
     protected AbstractGroups(final ProctorResult proctorResult) {
         this.proctorResult = proctorResult;
         this.buckets = Maps.newLinkedHashMap();

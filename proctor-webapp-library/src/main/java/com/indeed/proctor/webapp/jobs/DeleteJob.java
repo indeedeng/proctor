@@ -58,7 +58,7 @@ public class DeleteJob extends AbstractJob {
         this.postDefinitionDeleteChanges = postDefinitionDeleteChanges;
     }
 
-    public BackgroundJob doDelete(final String testName,
+    public BackgroundJob<Void> doDelete(final String testName,
                                   final String username,
                                   final String password,
                                   final String author,
@@ -68,7 +68,7 @@ public class DeleteJob extends AbstractJob {
                                   final Map<String, String[]> requestParameterMap
     ) {
         LOGGER.info(String.format("Deleting test %s branch: %s user: %s ", testName, source, username));
-        final BackgroundJob<Object> backgroundJob = jobFactory.createBackgroundJob(
+        final BackgroundJob<Void> backgroundJob = jobFactory.createBackgroundJob(
                 String.format("(username:%s author:%s) deleting %s branch: %s ", username, author, testName, source),
                 author,
                 BackgroundJob.JobType.TEST_DELETION,
@@ -78,7 +78,7 @@ public class DeleteJob extends AbstractJob {
                     } catch (final GitNoMasterAccessLevelException | GitNoAuthorizationException | GitNoDevelperAccessLevelException | IllegalArgumentException exp) {
                         job.logFailedJob(exp);
                         LOGGER.info("Deletion Failed: " + job.getTitle(), exp);
-                    } catch (Exception e) {
+                    } catch (final Exception e) {
                         job.logFailedJob(e);
                         LOGGER.error("Deletion Failed: " + job.getTitle(), e);
                     }
@@ -97,7 +97,7 @@ public class DeleteJob extends AbstractJob {
                                      final String srcRevision,
                                      final String comment,
                                      final Map<String, String[]> requestParameterMap,
-                                     final BackgroundJob job
+                                     final BackgroundJob<?> job
     ) throws Exception {
         final ProctorStore store = determineStoreFromEnvironment(source);
         final TestDefinition definition = TestDefinitionUtil.getTestDefinition(store, testName);

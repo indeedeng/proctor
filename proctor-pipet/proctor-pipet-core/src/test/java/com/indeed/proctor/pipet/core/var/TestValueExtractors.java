@@ -42,6 +42,7 @@ public class TestValueExtractors {
         Assert.assertNull("Request missing header and parameter should return null", chainedExtractor.extract(request));
         request.addHeader("User-Agent", "Chrome");
         Assert.assertEquals("Chrome", chainedExtractor.extract(request));
+        Assert.assertEquals("ChainedValueExtractor{chained(QUERY:ua, HEADER:User-Agent)}", chainedExtractor.toString());
 
         request.setParameter("ua", "Firefox");
         Assert.assertEquals("Query Parameter (listed first) should extract first", "Firefox", chainedExtractor.extract(request));

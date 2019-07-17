@@ -28,7 +28,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 /**
- * The sole entry point for client applications determining the test buckets for a particular client.  See {@link #determineTestGroups(Identifiers, Map, Map)}
+ * The sole entry point for client applications determining the test buckets for a particular client.
+ * Basically a Factory to create ProctorResult for a given identifier and context, based on a TestMatrix and a specification.
+ * Supposedly immutable result of loading a test matrix, so each reload creates a new instance of this class.
+ *
+ * See {@link #determineTestGroups(Identifiers, Map, Map)}
  * @author ketan
  */
 public class Proctor {
