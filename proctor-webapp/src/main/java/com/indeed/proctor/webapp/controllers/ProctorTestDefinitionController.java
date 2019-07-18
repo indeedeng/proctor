@@ -263,7 +263,7 @@ public class ProctorTestDefinitionController extends AbstractController {
             final HttpServletRequest request
     ) {
         final Environment theEnvironment = determineEnvironmentFromParameter(src);
-        final BackgroundJob<> job = deleteJob.doDelete(
+        final BackgroundJob<?> job = deleteJob.doDelete(
                 testName,
                 username,
                 password,

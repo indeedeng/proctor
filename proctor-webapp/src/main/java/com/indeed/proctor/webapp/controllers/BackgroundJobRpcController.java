@@ -71,7 +71,7 @@ public class BackgroundJobRpcController {
      */
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public String doGetJobList(final Model model) {
-        final List<BackgroundJob> jobs = manager.getRecentJobs();
+        final List<BackgroundJob<?>> jobs = manager.getRecentJobs();
         model.addAttribute("session",
                 SessionViewModel.builder()
                         .setUseCompiledCSS(configuration.isUseCompiledCSS())
