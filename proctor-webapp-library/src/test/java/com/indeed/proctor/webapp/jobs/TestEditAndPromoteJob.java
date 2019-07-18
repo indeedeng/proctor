@@ -377,7 +377,7 @@ public class TestEditAndPromoteJob {
         @Mock
         private MatrixChecker matrixChecker;
         @Mock
-        private BackgroundJob<?> backgroundJob;
+        private BackgroundJob<Void> backgroundJob;
 
         private static final String TEST_NAME = "unit_tst";
         private static final String USERNAME = "username";
