@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -92,6 +93,8 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
         proctorSpecification.setProvidedContext(providedContext);
         proctorSpecification.setDynamicFilters(dynamicFilters);
 
+        validateProctorSpecification(proctorSpecification);
+
         final File output =  new File(targetDir, name);
         try {
             OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValue(output, proctorSpecification);
@@ -99,6 +102,33 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
             throw new CodeGenException("Could not write to temp file " + output.getAbsolutePath(),e);
         }
         return output;
+    }
+
+    /**
+     * Validate proctor specification at build time. Throws {@link CodeGenException} if an error is found.
+     */
+    private static void validateProctorSpecification(final ProctorSpecification spec) throws CodeGenException {
+        for (final Map.Entry<String, TestSpecification> entry : spec.getTests().entrySet()) {
+            final String testName = entry.getKey();
+            final TestSpecification testSpecification = entry.getValue();
+            validateTestSpecification(testName, testSpecification);
+        }
+    }
+
+    @VisibleForTesting
+    static void validateTestSpecification(
+            final String testName,
+            final TestSpecification testSpec
+    ) throws CodeGenException {
+        final Set<Integer> bucketValueSet = new HashSet<>();
+        for (final Integer bucketValue : testSpec.getBuckets().values()) {
+            if (bucketValue == null) {
+                throw new CodeGenException("specification of " + testName + " has null bucket value");
+            }
+            if (!bucketValueSet.add(bucketValue)) {
+                throw new CodeGenException("specification of " + testName + " has duplicated bucket value " + bucketValue);
+            }
+        }
     }
 
     @Override

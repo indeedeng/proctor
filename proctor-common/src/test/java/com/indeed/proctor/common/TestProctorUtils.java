@@ -641,6 +641,20 @@ public class TestProctorUtils {
     }
 
     @Test
+    public void verifyAndConsolidateShouldFailIfDuplicatedBucketIsGiven() {
+        final List<TestBucket> buckets = fromCompactBucketFormat("zero:0,one:1");
+        final List<TestBucket> bucketsInSpec =
+                fromCompactBucketFormat("zero:0,one:1,another_one:1"); // using same bucket value 1
+        final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(bucketsInSpec));
+        final Map<String, ConsumableTestDefinition> tests = ImmutableMap.of(TEST_A,
+                constructDefinition(buckets, fromCompactAllocationFormat("0:1.0")));
+        final TestMatrixArtifact matrix = constructArtifact(tests);
+
+        assertEquals(1, matrix.getTests().size());
+        assertInvalid("duplicate bucket value in spec should cause invalid error", matrix, requiredTests);
+    }
+
+    @Test
     public void unknownBucketWithAllocationGreaterThanZero() throws IncompatibleTestMatrixException {
         // The test-matrix has 3 buckets
         final List<TestBucket> buckets = fromCompactBucketFormat("zero:0,one:1,two:2");
@@ -1756,16 +1770,16 @@ public class TestProctorUtils {
 
     /* Test Helper Methods Below */
 
-    private void assertInvalid(final String msg, final TestMatrixArtifact matrix, final Map<String, TestSpecification> requiredTests) throws IncompatibleTestMatrixException {
+    private void assertInvalid(final String msg, final TestMatrixArtifact matrix, final Map<String, TestSpecification> requiredTests) {
         assertErrorCreated(false, true, msg, matrix, requiredTests);
     }
-    private void assertMissing(final String msg, final TestMatrixArtifact matrix, final Map<String, TestSpecification> requiredTests) throws IncompatibleTestMatrixException {
+    private void assertMissing(final String msg, final TestMatrixArtifact matrix, final Map<String, TestSpecification> requiredTests) {
         assertErrorCreated(true, false, msg, matrix, requiredTests);
     }
-    private void assertValid(final String msg, final TestMatrixArtifact matrix, final Map<String, TestSpecification> requiredTests) throws IncompatibleTestMatrixException {
+    private void assertValid(final String msg, final TestMatrixArtifact matrix, final Map<String, TestSpecification> requiredTests) {
         assertErrorCreated(false, false, msg, matrix, requiredTests);
     }
-    private void assertErrorCreated(final boolean hasMissing, final boolean hasInvalid, final String msg, final TestMatrixArtifact matrix, final Map<String, TestSpecification> requiredTests) throws IncompatibleTestMatrixException {
+    private void assertErrorCreated(final boolean hasMissing, final boolean hasInvalid, final String msg, final TestMatrixArtifact matrix, final Map<String, TestSpecification> requiredTests) {
         final ProctorLoadResult proctorLoadResult = ProctorUtils.verifyAndConsolidate(matrix, "[ testcase: " + msg + " ]", requiredTests, RuleEvaluator.FUNCTION_MAPPER);
 
         final Set<String> missingTests = proctorLoadResult.getMissingTests();
