@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -52,6 +53,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -473,15 +475,23 @@ public abstract class ProctorUtils {
             @Nonnull final FunctionMapper functionMapper,
             final ProvidedContext providedContext
     ) throws IncompatibleTestMatrixException {
-        final Map<Integer, String> bucketValueToName = testSpecification.getBuckets()
-                .entrySet()
-                .stream()
-                .collect(Collectors.toMap(Entry::getValue, Entry::getKey));
+        final Set<Integer> knownBucketValues = new HashSet<>();
+        for (final Integer bucketValue : testSpecification.getBuckets().values()) {
+            if (bucketValue == null) {
+                throw new IncompatibleTestMatrixException("Test specification of " + testName + " has null in buckets");
+            }
+            if (!knownBucketValues.add(bucketValue)) {
+                throw new IncompatibleTestMatrixException(
+                        "Test specification of " + testName + " has duplicated buckets for value " + bucketValue
+                );
+            }
+        }
+
         verifyTest(
                 testName,
                 testDefinition,
                 testSpecification,
-                bucketValueToName,
+                knownBucketValues,
                 matrixSource,
                 functionMapper,
                 providedContext
@@ -510,7 +520,7 @@ public abstract class ProctorUtils {
                 testName,
                 testDefinition,
                 new TestSpecification(),
-                Collections.emptyMap(),
+                Collections.emptySet(),
                 matrixSource,
                 functionMapper,
                 providedContext
@@ -521,7 +531,7 @@ public abstract class ProctorUtils {
             @Nonnull final String testName,
             @Nonnull final ConsumableTestDefinition testDefinition,
             @Nonnull final TestSpecification testSpecification,
-            @Nonnull final Map<Integer, String> knownBuckets,
+            @Nonnull final Set<Integer> knownBuckets,
             @Nonnull final String matrixSource,
             @Nonnull final FunctionMapper functionMapper,
             final ProvidedContext providedContext
@@ -547,7 +557,7 @@ public abstract class ProctorUtils {
                 //  ensure that each range refers to a known bucket
                 for (final Range range : ranges) {
                     // Externally consistent (application's requirements)
-                    if (!knownBuckets.containsKey(range.getBucketValue())) {
+                    if (!knownBuckets.contains(range.getBucketValue())) {
                         // If the bucket has a positive allocation, add it to the list of unknownBuckets
                         if (range.getLength() > 0) {
                             unknownBuckets.add(range.getBucketValue());
