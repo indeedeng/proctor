@@ -13,13 +13,17 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.assertj.core.groups.Tuple;
 import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.RmCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.Constants;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Locale;
 
@@ -224,6 +228,15 @@ public class GitProctorTest {
                 .isNull();
     }
 
+    @Test
+    public void testRevisionDetailsWithRename() throws StoreException, IOException, GitAPIException {
+        addTestDefinition("proc_a_tst", "author1", "add a new test a", DEFINITION_A);
+        final String revision = renameTestDefinition("proc_a_tst", "proc_b_tst", "rename");
+
+        assertThat(gitProctor.getRevisionDetails(revision).getModifiedTests())
+                .containsExactlyInAnyOrder("proc_a_tst", "proc_b_tst");
+    }
+
     private String addTestDefinition(
             final String testName,
             final String author,
@@ -266,13 +279,58 @@ public class GitProctorTest {
     private String deleteAllTestDefinitions(
             final String message
     ) throws IOException, GitAPIException, StoreException {
-        FileUtils.deleteDirectory(
-                testFolder.getRoot().toPath().resolve(GitProctor.DEFAULT_TEST_DEFINITIONS_DIRECTORY).toFile()
-        );
-        git.add().addFilepattern("*").call();
-        final String revision = git.commit().setMessage(message).call().getId().getName();
+        resetStageAndWorkingTreeToHEAD();
+        FileUtils.deleteDirectory(getPathToDefinitionDirectory().toFile());
+        final String revision = commitAllWorkingTreeChanges(message);
         gitProctor.refresh();
         return revision;
+    }
+
+    private String renameTestDefinition(
+            final String srcTestName,
+            final String dstTestName,
+            final String message
+    ) throws IOException, GitAPIException, StoreException {
+        resetStageAndWorkingTreeToHEAD();
+        final File srcDir = getPathToDefinitionDirectory().resolve(srcTestName).toFile();
+        final File dstDir = getPathToDefinitionDirectory().resolve(dstTestName).toFile();
+        FileUtils.moveDirectory(srcDir, dstDir);
+        final String revision = commitAllWorkingTreeChanges(message);
+        gitProctor.refresh();
+        return revision;
+    }
+
+    private Path getPathToDefinitionDirectory() {
+        return testFolder.getRoot()
+                .toPath()
+                .resolve(FileBasedProctorStore.DEFAULT_TEST_DEFINITIONS_DIRECTORY);
+    }
+
+    /**
+     * Reset stage and working tree to HEAD.
+     * <p>
+     * This is equivalent to
+     * $ git reset HEAD
+     * $ git checkout -- .
+     */
+    private void resetStageAndWorkingTreeToHEAD() throws GitAPIException {
+        git.reset().setRef(Constants.HEAD).call();
+        git.checkout().setAllPaths(true).call();
+    }
+
+    /**
+     * commit all changes in working tree.
+     * <p>
+     * This is equivalent to the following in git (written in C)
+     * $ git add .
+     * $ git commit -m $message
+     */
+    private String commitAllWorkingTreeChanges(final String message) throws GitAPIException {
+        final RmCommand rmCommand = git.rm();
+        git.status().call().getMissing().forEach(rmCommand::addFilepattern);
+        rmCommand.call();
+        git.add().addFilepattern(".").call();
+        return git.commit().setMessage(message).call().getId().getName();
     }
 
     private static final String UNKNOWN_GIT_REVISION = StringUtils.repeat('0', 40);

@@ -176,6 +176,7 @@ class GitHistoryParser {
         final DiffFormatter df = new DiffFormatter(DisabledOutputStream.INSTANCE);
         df.setRepository(repository);
         df.setDiffComparator(RawTextComparator.DEFAULT);
+        df.setDetectRenames(false); // to regard rename changes as add and remove
         return new GitHistoryParser(revWalk, df, testDefinitionDirectory);
     }
 }
