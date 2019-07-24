@@ -37,8 +37,8 @@ import com.indeed.proctor.webapp.extensions.PreDefinitionCreateChange;
 import com.indeed.proctor.webapp.extensions.PreDefinitionEditChange;
 import com.indeed.proctor.webapp.extensions.PreDefinitionPromoteChange;
 import com.indeed.proctor.webapp.model.RevisionDefinition;
-import com.indeed.proctor.webapp.util.EncodingUtil;
 import com.indeed.proctor.webapp.util.AllocationIdUtil;
+import com.indeed.proctor.webapp.util.EncodingUtil;
 import com.indeed.proctor.webapp.util.TestDefinitionUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
@@ -61,6 +61,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static com.indeed.proctor.webapp.db.Environment.PRODUCTION;
+import static com.indeed.proctor.webapp.db.Environment.QA;
 import static com.indeed.proctor.webapp.util.AllocationIdUtil.ALLOCATION_ID_COMPARATOR;
 
 //Todo: Separate EditAndPromoteJob to EditJob and PromoteJob
@@ -390,7 +392,7 @@ public class EditAndPromoteJob extends AbstractJob {
         switch (autopromoteTarget) {
             case QA:
                 final String currentRevision = getCurrentVersion(testName, trunkStore).getRevision();
-                doPromoteTestToEnvironment(Environment.QA, testName, username, password, author, null,
+                doPromoteTestToEnvironment(QA, testName, username, password, author, null,
                         requestParameterMap, job, currentRevision, qaRevision, false);
                 break;
             case PRODUCTION:
@@ -448,7 +450,7 @@ public class EditAndPromoteJob extends AbstractJob {
             final String currentRevision
     ) throws Exception {
         try {
-            doPromoteTestToEnvironment(Environment.QA, testName, username, password, author, null,
+            doPromoteTestToEnvironment(QA, testName, username, password, author, null,
                     requestParameterMap, job, currentRevision, EnvironmentVersion.UNKNOWN_REVISION, false);
         } catch (final Exception e) {
             job.log("previous revision changes prevented auto-promote to PRODUCTION");
@@ -486,7 +488,7 @@ public class EditAndPromoteJob extends AbstractJob {
         job.log("allocation only change, checking against other branches for auto-promote capability for test " +
                 testName + "\nat QA revision " + qaRevision + " and PRODUCTION revision " + prodRevision);
 
-        doPromoteTestToEnvironment(Environment.QA, testName, username, password, author, testDefinitionToUpdate,
+        doPromoteTestToEnvironment(QA, testName, username, password, author, testDefinitionToUpdate,
                 requestParameterMap, job, currentRevision, qaRevision, true);
 
         doPromoteTestToEnvironment(Environment.PRODUCTION, testName, username, password, author, testDefinitionToUpdate,
@@ -529,6 +531,9 @@ public class EditAndPromoteJob extends AbstractJob {
         if (verifyAllocationOnlyChange && targetRevision.equals(EnvironmentVersion.UNKNOWN_REVISION)) {
             throw new IllegalArgumentException(targetEnv.getName() + " revision is unknown");
         }
+        if (!QA.equals(targetEnv) && !PRODUCTION.equals(targetEnv)) {
+            throw new IllegalArgumentException("Promotion target environment " + targetEnv.getName() + " is invalid.");
+        }
 
         final TestDefinition targetTestDefinition = TestDefinitionUtil.getTestDefinition(
                 determineStoreFromEnvironment(targetEnv),
@@ -550,21 +555,13 @@ public class EditAndPromoteJob extends AbstractJob {
             }
         }
 
-        switch (targetEnv) {
-            case QA:
-            case PRODUCTION:
-                job.log("auto-promote changes to " + targetEnv.getName());
-
-                try {
-                    doPromoteInternal(testName, username, password, author, Environment.WORKING, currentRevision,
-                            targetEnv, targetRevision, requestParameterMap, job, true);
-                } catch (final Exception e) {
-                    job.log("Failed to promote the test to " + targetEnv.getName());
-                    throw e;
-                }
-                break;
-            default:
-                throw new IllegalArgumentException("Promotion target environment " + targetEnv.getName() + " is invalid.");
+        job.log("auto-promote changes to " + targetEnv.getName());
+        try {
+            doPromoteInternal(testName, username, password, author, Environment.WORKING, currentRevision,
+                    targetEnv, targetRevision, requestParameterMap, job, true);
+        } catch (final Exception e) {
+            job.log("Error while promoting the test to " + targetEnv.getName());
+            throw e;
         }
     }
 
@@ -1139,7 +1136,7 @@ public class EditAndPromoteJob extends AbstractJob {
     }
 
     private final PromoteAction TRUNK_TO_QA = new PromoteActionBase(Environment.WORKING,
-            Environment.QA) {
+            QA) {
         @Override
         void doPromotion(
                 final BackgroundJob<Void> job,
@@ -1174,7 +1171,7 @@ public class EditAndPromoteJob extends AbstractJob {
         }
     };
 
-    private final PromoteAction QA_TO_PRODUCTION = new PromoteActionBase(Environment.QA,
+    private final PromoteAction QA_TO_PRODUCTION = new PromoteActionBase(QA,
             Environment.PRODUCTION) {
         @Override
         void doPromotion(
@@ -1194,9 +1191,9 @@ public class EditAndPromoteJob extends AbstractJob {
 
     private final Map<Environment, Map<Environment, PromoteAction>> PROMOTE_ACTIONS = ImmutableMap.<Environment, Map<Environment, PromoteAction>>builder()
             .put(Environment.WORKING, ImmutableMap.of(
-                    Environment.QA, TRUNK_TO_QA,
+                    QA, TRUNK_TO_QA,
                     Environment.PRODUCTION, TRUNK_TO_PRODUCTION))
-            .put(Environment.QA, ImmutableMap.of(
+            .put(QA, ImmutableMap.of(
                     Environment.PRODUCTION, QA_TO_PRODUCTION))
             .build();
 }
