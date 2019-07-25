@@ -55,6 +55,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.indeed.proctor.store.GitProctorUtils.determineAuthorId;
+
 public class GitProctorCore implements FileBasedPersisterCore {
     private static final Logger LOGGER = Logger.getLogger(GitProctorCore.class);
     private static final TextProgressMonitor PROGRESS_MONITOR = new TextProgressMonitor(new LoggerPrintWriter(LOGGER, Level.DEBUG));
@@ -553,7 +555,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
             return new TestVersionResult(
                     tests,
                     new Date(Long.valueOf(headTree.getCommitTime()) * 1000 /* convert seconds to milliseconds */),
-                    headTree.getAuthorIdent().getName(),
+                    determineAuthorId(headTree),
                     headTree.toObjectId().getName(),
                     headTree.getFullMessage()
             );
