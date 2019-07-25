@@ -527,8 +527,11 @@ public class ProctorTestDefinitionController extends AbstractController {
     }
 
     private TestDefinition getTestDefinition(final Environment environment, final String testName, final String revision) {
-        final ProctorStore store = determineStoreFromEnvironment(environment);
-        return TestDefinitionUtil.getTestDefinition(store, promoter, environment, testName, revision);
+        return TestDefinitionUtil.getTestDefinitionTryCached(
+                determineStoreFromEnvironment(environment),
+                environment,
+                testName,
+                revision);
     }
 
     private Set<AppVersion> filterDynamicClients(final Environment environment,

@@ -7,22 +7,21 @@ import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.webapp.db.Environment;
+import com.indeed.proctor.webapp.util.TestDefinitionUtil;
 import com.indeed.proctor.webapp.util.ThreadPoolExecutorVarExports;
 import com.indeed.util.varexport.VarExporter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
+import javax.annotation.CheckForNull;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static com.indeed.proctor.common.EnvironmentVersion.UNKNOWN_REVISION;
 
@@ -77,15 +76,15 @@ public class ProctorPromoter {
                 srcRevision, destBranch, destRevision));
         final ProctorStore src = getStoreFromBranch(srcBranch);
         final ProctorStore dest = getStoreFromBranch(destBranch);
-        final boolean isSrcTrunk = Environment.WORKING == srcBranch;
+        final boolean isSrcTrunk = (Environment.WORKING == srcBranch);
 
         final TestDefinition d = new TestDefinition(getTestDefinition(src, testName, srcRevision));
 
-        final EnvironmentVersion version = getEnvironmentVersion(testName);
-        final String knownDestRevision = version != null ? version.getRevision(destBranch) : UNKNOWN_VERSION;
+        final String version = TestDefinitionUtil.getResolvedLastVersion(dest, testName, destBranch).getVersion();
+        final String knownDestRevision = version != null ? version : UNKNOWN_VERSION;
 
         // destRevision > 0 indicates destination revision expected
-        // TODO (parker) 7/1/14 - alloq ProctorStore to implement valid / unknown revision parsing
+        // TODO (parker) 7/1/14 - allow ProctorStore to implement valid / unknown revision parsing
         if (knownDestRevision.length() == 0 && destRevision.length() > 0) {
             throw new TestPromotionException("Positive revision r" + destRevision + " given for destination ( " + destBranch + " ) but '" + testName + "' does not exist.");
         }
@@ -156,20 +155,28 @@ public class ProctorPromoter {
         return sb.toString();
     }
 
+
     /**
      * Retrieve latest revision and version in each environment from ProctorStore and then return them as EnvironmentVersion.
-     * ToDo: this method should be refactored to be called with specified environment.
+     * Prefer TestDefinitionUtil.getResolvedLastVersion when possible
      */
+    @CheckForNull
     public EnvironmentVersion getEnvironmentVersion(final String testName) {
-        final List<Revision> trunkHistory, qaHistory, productionHistory;
+
+        final SingleEnvironmentVersion trunkEnvironmentVersion;
+        final SingleEnvironmentVersion qaEnvironmentVersion;
+        final SingleEnvironmentVersion productionEnvironmentVersion;
         // Fetch versions in parallel
-        final Future<List<Revision>> trunkFuture = executor.submit(new GetEnvironmentVersionTask(trunk, testName));
-        final Future<List<Revision>> qaFuture = executor.submit(new GetEnvironmentVersionTask(qa, testName));
-        final Future<List<Revision>> productionFuture = executor.submit(new GetEnvironmentVersionTask(production, testName));
+        final Future<SingleEnvironmentVersion> trunkFuture = executor.submit(() ->
+                TestDefinitionUtil.getResolvedLastVersion(trunk, testName, Environment.WORKING));
+        final Future<SingleEnvironmentVersion> qaFuture = executor.submit(() ->
+                TestDefinitionUtil.getResolvedLastVersion(qa, testName, Environment.QA));
+        final Future<SingleEnvironmentVersion> productionFuture = executor.submit(() ->
+                TestDefinitionUtil.getResolvedLastVersion(production, testName, Environment.PRODUCTION));
         try {
-            trunkHistory = trunkFuture.get(30, TimeUnit.SECONDS);
-            qaHistory = qaFuture.get(30, TimeUnit.SECONDS);
-            productionHistory = productionFuture.get(30, TimeUnit.SECONDS);
+            trunkEnvironmentVersion = trunkFuture.get(30, TimeUnit.SECONDS);
+            qaEnvironmentVersion = qaFuture.get(30, TimeUnit.SECONDS);
+            productionEnvironmentVersion = productionFuture.get(30, TimeUnit.SECONDS);
         } catch (final InterruptedException | ExecutionException e) {
             LOGGER.error("Unable to retrieve latest version for trunk or qa or production", e);
             return null;
@@ -181,60 +188,16 @@ public class ProctorPromoter {
             return null;
         }
 
-        final Revision trunkRevision = trunkHistory.isEmpty() ? null : trunkHistory.get(0);
-        final Revision qaRevision = qaHistory.isEmpty() ? null : qaHistory.get(0);
-        final Revision productionRevision = productionHistory.isEmpty() ? null : productionHistory.get(0);
-
-        final String trunkVersion = GitProctorUtils.resolveSvnMigratedRevision(trunkRevision, Environment.WORKING.getName());
-        final String qaVersion = getEffectiveRevisionFromStore(qa, testName, qaRevision);
-        final String productionVersion = getEffectiveRevisionFromStore(production, testName, productionRevision);
-
-        return new EnvironmentVersion(testName, trunkRevision, trunkVersion, qaRevision, qaVersion, productionRevision, productionVersion);
+        return new EnvironmentVersion(
+                testName,
+                trunkEnvironmentVersion.getRevision(),
+                trunkEnvironmentVersion.getVersion(),
+                qaEnvironmentVersion.getRevision(),
+                qaEnvironmentVersion.getVersion(),
+                productionEnvironmentVersion.getRevision(),
+                productionEnvironmentVersion.getVersion());
     }
 
-    private String getEffectiveRevisionFromStore(final ProctorStore proctorStore, final String testName, final Revision revision) {
-        try {
-            return identifyEffectiveRevision(proctorStore.getCurrentTestDefinition(testName), revision);
-        } catch (final StoreException e) {
-            LOGGER.error("Unable to retrieve test definition for " + testName + " at " + revision
-                    + " in " + proctorStore.getName(), e);
-            return UNKNOWN_VERSION;
-        }
-    }
-
-    @VisibleForTesting
-    static class GetEnvironmentVersionTask implements Callable<List<Revision>> {
-        final ProctorStore store;
-        final String testName;
-
-        GetEnvironmentVersionTask(final ProctorStore store, final String testName) {
-            this.store = store;
-            this.testName = testName;
-        }
-
-        @Override
-        public List<Revision> call() throws StoreException {
-            return getMostRecentHistory(store, testName);
-        }
-    }
-
-    private static final Pattern CHARM_MERGE_REVISION = Pattern.compile("^merged r([\\d]+):", Pattern.MULTILINE);
-
-    private String identifyEffectiveRevision(final TestDefinition branchDefinition,
-                                             final Revision branchRevision) {
-        if (branchDefinition == null) {
-            return UNKNOWN_VERSION;
-        }
-        if (branchRevision == null) {
-            return branchDefinition.getVersion();
-        }
-        final Matcher m = CHARM_MERGE_REVISION.matcher(branchRevision.getMessage());
-        if (m.find()) {
-            final String trunkRevision = m.group(1);
-            return trunkRevision;
-        }
-        return branchDefinition.getVersion();
-    }
 
     // @Nonnull
     private static List<Revision> getMostRecentHistory(final ProctorStore store, final String testName) throws StoreException {

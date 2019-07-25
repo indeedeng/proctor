@@ -303,7 +303,7 @@ public class EditAndPromoteJob extends AbstractJob {
             testDefinitionToUpdate.setTestType(existingTestDefinition.getTestType());
         }
         if (isCreate) {
-            testDefinitionToUpdate.setVersion("-1");
+            testDefinitionToUpdate.setVersion(EnvironmentVersion.UNKNOWN_VERSION);
             handleAllocationIdsForNewTest(testDefinitionToUpdate);
         } else if (existingTestDefinition != null) {
             testDefinitionToUpdate.setVersion(existingTestDefinition.getVersion());
@@ -535,9 +535,8 @@ public class EditAndPromoteJob extends AbstractJob {
             throw new IllegalArgumentException("Promotion target environment " + targetEnv.getName() + " is invalid.");
         }
 
-        final TestDefinition targetTestDefinition = TestDefinitionUtil.getTestDefinition(
+        final TestDefinition targetTestDefinition = TestDefinitionUtil.getTestDefinitionTryCached(
                 determineStoreFromEnvironment(targetEnv),
-                promoter,
                 targetEnv,
                 testName,
                 targetRevision
@@ -1031,12 +1030,16 @@ public class EditAndPromoteJob extends AbstractJob {
         validateUsernamePassword(username, password);
 
         // TODO (parker) 9/5/12 - Verify that promoting to the destination branch won't cause issues
-        final TestDefinition testDefintion = TestDefinitionUtil.getTestDefinition(determineStoreFromEnvironment(source), promoter, source, testName, srcRevision);
+        final TestDefinition testDefinition = TestDefinitionUtil.getTestDefinitionTryCached(
+                determineStoreFromEnvironment(source),
+                source,
+                testName,
+                srcRevision);
         //            if (d == null) {
         //                return "could not find " + testName + " on " + source + " with revision " + srcRevision;
         //            }
         job.logWithTiming("Validating Matrix.", "matrixCheck");
-        final MatrixChecker.CheckMatrixResult result = matrixChecker.checkMatrix(destination, testName, testDefintion);
+        final MatrixChecker.CheckMatrixResult result = matrixChecker.checkMatrix(destination, testName, testDefinition);
         if (!result.isValid()) {
             throw new IllegalArgumentException(String.format("Test Promotion not compatible, errors: %s", String.join("\n", result.getErrors())));
         } else {
@@ -1050,7 +1053,7 @@ public class EditAndPromoteJob extends AbstractJob {
             job.logWithTiming("Executing pre promote extension tasks.", "prePromoteExtension");
             final DefinitionChangeLogger logger = new BackgroundJobLogger(job);
             for (final PreDefinitionPromoteChange preDefinitionPromoteChange : preDefinitionPromoteChanges) {
-                preDefinitionPromoteChange.prePromote(testDefintion, requestParameterMap, source, destination,
+                preDefinitionPromoteChange.prePromote(testDefinition, requestParameterMap, source, destination,
                         isAutopromote, logger);
             }
 
