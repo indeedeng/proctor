@@ -26,6 +26,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import static com.indeed.proctor.store.GitProctorUtils.determineAuthorId;
+
 public class GitProctor extends FileBasedProctorStore {
     private static final Logger LOGGER = Logger.getLogger(GitProctor.class);
 
@@ -216,7 +218,7 @@ public class GitProctor extends FileBasedProctorStore {
         for (final RevCommit commit : commits) {
             versions.add(new Revision(
                     commit.getName(),
-                    commit.getAuthorIdent().getName(),
+                    determineAuthorId(commit),
                     new Date((long) commit.getCommitTime() * 1000 /* convert seconds to milliseconds */),
                     commit.getFullMessage()
             ));

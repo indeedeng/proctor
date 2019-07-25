@@ -34,6 +34,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
+import static com.indeed.proctor.store.GitProctorUtils.determineAuthorId;
 
 class GitHistoryParser {
     private static final Logger LOGGER = Logger.getLogger(GitHistoryParser.class);
@@ -165,7 +166,7 @@ class GitHistoryParser {
     static Revision createRevisionFromCommit(final RevCommit commit) {
         return new Revision(
                 commit.getName(),
-                commit.getAuthorIdent().getName(),
+                determineAuthorId(commit),
                 new Date((long) commit.getCommitTime() * 1000 /* convert seconds to milliseconds */),
                 commit.getFullMessage()
         );
