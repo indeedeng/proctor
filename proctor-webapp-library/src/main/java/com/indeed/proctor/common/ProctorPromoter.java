@@ -53,16 +53,28 @@ public class ProctorPromoter {
         this.executor = executor;
     }
 
+    /**
+     * @deprecated Just use promote
+     */
+    @Deprecated
     public void promoteTrunkToQa(final String testName, String trunkRevision, String qaRevision,
                                  String username, String password, String author, Map<String, String> metadata) throws StoreException, TestPromotionException {
         promote(testName, Environment.WORKING, trunkRevision, Environment.QA, qaRevision, username, password, author, metadata);
     }
 
+    /**
+     * @deprecated Just use promote
+     */
+    @Deprecated
     public void promoteQaToProduction(final String testName, String qaRevision, String prodRevision,
                                       String username, String password, String author, Map<String, String> metadata) throws StoreException, TestPromotionException {
         promote(testName, Environment.QA, qaRevision, Environment.PRODUCTION, prodRevision, username, password, author, metadata);
     }
 
+    /**
+     * @deprecated Just use promote
+     */
+    @Deprecated
     public void promoteTrunkToProduction(final String testName, String trunkRevision, String prodRevision,
                                          String username, String password, String author, Map<String, String> metadata) throws StoreException, TestPromotionException {
         promote(testName, Environment.WORKING, trunkRevision, Environment.PRODUCTION, prodRevision, username, password, author, metadata);
@@ -70,7 +82,7 @@ public class ProctorPromoter {
 
     @SuppressWarnings({"MethodWithTooManyParameters"})
     @VisibleForTesting
-    void promote(final String testName, final Environment srcBranch, final String srcRevision, final Environment destBranch, final String destRevision,
+    public void promote(final String testName, final Environment srcBranch, final String srcRevision, final Environment destBranch, final String destRevision,
                  final String username, final String password, final String author, final Map<String, String> metadata) throws TestPromotionException, StoreException {
         LOGGER.info(String.format("%s : Promoting %s from %s r%s to %s r%s", username, testName, srcBranch,
                 srcRevision, destBranch, destRevision));

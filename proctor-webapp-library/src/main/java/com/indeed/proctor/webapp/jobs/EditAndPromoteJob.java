@@ -8,7 +8,8 @@ import com.google.common.base.CharMatcher;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Multimap;
 import com.indeed.proctor.common.EnvironmentVersion;
 import com.indeed.proctor.common.IncompatibleTestMatrixException;
 import com.indeed.proctor.common.ProctorPromoter;
@@ -62,6 +63,7 @@ import java.util.stream.Collectors;
 
 import static com.indeed.proctor.webapp.db.Environment.PRODUCTION;
 import static com.indeed.proctor.webapp.db.Environment.QA;
+import static com.indeed.proctor.webapp.db.Environment.WORKING;
 import static com.indeed.proctor.webapp.jobs.AllocationUtil.generateAllocationRangeMap;
 import static com.indeed.proctor.webapp.util.AllocationIdUtil.ALLOCATION_ID_COMPARATOR;
 import static com.indeed.proctor.webapp.util.NumberUtil.equalsWithinTolerance;
@@ -253,7 +255,7 @@ public class EditAndPromoteJob extends AbstractJob {
             final Map<String, String[]> requestParameterMap,
             final BackgroundJob<Void> job
     ) throws Exception {
-        final Environment theEnvironment = Environment.WORKING; // only allow editing of TRUNK!
+        final Environment theEnvironment = WORKING; // only allow editing of TRUNK!
         final ProctorStore trunkStore = determineStoreFromEnvironment(theEnvironment);
         final EnvironmentVersion environmentVersion = promoter.getEnvironmentVersion(testName);
         final String qaRevision = environmentVersion == null ? EnvironmentVersion.UNKNOWN_REVISION : environmentVersion.getQaRevision();
@@ -383,7 +385,7 @@ public class EditAndPromoteJob extends AbstractJob {
             final String prodRevision,
             final TestDefinition existingTestDefinition
     ) throws Exception {
-        final boolean isAutopromote = autopromoteTarget != Environment.WORKING;
+        final boolean isAutopromote = autopromoteTarget != WORKING;
         if (!isAutopromote) {
             job.log("Not auto-promote because it wasn't requested by user.");
             return;
@@ -457,8 +459,8 @@ public class EditAndPromoteJob extends AbstractJob {
             throw e;
         }
 
-        doPromoteInternal(testName, username, password, author, Environment.WORKING,
-                currentRevision, Environment.PRODUCTION, EnvironmentVersion.UNKNOWN_REVISION, requestParameterMap, job, true);
+        doPromoteInternal(testName, username, password, author, WORKING,
+                currentRevision, PRODUCTION, EnvironmentVersion.UNKNOWN_REVISION, requestParameterMap, job, true);
     }
 
     /**
@@ -491,7 +493,7 @@ public class EditAndPromoteJob extends AbstractJob {
         doPromoteTestToEnvironment(QA, testName, username, password, author, testDefinitionToUpdate,
                 requestParameterMap, job, currentRevision, qaRevision, true);
 
-        doPromoteTestToEnvironment(Environment.PRODUCTION, testName, username, password, author, testDefinitionToUpdate,
+        doPromoteTestToEnvironment(PRODUCTION, testName, username, password, author, testDefinitionToUpdate,
                 requestParameterMap, job, currentRevision, prodRevision, true);
     }
 
@@ -556,7 +558,7 @@ public class EditAndPromoteJob extends AbstractJob {
 
         job.log("auto-promote changes to " + targetEnv.getName());
         try {
-            doPromoteInternal(testName, username, password, author, Environment.WORKING, currentRevision,
+            doPromoteInternal(testName, username, password, author, WORKING, currentRevision,
                     targetEnv, targetRevision, requestParameterMap, job, true);
         } catch (final Exception e) {
             job.log("Error while promoting the test to " + targetEnv.getName());
@@ -681,7 +683,7 @@ public class EditAndPromoteJob extends AbstractJob {
      */
     private Optional<String> getMaxUsedAllocationIdForTest(final String testName) {
         // Use trunk store
-        final ProctorStore trunkStore = determineStoreFromEnvironment(Environment.WORKING);
+        final ProctorStore trunkStore = determineStoreFromEnvironment(WORKING);
         final List<RevisionDefinition> revisionDefinitions = TestDefinitionUtil.makeRevisionDefinitionList(trunkStore, testName, null, true);
         return getMaxAllocationId(revisionDefinitions);
     }
@@ -998,6 +1000,12 @@ public class EditAndPromoteJob extends AbstractJob {
         return backgroundJob;
     }
 
+    private final static Multimap<Environment, Environment> PROMOTE_ACTIONS = ImmutableMultimap.<Environment, Environment>builder()
+            .put(WORKING, QA)
+            .put(WORKING, PRODUCTION)
+            .put(QA, PRODUCTION)
+            .build();
+
     @VisibleForTesting
     Boolean doPromoteInternal(
             final String testName,
@@ -1029,11 +1037,7 @@ public class EditAndPromoteJob extends AbstractJob {
         if (!result.isValid()) {
             throw new IllegalArgumentException(String.format("Test Promotion not compatible, errors: %s", String.join("\n", result.getErrors())));
         } else {
-            final Map<Environment, PromoteAction> actions = PROMOTE_ACTIONS.get(source);
-            if (actions == null || !actions.containsKey(destination)) {
-                throw new IllegalArgumentException("Invalid combination of source and destination: source=" + source + " dest=" + destination);
-            }
-            final PromoteAction action = actions.get(destination);
+
 
             //PreDefinitionPromoteChanges
             job.logWithTiming("Executing pre promote extension tasks.", "prePromoteExtension");
@@ -1045,7 +1049,17 @@ public class EditAndPromoteJob extends AbstractJob {
 
             //Promote Change
             job.logWithTiming("Promoting experiment", "promote");
-            final boolean success = action.promoteTest(job, testName, srcRevision, destRevision, username, password, author, metadata);
+            if (!PROMOTE_ACTIONS.containsEntry(source, destination)) {
+                throw new IllegalArgumentException("Invalid combination of source and destination: source=" + source + " dest=" + destination);
+            }
+            try {
+                job.log(String.format("(scm) promote %s %1.7s (%s to %s)", testName, srcRevision, source.getName(), destination.getName()));
+                promoter.promote(testName, source, srcRevision, destination, destRevision, username, password, author, metadata);
+            } catch (final Exception t) {
+                Throwables.propagateIfInstanceOf(t, ProctorPromoter.TestPromotionException.class);
+                Throwables.propagateIfInstanceOf(t, StoreException.TestUpdateException.class);
+                throw Throwables.propagate(t);
+            }
 
             //PostDefinitionPromoteChanges
             job.logWithTiming("Executing post promote extension tasks.", "postPromoteExtension");
@@ -1056,133 +1070,8 @@ public class EditAndPromoteJob extends AbstractJob {
 
             job.log(String.format("Promoted %s from %s (%1.7s) to %s (%1.7s)", testName, source.getName(), srcRevision, destination.getName(), destRevision));
             job.addUrl("/proctor/definition/" + EncodingUtil.urlEncodeUtf8(testName) + "?branch=" + destination.getName(), "view " + testName + " on " + destination.getName());
-            return success;
+            return true;
         }
     }
 
-    private interface PromoteAction {
-        Environment getSource();
-
-        Environment getDestination();
-
-        boolean promoteTest(
-                final BackgroundJob<Void> job,
-                final String testName,
-                final String srcRevision,
-                final String destRevision,
-                final String username,
-                final String password,
-                final String author,
-                final Map<String, String> metadata
-        ) throws IllegalArgumentException, ProctorPromoter.TestPromotionException, StoreException.TestUpdateException;
-    }
-
-    private abstract class PromoteActionBase implements PromoteAction {
-        final Environment src;
-        final Environment destination;
-
-        protected PromoteActionBase(final Environment src,
-                                    final Environment destination
-        ) {
-            this.destination = destination;
-            this.src = src;
-        }
-
-        @Override
-        public boolean promoteTest(
-                final BackgroundJob<Void> job,
-                final String testName,
-                final String srcRevision,
-                final String destRevision,
-                final String username,
-                final String password,
-                final String author,
-                final Map<String, String> metadata
-        ) throws IllegalArgumentException, ProctorPromoter.TestPromotionException, StoreException.TestUpdateException, StoreException.TestUpdateException {
-            try {
-                doPromotion(job, testName, srcRevision, destRevision, username, password, author, metadata);
-                return true;
-            } catch (final Exception t) {
-                Throwables.propagateIfInstanceOf(t, ProctorPromoter.TestPromotionException.class);
-                Throwables.propagateIfInstanceOf(t, StoreException.TestUpdateException.class);
-                throw Throwables.propagate(t);
-            }
-        }
-
-        @Override
-        public final Environment getSource() {
-            return src;
-        }
-
-        @Override
-        public final Environment getDestination() {
-            return destination;
-        }
-
-        abstract void doPromotion(BackgroundJob<Void> job, String testName, String srcRevision, String destRevision,
-                                  String username, String password, String author, Map<String, String> metadata)
-                throws ProctorPromoter.TestPromotionException, StoreException;
-    }
-
-    private final PromoteAction TRUNK_TO_QA = new PromoteActionBase(Environment.WORKING,
-            QA) {
-        @Override
-        void doPromotion(
-                final BackgroundJob<Void> job,
-                final String testName,
-                final String srcRevision,
-                final String destRevision,
-                final String username,
-                final String password,
-                final String author,
-                final Map<String, String> metadata
-        ) throws ProctorPromoter.TestPromotionException, StoreException {
-            job.log(String.format("(scm) promote %s %1.7s (trunk to qa)", testName, srcRevision));
-            promoter.promoteTrunkToQa(testName, srcRevision, destRevision, username, password, author, metadata);
-        }
-    };
-
-    private final PromoteAction TRUNK_TO_PRODUCTION = new PromoteActionBase(Environment.WORKING,
-            Environment.PRODUCTION) {
-        @Override
-        void doPromotion(
-                final BackgroundJob<Void> job,
-                final String testName,
-                final String srcRevision,
-                final String destRevision,
-                final String username,
-                final String password,
-                final String author,
-                final Map<String, String> metadata
-        ) throws ProctorPromoter.TestPromotionException, StoreException {
-            job.log(String.format("(scm) promote %s %1.7s (trunk to production)", testName, srcRevision));
-            promoter.promoteTrunkToProduction(testName, srcRevision, destRevision, username, password, author, metadata);
-        }
-    };
-
-    private final PromoteAction QA_TO_PRODUCTION = new PromoteActionBase(QA,
-            Environment.PRODUCTION) {
-        @Override
-        void doPromotion(
-                final BackgroundJob<Void> job,
-                final String testName,
-                final String srcRevision,
-                final String destRevision,
-                final String username,
-                final String password,
-                final String author,
-                final Map<String, String> metadata
-        ) throws ProctorPromoter.TestPromotionException, StoreException {
-            job.log(String.format("(scm) promote %s %1.7s (qa to production)", testName, srcRevision));
-            promoter.promoteQaToProduction(testName, srcRevision, destRevision, username, password, author, metadata);
-        }
-    };
-
-    private final Map<Environment, Map<Environment, PromoteAction>> PROMOTE_ACTIONS = ImmutableMap.<Environment, Map<Environment, PromoteAction>>builder()
-            .put(Environment.WORKING, ImmutableMap.of(
-                    QA, TRUNK_TO_QA,
-                    Environment.PRODUCTION, TRUNK_TO_PRODUCTION))
-            .put(QA, ImmutableMap.of(
-                    Environment.PRODUCTION, QA_TO_PRODUCTION))
-            .build();
 }
