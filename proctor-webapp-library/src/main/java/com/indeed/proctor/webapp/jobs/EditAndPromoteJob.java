@@ -50,7 +50,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -63,7 +62,9 @@ import java.util.stream.Collectors;
 
 import static com.indeed.proctor.webapp.db.Environment.PRODUCTION;
 import static com.indeed.proctor.webapp.db.Environment.QA;
+import static com.indeed.proctor.webapp.jobs.AllocationUtil.generateAllocationRangeMap;
 import static com.indeed.proctor.webapp.util.AllocationIdUtil.ALLOCATION_ID_COMPARATOR;
+import static com.indeed.proctor.webapp.util.NumberUtil.equalsWithinTolerance;
 
 //Todo: Separate EditAndPromoteJob to EditJob and PromoteJob
 @Component
@@ -73,7 +74,6 @@ public class EditAndPromoteJob extends AbstractJob {
     private static final Pattern ALPHA_NUMERIC_JAVA_IDENTIFIER_PATTERN = Pattern.compile("^[a-z_][a-z0-9_]*$", Pattern.CASE_INSENSITIVE);
     private static final Pattern VALID_TEST_NAME_PATTERN = ALPHA_NUMERIC_END_RESTRICTION_JAVA_IDENTIFIER_PATTERN;
     private static final Pattern VALID_BUCKET_NAME_PATTERN = ALPHA_NUMERIC_JAVA_IDENTIFIER_PATTERN;
-    private static final double TOLERANCE = 1E-6;
 
     private static final ObjectMapper OBJECT_MAPPER = Serializers.strict();
 
@@ -679,7 +679,6 @@ public class EditAndPromoteJob extends AbstractJob {
      * @param testName the proctor test name
      * @return the max allocation id ever used in the format like "#Z1"
      */
-    @Nullable
     private Optional<String> getMaxUsedAllocationIdForTest(final String testName) {
         // Use trunk store
         final ProctorStore trunkStore = determineStoreFromEnvironment(Environment.WORKING);
@@ -700,7 +699,7 @@ public class EditAndPromoteJob extends AbstractJob {
     /**
      * @param testDefinition the test definition to generate allocation ids for
      */
-    private void handleAllocationIdsForNewTest(final TestDefinition testDefinition) {
+    private static void handleAllocationIdsForNewTest(final TestDefinition testDefinition) {
         for (int i = 0; i < testDefinition.getAllocations().size(); i++) {
             final Allocation allocation = testDefinition.getAllocations().get(i);
             allocation.setId(AllocationIdUtil.generateAllocationId(i, 1));
@@ -786,26 +785,14 @@ public class EditAndPromoteJob extends AbstractJob {
         final Map<Integer, Double> existingAllocRangeMap = generateAllocationRangeMap(existingAllocationRanges);
         final Map<Integer, Double> allocToUpdateRangeMap = generateAllocationRangeMap(allocationToUpdateRanges);
         return allocToUpdateRangeMap.entrySet().stream()
-                .filter(bucket -> bucket.getValue() > TOLERANCE)
+                .filter(bucket -> !equalsWithinTolerance(0.0, bucket.getValue()))
                 .filter(bucket -> bucket.getKey() != -1)
-                .anyMatch(bucket -> existingAllocRangeMap.getOrDefault(bucket.getKey(), 0.0) < TOLERANCE);
+                .anyMatch(bucket -> equalsWithinTolerance(
+                        0.0,
+                        existingAllocRangeMap.getOrDefault(bucket.getKey(), 0.0)));
     }
 
-    private static Map<Integer, Double> generateAllocationRangeMap(final List<Range> ranges) {
-        final Map<Integer, Double> bucketToTotalAllocationMap = new HashMap<>();
-        for (final Range range : ranges) {
-            final int bucketVal = range.getBucketValue();
-            double sum = range.getLength();
-            final Double allocationValue = bucketToTotalAllocationMap.get(bucketVal);
-            if (allocationValue != null) {
-                sum += allocationValue;
-            }
-            bucketToTotalAllocationMap.put(bucketVal, sum);
-        }
-        return bucketToTotalAllocationMap;
-    }
-
-    private void validateBasicInformation(
+    private static void validateBasicInformation(
             final TestDefinition definition,
             final BackgroundJob<Void> backgroundJob
     ) throws IllegalArgumentException {
@@ -830,7 +817,7 @@ public class EditAndPromoteJob extends AbstractJob {
         validateAllocationsAndBuckets(definition, backgroundJob);
     }
 
-    private void validateAllocationsAndBuckets(
+    private static void validateAllocationsAndBuckets(
             final TestDefinition definition,
             final BackgroundJob<Void> backgroundJob
     ) throws IllegalArgumentException {
@@ -862,8 +849,7 @@ public class EditAndPromoteJob extends AbstractJob {
                 if (totalBucketAllocation > 0) {
                     numActiveBuckets++;
                 }
-                final double difference = totalBucketAllocation - totalControlBucketAllocation;
-                if (integerDoubleEntry.getKey() > 0 && totalBucketAllocation > 0 && Math.abs(difference) >= TOLERANCE) {
+                if (integerDoubleEntry.getKey() > 0 && totalBucketAllocation > 0 && !equalsWithinTolerance(totalBucketAllocation, totalControlBucketAllocation)) {
                     backgroundJob.log("WARNING: Positive bucket total allocation size not same as control bucket total allocation size. \nBucket #" + integerDoubleEntry.getKey() + "=" + totalBucketAllocation + ", Zero Bucket=" + totalControlBucketAllocation);
                 }
             }
@@ -898,21 +884,21 @@ public class EditAndPromoteJob extends AbstractJob {
         return m.matches();
     }
 
-    private String formatDefaultUpdateComment(final String testName, final String comment) {
+    private static String formatDefaultUpdateComment(final String testName, final String comment) {
         if (Strings.isNullOrEmpty(comment)) {
             return String.format("Updating A/B test %s", testName);
         }
         return comment;
     }
 
-    private String formatDefaultCreateComment(final String testName, final String comment) {
+    private static String formatDefaultCreateComment(final String testName, final String comment) {
         if (Strings.isNullOrEmpty(comment)) {
             return String.format("Creating A/B test %s", testName);
         }
         return comment;
     }
 
-    private String createJobTitle(
+    private static String createJobTitle(
             final String testName,
             final String username,
             final String author,
