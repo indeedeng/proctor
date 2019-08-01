@@ -11,6 +11,7 @@ import java.util.Map;
 
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonMap;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -35,7 +36,7 @@ public class TestRuleEvaluator {
 
     @Test
     public void testNullReferenceRule() {
-        assertFalse("null rule should be true", ruleEvaluator.evaluateBooleanRule("${null}", emptyMap()));
+        assertFalse("null rule should be false", ruleEvaluator.evaluateBooleanRule("${null}", emptyMap()));
     }
 
     @Test
@@ -59,6 +60,32 @@ public class TestRuleEvaluator {
     public void testMalformedRuleShouldBeFalse() {
         for (final String rule : new String[] { "true", "TRUE", "FALSE", "false", " ${true} ", " ${ true } " }) {
             assertFalse("malformed rule '" + rule + "' should be false", ruleEvaluator.evaluateBooleanRule(rule, emptyMap()));
+        }
+    }
+
+    @Test
+    public void testNonBooleanShouldFail() {
+        {
+            final String rule = "${1 == 1}";
+            assertTrue("rule '" + rule + "' should be true", ruleEvaluator.evaluateBooleanRule(rule, emptyMap()));
+        }
+        {
+            // mismatched parens make this a String value "true}"
+            assertThatThrownBy(() -> ruleEvaluator.evaluateBooleanRule("${1 == 1}}", emptyMap()))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("Received non-boolean return value");
+        }
+        {
+            // numeric result becomes String, not boolean
+            assertThatThrownBy(() -> ruleEvaluator.evaluateBooleanRule("${1 + 1}}", emptyMap()))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("Received non-boolean return value");
+        }
+        {
+            // numeric result becomes String, not boolean
+            assertThatThrownBy(() -> ruleEvaluator.evaluateBooleanRule("${'tr'}${'ue'}", emptyMap()))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("Received non-boolean return value");
         }
     }
 
@@ -357,5 +384,13 @@ public class TestRuleEvaluator {
             final Map<String, Object> values = singletonMap("version", ReleaseVersion.fromString("0.9.0.0"));
             assertFalse("0.9 not in range", ruleEvaluator.evaluateBooleanRule(rule, values));
         }
+    }
+
+    @Test
+    public void testNonBooleanRule() {
+        assertThat(ruleEvaluator.evaluateRule("${4}", emptyMap(), Integer.class)).isEqualTo(4);
+        assertThat(ruleEvaluator.evaluateRule("${true}", emptyMap(), Boolean.class)).isEqualTo(true);
+        assertThat(ruleEvaluator.evaluateRule("${4}", emptyMap(), String.class)).isEqualTo("4");
+        assertThat(ruleEvaluator.evaluateRule("${true}", emptyMap(), String.class)).isEqualTo("true");
     }
 }

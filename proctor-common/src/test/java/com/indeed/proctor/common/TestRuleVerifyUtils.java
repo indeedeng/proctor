@@ -154,6 +154,18 @@ public class TestRuleVerifyUtils {
     }
 
     @Test
+    public void testVerifyRulesWithMismatchedCurlys() {
+        final InvalidRuleException e = expectInvalidRule(
+                "${true}}",
+                new Object[][]{
+                },
+                new String[]{
+                }
+        );
+        assertThat(e).hasMessageContaining("not a boolean condition");
+    }
+
+    @Test
     public void testVerifyRulesWithLambda() {
         final InvalidRuleException e = expectInvalidRule(
                 "${(x -> 42);true}",

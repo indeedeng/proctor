@@ -2,6 +2,7 @@ package com.indeed.proctor.common;
 
 import com.indeed.proctor.common.el.LibraryFunctionMapperBuilder;
 import com.indeed.proctor.common.el.MulticontextReadOnlyVariableMapper;
+import org.apache.commons.lang3.ClassUtils;
 import org.apache.el.ExpressionFactoryImpl;
 import org.apache.log4j.Logger;
 import org.apache.taglibs.standard.functions.Functions;
@@ -82,6 +83,14 @@ public class RuleEvaluator {
     }
 
     @Nonnull
+    ELContext createElContext(@Nonnull final Map<String, Object> values) {
+        final Map<String, ValueExpression> localContext = ProctorUtils.convertToValueExpressionMap(expressionFactory, values);
+        @SuppressWarnings("unchecked")
+        final VariableMapper variableMapper = new MulticontextReadOnlyVariableMapper(testConstants, localContext);
+        return createELContext(variableMapper);
+    }
+
+    @Nonnull
     ELContext createELContext(@Nonnull final VariableMapper variableMapper) {
         return new ELContext() {
             @Nonnull
@@ -120,7 +129,11 @@ public class RuleEvaluator {
             return false;
         }
 
-        final Object result = evaluateRule(rule, values, Boolean.class);
+        final ELContext elContext = createElContext(values);
+        final ValueExpression ve = expressionFactory.createValueExpression(elContext, rule, boolean.class);
+        checkRuleIsBooleanType(rule, elContext, ve);
+
+        final Object result = ve.getValue(elContext);
 
         if (result instanceof Boolean) {
             return ((Boolean) result);
@@ -132,17 +145,35 @@ public class RuleEvaluator {
     }
 
     /**
+     * @throws IllegalArgumentException if type of expression is not boolean
+     */
+    static void checkRuleIsBooleanType(final String rule, final ELContext elContext, final ValueExpression ve) {
+        // apache-el is an expression language, not a rule language, and it is very lenient
+        // sadly that means it will just evaluate to false when users make certain mistakes, e.g. by
+        // coercing String value "xyz" to boolean false, instead of throwing an exception.
+        // To support users writing rules, be more strict here in requiring the type of the
+        // value to be expected before coercion
+        Class<?> type = ve.getType(elContext);
+        if (ClassUtils.isPrimitiveWrapper(type)) {
+            type = ClassUtils.wrapperToPrimitive(type);
+        }
+        // allow null to be coerced for historic reasons
+        if ((type != null) && (type != boolean.class)) {
+            throw new IllegalArgumentException("Received non-boolean return value: " + type + " from rule " + rule);
+        }
+    }
+
+    /**
+     * @param expectedType class to coerce result to, use primitive instead of wrapper, e.g. boolean.class instead of Boolean.class.
      * @return null or a Boolean value representing the expression evaluation result
      * @throws RuntimeException: E.g. PropertyNotFound or other ELException when not of expectedType
      */
     @CheckForNull
+    @Deprecated // Use evaluateBooleanRule instead, it checks against more errors
     public Object evaluateRule(final String rule, final Map<String, Object> values, final Class expectedType) {
-        final Map<String, ValueExpression> localContext = ProctorUtils.convertToValueExpressionMap(expressionFactory, values);
-        @SuppressWarnings("unchecked")
-        final VariableMapper variableMapper = new MulticontextReadOnlyVariableMapper(testConstants, localContext);
-        final ELContext elContext = createELContext(variableMapper);
-
+        final ELContext elContext = createElContext(values);
         final ValueExpression ve = expressionFactory.createValueExpression(elContext, rule, expectedType);
         return ve.getValue(elContext);
     }
+
 }

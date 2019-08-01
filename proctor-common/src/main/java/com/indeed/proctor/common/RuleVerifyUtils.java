@@ -15,6 +15,7 @@ import java.util.Set;
 
 import static com.indeed.proctor.common.ProctorUtils.isEmptyWhitespace;
 import static com.indeed.proctor.common.ProctorUtils.removeElExpressionBraces;
+import static com.indeed.proctor.common.RuleEvaluator.checkRuleIsBooleanType;
 
 public class RuleVerifyUtils {
 
@@ -60,6 +61,13 @@ public class RuleVerifyUtils {
                 if (undefinedIdentifier != null) {
                     throw new InvalidRuleException(String.format("Rule %s contains undefined identifier '%s'", testRule, undefinedIdentifier.getImage()));
                 }
+
+                try {
+                    checkRuleIsBooleanType(testRule, elContext, valueExpression);
+                } catch (final IllegalArgumentException e) {
+                    throw new InvalidRuleException(e, "Rule is not a boolean condition " + testRule);
+                }
+
 
                 // Evaluate rule with given context
                 try {
