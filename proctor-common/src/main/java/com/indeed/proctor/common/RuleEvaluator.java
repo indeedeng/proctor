@@ -167,9 +167,10 @@ public class RuleEvaluator {
      * @param expectedType class to coerce result to, use primitive instead of wrapper, e.g. boolean.class instead of Boolean.class.
      * @return null or a Boolean value representing the expression evaluation result
      * @throws RuntimeException: E.g. PropertyNotFound or other ELException when not of expectedType
+     * @deprecated Use evaluateBooleanRule() instead, it checks against more errors
      */
     @CheckForNull
-    @Deprecated // Use evaluateBooleanRule instead, it checks against more errors
+    @Deprecated
     public Object evaluateRule(final String rule, final Map<String, Object> values, final Class expectedType) {
         final ELContext elContext = createElContext(values);
         final ValueExpression ve = expressionFactory.createValueExpression(elContext, rule, expectedType);

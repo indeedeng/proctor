@@ -62,15 +62,14 @@ public class RuleVerifyUtils {
                     throw new InvalidRuleException(String.format("Rule %s contains undefined identifier '%s'", testRule, undefinedIdentifier.getImage()));
                 }
 
-                try {
-                    checkRuleIsBooleanType(testRule, elContext, valueExpression);
-                } catch (final IllegalArgumentException e) {
-                    throw new InvalidRuleException(e, "Rule is not a boolean condition " + testRule);
-                }
-
-
                 // Evaluate rule with given context
                 try {
+                    try {
+                        checkRuleIsBooleanType(testRule, elContext, valueExpression);
+                    } catch (final IllegalArgumentException e) {
+                        throw new InvalidRuleException(e, "Rule is not a boolean condition " + testRule);
+                    }
+
                     valueExpression.getValue(elContext);
                 } catch (final ELException e) {
                     if (isIgnorable(root, absentIdentifiers)) {
