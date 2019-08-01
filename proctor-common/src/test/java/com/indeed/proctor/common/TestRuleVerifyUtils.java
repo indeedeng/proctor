@@ -16,8 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertThat;
-import static org.junit.matchers.JUnitMatchers.containsString;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class TestRuleVerifyUtils {
 
@@ -89,7 +88,7 @@ public class TestRuleVerifyUtils {
                 new String[]{
                 }
         );
-        assertThat(e.getMessage(), containsString("contains undefined identifier"));
+        assertThat(e).hasMessageContaining("contains undefined identifier");
     }
 
     @Test
@@ -114,7 +113,7 @@ public class TestRuleVerifyUtils {
                 new String[]{
                 }
         );
-        assertThat(e.getMessage(), containsString("has invalid syntax"));
+        assertThat(e).hasMessageContaining("has invalid syntax");
     }
 
     @Test
@@ -127,7 +126,7 @@ public class TestRuleVerifyUtils {
                 new String[]{
                 }
         );
-        assertThat(e.getMessage(), containsString("has invalid syntax"));
+        assertThat(e).hasMessageContaining("has invalid syntax");
     }
 
     @Test
@@ -139,7 +138,7 @@ public class TestRuleVerifyUtils {
                 new String[]{
                 }
         );
-        assertThat(e.getMessage(), containsString("has invalid syntax"));
+        assertThat(e).hasMessageContaining("has invalid syntax");
     }
 
     @Test
@@ -151,7 +150,7 @@ public class TestRuleVerifyUtils {
                 new String[]{
                 }
         );
-        assertThat(e.getMessage(), containsString("has invalid syntax"));
+        assertThat(e).hasMessageContaining("has invalid syntax");
     }
 
     @Test
@@ -164,7 +163,7 @@ public class TestRuleVerifyUtils {
                 new String[]{
                 }
         );
-        assertThat(e.getMessage(), containsString("has invalid syntax"));
+        assertThat(e).hasMessageContaining("has invalid syntax");
     }
 
     @Test
@@ -191,7 +190,7 @@ public class TestRuleVerifyUtils {
                 new String[]{
                 }
         );
-        assertThat(e.getMessage(), containsString("contains undefined identifier"));
+        assertThat(e).hasMessageContaining("contains undefined identifier");
         e = expectInvalidRule(
                 testRule,
                 new Object[][]{
@@ -200,7 +199,7 @@ public class TestRuleVerifyUtils {
                 new String[]{
                 }
         );
-        assertThat(e.getMessage(), containsString("contains undefined identifier"));
+        assertThat(e).hasMessageContaining("contains undefined identifier");
         e = expectInvalidRule(
                 testRule,
                 new Object[][]{
@@ -209,7 +208,7 @@ public class TestRuleVerifyUtils {
                         "browser",
                 }
         );
-        assertThat(e.getMessage(), containsString("contains undefined identifier"));
+        assertThat(e).hasMessageContaining("contains undefined identifier");
         e = expectInvalidRule(
                 testRule,
                 new Object[][]{
@@ -218,7 +217,7 @@ public class TestRuleVerifyUtils {
                         "country",
                 }
         );
-        assertThat(e.getMessage(), containsString("contains undefined identifier"));
+        assertThat(e).hasMessageContaining("contains undefined identifier");
     }
 
     @Test
@@ -264,7 +263,7 @@ public class TestRuleVerifyUtils {
                 new String[]{
                 }
         );
-        assertThat(e.getMessage(), containsString("has invalid syntax"));
+        assertThat(e).hasMessageContaining("has invalid syntax");
     }
 
     @Test
@@ -278,7 +277,7 @@ public class TestRuleVerifyUtils {
                 new String[]{
                 }
         );
-        assertThat(e.getMessage(), containsString("has invalid syntax"));
+        assertThat(e).hasMessageContaining("has invalid syntax");
     }
 
     @Test
@@ -309,7 +308,7 @@ public class TestRuleVerifyUtils {
                 new String[]{
                 }
         );
-        assertThat(e.getMessage(), containsString("has invalid syntax"));
+        assertThat(e).hasMessageContaining("has invalid syntax");
         e = expectInvalidRule(
                 testRuleUsingAssign,
                 new Object[][]{
@@ -321,6 +320,6 @@ public class TestRuleVerifyUtils {
                         "country",
                 }
         );
-        assertThat(e.getMessage(), containsString("has invalid syntax"));
+        assertThat(e).hasMessageContaining("has invalid syntax");
     }
 }
