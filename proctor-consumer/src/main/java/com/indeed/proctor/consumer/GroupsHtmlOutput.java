@@ -1,15 +1,13 @@
 package com.indeed.proctor.consumer;
 
-import com.google.common.base.CharMatcher;
-import com.google.common.base.Strings;
 import com.indeed.proctor.common.ProctorResult;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.TestBucket;
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
 import java.util.Map;
-
-import org.apache.commons.lang3.StringEscapeUtils;
 
 public class GroupsHtmlOutput {
     private final String output;
@@ -62,7 +60,7 @@ public class GroupsHtmlOutput {
                                         .append(": ")
                                         .append(anotherTestBucket.getName());
                             final String description = anotherTestBucket.getDescription();
-                            if (! CharMatcher.WHITESPACE.matchesAllOf(Strings.nullToEmpty(description))) {
+                            if (StringUtils.isNotBlank(description)) {
                                 titleBuilder.append(" - ")
                                             .append(description);
                             }

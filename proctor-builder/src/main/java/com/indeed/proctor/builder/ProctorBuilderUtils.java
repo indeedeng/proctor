@@ -1,6 +1,5 @@
 package com.indeed.proctor.builder;
 
-import com.google.common.base.CharMatcher;
 import com.google.common.base.Strings;
 import com.indeed.proctor.common.IncompatibleTestMatrixException;
 import com.indeed.proctor.common.ProctorUtils;
@@ -9,8 +8,10 @@ import com.indeed.proctor.common.model.TestMatrixArtifact;
 import com.indeed.proctor.common.model.TestMatrixVersion;
 import com.indeed.proctor.store.ProctorReader;
 import com.indeed.proctor.store.StoreException;
+import org.apache.commons.lang3.StringUtils;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.Writer;
 import java.util.Map;
 
 /**
@@ -27,7 +28,7 @@ class ProctorBuilderUtils {
         }
 
         // I'm not sure if it's better for the LocalDirectoryPersister to be aware of this svn info, or for all the overrides to happen here.
-        if (!CharMatcher.WHITESPACE.matchesAllOf(Strings.nullToEmpty(authorOverride))) {
+        if (StringUtils.isNotBlank(authorOverride)) {
             currentTestMatrix.setAuthor(authorOverride);
         }
         if (!Strings.isNullOrEmpty(versionOverride)) {

@@ -5,7 +5,6 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.CharMatcher;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -28,6 +27,7 @@ import com.indeed.proctor.common.model.TestMatrixArtifact;
 import com.indeed.proctor.common.model.TestMatrixDefinition;
 import com.indeed.proctor.common.model.TestMatrixVersion;
 import com.indeed.proctor.common.model.TestType;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.el.ExpressionFactoryImpl;
 import org.apache.log4j.Logger;
 import org.springframework.util.CollectionUtils;
@@ -977,10 +977,7 @@ public abstract class ProctorUtils {
      * @return true if the string is null, empty or only contains whitespace characters
      */
     static boolean isEmptyWhitespace(@Nullable final String s) {
-        if (s == null) {
-            return true;
-        }
-        return CharMatcher.WHITESPACE.matchesAllOf(s);
+        return StringUtils.isBlank(s);
     }
 
     /**
@@ -1045,10 +1042,10 @@ public abstract class ProctorUtils {
         int endchar = rule.length() - 1; // inclusive
 
         // garbage free trim()
-        while (startchar < rule.length() && CharMatcher.WHITESPACE.matches(rule.charAt(startchar))) {
+        while (startchar < rule.length() && Character.isWhitespace(rule.charAt(startchar))) {
             ++startchar;
         }
-        while (endchar > startchar && CharMatcher.WHITESPACE.matches(rule.charAt(endchar))) {
+        while (endchar > startchar && Character.isWhitespace(rule.charAt(endchar))) {
             --endchar;
         }
 
@@ -1057,10 +1054,10 @@ public abstract class ProctorUtils {
             --endchar; // skip '}'
         }
         // garbage free trim()
-        while (startchar < rule.length() && CharMatcher.WHITESPACE.matches(rule.charAt(startchar))) {
+        while (startchar < rule.length() && Character.isWhitespace(rule.charAt(startchar))) {
             ++startchar;
         }
-        while (endchar > startchar && CharMatcher.WHITESPACE.matches(rule.charAt(endchar))) {
+        while (endchar > startchar && Character.isWhitespace(rule.charAt(endchar))) {
             --endchar;
         }
         if (endchar < startchar) {

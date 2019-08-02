@@ -1,8 +1,6 @@
 package com.indeed.proctor.common;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.CharMatcher;
-import com.google.common.base.Strings;
 import com.indeed.proctor.common.model.TestDefinition;
 import com.indeed.proctor.store.GitProctorUtils;
 import com.indeed.proctor.store.ProctorStore;
@@ -11,6 +9,7 @@ import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.webapp.db.Environment;
 import com.indeed.proctor.webapp.util.ThreadPoolExecutorVarExports;
 import com.indeed.util.varexport.VarExporter;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import java.util.List;
@@ -149,7 +148,7 @@ public class ProctorPromoter {
     private static String formatCommitMessage(final String testName, final Environment src, final String srcRevision, final Environment dest, final String comment) {
         final StringBuilder sb = new StringBuilder();
         sb.append(String.format("Promoting %s (%s r%s) to %s", testName, src.getName(), srcRevision, dest.getName()));
-        if (!CharMatcher.WHITESPACE.matchesAllOf(Strings.nullToEmpty(comment))) {
+        if (StringUtils.isNotBlank((comment))) {
             // PROW-59: Replace smart-commit commit messages when promoting tests
             final String cleanedComment = comment.replace("+review", "_review");
             sb.append("\n\n").append(cleanedComment);

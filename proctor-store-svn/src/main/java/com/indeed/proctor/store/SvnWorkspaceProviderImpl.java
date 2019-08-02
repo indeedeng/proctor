@@ -2,10 +2,10 @@ package com.indeed.proctor.store;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import java.io.Closeable;
@@ -56,7 +56,7 @@ public class SvnWorkspaceProviderImpl extends TimerTask implements SvnWorkspaceP
         Preconditions.checkArgument(cleanupAgeMillis > 0, "cleanup age millis (%s) should be greater than zero", cleanupAgeMillis);
         Preconditions.checkArgument(rootDirectory.isDirectory(), "File %s should be a directory", rootDirectory.getAbsolutePath());
         Preconditions.checkArgument(rootDirectory.exists(), "File %s should exists", rootDirectory.getAbsolutePath());
-        Preconditions.checkArgument(!CharMatcher.WHITESPACE.matchesAllOf(Strings.nullToEmpty(prefix)), "Prefix should not be empty");
+        Preconditions.checkArgument(StringUtils.isNotBlank(prefix), "Prefix should not be empty");
     }
 
     @Override
