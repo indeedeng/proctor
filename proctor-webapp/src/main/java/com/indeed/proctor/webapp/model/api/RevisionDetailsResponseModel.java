@@ -2,6 +2,7 @@ package com.indeed.proctor.webapp.model.api;
 
 import com.indeed.proctor.store.RevisionDetails;
 import io.swagger.annotations.ApiModelProperty;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -59,9 +60,9 @@ public class RevisionDetailsResponseModel {
 
     @Override
     public String toString() {
-        return com.google.common.base.Objects.toStringHelper(this)
-                .add("revision", revision)
-                .add("modifiedTests", modifiedTests)
+        return new ToStringBuilder(this)
+                .append("revision", revision)
+                .append("modifiedTests", modifiedTests)
                 .toString();
     }
 
