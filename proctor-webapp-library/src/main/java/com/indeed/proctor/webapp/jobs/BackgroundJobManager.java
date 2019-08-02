@@ -1,12 +1,12 @@
 package com.indeed.proctor.webapp.jobs;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.MapMaker;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.indeed.proctor.webapp.extensions.JobInfoStore;
 import com.indeed.proctor.webapp.util.ThreadPoolExecutorVarExports;
 import com.indeed.proctor.webapp.util.threads.LogOnUncaughtExceptionHandler;
 import com.indeed.util.varexport.VarExporter;
+import org.apache.commons.collections4.map.LRUMap;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -31,9 +31,10 @@ public class BackgroundJobManager {
 
     private final List<BackgroundJob<?>> backgroundJobs = Lists.newLinkedList();
     private final ExecutorService service;
-    private final Map<UUID, BackgroundJob<?>> history = new MapMaker()
-            .softValues()
-            .makeMap();
+
+    static final int JOB_HISTORY_MAX_SIZE = 1000;
+    private final Map<UUID, BackgroundJob<?>> jobHistoryMap = new LRUMap<>(JOB_HISTORY_MAX_SIZE);
+
     private final AtomicLong lastId = new AtomicLong(0);
 
     private JobInfoStore jobInfoStore;
@@ -70,7 +71,7 @@ public class BackgroundJobManager {
         final Future<T> future = service.submit(job);
         job.setFuture(future);
         backgroundJobs.add(job);
-        history.put(uuid, job);
+        jobHistoryMap.put(uuid, job);
         if (jobInfoStore != null) {
             jobInfoStore.updateJobInfo(uuid, job.getJobInfo());
         }
@@ -91,7 +92,7 @@ public class BackgroundJobManager {
     }
 
     public BackgroundJob<?> getJobForId(final UUID id) {
-        return history.get(id);
+        return jobHistoryMap.get(id);
     }
 
     @Nullable
@@ -113,7 +114,7 @@ public class BackgroundJobManager {
             return;
         }
 
-        history.entrySet().stream()
+        jobHistoryMap.entrySet().stream()
                 .filter(entry -> jobInfoStore.shouldUpdateJobInfo(entry.getValue()))
                 .forEach(entry -> jobInfoStore.updateJobInfo(entry.getKey(), entry.getValue().getJobInfo()));
     }
