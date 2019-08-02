@@ -3,9 +3,6 @@ package com.indeed.proctor.webapp.controllers;
 import com.fasterxml.jackson.core.util.MinimalPrettyPrinter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
-import com.google.common.base.Functions;
-import com.google.common.base.Joiner;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -27,6 +24,7 @@ import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.webapp.ProctorSpecificationSource;
 import com.indeed.proctor.webapp.db.Environment;
 import com.indeed.proctor.webapp.model.AppVersion;
+import com.indeed.proctor.webapp.model.ProctorClientApplication;
 import com.indeed.proctor.webapp.model.RemoteSpecificationResult;
 import com.indeed.proctor.webapp.model.SessionViewModel;
 import com.indeed.proctor.webapp.model.WebappConfiguration;
@@ -54,6 +52,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.function.BiFunction;
+
+import static java.util.stream.Collectors.joining;
 
 @Controller
 @RequestMapping({"/", "/proctor"})
@@ -291,8 +291,9 @@ public class ProctorController extends AbstractController {
                         remoteResult.getSpecificationResult().getSpecification()
                 );
             } else {
-                final String error = "Failed to load a proctor specification from "
-                        + Joiner.on(", ").join(Iterables.transform(remoteResult.getFailures().keySet(), Functions.toStringFunction()));
+                final String error = "Failed to load a proctor specification from " + remoteResult.getFailures().keySet().stream()
+                        .map(ProctorClientApplication::toString)
+                        .collect(joining(", "));
                 result = new CompatibleSpecificationResult(version, false, error, Collections.emptySet());
             }
 

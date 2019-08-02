@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.CharMatcher;
-import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
@@ -1042,7 +1041,7 @@ public class EditAndPromoteJob extends AbstractJob {
         job.logWithTiming("Validating Matrix.", "matrixCheck");
         final MatrixChecker.CheckMatrixResult result = matrixChecker.checkMatrix(destination, testName, testDefintion);
         if (!result.isValid()) {
-            throw new IllegalArgumentException(String.format("Test Promotion not compatible, errors: %s", Joiner.on("\n").join(result.getErrors())));
+            throw new IllegalArgumentException(String.format("Test Promotion not compatible, errors: %s", String.join("\n", result.getErrors())));
         } else {
             final Map<Environment, PromoteAction> actions = PROMOTE_ACTIONS.get(source);
             if (actions == null || !actions.containsKey(destination)) {

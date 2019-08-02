@@ -1,8 +1,8 @@
 package com.indeed.proctor.common.model;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -133,30 +133,30 @@ public class Payload {
     @Nonnull
     @Override
     public String toString() {
-        final StringBuilder s = new StringBuilder("{");
+        final StringBuilder s = new StringBuilder(50).append('{');
         // careful of the autoboxing...
         if (map != null) {
             s.append(" map : [");
-            for (Map.Entry<String,Object> Entry : map.entrySet()) {
-                s.append("(" + Entry.getKey() + "," + Entry.getValue() + ")");
+            for (final Map.Entry<String,Object> entry : map.entrySet()) {
+                s.append('(').append(entry.getKey()).append(',').append(entry.getValue()).append(')');
             }
-            s.append("]");
+            s.append(']');
         }
         if (doubleValue != null) {
             s.append(" doubleValue : ").append(doubleValue);
         }
         if (doubleArray != null) {
             s.append(" doubleArray : [");
-            Joiner.on(", ").appendTo(s, doubleArray);
-            s.append("]");
+            s.append(StringUtils.join(doubleArray, ", "));
+            s.append(']');
         }
         if (longValue != null) {
             s.append(" longValue : ").append(longValue);
         }
         if (longArray != null) {
             s.append(" longArray : [");
-            Joiner.on(", ").appendTo(s, longArray);
-            s.append("]");
+            s.append(StringUtils.join(longArray, ", "));
+            s.append(']');
         }
         if (stringValue != null) {
             s.append(" stringValue : \"").append(stringValue).append('"');
@@ -165,7 +165,7 @@ public class Payload {
             s.append(" stringArray : [");
             if (stringArray.length > 0) {
                 s.append('"');
-                Joiner.on("\", \"").appendTo(s, stringArray);
+                s.append(String.join("\", \"", stringArray));
                 s.append('"');
             }
             s.append(']');

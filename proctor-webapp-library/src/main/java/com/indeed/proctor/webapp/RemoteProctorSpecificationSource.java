@@ -2,7 +2,6 @@ package com.indeed.proctor.webapp;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
@@ -256,11 +255,11 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
         // TODO (parker) 9/6/12 - Fail if we do not have 1 specification for each <Application>.<Version>
         // should we update the cache?
         if (!appVersionsToCheck.isEmpty()) {
-            LOGGER.warn("Failed to load any specification for the following AppVersions: " + Joiner.on(",").join(appVersionsToCheck));
+            LOGGER.warn("Failed to load any specification for the following AppVersions: " + StringUtils.join(appVersionsToCheck, ','));
         }
 
         if (!skippedAppVersions.isEmpty()) {
-            LOGGER.info("Skipped checking specification for the following AppVersions (/private/proctor/specification returned 404): " + Joiner.on(",").join(skippedAppVersions));
+            LOGGER.info("Skipped checking specification for the following AppVersions (/private/proctor/specification returned 404): " + StringUtils.join(skippedAppVersions, ','));
         }
 
         LOGGER.info("Finish refreshing internal list of ProctorSpecifications for " + environment);
