@@ -1,6 +1,5 @@
 package com.indeed.proctor.store.utils.test;
 
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
@@ -16,8 +15,8 @@ import com.indeed.proctor.store.cache.CachingProctorStore;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -319,21 +318,12 @@ public class InMemoryProctorStore implements ProctorStore {
     }
 
     private static List<Revision> castToRevisionList(final List<RevisionAndTest> list) {
-        return list.stream().map(castToRevision::apply).collect(Collectors.toList());
+        return new ArrayList<>(list);
     }
-
-    private static final Function<RevisionAndTest, Revision> castToRevision = new Function<RevisionAndTest, Revision>() {
-        @Nullable
-        @Override
-        public Revision apply(@Nullable final RevisionAndTest revisionAndTest) {
-            return revisionAndTest;
-        }
-    };
 
     private static List<Revision> filterRevisionByTest(final List<RevisionAndTest> revisionHistory, final String test) {
         return revisionHistory.stream()
                 .filter(revisionAndTest -> revisionAndTest.getTestName().equals(test))
-                .map(castToRevision::apply)
                 .collect(Collectors.toList());
     }
 
