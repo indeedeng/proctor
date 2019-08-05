@@ -2,6 +2,7 @@ package com.indeed.proctor.store.cache;
 
 import com.indeed.proctor.common.model.TestDefinition;
 import com.indeed.proctor.common.model.TestMatrixVersion;
+import com.indeed.proctor.store.ChangeMetadata;
 import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.store.RevisionDetails;
@@ -65,20 +66,36 @@ public class GlobalCachingProctorStore implements ProctorStore {
     }
 
     @Override
-    public void updateTestDefinition(final String username, final String password, final String author, final String previousVersion, final String testName, final TestDefinition testDefinition, final Map<String, String> metadata, final String comment) throws StoreException.TestUpdateException {
-        delegate.updateTestDefinition(username, password, author, previousVersion, testName, testDefinition, metadata, comment);
+    public void updateTestDefinition(
+            final ChangeMetadata changeMetadata,
+            final String previousVersion,
+            final String testName,
+            final TestDefinition testDefinition,
+            final Map<String, String> metadata
+    ) throws StoreException.TestUpdateException {
+        delegate.updateTestDefinition(changeMetadata, previousVersion, testName, testDefinition, metadata);
         updateGlobalCache(testName, testDefinition);
     }
 
     @Override
-    public void deleteTestDefinition(final String username, final String password, final String author, final String previousVersion, final String testName, final TestDefinition testDefinition, final String comment) throws StoreException.TestUpdateException {
-        delegate.deleteTestDefinition(username, password, author, previousVersion, testName, testDefinition, comment);
+    public void deleteTestDefinition(
+            final ChangeMetadata changeMetadata,
+            final String previousVersion,
+            final String testName,
+            final TestDefinition testDefinition
+    ) throws StoreException.TestUpdateException {
+        delegate.deleteTestDefinition(changeMetadata, previousVersion, testName, testDefinition);
         updateGlobalCache(testName, null);
     }
 
     @Override
-    public void addTestDefinition(final String username, final String password, final String author, final String testName, final TestDefinition testDefinition, final Map<String, String> metadata, final String comment) throws StoreException.TestUpdateException {
-        delegate.addTestDefinition(username, password, author, testName, testDefinition, metadata, comment);
+    public void addTestDefinition(
+            final ChangeMetadata changeMetadata,
+            final String testName,
+            final TestDefinition testDefinition,
+            final Map<String, String> metadata
+    ) throws StoreException.TestUpdateException {
+        delegate.addTestDefinition(changeMetadata, testName, testDefinition, metadata);
         updateGlobalCache(testName, testDefinition);
     }
 

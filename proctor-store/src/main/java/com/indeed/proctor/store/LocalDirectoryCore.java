@@ -1,12 +1,12 @@
 package com.indeed.proctor.store;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.indeed.proctor.common.Serializers;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.log4j.Logger;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -84,7 +84,7 @@ public class LocalDirectoryCore implements FileBasedPersisterCore {
 
 
     @Override
-    public void doInWorkingDirectory(final String username, final String password, final String author, final String comment, final String previousVersion, final FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException {
+    public void doInWorkingDirectory(final ChangeMetadata changeMetadata, final String previousVersion, final FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException {
         try {
             final FileBasedProctorStore.RcsClient rcsClient = new LocalRcsClient();
             final boolean thingsChanged = updater.doInWorkingDirectory(rcsClient, baseDir);

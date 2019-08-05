@@ -64,7 +64,7 @@
         <log4j.version>1.2.14</log4j.version>
         <jackson.core.version>2.9.8</jackson.core.version>
         <junit.version>4.12</junit.version>
-        <mockito.version>1.9.5</mockito.version>
+        <mockito.version>2.28.2</mockito.version>
         <assertj.version>3.6.2</assertj.version>
     </properties>
 

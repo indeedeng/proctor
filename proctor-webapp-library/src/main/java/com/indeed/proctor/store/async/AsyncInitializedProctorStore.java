@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.indeed.proctor.common.model.TestDefinition;
 import com.indeed.proctor.common.model.TestMatrixVersion;
+import com.indeed.proctor.store.ChangeMetadata;
 import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.store.RevisionDetails;
@@ -13,7 +14,6 @@ import org.apache.log4j.Logger;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -170,37 +170,34 @@ public class AsyncInitializedProctorStore implements ProctorStore {
     }
 
     @Override
-    public void updateTestDefinition(final String username,
-                                     final String password,
-                                     final String author,
-                                     final String previousVersion,
-                                     final String testName,
-                                     final TestDefinition testDefinition,
-                                     final Map<String, String> metadata,
-                                     final String comment) throws StoreException.TestUpdateException {
-        getProctorStore().updateTestDefinition(username, password, author, previousVersion, testName, testDefinition, metadata, comment);
+    public void updateTestDefinition(
+            final ChangeMetadata changeMetadata,
+            final String previousVersion,
+            final String testName,
+            final TestDefinition testDefinition,
+            final Map<String, String> metadata
+    ) throws StoreException.TestUpdateException {
+        getProctorStore().updateTestDefinition(changeMetadata, previousVersion, testName, testDefinition, metadata);
     }
 
     @Override
-    public void deleteTestDefinition(final String username,
-                                     final String password,
-                                     final String author,
-                                     final String previousVersion,
-                                     final String testName,
-                                     final TestDefinition testDefinition,
-                                     final String comment) throws StoreException.TestUpdateException {
-        getProctorStore().deleteTestDefinition(username, password, author, previousVersion, testName, testDefinition, comment);
+    public void deleteTestDefinition(
+            final ChangeMetadata changeMetadata,
+            final String previousVersion,
+            final String testName,
+            final TestDefinition testDefinition
+    ) throws StoreException.TestUpdateException {
+        getProctorStore().deleteTestDefinition(changeMetadata, previousVersion, testName, testDefinition);
     }
 
     @Override
-    public void addTestDefinition(final String username,
-                                  final String password,
-                                  final String author,
-                                  final String testName,
-                                  final TestDefinition testDefinition,
-                                  final Map<String, String> metadata,
-                                  final String comment) throws StoreException.TestUpdateException {
-        getProctorStore().addTestDefinition(username, password, author, testName, testDefinition, metadata, comment);
+    public void addTestDefinition(
+            final ChangeMetadata changeMetadata,
+            final String testName,
+            final TestDefinition testDefinition,
+            final Map<String, String> metadata
+    ) throws StoreException.TestUpdateException {
+        getProctorStore().addTestDefinition(changeMetadata, testName, testDefinition, metadata);
     }
 
     @Override

@@ -79,8 +79,12 @@ public class CachedSvnPersisterCore implements SvnPersisterCore {
     }
 
     @Override
-    public void doInWorkingDirectory(String username, String password, String author, String comment, String previousVersion, FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException {
-        core.doInWorkingDirectory(username, password, author, comment, previousVersion, updater);
+    public void doInWorkingDirectory(
+            final ChangeMetadata changeMetadata,
+            final String previousVersion,
+            final FileBasedProctorStore.ProctorUpdater updater
+    ) throws StoreException.TestUpdateException {
+        core.doInWorkingDirectory(changeMetadata, previousVersion, updater);
     }
 
     @Override

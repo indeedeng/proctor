@@ -15,7 +15,6 @@ import org.junit.rules.TemporaryFolder;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
@@ -218,19 +217,10 @@ public class FileBasedProctorStoreTest {
         }
 
         @Override
-        public void doInWorkingDirectory(final String username, final String password, final String comment, final String previousVersion, final FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException {
+        public void doInWorkingDirectory(final ChangeMetadata changeMetadata, final String previousVersion, final FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException {
             try {
                 updater.doInWorkingDirectory(client, dir);
-            } catch (Exception e) {
-                throw new StoreException.TestUpdateException("test", e);
-            }
-        }
-
-        @Override
-        public void doInWorkingDirectory(final String username, final String password, final String author, final String comment, final String previousVersion, final FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException {
-            try {
-                updater.doInWorkingDirectory(client, dir);
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 throw new StoreException.TestUpdateException("test", e);
             }
         }
