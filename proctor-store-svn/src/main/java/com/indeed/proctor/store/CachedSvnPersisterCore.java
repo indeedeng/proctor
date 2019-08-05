@@ -84,11 +84,6 @@ public class CachedSvnPersisterCore implements SvnPersisterCore {
     }
 
     @Override
-    public void doInWorkingDirectory(String username, String password, String comment, String previousVersion, FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException {
-        core.doInWorkingDirectory(username, password, comment, previousVersion, updater);
-    }
-
-    @Override
     public TestVersionResult determineVersions(final String fetchRevision) throws StoreException.ReadException {
         final Long parsedRevision = SvnPersisterCoreImpl.parseRevisionOrDie(fetchRevision);
         final TestVersionResult testVersionResult = versionCache.getIfPresent(parsedRevision);

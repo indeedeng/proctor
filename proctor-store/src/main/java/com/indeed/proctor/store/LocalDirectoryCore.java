@@ -95,11 +95,6 @@ public class LocalDirectoryCore implements FileBasedPersisterCore {
     }
 
     @Override
-    public void doInWorkingDirectory(final String username, final String password, final String comment, final String previousVersion, final FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException {
-        doInWorkingDirectory(username, password, username, comment, previousVersion, updater);
-    }
-
-    @Override
     public TestVersionResult determineVersions(final String fetchRevision) throws StoreException.ReadException {
         final File testDir = new File(baseDir + File.separator + testDefinitionsDirectory);
         // List all of the directories, excluding the directories created by svn (implementation is ignoring directories named '.svn'

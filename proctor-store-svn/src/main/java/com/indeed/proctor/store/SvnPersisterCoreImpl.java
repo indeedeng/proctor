@@ -319,15 +319,6 @@ public class SvnPersisterCoreImpl implements SvnPersisterCore, Closeable {
         }
     }
 
-    @Override
-    public void doInWorkingDirectory(final String username,
-                                     final String password,
-                                     final String comment,
-                                     final String previousVersion,
-                                     final FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException {
-        doInWorkingDirectory(username, password, username, comment, previousVersion, updater);
-    }
-
     private File getOrCreateSvnUserDirectory(final String username) throws IOException {
         final File userDirectory = workspaceProvider.createWorkspace(username, false);
         try {

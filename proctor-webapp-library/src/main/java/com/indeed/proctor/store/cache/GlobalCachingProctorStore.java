@@ -65,33 +65,15 @@ public class GlobalCachingProctorStore implements ProctorStore {
     }
 
     @Override
-    public void updateTestDefinition(final String username, final String password, final String previousVersion, final String testName, final TestDefinition testDefinition, final Map<String, String> metadata, final String comment) throws StoreException.TestUpdateException {
-        delegate.updateTestDefinition(username, password, previousVersion, testName, testDefinition, metadata, comment);
-        updateGlobalCache(testName, testDefinition);
-    }
-
-    @Override
     public void updateTestDefinition(final String username, final String password, final String author, final String previousVersion, final String testName, final TestDefinition testDefinition, final Map<String, String> metadata, final String comment) throws StoreException.TestUpdateException {
         delegate.updateTestDefinition(username, password, author, previousVersion, testName, testDefinition, metadata, comment);
         updateGlobalCache(testName, testDefinition);
     }
 
     @Override
-    public void deleteTestDefinition(final String username, final String password, final String previousVersion, final String testName, final TestDefinition testDefinition, final String comment) throws StoreException.TestUpdateException {
-        delegate.deleteTestDefinition(username, password, previousVersion, testName, testDefinition, comment);
-        updateGlobalCache(testName, null);
-    }
-
-    @Override
     public void deleteTestDefinition(final String username, final String password, final String author, final String previousVersion, final String testName, final TestDefinition testDefinition, final String comment) throws StoreException.TestUpdateException {
         delegate.deleteTestDefinition(username, password, author, previousVersion, testName, testDefinition, comment);
         updateGlobalCache(testName, null);
-    }
-
-    @Override
-    public void addTestDefinition(final String username, final String password, final String testName, final TestDefinition testDefinition, final Map<String, String> metadata, final String comment) throws StoreException.TestUpdateException {
-        delegate.addTestDefinition(username, password, testName, testDefinition, metadata, comment);
-        updateGlobalCache(testName, testDefinition);
     }
 
     @Override

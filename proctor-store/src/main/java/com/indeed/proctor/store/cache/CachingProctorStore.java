@@ -174,17 +174,6 @@ public class CachingProctorStore implements ProctorStore {
      * Following three methods make side-effect and it would trigger cache refreshing at once
      */
 
-    @Override
-    public void updateTestDefinition(final String username,
-                                     final String password,
-                                     final String previousVersion,
-                                     final String testName,
-                                     final TestDefinition testDefinition,
-                                     final Map<String, String> metadata,
-                                     final String comment) throws StoreException.TestUpdateException {
-        delegate.updateTestDefinition(username, password, previousVersion, testName, testDefinition, metadata, comment);
-        cacheHolder.startRefreshCacheTask();
-    }
 
     @Override
     public void updateTestDefinition(final String username,
@@ -199,16 +188,6 @@ public class CachingProctorStore implements ProctorStore {
         cacheHolder.startRefreshCacheTask();
     }
 
-    @Override
-    public void deleteTestDefinition(final String username,
-                                     final String password,
-                                     final String previousVersion,
-                                     final String testName,
-                                     final TestDefinition testDefinition,
-                                     final String comment) throws StoreException.TestUpdateException {
-        delegate.deleteTestDefinition(username, password, previousVersion, testName, testDefinition, comment);
-        cacheHolder.startRefreshCacheTask();
-    }
 
     @Override
     public void deleteTestDefinition(final String username,
@@ -222,16 +201,6 @@ public class CachingProctorStore implements ProctorStore {
         cacheHolder.startRefreshCacheTask();
     }
 
-    @Override
-    public void addTestDefinition(final String username,
-                                  final String password,
-                                  final String testName,
-                                  final TestDefinition testDefinition,
-                                  final Map<String, String> metadata,
-                                  final String comment) throws StoreException.TestUpdateException {
-        delegate.addTestDefinition(username, password, testName, testDefinition, metadata, comment);
-        cacheHolder.startRefreshCacheTask();
-    }
 
     @Override
     public void addTestDefinition(final String username,

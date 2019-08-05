@@ -19,7 +19,11 @@ public interface FileBasedPersisterCore extends Closeable {
      */
     <C> C getFileContents(Class<C> c, String[] path, C defaultValue, String revision) throws StoreException.ReadException, JsonProcessingException;
 
-    void doInWorkingDirectory(String username, String password, String comment, String previousVersion, FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException;
+    default void doInWorkingDirectory(
+            final String username, final String password, final String comment, final String previousVersion, final FileBasedProctorStore.ProctorUpdater updater
+    ) throws StoreException.TestUpdateException {
+        doInWorkingDirectory(username, password, username, comment, previousVersion, updater);
+    }
 
     void doInWorkingDirectory(String username, String password, String author, String comment, String previousVersion, FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException;
 

@@ -16,15 +16,17 @@ public interface ProctorWriter {
     /**
      * {@see other ProctorWriter.updateTestDefinition}, using username as author
      */
-    void updateTestDefinition(
-            String username,
-            String password,
-            String previousVersion,
-            String testName,
-            TestDefinition testDefinition,
-            Map<String, String> metadata,
-            String comment
-    ) throws StoreException.TestUpdateException;
+    default void updateTestDefinition(
+            final String username,
+            final String password,
+            final String previousVersion,
+            final String testName,
+            final TestDefinition testDefinition,
+            final Map<String, String> metadata,
+            final String comment
+    ) throws StoreException.TestUpdateException {
+        updateTestDefinition(username, password, username, previousVersion, testName, testDefinition, metadata, comment);
+    }
 
     /**
      * Updates a test with testName that already exists in this store
@@ -48,14 +50,16 @@ public interface ProctorWriter {
     /**
      * {@see other ProctorWriter.deleteTestDefinition}, using username as author
      */
-    void deleteTestDefinition(
-            String username,
-            String password,
-            String previousVersion,
-            String testName,
-            TestDefinition testDefinition,
-            String comment
-    ) throws StoreException.TestUpdateException;
+    default void deleteTestDefinition(
+            final String username,
+            final String password,
+            final String previousVersion,
+            final String testName,
+            final TestDefinition testDefinition,
+            final String comment
+    ) throws StoreException.TestUpdateException {
+        deleteTestDefinition(username, password, username, previousVersion, testName, testDefinition, comment);
+    }
 
     /**
      * @throws StoreException.TestUpdateException when
@@ -73,14 +77,16 @@ public interface ProctorWriter {
     /**
      * {@see other ProctorWriter.addTestDefinition}, using username as author
      */
-    void addTestDefinition(
-            String username,
-            String password,
-            String testName,
-            TestDefinition testDefinition,
-            Map<String, String> metadata,
-            String comment
-    ) throws StoreException.TestUpdateException;
+    default void addTestDefinition(
+            final String username,
+            final String password,
+            final String testName,
+            final TestDefinition testDefinition,
+            final Map<String, String> metadata,
+            final String comment
+    ) throws StoreException.TestUpdateException {
+        addTestDefinition(username, password, username, testName, testDefinition, metadata, comment);
+    }
 
     /**
      * Add new test definition to this store.

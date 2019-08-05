@@ -265,10 +265,12 @@ public class GitProctorCore implements FileBasedPersisterCore {
     }
 
     @Override
-    public <C> C getFileContents(final Class<C> c,
+    public <C> C getFileContents(
+            final Class<C> c,
             final String[] path,
             final C defaultValue,
-            final String revision) throws StoreException.ReadException, JsonProcessingException {
+            final String revision
+    ) throws StoreException.ReadException, JsonProcessingException {
         try {
             if (!ObjectId.isId(revision)) {
                 throw new StoreException.ReadException("Malformed id " + revision);
@@ -361,12 +363,14 @@ public class GitProctorCore implements FileBasedPersisterCore {
     }
 
     @Override
-    public void doInWorkingDirectory(final String username,
-                                     final String password,
-                                     final String author,
-                                     final String comment,
-                                     final String previousVersion,
-                                     final FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException {
+    public void doInWorkingDirectory(
+            final String username,
+            final String password,
+            final String author,
+            final String comment,
+            final String previousVersion,
+            final FileBasedProctorStore.ProctorUpdater updater
+    ) throws StoreException.TestUpdateException {
         final UsernamePasswordCredentialsProvider user = new UsernamePasswordCredentialsProvider(username, password);
         final File workingDir = workspaceProvider.getRootDirectory();
 
@@ -443,15 +447,6 @@ public class GitProctorCore implements FileBasedPersisterCore {
                 return null;
             }
         });
-    }
-
-    @Override
-    public void doInWorkingDirectory(final String username,
-                                     final String password,
-                                     final String comment,
-                                     final String previousVersion,
-                                     final FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException {
-        doInWorkingDirectory(username, password, username, comment, previousVersion, updater);
     }
 
     @Nullable
