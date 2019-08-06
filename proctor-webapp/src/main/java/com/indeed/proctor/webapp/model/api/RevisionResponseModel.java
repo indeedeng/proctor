@@ -2,6 +2,7 @@ package com.indeed.proctor.webapp.model.api;
 
 import com.indeed.proctor.store.Revision;
 import io.swagger.annotations.ApiModelProperty;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import javax.annotation.Nonnull;
 import java.util.Date;
@@ -78,11 +79,11 @@ public class RevisionResponseModel {
 
     @Override
     public String toString() {
-        return com.google.common.base.Objects.toStringHelper(this)
-                .add("revision", revision)
-                .add("author", author)
-                .add("date", date)
-                .add("message", message)
+        return new ToStringBuilder(this)
+                .append("revision", revision)
+                .append("author", author)
+                .append("date", date)
+                .append("message", message)
                 .toString();
     }
 

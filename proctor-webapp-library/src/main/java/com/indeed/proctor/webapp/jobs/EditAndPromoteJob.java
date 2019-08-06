@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.CharMatcher;
-import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
@@ -153,7 +152,7 @@ public class EditAndPromoteJob extends AbstractJob {
                 createJobType(isCreate, autopromoteTarget),
                 job -> {
                     try {
-                        if (CharMatcher.WHITESPACE.matchesAllOf(Strings.nullToEmpty(testDefinitionJson))) {
+                        if (StringUtils.isBlank(testDefinitionJson)) {
                             throw new IllegalArgumentException("No new test definition given");
                         }
                         job.logWithTiming("Parsing test definition json", "parsing");
@@ -176,11 +175,11 @@ public class EditAndPromoteJob extends AbstractJob {
     private static TestDefinition parseTestDefinition(final String testDefinition) throws IOException, JsonParseException, JsonMappingException {
         final TestDefinition td = OBJECT_MAPPER.readValue(testDefinition, TestDefinition.class);
         // Until (PROC-72) is resolved, all of the 'empty' rules should get saved as NULL rules.
-        if (CharMatcher.WHITESPACE.matchesAllOf(Strings.nullToEmpty(td.getRule()))) {
+        if (StringUtils.isBlank(td.getRule())) {
             td.setRule(null);
         }
         for (final Allocation ac : td.getAllocations()) {
-            if (CharMatcher.WHITESPACE.matchesAllOf(Strings.nullToEmpty(ac.getRule()))) {
+            if (StringUtils.isBlank(ac.getRule())) {
                 ac.setRule(null);
             }
         }
@@ -814,10 +813,10 @@ public class EditAndPromoteJob extends AbstractJob {
             final TestDefinition definition,
             final BackgroundJob<Void> backgroundJob
     ) throws IllegalArgumentException {
-        if (CharMatcher.WHITESPACE.matchesAllOf(Strings.nullToEmpty(definition.getDescription()))) {
+        if (StringUtils.isBlank(definition.getDescription())) {
             throw new IllegalArgumentException("Description is required.");
         }
-        if (CharMatcher.WHITESPACE.matchesAllOf(Strings.nullToEmpty(definition.getSalt()))) {
+        if (StringUtils.isBlank(definition.getSalt())) {
             throw new IllegalArgumentException("Salt is required.");
         }
         if (definition.getTestType() == null) {
@@ -1042,7 +1041,7 @@ public class EditAndPromoteJob extends AbstractJob {
         job.logWithTiming("Validating Matrix.", "matrixCheck");
         final MatrixChecker.CheckMatrixResult result = matrixChecker.checkMatrix(destination, testName, testDefintion);
         if (!result.isValid()) {
-            throw new IllegalArgumentException(String.format("Test Promotion not compatible, errors: %s", Joiner.on("\n").join(result.getErrors())));
+            throw new IllegalArgumentException(String.format("Test Promotion not compatible, errors: %s", String.join("\n", result.getErrors())));
         } else {
             final Map<Environment, PromoteAction> actions = PROMOTE_ACTIONS.get(source);
             if (actions == null || !actions.containsKey(destination)) {

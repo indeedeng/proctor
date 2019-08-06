@@ -2,7 +2,6 @@ package com.indeed.proctor.webapp.controllers;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -28,11 +27,11 @@ import com.indeed.proctor.webapp.jobs.DeleteJob;
 import com.indeed.proctor.webapp.jobs.EditAndPromoteJob;
 import com.indeed.proctor.webapp.jobs.MatrixChecker;
 import com.indeed.proctor.webapp.model.AppVersion;
-import com.indeed.proctor.webapp.model.api.BackgroundJobResponseModel;
 import com.indeed.proctor.webapp.model.ProctorClientApplication;
 import com.indeed.proctor.webapp.model.RevisionDefinition;
 import com.indeed.proctor.webapp.model.SessionViewModel;
 import com.indeed.proctor.webapp.model.WebappConfiguration;
+import com.indeed.proctor.webapp.model.api.BackgroundJobResponseModel;
 import com.indeed.proctor.webapp.util.EncodingUtil;
 import com.indeed.proctor.webapp.util.TestDefinitionUtil;
 import com.indeed.proctor.webapp.views.JsonView;
@@ -387,7 +386,7 @@ public class ProctorTestDefinitionController extends AbstractController {
         if (result.isValid()) {
             return "check success";
         } else {
-            return "failed: " + Joiner.on("\n").join(result.getErrors());
+            return "failed: " + String.join("\n", result.getErrors());
         }
     }
 

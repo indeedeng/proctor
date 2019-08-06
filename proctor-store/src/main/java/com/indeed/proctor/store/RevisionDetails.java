@@ -1,6 +1,7 @@
 package com.indeed.proctor.store;
 
 import com.google.common.collect.ImmutableSet;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;
@@ -53,9 +54,9 @@ public class RevisionDetails {
 
     @Override
     public String toString() {
-        return com.google.common.base.Objects.toStringHelper(this)
-                .add("revision", revision)
-                .add("modifiedTests", modifiedTests)
+        return new ToStringBuilder(this)
+                .append("revision", revision)
+                .append("modifiedTests", modifiedTests)
                 .toString();
     }
 }

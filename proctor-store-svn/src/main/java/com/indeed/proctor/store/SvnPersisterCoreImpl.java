@@ -1,6 +1,7 @@
 package com.indeed.proctor.store;
 
-import com.google.common.base.Joiner;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
@@ -9,8 +10,6 @@ import com.indeed.util.varexport.Export;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.pool2.ObjectPool;
 import org.apache.log4j.Logger;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.tmatesoft.svn.core.SVNAuthenticationException;
 import org.tmatesoft.svn.core.SVNDepth;
 import org.tmatesoft.svn.core.SVNDirEntry;
@@ -241,7 +240,7 @@ public class SvnPersisterCoreImpl implements SvnPersisterCore, Closeable {
     @Override
     public <C> C getFileContents(final Class<C> c, final String[] path_parts, final C defaultValue, final String version) throws StoreException.ReadException, JsonProcessingException {
         checkShutdownState();
-        final String path = Joiner.on("/").join(path_parts);
+        final String path = String.join("/", path_parts);
         return doReadWithClientAndRepository(new SvnOperation<C>() {
             @Override
             public C execute(final SVNRepository repo, final SVNClientManager clientManager) throws Exception {

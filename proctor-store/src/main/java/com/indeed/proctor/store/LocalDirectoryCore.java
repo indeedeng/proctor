@@ -1,6 +1,5 @@
 package com.indeed.proctor.store;
 
-import com.google.common.base.Joiner;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.indeed.proctor.common.Serializers;
@@ -33,7 +32,7 @@ public class LocalDirectoryCore implements FileBasedPersisterCore {
 
     @Override
     public <C> C getFileContents(final Class<C> c, final String[] path_parts, final C defaultValue, final String revision) throws StoreException.ReadException, JsonProcessingException {
-        final String path = Joiner.on(File.separator).join(path_parts);
+        final String path = String.join(File.separator, path_parts);
         FileReader reader = null;
 
         try {

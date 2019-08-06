@@ -3,12 +3,10 @@ package com.indeed.proctor.store;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
-import com.google.common.io.Files;
 import com.indeed.proctor.common.Serializers;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Level;
@@ -286,8 +284,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
                 final TreeWalk treeWalk2 = new TreeWalk(git.getRepository());
                 treeWalk2.addTree(commit.getTree());
                 treeWalk2.setRecursive(true);
-                //final String joinedPath = "matrices" + "/" + Joiner.on("/").join(path);
-                final String joinedPath = Joiner.on("/").join(path);
+                final String joinedPath = String.join("/", path);
                 treeWalk2.setFilter(PathFilter.create(joinedPath));
 
                 if (!treeWalk2.next()) {
@@ -394,10 +391,10 @@ public class GitProctorCore implements FileBasedPersisterCore {
                     if (thingsChanged) {
                         final Set<String> stagedTests = parseStagedTestNames();
                         if (LOGGER.isDebugEnabled()) {
-                            LOGGER.debug("Staged tests are " + Joiner.on(",").join(stagedTests));
+                            LOGGER.debug("Staged tests are " + String.join(",", stagedTests));
                         }
                         if (stagedTests != null && stagedTests.size() >= 2) {
-                            LOGGER.error("Multiple tests are going to be modified at the one commit : " + Joiner.on(",").join(stagedTests));
+                            LOGGER.error("Multiple tests are going to be modified at the one commit : " + String.join(",", stagedTests));
                             throw new IllegalStateException("Another test are staged unintentionally due to invalid local git state");
                         } else if (stagedTests != null && stagedTests.isEmpty()) {
                             LOGGER.warn("Failed to parse staged test names or no test files aren't staged");

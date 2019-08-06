@@ -1,7 +1,6 @@
 package com.indeed.proctor.groups;
 
 import com.google.common.base.Predicate;
-import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.io.CharStreams;
@@ -64,12 +63,7 @@ public class TestUnitTestGroupsManager {
     }
 
     private void setUp(final Proctor proctor) {
-        manager = new UnitTestGroupsManager(new Supplier<Proctor>() {
-            @Override
-            public Proctor get() {
-                return proctor;
-            }
-        });
+        manager = new UnitTestGroupsManager(() -> proctor);
     }
 
     private Proctor getProctor() throws IOException {

@@ -1,9 +1,7 @@
 package com.indeed.proctor.store.utils.test;
 
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
-import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.indeed.proctor.common.model.TestDefinition;
@@ -17,8 +15,8 @@ import com.indeed.proctor.store.cache.CachingProctorStore;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -29,6 +27,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.stream.Collectors;
 
 /**
  * This class is an in-memory implementation of ProctorStore.
@@ -319,22 +318,13 @@ public class InMemoryProctorStore implements ProctorStore {
     }
 
     private static List<Revision> castToRevisionList(final List<RevisionAndTest> list) {
-        return Lists.transform(list, castToRevision);
+        return new ArrayList<>(list);
     }
 
-    private static final Function<RevisionAndTest, Revision> castToRevision = new Function<RevisionAndTest, Revision>() {
-        @Nullable
-        @Override
-        public Revision apply(@Nullable final RevisionAndTest revisionAndTest) {
-            return revisionAndTest;
-        }
-    };
-
     private static List<Revision> filterRevisionByTest(final List<RevisionAndTest> revisionHistory, final String test) {
-        return FluentIterable.from(revisionHistory)
+        return revisionHistory.stream()
                 .filter(revisionAndTest -> revisionAndTest.getTestName().equals(test))
-                .transform(castToRevision)
-                .toList();
+                .collect(Collectors.toList());
     }
 
     /**
