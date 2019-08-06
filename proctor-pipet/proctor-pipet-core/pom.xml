@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.indeed</groupId>
         <artifactId>proctor-pipet-parent</artifactId>
-        <version>9999-SNAPSHOT</version>
+        <version>1.5.5</version>
     </parent>
 
     <dependencies>
