@@ -15,16 +15,38 @@ public interface ProctorWriter {
 
     /**
      * {@see other ProctorWriter.updateTestDefinition}, using username as author
+     * @deprecated  use ChangeMetadata
      */
-    void updateTestDefinition(
-            String username,
-            String password,
-            String previousVersion,
-            String testName,
-            TestDefinition testDefinition,
-            Map<String, String> metadata,
-            String comment
-    ) throws StoreException.TestUpdateException;
+    @Deprecated
+    default void updateTestDefinition(
+            final String username,
+            final String password,
+            final String previousVersion,
+            final String testName,
+            final TestDefinition testDefinition,
+            final Map<String, String> metadata,
+            final String comment
+    ) throws StoreException.TestUpdateException {
+        updateTestDefinition(username, password, username, previousVersion, testName, testDefinition, metadata, comment);
+    }
+
+    /**
+     * {@see other ProctorWriter.updateTestDefinition}, using Instant.now
+     * @deprecated  use ChangeMetadata
+     */
+    @Deprecated
+    default void updateTestDefinition(
+            final String username,
+            final String password,
+            final String author,
+            final String previousVersion,
+            final String testName,
+            final TestDefinition testDefinition,
+            final Map<String, String> metadata,
+            final String comment
+    ) throws StoreException.TestUpdateException {
+        updateTestDefinition(new ChangeMetadata(username, password, author, comment), previousVersion, testName, testDefinition, metadata);
+    }
 
     /**
      * Updates a test with testName that already exists in this store
@@ -35,52 +57,89 @@ public interface ProctorWriter {
      * @throws StoreException.TestUpdateException
      */
     void updateTestDefinition(
-            String username,
-            String password,
-            String author,
+            ChangeMetadata changeMetadata,
             String previousVersion,
             String testName,
             TestDefinition testDefinition,
-            Map<String, String> metadata,
-            String comment
+            Map<String, String> metadata
     ) throws StoreException.TestUpdateException;
 
     /**
      * {@see other ProctorWriter.deleteTestDefinition}, using username as author
+     * @deprecated  use ChangeMetadata
      */
-    void deleteTestDefinition(
-            String username,
-            String password,
-            String previousVersion,
-            String testName,
-            TestDefinition testDefinition,
-            String comment
-    ) throws StoreException.TestUpdateException;
+    @Deprecated
+    default void deleteTestDefinition(
+            final String username,
+            final String password,
+            final String previousVersion,
+            final String testName,
+            final TestDefinition testDefinition,
+            final String comment
+    ) throws StoreException.TestUpdateException {
+        deleteTestDefinition(username, password, username, previousVersion, testName, testDefinition, comment);
+    }
+
+    /**
+     * {@see other ProctorWriter.deleteTestDefinition}, using Instant.now
+     * @deprecated  use ChangeMetadata
+     */
+    @Deprecated
+    default void deleteTestDefinition(
+            final String username,
+            final String password,
+            final String author,
+            final String previousVersion,
+            final String testName,
+            final TestDefinition testDefinition,
+            final String comment
+    ) throws StoreException.TestUpdateException {
+        deleteTestDefinition(new ChangeMetadata(username, password, author, comment), previousVersion, testName, testDefinition);
+    }
 
     /**
      * @throws StoreException.TestUpdateException when
      */
     void deleteTestDefinition(
-            String username,
-            String password,
-            String author,
+            ChangeMetadata changeMetadata,
             String previousVersion,
             String testName,
-            TestDefinition testDefinition,
-            String comment
+            TestDefinition testDefinition
     ) throws StoreException.TestUpdateException;
 
     /**
      * {@see other ProctorWriter.addTestDefinition}, using username as author
+     * @deprecated  use ChangeMetadata
      */
-    void addTestDefinition(
-            String username,
-            String password,
-            String testName,
-            TestDefinition testDefinition,
-            Map<String, String> metadata,
-            String comment
-    ) throws StoreException.TestUpdateException;
+    @Deprecated
+    default void addTestDefinition(
+            final String username,
+            final String password,
+            final String testName,
+            final TestDefinition testDefinition,
+            final Map<String, String> metadata,
+            final String comment
+    ) throws StoreException.TestUpdateException {
+        addTestDefinition(username, password, username, testName, testDefinition, metadata, comment);
+    }
+
+    /**
+     * {@see other ProctorWriter.addTestDefinition}, using Instant.now
+     * @deprecated  use ChangeMetadata
+     */
+    @Deprecated
+    default void addTestDefinition(
+            final String username,
+            final String password,
+            final String author,
+            final String testName,
+            final TestDefinition testDefinition,
+            final Map<String, String> metadata,
+            final String comment
+    ) throws StoreException.TestUpdateException {
+        addTestDefinition(new ChangeMetadata(username, password, author, comment), testName, testDefinition, metadata);
+    }
+
 
     /**
      * Add new test definition to this store.
@@ -90,12 +149,9 @@ public interface ProctorWriter {
      * @throws StoreException.TestUpdateException on invalid inputs
      */
     void addTestDefinition(
-            String username,
-            String password,
-            String author,
-            String testName,
+            ChangeMetadata changeMetadata,
+            final String testName,
             TestDefinition testDefinition,
-            Map<String, String> metadata,
-            String comment
+            Map<String, String> metadata
     ) throws StoreException.TestUpdateException;
 }

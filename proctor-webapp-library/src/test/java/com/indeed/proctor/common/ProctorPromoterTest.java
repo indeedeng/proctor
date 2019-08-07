@@ -170,8 +170,6 @@ public class ProctorPromoterTest {
 
     @Test
     public void promoteWhenSrcHistoryIsEmptyFails() throws StoreException, ProctorPromoter.TestPromotionException {
-        final List<Revision> emptyHistory = Collections.emptyList();
-        Mockito.when(trunk.getHistory(TEST_NAME, 0, 1)).thenReturn(emptyHistory);
         mockEnvironmentVersion(Environment.QA, QA_REVISION);
 
         expectedException.expect(ProctorPromoter.TestPromotionException.class);

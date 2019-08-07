@@ -296,18 +296,18 @@ public class SvnPersisterCoreImpl implements SvnPersisterCore, Closeable {
     }
 
     @Override
-    public void doInWorkingDirectory(final String username,
-                                     final String password,
-                                     final String author,
-                                     final String comment,
-                                     final String previousVersion,
-                                     final FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException {
+    public void doInWorkingDirectory(
+            final ChangeMetadata changeMetadata,
+            final String previousVersion,
+            final FileBasedProctorStore.ProctorUpdater updater
+    ) throws StoreException.TestUpdateException {
         checkShutdownState();
 
+        final String username = changeMetadata.getUsername();
         try {
             final File workingDir = this.getWorkingDirForUser(username);
 
-            SvnProctorUtils.doInWorkingDirectory(LOGGER, workingDir, username, password, svnUrl, updater, comment);
+            SvnProctorUtils.doInWorkingDirectory(LOGGER, workingDir, username, changeMetadata.getPassword(), svnUrl, updater, changeMetadata.getComment());
         } catch (final SVNAuthenticationException e) {
             throw new StoreException.TestUpdateException("Invalid credentials provided for " + username, e);
         } catch (final SVNException e) {
@@ -317,15 +317,6 @@ public class SvnPersisterCoreImpl implements SvnPersisterCore, Closeable {
         } catch (final Exception e) {
             throw new StoreException.TestUpdateException("SvnCore: Unable to perform operation", e);
         }
-    }
-
-    @Override
-    public void doInWorkingDirectory(final String username,
-                                     final String password,
-                                     final String comment,
-                                     final String previousVersion,
-                                     final FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException {
-        doInWorkingDirectory(username, password, username, comment, previousVersion, updater);
     }
 
     private File getOrCreateSvnUserDirectory(final String username) throws IOException {

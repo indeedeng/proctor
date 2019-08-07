@@ -7,6 +7,7 @@ import com.google.common.collect.Maps;
 import com.indeed.proctor.common.model.TestDefinition;
 import com.indeed.proctor.common.model.TestMatrixDefinition;
 import com.indeed.proctor.common.model.TestMatrixVersion;
+import com.indeed.proctor.store.ChangeMetadata;
 import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.store.RevisionDetails;
@@ -120,9 +121,13 @@ public class InMemoryProctorStore implements ProctorStore {
     }
 
     @Override
-    public void updateTestDefinition(final String username, final String password, final String author, final String previousVersion,
-                                     final String testName, final TestDefinition testDefinition,
-                                     final Map<String, String> metadata, final String comment) throws StoreException.TestUpdateException {
+    public void updateTestDefinition(
+            final ChangeMetadata changeMetadata,
+            final String previousVersion,
+            final String testName,
+            final TestDefinition testDefinition,
+            final Map<String, String> metadata
+    ) throws StoreException.TestUpdateException {
         synchronizedWrite((Callable<Void>) () -> {
             try {
                 final TestMatrixVersion currentTestMatrix = getCurrentTestMatrix();
@@ -131,7 +136,7 @@ public class InMemoryProctorStore implements ProctorStore {
                 final String newVersion = testDefinition.getVersion();
                 final TestMatrixDefinition newTestMatrixDefinition = cloneTestMatrixDefinition(currentTestMatrix.getTestMatrixDefinition());
                 newTestMatrixDefinition.getTests().put(testName, testDefinition);
-                commitTestMatrixVersion(username, newVersion, newTestMatrixDefinition, comment, testName);
+                commitTestMatrixVersion(changeMetadata.getUsername(), newVersion, newTestMatrixDefinition, changeMetadata.getComment(), testName);
             } catch (final Exception e) {
                 throw new StoreException.TestUpdateException("", e);
             }
@@ -140,14 +145,12 @@ public class InMemoryProctorStore implements ProctorStore {
     }
 
     @Override
-    public void updateTestDefinition(final String username, final String password, final String previousVersion,
-                                     final String testName, final TestDefinition testDefinition,
-                                     final Map<String, String> metadata, final String comment) throws StoreException.TestUpdateException {
-        updateTestDefinition(username, password, username, previousVersion, testName, testDefinition, metadata, comment);
-    }
-
-    @Override
-    public void deleteTestDefinition(final String username, final String password, final String author, final String previousVersion, final String testName, final TestDefinition testDefinition, final String comment) throws StoreException.TestUpdateException {
+    public void deleteTestDefinition(
+            final ChangeMetadata changeMetadata,
+            final String previousVersion,
+            final String testName,
+            final TestDefinition testDefinition
+    ) throws StoreException.TestUpdateException {
         synchronizedWrite((Callable<Void>) () -> {
 
             try {
@@ -161,7 +164,7 @@ public class InMemoryProctorStore implements ProctorStore {
                 if (newTestMatrixDefinition.getTests().containsKey(testName)) {
                     final String newVersion = testDefinition.getVersion();
                     newTestMatrixDefinition.getTests().remove(testName);
-                    commitTestMatrixVersion(username, newVersion, newTestMatrixDefinition, comment, testName);
+                    commitTestMatrixVersion(changeMetadata.getUsername(), newVersion, newTestMatrixDefinition, changeMetadata.getComment(), testName);
                 }
             } catch (final Exception e) {
                 throw new StoreException.TestUpdateException("Failed to delete test", e);
@@ -171,12 +174,12 @@ public class InMemoryProctorStore implements ProctorStore {
     }
 
     @Override
-    public void deleteTestDefinition(final String username, final String password, final String previousVersion, final String testName, final TestDefinition testDefinition, final String comment) throws StoreException.TestUpdateException {
-        deleteTestDefinition(username, password, username, previousVersion, testName, testDefinition, comment);
-    }
-
-    @Override
-    public void addTestDefinition(final String username, final String password, final String author, final String testName, final TestDefinition testDefinition, final Map<String, String> metadata, final String comment) throws StoreException.TestUpdateException {
+    public void addTestDefinition(
+            final ChangeMetadata changeMetadata,
+            final String testName,
+            final TestDefinition testDefinition,
+            final Map<String, String> metadata
+    ) throws StoreException.TestUpdateException {
         synchronizedWrite((Callable<Void>) () -> {
             try {
                 final TestMatrixVersion currentTestMatrix = getCurrentTestMatrix();
@@ -184,17 +187,12 @@ public class InMemoryProctorStore implements ProctorStore {
                 Preconditions.checkState(!newTestMatrixDefinition.getTests().containsKey(testName), "Test already exists");
                 newTestMatrixDefinition.getTests().put(testName, testDefinition);
                 final String newVersion = testDefinition.getVersion();
-                commitTestMatrixVersion(username, newVersion, newTestMatrixDefinition, comment, testName);
+                commitTestMatrixVersion(changeMetadata.getUsername(), newVersion, newTestMatrixDefinition, changeMetadata.getComment(), testName);
             } catch (final Exception e) {
                 throw new StoreException.TestUpdateException("Failed to add ", e);
             }
             return null;
         });
-    }
-
-    @Override
-    public void addTestDefinition(final String username, final String password, final String testName, final TestDefinition testDefinition, final Map<String, String> metadata, final String comment) throws StoreException.TestUpdateException {
-        addTestDefinition(username, password, username, testName, testDefinition, metadata, comment);
     }
 
     @Nonnull

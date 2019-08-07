@@ -24,6 +24,7 @@ import org.eclipse.jgit.errors.NoWorkTreeException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectLoader;
+import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.StoredConfig;
 import org.eclipse.jgit.lib.TextProgressMonitor;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -45,6 +46,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -265,10 +267,12 @@ public class GitProctorCore implements FileBasedPersisterCore {
     }
 
     @Override
-    public <C> C getFileContents(final Class<C> c,
+    public <C> C getFileContents(
+            final Class<C> c,
             final String[] path,
             final C defaultValue,
-            final String revision) throws StoreException.ReadException, JsonProcessingException {
+            final String revision
+    ) throws StoreException.ReadException, JsonProcessingException {
         try {
             if (!ObjectId.isId(revision)) {
                 throw new StoreException.ReadException("Malformed id " + revision);
@@ -361,12 +365,11 @@ public class GitProctorCore implements FileBasedPersisterCore {
     }
 
     @Override
-    public void doInWorkingDirectory(final String username,
-                                     final String password,
-                                     final String author,
-                                     final String comment,
-                                     final String previousVersion,
-                                     final FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException {
+    public void doInWorkingDirectory(
+            final ChangeMetadata changeMetadata,
+            final String previousVersion,
+            final FileBasedProctorStore.ProctorUpdater updater
+    ) throws StoreException.TestUpdateException {
         final UsernamePasswordCredentialsProvider user = new UsernamePasswordCredentialsProvider(username, password);
         final File workingDir = workspaceProvider.getRootDirectory();
 
@@ -402,9 +405,14 @@ public class GitProctorCore implements FileBasedPersisterCore {
 
                         git.commit()
                                 .setCommitter(username, username)
-                                .setAuthor(author, author)
-                                .setMessage(comment)
+                                .setAuthor(new PersonIdent(
+                                        changeMetadata.getAuthor(),
+                                        changeMetadata.getAuthor(),
+                                        Date.from(changeMetadata.getTimestamp()),
+                                        TimeZone.getTimeZone("UTC")))
+                                .setMessage(changeMetadata.getComment())
                                 .call();
+
                         final Iterable<PushResult> pushResults = git.push()
                                 .setProgressMonitor(PROGRESS_MONITOR)
                                 .setCredentialsProvider(user)
@@ -443,15 +451,6 @@ public class GitProctorCore implements FileBasedPersisterCore {
                 return null;
             }
         });
-    }
-
-    @Override
-    public void doInWorkingDirectory(final String username,
-                                     final String password,
-                                     final String comment,
-                                     final String previousVersion,
-                                     final FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException {
-        doInWorkingDirectory(username, password, username, comment, previousVersion, updater);
     }
 
     @Nullable
