@@ -146,7 +146,7 @@ public abstract class FileBasedProctorStore implements ProctorStore {
     }
 
     @Override
-    public TestDefinition getTestDefinition(final String testName, String fetchRevision) throws StoreException {
+    public TestDefinition getTestDefinition(final String testName, final String fetchRevision) throws StoreException {
         try {
             return getFileContents(TestDefinition.class, new String[] { getTestDefinitionsDirectory(), testName, TEST_DEFINITION_FILENAME }, null, fetchRevision);
         } catch (final JsonProcessingException e) {
@@ -159,7 +159,7 @@ public abstract class FileBasedProctorStore implements ProctorStore {
     public void shutdown() {
         try {
             close();
-        } catch (IOException e) {
+        } catch (final IOException e) {
             LOGGER.error("Ignored exception during closing", e);
         }
     }
@@ -169,7 +169,7 @@ public abstract class FileBasedProctorStore implements ProctorStore {
         core.close();
     }
 
-    private final <C> C getFileContents(Class<C> c, String[] path, C defaultValue, String revision) throws StoreException.ReadException, JsonProcessingException {
+    private final <C> C getFileContents(final Class<C> c, final String[] path, final C defaultValue, final String revision) throws StoreException.ReadException, JsonProcessingException {
         return core.getFileContents(c, path, defaultValue, revision);
     }
 

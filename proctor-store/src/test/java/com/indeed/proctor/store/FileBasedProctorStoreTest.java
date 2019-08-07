@@ -52,7 +52,7 @@ public class FileBasedProctorStoreTest {
         EasyMock.expectLastCall().anyTimes();
         replay(gitClient);
         coreMock = EasyMock.createMock(FileBasedPersisterCore.class);
-        DelegatingCore coreMockWrapper = new DelegatingCore(coreMock, temporaryFolder.getRoot(), gitClient);
+        final DelegatingCore coreMockWrapper = new DelegatingCore(coreMock, temporaryFolder.getRoot(), gitClient);
         store = new TestFileBasedProctorStore(coreMockWrapper);
     }
 
@@ -100,7 +100,7 @@ public class FileBasedProctorStoreTest {
             store.updateTestDefinition("fooUser", "fooPassw0rd", "fooAuthor", "r0",
                     definition, metadata, "fooComment");
             fail("Expected Exception");
-        } catch (StoreException.TestUpdateException tue) {
+        } catch (final StoreException.TestUpdateException tue) {
             assertEquals("Attempting to update non-existent test r0", tue.getCause().getMessage());
         }
     }
@@ -130,7 +130,7 @@ public class FileBasedProctorStoreTest {
             store.updateTestDefinition("fooUser", "fooPassw0rd", "fooAuthor", "r0",
                     definition, metadata, "fooComment");
             fail("Expected Exception");
-        } catch (StoreException.TestUpdateException tue) {
+        } catch (final StoreException.TestUpdateException tue) {
             assertEquals("Attempting to save test definition without changes for test r0", tue.getCause().getMessage());
         }
     }

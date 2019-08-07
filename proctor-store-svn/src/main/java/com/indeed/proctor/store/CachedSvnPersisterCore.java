@@ -32,7 +32,7 @@ public class CachedSvnPersisterCore implements SvnPersisterCore {
 
     final SvnPersisterCoreImpl core;
 
-    public CachedSvnPersisterCore(SvnPersisterCoreImpl core) {
+    public CachedSvnPersisterCore(final SvnPersisterCoreImpl core) {
         this.core = core;
     }
 
@@ -48,7 +48,7 @@ public class CachedSvnPersisterCore implements SvnPersisterCore {
     }
 
     @Override
-    public boolean cleanUserWorkspace(String username) {
+    public boolean cleanUserWorkspace(final String username) {
         return core.cleanUserWorkspace(username);
     }
 
@@ -104,7 +104,7 @@ public class CachedSvnPersisterCore implements SvnPersisterCore {
     public void shutdown() {
         try {
             close();
-        } catch (IOException e) {
+        } catch (final IOException e) {
             LOGGER.error("Ignored exception during closing of core", e);
         }
     }
@@ -119,14 +119,14 @@ public class CachedSvnPersisterCore implements SvnPersisterCore {
         final String[] path;
         final long revision;
 
-        private FileContentsKey(Class c, String[] path, long revision) {
+        private FileContentsKey(final Class c, final String[] path, final long revision) {
             this.c = c;
             this.path = path;
             this.revision = revision;
         }
 
         @Override
-        public boolean equals(Object o) {
+        public boolean equals(final Object o) {
             if (this == o) {
                 return true;
             }
@@ -134,7 +134,7 @@ public class CachedSvnPersisterCore implements SvnPersisterCore {
                 return false;
             }
 
-            FileContentsKey that = (FileContentsKey) o;
+            final FileContentsKey that = (FileContentsKey) o;
 
             if (revision != that.revision) {
                 return false;
