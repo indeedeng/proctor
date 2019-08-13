@@ -69,7 +69,7 @@
         the versions defined in javadev
         -->
         <spring.version>4.3.18.RELEASE</spring.version>
-        <google-guava.version>16.0.1</google-guava.version>
+        <google-guava.version>19.0</google-guava.version>
         <slf4j.version>1.7.25</slf4j.version>
         <log4j.version>1.2.14</log4j.version>
         <jackson.core.version>2.9.8</jackson.core.version>
