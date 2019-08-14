@@ -2,7 +2,6 @@ package com.indeed.proctor.common.model;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Objects;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import javax.annotation.Nonnull;
@@ -18,6 +17,11 @@ import java.util.Map;
  * @author ketan
  */
 public class TestDefinition {
+
+    /**
+     * "-1" when for definitions on the trunk branch.
+     * On other branches, the revision of the definition on the trunk branch from which it was promoted
+     */
     private String version;
     @Nonnull
     private Map<String, Object> constants = Collections.emptyMap();

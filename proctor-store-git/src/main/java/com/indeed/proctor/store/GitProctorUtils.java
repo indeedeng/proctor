@@ -5,6 +5,8 @@ import com.google.common.base.Strings;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jgit.revwalk.RevCommit;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -28,7 +30,8 @@ public class GitProctorUtils {
      * @param branch   the name of the branch it came from
      * @return the original SVN revision if it was a migrated commit from the branch specified, otherwise the git revision
      */
-    public static String resolveSvnMigratedRevision(final Revision revision, final String branch) {
+    @CheckForNull
+    public static String resolveSvnMigratedRevision(@Nullable final Revision revision, final String branch) {
         if (revision == null) {
             return null;
         }
