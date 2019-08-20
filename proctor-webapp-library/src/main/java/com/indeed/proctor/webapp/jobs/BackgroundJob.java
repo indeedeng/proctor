@@ -22,7 +22,8 @@ public abstract class BackgroundJob<T> implements Callable<T> {
 
     private Future<T> future;
     private JobStatus status = JobStatus.PENDING;
-    protected final StringBuilder logBuilder = new StringBuilder();
+    // using StringBuffer because append() and toString() may be called in parallel by different threads
+    protected final StringBuffer logBuilder = new StringBuffer();
 
     private Long id;
     private UUID uuid;
