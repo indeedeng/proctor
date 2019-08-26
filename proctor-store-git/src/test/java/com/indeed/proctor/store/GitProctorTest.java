@@ -24,7 +24,11 @@ import org.junit.rules.TemporaryFolder;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Locale;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -237,6 +241,44 @@ public class GitProctorTest {
                 .containsExactlyInAnyOrder("proc_a_tst", "proc_b_tst");
     }
 
+    @Test
+    public void testAddTestDefinition() throws StoreException {
+        final String testname = "proc_sample1_tst";
+        final String username = "proctorwebapp";
+        final String author = "me";
+        final String comment = "comment";
+        final TestDefinition testDefinition = createRandomTestDefinition();
+        final Instant timestamp = OffsetDateTime.of(
+                2019, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC
+        ).toInstant();
+
+        gitProctor.addTestDefinition(
+                ChangeMetadata.builder()
+                        .setUsername(username)
+                        .setPassword("")
+                        .setAuthor(author)
+                        .setComment(comment)
+                        .setTimestamp(timestamp)
+                        .build(),
+                testname,
+                testDefinition,
+                Collections.emptyMap()
+        );
+
+        final Revision latestRevision = gitProctor.getMatrixHistory(0, 1).get(0);
+
+        assertThat(gitProctor.getHistory(testname, 0, 2)).hasSize(1)
+                .first()
+                .isEqualTo(
+                        new Revision(
+                                latestRevision.getRevision(),
+                                author,
+                                new Date(timestamp.toEpochMilli()),
+                                comment
+                        )
+                );
+    }
+
     private String addTestDefinition(
             final String testName,
             final String author,
@@ -335,10 +377,10 @@ public class GitProctorTest {
 
     private static final String UNKNOWN_GIT_REVISION = StringUtils.repeat('0', 40);
 
-    private static final TestDefinition DEFINITION_A = createStubTestDefinition();
-    private static final TestDefinition DEFINITION_B = createStubTestDefinition();
+    private static final TestDefinition DEFINITION_A = createRandomTestDefinition();
+    private static final TestDefinition DEFINITION_B = createRandomTestDefinition();
 
-    private static TestDefinition createStubTestDefinition() {
+    private static TestDefinition createRandomTestDefinition() {
         return new TestDefinition(
                 "-1",
                 null,

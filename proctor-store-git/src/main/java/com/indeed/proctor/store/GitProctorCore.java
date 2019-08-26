@@ -404,7 +404,11 @@ public class GitProctorCore implements FileBasedPersisterCore {
                         }
 
                         git.commit()
-                                .setCommitter(username, username)
+                                .setCommitter(new PersonIdent(
+                                        username,
+                                        username,
+                                        Date.from(changeMetadata.getTimestamp()),
+                                        TimeZone.getTimeZone("UTC")))
                                 .setAuthor(new PersonIdent(
                                         changeMetadata.getAuthor(),
                                         changeMetadata.getAuthor(),
@@ -496,7 +500,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
                     LOGGER.info("Undo local changes due to failure of git operations");
                     try {
                         git.rebase().setOperation(RebaseCommand.Operation.ABORT).call();
-                    } catch (WrongRepositoryStateException e) {
+                    } catch (final WrongRepositoryStateException e) {
                         // ignore rebasing exception when in wrong state
                     }
                     final String remoteBranch = Constants.R_REMOTES + Constants.DEFAULT_REMOTE_NAME + '/' + git.getRepository().getBranch();
