@@ -2,6 +2,7 @@ package com.indeed.proctor.common;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -63,21 +64,23 @@ public class TestProctorUtils {
         final Map<String, Object> constants = Collections.emptyMap();
         final Map<String, Object> specialConstants = Collections.emptyMap();
         final String description = "test description";
+        final List<String> metaTags = ImmutableList.of("sample_test_tag");
 
         for (final String tdRule : emptyRules) {
             for (final String allocRule : emptyRules) {
                 final Allocation allocation = new Allocation(allocRule, Collections.singletonList(range));
                 final TestDefinition testDefinition = new TestDefinition(
-                    version,
-                    tdRule,
-                    testType,
-                    salt,
-                    buckets,
-                    Collections.singletonList(allocation),
-                    false,
-                    constants,
-                    specialConstants,
-                    description
+                        version,
+                        tdRule,
+                        testType,
+                        salt,
+                        buckets,
+                        Collections.singletonList(allocation),
+                        false,
+                        constants,
+                        specialConstants,
+                        description,
+                        metaTags
                 );
 
                 final ConsumableTestDefinition ctd = ProctorUtils.convertToConsumableTestDefinition(testDefinition);
@@ -87,6 +90,7 @@ public class TestProctorUtils {
                 assertEquals(description, ctd.getDescription());
                 assertEquals(0, ctd.getConstants().size());
                 assertEquals(buckets, ctd.getBuckets());
+                assertEquals(metaTags, ctd.getMetaTags());
 
                 assertEquals(String.format("TestDefinition rule '%s' should convert to a null ConsumableTestDefinition.rule", tdRule), null, ctd.getRule());
 
@@ -116,22 +120,23 @@ public class TestProctorUtils {
         final Map<String, Object> constants = Collections.emptyMap();
         final Map<String, Object> specialConstants = Collections.emptyMap();
         final String description = "test description";
+        final List<String> metaTags = Collections.emptyList();
 
 
-        for (final String rule : new String[] { "lang == 'en'", "${lang == 'en'}"})
-        {
+        for (final String rule : new String[] { "lang == 'en'", "${lang == 'en'}"})  {
             final Allocation allocation = new Allocation(rule, Collections.singletonList(range));
             final TestDefinition testDefinition = new TestDefinition(
-                version,
-                rule,
-                testType,
-                salt,
-                buckets,
-                Collections.singletonList(allocation),
-                false,
-                constants,
-                specialConstants,
-                description
+                    version,
+                    rule,
+                    testType,
+                    salt,
+                    buckets,
+                    Collections.singletonList(allocation),
+                    false,
+                    constants,
+                    specialConstants,
+                    description,
+                    metaTags
             );
 
             final ConsumableTestDefinition ctd = ProctorUtils.convertToConsumableTestDefinition(testDefinition);
@@ -162,22 +167,23 @@ public class TestProctorUtils {
         final Map<String, Object> constants = Collections.emptyMap();
         final Map<String, Object> specialConstants = Collections.<String, Object>singletonMap("__COUNTRIES", Lists.newArrayList("US", "CA"));
         final String description = "test description";
+        final List<String> metaTags = Collections.emptyList();
 
         final Allocation allocation = new Allocation(null, Collections.singletonList(range));
 
-        for (final String tdRule : new String[] { "lang == 'en'", "${lang == 'en'}"})
-        {
+        for (final String tdRule : new String[] { "lang == 'en'", "${lang == 'en'}"}) {
             final TestDefinition testDefinition = new TestDefinition(
-                version,
-                tdRule,
-                testType,
-                salt,
-                buckets,
-                Collections.singletonList(allocation),
-                false,
-                constants,
-                specialConstants,
-                description
+                    version,
+                    tdRule,
+                    testType,
+                    salt,
+                    buckets,
+                    Collections.singletonList(allocation),
+                    false,
+                    constants,
+                    specialConstants,
+                    description,
+                    metaTags
             );
 
             final ConsumableTestDefinition ctd = ProctorUtils.convertToConsumableTestDefinition(testDefinition);
@@ -1471,16 +1477,17 @@ public class TestProctorUtils {
     public void testGenerateSpecificationFromEmptyDefinition() {
         final String description = "this is an empty test with no buckets";
         final TestDefinition empty = new TestDefinition(
-            "empty",
-            "",
-            TestType.ANONYMOUS_USER,
-            "salty",
-            Collections.<TestBucket>emptyList(),
-            Collections.<Allocation>emptyList(),
-            false,
-            Collections.<String, Object>emptyMap(),
-            Collections.<String, Object>emptyMap(),
-            description
+                "empty",
+                "",
+                TestType.ANONYMOUS_USER,
+                "salty",
+                Collections.<TestBucket>emptyList(),
+                Collections.<Allocation>emptyList(),
+                false,
+                Collections.<String, Object>emptyMap(),
+                Collections.<String, Object>emptyMap(),
+                description,
+                Collections.emptyList()
         );
         final TestSpecification specification = ProctorUtils.generateSpecification(empty);
         assertEquals(description, specification.getDescription());
@@ -1496,16 +1503,17 @@ public class TestProctorUtils {
         final TestBucket inactiveBucket = new TestBucket("inactive", -3, "status quo");
         final TestBucket test = new TestBucket("test", 1, "test bucket");
         final TestDefinition empty = new TestDefinition(
-            "buckets",
-            "",
-            TestType.ANONYMOUS_USER,
-            "salty",
-            Lists.newArrayList(control, inactiveBucket, test),
-            Collections.<Allocation>emptyList(),
-            false,
-            Collections.<String, Object>emptyMap(),
-            Collections.<String, Object>emptyMap(),
-            description
+                "buckets",
+                "",
+                TestType.ANONYMOUS_USER,
+                "salty",
+                Lists.newArrayList(control, inactiveBucket, test),
+                Collections.<Allocation>emptyList(),
+                false,
+                Collections.<String, Object>emptyMap(),
+                Collections.<String, Object>emptyMap(),
+                description,
+                Collections.emptyList()
         );
         final TestSpecification specification = ProctorUtils.generateSpecification(empty);
         assertEquals(description, specification.getDescription());
@@ -1541,16 +1549,17 @@ public class TestProctorUtils {
         testPayload.setDoubleArray(new Double[]{22.22, 33.33});
         test.setPayload(controlPayload);
         final TestDefinition empty = new TestDefinition(
-            "buckets",
-            "",
-            TestType.ANONYMOUS_USER,
-            "salty",
-            Lists.newArrayList(inactiveBucket, control, test),
-            Collections.<Allocation>emptyList(),
-            false,
-            Collections.<String, Object>emptyMap(),
-            Collections.<String, Object>emptyMap(),
-            description
+                "buckets",
+                "",
+                TestType.ANONYMOUS_USER,
+                "salty",
+                Lists.newArrayList(inactiveBucket, control, test),
+                Collections.<Allocation>emptyList(),
+                false,
+                Collections.<String, Object>emptyMap(),
+                Collections.<String, Object>emptyMap(),
+                description,
+                Collections.emptyList()
         );
         final TestSpecification specification = ProctorUtils.generateSpecification(empty);
         assertEquals(description, specification.getDescription());
@@ -1579,16 +1588,17 @@ public class TestProctorUtils {
         ));
         bucket.setPayload(inactivePayload);
         final TestDefinition empty = new TestDefinition(
-            "buckets",
-            "",
-            TestType.ANONYMOUS_USER,
-            "salty",
-            Collections.singletonList(bucket),
-            Collections.<Allocation>emptyList(),
-            false,
-            Collections.<String, Object>emptyMap(),
-            Collections.<String, Object>emptyMap(),
-            description
+                "buckets",
+                "",
+                TestType.ANONYMOUS_USER,
+                "salty",
+                Collections.singletonList(bucket),
+                Collections.<Allocation>emptyList(),
+                false,
+                Collections.<String, Object>emptyMap(),
+                Collections.<String, Object>emptyMap(),
+                description,
+                Collections.emptyList()
         );
         final TestSpecification specification = ProctorUtils.generateSpecification(empty);
         assertEquals(description, specification.getDescription());

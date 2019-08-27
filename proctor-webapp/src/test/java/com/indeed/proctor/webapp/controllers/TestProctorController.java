@@ -76,7 +76,8 @@ public class TestProctorController {
                         false,
                         Collections.emptyMap(),
                         Collections.emptyMap(),
-                        "test for a unit test"
+                        "test for a unit test",
+                        Lists.newArrayList(TEST_NAME + "_tag")
                 )
         );
 

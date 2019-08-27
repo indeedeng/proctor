@@ -59,7 +59,8 @@ public class TestTestSearchUtil {
             false,
             Collections.emptyMap(),
             Collections.emptyMap(),
-            null);
+            null,
+            Collections.emptyList());
     private static final TestDefinition DEFINITION_WITH_DESCRIPTION = new TestDefinition(DEFAULT_DEFINITION);
     private static final TestDefinition DEFINITION_WITH_RULE = new TestDefinition(DEFAULT_DEFINITION);
     private static final TestDefinition DEFINITION_WITH_BUCKET_RULE = new TestDefinition(DEFAULT_DEFINITION);

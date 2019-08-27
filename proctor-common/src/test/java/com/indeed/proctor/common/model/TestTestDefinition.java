@@ -1,5 +1,6 @@
 package com.indeed.proctor.common.model;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import org.junit.Test;
@@ -28,7 +29,8 @@ public class TestTestDefinition {
                 false,
                 sampleConstants(),
                 sampleSpecialConstants(),
-                "sample test"
+                "sample test",
+                ImmutableList.of("sample_test_tag")
         );
     }
 

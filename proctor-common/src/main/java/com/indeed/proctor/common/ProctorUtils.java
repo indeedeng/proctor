@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -58,7 +57,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.joining;
 
@@ -191,7 +189,8 @@ public abstract class ProctorUtils {
         constants.putAll(td.getConstants());
         constants.putAll(specialConstants);
 
-        return new ConsumableTestDefinition(td.getVersion(), rule, td.getTestType(), td.getSalt(), td.getBuckets(), allocations, td.getSilent(), constants, td.getDescription());
+        return new ConsumableTestDefinition(td.getVersion(), rule, td.getTestType(), td.getSalt(), td.getBuckets(),
+                allocations, td.getSilent(), constants, td.getDescription(), td.getMetaTags());
     }
 
     public static ProctorSpecification readSpecification(final File inputFile) {
