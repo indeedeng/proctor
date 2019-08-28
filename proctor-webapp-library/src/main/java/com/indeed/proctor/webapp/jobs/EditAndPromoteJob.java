@@ -156,6 +156,7 @@ public class EditAndPromoteJob extends AbstractJob {
                         }
                         job.logWithTiming("Parsing test definition json", "parsing");
                         final TestDefinition testDefinitionToUpdate = parseTestDefinition(testDefinitionJson);
+                        job.logWithTiming("Finished parsing test definition json", "parsing");
                         doEditInternal(testName, username, password, author, isCreate, comment, testDefinitionToUpdate, previousRevision, autopromoteTarget, requestParameterMap, job);
                     } catch (final GitNoAuthorizationException | GitNoDevelperAccessLevelException | IllegalArgumentException | IncompatibleTestMatrixException exp) {
                         job.logFailedJob(exp);
@@ -276,6 +277,7 @@ public class EditAndPromoteJob extends AbstractJob {
                 throw new IllegalArgumentException("Test Name must be alpha-numeric underscore and not start/end with a number, found: '" + testName + "'");
             }
         }
+        job.log("(scm) Success: getting history for '" + testName + "'");
 
         job.logWithTiming("(scm) loading existing test definition for '" + testName + "'", "loadDefinition");
         // Getting the TestDefinition via currentTestMatrix instead of trunkStore.getTestDefinition because the test
@@ -315,45 +317,59 @@ public class EditAndPromoteJob extends AbstractJob {
         //PreDefinitionEdit
         final DefinitionChangeLogger logger = new BackgroundJobLogger(job);
         if (isCreate) {
-            job.logWithTiming("Executing pre create extension tasks.", "preCreateExtension");
-            for (final PreDefinitionCreateChange preDefinitionCreateChange : preDefinitionCreateChanges) {
-                preDefinitionCreateChange.preCreate(testDefinitionToUpdate, requestParameterMap, logger);
+            if (!preDefinitionCreateChanges.isEmpty()) {
+                job.logWithTiming("Executing pre create extension tasks.", "preCreateExtension");
+                for (final PreDefinitionCreateChange preDefinitionCreateChange : preDefinitionCreateChanges) {
+                    preDefinitionCreateChange.preCreate(testDefinitionToUpdate, requestParameterMap, logger);
+                }
+                job.log("Finished pre create extension tasks.");
             }
         } else {
-            job.logWithTiming("Executing pre edit extension tasks.", "preEditExtension");
-            for (final PreDefinitionEditChange preDefinitionEditChange : preDefinitionEditChanges) {
-                preDefinitionEditChange.preEdit(existingTestDefinition, testDefinitionToUpdate,
-                        requestParameterMap, logger);
+            if (!preDefinitionEditChanges.isEmpty()) {
+                job.logWithTiming("Executing pre edit extension tasks.", "preEditExtension");
+                for (final PreDefinitionEditChange preDefinitionEditChange : preDefinitionEditChanges) {
+                    preDefinitionEditChange.preEdit(existingTestDefinition, testDefinitionToUpdate,
+                            requestParameterMap, logger);
+                }
+                job.log("Finished pre edit extension tasks.");
             }
         }
 
         final String fullComment = commentFormatter.formatFullComment(nonEmptyComment, requestParameterMap);
 
-        //Change definition
+        // Change definition
         final Map<String, String> metadata = Collections.emptyMap();
         if (existingTestDefinition == null) {
-            job.logWithTiming("(scm) adding test definition", "scmAdd");
+            job.logWithTiming("(scm) adding test definition in trunk", "scmAdd");
             trunkStore.addTestDefinition(username, password, author, testName, testDefinitionToUpdate, metadata, fullComment);
+            job.log("(scm) Success: adding test definition in trunk");
         } else {
-            job.logWithTiming("(scm) updating test definition", "scmUpdate");
+            job.logWithTiming("(scm) updating test definition in trunk", "scmUpdate");
             trunkStore.updateTestDefinition(username, password, author, previousRevision, testName, testDefinitionToUpdate, metadata, fullComment);
+            job.log("(scm) Success: updating test definition in trunk");
         }
 
-        //PostDefinitionEdit
+        // PostDefinitionEdit
         if (isCreate) {
-            job.logWithTiming("Executing post create extension tasks.", "postCreateExtension");
-            for (final PostDefinitionCreateChange postDefinitionCreateChange : postDefinitionCreateChanges) {
-                postDefinitionCreateChange.postCreate(testDefinitionToUpdate, requestParameterMap, logger);
+            if (!postDefinitionCreateChanges.isEmpty()) {
+                job.logWithTiming("Executing post create extension tasks.", "postCreateExtension");
+                for (final PostDefinitionCreateChange postDefinitionCreateChange : postDefinitionCreateChanges) {
+                    postDefinitionCreateChange.postCreate(testDefinitionToUpdate, requestParameterMap, logger);
+                }
+                job.log("Finished post create extension tasks.");
             }
         } else {
-            job.logWithTiming("Executing post edit extension tasks.", "postEditExtension");
-            for (final PostDefinitionEditChange postDefinitionEditChange : postDefinitionEditChanges) {
-                postDefinitionEditChange.postEdit(existingTestDefinition, testDefinitionToUpdate,
-                        requestParameterMap, logger);
+            if (!postDefinitionEditChanges.isEmpty()) {
+                job.logWithTiming("Executing post edit extension tasks.", "postEditExtension");
+                for (final PostDefinitionEditChange postDefinitionEditChange : postDefinitionEditChanges) {
+                    postDefinitionEditChange.postEdit(existingTestDefinition, testDefinitionToUpdate,
+                            requestParameterMap, logger);
+                }
+                job.log("Finished post edit extension tasks.");
             }
         }
 
-        //Autopromote if necessary
+        // Autopromote if necessary
         autoPromoter.maybeAutoPromote(testName, username, password, author, testDefinitionToUpdate, previousRevision,
                 autopromoteTarget, requestParameterMap, job, trunkStore, qaRevision, prodRevision, existingTestDefinition);
 
@@ -673,17 +689,20 @@ public class EditAndPromoteJob extends AbstractJob {
         if (!result.isValid()) {
             throw new IllegalArgumentException(String.format("Test Promotion not compatible, errors: %s", String.join("\n", result.getErrors())));
         }
+        job.logWithTiming("Success: Validating Matrix.", "matrixCheck");
 
-
-        //PreDefinitionPromoteChanges
-        job.logWithTiming("Executing pre promote extension tasks.", "prePromoteExtension");
+        // PreDefinitionPromoteChanges
         final DefinitionChangeLogger logger = new BackgroundJobLogger(job);
-        for (final PreDefinitionPromoteChange preDefinitionPromoteChange : preDefinitionPromoteChanges) {
-            preDefinitionPromoteChange.prePromote(testDefinition, requestParameterMap, source, destination,
-                    isAutopromote, logger);
+        if (!preDefinitionPromoteChanges.isEmpty()) {
+            job.logWithTiming("Executing pre promote extension tasks.", "prePromoteExtension");
+            for (final PreDefinitionPromoteChange preDefinitionPromoteChange : preDefinitionPromoteChanges) {
+                preDefinitionPromoteChange.prePromote(testDefinition, requestParameterMap, source, destination,
+                        isAutopromote, logger);
+            }
+            job.log("Finished pre promote extension tasks.");
         }
 
-        //Promote Change
+        // Promote Change
         job.logWithTiming("Promoting experiment", "promote");
         if (!PROMOTE_ACTIONS.containsEntry(source, destination)) {
             throw new IllegalArgumentException("Invalid combination of source and destination: source=" + source + " dest=" + destination);
@@ -691,17 +710,21 @@ public class EditAndPromoteJob extends AbstractJob {
         try {
             job.log(String.format("(scm) promote %s %1.7s (%s to %s)", testName, srcRevision, source.getName(), destination.getName()));
             promoter.promote(testName, source, srcRevision, destination, destRevision, username, password, author, metadata);
+            job.log(String.format("(scm) Successfully promoted %s %1.7s (%s to %s)", testName, srcRevision, source.getName(), destination.getName()));
         } catch (final Exception t) {
             Throwables.propagateIfInstanceOf(t, ProctorPromoter.TestPromotionException.class);
             Throwables.propagateIfInstanceOf(t, StoreException.TestUpdateException.class);
-            throw Throwables.propagate(t);
+            throw new RuntimeException(t);
         }
 
-        //PostDefinitionPromoteChanges
-        job.logWithTiming("Executing post promote extension tasks.", "postPromoteExtension");
-        for (final PostDefinitionPromoteChange postDefinitionPromoteChange : postDefinitionPromoteChanges) {
-            postDefinitionPromoteChange.postPromote(requestParameterMap, source, destination, isAutopromote,
-                    logger);
+        // PostDefinitionPromoteChanges
+        if (!postDefinitionPromoteChanges.isEmpty()) {
+            job.logWithTiming("Executing post promote extension tasks.", "postPromoteExtension");
+            for (final PostDefinitionPromoteChange postDefinitionPromoteChange : postDefinitionPromoteChanges) {
+                postDefinitionPromoteChange.postPromote(requestParameterMap, source, destination, isAutopromote,
+                        logger);
+            }
+            job.log("Finished post promote extension tasks.");
         }
 
         job.log(String.format("Promoted %s from %s (%1.7s) to %s (%1.7s)", testName, source.getName(), srcRevision, destination.getName(), destRevision));

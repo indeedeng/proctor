@@ -118,7 +118,9 @@ public class DeleteJob extends AbstractJob {
         } else {
             throw new IllegalArgumentException("Could not get any history for " + testName);
         }
+        job.log("(scm) Success: getting history for '" + testName + "'");
 
+        job.logWithTiming("checking clients usage", "checkMatrix");
         final String nonEmptyComment = formatDefaultDeleteComment(testName, comment);
         final String fullComment = commentFormatter.formatFullComment(nonEmptyComment, requestParameterMap);
 
@@ -137,17 +139,23 @@ public class DeleteJob extends AbstractJob {
                 throw new IllegalArgumentException("There are still clients in prod using " + testName + " " + checkMatrixResult.getErrors().get(0));
             }
         }
+        job.log("Success: checking clients usage");
 
-        //PreDefinitionDeleteChanges
-        job.logWithTiming("Executing pre delete extension tasks.", "preDeleteExtension");
         final DefinitionChangeLogger logger = new BackgroundJobLogger(job);
-        for (final PreDefinitionDeleteChange preDefinitionDeleteChange : preDefinitionDeleteChanges) {
-            preDefinitionDeleteChange.preDelete(definition, requestParameterMap, logger);
+        // PreDefinitionDeleteChanges
+        if (!preDefinitionDeleteChanges.isEmpty()) {
+            job.logWithTiming("Executing pre delete extension tasks.", "preDeleteExtension");
+            for (final PreDefinitionDeleteChange preDefinitionDeleteChange : preDefinitionDeleteChanges) {
+                preDefinitionDeleteChange.preDelete(definition, requestParameterMap, logger);
+            }
+            job.log("Finished pre delete extension tasks.");
         }
+
 
         job.logWithTiming("Deleting", "Delete");
         job.log("(scm) delete " + testName);
         store.deleteTestDefinition(username, password, author, srcRevision, testName, definition, fullComment);
+        job.log("(scm) Success: delete " + testName);
 
         boolean testExistsInOtherEnvironments = false;
         for (final Environment otherEnvironment : Environment.values()) {
@@ -164,10 +172,13 @@ public class DeleteJob extends AbstractJob {
             job.setEndMessage("This test no longer exists in any environment.");
         }
 
-        //PostDefinitionDeleteChanges
-        job.logWithTiming("Executing post delete extension tasks.", "PostDeleteExtension");
-        for (final PostDefinitionDeleteChange postDefinitionDeleteChange : postDefinitionDeleteChanges) {
-            postDefinitionDeleteChange.postDelete(requestParameterMap, logger);
+        // PostDefinitionDeleteChanges
+        if (!postDefinitionDeleteChanges.isEmpty()) {
+            job.logWithTiming("Executing post delete extension tasks.", "PostDeleteExtension");
+            for (final PostDefinitionDeleteChange postDefinitionDeleteChange : postDefinitionDeleteChanges) {
+                postDefinitionDeleteChange.postDelete(requestParameterMap, logger);
+            }
+            job.log("Finished post delete extension tasks.");
         }
         job.logComplete();
         return true;
