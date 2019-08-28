@@ -550,7 +550,7 @@ public class EditAndPromoteJob extends AbstractJob {
     }
 
     private static String createJobTitleString(final boolean isCreate, final Environment autopromoteTarget) {
-        final StringBuilder messageBuilder = new StringBuilder();
+        final StringBuilder messageBuilder = new StringBuilder(40);
 
         if (isCreate) {
             messageBuilder.append("Creating");
