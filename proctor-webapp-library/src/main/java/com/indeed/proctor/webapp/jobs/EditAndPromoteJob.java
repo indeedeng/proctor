@@ -672,42 +672,42 @@ public class EditAndPromoteJob extends AbstractJob {
         final MatrixChecker.CheckMatrixResult result = matrixChecker.checkMatrix(destination, testName, testDefinition);
         if (!result.isValid()) {
             throw new IllegalArgumentException(String.format("Test Promotion not compatible, errors: %s", String.join("\n", result.getErrors())));
-        } else {
-
-
-            //PreDefinitionPromoteChanges
-            job.logWithTiming("Executing pre promote extension tasks.", "prePromoteExtension");
-            final DefinitionChangeLogger logger = new BackgroundJobLogger(job);
-            for (final PreDefinitionPromoteChange preDefinitionPromoteChange : preDefinitionPromoteChanges) {
-                preDefinitionPromoteChange.prePromote(testDefinition, requestParameterMap, source, destination,
-                        isAutopromote, logger);
-            }
-
-            //Promote Change
-            job.logWithTiming("Promoting experiment", "promote");
-            if (!PROMOTE_ACTIONS.containsEntry(source, destination)) {
-                throw new IllegalArgumentException("Invalid combination of source and destination: source=" + source + " dest=" + destination);
-            }
-            try {
-                job.log(String.format("(scm) promote %s %1.7s (%s to %s)", testName, srcRevision, source.getName(), destination.getName()));
-                promoter.promote(testName, source, srcRevision, destination, destRevision, username, password, author, metadata);
-            } catch (final Exception t) {
-                Throwables.propagateIfInstanceOf(t, ProctorPromoter.TestPromotionException.class);
-                Throwables.propagateIfInstanceOf(t, StoreException.TestUpdateException.class);
-                throw Throwables.propagate(t);
-            }
-
-            //PostDefinitionPromoteChanges
-            job.logWithTiming("Executing post promote extension tasks.", "postPromoteExtension");
-            for (final PostDefinitionPromoteChange postDefinitionPromoteChange : postDefinitionPromoteChanges) {
-                postDefinitionPromoteChange.postPromote(requestParameterMap, source, destination, isAutopromote,
-                        logger);
-            }
-
-            job.log(String.format("Promoted %s from %s (%1.7s) to %s (%1.7s)", testName, source.getName(), srcRevision, destination.getName(), destRevision));
-            job.addUrl("/proctor/definition/" + EncodingUtil.urlEncodeUtf8(testName) + "?branch=" + destination.getName(), "view " + testName + " on " + destination.getName());
-            return true;
         }
+
+
+        //PreDefinitionPromoteChanges
+        job.logWithTiming("Executing pre promote extension tasks.", "prePromoteExtension");
+        final DefinitionChangeLogger logger = new BackgroundJobLogger(job);
+        for (final PreDefinitionPromoteChange preDefinitionPromoteChange : preDefinitionPromoteChanges) {
+            preDefinitionPromoteChange.prePromote(testDefinition, requestParameterMap, source, destination,
+                    isAutopromote, logger);
+        }
+
+        //Promote Change
+        job.logWithTiming("Promoting experiment", "promote");
+        if (!PROMOTE_ACTIONS.containsEntry(source, destination)) {
+            throw new IllegalArgumentException("Invalid combination of source and destination: source=" + source + " dest=" + destination);
+        }
+        try {
+            job.log(String.format("(scm) promote %s %1.7s (%s to %s)", testName, srcRevision, source.getName(), destination.getName()));
+            promoter.promote(testName, source, srcRevision, destination, destRevision, username, password, author, metadata);
+        } catch (final Exception t) {
+            Throwables.propagateIfInstanceOf(t, ProctorPromoter.TestPromotionException.class);
+            Throwables.propagateIfInstanceOf(t, StoreException.TestUpdateException.class);
+            throw Throwables.propagate(t);
+        }
+
+        //PostDefinitionPromoteChanges
+        job.logWithTiming("Executing post promote extension tasks.", "postPromoteExtension");
+        for (final PostDefinitionPromoteChange postDefinitionPromoteChange : postDefinitionPromoteChanges) {
+            postDefinitionPromoteChange.postPromote(requestParameterMap, source, destination, isAutopromote,
+                    logger);
+        }
+
+        job.log(String.format("Promoted %s from %s (%1.7s) to %s (%1.7s)", testName, source.getName(), srcRevision, destination.getName(), destRevision));
+        job.addUrl("/proctor/definition/" + EncodingUtil.urlEncodeUtf8(testName) + "?branch=" + destination.getName(), "view " + testName + " on " + destination.getName());
+        return true;
+
     }
 
 }
