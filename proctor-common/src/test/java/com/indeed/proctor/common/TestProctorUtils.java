@@ -21,6 +21,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -28,6 +29,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import static com.indeed.proctor.common.ProctorUtils.*;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
+import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -61,21 +66,21 @@ public class TestProctorUtils {
         final TestType testType = TestType.ANONYMOUS_USER;
         final String salt = "testsalt";
         final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
-        final Map<String, Object> constants = Collections.emptyMap();
-        final Map<String, Object> specialConstants = Collections.emptyMap();
+        final Map<String, Object> constants = emptyMap();
+        final Map<String, Object> specialConstants = emptyMap();
         final String description = "test description";
         final List<String> metaTags = ImmutableList.of("sample_test_tag");
 
         for (final String tdRule : emptyRules) {
             for (final String allocRule : emptyRules) {
-                final Allocation allocation = new Allocation(allocRule, Collections.singletonList(range));
+                final Allocation allocation = new Allocation(allocRule, singletonList(range));
                 final TestDefinition testDefinition = new TestDefinition(
                         version,
                         tdRule,
                         testType,
                         salt,
                         buckets,
-                        Collections.singletonList(allocation),
+                        singletonList(allocation),
                         false,
                         constants,
                         specialConstants,
@@ -83,7 +88,7 @@ public class TestProctorUtils {
                         metaTags
                 );
 
-                final ConsumableTestDefinition ctd = ProctorUtils.convertToConsumableTestDefinition(testDefinition);
+                final ConsumableTestDefinition ctd = convertToConsumableTestDefinition(testDefinition);
                 assertEquals(version, ctd.getVersion());
                 assertEquals(testType, ctd.getTestType());
                 assertEquals(salt, ctd.getSalt());
@@ -92,11 +97,11 @@ public class TestProctorUtils {
                 assertEquals(buckets, ctd.getBuckets());
                 assertEquals(metaTags, ctd.getMetaTags());
 
-                assertEquals(String.format("TestDefinition rule '%s' should convert to a null ConsumableTestDefinition.rule", tdRule), null, ctd.getRule());
+                assertNull(String.format("TestDefinition rule '%s' should convert to a null ConsumableTestDefinition.rule", tdRule), ctd.getRule());
 
                 assertEquals(1, ctd.getAllocations().size());
                 final Allocation ctdAllocation = ctd.getAllocations().get(0);
-                assertEquals(String.format("Allocation rule '%s' should convert to a null ConsumableTestDefinition.Allocation.rule", allocRule), null, ctdAllocation.getRule());
+                assertNull(String.format("Allocation rule '%s' should convert to a null ConsumableTestDefinition.Allocation.rule", allocRule), ctdAllocation.getRule());
                 assertEquals(allocation.getRanges(), ctdAllocation.getRanges());
             }
         }
@@ -117,21 +122,21 @@ public class TestProctorUtils {
         final TestType testType = TestType.ANONYMOUS_USER;
         final String salt = "testsalt";
         final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
-        final Map<String, Object> constants = Collections.emptyMap();
-        final Map<String, Object> specialConstants = Collections.emptyMap();
+        final Map<String, Object> constants = emptyMap();
+        final Map<String, Object> specialConstants = emptyMap();
         final String description = "test description";
-        final List<String> metaTags = Collections.emptyList();
+        final List<String> metaTags = emptyList();
 
 
         for (final String rule : new String[] { "lang == 'en'", "${lang == 'en'}"})  {
-            final Allocation allocation = new Allocation(rule, Collections.singletonList(range));
+            final Allocation allocation = new Allocation(rule, singletonList(range));
             final TestDefinition testDefinition = new TestDefinition(
                     version,
                     rule,
                     testType,
                     salt,
                     buckets,
-                    Collections.singletonList(allocation),
+                    singletonList(allocation),
                     false,
                     constants,
                     specialConstants,
@@ -139,7 +144,7 @@ public class TestProctorUtils {
                     metaTags
             );
 
-            final ConsumableTestDefinition ctd = ProctorUtils.convertToConsumableTestDefinition(testDefinition);
+            final ConsumableTestDefinition ctd = convertToConsumableTestDefinition(testDefinition);
             assertEquals(String.format("TestDefinition rule '%s' should convert to a ${lang == 'en'} ConsumableTestDefinition.rule", rule), "${lang == 'en'}", ctd.getRule());
 
             assertEquals(1, ctd.getAllocations().size());
@@ -164,12 +169,12 @@ public class TestProctorUtils {
         final TestType testType = TestType.ANONYMOUS_USER;
         final String salt = "testsalt";
         final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
-        final Map<String, Object> constants = Collections.emptyMap();
-        final Map<String, Object> specialConstants = Collections.<String, Object>singletonMap("__COUNTRIES", Lists.newArrayList("US", "CA"));
+        final Map<String, Object> constants = emptyMap();
+        final Map<String, Object> specialConstants = Collections.singletonMap("__COUNTRIES", Lists.newArrayList("US", "CA"));
         final String description = "test description";
-        final List<String> metaTags = Collections.emptyList();
+        final List<String> metaTags = emptyList();
 
-        final Allocation allocation = new Allocation(null, Collections.singletonList(range));
+        final Allocation allocation = new Allocation(null, singletonList(range));
 
         for (final String tdRule : new String[] { "lang == 'en'", "${lang == 'en'}"}) {
             final TestDefinition testDefinition = new TestDefinition(
@@ -178,7 +183,7 @@ public class TestProctorUtils {
                     testType,
                     salt,
                     buckets,
-                    Collections.singletonList(allocation),
+                    singletonList(allocation),
                     false,
                     constants,
                     specialConstants,
@@ -186,7 +191,7 @@ public class TestProctorUtils {
                     metaTags
             );
 
-            final ConsumableTestDefinition ctd = ProctorUtils.convertToConsumableTestDefinition(testDefinition);
+            final ConsumableTestDefinition ctd = convertToConsumableTestDefinition(testDefinition);
             assertEquals(String.format("TestDefinition rule '%s' should convert to ${proctor:contains(__COUNTRIES, country) && lang == 'en'} ConsumableTestDefinition.rule", tdRule), "${proctor:contains(__COUNTRIES, country) && lang == 'en'}", ctd.getRule());
             assertEquals(1, ctd.getConstants().size());
             assertEquals("special constants should be added to constants", Lists.newArrayList("US", "CA"), ctd.getConstants().get("__COUNTRIES"));
@@ -195,45 +200,45 @@ public class TestProctorUtils {
 
     @Test
     public void testRemoveElExpressionBraces() {
-        assertEquals(null, ProctorUtils.removeElExpressionBraces(""));
-        assertEquals(null, ProctorUtils.removeElExpressionBraces(" "));
-        assertEquals(null, ProctorUtils.removeElExpressionBraces(null));
-        assertEquals(null, ProctorUtils.removeElExpressionBraces("\t"));
-        assertEquals(null, ProctorUtils.removeElExpressionBraces(" ${} "));
-        assertEquals(null, ProctorUtils.removeElExpressionBraces(" ${ } "));
-        assertEquals("a", ProctorUtils.removeElExpressionBraces("${a}"));
-        assertEquals("a", ProctorUtils.removeElExpressionBraces(" ${a} "));
-        assertEquals("a", ProctorUtils.removeElExpressionBraces(" ${ a } "));
-        assertEquals("a", ProctorUtils.removeElExpressionBraces(" ${ a}"));
-        assertEquals("a", ProctorUtils.removeElExpressionBraces("${a } "));
-        assertEquals("a", ProctorUtils.removeElExpressionBraces(" a "));
-        assertEquals("lang == 'en'", ProctorUtils.removeElExpressionBraces("lang == 'en'"));
-        assertEquals("lang == 'en'", ProctorUtils.removeElExpressionBraces("${lang == 'en'}"));
+        assertNull(removeElExpressionBraces(""));
+        assertNull(removeElExpressionBraces(" "));
+        assertNull(removeElExpressionBraces(null));
+        assertNull(removeElExpressionBraces("\t"));
+        assertNull(removeElExpressionBraces(" ${} "));
+        assertNull(removeElExpressionBraces(" ${ } "));
+        assertEquals("a", removeElExpressionBraces("${a}"));
+        assertEquals("a", removeElExpressionBraces(" ${a} "));
+        assertEquals("a", removeElExpressionBraces(" ${ a } "));
+        assertEquals("a", removeElExpressionBraces(" ${ a}"));
+        assertEquals("a", removeElExpressionBraces("${a } "));
+        assertEquals("a", removeElExpressionBraces(" a "));
+        assertEquals("lang == 'en'", removeElExpressionBraces("lang == 'en'"));
+        assertEquals("lang == 'en'", removeElExpressionBraces("${lang == 'en'}"));
         // whitespace should be trimmed
-        assertEquals("lang == 'en'", ProctorUtils.removeElExpressionBraces("${ lang == 'en' }"));
+        assertEquals("lang == 'en'", removeElExpressionBraces("${ lang == 'en' }"));
         // whitespace should be removed around braces
-        assertEquals("lang == 'en'", ProctorUtils.removeElExpressionBraces(" ${ lang == 'en' } "));
+        assertEquals("lang == 'en'", removeElExpressionBraces(" ${ lang == 'en' } "));
         // only single level of braces are removed
-        assertEquals("${lang == 'en'}", ProctorUtils.removeElExpressionBraces("${${lang == 'en'}}"));
+        assertEquals("${lang == 'en'}", removeElExpressionBraces("${${lang == 'en'}}"));
         // mis matched braces are not handled
-        assertEquals("${lang == 'en'", ProctorUtils.removeElExpressionBraces("${lang == 'en'"));
+        assertEquals("${lang == 'en'", removeElExpressionBraces("${lang == 'en'"));
         // mis matched braces are not handled
-        assertEquals("lang == 'en'}", ProctorUtils.removeElExpressionBraces("lang == 'en'}"));
+        assertEquals("lang == 'en'}", removeElExpressionBraces("lang == 'en'}"));
     }
 
     @Test
     public void testEmptyWhitespace() {
-        assertTrue(ProctorUtils.isEmptyWhitespace(""));
-        assertTrue(ProctorUtils.isEmptyWhitespace(null));
-        assertTrue(ProctorUtils.isEmptyWhitespace("  "));
-        assertTrue(ProctorUtils.isEmptyWhitespace("  \t"));
-        assertFalse(ProctorUtils.isEmptyWhitespace(" x "));
-        assertFalse(ProctorUtils.isEmptyWhitespace("/"));
+        assertTrue(isEmptyWhitespace(""));
+        assertTrue(isEmptyWhitespace(null));
+        assertTrue(isEmptyWhitespace("  "));
+        assertTrue(isEmptyWhitespace("  \t"));
+        assertFalse(isEmptyWhitespace(" x "));
+        assertFalse(isEmptyWhitespace("/"));
     }
 
 
     @Test
-    public void verifyAndConsolidateShouldTestAllocationSum() throws IncompatibleTestMatrixException {
+    public void verifyAndConsolidateShouldTestAllocationSum() {
         final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
         final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets));
         {
@@ -246,7 +251,7 @@ public class TestProctorUtils {
 
             // verifyAndConsolidate should not throw an error because the 'invalidbuckets' test is not required.
             assertEquals(1, matrix.getTests().size());
-            assertValid("invalid test not required, sum{allocations} < 1.0", matrix, Collections.<String, TestSpecification>emptyMap());
+            assertValid("invalid test not required, sum{allocations} < 1.0", matrix, Collections.emptyMap());
             assertEquals("non-required tests should be removed from the matrix", 0, matrix.getTests().size());
         }
         {
@@ -272,7 +277,7 @@ public class TestProctorUtils {
 
             assertEquals(1, matrix.getTests().size());
             // verifyAndConsolidate should not throw an error because the 'invalidbuckets' test is not required.
-            assertValid("invalid test not required, sum{allocations} > 1.0", matrix, Collections.<String, TestSpecification>emptyMap());
+            assertValid("invalid test not required, sum{allocations} > 1.0", matrix, Collections.emptyMap());
             assertEquals("non-required tests should be removed from the matrix", 0, matrix.getTests().size());
         }
         {
@@ -297,7 +302,7 @@ public class TestProctorUtils {
             final TestMatrixArtifact matrix = constructArtifact(tests);
 
             assertEquals(1, matrix.getTests().size());
-            assertValid("bucket allocation sums are unchecked, sum{allocations} == 1.0", matrix, Collections.<String, TestSpecification>emptyMap());
+            assertValid("bucket allocation sums are unchecked, sum{allocations} == 1.0", matrix, Collections.emptyMap());
             assertEquals("non-required tests should be removed from the matrix", 0, matrix.getTests().size());
         }
         {
@@ -323,7 +328,7 @@ public class TestProctorUtils {
                 fromCompactAllocationFormat("${b4t#+=}|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25")); // invalid EL, nonsense rule
 
         assertThatThrownBy(() ->
-                ProctorUtils.verifyInternallyConsistentDefinition("testELevalInval", "test el recognition - inval", testDefInVal)
+                verifyInternallyConsistentDefinition("testELevalInval", "test el recognition - inval", testDefInVal)
         )
                 .isInstanceOf(IncompatibleTestMatrixException.class)
                 .hasMessage(
@@ -333,7 +338,7 @@ public class TestProctorUtils {
         //testing valid functions pass with proctor included functions (will throw exception if can't find) and backwards compatibility
         final ConsumableTestDefinition testDefVal1 = constructDefinition(buckets,
                 fromCompactAllocationFormat("${proctor:now()==indeed:now()}|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25"));
-        ProctorUtils.verifyInternallyConsistentDefinition("testELevalProctor", "test el recognition", testDefVal1);
+        verifyInternallyConsistentDefinition("testELevalProctor", "test el recognition", testDefVal1);
 
     }
     @Test
@@ -345,7 +350,7 @@ public class TestProctorUtils {
             testDefInValTestRule.setRule("${b4t#+=}");
 
             assertThatThrownBy(() ->
-                    ProctorUtils.verifyInternallyConsistentDefinition("testELevalInValTestRule", "test el recognition - inval test rule", testDefInValTestRule)
+                    verifyInternallyConsistentDefinition("testELevalInValTestRule", "test el recognition - inval test rule", testDefInValTestRule)
             )
                     .isInstanceOf(IncompatibleTestMatrixException.class)
                     .hasMessage(
@@ -359,7 +364,7 @@ public class TestProctorUtils {
             testDefInValTestRule.setRule("${proctor:now()=indeed:now()}");
 
             assertThatThrownBy(() ->
-                    ProctorUtils.verifyInternallyConsistentDefinition("testELevalInValTestRule", "test el recognition - inval test rule", testDefInValTestRule)
+                    verifyInternallyConsistentDefinition("testELevalInValTestRule", "test el recognition - inval test rule", testDefInValTestRule)
             )
                     .isInstanceOf(IncompatibleTestMatrixException.class)
                     .hasMessage(
@@ -371,7 +376,7 @@ public class TestProctorUtils {
             final ConsumableTestDefinition testDefValTestRule = constructDefinition(buckets,
                     fromCompactAllocationFormat("${true}|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25"));
             testDefValTestRule.setRule("${proctor:now()==indeed:now()}");
-            ProctorUtils.verifyInternallyConsistentDefinition("testELevalValTestRule", "test el recognition - val test rule and functions", testDefValTestRule);
+            verifyInternallyConsistentDefinition("testELevalValTestRule", "test el recognition - val test rule and functions", testDefValTestRule);
         }
     }
 
@@ -381,57 +386,57 @@ public class TestProctorUtils {
         { //verify primitive types convert correctly
             final ConsumableTestDefinition testDef = constructDefinition(buckets,
                     fromCompactAllocationFormat("${time eq ''}|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25"));
-            final Map<String, String> providedContextString = new HashMap<String, String>();
+            final Map<String, String> providedContextString = new HashMap<>();
             providedContextString.put("time", "String");
-            final ProvidedContext providedContext = ProctorUtils.convertContextToTestableMap(providedContextString);
-            ProctorUtils.verifyInternallyConsistentDefinition("testProvidedContextConversion", "test Provided Context Conversion String", testDef, RuleEvaluator.FUNCTION_MAPPER, providedContext);
+            final ProvidedContext providedContext = convertContextToTestableMap(providedContextString);
+            verifyInternallyConsistentDefinition("testProvidedContextConversion", "test Provided Context Conversion String", testDef, RuleEvaluator.FUNCTION_MAPPER, providedContext);
             //checking to make sure it can evaluate with converted provided context
         }
         { //verify primitive types convert correctly
             final ConsumableTestDefinition testDef = constructDefinition(buckets,
                     fromCompactAllocationFormat("${time eq 0}|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25"));
-            final Map<String, String> providedContextInteger = new HashMap<String, String>();
+            final Map<String, String> providedContextInteger = new HashMap<>();
             providedContextInteger.put("time", "int");
-            final ProvidedContext providedContext = ProctorUtils.convertContextToTestableMap(providedContextInteger);
-            ProctorUtils.verifyInternallyConsistentDefinition("testProvidedContextConversion", "test Provided Context Conversion Integer", testDef, RuleEvaluator.FUNCTION_MAPPER, providedContext);
+            final ProvidedContext providedContext = convertContextToTestableMap(providedContextInteger);
+            verifyInternallyConsistentDefinition("testProvidedContextConversion", "test Provided Context Conversion Integer", testDef, RuleEvaluator.FUNCTION_MAPPER, providedContext);
             //checking to make sure it can evaluate with converted provided context
         }
         { //verify primitive types convert correctly
             final ConsumableTestDefinition testDef = constructDefinition(buckets,
                     fromCompactAllocationFormat("${time eq ''}|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25"));
-            final Map<String, String> providedContextChar = new HashMap<String, String>();
+            final Map<String, String> providedContextChar = new HashMap<>();
             providedContextChar.put("time", "char");
-            final ProvidedContext providedContext = ProctorUtils.convertContextToTestableMap(providedContextChar);
-            ProctorUtils.verifyInternallyConsistentDefinition("testProvidedContextConversion", "test Provided Context Conversion Char", testDef, RuleEvaluator.FUNCTION_MAPPER, providedContext);
+            final ProvidedContext providedContext = convertContextToTestableMap(providedContextChar);
+            verifyInternallyConsistentDefinition("testProvidedContextConversion", "test Provided Context Conversion Char", testDef, RuleEvaluator.FUNCTION_MAPPER, providedContext);
             //checking to make sure it can evaluate with converted provided context
         }
         { //verify primitive types convert correctly
             final ConsumableTestDefinition testDef = constructDefinition(buckets,
                     fromCompactAllocationFormat("${time}|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25"));
-            final Map<String, String> providedContextBoolean = new HashMap<String, String>();
+            final Map<String, String> providedContextBoolean = new HashMap<>();
             providedContextBoolean.put("time", "Boolean");
-            final ProvidedContext providedContext = ProctorUtils.convertContextToTestableMap(providedContextBoolean);
-            ProctorUtils.verifyInternallyConsistentDefinition("testProvidedContextConversion", "test Provided Context Conversion Boolean", testDef, RuleEvaluator.FUNCTION_MAPPER, providedContext);
+            final ProvidedContext providedContext = convertContextToTestableMap(providedContextBoolean);
+            verifyInternallyConsistentDefinition("testProvidedContextConversion", "test Provided Context Conversion Boolean", testDef, RuleEvaluator.FUNCTION_MAPPER, providedContext);
             //checking to make sure it can evaluate with converted provided context
         }
         { //verify User Defined enum Classes convert correctly
             final ConsumableTestDefinition testDef = constructDefinition(buckets,
                     fromCompactAllocationFormat("${time eq 'SPADES'}|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25"));
-            final Map<String, String> providedContextClass = new HashMap<String, String>();
+            final Map<String, String> providedContextClass = new HashMap<>();
             providedContextClass.put("time", "com.indeed.proctor.common.TestEnumType");
-            final ProvidedContext providedContext = ProctorUtils.convertContextToTestableMap(providedContextClass);
-            ProctorUtils.verifyInternallyConsistentDefinition("testProvidedContextConversion", "test Provided Context Conversion Class", testDef, RuleEvaluator.FUNCTION_MAPPER, providedContext);
+            final ProvidedContext providedContext = convertContextToTestableMap(providedContextClass);
+            verifyInternallyConsistentDefinition("testProvidedContextConversion", "test Provided Context Conversion Class", testDef, RuleEvaluator.FUNCTION_MAPPER, providedContext);
             //checking to make sure it can evaluate with converted provided context
         }
         { //verify enums are actually used and an error is thrown with a nonexistent constant
             final ConsumableTestDefinition testDef = constructDefinition(buckets,
                     fromCompactAllocationFormat("${time eq 'SP'}|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25"));
-            final Map<String, String> providedContextClass = new HashMap<String, String>();
+            final Map<String, String> providedContextClass = new HashMap<>();
             providedContextClass.put("time", "com.indeed.proctor.common.TestEnumType");
-            final ProvidedContext providedContext = ProctorUtils.convertContextToTestableMap(providedContextClass);
+            final ProvidedContext providedContext = convertContextToTestableMap(providedContextClass);
 
             assertThatThrownBy(() ->
-                    ProctorUtils.verifyInternallyConsistentDefinition("testProvidedContextConversion", "test Provided Context Conversion Class", testDef, RuleEvaluator.FUNCTION_MAPPER, providedContext)
+                    verifyInternallyConsistentDefinition("testProvidedContextConversion", "test Provided Context Conversion Class", testDef, RuleEvaluator.FUNCTION_MAPPER, providedContext)
             )
                     .as("expected IncompatibleTestMatrixException due to nonexistent enum constant")
                     .isInstanceOf(IncompatibleTestMatrixException.class)
@@ -442,9 +447,9 @@ public class TestProctorUtils {
                     );
         }
         { //verify class names are verified correctly
-            final Map<String, String> providedContextBadClass = new HashMap<String, String>();
+            final Map<String, String> providedContextBadClass = new HashMap<>();
             providedContextBadClass.put("time", "com.indeed.proctor.common.TestRulesCla");
-            final ProvidedContext providedContext = ProctorUtils.convertContextToTestableMap(providedContextBadClass);
+            final ProvidedContext providedContext = convertContextToTestableMap(providedContextBadClass);
             assertTrue(providedContext.shouldEvaluate());
             assertEquals(Sets.newHashSet("time"), providedContext.getUninstantiatedIdentifiers());
             /* Class was not found, add 'time' to uninstantiated identifiers */
@@ -452,21 +457,21 @@ public class TestProctorUtils {
         { // Verify rule when unable to instantiate class
             final ConsumableTestDefinition testDef = constructDefinition(buckets,
                     fromCompactAllocationFormat("${time.yes eq 'SP'}|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25"));
-            final Map<String, String> providedContextNoConstructor = new HashMap<String, String>();
+            final Map<String, String> providedContextNoConstructor = new HashMap<>();
             providedContextNoConstructor.put("time", "com.indeed.proctor.common.AbstractProctorLoader");
-            final ProvidedContext providedContext = ProctorUtils.convertContextToTestableMap(providedContextNoConstructor);
+            final ProvidedContext providedContext = convertContextToTestableMap(providedContextNoConstructor);
             assertTrue(providedContext.shouldEvaluate());
-            ProctorUtils.verifyInternallyConsistentDefinition("testProvidedContextConversion", "test Provided Context Conversion Class", testDef, RuleEvaluator.FUNCTION_MAPPER, providedContext);
+            verifyInternallyConsistentDefinition("testProvidedContextConversion", "test Provided Context Conversion Class", testDef, RuleEvaluator.FUNCTION_MAPPER, providedContext);
             /* Should ignore checking failure because time was not instantiated */
         }
         { // Verify rule when class not found
             final ConsumableTestDefinition testDef = constructDefinition(buckets,
                     fromCompactAllocationFormat("${time.yes eq 'SP'}|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25"));
-            final Map<String, String> providedContextNoClass = new HashMap<String, String>();
+            final Map<String, String> providedContextNoClass = new HashMap<>();
             providedContextNoClass.put("time", "com.indeed.proctor.common.NotFoundClass");
-            final ProvidedContext providedContext = ProctorUtils.convertContextToTestableMap(providedContextNoClass);
+            final ProvidedContext providedContext = convertContextToTestableMap(providedContextNoClass);
             assertTrue(providedContext.shouldEvaluate());
-            ProctorUtils.verifyInternallyConsistentDefinition("testProvidedContextConversion", "test Provided Context Conversion Class", testDef, RuleEvaluator.FUNCTION_MAPPER, providedContext);
+            verifyInternallyConsistentDefinition("testProvidedContextConversion", "test Provided Context Conversion Class", testDef, RuleEvaluator.FUNCTION_MAPPER, providedContext);
             /* Should ignore checking failure because time was not instantiated */
         }
     }
@@ -478,12 +483,12 @@ public class TestProctorUtils {
             //testing recognition of test constants
             final ConsumableTestDefinition testDefValConstants = constructDefinition(buckets,
                     fromCompactAllocationFormat("${proctor:now()>time}|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25"));
-            final Map<String, Object> providedConstantsVal = new HashMap<String, Object>();
+            final Map<String, Object> providedConstantsVal = new HashMap<>();
             providedConstantsVal.put("time", "1");
             testDefValConstants.setConstants(providedConstantsVal);
-            final Map<String, String> providedContext = Collections.emptyMap();
-            ProctorUtils.verifyInternallyConsistentDefinition("testELevalwithcontext", "test context recognition", testDefValConstants, RuleEvaluator.FUNCTION_MAPPER,
-                    ProctorUtils.convertContextToTestableMap(providedContext));
+            final Map<String, String> providedContext = emptyMap();
+            verifyInternallyConsistentDefinition("testELevalwithcontext", "test context recognition", testDefValConstants, RuleEvaluator.FUNCTION_MAPPER,
+                    convertContextToTestableMap(providedContext));
         }
         {//test if the providedContext is read in correctly
             final ConsumableTestDefinition testDefValConstants2 = constructDefinition(buckets,
@@ -493,8 +498,8 @@ public class TestProctorUtils {
             final Map<String, String> providedContext2 = spec.getProvidedContext(); //needs to read in empty provided context as Collections.emptyMap() and not null
 
             assertThatThrownBy(() ->
-                    ProctorUtils.verifyInternallyConsistentDefinition("testELevalwithcontext", "test context recognition", testDefValConstants2, RuleEvaluator.FUNCTION_MAPPER,
-                            ProctorUtils.convertContextToTestableMap(providedContext2))
+                    verifyInternallyConsistentDefinition("testELevalwithcontext", "test context recognition", testDefValConstants2, RuleEvaluator.FUNCTION_MAPPER,
+                            convertContextToTestableMap(providedContext2))
                     )
                     .isInstanceOf(IncompatibleTestMatrixException.class)
                     .hasMessage(
@@ -507,7 +512,7 @@ public class TestProctorUtils {
                     fromCompactAllocationFormat("${time eq ''}|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25"));
 
             assertThatThrownBy(() ->
-                    ProctorUtils.verifyInternallyConsistentDefinition("testProvidedContextMissing", "test Provided Context Missing", testDef, RuleEvaluator.FUNCTION_MAPPER, new ProvidedContext(ProvidedContext.EMPTY_CONTEXT,true))
+                    verifyInternallyConsistentDefinition("testProvidedContextMissing", "test Provided Context Missing", testDef, RuleEvaluator.FUNCTION_MAPPER, new ProvidedContext(ProvidedContext.EMPTY_CONTEXT,true))
             )
                     .as("expected IncompatibleTestMatrixException due to missing provided Context")
                     .isInstanceOf(IncompatibleTestMatrixException.class)
@@ -517,22 +522,22 @@ public class TestProctorUtils {
                     );
         }
         {//testing recognition of providedContext in testRule
-            final Map<String, String> providedContextVal = new HashMap<String, String>();
+            final Map<String, String> providedContextVal = new HashMap<>();
             providedContextVal.put("time", "Integer");
             final ConsumableTestDefinition testDefValContextTestRule = constructDefinition(buckets,
                     fromCompactAllocationFormat("${proctor:now()>-1}|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25"));
             testDefValContextTestRule.setRule("${proctor:now()>time}");
-            ProctorUtils.verifyInternallyConsistentDefinition("testELevalwithcontext", "test context recognition in test rule", testDefValContextTestRule, RuleEvaluator.FUNCTION_MAPPER,
-                    ProctorUtils.convertContextToTestableMap(providedContextVal));
+            verifyInternallyConsistentDefinition("testELevalwithcontext", "test context recognition in test rule", testDefValContextTestRule, RuleEvaluator.FUNCTION_MAPPER,
+                    convertContextToTestableMap(providedContextVal));
         }
         { //testing that invalid properties are recognized
             final ConsumableTestDefinition testDef = constructDefinition(buckets,
                     fromCompactAllocationFormat("${ua.iPad}|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25"));
-            final Map<String, String> providedContextClass = new HashMap<String, String>();
+            final Map<String, String> providedContextClass = new HashMap<>();
             providedContextClass.put("ua", "com.indeed.proctor.common.TestRulesClass");
-            final ProvidedContext providedContext = ProctorUtils.convertContextToTestableMap(providedContextClass);
+            final ProvidedContext providedContext = convertContextToTestableMap(providedContextClass);
             assertThatThrownBy(() ->
-                    ProctorUtils.verifyInternallyConsistentDefinition("testProvidedContextConversion", "test Provided Context Conversion Class", testDef, RuleEvaluator.FUNCTION_MAPPER, providedContext)
+                    verifyInternallyConsistentDefinition("testProvidedContextConversion", "test Provided Context Conversion Class", testDef, RuleEvaluator.FUNCTION_MAPPER, providedContext)
             )
                     .as("expected IncompatibleTestMatrixException due to missing attribute")
                     .isInstanceOf(IncompatibleTestMatrixException.class)
@@ -545,17 +550,17 @@ public class TestProctorUtils {
         { //testing that valid properties are recognized
             final ConsumableTestDefinition testDef = constructDefinition(buckets,
                     fromCompactAllocationFormat("${ua.IPad}|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25"));
-            final Map<String, String> providedContextClass = new HashMap<String, String>();
+            final Map<String, String> providedContextClass = new HashMap<>();
             providedContextClass.put("ua", "com.indeed.proctor.common.TestRulesClass");
-            final ProvidedContext providedContext = ProctorUtils.convertContextToTestableMap(providedContextClass);
-            ProctorUtils.verifyInternallyConsistentDefinition("testProvidedContextConversion", "test Provided Context Conversion Class", testDef, RuleEvaluator.FUNCTION_MAPPER, providedContext);
+            final ProvidedContext providedContext = convertContextToTestableMap(providedContextClass);
+            verifyInternallyConsistentDefinition("testProvidedContextConversion", "test Provided Context Conversion Class", testDef, RuleEvaluator.FUNCTION_MAPPER, providedContext);
         }
         { //testing that invalid functions are recognized
             final ConsumableTestDefinition testDef = constructDefinition(buckets,
                     fromCompactAllocationFormat("${proctor:notafunction()}|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25"));
 
             assertThatThrownBy(() ->
-                    ProctorUtils.verifyInternallyConsistentDefinition("testProvidedContextConversion", "test Provided Context Conversion Class", testDef, RuleEvaluator.FUNCTION_MAPPER, new ProvidedContext(ProvidedContext.EMPTY_CONTEXT,true))
+                    verifyInternallyConsistentDefinition("testProvidedContextConversion", "test Provided Context Conversion Class", testDef, RuleEvaluator.FUNCTION_MAPPER, new ProvidedContext(ProvidedContext.EMPTY_CONTEXT,true))
             )
                     .as("expected IncompatibleTestMatrixException due to missing function")
                     .isInstanceOf(IncompatibleTestMatrixException.class)
@@ -568,7 +573,7 @@ public class TestProctorUtils {
 
 
     @Test
-    public void verifyAndConsolidateShouldFailIfMissingDefaultAllocation() throws IncompatibleTestMatrixException {
+    public void verifyAndConsolidateShouldFailIfMissingDefaultAllocation() {
         final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
         final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets));
         {
@@ -577,8 +582,8 @@ public class TestProctorUtils {
                                                       // Allocations all have rules
                                                       fromCompactAllocationFormat("ruleA|-1:0.0,0:0.0,1:1.0", "ruleB|-1:0.5,0:0.5,1:0.0")));
 
-            assertValid("test missing empty rule is not required", constructArtifact(tests), Collections.<String, TestSpecification>emptyMap());
-            assertMissing("test missing empty rule is required", constructArtifact(Collections.<String, ConsumableTestDefinition>emptyMap()), requiredTests);
+            assertValid("test missing empty rule is not required", constructArtifact(tests), Collections.emptyMap());
+            assertMissing("test missing empty rule is required", constructArtifact(Collections.emptyMap()), requiredTests);
         }
         {
             final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
@@ -587,7 +592,7 @@ public class TestProctorUtils {
                                                       fromCompactAllocationFormat("|-1:0.0,0:0.0,1:1.0", "-1:0.5,0:0.5,1:0.0")));
 
             assertInvalid("non-final rule lacks non-empty rule", constructArtifact(tests), requiredTests);
-            assertValid("non-final rule lacks non-empty rule is allowed when not required", constructArtifact(tests), Collections.<String, TestSpecification>emptyMap());
+            assertValid("non-final rule lacks non-empty rule is allowed when not required", constructArtifact(tests), Collections.emptyMap());
         }
         {
             final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
@@ -624,21 +629,21 @@ public class TestProctorUtils {
     }
 
     @Test
-    public void verifyAndConsolidateShouldFailIfNoAllocations() throws IncompatibleTestMatrixException {
+    public void verifyAndConsolidateShouldFailIfNoAllocations() {
         final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
 
         final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets));
         {
             final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
-            tests.put(TEST_A, constructDefinition(buckets, Collections.<Allocation>emptyList()));
+            tests.put(TEST_A, constructDefinition(buckets, emptyList()));
 
             final TestMatrixArtifact matrix = constructArtifact(tests);
 
-            assertValid("test missing allocations is not required", matrix, Collections.<String, TestSpecification>emptyMap());
+            assertValid("test missing allocations is not required", matrix, Collections.emptyMap());
         }
         {
             final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
-            tests.put(TEST_A, constructDefinition(buckets, Collections.<Allocation>emptyList()));
+            tests.put(TEST_A, constructDefinition(buckets, emptyList()));
 
             final TestMatrixArtifact matrix = constructArtifact(tests);
 
@@ -661,7 +666,7 @@ public class TestProctorUtils {
     }
 
     @Test
-    public void unknownBucketWithAllocationGreaterThanZero() throws IncompatibleTestMatrixException {
+    public void unknownBucketWithAllocationGreaterThanZero() {
         // The test-matrix has 3 buckets
         final List<TestBucket> buckets = fromCompactBucketFormat("zero:0,one:1,two:2");
         // The proctor-specification only knows about two of the buckets
@@ -699,11 +704,11 @@ public class TestProctorUtils {
     }
 
     @Test
-    public void noBucketsSpecified() throws IncompatibleTestMatrixException {
+    public void noBucketsSpecified() {
         // The test-matrix has 3 buckets
         final List<TestBucket> buckets = fromCompactBucketFormat("zero:0,one:1,two:2");
         // The proctor-specification does not specify any buckets
-        final TestSpecification testSpecification = transformTestBuckets(Collections.<TestBucket>emptyList());
+        final TestSpecification testSpecification = transformTestBuckets(emptyList());
         final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, testSpecification);
 
         {
@@ -719,7 +724,7 @@ public class TestProctorUtils {
     }
 
     @Test
-    public void internallyUnknownBucketWithAllocationGreaterThanZero() throws IncompatibleTestMatrixException {
+    public void internallyUnknownBucketWithAllocationGreaterThanZero() {
          // The test-matrix has 3 buckets
         final List<TestBucket> buckets = fromCompactBucketFormat("zero:0,one:1,two:2");
         final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets));
@@ -747,7 +752,7 @@ public class TestProctorUtils {
     }
 
     @Test
-    public void requiredTestBucketsMissing() throws IncompatibleTestMatrixException {
+    public void requiredTestBucketsMissing() {
          // The test-matrix has fewer buckets than the required tests
         final List<TestBucket> buckets_matrix = fromCompactBucketFormat("zero:0,one:1");
         final List<TestBucket> buckets_required = fromCompactBucketFormat("zero:0,one:1,two:2,three:3");
@@ -765,7 +770,7 @@ public class TestProctorUtils {
     }
 
     @Test
-    public void bucketsNameAndValuesShouldBeConsistent() throws IncompatibleTestMatrixException {
+    public void bucketsNameAndValuesShouldBeConsistent() {
         {
             final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(fromCompactBucketFormat("zero:0,one:1")));
             final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
@@ -791,7 +796,7 @@ public class TestProctorUtils {
     }
 
     @Test
-    public void requiredTestIsMissing() throws IncompatibleTestMatrixException {
+    public void requiredTestIsMissing() {
          // The test-matrix has 3 buckets
         final List<TestBucket> buckets_A = fromCompactBucketFormat("zero:0,one:1,two:2");
         final TestSpecification testSpecA = transformTestBuckets(buckets_A);
@@ -853,7 +858,7 @@ public class TestProctorUtils {
     }
 
     @Test
-    public void verifyBucketPayloads() throws IncompatibleTestMatrixException {
+    public void verifyBucketPayloads() {
         {
             final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
             Payload p = new Payload();
@@ -965,13 +970,13 @@ public class TestProctorUtils {
         {
             final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
             Payload p = new Payload();
-            p.setMap(ImmutableMap.<String,Object>of("val1",1.0,"val2","one","val3",new ArrayList<String>()));
+            p.setMap(ImmutableMap.of("val1",1.0,"val2","one","val3",new ArrayList<String>()));
             buckets.get(0).setPayload(p);
             p = new Payload();
-            p.setMap(ImmutableMap.<String,Object>of("val1",2.0,"val2","tw","val3",new ArrayList<String>(){{add("a");add("c");}}));
+            p.setMap(ImmutableMap.of("val1",2.0,"val2","tw","val3",new ArrayList<String>(){{add("a");add("c");}}));
             buckets.get(1).setPayload(p);
             p = new Payload();
-            p.setMap(ImmutableMap.<String,Object>of("val1",2.0,"val2","th","val3",new ArrayList<String>(){{add("foo");add("bar");}}));
+            p.setMap(ImmutableMap.of("val1",2.0,"val2","th","val3",new ArrayList<String>(){{add("foo");add("bar");}}));
             buckets.get(2).setPayload(p);
 
             final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets,"map",
@@ -987,13 +992,13 @@ public class TestProctorUtils {
         {
             final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
             Payload p = new Payload();
-            p.setMap(ImmutableMap.<String,Object>of("val1",1.0,"val2",3.0,"val3",1.0));
+            p.setMap(ImmutableMap.of("val1",1.0,"val2",3.0,"val3",1.0));
             buckets.get(0).setPayload(p);
             p = new Payload();
-            p.setMap(ImmutableMap.<String,Object>of("val1",2.0,"val3",1.0,"val4",3.0));
+            p.setMap(ImmutableMap.of("val1",2.0,"val3",1.0,"val4",3.0));
             buckets.get(1).setPayload(p);
             p = new Payload();
-            p.setMap(ImmutableMap.<String,Object>of("val1",2.0,"val2",2.0,"val3",2.0));
+            p.setMap(ImmutableMap.of("val1",2.0,"val2",2.0,"val3",2.0));
             buckets.get(2).setPayload(p);
 
             final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets,"map",
@@ -1010,13 +1015,13 @@ public class TestProctorUtils {
         {
             final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
             Payload p = new Payload();
-            p.setMap(ImmutableMap.<String,Object>of("val1",1.0,"val2","yea1","val3",1.0));
+            p.setMap(ImmutableMap.of("val1",1.0,"val2","yea1","val3",1.0));
             buckets.get(0).setPayload(p);
             p = new Payload();
-            p.setMap(ImmutableMap.<String,Object>of("val1",2.0,"val2","yea2","val3",3.0));
+            p.setMap(ImmutableMap.of("val1",2.0,"val2","yea2","val3",3.0));
             buckets.get(1).setPayload(p);
             p = new Payload();
-            p.setMap(ImmutableMap.<String,Object>of("val1",2.0,"val2","yea3","val3",2.0));
+            p.setMap(ImmutableMap.of("val1",2.0,"val2","yea3","val3",2.0));
             buckets.get(2).setPayload(p);
 
             final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets,"map",
@@ -1033,13 +1038,13 @@ public class TestProctorUtils {
         {
             final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
             Payload p = new Payload();
-            p.setMap(ImmutableMap.<String,Object>of("val1",1.0,"val2",3.0,"val3",1.0));
+            p.setMap(ImmutableMap.of("val1",1.0,"val2",3.0,"val3",1.0));
             buckets.get(0).setPayload(p);
             p = new Payload();
-            p.setMap(ImmutableMap.<String,Object>of("val1",2.0,"val2",1.0,"val3",3.0));
+            p.setMap(ImmutableMap.of("val1",2.0,"val2",1.0,"val3",3.0));
             buckets.get(1).setPayload(p);
             p = new Payload();
-            p.setMap(ImmutableMap.<String,Object>of("val1",2.0,"val2",2.0,"val3",2.0));
+            p.setMap(ImmutableMap.of("val1",2.0,"val2",2.0,"val3",2.0));
             buckets.get(2).setPayload(p);
 
             final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets,"map",
@@ -1056,13 +1061,13 @@ public class TestProctorUtils {
         {
             final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
             Payload p = new Payload();
-            p.setMap(ImmutableMap.<String,Object>of("val1",1.0,"val2",3.0,"val3",1.0));
+            p.setMap(ImmutableMap.of("val1",1.0,"val2",3.0,"val3",1.0));
             buckets.get(0).setPayload(p);
             p = new Payload();
-            p.setMap(ImmutableMap.<String,Object>of("val1",2.0,"val2",new ArrayList<Double>(){{add(1.0D);}},"val3",3.0));
+            p.setMap(ImmutableMap.of("val1",2.0,"val2",new ArrayList<Double>(){{add(1.0D);}},"val3",3.0));
             buckets.get(1).setPayload(p);
             p = new Payload();
-            p.setMap(ImmutableMap.<String,Object>of("val1",2.0,"val2",2.0,"val3",2.0));
+            p.setMap(ImmutableMap.of("val1",2.0,"val2",2.0,"val3",2.0));
             buckets.get(2).setPayload(p);
 
             final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets,"map",
@@ -1079,13 +1084,13 @@ public class TestProctorUtils {
         {
             final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
             Payload p = new Payload();
-            p.setMap(ImmutableMap.<String,Object>of("val1",1.0,"val2",ImmutableMap.<String,Object>of("a",1,"b",2),"val3",1.0));
+            p.setMap(ImmutableMap.of("val1",1.0,"val2",ImmutableMap.<String,Object>of("a",1,"b",2),"val3",1.0));
             buckets.get(0).setPayload(p);
             p = new Payload();
-            p.setMap(ImmutableMap.<String,Object>of("val1",2.0,"val2",ImmutableMap.<String,Object>of("c",3,"d",4),"val3",3.0));
+            p.setMap(ImmutableMap.of("val1",2.0,"val2",ImmutableMap.<String,Object>of("c",3,"d",4),"val3",3.0));
             buckets.get(1).setPayload(p);
             p = new Payload();
-            p.setMap(ImmutableMap.<String,Object>of("val1",2.0,"val2",ImmutableMap.<String,Object>of("e",5,"f",6),"val3",2.0));
+            p.setMap(ImmutableMap.of("val1",2.0,"val2",ImmutableMap.<String,Object>of("e",5,"f",6),"val3",2.0));
             buckets.get(2).setPayload(p);
 
             final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets,"map",
@@ -1102,13 +1107,13 @@ public class TestProctorUtils {
         {
             final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
             Payload p = new Payload();
-            p.setMap(ImmutableMap.<String,Object>of("val1",1.0,"val2","one","val3",new ArrayList<String>()));
+            p.setMap(ImmutableMap.of("val1",1.0,"val2","one","val3",new ArrayList<String>()));
             buckets.get(0).setPayload(p);
             p = new Payload();
-            p.setMap(ImmutableMap.<String,Object>of("val1",2.0,"val2","tw","val3",new ArrayList<String>(){{add("a");add("c");}}));
+            p.setMap(ImmutableMap.of("val1",2.0,"val2","tw","val3",new ArrayList<String>(){{add("a");add("c");}}));
             buckets.get(1).setPayload(p);
             p = new Payload();
-            p.setMap(ImmutableMap.<String,Object>of("val1",2.0,"val2","th","val3",new ArrayList(){{add(2.1D);add("bar");}}));
+            p.setMap(ImmutableMap.of("val1",2.0,"val2","th","val3",new ArrayList(){{add(2.1D);add("bar");}}));
             buckets.get(2).setPayload(p);
 
             final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets,"map",
@@ -1124,7 +1129,7 @@ public class TestProctorUtils {
     }
 
     @Test
-    public void verifyBucketPayloadValueValidators() throws IncompatibleTestMatrixException {
+    public void verifyBucketPayloadValueValidators() {
         {
             final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
             Payload p = new Payload();
@@ -1260,13 +1265,13 @@ public class TestProctorUtils {
         {
             final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
             Payload p = new Payload();
-            p.setMap(ImmutableMap.<String,Object>of("val1",1.0,"val2",3.0,"val3",1.0));
+            p.setMap(ImmutableMap.of("val1",1.0,"val2",3.0,"val3",1.0));
             buckets.get(0).setPayload(p);
             p = new Payload();
-            p.setMap(ImmutableMap.<String,Object>of("val1",2.0,"val2",4.0,"val3",1.0));
+            p.setMap(ImmutableMap.of("val1",2.0,"val2",4.0,"val3",1.0));
             buckets.get(1).setPayload(p);
             p = new Payload();
-            p.setMap(ImmutableMap.<String,Object>of("val1",2.0,"val2",2.0,"val3",2.0));
+            p.setMap(ImmutableMap.of("val1",2.0,"val2",2.0,"val3",2.0));
             buckets.get(2).setPayload(p);
 
             final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets, "map", ImmutableMap.of("val1","doubleValue","val2","doubleValue","val3","doubleValue"), "${val1 + val2 + val3 < 10}"));
@@ -1282,13 +1287,13 @@ public class TestProctorUtils {
         {
             final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
             Payload p = new Payload();
-            p.setMap(ImmutableMap.<String,Object>of("val1",1.0,"val2",3.0,"val3",1.0));
+            p.setMap(ImmutableMap.of("val1",1.0,"val2",3.0,"val3",1.0));
             buckets.get(0).setPayload(p);
             p = new Payload();
-            p.setMap(ImmutableMap.<String,Object>of("val1",2.0,"val2",4.0,"val3",1.0));
+            p.setMap(ImmutableMap.of("val1",2.0,"val2",4.0,"val3",1.0));
             buckets.get(1).setPayload(p);
             p = new Payload();
-            p.setMap(ImmutableMap.<String,Object>of("val1",2.0,"val2",6.0,"val3",2.0));
+            p.setMap(ImmutableMap.of("val1",2.0,"val2",6.0,"val3",2.0));
             buckets.get(2).setPayload(p);
 
             final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets, "map", ImmutableMap.of("val1","doubleValue","val2","doubleValue","val3","doubleValue"), "${val1 + val2 + val3 < 10}"));
@@ -1304,7 +1309,7 @@ public class TestProctorUtils {
     }
 
     @Test
-    public void verifyPayloadDeploymentScenerios() throws IncompatibleTestMatrixException {
+    public void verifyPayloadDeploymentScenerios() {
         {
             // Proctor should not break if it consumes a test matrix
             // that has a payload even if it's not expecting one.
@@ -1481,15 +1486,15 @@ public class TestProctorUtils {
                 "",
                 TestType.ANONYMOUS_USER,
                 "salty",
-                Collections.<TestBucket>emptyList(),
-                Collections.<Allocation>emptyList(),
+                emptyList(),
+                emptyList(),
                 false,
-                Collections.<String, Object>emptyMap(),
-                Collections.<String, Object>emptyMap(),
+                Collections.emptyMap(),
+                Collections.emptyMap(),
                 description,
-                Collections.emptyList()
+                emptyList()
         );
-        final TestSpecification specification = ProctorUtils.generateSpecification(empty);
+        final TestSpecification specification = generateSpecification(empty);
         assertEquals(description, specification.getDescription());
         assertEquals(0, specification.getBuckets().size());
         assertEquals(-1, specification.getFallbackValue());
@@ -1508,14 +1513,14 @@ public class TestProctorUtils {
                 TestType.ANONYMOUS_USER,
                 "salty",
                 Lists.newArrayList(control, inactiveBucket, test),
-                Collections.<Allocation>emptyList(),
+                emptyList(),
                 false,
-                Collections.<String, Object>emptyMap(),
-                Collections.<String, Object>emptyMap(),
+                Collections.emptyMap(),
+                Collections.emptyMap(),
                 description,
-                Collections.emptyList()
+                emptyList()
         );
-        final TestSpecification specification = ProctorUtils.generateSpecification(empty);
+        final TestSpecification specification = generateSpecification(empty);
         assertEquals(description, specification.getDescription());
         assertEquals(3, specification.getBuckets().size());
         assertEquals(inactiveBucket.getValue(), specification.getFallbackValue());
@@ -1554,14 +1559,14 @@ public class TestProctorUtils {
                 TestType.ANONYMOUS_USER,
                 "salty",
                 Lists.newArrayList(inactiveBucket, control, test),
-                Collections.<Allocation>emptyList(),
+                emptyList(),
                 false,
-                Collections.<String, Object>emptyMap(),
-                Collections.<String, Object>emptyMap(),
+                Collections.emptyMap(),
+                Collections.emptyMap(),
                 description,
-                Collections.emptyList()
+                emptyList()
         );
-        final TestSpecification specification = ProctorUtils.generateSpecification(empty);
+        final TestSpecification specification = generateSpecification(empty);
         assertEquals(description, specification.getDescription());
         assertEquals(3, specification.getBuckets().size());
         assertEquals(inactiveBucket.getValue(), specification.getFallbackValue());
@@ -1581,7 +1586,7 @@ public class TestProctorUtils {
         final String description = "this test has a payload buckets";
         final TestBucket bucket = new TestBucket("inactive", -3, "status quo");
         final Payload inactivePayload = new Payload();
-        inactivePayload.setMap(ImmutableMap.<String, Object>of(
+        inactivePayload.setMap(ImmutableMap.of(
             "da", new Double[] { 1.4d, 4.5d },
             "lv", 5L,
             "sa", new String[] { "foo", "bar" }
@@ -1592,15 +1597,15 @@ public class TestProctorUtils {
                 "",
                 TestType.ANONYMOUS_USER,
                 "salty",
-                Collections.singletonList(bucket),
-                Collections.<Allocation>emptyList(),
+                singletonList(bucket),
+                emptyList(),
                 false,
-                Collections.<String, Object>emptyMap(),
-                Collections.<String, Object>emptyMap(),
+                Collections.emptyMap(),
+                Collections.emptyMap(),
                 description,
-                Collections.emptyList()
+                emptyList()
         );
-        final TestSpecification specification = ProctorUtils.generateSpecification(empty);
+        final TestSpecification specification = generateSpecification(empty);
         assertEquals(description, specification.getDescription());
         assertEquals(1, specification.getBuckets().size());
         assertEquals(bucket.getValue(), specification.getFallbackValue());
@@ -1639,7 +1644,7 @@ public class TestProctorUtils {
 
         final Set<String> dynamicTests = Sets.newHashSet(TEST_B);
 
-        final ProctorLoadResult proctorLoadResult = ProctorUtils.verifyAndConsolidate(
+        final ProctorLoadResult proctorLoadResult = verifyAndConsolidate(
                 matrix,
                 "",
                 requiredTests,
@@ -1683,7 +1688,7 @@ public class TestProctorUtils {
 
         final Set<String> dynamicTests = Sets.newHashSet(TEST_B);
 
-        final ProctorLoadResult proctorLoadResult = ProctorUtils.verifyAndConsolidate(
+        final ProctorLoadResult proctorLoadResult = verifyAndConsolidate(
                 matrix,
                 "",
                 requiredTests,
@@ -1750,7 +1755,7 @@ public class TestProctorUtils {
 
         final Set<String> dynamicTests = Sets.newHashSet(TEST_B);
 
-        final ProctorLoadResult proctorLoadResult = ProctorUtils.verifyAndConsolidate(
+        final ProctorLoadResult proctorLoadResult = verifyAndConsolidate(
                 matrix,
                 "",
                 requiredTests,
@@ -1790,7 +1795,7 @@ public class TestProctorUtils {
         assertErrorCreated(false, false, msg, matrix, requiredTests);
     }
     private void assertErrorCreated(final boolean hasMissing, final boolean hasInvalid, final String msg, final TestMatrixArtifact matrix, final Map<String, TestSpecification> requiredTests) {
-        final ProctorLoadResult proctorLoadResult = ProctorUtils.verifyAndConsolidate(matrix, "[ testcase: " + msg + " ]", requiredTests, RuleEvaluator.FUNCTION_MAPPER);
+        final ProctorLoadResult proctorLoadResult = verifyAndConsolidate(matrix, "[ testcase: " + msg + " ]", requiredTests, RuleEvaluator.FUNCTION_MAPPER);
 
         final Set<String> missingTests = proctorLoadResult.getMissingTests();
         assertEquals(msg + " missing tests is not empty", hasMissing, !missingTests.isEmpty());
@@ -1825,7 +1830,7 @@ public class TestProctorUtils {
         test.setSalt(null); // don't care about salt for this test
         test.setRule(null); // don't care about rule for this test
         test.setTestType(TestType.ANONYMOUS_USER);    // don't really care, but need a valid value
-        test.setConstants(Collections.<String, Object>emptyMap()); // don't care about constants for this test
+        test.setConstants(Collections.emptyMap()); // don't care about constants for this test
 
         test.setBuckets(buckets);
         test.setAllocations(allocations);
@@ -1839,12 +1844,10 @@ public class TestProctorUtils {
 
     public static List<Allocation> fromCompactAllocationFormat(final String ... allocations) {
         final List<String> allocationList = Lists.newArrayListWithExpectedSize(allocations.length);
-        for (final String s : allocations) {
-            allocationList.add(s);
-        }
+        allocationList.addAll(Arrays.asList(allocations));
         return fromCompactAllocationFormat(allocationList);
     }
-    public static List<Allocation> fromCompactAllocationFormat(final List<String> allocations) {
+    private static List<Allocation> fromCompactAllocationFormat(final List<String> allocations) {
         final List<Allocation> allocationList = Lists.newArrayListWithExpectedSize(allocations.size());
         // rule|0:0,0:.0.1,0:.2
         for (final String allocation : allocations) {
