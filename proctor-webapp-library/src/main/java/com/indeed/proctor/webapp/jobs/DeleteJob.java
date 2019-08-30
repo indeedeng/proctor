@@ -131,16 +131,12 @@ public class DeleteJob extends AbstractJob {
             if (!checkMatrixResultInQa.isValid) {
                 throw new IllegalArgumentException("There are still clients in QA using " + testName + " " + checkMatrixResultInQa.getErrors().get(0));
             }
-            final MatrixChecker.CheckMatrixResult checkMatrixResultInProd = matrixChecker.checkMatrix(Environment.PRODUCTION, testName, null);
-            if (!checkMatrixResultInProd.isValid) {
-                throw new IllegalArgumentException("There are still clients in prod using " + testName + " " + checkMatrixResultInProd.getErrors().get(0));
-            }
-        } else {
-            final MatrixChecker.CheckMatrixResult checkMatrixResult = matrixChecker.checkMatrix(source, testName, null);
-            if (!checkMatrixResult.isValid()) {
-                throw new IllegalArgumentException("There are still clients in prod using " + testName + " " + checkMatrixResult.getErrors().get(0));
-            }
         }
+        final MatrixChecker.CheckMatrixResult checkMatrixResult = matrixChecker.checkMatrix(Environment.PRODUCTION, testName, null);
+        if (!checkMatrixResult.isValid()) {
+            throw new IllegalArgumentException("There are still clients in prod using " + testName + " " + checkMatrixResult.getErrors().get(0));
+        }
+
         job.log("Success: checking clients usage");
 
         final DefinitionChangeLogger logger = new BackgroundJobLogger(job);
