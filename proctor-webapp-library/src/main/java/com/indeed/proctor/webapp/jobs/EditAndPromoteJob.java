@@ -19,6 +19,7 @@ import com.indeed.proctor.common.model.Range;
 import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.common.model.TestDefinition;
 import com.indeed.proctor.common.model.TestType;
+import com.indeed.proctor.store.ChangeMetadata;
 import com.indeed.proctor.store.GitNoAuthorizationException;
 import com.indeed.proctor.store.GitNoDevelperAccessLevelException;
 import com.indeed.proctor.store.GitNoMasterAccessLevelException;
@@ -335,17 +336,26 @@ public class EditAndPromoteJob extends AbstractJob {
             }
         }
 
-        final String fullComment = commentFormatter.formatFullComment(nonEmptyComment, requestParameterMap);
-
         // Change definition
-        final Map<String, String> metadata = Collections.emptyMap();
+        final ChangeMetadata changeMeataData = ChangeMetadata.builder()
+                .setUsername(username)
+                .setPassword(password)
+                .setAuthor(author)
+                .setComment(commentFormatter.formatFullComment(nonEmptyComment, requestParameterMap))
+                .build();
         if (existingTestDefinition == null) {
             job.logWithTiming("(scm) adding test definition in trunk", "scmAdd");
-            trunkStore.addTestDefinition(username, password, author, testName, testDefinitionToUpdate, metadata, fullComment);
+            trunkStore.addTestDefinition(
+                    changeMeataData,
+                    testName,
+                    testDefinitionToUpdate,
+                    Collections.emptyMap());
             job.log("(scm) Success: adding test definition in trunk");
         } else {
             job.logWithTiming("(scm) updating test definition in trunk", "scmUpdate");
-            trunkStore.updateTestDefinition(username, password, author, previousRevision, testName, testDefinitionToUpdate, metadata, fullComment);
+            trunkStore.updateTestDefinition(
+                    changeMeataData,
+                    previousRevision, testName, testDefinitionToUpdate, Collections.emptyMap());
             job.log("(scm) Success: updating test definition in trunk");
         }
 
