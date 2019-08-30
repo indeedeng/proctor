@@ -13,6 +13,7 @@ import com.indeed.proctor.webapp.extensions.BackgroundJobLogger;
 import com.indeed.proctor.webapp.extensions.DefinitionChangeLogger;
 import com.indeed.proctor.webapp.extensions.PostDefinitionDeleteChange;
 import com.indeed.proctor.webapp.extensions.PreDefinitionDeleteChange;
+import com.indeed.proctor.webapp.util.IdentifierValidationUtil;
 import com.indeed.proctor.webapp.util.EncodingUtil;
 import com.indeed.proctor.webapp.util.TestDefinitionUtil;
 import org.apache.log4j.Logger;

@@ -190,7 +190,7 @@ public class ConsumableTestDefinition {
     }
 
     /**
-     * metaTags to let dynamic filters to know which the experiments belong to the specific tags.
+     * metaTags allow to group and filter tests.
      */
     @Nonnull
     public List<String> getMetaTags() {

@@ -52,28 +52,21 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import static com.indeed.proctor.webapp.db.Environment.PRODUCTION;
 import static com.indeed.proctor.webapp.db.Environment.QA;
 import static com.indeed.proctor.webapp.db.Environment.WORKING;
 import static com.indeed.proctor.webapp.jobs.AllocationUtil.generateAllocationRangeMap;
 import static com.indeed.proctor.webapp.util.AllocationIdUtil.ALLOCATION_ID_COMPARATOR;
+import static com.indeed.proctor.webapp.util.IdentifierValidationUtil.isValidBucketName;
+import static com.indeed.proctor.webapp.util.IdentifierValidationUtil.validateMetaTags;
+import static com.indeed.proctor.webapp.util.IdentifierValidationUtil.validateTestName;
 import static com.indeed.proctor.webapp.util.NumberUtil.equalsWithinTolerance;
 
 //Todo: Separate EditAndPromoteJob to EditJob and PromoteJob
 @Component
 public class EditAndPromoteJob extends AbstractJob {
     private static final Logger LOGGER = Logger.getLogger(EditAndPromoteJob.class);
-    private static final Pattern ALPHA_NUMERIC_END_RESTRICTION_JAVA_IDENTIFIER_PATTERN = Pattern.compile("^([a-z]([a-z0-9_]*[a-z_])?|_+[a-z0-9]+[a-z_])$", Pattern.CASE_INSENSITIVE);
-    private static final Pattern ALPHA_NUMERIC_JAVA_IDENTIFIER_PATTERN = Pattern.compile("^[a-z_][a-z0-9_]*$", Pattern.CASE_INSENSITIVE);
-    private static final Pattern VALID_TEST_NAME_PATTERN = ALPHA_NUMERIC_END_RESTRICTION_JAVA_IDENTIFIER_PATTERN;
-    private static final Pattern VALID_META_TAG_PATTERN = ALPHA_NUMERIC_END_RESTRICTION_JAVA_IDENTIFIER_PATTERN;
-    private static final Pattern VALID_BUCKET_NAME_PATTERN = ALPHA_NUMERIC_JAVA_IDENTIFIER_PATTERN;
-    private static final int TEST_NAME_LENGTH_LIMIT = 100;
-    private static final int META_TAG_LENGTH_LIMIT = 100;
 
     private static final ObjectMapper OBJECT_MAPPER = Serializers.strict();
 
@@ -484,24 +477,6 @@ public class EditAndPromoteJob extends AbstractJob {
         validateAllocationsAndBuckets(definition, backgroundJob);
     }
 
-    @VisibleForTesting
-    static void validateMetaTags(final TestDefinition definition) {
-        final List<String> invalidMetaTags = definition.getMetaTags()
-                .stream()
-                .filter((metaTag) -> !isValidMetaTag(metaTag))
-                .collect(Collectors.toList());
-
-        if (!invalidMetaTags.isEmpty()) {
-            throw new IllegalArgumentException(
-                    "Meta Tag must \n" +
-                            " - be alpha-numeric underscore\n" +
-                            " - not start/end with a number\n" +
-                            " - not be longer than " + META_TAG_LENGTH_LIMIT + "\n" +
-                            " but found: " + invalidMetaTags
-            );
-        }
-    }
-
     private static void validateAllocationsAndBuckets(
             final TestDefinition definition,
             final BackgroundJob<Void> backgroundJob
@@ -557,31 +532,6 @@ public class EditAndPromoteJob extends AbstractJob {
                 throw new IllegalArgumentException("Bucket name must be alpha-numeric underscore and not start with a number, found: '" + name + "'");
             }
         }
-    }
-
-    @VisibleForTesting
-    static void validateTestName(final String testName) {
-        final Matcher m = VALID_TEST_NAME_PATTERN.matcher(testName);
-        if (!m.matches()) {
-            throw new IllegalArgumentException("Test Name must be alpha-numeric underscore and not start/end with a number, found: '" + testName + "'");
-        }
-
-        if (testName.length() > TEST_NAME_LENGTH_LIMIT) {
-            throw new IllegalArgumentException("Test Name length can't be longer than " + TEST_NAME_LENGTH_LIMIT +
-                    ", found: " + testName.length());
-        }
-    }
-
-    @VisibleForTesting
-    static boolean isValidMetaTag(final String metaTag) {
-        final Matcher m = VALID_META_TAG_PATTERN.matcher(metaTag);
-        return m.matches() && metaTag.length() <= META_TAG_LENGTH_LIMIT;
-    }
-
-    @VisibleForTesting
-    static boolean isValidBucketName(final String bucketName) {
-        final Matcher m = VALID_BUCKET_NAME_PATTERN.matcher(bucketName);
-        return m.matches();
     }
 
     private static String formatDefaultUpdateComment(final String testName, final String comment) {

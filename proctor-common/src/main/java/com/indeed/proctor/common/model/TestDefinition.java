@@ -278,7 +278,7 @@ public class TestDefinition {
     }
 
     /**
-     * metaTags to let dynamic filters to get the experiments which belong to specific tags.
+     * metaTags allow to group and filter tests.
      */
     @Nonnull
     public List<String> getMetaTags() {
