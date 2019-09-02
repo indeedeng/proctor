@@ -52,6 +52,12 @@
             <artifactId>proctor-codegen</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>proctor-consumer</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
 
     </dependencies>
 
