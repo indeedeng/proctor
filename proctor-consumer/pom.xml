@@ -44,6 +44,7 @@
             <artifactId>commons-lang</artifactId>
         </dependency>
         <dependency>
+            <!-- For optional auxilliary controllers -->
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
         </dependency>

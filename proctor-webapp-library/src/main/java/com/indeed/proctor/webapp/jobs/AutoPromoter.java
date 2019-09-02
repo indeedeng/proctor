@@ -34,7 +34,7 @@ class AutoPromoter {
     private static final Logger LOGGER = Logger.getLogger(AutoPromoter.class);
     private final EditAndPromoteJob editAndPromoteJob;
 
-    AutoPromoter(EditAndPromoteJob editAndPromoteJob) {
+    AutoPromoter(final EditAndPromoteJob editAndPromoteJob) {
         this.editAndPromoteJob = editAndPromoteJob;
     }
 

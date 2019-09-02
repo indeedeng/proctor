@@ -2,6 +2,7 @@ package com.indeed.proctor.webapp.jobs;
 
 import com.google.common.base.Strings;
 import com.indeed.proctor.common.model.TestDefinition;
+import com.indeed.proctor.store.ChangeMetadata;
 import com.indeed.proctor.store.GitNoAuthorizationException;
 import com.indeed.proctor.store.GitNoDevelperAccessLevelException;
 import com.indeed.proctor.store.GitNoMasterAccessLevelException;
@@ -75,7 +76,10 @@ public class DeleteJob extends AbstractJob {
                 job -> {
                     try {
                         doDeleteInternal(testName, username, password, author, source, srcRevision, comment, requestParameterMap, job);
-                    } catch (final GitNoMasterAccessLevelException | GitNoAuthorizationException | GitNoDevelperAccessLevelException | IllegalArgumentException exp) {
+                    } catch (final GitNoMasterAccessLevelException
+                            | GitNoAuthorizationException
+                            | GitNoDevelperAccessLevelException
+                            | IllegalArgumentException exp) {
                         job.logFailedJob(exp);
                         LOGGER.info("Deletion Failed: " + job.getTitle(), exp);
                     } catch (final Exception e) {
@@ -118,45 +122,63 @@ public class DeleteJob extends AbstractJob {
         } else {
             throw new IllegalArgumentException("Could not get any history for " + testName);
         }
+        job.log("(scm) Success: getting history for '" + testName + "'");
 
-        final String nonEmptyComment = formatDefaultDeleteComment(testName, comment);
-        final String fullComment = commentFormatter.formatFullComment(nonEmptyComment, requestParameterMap);
+        job.logWithTiming("checking clients usage", "checkMatrix");
 
         if (source.equals(Environment.WORKING) || source.equals(Environment.QA)) {
             final MatrixChecker.CheckMatrixResult checkMatrixResultInQa = matrixChecker.checkMatrix(Environment.QA, testName, null);
             if (!checkMatrixResultInQa.isValid) {
                 throw new IllegalArgumentException("There are still clients in QA using " + testName + " " + checkMatrixResultInQa.getErrors().get(0));
             }
-            final MatrixChecker.CheckMatrixResult checkMatrixResultInProd = matrixChecker.checkMatrix(Environment.PRODUCTION, testName, null);
-            if (!checkMatrixResultInProd.isValid) {
-                throw new IllegalArgumentException("There are still clients in prod using " + testName + " " + checkMatrixResultInProd.getErrors().get(0));
-            }
-        } else {
-            final MatrixChecker.CheckMatrixResult checkMatrixResult = matrixChecker.checkMatrix(source, testName, null);
-            if (!checkMatrixResult.isValid()) {
-                throw new IllegalArgumentException("There are still clients in prod using " + testName + " " + checkMatrixResult.getErrors().get(0));
-            }
+        }
+        final MatrixChecker.CheckMatrixResult checkMatrixResult = matrixChecker.checkMatrix(Environment.PRODUCTION, testName, null);
+        if (!checkMatrixResult.isValid()) {
+            throw new IllegalArgumentException("There are still clients in prod using " + testName + " " + checkMatrixResult.getErrors().get(0));
         }
 
-        //PreDefinitionDeleteChanges
-        job.logWithTiming("Executing pre delete extension tasks.", "preDeleteExtension");
+        job.log("Success: checking clients usage");
+
         final DefinitionChangeLogger logger = new BackgroundJobLogger(job);
-        for (final PreDefinitionDeleteChange preDefinitionDeleteChange : preDefinitionDeleteChanges) {
-            preDefinitionDeleteChange.preDelete(definition, requestParameterMap, logger);
+        // PreDefinitionDeleteChanges
+        if (!preDefinitionDeleteChanges.isEmpty()) {
+            job.logWithTiming("Executing pre delete extension tasks.", "preDeleteExtension");
+            for (final PreDefinitionDeleteChange preDefinitionDeleteChange : preDefinitionDeleteChanges) {
+                preDefinitionDeleteChange.preDelete(definition, requestParameterMap, logger);
+            }
+            job.log("Finished pre delete extension tasks.");
         }
+
 
         job.logWithTiming("Deleting", "Delete");
         job.log("(scm) delete " + testName);
-        store.deleteTestDefinition(username, password, author, srcRevision, testName, definition, fullComment);
+        store.deleteTestDefinition(
+                ChangeMetadata.builder()
+                        .setUsername(username)
+                        .setPassword(password)
+                        .setAuthor(author)
+                        .setComment(commentFormatter.formatFullComment(
+                                formatDefaultDeleteComment(testName, comment),
+                                requestParameterMap))
+                        .build(),
+                srcRevision,
+                testName,
+                definition
+        );
+        job.log("(scm) Success: delete " + testName);
 
+        // add urls to same test in other environments to job information for user
         boolean testExistsInOtherEnvironments = false;
         for (final Environment otherEnvironment : Environment.values()) {
             if (otherEnvironment != source) {
-                final ProctorStore otherStore = determineStoreFromEnvironment(otherEnvironment);
-                final TestDefinition otherDefinition = TestDefinitionUtil.getTestDefinition(otherStore, testName);
+                final TestDefinition otherDefinition = TestDefinitionUtil.getTestDefinition(
+                        determineStoreFromEnvironment(otherEnvironment),
+                        testName);
                 if (otherDefinition != null) {
                     testExistsInOtherEnvironments = true;
-                    job.addUrl("/proctor/definition/" + EncodingUtil.urlEncodeUtf8(testName) + "?branch=" + otherEnvironment.getName(), "view " + testName + " on " + otherEnvironment.getName());
+                    job.addUrl(
+                            "/proctor/definition/" + EncodingUtil.urlEncodeUtf8(testName) + "?branch=" + otherEnvironment.getName(),
+                            "view " + testName + " on " + otherEnvironment.getName());
                 }
             }
         }
@@ -164,10 +186,13 @@ public class DeleteJob extends AbstractJob {
             job.setEndMessage("This test no longer exists in any environment.");
         }
 
-        //PostDefinitionDeleteChanges
-        job.logWithTiming("Executing post delete extension tasks.", "PostDeleteExtension");
-        for (final PostDefinitionDeleteChange postDefinitionDeleteChange : postDefinitionDeleteChanges) {
-            postDefinitionDeleteChange.postDelete(requestParameterMap, logger);
+        // PostDefinitionDeleteChanges
+        if (!postDefinitionDeleteChanges.isEmpty()) {
+            job.logWithTiming("Executing post delete extension tasks.", "PostDeleteExtension");
+            for (final PostDefinitionDeleteChange postDefinitionDeleteChange : postDefinitionDeleteChanges) {
+                postDefinitionDeleteChange.postDelete(requestParameterMap, logger);
+            }
+            job.log("Finished post delete extension tasks.");
         }
         job.logComplete();
         return true;

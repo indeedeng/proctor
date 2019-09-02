@@ -1,5 +1,6 @@
 package com.indeed.proctor.webapp.jobs;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.indeed.proctor.webapp.extensions.JobInfoStore;
@@ -25,6 +26,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import static org.apache.commons.collections.MapUtils.synchronizedMap;
+
 @EnableScheduling
 public class BackgroundJobManager {
     private static final Logger LOGGER = Logger.getLogger(BackgroundJobManager.class);
@@ -33,7 +36,8 @@ public class BackgroundJobManager {
     private final ExecutorService service;
 
     static final int JOB_HISTORY_MAX_SIZE = 1000;
-    private final Map<UUID, BackgroundJob<?>> jobHistoryMap = new LRUMap<>(JOB_HISTORY_MAX_SIZE);
+    // synchronizing Map because put() and entrySet() may be called in parallel by different threads
+    private final Map<UUID, BackgroundJob<?>> jobHistoryMap = synchronizedMap(new LRUMap<>(JOB_HISTORY_MAX_SIZE));
 
     private final AtomicLong lastId = new AtomicLong(0);
 
@@ -109,7 +113,8 @@ public class BackgroundJobManager {
 
     // Update the job status to jobInfoStore
     @Scheduled(fixedDelay = 1000, initialDelay = 1000)
-    private void scheduledCacheUpdate() {
+    @VisibleForTesting
+    void scheduledCacheUpdate() {
         if (jobInfoStore == null) {
             return;
         }

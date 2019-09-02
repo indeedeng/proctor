@@ -67,7 +67,7 @@ public class RuleVerifyUtils {
                     try {
                         checkRuleIsBooleanType(testRule, elContext, valueExpression);
                     } catch (final IllegalArgumentException e) {
-                        throw new InvalidRuleException(e, "Rule is not a boolean condition " + testRule);
+                        throw new InvalidRuleException(e, "Rule is not a boolean condition '" + testRule + "' (e.g. unbalanced braces)");
                     }
 
                     valueExpression.getValue(elContext);
