@@ -2,46 +2,24 @@ package com.indeed.proctor.webapp.jobs;
 
 import com.google.common.collect.Lists;
 import com.indeed.proctor.store.Revision;
+import com.indeed.proctor.testUtil.Stubs;
 import com.indeed.proctor.webapp.db.Environment;
 import com.indeed.proctor.webapp.jobs.BackgroundJob.JobType;
 import com.indeed.proctor.webapp.model.RevisionDefinition;
 import org.junit.Test;
-import org.junit.experimental.runners.Enclosed;
-import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-import static com.indeed.proctor.testUtil.Stubs.createTestDefinition;
+import static com.indeed.proctor.webapp.jobs.AbstractJob.validateComment;
+import static com.indeed.proctor.webapp.jobs.AbstractJob.validateUsernamePassword;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
-@RunWith(Enclosed.class)
 public class TestEditAndPromoteJob {
-
-    @Test
-    public void testIsValidTestName() {
-        assertFalse(EditAndPromoteJob.isValidTestName(""));
-        assertTrue(EditAndPromoteJob.isValidTestName("a"));
-        assertTrue(EditAndPromoteJob.isValidTestName("A"));
-        assertTrue(EditAndPromoteJob.isValidTestName("_"));
-        assertFalse(EditAndPromoteJob.isValidTestName("0"));
-        assertFalse(EditAndPromoteJob.isValidTestName("."));
-        assertFalse(EditAndPromoteJob.isValidTestName("_0"));
-        assertFalse(EditAndPromoteJob.isValidTestName("inValid_test_Name_10"));
-        assertFalse(EditAndPromoteJob.isValidTestName("inValid#test#name"));
-    }
-
-    @Test
-    public void testIsValidBucketName() {
-        assertFalse(EditAndPromoteJob.isValidBucketName(""));
-        assertTrue(EditAndPromoteJob.isValidBucketName("valid_bucket_Name"));
-        assertTrue(EditAndPromoteJob.isValidBucketName("valid_bucket_Name0"));
-        assertFalse(EditAndPromoteJob.isValidBucketName("0invalid_bucket_Name"));
-    }
 
     @Test
     public void testGetMaxAllocationId() {
@@ -56,29 +34,29 @@ public class TestEditAndPromoteJob {
         // Empty allocation id
         revisionDefinitions.add(new RevisionDefinition(
                 new Revision("revision2", "tester", new Date(now + 1000), "change 2"),
-                createTestDefinition("control:0,test:1", range))
+                Stubs.createTestDefinition("control:0,test:1", range))
         );
         Optional<String> maxAllocId = EditAndPromoteJob.getMaxAllocationId(revisionDefinitions);
         assertFalse(maxAllocId.isPresent());
         // Normal allocation ids
         revisionDefinitions.add(new RevisionDefinition(
                 new Revision("revision3", "tester", new Date(now + 2000), "change 3"),
-                createTestDefinition("control:0,test:1", range, Lists.newArrayList("#A1", "#B1")))
+                Stubs.createTestDefinition("control:0,test:1", range, Lists.newArrayList("#A1", "#B1")))
         );
         // Different allocation id version for A, deleted allocation B
         revisionDefinitions.add(new RevisionDefinition(
                 new Revision("revision4", "tester", new Date(now + 3000), "change 4"),
-                createTestDefinition("control:0,test:1", range, Lists.newArrayList("#A1234")))
+                Stubs.createTestDefinition("control:0,test:1", range, Lists.newArrayList("#A1234")))
         );
         // Add allocation C, D
         revisionDefinitions.add(new RevisionDefinition(
                 new Revision("revision5", "tester", new Date(now + 4000), "change 5"),
-                createTestDefinition("control:0,test:1", range, Lists.newArrayList("#A1234", "#C1", "#D1")))
+                Stubs.createTestDefinition("control:0,test:1", range, Lists.newArrayList("#A1234", "#C1", "#D1")))
         );
         // Delete allocation D
         revisionDefinitions.add(new RevisionDefinition(
                 new Revision("revision6", "tester", new Date(now + 5000), "change 6"),
-                createTestDefinition("control:0,test:1", range, Lists.newArrayList("#A1234", "#C1")))
+                Stubs.createTestDefinition("control:0,test:1", range, Lists.newArrayList("#A1234", "#C1")))
         );
         maxAllocId = EditAndPromoteJob.getMaxAllocationId(revisionDefinitions);
         assertEquals("#D1", maxAllocId.get());
@@ -94,5 +72,28 @@ public class TestEditAndPromoteJob {
         assertEquals(JobType.TEST_EDIT_PROMOTION_QA, EditAndPromoteJob.createJobType(false, Environment.QA));
     }
 
+    @Test
+    public void testValidateUsernamePassword() {
+        assertThatValidateUsernamePasswordThrows("", "");
+        assertThatValidateUsernamePasswordThrows("", "password");
+        assertThatValidateUsernamePasswordThrows("username", "");
 
-}
+        // Nothing happens for valid username and password
+        validateUsernamePassword("username", "password");
+    }
+
+    private void assertThatValidateUsernamePasswordThrows(final String username, final String password) {
+        assertThatThrownBy(() -> validateUsernamePassword(username, password))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("No username or password provided");
+    }
+
+    @Test
+    public void testValidateComment() {
+        assertThatThrownBy(() -> validateComment(""))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Comment is required.");
+
+        // Nothing happens for valid comment
+        validateComment("valid");
+    }}

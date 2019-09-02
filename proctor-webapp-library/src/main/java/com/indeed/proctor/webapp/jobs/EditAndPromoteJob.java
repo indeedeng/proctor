@@ -52,24 +52,21 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static com.indeed.proctor.webapp.db.Environment.PRODUCTION;
 import static com.indeed.proctor.webapp.db.Environment.QA;
 import static com.indeed.proctor.webapp.db.Environment.WORKING;
 import static com.indeed.proctor.webapp.jobs.AllocationUtil.generateAllocationRangeMap;
 import static com.indeed.proctor.webapp.util.AllocationIdUtil.ALLOCATION_ID_COMPARATOR;
+import static com.indeed.proctor.webapp.util.IdentifierValidationUtil.isValidBucketName;
+import static com.indeed.proctor.webapp.util.IdentifierValidationUtil.validateMetaTags;
+import static com.indeed.proctor.webapp.util.IdentifierValidationUtil.validateTestName;
 import static com.indeed.proctor.webapp.util.NumberUtil.equalsWithinTolerance;
 
 //Todo: Separate EditAndPromoteJob to EditJob and PromoteJob
 @Component
 public class EditAndPromoteJob extends AbstractJob {
     private static final Logger LOGGER = Logger.getLogger(EditAndPromoteJob.class);
-    private static final Pattern ALPHA_NUMERIC_END_RESTRICTION_JAVA_IDENTIFIER_PATTERN = Pattern.compile("^([a-z_][a-z0-9_]+)?[a-z_]+$", Pattern.CASE_INSENSITIVE);
-    private static final Pattern ALPHA_NUMERIC_JAVA_IDENTIFIER_PATTERN = Pattern.compile("^[a-z_][a-z0-9_]*$", Pattern.CASE_INSENSITIVE);
-    private static final Pattern VALID_TEST_NAME_PATTERN = ALPHA_NUMERIC_END_RESTRICTION_JAVA_IDENTIFIER_PATTERN;
-    private static final Pattern VALID_BUCKET_NAME_PATTERN = ALPHA_NUMERIC_JAVA_IDENTIFIER_PATTERN;
 
     private static final ObjectMapper OBJECT_MAPPER = Serializers.strict();
 
@@ -274,9 +271,7 @@ public class EditAndPromoteJob extends AbstractJob {
             }
         } else {
             // check that the test name is valid
-            if (!isValidTestName(testName)) {
-                throw new IllegalArgumentException("Test Name must be alpha-numeric underscore and not start/end with a number, found: '" + testName + "'");
-            }
+            validateTestName(testName);
         }
         job.log("(scm) Success: getting history for '" + testName + "'");
 
@@ -478,6 +473,7 @@ public class EditAndPromoteJob extends AbstractJob {
             throw new IllegalArgumentException("Allocations cannot be empty.");
         }
 
+        validateMetaTags(definition);
         validateAllocationsAndBuckets(definition, backgroundJob);
     }
 
@@ -536,16 +532,6 @@ public class EditAndPromoteJob extends AbstractJob {
                 throw new IllegalArgumentException("Bucket name must be alpha-numeric underscore and not start with a number, found: '" + name + "'");
             }
         }
-    }
-
-    static boolean isValidTestName(final String testName) {
-        final Matcher m = VALID_TEST_NAME_PATTERN.matcher(testName);
-        return m.matches();
-    }
-
-    static boolean isValidBucketName(final String bucketName) {
-        final Matcher m = VALID_BUCKET_NAME_PATTERN.matcher(bucketName);
-        return m.matches();
     }
 
     private static String formatDefaultUpdateComment(final String testName, final String comment) {

@@ -401,7 +401,8 @@ public class GitProctorTest {
                 false,
                 Collections.emptyMap(),
                 Collections.emptyMap(),
-                RandomStringUtils.randomAlphabetic(8)
+                RandomStringUtils.randomAlphabetic(8),
+                ImmutableList.of(RandomStringUtils.randomAlphabetic(8).toLowerCase())
         );
     }
 

@@ -287,7 +287,8 @@ public class GlobalCachingProctorStoreTest {
                 false,
                 Collections.emptyMap(),
                 Collections.emptyMap(),
-                "SAND-1: test"
+                "SAND-1: test",
+                ImmutableList.of("example_tst_tag")
         );
     }
 
