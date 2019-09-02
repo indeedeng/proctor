@@ -37,7 +37,7 @@ public class CachingProctorStoreTest {
         delegate = new InMemoryProctorStore();
         delegate.addTestDefinition(
                 ChangeMetadata.builder()
-                        .setUsername("Mike")
+                        .setUsernameAndAuthor("Mike")
                         .setPassword("pwd")
                         .setComment("commit tst1")
                         .build(),
@@ -46,7 +46,7 @@ public class CachingProctorStoreTest {
                 emptyMap());
         delegate.addTestDefinition(
                 ChangeMetadata.builder()
-                        .setUsername("William")
+                        .setUsernameAndAuthor("William")
                         .setPassword("pwd")
                         .setComment("commit tst2")
                         .build(),
@@ -66,7 +66,7 @@ public class CachingProctorStoreTest {
             try {
                 testee.addTestDefinition(
                         ChangeMetadata.builder()
-                                .setUsername("Mike")
+                                .setUsernameAndAuthor("Mike")
                                 .setPassword("pwd")
                                 .setComment("Create tst2")
                                 .build(),
@@ -96,7 +96,7 @@ public class CachingProctorStoreTest {
             try {
                 testee.updateTestDefinition(
                         ChangeMetadata.builder()
-                                .setUsername("Mike")
+                                .setUsernameAndAuthor("Mike")
                                 .setPassword("pwd")
                                 .setComment("Update description of tst1")
                                 .build(),
@@ -122,7 +122,7 @@ public class CachingProctorStoreTest {
         final Thread thread = new Thread(() -> {
             try {
                 testee.updateTestDefinition(ChangeMetadata.builder()
-                        .setUsername("Mike")
+                        .setUsernameAndAuthor("Mike")
                         .setPassword("pwd")
                         .setComment("Update description of tst1")
                         .build(),
@@ -160,7 +160,7 @@ public class CachingProctorStoreTest {
         return new FutureTask<>(() -> {
             try {
                 testee.updateTestDefinition(ChangeMetadata.builder()
-                        .setUsername("Mike")
+                        .setUsernameAndAuthor("Mike")
                         .setPassword("pwd")
                         .setComment(comment)
                         .build(),
@@ -183,7 +183,7 @@ public class CachingProctorStoreTest {
             try {
                 testee.addTestDefinition(
                         ChangeMetadata.builder()
-                                .setUsername("Tom")
+                                .setUsernameAndAuthor("Tom")
                                 .setPassword("pwd")
                                 .setComment("Create tst4")
                                 .build(),
@@ -211,7 +211,7 @@ public class CachingProctorStoreTest {
             try {
                 testee.deleteTestDefinition(
                         ChangeMetadata.builder()
-                                .setUsername("Mike")
+                                .setUsernameAndAuthor("Mike")
                                 .setPassword("pwd")
                                 .setComment("Delete tst1")
                                 .build(),

@@ -102,6 +102,12 @@ public class ChangeMetadata {
             return this;
         }
 
+        public Builder setUsernameAndAuthor(final String username) {
+            setUsername(username);
+            setAuthor(username);
+            return this;
+        }
+
         public Builder setTimestamp(final Instant timestamp) {
             this.timestamp = timestamp;
             return this;
