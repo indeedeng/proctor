@@ -154,7 +154,8 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
         }
 
         final TestMatrixArtifact testMatrixArtifact = getCurrentTestMatrixArtifact(environment);
-        Preconditions.checkNotNull(testMatrixArtifact, "Failed to get the current test matrix artifact from Envirronment " + environment);
+        Preconditions.checkNotNull(testMatrixArtifact,
+                "Failed to get the current test matrix artifact from Envirronment " + environment);
         final Map<String, ConsumableTestDefinition> definedTests = testMatrixArtifact.getTests();
 
         final Set<String> tests = Sets.newHashSet();
@@ -201,7 +202,8 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
         final Set<AppVersion> skippedAppVersions = Sets.newLinkedHashSet();
 
         // Accumulate all clients that have equivalent AppVersion (APPLICATION_COMPARATOR)
-        final ImmutableListMultimap.Builder<AppVersion, ProctorClientApplication> builder = ImmutableListMultimap.builder();
+        final ImmutableListMultimap.Builder<AppVersion, ProctorClientApplication> builder =
+                ImmutableListMultimap.builder();
 
         for (final ProctorClientApplication client : clients) {
             final AppVersion appVersion = new AppVersion(client.getApplication(), client.getVersion());
@@ -223,7 +225,8 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
             } catch (final InterruptedException e) {
                 LOGGER.error("Oh heavens", e);
             }
-            for (final Iterator<Map.Entry<AppVersion, Future<RemoteSpecificationResult>>> iterator = futures.entrySet().iterator(); iterator.hasNext(); ) {
+            for (final Iterator<Map.Entry<AppVersion, Future<RemoteSpecificationResult>>> iterator =
+                 futures.entrySet().iterator(); iterator.hasNext(); ) {
                 final Map.Entry<AppVersion, Future<RemoteSpecificationResult>> entry = iterator.next();
                 final AppVersion appVersion = entry.getKey();
                 final Future<RemoteSpecificationResult> future = entry.getValue();
@@ -255,11 +258,14 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
         // TODO (parker) 9/6/12 - Fail if we do not have 1 specification for each <Application>.<Version>
         // should we update the cache?
         if (!appVersionsToCheck.isEmpty()) {
-            LOGGER.warn("Failed to load any specification for the following AppVersions: " + StringUtils.join(appVersionsToCheck, ','));
+            LOGGER.warn("Failed to load any specification for the following AppVersions: "
+                    + StringUtils.join(appVersionsToCheck, ','));
         }
 
         if (!skippedAppVersions.isEmpty()) {
-            LOGGER.info("Skipped checking specification for the following AppVersions (/private/proctor/specification returned 404): " + StringUtils.join(skippedAppVersions, ','));
+            LOGGER.info("Skipped checking specification for the following AppVersions "
+                    + "(/private/proctor/specification returned 404): "
+                    + StringUtils.join(skippedAppVersions, ','));
         }
 
         LOGGER.info("Finish refreshing internal list of ProctorSpecifications for " + environment);
@@ -289,7 +295,8 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
                 }
 
                 // Don't yell too load, the error is handled
-                LOGGER.info("Failed to read specification from: " + client.getBaseApplicationUrl() + " : " + statusCode + ", " + specificationResult.getError());
+                LOGGER.info("Failed to read specification from: " + client.getBaseApplicationUrl()
+                        + " : " + statusCode + ", " + specificationResult.getError());
                 results.failed(client, specificationResult);
             } else {
                 results.success(client, specificationResult);
@@ -315,8 +322,11 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
         return apiSpec;
     }
 
-    // @Nonnull
-    private static Pair<Integer, SpecificationResult> fetchSpecification(final String urlString, final int timeout, final SpecificationParser parser) {
+    private static Pair<Integer, SpecificationResult> fetchSpecification(
+            final String urlString,
+            final int timeout,
+            final SpecificationParser parser
+    ) {
         int statusCode = -1;
         InputStream inputStream = null;
         try {
@@ -362,9 +372,16 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
     }
 
     // Check if this test will be resolved by defined filters in a client.
-    private static boolean willResolveTest(final DynamicFilters filters, final String testName, final ConsumableTestDefinition testDefinition) {
-        return (filters != null) && StringUtils.isNotEmpty(testName) && (testDefinition != null) &&
-                filters.determineTests(ImmutableMap.of(testName, testDefinition), Collections.emptySet()).contains(testName);
+    private static boolean willResolveTest(
+            final DynamicFilters filters,
+            final String testName,
+            final ConsumableTestDefinition testDefinition
+    ) {
+        return (filters != null)
+                && StringUtils.isNotEmpty(testName)
+                && (testDefinition != null)
+                && filters.determineTests(
+                ImmutableMap.of(testName, testDefinition), Collections.emptySet()).contains(testName);
     }
 
     @Nullable
@@ -393,7 +410,10 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
         return null;
     }
 
-    private static Pair<Integer, SpecificationResult> fetchSpecificationFromApi(final ProctorClientApplication client, final int timeout) {
+    private static Pair<Integer, SpecificationResult> fetchSpecificationFromApi(
+            final ProctorClientApplication client,
+            final int timeout
+    ) {
         /*
          * This needs to be moved to a separate checker class implementing some interface
          */
@@ -406,7 +426,10 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
         });
     }
 
-    private static Pair<Integer, SpecificationResult> fetchSpecificationFromExportedVariable(final ProctorClientApplication client, final int timeout) {
+    private static Pair<Integer, SpecificationResult> fetchSpecificationFromExportedVariable(
+            final ProctorClientApplication client,
+            final int timeout
+    ) {
         /*
          * This needs to be moved to a separate checker class implementing some interface
          */
