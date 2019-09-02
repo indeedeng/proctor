@@ -13,24 +13,26 @@ import java.util.Map;
 * @author parker
 */
 public class RemoteSpecificationResult {
-    final AppVersion version;
-    final Map<ProctorClientApplication, SpecificationResult> failures;
-    final ProctorClientApplication skipped;
-    final List<ProctorClientApplication> remaining;
-    final ProctorClientApplication clientApplication;
-    final SpecificationResult specificationResult;
+    private final AppVersion version;
+    private final Map<ProctorClientApplication, SpecificationResult> failures;
+    private final ProctorClientApplication skipped;
+    private final List<ProctorClientApplication> remaining;
+    private final ProctorClientApplication clientApplication;
+    private final SpecificationResult specificationResult;
 
-    public RemoteSpecificationResult(final AppVersion version,
-                                     final Map<ProctorClientApplication, SpecificationResult> failures,
-                                     final ProctorClientApplication skipped,
-                                     final List<ProctorClientApplication> remaining,
-                                     final ProctorClientApplication _clientApplication,
-                                     final SpecificationResult specificationResult) {
+    public RemoteSpecificationResult(
+            final AppVersion version,
+            final Map<ProctorClientApplication, SpecificationResult> failures,
+            final ProctorClientApplication skipped,
+            final List<ProctorClientApplication> remaining,
+            final ProctorClientApplication clientApplication,
+            final SpecificationResult specificationResult
+    ) {
         this.version = version;
         this.failures = failures;
         this.skipped = skipped;
         this.remaining = remaining;
-        this.clientApplication = _clientApplication;
+        this.clientApplication = clientApplication;
         this.specificationResult = specificationResult;
     }
 
@@ -74,11 +76,11 @@ public class RemoteSpecificationResult {
         ProctorClientApplication success;
         SpecificationResult result;
 
-        private Builder(AppVersion version) {
+        private Builder(final AppVersion version) {
             this.version = version;
         }
 
-        public RemoteSpecificationResult build(List<ProctorClientApplication> remaining) {
+        public RemoteSpecificationResult build(final List<ProctorClientApplication> remaining) {
             return new RemoteSpecificationResult(
                 version,
                 ImmutableMap.copyOf(failures),

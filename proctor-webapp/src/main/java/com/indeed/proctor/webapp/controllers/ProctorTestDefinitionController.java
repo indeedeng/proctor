@@ -152,12 +152,12 @@ public class ProctorTestDefinitionController extends AbstractController {
      */
     @RequestMapping(value = "/{testName}", method = RequestMethod.GET)
     public String show(
-            HttpServletResponse response,
+            final HttpServletResponse response,
             @PathVariable final String testName,
             @RequestParam(required = false) final String branch,
             @RequestParam(required = false, defaultValue = "", value = "r") final String revision,
             @RequestParam(required = false, value = "alloc_hist") final String loadAllocHistParam,
-            @CookieValue(value = "loadAllocationHistory", defaultValue = "") String loadAllocHistCookie,
+            @CookieValue(value = "loadAllocationHistory", defaultValue = "") final String loadAllocHistCookie,
             final Model model
     ) throws StoreException {
         final Environment theEnvironment = determineEnvironmentFromParameter(branch);
@@ -201,7 +201,7 @@ public class ProctorTestDefinitionController extends AbstractController {
                 .allMatch(env -> getTestDefinition(env, testName, revision) == null);
     }
 
-    private boolean shouldLoadAllocationHistory(String loadAllocHistParam, String loadAllocHistCookie, HttpServletResponse response) {
+    private boolean shouldLoadAllocationHistory(final String loadAllocHistParam, final String loadAllocHistCookie, final HttpServletResponse response) {
         if (loadAllocHistParam != null) {
             if (loadAllocHistParam.equals("true") || loadAllocHistParam.equals("1")) {
                 final Cookie lahCookie = new Cookie("loadAllocationHistory", "true");
@@ -230,7 +230,7 @@ public class ProctorTestDefinitionController extends AbstractController {
      */
     @RequestMapping(value = "/{testName}/edit", method = RequestMethod.GET)
     public String doEditGet(
-            @PathVariable String testName,
+            @PathVariable final String testName,
             final Model model,
             final HttpServletResponse response
     ) throws StoreException {
@@ -363,10 +363,10 @@ public class ProctorTestDefinitionController extends AbstractController {
     @ResponseBody
     public String doVerifyGet
             (
-                    @PathVariable String testName,
-                    @RequestParam(required = false) String src,
-                    @RequestParam(required = false) String srcRevision,
-                    @RequestParam(required = false) String dest,
+                    @PathVariable final String testName,
+                    @RequestParam(required = false) final String src,
+                    @RequestParam(required = false) final String srcRevision,
+                    @RequestParam(required = false) final String dest,
                     final HttpServletRequest request,
                     final Model model
             ) {
@@ -482,30 +482,25 @@ public class ProctorTestDefinitionController extends AbstractController {
             final StringWriter sw = new StringWriter();
             ProctorUtils.serializeTestDefinition(sw, definition);
             model.addAttribute("testDefinitionJson", sw.toString());
-        } catch (JsonGenerationException e) {
-            LOGGER.error("Could not generate JSON", e);
-        } catch (JsonMappingException e) {
-            LOGGER.error("Could not generate JSON", e);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             LOGGER.error("Could not generate JSON", e);
         }
 
         try {
             final StringWriter swSpecification = new StringWriter();
-            ProctorUtils.serializeTestSpecification(swSpecification, ProctorUtils.generateSpecification(definition));
+            ProctorUtils.serializeTestSpecification(swSpecification,
+                    ProctorUtils.generateSpecification(definition));
             model.addAttribute("testSpecificationJson", swSpecification.toString());
-        } catch (IllegalArgumentException e) {
+        } catch (final IllegalArgumentException e) {
             LOGGER.warn("Could not generate Test Specification", e);
-        } catch (JsonGenerationException e) {
-            LOGGER.error("Could not generate JSON", e);
-        } catch (JsonMappingException e) {
-            LOGGER.error("Could not generate JSON", e);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             LOGGER.error("Could not generate JSON", e);
         }
 
         model.addAttribute("testDefinitionHistory", history);
-        final Revision testDefinitionVersion = version == null ? EnvironmentVersion.FULL_UNKNOWN_REVISION : version.getFullRevision(b);
+        final Revision testDefinitionVersion = version == null
+                ? EnvironmentVersion.FULL_UNKNOWN_REVISION
+                : version.getFullRevision(b);
         model.addAttribute("testDefinitionVersion", testDefinitionVersion);
 
         // TODO (parker) 8/9/12 - Add common model for TestTypes and other Drop Downs
@@ -514,19 +509,11 @@ public class ProctorTestDefinitionController extends AbstractController {
         return view.getName();
     }
 
-    /**
-     * This needs to be moved to a separate checker class implementing some interface
-     */
-    private URL getSpecificationUrl(final ProctorClientApplication client) {
-        final String urlStr = client.getBaseApplicationUrl() + "/private/proctor/specification";
-        try {
-            return new URL(urlStr);
-        } catch (final MalformedURLException e) {
-            throw new RuntimeException("Somehow created a malformed URL: " + urlStr, e);
-        }
-    }
-
-    private TestDefinition getTestDefinition(final Environment environment, final String testName, final String revision) {
+    private TestDefinition getTestDefinition(
+            final Environment environment,
+            final String testName,
+            final String revision
+    ) {
         return TestDefinitionUtil.getTestDefinitionTryCached(
                 determineStoreFromEnvironment(environment),
                 environment,
@@ -534,10 +521,12 @@ public class ProctorTestDefinitionController extends AbstractController {
                 revision);
     }
 
-    private Set<AppVersion> filterDynamicClients(final Environment environment,
-                                                 final String testName,
-                                                 final ConsumableTestDefinition testDefinition,
-                                                 final Set<AppVersion> applications) {
+    private Set<AppVersion> filterDynamicClients(
+            final Environment environment,
+            final String testName,
+            final ConsumableTestDefinition testDefinition,
+            final Set<AppVersion> applications
+    ) {
         final Map<AppVersion, ProctorSpecification> specifications =
                 specificationSource.loadAllSuccessfulSpecifications(environment);
         return applications.stream()
@@ -545,9 +534,11 @@ public class ProctorTestDefinitionController extends AbstractController {
                 .collect(Collectors.toSet());
     }
 
-    private static boolean isDynamicTest(final String testName,
-                                         final ConsumableTestDefinition testDefinition,
-                                         @Nullable final ProctorSpecification specification) {
+    private static boolean isDynamicTest(
+            final String testName,
+            final ConsumableTestDefinition testDefinition,
+            @Nullable final ProctorSpecification specification
+    ) {
         if (specification == null) {
             return false;
         }
