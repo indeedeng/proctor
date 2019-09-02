@@ -1,7 +1,5 @@
 package com.indeed.proctor.webapp.controllers;
 
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -27,7 +25,6 @@ import com.indeed.proctor.webapp.jobs.DeleteJob;
 import com.indeed.proctor.webapp.jobs.EditAndPromoteJob;
 import com.indeed.proctor.webapp.jobs.MatrixChecker;
 import com.indeed.proctor.webapp.model.AppVersion;
-import com.indeed.proctor.webapp.model.ProctorClientApplication;
 import com.indeed.proctor.webapp.model.RevisionDefinition;
 import com.indeed.proctor.webapp.model.SessionViewModel;
 import com.indeed.proctor.webapp.model.WebappConfiguration;
@@ -58,8 +55,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -73,7 +68,7 @@ import java.util.stream.Stream;
 
 /**
  * HTML/Json serving controller driving the Proctor webapp UI
- *
+ * <p>
  * Endpoints:
  * - GET  /definition/create                                 # Show test creation page
  * - GET  /definition/{testname}                             # Show test details
@@ -96,8 +91,6 @@ public class ProctorTestDefinitionController extends AbstractController {
     private final DeleteJob deleteJob;
     private final EditAndPromoteJob editAndPromoteJob;
     private final boolean requireAuth;
-
-
 
     @Autowired
     public ProctorTestDefinitionController(final WebappConfiguration configuration,
@@ -124,6 +117,7 @@ public class ProctorTestDefinitionController extends AbstractController {
 
     /**
      * Show the test creation page
+     *
      * @return spring view name
      */
     @RequestMapping(value = "/create", method = RequestMethod.GET)
@@ -226,6 +220,7 @@ public class ProctorTestDefinitionController extends AbstractController {
 
     /**
      * Modify a test and show the definition page
+     *
      * @return spring view name
      */
     @RequestMapping(value = "/{testName}/edit", method = RequestMethod.GET)
@@ -357,19 +352,19 @@ public class ProctorTestDefinitionController extends AbstractController {
 
     /**
      * Debug endpoint to run checks
+     *
      * @return A (non-Json, non-HTML) string with the check result
      */
     @RequestMapping(value = "/{testName}/verify", method = RequestMethod.GET)
     @ResponseBody
-    public String doVerifyGet
-            (
-                    @PathVariable final String testName,
-                    @RequestParam(required = false) final String src,
-                    @RequestParam(required = false) final String srcRevision,
-                    @RequestParam(required = false) final String dest,
-                    final HttpServletRequest request,
-                    final Model model
-            ) {
+    public String doVerifyGet(
+            @PathVariable final String testName,
+            @RequestParam(required = false) final String src,
+            @RequestParam(required = false) final String srcRevision,
+            @RequestParam(required = false) final String dest,
+            final HttpServletRequest request,
+            final Model model
+    ) {
         final Environment srcBranch = determineEnvironmentFromParameter(src);
         final Environment destBranch = determineEnvironmentFromParameter(dest);
 

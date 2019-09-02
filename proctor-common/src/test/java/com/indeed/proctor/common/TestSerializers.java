@@ -20,6 +20,7 @@ import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -96,7 +97,7 @@ public class TestSerializers {
 
     private void doAssertTestDefintion(final String resourceName, final ObjectMapper mapper) throws IOException {
         final InputStream input = getClass().getResourceAsStream(resourceName);
-        Assert.assertNotNull("Input stream for " + resourceName + " should not be null", input);
+        assertNotNull("Input stream for " + resourceName + " should not be null", input);
         try {
             final TestDefinition definition = mapper.readValue(input, TestDefinition.class);
             assertEquals("1", definition.getVersion());
