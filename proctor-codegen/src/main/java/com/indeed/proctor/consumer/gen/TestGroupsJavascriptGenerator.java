@@ -1,10 +1,8 @@
 package com.indeed.proctor.consumer.gen;
 
-
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.indeed.proctor.common.PayloadType;
-import com.indeed.proctor.common.model.Payload;
 
 import java.util.Map;
 

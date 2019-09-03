@@ -1,12 +1,12 @@
 package com.indeed.proctor.webapp.controllers;
 
-import com.indeed.proctor.webapp.db.Environment;
 import com.indeed.proctor.store.ProctorStore;
+import com.indeed.proctor.webapp.db.Environment;
 import com.indeed.proctor.webapp.jobs.BackgroundJob;
 import com.indeed.proctor.webapp.jobs.BackgroundJobFactory;
 import com.indeed.proctor.webapp.jobs.BackgroundJobManager;
-import com.indeed.proctor.webapp.model.api.BackgroundJobResponseModel;
 import com.indeed.proctor.webapp.model.WebappConfiguration;
+import com.indeed.proctor.webapp.model.api.BackgroundJobResponseModel;
 import com.indeed.proctor.webapp.views.JsonView;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
