@@ -3,7 +3,6 @@ package com.indeed.proctor.webapp.db;
 import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.store.cache.GlobalCachingProctorStore;
 import com.indeed.proctor.webapp.extensions.GlobalCacheStore;
-import org.apache.commons.configuration.ConfigurationException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -30,12 +29,12 @@ public class GitProctorStoreFactoryTest {
     private GitProctorStoreFactory gitProctorStoreFactory;
 
     @Before
-    public void setUp() throws IOException, ConfigurationException {
+    public void setUp() throws IOException {
         gitProctorStoreFactory = createGitProctorStoreFactory(globalCacheStore);
     }
 
     @Test
-    public void testCreateStoreWithoutGlobalCache() throws IOException, ConfigurationException {
+    public void testCreateStoreWithoutGlobalCache() throws IOException {
         final GitProctorStoreFactory gitProctorStoreFactoryWithoutGlobalCache = createGitProctorStoreFactory(null);
         final ProctorStore store = gitProctorStoreFactoryWithoutGlobalCache.createStoreWithGlobalCache("trunk", proctorStore);
         assertThat(store).isNotInstanceOf(GlobalCachingProctorStore.class);
@@ -56,7 +55,7 @@ public class GitProctorStoreFactoryTest {
 
     private GitProctorStoreFactory createGitProctorStoreFactory(
             final GlobalCacheStore globalCacheStore
-    ) throws IOException, ConfigurationException {
+    ) throws IOException {
         return new GitProctorStoreFactory(
                 "test.git",
                 "test-user",
