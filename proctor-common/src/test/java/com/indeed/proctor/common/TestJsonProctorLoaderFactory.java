@@ -8,6 +8,7 @@ import org.junit.Test;
 import java.util.Collections;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class TestJsonProctorLoaderFactory {
@@ -26,8 +27,13 @@ public class TestJsonProctorLoaderFactory {
                 Collections.<String, Integer>emptyMap()
         );
 
-        assertNotNull("exampletst should be loaded with a filter",
+        assertNotNull("exampletst should be loaded with a TestNamePrefixFilter",
                 proctor.getTestDefinition("exampletst"));
+        assertNotNull("meta_tags_tst should be loaded with a MetaTagsFilter",
+                proctor.getTestDefinition("meta_tags_tst"));
+        assertNull("sometst should not be loaded with a filter",
+                proctor.getTestDefinition("sometst"));
+
         assertTrue("an allocation of exampletst should be determined",
                 result.getAllocations().containsKey("exampletst"));
         assertTrue("a bucket of exampletst should be determined",

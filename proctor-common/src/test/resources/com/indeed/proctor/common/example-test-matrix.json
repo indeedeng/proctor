@@ -82,7 +82,33 @@
       } ],
       "silent" : false,
       "testType" : "USER",
-      "description" : "An some test"
+      "description" : "An some test",
+      "metaTags" : ["sometag"]
+    },
+    "meta_tags_tst" : {
+      "constants" : {
+        "ENGLISH" : "en"
+      },
+      "version" : "1",
+      "salt" : "meta_tags_tst",
+      "rule" : null,
+      "buckets" : [ {
+        "name" : "control",
+        "value" : 0
+      }],
+      "allocations" : [ {
+          "rule": "${lang == ENGLISH}",
+          "ranges": [
+            {
+              "bucketValue": 0,
+              "length": 1.0
+            }
+          ]
+      } ],
+      "silent" : false,
+      "testType" : "USER",
+      "description" : "A meta tag test",
+      "metaTags" : ["example_tag"]
     }
   }
 }
