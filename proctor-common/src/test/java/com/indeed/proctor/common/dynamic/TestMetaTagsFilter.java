@@ -9,45 +9,43 @@ import java.util.List;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.Assert.assertEquals;
 
 public class TestMetaTagsFilter {
     @Test
     public void testMatchEmptyMetaTags() {
-        final MetaTagsFilter filter = new MetaTagsFilter(emptyList());
-
-        assertFalse(filter.matches("", createTestDefinition(emptyList())));
-        assertFalse(filter.matches("", createTestDefinition(ImmutableList.of("test"))));
-        assertFalse(filter.matches("", createTestDefinition(ImmutableList.of("test", "test1"))));
+        assertThatThrownBy(() -> new MetaTagsFilter(emptyList()))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("meta_tags should be non-empty string list.");
     }
 
     @Test
     public void testMatchSingleMetaTag() {
         final MetaTagsFilter filter = new MetaTagsFilter(ImmutableList.of("test"));
 
-        assertTrue(filter.matches("", createTestDefinition(ImmutableList.of("test"))));
-        assertTrue(filter.matches("", createTestDefinition(ImmutableList.of("foo", "test"))));
+        assertFilterMatchesEquals(true, filter, ImmutableList.of("test"));
+        assertFilterMatchesEquals(true, filter, ImmutableList.of("foo", "test"));
 
-        assertFalse(filter.matches("", createTestDefinition(emptyList())));
-        assertFalse(filter.matches("", createTestDefinition(ImmutableList.of("foo_test"))));
+        assertFilterMatchesEquals(false, filter, emptyList());
+        assertFilterMatchesEquals(false, filter, ImmutableList.of("foo_test"));
     }
 
     @Test
     public void testMatchMetaTags() {
         final MetaTagsFilter filter = new MetaTagsFilter(ImmutableList.of("test1", "test2"));
 
-        assertTrue(filter.matches("", createTestDefinition(ImmutableList.of("test1"))));
-        assertTrue(filter.matches("", createTestDefinition(ImmutableList.of("test2"))));
-        assertTrue(filter.matches("", createTestDefinition(ImmutableList.of("test1", "test2"))));
-        assertTrue(filter.matches("", createTestDefinition(ImmutableList.of("test2", "test1"))));
-        assertTrue(filter.matches("", createTestDefinition(ImmutableList.of("foo", "test1", "test2"))));
+        assertFilterMatchesEquals(true, filter, ImmutableList.of("test1"));
+        assertFilterMatchesEquals(true, filter, ImmutableList.of("test2"));
+        assertFilterMatchesEquals(true, filter, ImmutableList.of("test1", "test2"));
+        assertFilterMatchesEquals(true, filter, ImmutableList.of("test2", "test1"));
+        assertFilterMatchesEquals(true, filter, ImmutableList.of("foo", "test1", "test2"));
 
-        assertFalse(filter.matches("", createTestDefinition(emptyList())));
+        assertFilterMatchesEquals(false, filter, emptyList());
     }
 
-    private ConsumableTestDefinition createTestDefinition(final List<String> metaTags) {
-        return new ConsumableTestDefinition(
+    private void assertFilterMatchesEquals(final boolean expected, final MetaTagsFilter filter, final List<String> testMetaTags) {
+        final ConsumableTestDefinition definition = new ConsumableTestDefinition(
                 "",
                 null,
                 TestType.EMAIL_ADDRESS,
@@ -57,7 +55,9 @@ public class TestMetaTagsFilter {
                 false,
                 emptyMap(),
                 null,
-                metaTags
+                testMetaTags
         );
+
+        assertEquals(expected, filter.matches("", definition));
     }
 }
