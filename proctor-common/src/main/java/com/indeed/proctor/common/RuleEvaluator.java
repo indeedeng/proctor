@@ -5,7 +5,6 @@ import com.indeed.proctor.common.el.MulticontextReadOnlyVariableMapper;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.el.ExpressionFactoryImpl;
 import org.apache.log4j.Logger;
-import org.apache.taglibs.standard.functions.Functions;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -77,7 +76,7 @@ public class RuleEvaluator {
     public static LibraryFunctionMapperBuilder defaultFunctionMapperBuilder() {
         final LibraryFunctionMapperBuilder builder = new LibraryFunctionMapperBuilder()
                                                 .add("indeed", ProctorRuleFunctions.class) //backwards compatibility
-                                                .add("fn", Functions.class)
+                                                .add("fn", LegacyTaglibFunctions.class)
                                                 .add("proctor", ProctorRuleFunctions.class);
         return builder;
     }

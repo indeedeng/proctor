@@ -4,7 +4,6 @@ import com.google.common.base.Preconditions;
 import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.store.async.AsyncInitializedProctorStoreFactory;
 import com.indeed.proctor.webapp.extensions.GlobalCacheStore;
-import org.apache.commons.configuration.ConfigurationException;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +42,7 @@ public class RevisionControlStoreFactory implements FactoryBean<StoreFactory> {
         return new AsyncInitializedProctorStoreFactory(createFactory(), scheduledExecutorService);
     }
 
-    private TrunkQaProdStoresFactory createFactory() throws IOException, ConfigurationException {
+    private TrunkQaProdStoresFactory createFactory() throws IOException {
         if ("svn".equals(revisionControlType)) {
             Preconditions.checkArgument(
                     globalCacheStore == null,

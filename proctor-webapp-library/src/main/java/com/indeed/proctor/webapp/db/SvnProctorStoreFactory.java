@@ -10,7 +10,6 @@ import com.indeed.proctor.store.SvnPersisterCoreImpl;
 import com.indeed.proctor.store.SvnProctor;
 import com.indeed.proctor.store.SvnWorkspaceProviderImpl;
 import com.indeed.util.varexport.VarExporter;
-import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -54,7 +53,7 @@ public class SvnProctorStoreFactory implements TrunkQaProdStoresFactory {
                                   final String svnPath,
                                   final String svnUsername,
                                   final String svnPassword,
-                                  final String testDefinitionsDirectory) throws IOException, ConfigurationException {
+                                  final String testDefinitionsDirectory) throws IOException {
         this.executor = executor;
         this.cache = cache;
         this.tempDirCleanupAgeMillis = TimeUnit.MINUTES.toMillis(tempDirCleanupAgeMinutes);

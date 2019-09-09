@@ -16,7 +16,6 @@ import com.indeed.proctor.webapp.model.WebappConfiguration;
 import com.indeed.proctor.webapp.util.TestSearchUtil;
 import com.indeed.proctor.webapp.views.JsonView;
 import io.swagger.annotations.ApiOperation;
-import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
@@ -198,7 +197,7 @@ public class TestSearchApiController extends AbstractController {
         for (final Map.Entry<String, TestDefinition> e : matrix.entrySet()) {
             final List<Revision> revisions = store.getHistory(e.getKey(), 0, 1);
             final long updatedTime;
-            if (CollectionUtils.isEmpty(revisions)) {
+            if (revisions.isEmpty()) {
                 updatedTime = 0;
             } else {
                 updatedTime = revisions.get(0).getDate().getTime();

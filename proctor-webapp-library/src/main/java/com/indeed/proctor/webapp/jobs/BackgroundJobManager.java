@@ -26,7 +26,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static org.apache.commons.collections.MapUtils.synchronizedMap;
+import static org.apache.commons.collections4.MapUtils.synchronizedMap;
 
 @EnableScheduling
 public class BackgroundJobManager {

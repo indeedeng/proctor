@@ -40,8 +40,9 @@
             <type>pom</type>
         </dependency>
         <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>3.1.0</version>
         </dependency>
         <dependency>
             <!-- For optional auxilliary controllers -->

@@ -29,7 +29,7 @@ import com.indeed.proctor.common.model.TestType;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.el.ExpressionFactoryImpl;
 import org.apache.log4j.Logger;
-import org.springframework.util.CollectionUtils;
+
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -905,7 +905,7 @@ public abstract class ProctorUtils {
         for (int i = 0; i < allocations.size(); i++) {
             final Allocation allocation = allocations.get(i);
             final List<Range> ranges = allocation.getRanges();
-            if (CollectionUtils.isEmpty(ranges)) {
+            if ((ranges == null) || ranges.isEmpty()) {
                 throw new IncompatibleTestMatrixException("Allocation range has no buckets, needs to add up to 1.");
             }
             //  ensure that each range refers to a known bucket
