@@ -1,6 +1,7 @@
 package com.indeed.proctor.common.dynamic;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.TestType;
 import org.junit.Test;
@@ -9,20 +10,21 @@ import java.util.List;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
+import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 
 public class TestMetaTagsFilter {
     @Test
     public void testMatchEmptyMetaTags() {
-        assertThatThrownBy(() -> new MetaTagsFilter(emptyList()))
+        assertThatThrownBy(() -> new MetaTagsFilter(emptySet()))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("meta_tags should be non-empty string list.");
     }
 
     @Test
     public void testMatchSingleMetaTag() {
-        final MetaTagsFilter filter = new MetaTagsFilter(ImmutableList.of("test"));
+        final MetaTagsFilter filter = new MetaTagsFilter(ImmutableSet.of("test"));
 
         assertFilterMatchesEquals(true, filter, ImmutableList.of("test"));
         assertFilterMatchesEquals(true, filter, ImmutableList.of("foo", "test"));
@@ -33,7 +35,7 @@ public class TestMetaTagsFilter {
 
     @Test
     public void testMatchMetaTags() {
-        final MetaTagsFilter filter = new MetaTagsFilter(ImmutableList.of("test1", "test2"));
+        final MetaTagsFilter filter = new MetaTagsFilter(ImmutableSet.of("test1", "test2"));
 
         assertFilterMatchesEquals(true, filter, ImmutableList.of("test1"));
         assertFilterMatchesEquals(true, filter, ImmutableList.of("test2"));

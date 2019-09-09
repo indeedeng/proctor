@@ -6,24 +6,21 @@ import com.google.common.base.Preconditions;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import org.springframework.util.CollectionUtils;
 
-import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
-
-import static java.util.Collections.emptyList;
+import java.util.Set;
 
 @JsonTypeName("meta_tags_filter")
 public class MetaTagsFilter implements DynamicFilter {
-    private final List<String> metaTags;
+    private final Set<String> metaTags;
 
-    public MetaTagsFilter(@JsonProperty("meta_tags") final List<String> metaTags) {
+    public MetaTagsFilter(@JsonProperty("meta_tags") final Set<String> metaTags) {
         Preconditions.checkArgument(!CollectionUtils.isEmpty(metaTags), "meta_tags should be non-empty string list.");
         this.metaTags = metaTags;
     }
 
     @Override
     public boolean matches(final String testName, final ConsumableTestDefinition testDefinition) {
-        return this.metaTags.stream().anyMatch(metaTag -> testDefinition.getMetaTags().contains(metaTag));
+        return testDefinition.getMetaTags().stream().anyMatch(this.metaTags::contains);
     }
 
     @Override
