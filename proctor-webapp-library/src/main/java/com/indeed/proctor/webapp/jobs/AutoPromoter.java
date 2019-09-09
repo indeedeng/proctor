@@ -233,7 +233,7 @@ class AutoPromoter {
             editAndPromoteJob.doPromoteInternal(testName, username, password, author, WORKING, currentRevision,
                     targetEnv, targetRevision, requestParameterMap, job, true);
         } catch (final Exception e) {
-            job.log("Error while promoting the test to " + targetEnv.getName());
+            job.log("Error while (or after) promoting the test to " + targetEnv.getName());
             throw e;
         }
     }
