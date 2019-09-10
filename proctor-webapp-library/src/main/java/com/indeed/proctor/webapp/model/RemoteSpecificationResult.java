@@ -5,7 +5,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.indeed.proctor.common.SpecificationResult;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -85,7 +84,7 @@ public class RemoteSpecificationResult {
                 version,
                 ImmutableMap.copyOf(failures),
                 skipped,
-                Lists.<ProctorClientApplication>newArrayList(remaining),
+                Lists.newArrayList(remaining),
                 success,
                 result
             );

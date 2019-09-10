@@ -101,7 +101,7 @@ public class TestRangeSelector {
         try {
             return ruleEvaluator.evaluateBooleanRule(rule, values);
 
-        } catch (@Nonnull final RuntimeException e) {
+        } catch (final RuntimeException e) {
             throw new InvalidRuleException(e, String.format(
                     "Error evaluating rule '%s' for test '%s': '%s'. Failing evaluation and continuing.",
                     rule, testName, e.getMessage()));
