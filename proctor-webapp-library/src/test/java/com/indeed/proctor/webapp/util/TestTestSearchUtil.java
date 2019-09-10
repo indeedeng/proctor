@@ -15,6 +15,15 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import static com.indeed.proctor.webapp.util.TestSearchUtil.matchActiveAllocation;
+import static com.indeed.proctor.webapp.util.TestSearchUtil.matchBucket;
+import static com.indeed.proctor.webapp.util.TestSearchUtil.matchBucketDescription;
+import static com.indeed.proctor.webapp.util.TestSearchUtil.matchDescription;
+import static com.indeed.proctor.webapp.util.TestSearchUtil.matchMetaTags;
+import static com.indeed.proctor.webapp.util.TestSearchUtil.matchRule;
+import static com.indeed.proctor.webapp.util.TestSearchUtil.matchSalt;
+import static com.indeed.proctor.webapp.util.TestSearchUtil.matchTestName;
+import static com.indeed.proctor.webapp.util.TestSearchUtil.matchTestType;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -60,7 +69,7 @@ public class TestTestSearchUtil {
             Collections.emptyMap(),
             Collections.emptyMap(),
             null,
-            Collections.emptyList());
+            ImmutableList.of("example_tag_1", "example_tag_2"));
     private static final TestDefinition DEFINITION_WITH_DESCRIPTION = new TestDefinition(DEFAULT_DEFINITION);
     private static final TestDefinition DEFINITION_WITH_RULE = new TestDefinition(DEFAULT_DEFINITION);
     private static final TestDefinition DEFINITION_WITH_BUCKET_RULE = new TestDefinition(DEFAULT_DEFINITION);
@@ -76,72 +85,82 @@ public class TestTestSearchUtil {
 
     @Test
     public void testMatchTestName() {
-        assertTrue(TestSearchUtil.matchTestName("GREAT_test_1", "great"));
-        assertFalse(TestSearchUtil.matchTestName("GREAT_test_1", "great test"));
-        assertTrue(TestSearchUtil.matchTestName("GREAT_test_1", "t_1"));
-        assertTrue(TestSearchUtil.matchTestName("GREAT_test_1", ""));
+        assertTrue(matchTestName("GREAT_test_1", "great"));
+        assertFalse(matchTestName("GREAT_test_1", "great test"));
+        assertTrue(matchTestName("GREAT_test_1", "t_1"));
+        assertTrue(matchTestName("GREAT_test_1", ""));
     }
 
     @Test
     public void testMatchDescription() {
-        assertFalse(TestSearchUtil.matchDescription(DEFAULT_DEFINITION, "great"));
-        assertTrue(TestSearchUtil.matchDescription(DEFAULT_DEFINITION, ""));
-        assertFalse(TestSearchUtil.matchDescription(DEFINITION_WITH_DESCRIPTION, "great test"));
-        assertTrue(TestSearchUtil.matchDescription(DEFINITION_WITH_DESCRIPTION, "great"));
-        assertTrue(TestSearchUtil.matchDescription(DEFINITION_WITH_DESCRIPTION, "t a"));
+        assertFalse(matchDescription(DEFAULT_DEFINITION, "great"));
+        assertTrue(matchDescription(DEFAULT_DEFINITION, ""));
+        assertFalse(matchDescription(DEFINITION_WITH_DESCRIPTION, "great test"));
+        assertTrue(matchDescription(DEFINITION_WITH_DESCRIPTION, "great"));
+        assertTrue(matchDescription(DEFINITION_WITH_DESCRIPTION, "t a"));
     }
 
     @Test
     public void testMatchRule() {
-        assertFalse(TestSearchUtil.matchRule(DEFAULT_DEFINITION, "rule"));
-        assertTrue(TestSearchUtil.matchRule(DEFAULT_DEFINITION, ""));
-        assertFalse(TestSearchUtil.matchRule(DEFINITION_WITH_RULE, "== mx"));
-        assertTrue(TestSearchUtil.matchRule(DEFINITION_WITH_RULE, "'mx'"));
-        assertFalse(TestSearchUtil.matchRule(DEFINITION_WITH_BUCKET_RULE, "'mx'"));
-        assertTrue(TestSearchUtil.matchRule(DEFINITION_WITH_BUCKET_RULE, "'us'"));
+        assertFalse(matchRule(DEFAULT_DEFINITION, "rule"));
+        assertTrue(matchRule(DEFAULT_DEFINITION, ""));
+        assertFalse(matchRule(DEFINITION_WITH_RULE, "== mx"));
+        assertTrue(matchRule(DEFINITION_WITH_RULE, "'mx'"));
+        assertFalse(matchRule(DEFINITION_WITH_BUCKET_RULE, "'mx'"));
+        assertTrue(matchRule(DEFINITION_WITH_BUCKET_RULE, "'us'"));
     }
 
     @Test
     public void testMatchBucket() {
-        assertTrue(TestSearchUtil.matchBucket(DEFAULT_DEFINITION, ""));
-        assertTrue(TestSearchUtil.matchBucket(DEFAULT_DEFINITION, "inactive"));
-        assertFalse(TestSearchUtil.matchBucket(DEFAULT_DEFINITION, "grp2"));
+        assertTrue(matchBucket(DEFAULT_DEFINITION, ""));
+        assertTrue(matchBucket(DEFAULT_DEFINITION, "inactive"));
+        assertFalse(matchBucket(DEFAULT_DEFINITION, "grp2"));
     }
 
     @Test
     public void testMatchBucketDescription() {
-        assertTrue(TestSearchUtil.matchBucketDescription(DEFAULT_DEFINITION, ""));
-        assertFalse(TestSearchUtil.matchBucketDescription(DEFAULT_DEFINITION, "this is"));
-        assertTrue(TestSearchUtil.matchBucketDescription(DEFINITION_WITH_BUCKET_DESCRIPTION, "this is the test " +
+        assertTrue(matchBucketDescription(DEFAULT_DEFINITION, ""));
+        assertFalse(matchBucketDescription(DEFAULT_DEFINITION, "this is"));
+        assertTrue(matchBucketDescription(DEFINITION_WITH_BUCKET_DESCRIPTION, "this is the test " +
                 "treatment 1"));
-        assertFalse(TestSearchUtil.matchBucketDescription(DEFINITION_WITH_BUCKET_DESCRIPTION, "treatment 2"));
+        assertFalse(matchBucketDescription(DEFINITION_WITH_BUCKET_DESCRIPTION, "treatment 2"));
     }
 
     @Test
     public void testMatchTestType() {
-        assertTrue(TestSearchUtil.matchTestType(DEFAULT_DEFINITION, ""));
-        assertTrue(TestSearchUtil.matchTestType(DEFAULT_DEFINITION, "user"));
-        assertFalse(TestSearchUtil.matchTestType(DEFAULT_DEFINITION, "random"));
+        assertTrue(matchTestType(DEFAULT_DEFINITION, ""));
+        assertTrue(matchTestType(DEFAULT_DEFINITION, "user"));
+        assertFalse(matchTestType(DEFAULT_DEFINITION, "random"));
     }
 
     @Test
     public void testMatchSalt() {
-        assertTrue(TestSearchUtil.matchSalt(DEFAULT_DEFINITION, ""));
-        assertTrue(TestSearchUtil.matchSalt(DEFAULT_DEFINITION, "salt"));
-        assertFalse(TestSearchUtil.matchSalt(DEFAULT_DEFINITION, "sugar"));
+        assertTrue(matchSalt(DEFAULT_DEFINITION, ""));
+        assertTrue(matchSalt(DEFAULT_DEFINITION, "salt"));
+        assertFalse(matchSalt(DEFAULT_DEFINITION, "sugar"));
     }
 
     @Test
     public void testMatchActiveAllocation() {
-        assertFalse(TestSearchUtil.matchActiveAllocation(ImmutableList.of()));
-        assertFalse(TestSearchUtil.matchActiveAllocation(ImmutableList.of(ALLOCATION_0)));
-        assertFalse(TestSearchUtil.matchActiveAllocation(ImmutableList.of(ALLOCATION_100)));
-        assertFalse(TestSearchUtil.matchActiveAllocation(ImmutableList.of(ALLOCATION_0, ALLOCATION_100)));
-        assertTrue(TestSearchUtil.matchActiveAllocation(ImmutableList.of(ALLOCATION_50_50)));
-        assertTrue(TestSearchUtil.matchActiveAllocation(ImmutableList.of(ALLOCATION_TEN_10S)));
-        assertTrue(TestSearchUtil.matchActiveAllocation(ImmutableList.of(ALLOCATION_0, ALLOCATION_50_50)));
-        assertTrue(TestSearchUtil.matchActiveAllocation(ImmutableList.of(ALLOCATION_0, ALLOCATION_50_50,
+        assertFalse(matchActiveAllocation(ImmutableList.of()));
+        assertFalse(matchActiveAllocation(ImmutableList.of(ALLOCATION_0)));
+        assertFalse(matchActiveAllocation(ImmutableList.of(ALLOCATION_100)));
+        assertFalse(matchActiveAllocation(ImmutableList.of(ALLOCATION_0, ALLOCATION_100)));
+        assertTrue(matchActiveAllocation(ImmutableList.of(ALLOCATION_50_50)));
+        assertTrue(matchActiveAllocation(ImmutableList.of(ALLOCATION_TEN_10S)));
+        assertTrue(matchActiveAllocation(ImmutableList.of(ALLOCATION_0, ALLOCATION_50_50)));
+        assertTrue(matchActiveAllocation(ImmutableList.of(ALLOCATION_0, ALLOCATION_50_50,
                 ALLOCATION_100)));
+    }
+
+    @Test
+    public void testMatchMetaTags() {
+        assertTrue(matchMetaTags(DEFAULT_DEFINITION, ""));
+        assertTrue(matchMetaTags(DEFAULT_DEFINITION, "example"));
+        assertTrue(matchMetaTags(DEFAULT_DEFINITION, "_1"));
+        assertTrue(matchMetaTags(DEFAULT_DEFINITION, "2"));
+        assertTrue(matchMetaTags(DEFAULT_DEFINITION, "example_tag_2"));
+        assertFalse(matchMetaTags(DEFAULT_DEFINITION, "dummy"));
     }
 
     @Test

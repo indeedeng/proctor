@@ -51,6 +51,7 @@ public class TestSearchUtil {
                 matchBucket(definition, lowerQuery) ||
                 matchBucketDescription(definition, lowerQuery) ||
                 matchTestType(definition, lowerQuery) ||
+                matchMetaTags(definition, lowerQuery) ||
                 matchSalt(definition, lowerQuery);
     }
 
@@ -58,6 +59,13 @@ public class TestSearchUtil {
         return allocations.stream()
                 .anyMatch(allocation -> allocation.getRanges().stream()
                         .allMatch(range -> range.getLength() < 1));
+    }
+
+    public static boolean matchMetaTags(final TestDefinition definition, final String lowerQuery) {
+        return Strings.isNullOrEmpty(lowerQuery) ||
+                definition.getMetaTags().stream()
+                .map(metaTag -> metaTag.toLowerCase())
+                .anyMatch(name -> name.contains(lowerQuery));
     }
 
     /**
