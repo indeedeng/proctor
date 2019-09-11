@@ -106,7 +106,7 @@ public class TestProctorController {
                         appVersion,
                         constructArtifact(),
                         TEST_NAME,
-                        testSpecification
+                        Collections.singleton(testSpecification)
                 );
         assertTrue(result.isCompatible());
         assertFalse(result.isDynamicTest(TEST_NAME));

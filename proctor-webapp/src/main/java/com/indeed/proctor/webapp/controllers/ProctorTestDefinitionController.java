@@ -5,10 +5,9 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.indeed.proctor.common.EnvironmentVersion;
 import com.indeed.proctor.common.ProctorPromoter;
-import com.indeed.proctor.common.ProctorSpecification;
+import com.indeed.proctor.webapp.model.ProctorSpecifications;
 import com.indeed.proctor.common.ProctorUtils;
 import com.indeed.proctor.common.TestSpecification;
-import com.indeed.proctor.common.dynamic.DynamicFilters;
 import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.Range;
@@ -49,7 +48,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.view.RedirectView;
 
-import javax.annotation.Nullable;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -459,19 +457,19 @@ public class ProctorTestDefinitionController extends AbstractController {
 
         final Set<AppVersion> devApplications = specificationSource.activeClients(Environment.WORKING, testName);
         final Set<AppVersion> devDynamicClients =
-                filterDynamicClients(Environment.WORKING, testName, consumableTestDefinition, devApplications);
+                findDynamicClients(Environment.WORKING, testName, consumableTestDefinition, devApplications);
         model.addAttribute("devApplications", devApplications);
         model.addAttribute("devDynamicClients", devDynamicClients);
 
         final Set<AppVersion> qaApplications = specificationSource.activeClients(Environment.QA, testName);
         final Set<AppVersion> qaDynamicClients =
-                filterDynamicClients(Environment.QA, testName, consumableTestDefinition, qaApplications);
+                findDynamicClients(Environment.QA, testName, consumableTestDefinition, qaApplications);
         model.addAttribute("qaApplications", qaApplications);
         model.addAttribute("qaDynamicClients", qaDynamicClients);
 
         final Set<AppVersion> productionApplications = specificationSource.activeClients(Environment.PRODUCTION, testName);
         final Set<AppVersion> productionDynamicClients =
-                filterDynamicClients(Environment.PRODUCTION, testName, consumableTestDefinition, productionApplications);
+                findDynamicClients(Environment.PRODUCTION, testName, consumableTestDefinition, productionApplications);
         model.addAttribute("productionApplications", productionApplications);
         model.addAttribute("productionDynamicClients", productionDynamicClients);
 
@@ -519,30 +517,29 @@ public class ProctorTestDefinitionController extends AbstractController {
                 revision);
     }
 
-    private Set<AppVersion> filterDynamicClients(
+    /**
+     * Find clients that defines the test in any specification
+     * but matches some dynamic filters defined in the client.
+     */
+    private Set<AppVersion> findDynamicClients(
             final Environment environment,
             final String testName,
             final ConsumableTestDefinition testDefinition,
             final Set<AppVersion> applications
     ) {
-        final Map<AppVersion, ProctorSpecification> specifications =
+        final Map<AppVersion, ProctorSpecifications> specifications =
                 specificationSource.loadAllSuccessfulSpecifications(environment);
+        final Map<String, ConsumableTestDefinition> singleTestMatrix =
+                ImmutableMap.of(testName, testDefinition);
         return applications.stream()
-                .filter(appVersion -> isDynamicTest(testName, testDefinition, specifications.get(appVersion)))
+                .filter(appVersion ->
+                        specifications.get(appVersion)
+                                .getDynamicTests(singleTestMatrix)
+                                .contains(testName)
+                        && !specifications.get(appVersion)
+                                .getRequiredTests(singleTestMatrix.keySet())
+                                .containsKey(testName)
+                )
                 .collect(Collectors.toSet());
-    }
-
-    private static boolean isDynamicTest(
-            final String testName,
-            final ConsumableTestDefinition testDefinition,
-            @Nullable final ProctorSpecification specification
-    ) {
-        if (specification == null) {
-            return false;
-        }
-        final DynamicFilters filters = specification.getDynamicFilters();
-        final Set<String> requiedTests = specification.getTests().keySet();
-        final Set<String> dynamicTests = filters.determineTests(ImmutableMap.of(testName, testDefinition), requiedTests);
-        return dynamicTests.contains(testName);
     }
 }

@@ -13,8 +13,6 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.indeed.proctor.common.ProctorSpecification;
 import com.indeed.proctor.common.ProctorUtils;
 import com.indeed.proctor.common.Serializers;
-import com.indeed.proctor.common.SpecificationResult;
-import com.indeed.proctor.common.dynamic.DynamicFilters;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.TestDefinition;
 import com.indeed.proctor.common.model.TestMatrixArtifact;
@@ -24,7 +22,10 @@ import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.webapp.db.Environment;
 import com.indeed.proctor.webapp.model.AppVersion;
 import com.indeed.proctor.webapp.model.ProctorClientApplication;
+import com.indeed.proctor.webapp.model.ProctorSpecifications;
+import com.indeed.proctor.webapp.model.ProctorSpecifications;
 import com.indeed.proctor.webapp.model.RemoteSpecificationResult;
+import com.indeed.proctor.webapp.model.SpecificationResult;
 import com.indeed.proctor.webapp.util.threads.LogOnUncaughtExceptionHandler;
 import com.indeed.util.core.DataLoadingTimerTask;
 import com.indeed.util.core.Pair;
@@ -118,7 +119,7 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
     }
 
     @Override
-    public Map<AppVersion, ProctorSpecification> loadAllSuccessfulSpecifications(final Environment environment) {
+    public Map<AppVersion, ProctorSpecifications> loadAllSuccessfulSpecifications(final Environment environment) {
         final ImmutableMap<AppVersion, RemoteSpecificationResult> applicationsMap =
                 applicationMapByEnvironment.get(environment);
         if (applicationsMap == null) {
@@ -130,7 +131,7 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
                         // not actually nullable because of filter
-                        e -> e.getValue().getSpecificationResult().getSpecification()
+                        e -> e.getValue().getSpecificationResult().getSpecifications()
                 ));
     }
 
@@ -147,13 +148,16 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
             return Collections.emptySet();
         }
 
+        final Map<String, ConsumableTestDefinition> singleTestMatrix
+                = ImmutableMap.of(testName, testDefinition);
+
         return applicationsMap.entrySet().stream()
                 .filter(e -> e.getValue().isSuccess())
-                .filter(e -> {
-                    final ProctorSpecification specification = e.getValue().getSpecificationResult().getSpecification();
-                    final DynamicFilters filters = specification.getDynamicFilters();
-                    return (containsTest(specification, testName) || willResolveTest(filters, testName, testDefinition));
-                })
+                .filter(e -> e.getValue().getSpecificationResult()
+                        .getSpecifications()
+                        .getResolvedTests(singleTestMatrix)
+                        .contains(testName)
+                )
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toSet());
     }
@@ -173,15 +177,8 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
 
         return applicationsMap.values().stream()
                 .filter(RemoteSpecificationResult::isSuccess)
-                .map(r -> r.getSpecificationResult().getSpecification())
-                .map(s -> {
-                    final Set<String> requiredTests = s.getTests().keySet();
-                    return ImmutableSet.<String>builder()
-                            .addAll(requiredTests)
-                            .addAll(s.getDynamicFilters().determineTests(definedTests, requiredTests))
-                            .build();
-                })
-                .flatMap(Collection::stream)
+                .map(r -> r.getSpecificationResult().getSpecifications())
+                .flatMap(s -> s.getResolvedTests(definedTests).stream())
                 .collect(Collectors.toSet());
     }
 
@@ -305,7 +302,7 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
             final Pair<Integer, SpecificationResult> result = fetchSpecification(client, timeoutMillis);
             final int statusCode = result.getFirst();
             final SpecificationResult specificationResult = result.getSecond();
-            if (fetchSpecificationFailed(specificationResult)) {
+            if (specificationResult.isFailed()) {
                 if (statusCode == HttpURLConnection.HTTP_NOT_FOUND) {
                     LOGGER.info("Client " + client.getBaseApplicationUrl() + " endpoints for spec returned 404 - skipping");
                     results.skipped(client, specificationResult);
@@ -335,7 +332,7 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
     private static Pair<Integer, SpecificationResult> fetchSpecification(final ProctorClientApplication client, final int timeout) {
 
         final Pair<Integer, SpecificationResult> apiSpec = fetchSpecificationFromApi(client, timeout);
-        if (fetchSpecificationFailed(apiSpec.getSecond())) {
+        if (apiSpec.getSecond().isFailed()) {
             return fetchSpecificationFromExportedVariable(client, timeout);
         }
         return apiSpec;
@@ -374,32 +371,11 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
     }
 
     private static SpecificationResult createErrorResult(final Throwable t) {
-        final SpecificationResult result = new SpecificationResult();
         final StringWriter sw = new StringWriter();
         final PrintWriter writer = new PrintWriter(sw);
         t.printStackTrace(writer);
 
-        result.setError(t.getMessage());
-        result.setException(sw.toString());
-        return result;
-    }
-
-    // Check if this test is defined in a specification by a client.
-    private static boolean containsTest(final ProctorSpecification specification, final String testName) {
-        return specification.getTests().containsKey(testName);
-    }
-
-    // Check if this test will be resolved by defined filters in a client.
-    private static boolean willResolveTest(
-            final DynamicFilters filters,
-            final String testName,
-            final ConsumableTestDefinition testDefinition
-    ) {
-        return (filters != null)
-                && StringUtils.isNotEmpty(testName)
-                && (testDefinition != null)
-                && filters.determineTests(
-                ImmutableMap.of(testName, testDefinition), Collections.emptySet()).contains(testName);
+        return SpecificationResult.failed(t.getMessage());
     }
 
     @Nullable
@@ -467,18 +443,14 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
         public SpecificationResult parse(final InputStream inputStream) throws IOException {
             final String json = IOUtils.toString(inputStream).replace("\\:", ":").trim();
             final ProctorSpecification proctorSpecification = OBJECT_MAPPER.readValue(json, ProctorSpecification.class);
-            final SpecificationResult specificationResult = new SpecificationResult();
-            specificationResult.setSpecification(proctorSpecification);
-            return specificationResult;
+            return SpecificationResult.success(
+                    Collections.singleton(proctorSpecification)
+            );
         }
     };
 
     interface SpecificationParser {
         SpecificationResult parse(final InputStream inputStream) throws IOException;
-    }
-
-    private static boolean fetchSpecificationFailed(final SpecificationResult result) {
-        return result.getSpecification() == null;
     }
 
 }

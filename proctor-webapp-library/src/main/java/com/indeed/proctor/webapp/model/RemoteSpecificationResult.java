@@ -3,7 +3,6 @@ package com.indeed.proctor.webapp.model;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.indeed.proctor.common.SpecificationResult;
 
 import java.util.List;
 import java.util.Map;
@@ -36,7 +35,7 @@ public class RemoteSpecificationResult {
     }
 
     public boolean isSuccess() {
-        return specificationResult != null && specificationResult.getSpecification() != null;
+        return specificationResult != null && !specificationResult.getSpecifications().asSet().isEmpty();
     }
 
     public boolean isSkipped() {

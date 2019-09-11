@@ -80,16 +80,20 @@ public class MatrixChecker {
         final Map<AppVersion, Future<ProctorLoadResult>> futures = Maps.newLinkedHashMap();
 
         specificationSource.loadAllSuccessfulSpecifications(checkAgainst)
-                .forEach((appVersion, specification) -> futures.put(appVersion, verifierExecutor.submit(() -> {
-                    LOGGER.info("Verifying artifact against : cached "
-                            + appVersion + " for " + testName);
-                    return verify(
-                            specification,
-                            artifact,
-                            testName,
-                            appVersion.toString()
-                    );
-                })));
+                .forEach((appVersion, specifications) -> {
+                    for (final ProctorSpecification specification : specifications.asSet()) {
+                        futures.put(appVersion, verifierExecutor.submit(() -> {
+                            LOGGER.info("Verifying artifact against : cached "
+                                    + appVersion + " for " + testName);
+                            return verify(
+                                    specification,
+                                    artifact,
+                                    testName,
+                                    appVersion.toString()
+                            );
+                        }));
+                    }
+                });
 
         final ImmutableList.Builder<String> errorsBuilder = ImmutableList.builder();
         while (!futures.isEmpty()) {

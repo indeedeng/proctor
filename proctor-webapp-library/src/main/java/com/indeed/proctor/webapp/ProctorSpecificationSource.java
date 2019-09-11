@@ -1,6 +1,6 @@
 package com.indeed.proctor.webapp;
 
-import com.indeed.proctor.common.ProctorSpecification;
+import com.indeed.proctor.webapp.model.ProctorSpecifications;
 import com.indeed.proctor.webapp.db.Environment;
 import com.indeed.proctor.webapp.model.AppVersion;
 import com.indeed.proctor.webapp.model.RemoteSpecificationResult;
@@ -18,10 +18,10 @@ public interface ProctorSpecificationSource {
     Map<AppVersion, RemoteSpecificationResult> loadAllSpecifications(Environment environment);
 
     /**
-     * @return a map from application version to proctor specification
+     * @return a map from application version to proctor specifications
      * for instances that proctor webapp can successfully load from
      */
-    Map<AppVersion, ProctorSpecification> loadAllSuccessfulSpecifications(Environment environment);
+    Map<AppVersion, ProctorSpecifications> loadAllSuccessfulSpecifications(Environment environment);
 
     /**
      * @return a set of applications with version that uses the test in the environment.
