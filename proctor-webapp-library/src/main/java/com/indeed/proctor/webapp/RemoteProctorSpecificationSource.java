@@ -5,7 +5,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -26,10 +25,10 @@ import com.indeed.proctor.webapp.model.ProctorSpecifications;
 import com.indeed.proctor.webapp.model.ProctorSpecifications;
 import com.indeed.proctor.webapp.model.RemoteSpecificationResult;
 import com.indeed.proctor.webapp.model.SpecificationResult;
+import com.indeed.proctor.webapp.util.VarExportedVariablesDeserializer;
 import com.indeed.proctor.webapp.util.threads.LogOnUncaughtExceptionHandler;
 import com.indeed.util.core.DataLoadingTimerTask;
 import com.indeed.util.core.Pair;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,11 +43,13 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -323,26 +324,16 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
     }
 
     /**
-     * Firstly try visiting specification API end point. If it's not exported, fetch from private/v instead.
-     *
-     * @param client
-     * @param timeout
-     * @return
+     * try visiting private/v to get specification
      */
-    private static Pair<Integer, SpecificationResult> fetchSpecification(final ProctorClientApplication client, final int timeout) {
-
-        final Pair<Integer, SpecificationResult> apiSpec = fetchSpecificationFromApi(client, timeout);
-        if (apiSpec.getSecond().isFailed()) {
-            return fetchSpecificationFromExportedVariable(client, timeout);
-        }
-        return apiSpec;
-    }
-
     private static Pair<Integer, SpecificationResult> fetchSpecification(
-            final String urlString,
-            final int timeoutMillis,
-            final SpecificationParser parser
+            final ProctorClientApplication client,
+            final int timeoutMillis
     ) {
+        // This URL is where we expose variables by ViewExportedVariablesServlet
+        final String urlString = client.getBaseApplicationUrl()
+                + "/private/v?ns=JsonProctorLoaderFactory";
+
         int statusCode = -1;
         InputStream inputStream = null;
         try {
@@ -354,7 +345,7 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
             statusCode = urlConnection.getResponseCode();
             inputStream = urlConnection.getInputStream();
             //  map from testName => list of bucket names
-            final SpecificationResult result = parser.parse(inputStream);
+            final SpecificationResult result = parseExportedVariables(inputStream);
             return new Pair<>(statusCode, result);
         } catch (final Throwable e) {
             final SpecificationResult errorResult = createErrorResult(e);
@@ -410,47 +401,29 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
         return null;
     }
 
-    private static Pair<Integer, SpecificationResult> fetchSpecificationFromApi(
-            final ProctorClientApplication client,
-            final int timeoutMillis
-    ) {
-        /*
-         * This needs to be moved to a separate checker class implementing some interface
-         */
-        final String apiUrl = client.getBaseApplicationUrl() + "/private/proctor/specification";
-        return fetchSpecification(apiUrl, timeoutMillis, new SpecificationParser() {
-            @Override
-            public SpecificationResult parse(final InputStream inputStream) throws IOException {
-                return OBJECT_MAPPER.readValue(inputStream, SpecificationResult.class);
-            }
-        });
-    }
-
-    private static Pair<Integer, SpecificationResult> fetchSpecificationFromExportedVariable(
-            final ProctorClientApplication client,
-            final int timeout
-    ) {
-        /*
-         * This needs to be moved to a separate checker class implementing some interface
-         */
-        final String urlStr = client.getBaseApplicationUrl() + "/private/v?ns=JsonProctorLoaderFactory&v=specification";
-        return fetchSpecification(urlStr, timeout, EXPORTED_VARIABLE_PARSER);
-    }
-
     @VisibleForTesting
-    static final SpecificationParser EXPORTED_VARIABLE_PARSER = new SpecificationParser() {
-        @Override
-        public SpecificationResult parse(final InputStream inputStream) throws IOException {
-            final String json = IOUtils.toString(inputStream).replace("\\:", ":").trim();
-            final ProctorSpecification proctorSpecification = OBJECT_MAPPER.readValue(json, ProctorSpecification.class);
-            return SpecificationResult.success(
-                    Collections.singleton(proctorSpecification)
+    static SpecificationResult parseExportedVariables(
+            final InputStream inputStream
+    ) throws IOException {
+        final Properties exportedVariables = VarExportedVariablesDeserializer
+                .deserialize(inputStream);
+
+        final Set<ProctorSpecification> specifications = new HashSet<>();
+        for (final String key : exportedVariables.stringPropertyNames()) {
+            if (!key.startsWith("specification")) {
+                continue;
+            }
+            final String json = exportedVariables.getProperty(key);
+            final ProctorSpecification specification =
+                    OBJECT_MAPPER.readValue(json, ProctorSpecification.class);
+            specifications.add(specification);
+        }
+        if (specifications.isEmpty()) {
+            return SpecificationResult.failed(
+                    "no specification is found in exported variables"
             );
         }
-    };
-
-    interface SpecificationParser {
-        SpecificationResult parse(final InputStream inputStream) throws IOException;
+        return SpecificationResult.success(specifications);
     }
 
 }
