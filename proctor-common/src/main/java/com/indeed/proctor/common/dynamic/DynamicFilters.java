@@ -27,7 +27,8 @@ public class DynamicFilters implements JsonSerializable {
     private static final List<Class<? extends DynamicFilter>> FILTER_TYPES = Collections.synchronizedList(
             Lists.newArrayList(
                     TestNamePrefixFilter.class,
-                    TestNamePatternFilter.class
+                    TestNamePatternFilter.class,
+                    MetaTagsFilter.class
             )
     );
 

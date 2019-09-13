@@ -35,9 +35,10 @@ public class TestAbstractJsonProctorLoader {
         assertEquals("1524", testMatrixArtifact.getAudit().getVersion());
         assertEquals(1313525000000l, testMatrixArtifact.getAudit().getUpdated());
         assertEquals("shoichi", testMatrixArtifact.getAudit().getUpdatedBy());
-        assertEquals(2, testMatrixArtifact.getTests().size());
+        assertEquals(3, testMatrixArtifact.getTests().size());
         assertTrue(testMatrixArtifact.getTests().containsKey("exampletst"));
         assertTrue(testMatrixArtifact.getTests().containsKey("sometst"));
+        assertTrue(testMatrixArtifact.getTests().containsKey("meta_tags_tst"));
         final ConsumableTestDefinition testDefinition = testMatrixArtifact.getTests().get("exampletst");
         assertEquals("control", testDefinition.getBuckets().get(0).getName());
         assertEquals("test", testDefinition.getBuckets().get(1).getName());

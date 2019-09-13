@@ -8,6 +8,10 @@
         {
             "type": "name_prefix",
             "prefix": "example"
+        },
+        {
+            "type": "meta_tags_filter",
+            "meta_tags": ["example_tag"]
         }
     ]
 }
