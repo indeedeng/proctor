@@ -381,7 +381,7 @@ public class EditAndPromoteJob extends AbstractJob {
             }
         }
 
-        job.addUrl("/proctor/definition/" + EncodingUtil.urlEncodeUtf8(testName) + "?branch=" + theEnvironment.getName(), "View Result");
+        job.addUrl("/proctor/definition/" + EncodingUtil.urlEncodeUtf8(testName) + "?branch=" + theEnvironment.getName(), "View Test");
 
         // Autopromote if necessary
         autoPromoter.maybeAutoPromote(testName, username, password, author, testDefinitionToUpdate, previousRevision,
