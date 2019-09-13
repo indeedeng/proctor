@@ -4,6 +4,7 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import com.indeed.proctor.webapp.extensions.AfterBackgroundJobExecute;
 import com.indeed.proctor.webapp.extensions.BeforeBackgroundJobExecute;
+import com.indeed.proctor.webapp.jobs.AutoPromoter.AutoPromoteException;
 import org.apache.log4j.Logger;
 
 import javax.annotation.Nonnull;
@@ -62,7 +63,11 @@ public abstract class BackgroundJob<T> implements Callable<T> {
             if (future.isCancelled()) {
                 setStatus(JobStatus.CANCELLED);
             } else if (error != null) {
-                setStatus(JobStatus.FAILED);
+                if (error instanceof AutoPromoteException) {
+                    setStatus(JobStatus.PARTIAL_SUCCESS);
+                } else {
+                    setStatus(JobStatus.FAILED);
+                }
             } else if (executeFinished) {
                 setStatus(JobStatus.DONE);
             }
@@ -156,9 +161,18 @@ public abstract class BackgroundJob<T> implements Callable<T> {
 
     public void logFailedJob(final Throwable t) {
         logWithTiming("Failed:", "Failed");
+        logCauses(t);
+    }
+
+    public void logPartialSuccess(final AutoPromoteException e) {
+        logWithTiming("Partial Success:", "Failed");
+        logCauses(e);
+    }
+
+    private void logCauses(final Throwable t) {
         Throwable cause = t;
         final StringBuilder level = new StringBuilder(10);
-        while (cause != null) {
+        while(cause != null) {
             log(level.toString() + cause.getMessage());
             cause = cause.getCause();
             level.append("-- ");
@@ -268,7 +282,8 @@ public abstract class BackgroundJob<T> implements Callable<T> {
         PENDING("PENDING"),
         DONE("DONE"),
         CANCELLED("CANCELLED"),
-        FAILED("FAILED");
+        FAILED("FAILED"),
+        PARTIAL_SUCCESS("PARTIAL SUCCESS"); // Succeeded to create/edit but failed to promote
 
         private final String name;
 

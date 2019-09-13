@@ -35,6 +35,7 @@ import com.indeed.proctor.webapp.extensions.PostDefinitionPromoteChange;
 import com.indeed.proctor.webapp.extensions.PreDefinitionCreateChange;
 import com.indeed.proctor.webapp.extensions.PreDefinitionEditChange;
 import com.indeed.proctor.webapp.extensions.PreDefinitionPromoteChange;
+import com.indeed.proctor.webapp.jobs.AutoPromoter.AutoPromoteException;
 import com.indeed.proctor.webapp.model.RevisionDefinition;
 import com.indeed.proctor.webapp.util.AllocationIdUtil;
 import com.indeed.proctor.webapp.util.EncodingUtil;
@@ -159,6 +160,9 @@ public class EditAndPromoteJob extends AbstractJob {
                     } catch (final GitNoAuthorizationException | GitNoDevelperAccessLevelException | IllegalArgumentException | IncompatibleTestMatrixException exp) {
                         job.logFailedJob(exp);
                         LOGGER.info("Edit Failed: " + job.getTitle(), exp);
+                    } catch (final AutoPromoteException exp) {
+                        job.logPartialSuccess(exp);
+                        LOGGER.warn("Edit Succeeded but Promote Failed: " + job.getTitle(), exp);
                     } catch (final Exception exp) {
                         job.logFailedJob(exp);
                         LOGGER.error("Edit Failed: " + job.getTitle(), exp);
@@ -207,6 +211,9 @@ public class EditAndPromoteJob extends AbstractJob {
                     } catch (final GitNoAuthorizationException | GitNoDevelperAccessLevelException | IllegalArgumentException | IncompatibleTestMatrixException exp) {
                         job.logFailedJob(exp);
                         LOGGER.info("Edit Failed: " + job.getTitle(), exp);
+                    } catch (final AutoPromoteException exp) {
+                        job.logPartialSuccess(exp);
+                        LOGGER.warn("Edit Succeeded but Promote Failed: " + job.getTitle(), exp);
                     } catch (Exception exp) {
                         job.logFailedJob(exp);
                         LOGGER.error("Edit Failed: " + job.getTitle(), exp);
@@ -374,12 +381,13 @@ public class EditAndPromoteJob extends AbstractJob {
             }
         }
 
+        job.addUrl("/proctor/definition/" + EncodingUtil.urlEncodeUtf8(testName) + "?branch=" + theEnvironment.getName(), "View Result");
+
         // Autopromote if necessary
         autoPromoter.maybeAutoPromote(testName, username, password, author, testDefinitionToUpdate, previousRevision,
                 autopromoteTarget, requestParameterMap, job, trunkStore, qaRevision, prodRevision, existingTestDefinition);
 
         job.logComplete();
-        job.addUrl("/proctor/definition/" + EncodingUtil.urlEncodeUtf8(testName) + "?branch=" + theEnvironment.getName(), "View Result");
         return true;
     }
 
