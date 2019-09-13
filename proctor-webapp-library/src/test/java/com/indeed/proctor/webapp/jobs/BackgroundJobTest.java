@@ -1,9 +1,14 @@
 package com.indeed.proctor.webapp.jobs;
 
+import com.indeed.proctor.webapp.jobs.AutoPromoter.AutoPromoteException;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.concurrent.Future;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class BackgroundJobTest {
 
@@ -37,4 +42,17 @@ public class BackgroundJobTest {
         assertThat(job.getTimings()).containsKeys("init", "greet");
     }
 
+    @Test
+    public void logPartialSuccess() {
+        final String message = "auto-promote failed";
+        final Future future = mock(Future.class);
+        when(future.isCancelled()).thenReturn(false);
+        job.setFuture(future);
+
+        job.logPartialSuccess(new AutoPromoteException(message));
+
+        assertThat(job.getLog()).isEqualTo("Partial Success:\n" + message + "\n");
+        assertThat(job.getError()).isInstanceOf(AutoPromoteException.class);
+        assertThat(job.getStatus()).isEqualTo(BackgroundJob.JobStatus.PARTIAL_SUCCESS);
+    }
 }
