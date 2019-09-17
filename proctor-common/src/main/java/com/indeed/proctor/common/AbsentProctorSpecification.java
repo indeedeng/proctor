@@ -1,5 +1,10 @@
 package com.indeed.proctor.common;
 
+import com.indeed.proctor.common.dynamic.DynamicFilter;
+import com.indeed.proctor.common.dynamic.DynamicFilters;
+
+import java.util.Collections;
+
 /**
  * A placeholder for when Proctor users explicitly don't want to use a specification.
  *
@@ -9,8 +14,15 @@ package com.indeed.proctor.common;
  * The Proctor REST API uses this so that it isn't limited by a test specification. Instead, it can serve all tests.
  */
 public class AbsentProctorSpecification extends ProctorSpecification {
+    // filter that matches all proctor tests.
+    // used to serve all tests with determineGroups()
+    private static final DynamicFilter MATCH_ALL_FILTER =
+            ((testName, testDefinition) -> true);
+
     public AbsentProctorSpecification() {
         super();
-        setTests(null);
+        setDynamicFilters(
+                new DynamicFilters(Collections.singleton(MATCH_ALL_FILTER))
+        );
     }
 }
