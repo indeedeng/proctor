@@ -3,6 +3,7 @@ package com.indeed.proctor.common.dynamic;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableSet;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import org.springframework.util.CollectionUtils;
 
@@ -15,7 +16,7 @@ public class MetaTagsFilter implements DynamicFilter {
 
     public MetaTagsFilter(@JsonProperty("meta_tags") final Set<String> metaTags) {
         Preconditions.checkArgument(!CollectionUtils.isEmpty(metaTags), "meta_tags should be non-empty string list.");
-        this.metaTags = metaTags;
+        this.metaTags = ImmutableSet.copyOf(metaTags);
     }
 
     @JsonProperty("meta_tags")
