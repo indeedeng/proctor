@@ -56,7 +56,7 @@ class AutoPromoter {
             final String qaRevision,
             final String prodRevision,
             final TestDefinition existingTestDefinition
-    ) throws AutoPromoteException {
+    ) throws RuntimeException {
         final boolean isAutopromote = autopromoteTarget != WORKING;
         if (!isAutopromote) {
             job.log("Not auto-promote because it wasn't requested by user.");
@@ -407,7 +407,7 @@ class AutoPromoter {
                         existingAllocRangeMap.getOrDefault(bucket.getKey(), 0.0)));
     }
 
-    static class AutoPromoteException extends Exception {
+    static class AutoPromoteException extends RuntimeException {
         AutoPromoteException(final String message) {
             super(message);
         }
