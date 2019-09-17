@@ -1,12 +1,13 @@
 package com.indeed.proctor.common;
 
 import com.google.common.collect.ImmutableMap;
-import com.indeed.proctor.common.dynamic.TestNamePrefixFilter;
 import com.indeed.proctor.common.model.TestType;
+import com.indeed.util.varexport.VarExporter;
 import org.junit.Test;
 
 import java.util.Collections;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -40,4 +41,14 @@ public class TestJsonProctorLoaderFactory {
                 result.getBuckets().containsKey("exampletst"));
     }
 
+    @Test
+    public void testExportedVariableForSpecification() {
+        final JsonProctorLoaderFactory factory = new JsonProctorLoaderFactory();
+        factory.setFilePath(getClass().getResource("example-test-matrix.json").getPath());
+        factory.setSpecificationResource("classpath:specification-with-filter.json");
+        assertThat(
+                VarExporter.forNamespace("JsonProctorLoaderFactory")
+                        .<String>getValue("specification-specification-with-filter.json")
+        ).contains("example");
+    }
 }
