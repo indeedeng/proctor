@@ -18,6 +18,11 @@ public class MetaTagsFilter implements DynamicFilter {
         this.metaTags = metaTags;
     }
 
+    @JsonProperty("meta_tags")
+    public Set<String> getMetaTags() {
+        return this.metaTags;
+    }
+
     @Override
     public boolean matches(final String testName, final ConsumableTestDefinition testDefinition) {
         return testDefinition.getMetaTags().stream().anyMatch(this.metaTags::contains);
