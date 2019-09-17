@@ -14,7 +14,7 @@ import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.webapp.db.Environment;
-import com.indeed.proctor.webapp.jobs.AutoPromoter.AutoPromoteException;
+import com.indeed.proctor.webapp.jobs.AutoPromoter.AutoPromoteFailedException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -776,7 +776,7 @@ public class AutoPromoterTest {
             assertThatThrownBy(() -> autoPromoter.maybeAutoPromote(
                     TEST_NAME, USERNAME, PASSWORD, AUTHOR, testDefinitionToUpdate, PREVIOUS_REVISION, Environment.QA,
                     REQUEST_PARAMETER_MAP, backgroundJob, trunkStore, QA_REVISION, PROD_REVISION, existingTestDefinition
-            )).isInstanceOf(AutoPromoteException.class);
+            )).isInstanceOf(AutoPromoteFailedException.class);
         }
     }
 

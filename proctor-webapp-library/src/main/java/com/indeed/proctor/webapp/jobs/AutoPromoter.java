@@ -56,7 +56,7 @@ class AutoPromoter {
             final String qaRevision,
             final String prodRevision,
             final TestDefinition existingTestDefinition
-    ) throws RuntimeException {
+    ) {
         final boolean isAutopromote = autopromoteTarget != WORKING;
         if (!isAutopromote) {
             job.log("Not auto-promote because it wasn't requested by user.");
@@ -76,7 +76,7 @@ class AutoPromoter {
                     break;
             }
         } catch (final Exception exception) {
-            throw new AutoPromoteException("Test Creation/Edit succeeded. However, the test was not promoted automatically to QA/Production.", exception);
+            throw new AutoPromoteFailedException("Test Creation/Edit succeeded. However, the test was not promoted automatically to QA/Production.", exception);
         }
     }
 
@@ -407,12 +407,12 @@ class AutoPromoter {
                         existingAllocRangeMap.getOrDefault(bucket.getKey(), 0.0)));
     }
 
-    static class AutoPromoteException extends RuntimeException {
-        AutoPromoteException(final String message) {
+    static class AutoPromoteFailedException extends EditAndPromoteJob.PostEditActionFailedException {
+        AutoPromoteFailedException(final String message) {
             super(message);
         }
 
-        AutoPromoteException(final String message, final Throwable cause) {
+        AutoPromoteFailedException(final String message, final Throwable cause) {
             super(message, cause);
         }
     }

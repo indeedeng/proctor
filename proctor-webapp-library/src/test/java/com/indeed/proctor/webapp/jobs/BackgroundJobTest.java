@@ -1,6 +1,6 @@
 package com.indeed.proctor.webapp.jobs;
 
-import com.indeed.proctor.webapp.jobs.AutoPromoter.AutoPromoteException;
+import com.indeed.proctor.webapp.jobs.AutoPromoter.AutoPromoteFailedException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -49,10 +49,10 @@ public class BackgroundJobTest {
         when(future.isCancelled()).thenReturn(false);
         job.setFuture(future);
 
-        job.logPartialSuccess(new AutoPromoteException(message));
+        job.logPartialSuccess(new AutoPromoteFailedException(message));
 
         assertThat(job.getLog()).isEqualTo("Partial Success:\n" + message + "\n");
-        assertThat(job.getError()).isInstanceOf(AutoPromoteException.class);
+        assertThat(job.getError()).isInstanceOf(AutoPromoteFailedException.class);
         assertThat(job.getStatus()).isEqualTo(BackgroundJob.JobStatus.PARTIAL_SUCCESS);
     }
 }

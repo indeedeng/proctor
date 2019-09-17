@@ -4,7 +4,7 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import com.indeed.proctor.webapp.extensions.AfterBackgroundJobExecute;
 import com.indeed.proctor.webapp.extensions.BeforeBackgroundJobExecute;
-import com.indeed.proctor.webapp.jobs.AutoPromoter.AutoPromoteException;
+import com.indeed.proctor.webapp.jobs.AutoPromoter.AutoPromoteFailedException;
 import org.apache.log4j.Logger;
 
 import javax.annotation.Nonnull;
@@ -63,7 +63,7 @@ public abstract class BackgroundJob<T> implements Callable<T> {
             if (future.isCancelled()) {
                 setStatus(JobStatus.CANCELLED);
             } else if (error != null) {
-                if (error instanceof AutoPromoteException) {
+                if (error instanceof AutoPromoteFailedException) {
                     setStatus(JobStatus.PARTIAL_SUCCESS);
                 } else {
                     setStatus(JobStatus.FAILED);
@@ -164,7 +164,7 @@ public abstract class BackgroundJob<T> implements Callable<T> {
         logCauses(t);
     }
 
-    public void logPartialSuccess(final AutoPromoteException e) {
+    public void logPartialSuccess(final AutoPromoteFailedException e) {
         logWithTiming("Partial Success:", "Failed");
         logCauses(e);
     }
