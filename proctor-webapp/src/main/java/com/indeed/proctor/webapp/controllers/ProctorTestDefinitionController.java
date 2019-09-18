@@ -66,6 +66,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
+
 /**
  * HTML/Json serving controller driving the Proctor webapp UI
  * <p>
@@ -128,15 +131,15 @@ public class ProctorTestDefinitionController extends AbstractController {
                 null /* rule */,
                 TestType.USER /* testType */,
                 "" /* salt */,
-                Collections.<TestBucket>emptyList(),
-                Lists.<Allocation>newArrayList(
-                        new Allocation(null, Collections.<Range>emptyList())
+                emptyList(),
+                Lists.newArrayList(
+                        new Allocation(null, emptyList())
                 ),
-                Collections.<String, Object>emptyMap(),
-                Collections.<String, Object>emptyMap(),
+                emptyMap(),
+                emptyMap(),
                 "" /* description */
         );
-        final List<RevisionDefinition> history = Collections.emptyList();
+        final List<RevisionDefinition> history = emptyList();
         final EnvironmentVersion version = null;
         return doView(Environment.WORKING, ProctorView.CREATE, "", definition, history, version, requireAuth, model);
     }
@@ -240,7 +243,7 @@ public class ProctorTestDefinitionController extends AbstractController {
             return doErrorView("Test " + testName + " does not exist in TRUNK", null, HttpServletResponse.SC_NOT_FOUND, response, model);
         }
 
-        return doView(theEnvironment, ProctorView.EDIT, testName, definition, Collections.<RevisionDefinition>emptyList(), version, requireAuth, model);
+        return doView(theEnvironment, ProctorView.EDIT, testName, definition, emptyList(), version, requireAuth, model);
     }
 
     /**
@@ -435,7 +438,7 @@ public class ProctorTestDefinitionController extends AbstractController {
         if (definition.getSpecialConstants() != null) {
             specialConstants = definition.getSpecialConstants();
         } else {
-            specialConstants = Collections.<String, Object>emptyMap();
+            specialConstants = emptyMap();
         }
         model.addAttribute("specialConstants", specialConstants);
 

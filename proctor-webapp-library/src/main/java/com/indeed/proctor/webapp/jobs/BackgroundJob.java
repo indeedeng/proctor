@@ -172,7 +172,7 @@ public abstract class BackgroundJob<T> implements Callable<T> {
     private void logCauses(final Throwable t) {
         Throwable cause = t;
         final StringBuilder level = new StringBuilder(10);
-        while(cause != null) {
+        while (cause != null) {
             log(level.toString() + cause.getMessage());
             cause = cause.getCause();
             level.append("-- ");

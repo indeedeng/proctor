@@ -49,7 +49,7 @@ public class CleanWorkingDirectoryController extends AbstractController {
 
         if (isAJAXRequest(request)) {
             final JsonResponse<BackgroundJobResponseModel> response =
-                    new JsonResponse<BackgroundJobResponseModel>(new BackgroundJobResponseModel(job), true, job.getTitle());
+                    new JsonResponse<>(new BackgroundJobResponseModel(job), true, job.getTitle());
             return new JsonView(response);
         } else {
             // redirect to a status page for the job id
