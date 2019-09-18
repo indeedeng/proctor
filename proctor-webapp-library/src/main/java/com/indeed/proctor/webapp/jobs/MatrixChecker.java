@@ -93,11 +93,13 @@ public class MatrixChecker {
 
         final ImmutableList.Builder<String> errorsBuilder = ImmutableList.builder();
         while (!futures.isEmpty()) {
+
             try {
                 Thread.sleep(10);
             } catch (final InterruptedException e) {
                 LOGGER.error("Oh heavens", e);
             }
+
             for (final Iterator<Map.Entry<AppVersion, Future<ProctorLoadResult>>> iterator = futures.entrySet().iterator(); iterator.hasNext(); ) {
                 final Map.Entry<AppVersion, Future<ProctorLoadResult>> entry = iterator.next();
                 final AppVersion version = entry.getKey();
@@ -119,6 +121,7 @@ public class MatrixChecker {
                     }
                 }
             }
+
         }
 
         final ImmutableList<String> errors = errorsBuilder.build();

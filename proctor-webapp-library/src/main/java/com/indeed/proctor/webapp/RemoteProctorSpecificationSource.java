@@ -5,6 +5,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -39,18 +40,21 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
+import java.util.stream.Collectors;
 
 /**
  * Regularly reloads specifications from applications where proctor client is deployed.
@@ -66,7 +70,8 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
     private final int httpTimeout;
     private final ExecutorService httpExecutor;
 
-    private final Map<Environment, ImmutableMap<AppVersion, RemoteSpecificationResult>> cache_ = Maps.newConcurrentMap();
+    private final Map<Environment, ImmutableMap<AppVersion, RemoteSpecificationResult>> applicationMapByEnvironment =
+            Maps.newConcurrentMap();
 
     private final Map<Environment, ProctorReader> proctorReaderMap;
 
@@ -93,63 +98,71 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
     @Override
     public RemoteSpecificationResult getRemoteResult(final Environment environment,
                                                      final AppVersion version) {
-        final ImmutableMap<AppVersion, RemoteSpecificationResult> results = cache_.get(environment);
-        if (results != null) {
-            final RemoteSpecificationResult result = results.get(version);
-            if (result != null) {
-                return result;
-            }
-        }
-        return RemoteSpecificationResult.newBuilder(version).build(Collections.<ProctorClientApplication>emptyList());
+        return Optional.ofNullable(applicationMapByEnvironment.get(environment))
+                .map(applicationMap -> applicationMap.get(version))
+                .orElseGet(() -> RemoteSpecificationResult
+                        .newBuilder(version)
+                        .build(Collections.emptyList())
+                );
     }
 
     @Override
     public Map<AppVersion, RemoteSpecificationResult> loadAllSpecifications(final Environment environment) {
-        final ImmutableMap<AppVersion, RemoteSpecificationResult> cache = cache_.get(environment);
-        if (cache == null) {
+        final ImmutableMap<AppVersion, RemoteSpecificationResult> applicationsMap =
+                applicationMapByEnvironment.get(environment);
+        if (applicationsMap == null) {
             return Collections.emptyMap();
-        } else {
-            return cache;
         }
+
+        return applicationsMap;
     }
 
     @Override
     public Map<AppVersion, ProctorSpecification> loadAllSuccessfulSpecifications(final Environment environment) {
-        final ImmutableMap<AppVersion, RemoteSpecificationResult> cache = cache_.get(environment);
-        if (cache == null) {
+        final ImmutableMap<AppVersion, RemoteSpecificationResult> applicationsMap =
+                applicationMapByEnvironment.get(environment);
+        if (applicationsMap == null) {
             return Collections.emptyMap();
-        } else {
-            final Map<AppVersion, RemoteSpecificationResult> success = Maps.filterEntries(cache, input -> input.getValue().isSuccess());
-            return Maps.transformValues(success, input -> input.getSpecificationResult().getSpecification());
         }
+
+        return applicationsMap.entrySet().stream()
+                .filter(e -> e.getValue().isSuccess())
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        // not actually nullable because of filter
+                        e -> e.getValue().getSpecificationResult().getSpecification()
+                ));
     }
 
     @Override
     public Set<AppVersion> activeClients(final Environment environment, final String testName) {
-        final Map<AppVersion, RemoteSpecificationResult> specifications = cache_.get(environment);
-        if (specifications == null) {
+        final Map<AppVersion, RemoteSpecificationResult> applicationsMap =
+                applicationMapByEnvironment.get(environment);
+        if (applicationsMap == null) {
             return Collections.emptySet();
         }
-        final Set<AppVersion> clients = Sets.newHashSet();
+
         final ConsumableTestDefinition testDefinition = getCurrentConsumableTestDefinition(environment, testName);
-        for (final Map.Entry<AppVersion, RemoteSpecificationResult> entry : specifications.entrySet()) {
-            final AppVersion version = entry.getKey();
-            final RemoteSpecificationResult rr = entry.getValue();
-            if (rr.isSuccess()) {
-                final ProctorSpecification specification = rr.getSpecificationResult().getSpecification();
-                final DynamicFilters filters = specification.getDynamicFilters();
-                if (containsTest(specification, testName) || willResolveTest(filters, testName, testDefinition)) {
-                    clients.add(version);
-                }
-            }
+        if (testDefinition == null) {
+            return Collections.emptySet();
         }
-        return clients;
+
+        return applicationsMap.entrySet().stream()
+                .filter(e -> e.getValue().isSuccess())
+                .filter(e -> {
+                    final ProctorSpecification specification = e.getValue().getSpecificationResult().getSpecification();
+                    final DynamicFilters filters = specification.getDynamicFilters();
+                    return (containsTest(specification, testName) || willResolveTest(filters, testName, testDefinition));
+                })
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toSet());
     }
 
     @Override
     public Set<String> activeTests(final Environment environment) {
-        final Map<AppVersion, RemoteSpecificationResult> specifications = cache_.get(environment);
-        if (specifications == null) {
+        final Map<AppVersion, RemoteSpecificationResult> applicationsMap =
+                applicationMapByEnvironment.get(environment);
+        if (applicationsMap == null) {
             return Collections.emptySet();
         }
 
@@ -158,19 +171,18 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
                 "Failed to get the current test matrix artifact from Envirronment " + environment);
         final Map<String, ConsumableTestDefinition> definedTests = testMatrixArtifact.getTests();
 
-        final Set<String> tests = Sets.newHashSet();
-        for (final Map.Entry<AppVersion, RemoteSpecificationResult> entry : specifications.entrySet()) {
-            final RemoteSpecificationResult remoteResult = entry.getValue();
-            if (remoteResult.isSuccess()) {
-                final ProctorSpecification specification = remoteResult.getSpecificationResult().getSpecification();
-                final Set<String> requiredTests = specification.getTests().keySet();
-                final Set<String> dynamicTests = specification.getDynamicFilters()
-                        .determineTests(definedTests, requiredTests);
-                tests.addAll(requiredTests);
-                tests.addAll(dynamicTests);
-            }
-        }
-        return tests;
+        return applicationsMap.values().stream()
+                .filter(RemoteSpecificationResult::isSuccess)
+                .map(r -> r.getSpecificationResult().getSpecification())
+                .map(s -> {
+                    final Set<String> requiredTests = s.getTests().keySet();
+                    return ImmutableSet.<String>builder()
+                            .addAll(requiredTests)
+                            .addAll(s.getDynamicFilters().determineTests(definedTests, requiredTests))
+                            .build();
+                })
+                .flatMap(Collection::stream)
+                .collect(Collectors.toSet());
     }
 
     @Override
@@ -251,9 +263,7 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
             }
         }
 
-        synchronized (cache_) {
-            cache_.put(environment, allResults.build());
-        }
+        applicationMapByEnvironment.put(environment, allResults.build());
 
         // TODO (parker) 9/6/12 - Fail if we do not have 1 specification for each <Application>.<Version>
         // should we update the cache?
@@ -264,7 +274,7 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
 
         if (!skippedAppVersions.isEmpty()) {
             LOGGER.info("Skipped checking specification for the following AppVersions "
-                    + "(/private/proctor/specification returned 404): "
+                    + "(endpoints for specs returned 404): "
                     + StringUtils.join(skippedAppVersions, ','));
         }
 
@@ -276,7 +286,15 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
         httpExecutor.shutdownNow();
     }
 
-    private static RemoteSpecificationResult internalGet(final AppVersion version, final List<ProctorClientApplication> clients, final int timeout) {
+    /**
+     * Fetch a specification from a list of instances (for a single application and version)
+     * It iterates instances until it success to read specification or find it doesn't expose endpoint for spec.
+     */
+    private static RemoteSpecificationResult internalGet(
+            final AppVersion version,
+            final List<ProctorClientApplication> clients,
+            final int timeoutMillis
+    ) {
         // TODO (parker) 2/7/13 - priority queue them based on AUS datacenter, US DC, etc
         final LinkedList<ProctorClientApplication> remaining = Lists.newLinkedList(clients);
 
@@ -284,18 +302,19 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
         while (remaining.peek() != null) {
             final ProctorClientApplication client = remaining.poll();
             // really stupid method of pinging 1 of the applications.
-            final Pair<Integer, SpecificationResult> result = fetchSpecification(client, timeout);
+            final Pair<Integer, SpecificationResult> result = fetchSpecification(client, timeoutMillis);
             final int statusCode = result.getFirst();
             final SpecificationResult specificationResult = result.getSecond();
             if (fetchSpecificationFailed(specificationResult)) {
                 if (statusCode == HttpURLConnection.HTTP_NOT_FOUND) {
-                    LOGGER.info("Client " + client.getBaseApplicationUrl() + " /private/proctor/specification returned 404 - skipping");
+                    LOGGER.info("Client " + client.getBaseApplicationUrl() + " endpoints for spec returned 404 - skipping");
                     results.skipped(client, specificationResult);
+                    // skipping rest of clients as none of them is expected to provide the endpoint
                     break;
                 }
 
                 // Don't yell too load, the error is handled
-                LOGGER.info("Failed to read specification from: " + client.getBaseApplicationUrl()
+                LOGGER.debug("Failed to read specification from: " + client.getBaseApplicationUrl()
                         + " : " + statusCode + ", " + specificationResult.getError());
                 results.failed(client, specificationResult);
             } else {
@@ -324,17 +343,16 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
 
     private static Pair<Integer, SpecificationResult> fetchSpecification(
             final String urlString,
-            final int timeout,
+            final int timeoutMillis,
             final SpecificationParser parser
     ) {
         int statusCode = -1;
         InputStream inputStream = null;
         try {
             final URL url = new URL(urlString);
-            LOGGER.debug("Trying to read specification from " + url.toString() + " using timeout " + timeout + " ms");
             final HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-            urlConnection.setReadTimeout(timeout);
-            urlConnection.setConnectTimeout(timeout);
+            urlConnection.setReadTimeout(timeoutMillis);
+            urlConnection.setConnectTimeout(timeoutMillis);
 
             statusCode = urlConnection.getResponseCode();
             inputStream = urlConnection.getInputStream();
@@ -385,7 +403,10 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
     }
 
     @Nullable
-    private ConsumableTestDefinition getCurrentConsumableTestDefinition(final Environment environment, final String testName) {
+    private ConsumableTestDefinition getCurrentConsumableTestDefinition(
+            final Environment environment,
+            final String testName
+    ) {
         try {
             final TestDefinition testDefinition = proctorReaderMap.get(environment).getCurrentTestDefinition(testName);
             if (testDefinition != null) {
@@ -398,9 +419,12 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
     }
 
     @Nullable
-    private TestMatrixArtifact getCurrentTestMatrixArtifact(final Environment environment) {
+    private TestMatrixArtifact getCurrentTestMatrixArtifact(
+            final Environment environment
+    ) {
         try {
-            final TestMatrixVersion testMatrix = proctorReaderMap.get(environment).getCurrentTestMatrix();
+            final TestMatrixVersion testMatrix =
+                    proctorReaderMap.get(environment).getCurrentTestMatrix();
             if (testMatrix != null) {
                 return ProctorUtils.convertToConsumableArtifact(testMatrix);
             }
@@ -412,13 +436,13 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
 
     private static Pair<Integer, SpecificationResult> fetchSpecificationFromApi(
             final ProctorClientApplication client,
-            final int timeout
+            final int timeoutMillis
     ) {
         /*
          * This needs to be moved to a separate checker class implementing some interface
          */
         final String apiUrl = client.getBaseApplicationUrl() + "/private/proctor/specification";
-        return fetchSpecification(apiUrl, timeout, new SpecificationParser() {
+        return fetchSpecification(apiUrl, timeoutMillis, new SpecificationParser() {
             @Override
             public SpecificationResult parse(final InputStream inputStream) throws IOException {
                 return OBJECT_MAPPER.readValue(inputStream, SpecificationResult.class);

@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
-* @author parker
-*/
+ * @author parker
+ */
 public class RemoteSpecificationResult {
     private final AppVersion version;
     private final Map<ProctorClientApplication, SpecificationResult> failures;
@@ -81,12 +81,12 @@ public class RemoteSpecificationResult {
 
         public RemoteSpecificationResult build(final List<ProctorClientApplication> remaining) {
             return new RemoteSpecificationResult(
-                version,
-                ImmutableMap.copyOf(failures),
-                skipped,
-                Lists.newArrayList(remaining),
-                success,
-                result
+                    version,
+                    ImmutableMap.copyOf(failures),
+                    skipped,
+                    Lists.newArrayList(remaining),
+                    success,
+                    result
             );
         }
 
