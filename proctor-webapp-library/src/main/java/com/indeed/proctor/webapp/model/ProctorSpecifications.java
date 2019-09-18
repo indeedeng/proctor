@@ -1,21 +1,28 @@
 package com.indeed.proctor.webapp.model;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.indeed.proctor.common.ProctorSpecification;
 import com.indeed.proctor.common.TestSpecification;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * a immutable set of proctor specifications (usually, from a single app)
+ *
+ * This model allows multiple specifications because one application
+ * may initiate more than one Proctor object with different specifications
+ * for different usages/contexts
  */
 public class ProctorSpecifications {
     private final Set<ProctorSpecification> specifications;
@@ -34,22 +41,24 @@ public class ProctorSpecifications {
     }
 
     /**
-     * Returns union of required tests in specifications
+     * For each testname, returns the specifictions for which it is a required test
      */
     public Map<String, Set<TestSpecification>> getRequiredTests(
             final Set<String> definedTests
     ) {
-        final Map<String, Set<TestSpecification>> result = new HashMap<>();
-        for (final ProctorSpecification specification : specifications) {
-            for (final String name : definedTests) {
-                final TestSpecification spec = specification.getTests().get(name);
-                if (spec != null) {
-                    result.computeIfAbsent(name, ignored -> new HashSet<>())
-                            .add(spec);
-                }
+        final ImmutableMap.Builder<String, Set<TestSpecification>> builder
+                = ImmutableMap.builder();
+        for (final String testName : definedTests) {
+            final Set<TestSpecification> specsForTest = specifications.stream()
+                    .map(ProctorSpecification::getTests)
+                    .map(x -> x.get(testName))
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toSet());
+            if (!specsForTest.isEmpty()) {
+                builder.put(testName, specsForTest);
             }
         }
-        return result;
+        return builder.build();
     }
 
     /**

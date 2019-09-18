@@ -6,6 +6,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collections;
 
+/**
+ * Model to represents a result of attempt
+ * to fetch proctor specifications from running instance.
+ */
 public class SpecificationResult {
     @Nonnull
     private final ProctorSpecifications specifications;

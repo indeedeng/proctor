@@ -7,9 +7,30 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.Properties;
 
+import static com.indeed.proctor.webapp.util.VarExportedVariablesDeserializer.ESCAPE_TARGET_PATTERN;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class VarExportedVariablesDeserializerTest {
+    @Test
+    public void testEscapeTargetPattern() {
+        assertThat(ESCAPE_TARGET_PATTERN.asPredicate())
+                .accepts(
+                        "\\",
+                        "\\\\",
+                        "\\r",
+                        "\\123Z",
+                        "\\\\:",
+                        "\\\\="
+                )
+                .rejects(
+                        "",
+                        "abc",
+                        "\\:",
+                        "\\=",
+                        "\\u1010"
+                );
+    }
+
     @Test
     public void testDeserialize_simpleString() throws IOException {
         testDeserializeSingleString("");
@@ -18,6 +39,8 @@ public class VarExportedVariablesDeserializerTest {
 
     @Test
     public void testDeserialize_Symbols() throws IOException {
+        testDeserializeSingleString("\"");
+        testDeserializeSingleString("\\\"");
         testDeserializeSingleString("\\");
         testDeserializeSingleString("\\r\\n");
         testDeserializeSingleString("\\\\");

@@ -1,5 +1,6 @@
 package com.indeed.proctor.webapp.util;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.indeed.util.varexport.Variable;
 import com.indeed.util.varexport.servlet.ViewExportedVariablesServlet;
 import org.apache.commons.io.IOUtils;
@@ -9,13 +10,44 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.util.Properties;
+import java.util.regex.Pattern;
 
 /**
  * Deserializer of exported variables from response of {@link ViewExportedVariablesServlet}
  * This class is required because escape logic in {@link Variable} is not complete
  * so naive deserialization with {@link Properties} fails.
+ *
+ * This is a example case how deserialization fails.
+ * 1. Consider variable `var` that stores this json as string
+ * { "value": "this string contains double quote \" "}
+ * 2. Verexporter expose this as follows
+ * var={ "value": "this string contains double quote \" "}
+ * 3. When loading it as property, `var` will be loaded as follows
+ * { "value": "this string contains double quote " "}
+ * 4. This is not more valid json format.
  */
 public class VarExportedVariablesDeserializer {
+    /**
+     * Pattern to match string that needs to be escaped with additional '\'
+     *
+     * Example string to match at the first character
+     * \
+     * \\
+     * \r
+     * \\:
+     * \\=
+     *
+     * Example string not to match at the first character
+     * abc
+     * \:
+     * \=
+     * \u0101
+     */
+    @VisibleForTesting
+    static final Pattern ESCAPE_TARGET_PATTERN = Pattern.compile("\\\\(?!(:|=|u[0-9a-f]{4}))");
+
+    private static final String ESCAPE_REPLACEMENT_STRING = "\\\\\\\\";
+
     /**
      * Deserialize exported variables from response of {@link ViewExportedVariablesServlet}
      * This loads the input as {@link Properties}
@@ -31,8 +63,8 @@ public class VarExportedVariablesDeserializer {
         try {
             properties.load(new ByteArrayInputStream(escapedInput.getBytes()));
         } catch (final IOException e) {
-            // throws unchecked exception because "throws IOException" is not
-            // documented in ByteArrayInputStream methods.
+            // throws unchecked exception because
+            // ByteArrayInputStream is not expected to throw IOException
             throw new UncheckedIOException("Unexpectedly, it failed to read from byte array.", e);
         }
         return properties;
@@ -46,9 +78,7 @@ public class VarExportedVariablesDeserializer {
      * Make additional escape so that we can load it as Properties.
      */
     private static String escapeForProperties(final String input) {
-        return input.replaceAll(
-                "\\\\(?!(:|=|u[0-9a-f]{4}))",
-                "\\\\\\\\"
-        );
+        return ESCAPE_TARGET_PATTERN.matcher(input)
+                .replaceAll(ESCAPE_REPLACEMENT_STRING);
     }
 }
