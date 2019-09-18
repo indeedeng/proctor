@@ -18,6 +18,7 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * A decorator class for ProctorStore
@@ -51,8 +52,11 @@ public class GlobalCachingProctorStore implements ProctorStore {
 
     @Override
     public TestDefinition getCurrentTestDefinition(final String test) throws StoreException {
-        return globalCacheStore.getCachedTestDefinition(environment, test)
-                .orElse(delegate.getCurrentTestDefinition(test));
+        final Optional<TestDefinition> cachedDefinitionOpt = globalCacheStore.getCachedTestDefinition(environment, test);
+        if (cachedDefinitionOpt.isPresent()) {
+            return cachedDefinitionOpt.get();
+        }
+        return delegate.getCurrentTestDefinition(test);
     }
 
     @Override
@@ -112,8 +116,11 @@ public class GlobalCachingProctorStore implements ProctorStore {
 
     @Override
     public TestDefinition getTestDefinition(final String test, final String fetchRevision) throws StoreException {
-        return globalCacheStore.getCachedTestDefinition(environment, test, fetchRevision)
-                .orElse(delegate.getTestDefinition(test, fetchRevision));
+        final Optional<TestDefinition> cachedDefinitionOpt = globalCacheStore.getCachedTestDefinition(environment, test, fetchRevision);
+        if (cachedDefinitionOpt.isPresent()) {
+            return cachedDefinitionOpt.get();
+        }
+        return delegate.getTestDefinition(test, fetchRevision);
     }
 
     @Nonnull
@@ -125,17 +132,23 @@ public class GlobalCachingProctorStore implements ProctorStore {
     @Nonnull
     @Override
     public List<Revision> getHistory(final String test, final int start, final int limit) throws StoreException {
-        return globalCacheStore.getCachedHistory(environment, test).map(
-                history -> HistoryUtil.selectHistorySet(history, start, limit)
-        ).orElse(delegate.getHistory(test, start, limit));
+        final Optional<List<Revision>> cachedHistoryOpt = globalCacheStore.getCachedHistory(environment, test).map(
+                history -> HistoryUtil.selectHistorySet(history, start, limit));
+        if (cachedHistoryOpt.isPresent()) {
+            return cachedHistoryOpt.get();
+        }
+        return delegate.getHistory(test, start, limit);
     }
 
     @Nonnull
     @Override
     public List<Revision> getHistory(final String test, final String revision, final int start, final int limit) throws StoreException {
-        return globalCacheStore.getCachedHistory(environment, test).map(
-                history -> HistoryUtil.selectRevisionHistorySetFrom(history, revision, start, limit)
-        ).orElse(delegate.getHistory(test, revision, start, limit));
+        final Optional<List<Revision>> cachedHistoryOpt = globalCacheStore.getCachedHistory(environment, test).map(
+                history -> HistoryUtil.selectRevisionHistorySetFrom(history, revision, start, limit));
+        if (cachedHistoryOpt.isPresent()) {
+            return cachedHistoryOpt.get();
+        }
+        return delegate.getHistory(test, revision, start, limit);
     }
 
     @CheckForNull

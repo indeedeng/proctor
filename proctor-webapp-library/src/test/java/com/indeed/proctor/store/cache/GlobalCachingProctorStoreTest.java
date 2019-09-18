@@ -31,11 +31,11 @@ import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -91,6 +91,7 @@ public class GlobalCachingProctorStoreTest {
         when(globalCacheStore.getCachedTestDefinition(Environment.PRODUCTION, TEST_NAME)).thenReturn(Optional.of(TEST_DEFINITION));
         final TestDefinition actualTestDefinition = globalCachingProctorStore.getCurrentTestDefinition(TEST_NAME);
         assertThat(actualTestDefinition).isEqualToComparingFieldByFieldRecursively(TEST_DEFINITION);
+        verifyNoMoreInteractions(delegate);
     }
 
     @Test
@@ -210,6 +211,7 @@ public class GlobalCachingProctorStoreTest {
         when(globalCacheStore.getCachedTestDefinition(ENVIRONMENT, TEST_NAME, REVISION)).thenReturn(Optional.of(TEST_DEFINITION));
         final TestDefinition actualTestDefinition = globalCachingProctorStore.getTestDefinition(TEST_NAME, REVISION);
         assertThat(actualTestDefinition).isEqualToComparingFieldByFieldRecursively(actualTestDefinition);
+        verifyNoMoreInteractions(delegate);
     }
 
     @Test
@@ -232,6 +234,7 @@ public class GlobalCachingProctorStoreTest {
         when(globalCacheStore.getCachedHistory(ENVIRONMENT, TEST_NAME)).thenReturn(Optional.of(HISTORY));
         final List<Revision> actualHistory = globalCachingProctorStore.getHistory(TEST_NAME, 0, 10);
         assertThat(actualHistory).isEqualTo(HISTORY);
+        verifyNoMoreInteractions(delegate);
     }
 
     @Test
