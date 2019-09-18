@@ -392,7 +392,7 @@ public class CachingProctorStore implements ProctorStore {
          */
         public void startRefreshCacheTask() {
             LOGGER.info(String.format("[%s] Rescheduling UpdateCacheTask due to new updates.", delegate.getName()));
-            /**
+            /*
              * cancel scheduled task, executing task is allowed to finish;
              */
             scheduledFuture.cancel(false);

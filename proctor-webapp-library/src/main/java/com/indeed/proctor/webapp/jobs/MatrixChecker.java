@@ -71,7 +71,7 @@ public class MatrixChecker {
         final TestMatrixDefinition tmd = new TestMatrixDefinition();
         // The potential test definition will be null for test deletions
         if (potential != null) {
-            tmd.setTests(ImmutableMap.<String, TestDefinition>of(testName, potential));
+            tmd.setTests(ImmutableMap.of(testName, potential));
         }
         tmv.setTestMatrixDefinition(tmd);
 
@@ -79,15 +79,17 @@ public class MatrixChecker {
         // Verify
         final Map<AppVersion, Future<ProctorLoadResult>> futures = Maps.newLinkedHashMap();
 
-        final Map<AppVersion, ProctorSpecification> toVerify = specificationSource.loadAllSuccessfulSpecifications(checkAgainst);
-        for (final Map.Entry<AppVersion, ProctorSpecification> entry : toVerify.entrySet()) {
-            final AppVersion appVersion = entry.getKey();
-            final ProctorSpecification specification = entry.getValue();
-            futures.put(appVersion, verifierExecutor.submit(() -> {
-                LOGGER.info("Verifying artifact against : cached " + appVersion + " for " + testName);
-                return verify(specification, artifact, testName, appVersion.toString());
-            }));
-        }
+        specificationSource.loadAllSuccessfulSpecifications(checkAgainst)
+                .forEach((appVersion, specification) -> futures.put(appVersion, verifierExecutor.submit(() -> {
+                    LOGGER.info("Verifying artifact against : cached "
+                            + appVersion + " for " + testName);
+                    return verify(
+                            specification,
+                            artifact,
+                            testName,
+                            appVersion.toString()
+                    );
+                })));
 
         final ImmutableList.Builder<String> errorsBuilder = ImmutableList.builder();
         while (!futures.isEmpty()) {

@@ -1,8 +1,6 @@
 package com.indeed.proctor.common;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
@@ -29,7 +27,6 @@ import com.indeed.proctor.common.model.TestType;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.el.ExpressionFactoryImpl;
 import org.apache.log4j.Logger;
-
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -71,7 +68,7 @@ public abstract class ProctorUtils {
     public static MessageDigest createMessageDigest() {
         try {
             return MessageDigest.getInstance("MD5");
-        } catch (@Nonnull final NoSuchAlgorithmException e) {
+        } catch (final NoSuchAlgorithmException e) {
             throw new RuntimeException("Impossible no MD5", e);
         }
     }
@@ -217,11 +214,7 @@ public abstract class ProctorUtils {
         final ProctorSpecification spec;
         try {
             spec = OBJECT_MAPPER_NON_AUTOCLOSE.readValue(inputFile, ProctorSpecification.class);
-        } catch (@Nonnull final JsonParseException e) {
-            throw new RuntimeException("Unable to read test set from " + inputFile + ": ", e);
-        } catch (@Nonnull final JsonMappingException e) {
-            throw new RuntimeException("Unable to read test set from " + inputFile, e);
-        } catch (@Nonnull final IOException e) {
+        } catch (final IOException e) {
             throw new RuntimeException("Unable to read test set from " + inputFile, e);
         }
         return spec;
@@ -849,7 +842,7 @@ public abstract class ProctorUtils {
                 }
                 newProvidedContext.put(identifier, toAdd);
             }
-            /** evaluate the rule even if defaultConstructor method does not exist, */
+            /* evaluate the rule even if defaultConstructor method does not exist, */
             return new ProvidedContext(ProctorUtils.convertToValueExpressionMap(expressionFactory, newProvidedContext),
                     true,
                     uninstantiatedIdentifiers);
@@ -1079,7 +1072,7 @@ public abstract class ProctorUtils {
     private static boolean evaluatePayloadMapValidator(@Nonnull final RuleEvaluator ruleEvaluator, final String rule, @Nonnull final Payload payload) throws IncompatibleTestMatrixException {
         try {
             return ruleEvaluator.evaluateBooleanRule(rule, payload.getMap());
-        } catch (@Nonnull final IllegalArgumentException e) {
+        } catch (final IllegalArgumentException e) {
             LOGGER.error("Unable to evaluate rule ${" + rule + "} with payload " + payload, e);
         }
         return true;
@@ -1090,7 +1083,7 @@ public abstract class ProctorUtils {
 
         try {
             return ruleEvaluator.evaluateBooleanRule(rule, values);
-        } catch (@Nonnull final IllegalArgumentException e) {
+        } catch (final IllegalArgumentException e) {
             LOGGER.error("Unable to evaluate rule ${" + rule + "} with payload " + payload, e);
         }
 

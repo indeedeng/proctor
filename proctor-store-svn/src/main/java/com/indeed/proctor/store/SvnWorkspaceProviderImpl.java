@@ -88,7 +88,7 @@ public class SvnWorkspaceProviderImpl extends TimerTask implements SvnWorkspaceP
                 final IOFileFilter tempDirFilter =
                     FileFilterUtils.prefixFileFilter(prefix);
 
-                /**
+                /*
                  * Delete directories that are:
                  * older than [clean up age millis]
                  * starts with temp-dir-prefix

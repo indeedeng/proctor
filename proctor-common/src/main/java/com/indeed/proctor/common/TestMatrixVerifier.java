@@ -55,7 +55,7 @@ public class TestMatrixVerifier {
             if (inputStream != null) {
                 try {
                     inputStream.close();
-                } catch (@Nonnull final IOException e) {
+                } catch (final IOException e) {
                     LOGGER.error("Unable to close input stream from " + requiredTestsUrl, e);
                 }
             }

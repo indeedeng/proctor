@@ -65,7 +65,7 @@ public class JsonProctorLoaderFactory {
                 fis.close();
             }
 
-        } catch (@Nonnull final IOException e) {
+        } catch (final IOException e) {
             throw new IllegalArgumentException("Unable to read proctor specification from " + specificationResource, e);
         }
     }
@@ -75,19 +75,16 @@ public class JsonProctorLoaderFactory {
             this._specification = OBJECT_MAPPER.readValue(stream, ProctorSpecification.class);
             exportJsonSpecification(OBJECT_MAPPER.writeValueAsString(_specification));
 
-        } catch (@Nonnull final JsonParseException e) {
-            throw new IllegalArgumentException("Unable to read proctor specification from " + specificationResource, e);
-        } catch (@Nonnull final JsonMappingException e) {
-            throw new IllegalArgumentException("Unable to read proctor specification from " + specificationResource, e);
-        } catch (@Nonnull final IOException e) {
+        } catch (final IOException e) {
             throw new IllegalArgumentException("Unable to read proctor specification from " + specificationResource, e);
         }
     }
 
-    @SuppressWarnings("UnusedDeclaration")
+
     /**
      * setSpecificationResource() is likely more convenient to use instead of this method.
      */
+    @SuppressWarnings("UnusedDeclaration")
     public void setSpecification(@Nonnull final ProctorSpecification specification) {
         this._specification = Preconditions.checkNotNull(specification, "Null specifications are not supported");
     }
@@ -123,7 +120,7 @@ public class JsonProctorLoaderFactory {
     @Deprecated
     public void setDiffReporter(final AbstractProctorDiffReporter diffReporter) {
         Preconditions.checkNotNull(diffReporter, "diff reporter can't be null use AbstractProctorDiffReporter for nop implementation");
-        setLoadReporters(ImmutableList.<ProctorLoadReporter>of(diffReporter));
+        setLoadReporters(ImmutableList.of(diffReporter));
     }
 
     public void setLoadReporters(final List<ProctorLoadReporter> reporters) {
