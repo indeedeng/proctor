@@ -14,6 +14,7 @@ import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.webapp.db.Environment;
+import com.indeed.proctor.webapp.jobs.AutoPromoter.AutoPromoteFailedException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -33,6 +34,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -755,6 +757,26 @@ public class AutoPromoterTest {
             verify(backgroundJob).log(anyString());
             verify(editAndPromoteJob).doPromoteInternal(TEST_NAME, USERNAME, PASSWORD, AUTHOR, Environment.WORKING,
                     TRUNK_REVISION, targetEnv, targetRevision, REQUEST_PARAMETER_MAP, backgroundJob, true);
+        }
+
+        @Test
+        public void testMaybeAutoPromoteThrowsAutoPromoteException() throws Exception {
+            final double[] rangeOne = {.7, .3};
+            final double[] rangeTwo = {.8, .2};
+            final TestDefinition testDefinitionToUpdate = createTestDefinition("testbuck:0,control:1", rangeOne);
+            final TestDefinition existingTestDefinition = createTestDefinition("testbuck:0,control:1", rangeTwo);
+
+            doThrow(new Exception("error message"))
+                    .when(autoPromoter)
+                    .doPromoteTestToEnvironment(
+                            Environment.QA, TEST_NAME, USERNAME, PASSWORD, AUTHOR, null,
+                            REQUEST_PARAMETER_MAP, backgroundJob, TRUNK_REVISION, QA_REVISION, false
+                    );
+
+            assertThatThrownBy(() -> autoPromoter.maybeAutoPromote(
+                    TEST_NAME, USERNAME, PASSWORD, AUTHOR, testDefinitionToUpdate, PREVIOUS_REVISION, Environment.QA,
+                    REQUEST_PARAMETER_MAP, backgroundJob, trunkStore, QA_REVISION, PROD_REVISION, existingTestDefinition
+            )).isInstanceOf(AutoPromoteFailedException.class);
         }
     }
 

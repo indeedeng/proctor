@@ -56,23 +56,27 @@ class AutoPromoter {
             final String qaRevision,
             final String prodRevision,
             final TestDefinition existingTestDefinition
-    ) throws Exception {
+    ) {
         final boolean isAutopromote = autopromoteTarget != WORKING;
         if (!isAutopromote) {
             job.log("Not auto-promote because it wasn't requested by user.");
             return;
         }
 
-        switch (autopromoteTarget) {
-            case QA:
-                final String currentRevision = getCurrentVersion(testName, trunkStore).getRevision();
-                doPromoteTestToEnvironment(QA, testName, username, password, author, null,
-                        requestParameterMap, job, currentRevision, qaRevision, false);
-                break;
-            case PRODUCTION:
-                doPromoteTestToQaAndProd(testName, username, password, author, testDefinitionToUpdate, previousRevision,
-                        requestParameterMap, job, trunkStore, qaRevision, prodRevision, existingTestDefinition);
-                break;
+        try {
+            switch (autopromoteTarget) {
+                case QA:
+                    final String currentRevision = getCurrentVersion(testName, trunkStore).getRevision();
+                    doPromoteTestToEnvironment(QA, testName, username, password, author, null,
+                            requestParameterMap, job, currentRevision, qaRevision, false);
+                    break;
+                case PRODUCTION:
+                    doPromoteTestToQaAndProd(testName, username, password, author, testDefinitionToUpdate, previousRevision,
+                            requestParameterMap, job, trunkStore, qaRevision, prodRevision, existingTestDefinition);
+                    break;
+            }
+        } catch (final Exception exception) {
+            throw new AutoPromoteFailedException("Test Creation/Edit succeeded. However, the test was not promoted automatically to QA/Production.", exception);
         }
     }
 
@@ -401,5 +405,15 @@ class AutoPromoter {
                 .anyMatch(bucket -> equalsWithinTolerance(
                         0.0,
                         existingAllocRangeMap.getOrDefault(bucket.getKey(), 0.0)));
+    }
+
+    static class AutoPromoteFailedException extends EditAndPromoteJob.PostEditActionFailedException {
+        AutoPromoteFailedException(final String message) {
+            super(message);
+        }
+
+        AutoPromoteFailedException(final String message, final Throwable cause) {
+            super(message, cause);
+        }
     }
 }
