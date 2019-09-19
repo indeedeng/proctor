@@ -1,9 +1,12 @@
 package com.indeed.proctor.webapp;
 
-import com.indeed.proctor.webapp.model.SpecificationResult;
+import com.indeed.proctor.webapp.model.ProctorClientApplication;
+import com.indeed.proctor.webapp.model.ProctorSpecifications;
+import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
 import java.io.InputStream;
+import java.util.Date;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -17,11 +20,20 @@ public class RemoteProctorSpecificationSourceTest {
         try (final InputStream exportedVariables =
                      RemoteProctorSpecificationSourceTest.class
                              .getResourceAsStream("exportedVariables.txt")) {
-            final SpecificationResult result =
+            final String content = IOUtils.toString(exportedVariables);
+            final ProctorClientApplication client =
+                    new ProctorClientApplication(
+                            "testapp",
+                            "http://example.com",
+                            "http://example.com",
+                            new Date(),
+                            "version"
+                    );
+            final ProctorSpecifications result =
                     RemoteProctorSpecificationSource
-                            .parseExportedVariables(exportedVariables);
+                            .parseExportedVariables(content, client);
 
-            assertThat(result.getSpecifications().asSet())
+            assertThat(result.asSet())
                     .hasSize(1)
                     .first()
                     .satisfies(s ->

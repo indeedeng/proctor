@@ -3,10 +3,8 @@ package com.indeed.proctor.webapp;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -24,15 +22,12 @@ import com.indeed.proctor.webapp.model.AppVersion;
 import com.indeed.proctor.webapp.model.ProctorClientApplication;
 import com.indeed.proctor.webapp.model.ProctorSpecifications;
 import com.indeed.proctor.webapp.model.RemoteSpecificationResult;
-import com.indeed.proctor.webapp.model.SpecificationResult;
 import com.indeed.proctor.webapp.util.VarExportedVariablesDeserializer;
 import com.indeed.proctor.webapp.util.threads.LogOnUncaughtExceptionHandler;
 import com.indeed.util.core.DataLoadingTimerTask;
-import com.indeed.util.core.Pair;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.HttpResponseException;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -44,11 +39,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -115,8 +110,7 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
         return Optional.ofNullable(applicationMapByEnvironment.get(environment))
                 .map(applicationMap -> applicationMap.get(version))
                 .orElseGet(() -> RemoteSpecificationResult
-                        .newBuilder(version)
-                        .build(Collections.emptyList())
+                        .failures(version, Collections.emptyMap())
                 );
     }
 
@@ -140,11 +134,10 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
         }
 
         return applicationsMap.entrySet().stream()
-                .filter(e -> e.getValue().isSuccess())
+                .filter(e -> e.getValue().getSpecifications() != null)
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
-                        // not actually nullable because of filter
-                        e -> e.getValue().getSpecificationResult().getSpecifications()
+                        e -> e.getValue().getSpecifications()
                 ));
     }
 
@@ -165,9 +158,8 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
                 = ImmutableMap.of(testName, testDefinition);
 
         return applicationsMap.entrySet().stream()
-                .filter(e -> e.getValue().isSuccess())
-                .filter(e -> e.getValue().getSpecificationResult()
-                        .getSpecifications()
+                .filter(e -> e.getValue().getSpecifications() != null)
+                .filter(e -> e.getValue().getSpecifications()
                         .getResolvedTests(singleTestMatrix)
                         .contains(testName)
                 )
@@ -189,8 +181,8 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
         final Map<String, ConsumableTestDefinition> definedTests = testMatrixArtifact.getTests();
 
         return applicationsMap.values().stream()
-                .filter(RemoteSpecificationResult::isSuccess)
-                .map(r -> r.getSpecificationResult().getSpecifications())
+                .map(RemoteSpecificationResult::getSpecifications)
+                .filter(Objects::nonNull)
                 .flatMap(s -> s.getResolvedTests(definedTests).stream())
                 .collect(Collectors.toSet());
     }
@@ -221,7 +213,6 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
 
         final ImmutableMap.Builder<AppVersion, RemoteSpecificationResult> allResults = ImmutableMap.builder();
         final Set<AppVersion> appVersionsToCheck = Sets.newLinkedHashSet();
-        final Set<AppVersion> skippedAppVersions = Sets.newLinkedHashSet();
 
         // Accumulate all clients that have equivalent AppVersion (APPLICATION_COMPARATOR)
         final ImmutableListMultimap.Builder<AppVersion, ProctorClientApplication> builder =
@@ -245,10 +236,7 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
             try {
                 final RemoteSpecificationResult result = future.get();
                 allResults.put(version, result);
-                if (result.isSkipped()) {
-                    skippedAppVersions.add(result.getVersion());
-                    appVersionsToCheck.remove(result.getVersion());
-                } else if (result.isSuccess()) {
+                if (result.isSuccess()) {
                     appVersionsToCheck.remove(result.getVersion());
                 }
             } catch (final InterruptedException e) {
@@ -268,12 +256,6 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
                     + StringUtils.join(appVersionsToCheck, ','));
         }
 
-        if (!skippedAppVersions.isEmpty()) {
-            LOGGER.info("Skipped checking specification for the following AppVersions "
-                    + "(endpoints for specs returned 404): "
-                    + StringUtils.join(skippedAppVersions, ','));
-        }
-
         LOGGER.info("Finish refreshing internal list of ProctorSpecifications for " + environment);
         return appVersionsToCheck.isEmpty();
     }
@@ -290,100 +272,78 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
             final AppVersion version,
             final List<ProctorClientApplication> clients
     ) {
-        // TODO (parker) 2/7/13 - priority queue them based on AUS datacenter, US DC, etc
-        final LinkedList<ProctorClientApplication> remaining = Lists.newLinkedList(clients);
-
-        final RemoteSpecificationResult.Builder results = RemoteSpecificationResult.newBuilder(version);
-        while (remaining.peek() != null) {
-            final ProctorClientApplication client = remaining.poll();
-            // really stupid method of pinging 1 of the applications.
-            final Pair<Integer, SpecificationResult> result = fetchSpecification(client);
-            final int statusCode = result.getFirst();
-            final SpecificationResult specificationResult = result.getSecond();
-            if (specificationResult.isFailed()) {
-                if (statusCode == HttpStatus.SC_NOT_FOUND) {
-                    LOGGER.info("App " + version + " endpoints for spec returned 404 - skipping");
-                    results.skipped(client, specificationResult);
-                    // skipping rest of clients as none of them is expected to provide the endpoint
-                    break;
-                }
-
-                LOGGER.debug("Failed to read specification of " + version
-                        + " : " + specificationResult.getError());
-                results.failed(client, specificationResult);
-            } else {
-                results.success(client, specificationResult);
-                break;
+        // ImmutableMap does not handle duplicate keys - use a HashMap for building instead
+        final Map<ProctorClientApplication, Throwable> failures = new HashMap<>();
+        for (final ProctorClientApplication client : clients) {
+            try {
+                final ProctorSpecifications specifications = fetchSpecification(client);
+                return RemoteSpecificationResult.success(version, client, specifications);
+            } catch (final IOException e) {
+                failures.put(client, e);
             }
         }
-        return results.build(remaining);
+        return RemoteSpecificationResult.failures(version, failures);
     }
 
     /**
      * try visiting private/v or private/proctor/specification to get specification
+     * The specifications are used by proctor webapp to validate test edit/promotion
+     * or to detect usage of test definitions.
+     * <p>
+     * Applications are expected to expose their specifications via either of these endpoints
+     * <p>
+     * * /private/proctor/specification
+     * by com.indeed.proctor.consumer.ViewProctorSpecificationServlet
+     * <p>
+     * * /private/v?ns=JsonProctorLoaderFactory
+     * by com.indeed.util.varexport.servlet.ViewExportedVariablesServlet
+     * The variable is exposed in
+     * com.indeed.proctor.common.JsonProctorLoaderFactory
      */
-    private Pair<Integer, SpecificationResult> fetchSpecification(
+    private ProctorSpecifications fetchSpecification(
             final ProctorClientApplication client
-    ) {
+    ) throws IOException {
         // This URL is where we expose variables by ViewExportedVariablesServlet
         final String varExportUrl = client.getBaseApplicationUrl()
                 + "/private/v?ns=JsonProctorLoaderFactory";
 
-        final Pair<Integer, SpecificationResult> specFromVarExport = fetchSpecificationFromUrl(
-                varExportUrl,
-                RemoteProctorSpecificationSource::parseExportedVariables
+        final ProctorSpecifications specFromVarExport = parseExportedVariables(
+                fetchContentFromUrl(varExportUrl),
+                client
         );
 
-        // Use var export version to support multiple specification
-        if (specFromVarExport.getSecond().getSpecifications().asSet().size() > 1) {
+        // Use this spec if the var export contains multiple specifications
+        // because the other legacy endpoint contains only single.
+        //
+        // Otherwise, check the legacy endpoint first where a client choose
+        // what specification to expose.
+        if (specFromVarExport.asSet().size() > 1) {
             return specFromVarExport;
         }
 
         // This URL is where we expose specification by ViewProctorSpecificationServlet
         final String viewSpecUrl = client.getBaseApplicationUrl()
                 + "/private/proctor/specification";
-        final Pair<Integer, SpecificationResult> specFromViewSpec = fetchSpecificationFromUrl(
-                viewSpecUrl,
-                RemoteProctorSpecificationSource::parseSpecificationFromServlet
-        );
-
-        // Use specification servlet version to allow users to choose any spec.
-        if (!specFromViewSpec.getSecond().isFailed()) {
-            return specFromViewSpec;
-        }
-
-        // Fallback to the first version.
-        return specFromVarExport;
-    }
-
-    private Pair<Integer, SpecificationResult> fetchSpecificationFromUrl(
-            final String urlString,
-            final SpecificationParser parser
-    ) {
         try {
-            final HttpGet httpGet = new HttpGet(urlString);
-            return this.httpClient.execute(httpGet, (r) -> {
-                try (InputStream inputStream = r.getEntity().getContent()) {
-                    return new Pair<>(
-                            r.getStatusLine().getStatusCode(),
-                            parser.parse(inputStream)
-                    );
-                }
-            });
-        } catch (final Throwable e) {
-            return createErrorResult(e);
+            return parseSpecificationFromServlet(
+                    fetchContentFromUrl(viewSpecUrl),
+                    client
+            );
+        } catch (final IOException e) {
+            // Fallback to the first version.
+            return specFromVarExport;
         }
     }
 
-    private static Pair<Integer, SpecificationResult> createErrorResult(final Throwable t) {
-        final int statusCode;
-        if (t instanceof HttpResponseException) {
-            statusCode = ((HttpResponseException) t).getStatusCode();
-        } else {
-            statusCode = -1;
-        }
-
-        return new Pair<>(statusCode, SpecificationResult.failed(t.getMessage()));
+    private String fetchContentFromUrl(
+            final String urlString
+    ) throws IOException {
+        final HttpGet httpGet = new HttpGet(urlString);
+        return this.httpClient.execute(httpGet, r -> {
+            try (InputStream inputStream = r.getEntity().getContent()) {
+                return IOUtils.toString(inputStream, "UTF-8");
+            }
+        });
     }
 
     @Nullable
@@ -418,53 +378,78 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
         return null;
     }
 
+    /**
+     * Parse generated string from
+     * com.indeed.util.varexport.servlet.ViewExportedVariablesServlet
+     * for variables in the namespace of JsonProctorLoaderFactory
+     * <p>
+     * JsonProctorLoaderFactory is expected to expose specification variable
+     * with the variable name
+     * - specification (earlier than 1.7.5)
+     * or
+     * - specification-file_name.json (1.7.5 or later)
+     *
+     * <p>
+     * Example string is
+     * <p>
+     * specification-spec.json={"providedContext"\:{"country"\:"String"}},"tests"\:{},"dynamicFilters"\:[]}
+     * exporter-start-time=2019-09-18T02\:28\:24CDT
+     */
     @VisibleForTesting
-    static SpecificationResult parseExportedVariables(
-            final InputStream inputStream
+    static ProctorSpecifications parseExportedVariables(
+            final String content,
+            final ProctorClientApplication client
     ) throws IOException {
         final Properties exportedVariables = VarExportedVariablesDeserializer
-                .deserialize(inputStream);
+                .deserialize(content);
 
         final Set<ProctorSpecification> specifications = new HashSet<>();
         for (final String key : exportedVariables.stringPropertyNames()) {
+            // JsonProctorLoaderFactory is expected to expose json string of specifications
+            // with "specification" or "specification-file_name.json"
             if (!key.startsWith("specification")) {
                 continue;
             }
             final String json = exportedVariables.getProperty(key);
-            final ProctorSpecification specification =
-                    OBJECT_MAPPER.readValue(json, ProctorSpecification.class);
-            specifications.add(specification);
+            try {
+                final ProctorSpecification specification =
+                        OBJECT_MAPPER.readValue(json, ProctorSpecification.class);
+                specifications.add(specification);
+            } catch (final IOException e) {
+                LOGGER.error("Failed to parse variable " + key
+                        + ": " + json + " from " + client, e);
+            }
         }
         if (specifications.isEmpty()) {
-            return SpecificationResult.failed(
-                    "no specification is found in exported variables"
+            throw new IOException(
+                    "no specification can be parsed from exported variables from "
+                            + client
             );
         }
-        return SpecificationResult.success(specifications);
+        return new ProctorSpecifications(specifications);
     }
 
-    private static SpecificationResult parseSpecificationFromServlet(
-            final InputStream inputStream
+    private static ProctorSpecifications parseSpecificationFromServlet(
+            final String jsonString,
+            final ProctorClientApplication client
     ) throws IOException {
         final com.indeed.proctor.common.SpecificationResult specificationResult =
-                OBJECT_MAPPER.readValue(inputStream,
+                OBJECT_MAPPER.readValue(jsonString,
                         com.indeed.proctor.common.SpecificationResult.class
                 );
 
         if (specificationResult.getSpecification() == null) {
-            return SpecificationResult.failed(
-                    Strings.nullToEmpty(specificationResult.getError())
+            throw new IOException(
+                    "Failed to fetch from servlet: "
+                            + specificationResult.getError()
+                            + " from " + client
             );
         }
 
-        return SpecificationResult.success(
+        return new ProctorSpecifications(
                 Collections.singleton(
                         specificationResult.getSpecification()
                 )
         );
-    }
-
-    interface SpecificationParser {
-        SpecificationResult parse(final InputStream inputStream) throws IOException;
     }
 }

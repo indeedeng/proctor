@@ -287,17 +287,14 @@ public class ProctorController extends AbstractController {
         final SortedSet<AppVersion> versions = Sets.newTreeSet(clients.keySet());
         for (final AppVersion version : versions) {
             final RemoteSpecificationResult remoteResult = clients.get(version);
-            if (remoteResult.isSkipped()) {
-                continue;
-            }
 
             final CompatibleSpecificationResult result;
-            if (remoteResult.isSuccess()) {
+            if (remoteResult.getSpecifications() != null) {
                 result = CompatibleSpecificationResult.fromProctorSpecifications(
                         artifactEnvironment,
                         version,
                         artifact,
-                        remoteResult.getSpecificationResult().getSpecifications()
+                        remoteResult.getSpecifications()
                 );
             } else {
                 final String error = "Failed to load a proctor specification from " + remoteResult.getFailures().keySet().stream()

@@ -1,25 +1,22 @@
 package com.indeed.proctor.webapp.model;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.indeed.proctor.common.ProctorSpecification;
 import com.indeed.proctor.common.TestSpecification;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * a immutable set of proctor specifications (usually, from a single app)
- *
+ * <p>
  * This model allows multiple specifications because one application
  * may initiate more than one Proctor object with different specifications
  * for different usages/contexts
@@ -36,12 +33,13 @@ public class ProctorSpecifications {
     /**
      * Provide a view of set object of specifications
      */
+    @JsonValue
     public Set<ProctorSpecification> asSet() {
         return specifications;
     }
 
     /**
-     * For each testname, returns the specifictions for which it is a required test
+     * For each test name, returns the specifications for which it is a required test
      */
     public Map<String, Set<TestSpecification>> getRequiredTests(
             final Set<String> definedTests
