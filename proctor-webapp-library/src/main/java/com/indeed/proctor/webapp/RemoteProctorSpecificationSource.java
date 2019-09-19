@@ -30,17 +30,18 @@ import com.indeed.proctor.webapp.util.threads.LogOnUncaughtExceptionHandler;
 import com.indeed.util.core.DataLoadingTimerTask;
 import com.indeed.util.core.Pair;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.HttpResponseException;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -69,7 +70,6 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
     @Autowired(required = false)
     private final ProctorClientSource clientSource = new DefaultClientSource();
 
-    private final int httpTimeout;
     private final ExecutorService httpExecutor;
 
     private final Map<Environment, ImmutableMap<AppVersion, RemoteSpecificationResult>> applicationMapByEnvironment =
@@ -77,14 +77,26 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
 
     private final Map<Environment, ProctorReader> proctorReaderMap;
 
-    public RemoteProctorSpecificationSource(final int httpTimeout,
+    private final HttpClient httpClient;
+
+    public RemoteProctorSpecificationSource(final int httpTimeoutMillis,
                                             final int executorThreads,
                                             final ProctorReader trunk,
                                             final ProctorReader qa,
                                             final ProctorReader production) {
         super(RemoteProctorSpecificationSource.class.getSimpleName());
-        this.httpTimeout = httpTimeout;
-        Preconditions.checkArgument(httpTimeout > 0, "verificationTimeout > 0");
+        Preconditions.checkArgument(httpTimeoutMillis > 0, "httpTimeoutMillis > 0");
+
+        this.httpClient = HttpClientBuilder.create()
+                .setDefaultRequestConfig(
+                        RequestConfig.custom()
+                                .setConnectTimeout(httpTimeoutMillis)
+                                .setSocketTimeout(httpTimeoutMillis)
+                                .build()
+                )
+                .disableCookieManagement() // to make it stateless
+                .build();
+
         final ThreadFactory threadFactory = new ThreadFactoryBuilder()
                 .setNameFormat("proctor-specification-source-Thread-%d")
                 .setUncaughtExceptionHandler(new LogOnUncaughtExceptionHandler())
@@ -226,7 +238,7 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
             final List<ProctorClientApplication> callableClients = apps.get(appVersion);
             assert !callableClients.isEmpty();
             futures.put(appVersion, httpExecutor.submit(
-                    () -> internalGet(appVersion, callableClients, httpTimeout)));
+                    () -> internalGet(appVersion, callableClients)));
 
         }
         while (!futures.isEmpty()) {
@@ -251,6 +263,7 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
                         } else if (result.isSuccess()) {
                             appVersionsToCheck.remove(result.getVersion());
                         }
+
                     } catch (final InterruptedException e) {
                         LOGGER.error("Interrupted getting " + appVersion, e);
                     } catch (final ExecutionException e) {
@@ -288,10 +301,9 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
      * Fetch a specification from a list of instances (for a single application and version)
      * It iterates instances until it success to read specification or find it doesn't expose endpoint for spec.
      */
-    private static RemoteSpecificationResult internalGet(
+    private RemoteSpecificationResult internalGet(
             final AppVersion version,
-            final List<ProctorClientApplication> clients,
-            final int timeoutMillis
+            final List<ProctorClientApplication> clients
     ) {
         // TODO (parker) 2/7/13 - priority queue them based on AUS datacenter, US DC, etc
         final LinkedList<ProctorClientApplication> remaining = Lists.newLinkedList(clients);
@@ -300,20 +312,19 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
         while (remaining.peek() != null) {
             final ProctorClientApplication client = remaining.poll();
             // really stupid method of pinging 1 of the applications.
-            final Pair<Integer, SpecificationResult> result = fetchSpecification(client, timeoutMillis);
+            final Pair<Integer, SpecificationResult> result = fetchSpecification(client);
             final int statusCode = result.getFirst();
             final SpecificationResult specificationResult = result.getSecond();
             if (specificationResult.isFailed()) {
-                if (statusCode == HttpURLConnection.HTTP_NOT_FOUND) {
-                    LOGGER.info("Client " + client.getBaseApplicationUrl() + " endpoints for spec returned 404 - skipping");
+                if (statusCode == HttpStatus.SC_NOT_FOUND) {
+                    LOGGER.info("App " + version + " endpoints for spec returned 404 - skipping");
                     results.skipped(client, specificationResult);
                     // skipping rest of clients as none of them is expected to provide the endpoint
                     break;
                 }
 
-                // Don't yell too load, the error is handled
-                LOGGER.debug("Failed to read specification from: " + client.getBaseApplicationUrl()
-                        + " : " + statusCode + ", " + specificationResult.getError());
+                LOGGER.debug("Failed to read specification of " + version
+                        + " : " + specificationResult.getError());
                 results.failed(client, specificationResult);
             } else {
                 results.success(client, specificationResult);
@@ -326,9 +337,8 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
     /**
      * try visiting private/v or private/proctor/specification to get specification
      */
-    private static Pair<Integer, SpecificationResult> fetchSpecification(
-            final ProctorClientApplication client,
-            final int timeoutMillis
+    private Pair<Integer, SpecificationResult> fetchSpecification(
+            final ProctorClientApplication client
     ) {
         // This URL is where we expose variables by ViewExportedVariablesServlet
         final String varExportUrl = client.getBaseApplicationUrl()
@@ -336,7 +346,6 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
 
         final Pair<Integer, SpecificationResult> specFromVarExport = fetchSpecificationFromUrl(
                 varExportUrl,
-                timeoutMillis,
                 RemoteProctorSpecificationSource::parseExportedVariables
         );
 
@@ -350,7 +359,6 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
                 + "/private/proctor/specification";
         final Pair<Integer, SpecificationResult> specFromViewSpec = fetchSpecificationFromUrl(
                 viewSpecUrl,
-                timeoutMillis,
                 RemoteProctorSpecificationSource::parseSpecificationFromServlet
         );
 
@@ -363,44 +371,34 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
         return specFromVarExport;
     }
 
-    private static Pair<Integer, SpecificationResult> fetchSpecificationFromUrl(
+    private Pair<Integer, SpecificationResult> fetchSpecificationFromUrl(
             final String urlString,
-            final int timeoutMillis,
             final SpecificationParser parser
     ) {
-        int statusCode = -1;
-        InputStream inputStream = null;
         try {
-            final URL url = new URL(urlString);
-            final HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-            urlConnection.setReadTimeout(timeoutMillis);
-            urlConnection.setConnectTimeout(timeoutMillis);
-
-            statusCode = urlConnection.getResponseCode();
-            inputStream = urlConnection.getInputStream();
-            //  map from testName => list of bucket names
-            final SpecificationResult result = parser.parse(inputStream);
-            return new Pair<>(statusCode, result);
-        } catch (final Throwable e) {
-            final SpecificationResult errorResult = createErrorResult(e);
-            return new Pair<>(statusCode, errorResult);
-        } finally {
-            try {
-                if (inputStream != null) {
-                    inputStream.close();
+            final HttpGet httpGet = new HttpGet(urlString);
+            return this.httpClient.execute(httpGet, (r) -> {
+                try (InputStream inputStream = r.getEntity().getContent()) {
+                    return new Pair<>(
+                            r.getStatusLine().getStatusCode(),
+                            parser.parse(inputStream)
+                    );
                 }
-            } catch (final IOException e) {
-                LOGGER.error("Unable to close stream to " + urlString, e);
-            }
+            });
+        } catch (final Throwable e) {
+            return createErrorResult(e);
         }
     }
 
-    private static SpecificationResult createErrorResult(final Throwable t) {
-        final StringWriter sw = new StringWriter();
-        final PrintWriter writer = new PrintWriter(sw);
-        t.printStackTrace(writer);
+    private static Pair<Integer, SpecificationResult> createErrorResult(final Throwable t) {
+        final int statusCode;
+        if (t instanceof HttpResponseException) {
+            statusCode = ((HttpResponseException) t).getStatusCode();
+        } else {
+            statusCode = -1;
+        }
 
-        return SpecificationResult.failed(t.getMessage());
+        return new Pair<>(statusCode, SpecificationResult.failed(t.getMessage()));
     }
 
     @Nullable
