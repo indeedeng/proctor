@@ -241,38 +241,23 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
                     () -> internalGet(appVersion, callableClients)));
 
         }
-        while (!futures.isEmpty()) {
+        futures.forEach((version, future) -> {
             try {
-                Thread.sleep(10);
-            } catch (final InterruptedException e) {
-                LOGGER.error("Oh heavens", e);
-            }
-            for (final Iterator<Map.Entry<AppVersion, Future<RemoteSpecificationResult>>> iterator =
-                 futures.entrySet().iterator(); iterator.hasNext(); ) {
-                final Map.Entry<AppVersion, Future<RemoteSpecificationResult>> entry = iterator.next();
-                final AppVersion appVersion = entry.getKey();
-                final Future<RemoteSpecificationResult> future = entry.getValue();
-                if (future.isDone()) {
-                    iterator.remove();
-                    try {
-                        final RemoteSpecificationResult result = future.get();
-                        allResults.put(appVersion, result);
-                        if (result.isSkipped()) {
-                            skippedAppVersions.add(result.getVersion());
-                            appVersionsToCheck.remove(result.getVersion());
-                        } else if (result.isSuccess()) {
-                            appVersionsToCheck.remove(result.getVersion());
-                        }
-
-                    } catch (final InterruptedException e) {
-                        LOGGER.error("Interrupted getting " + appVersion, e);
-                    } catch (final ExecutionException e) {
-                        final Throwable cause = e.getCause();
-                        LOGGER.error("Unable to fetch " + appVersion, cause);
-                    }
+                final RemoteSpecificationResult result = future.get();
+                allResults.put(version, result);
+                if (result.isSkipped()) {
+                    skippedAppVersions.add(result.getVersion());
+                    appVersionsToCheck.remove(result.getVersion());
+                } else if (result.isSuccess()) {
+                    appVersionsToCheck.remove(result.getVersion());
                 }
+            } catch (final InterruptedException e) {
+                LOGGER.error("Interrupted getting " + version, e);
+            } catch (final ExecutionException e) {
+                final Throwable cause = e.getCause();
+                LOGGER.error("Unable to fetch " + version, cause);
             }
-        }
+        });
 
         applicationMapByEnvironment.put(environment, allResults.build());
 
