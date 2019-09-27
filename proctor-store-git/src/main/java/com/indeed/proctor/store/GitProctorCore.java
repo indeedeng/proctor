@@ -267,10 +267,11 @@ public class GitProctorCore implements FileBasedPersisterCore {
     }
 
     @Override
+    @Nullable
     public <C> C getFileContents(
             final Class<C> c,
             final String[] path,
-            final C defaultValue,
+            @Nullable final C defaultValue,
             final String revision
     ) throws StoreException.ReadException, JsonProcessingException {
         try {
@@ -292,7 +293,8 @@ public class GitProctorCore implements FileBasedPersisterCore {
                 treeWalk2.setFilter(PathFilter.create(joinedPath));
 
                 if (!treeWalk2.next()) {
-                    throw new StoreException.ReadException("Did not find expected file '" + joinedPath + "'");
+                    // it did not find expected file `joinPath` so return default value
+                    return defaultValue;
                 }
                 final ObjectId blobId = treeWalk2.getObjectId(0);
                 return getFileContents(c, blobId);
