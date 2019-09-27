@@ -73,26 +73,26 @@ public class GitProctorTest {
                 .isEqualTo(DEFINITION_A);
         assertThat(gitProctor.getTestDefinition("proc_tst", revision3))
                 .isEqualTo(DEFINITION_B);
-        assertThatThrownBy(() -> gitProctor.getTestDefinition("proc_tst", revision4))
-                .isInstanceOf(StoreException.class);
-        assertThatThrownBy(() -> gitProctor.getTestDefinition("proc_tst", revision5))
-                .isInstanceOf(StoreException.class);
+        assertThat(gitProctor.getTestDefinition("proc_tst", revision4))
+                .isNull();
+        assertThat(gitProctor.getTestDefinition("proc_tst", revision5))
+                .isNull();
 
-        assertThatThrownBy(() -> gitProctor.getTestDefinition("proc_another_tst", revision1))
-                .isInstanceOf(StoreException.class);
+        assertThat(gitProctor.getTestDefinition("proc_another_tst", revision1))
+                .isNull();
         assertThat(gitProctor.getTestDefinition("proc_another_tst", revision2))
                 .isEqualTo(DEFINITION_B);
         assertThat(gitProctor.getTestDefinition("proc_another_tst", revision3))
                 .isEqualTo(DEFINITION_B);
-        assertThatThrownBy(() -> gitProctor.getTestDefinition("proc_another_tst", revision4))
-                .isInstanceOf(StoreException.class);
-        assertThatThrownBy(() -> gitProctor.getTestDefinition("proc_another_tst", revision5))
-                .isInstanceOf(StoreException.class);
+        assertThat(gitProctor.getTestDefinition("proc_another_tst", revision4))
+                .isNull();
+        assertThat(gitProctor.getTestDefinition("proc_another_tst", revision5))
+                .isNull();
 
-        assertThatThrownBy(() -> gitProctor.getCurrentTestDefinition("proc_tst"))
-                .isInstanceOf(StoreException.class);
-        assertThatThrownBy(() -> gitProctor.getCurrentTestDefinition("proc_another_tst"))
-                .isInstanceOf(StoreException.class);
+        assertThat(gitProctor.getCurrentTestDefinition("proc_tst"))
+                .isNull();
+        assertThat(gitProctor.getCurrentTestDefinition("proc_another_tst"))
+                .isNull();
         assertThat(gitProctor.getCurrentTestDefinition("proc_new_tst"))
                 .isEqualTo(DEFINITION_A);
 

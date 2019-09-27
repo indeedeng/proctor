@@ -20,14 +20,16 @@ import java.util.Map;
  */
 public interface ProctorReader {
     /**
-     * Returns the current test matrix in the database.
+     * @return the current test matrix in the database.
      */
     TestMatrixVersion getCurrentTestMatrix() throws StoreException;
 
     /**
-     * Returns a current test definition of a test in the database.
-     * @param testName name of the test
+     * @param testName name of the test.
+     * @return a current test definition of a test in the database.
+     * null if the test is not found in the current state.
      */
+    @CheckForNull
     TestDefinition getCurrentTestDefinition(String testName) throws StoreException;
 
     /**
@@ -38,62 +40,67 @@ public interface ProctorReader {
     void verifySetup() throws StoreException;
 
     /**
-     * Returns the latest revision id.
+     * @return the latest revision id.
      */
     @Nonnull
     String getLatestVersion() throws StoreException;
 
     /**
-     * Returns a test matrix when the revision was made.
      * @param revisionId id of the revision
+     * @return a test matrix when the revision was made.
+     * @throws StoreException if the revision is not found.
      */
     TestMatrixVersion getTestMatrix(String revisionId) throws StoreException;
 
     /**
-     * Returns a test definition of a test when the revision was made.
      * @param testName name of the test
      * @param revisionId id of the revision
+     * @return a test definition of a test when the revision was made.
+     * null if the test is not found at the revision
+     * @throws StoreException if the revision is not found.
      */
+    @CheckForNull
     TestDefinition getTestDefinition(String testName, String revisionId) throws StoreException;
 
     /**
-     * Returns a list of revisions for all tests ordered by recency.
      * @param start offset of the first revision (0-indexed)
      * @param limit limit of the number of revisions
+     * @return a list of revisions for all tests ordered by recency.
      */
     @Nonnull
     List<Revision> getMatrixHistory(int start, int limit) throws StoreException;
 
     /**
-     * Returns a list of revisions for a test ordered by recency.
      * @param testName name of the test
      * @param start offset of the first revision (0-indexed)
      * @param limit limit of the number of revisions
+     * @return a list of revisions for a test ordered by recency.
      */
     @Nonnull
     List<Revision> getHistory(String testName, int start, int limit) throws StoreException;
 
     /**
-     * Returns a list of revisions for a test when test revision was made ordered by recency.
      * @param testName name of the test
      * @param start offset of the first revision (0-indexed)
      * @param limit limit of the number of revisions
+     * @return a list of revisions for a test when test revision was made ordered by recency.
+     * @throws StoreException if the revision is not found.
      */
     @Nonnull
     List<Revision> getHistory(String testName, String revisionId, int start, int limit) throws StoreException;
 
     /**
-     * Returns a details of a single revision.
      * @param revisionId id of the revision
-     * @return details of the revision. null if the id is not found in the database.
+     * @return details of the single revision.
+     * null if the revision is not found in the store.
      */
     @CheckForNull
     RevisionDetails getRevisionDetails(String revisionId) throws StoreException;
 
     /**
-     * Returns a list of revisions grouped by a test. Each list is ordered by recency.
+     * Get all the revisions for all tests in history
      * Same revision may appear in two or more lists if multiple tests are modified in the revision.
-     * @return Map from test name to a list of revision.
+     * @return a list of revisions grouped by a test. Each list is ordered by recency.
      */
     @Nonnull
     Map<String, List<Revision>> getAllHistories() throws StoreException;
