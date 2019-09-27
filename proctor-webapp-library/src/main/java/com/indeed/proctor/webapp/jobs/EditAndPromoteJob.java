@@ -283,16 +283,8 @@ public class EditAndPromoteJob extends AbstractJob {
         job.log("(scm) Success: getting history for '" + testName + "'");
 
         job.logWithTiming("(scm) loading existing test definition for '" + testName + "'", "loadDefinition");
-        // Getting the TestDefinition via currentTestMatrix instead of trunkStore.getTestDefinition because the test
-        final TestDefinition existingTestDefinition = trunkStore.getCurrentTestMatrix()
-                .getTestMatrixDefinition()
-                .getTests()
-                .entrySet()
-                .stream()
-                .filter(map -> testName.equalsIgnoreCase(map.getKey()))
-                .map(Map.Entry::getValue)
-                .findAny()
-                .orElse(null);
+        final TestDefinition existingTestDefinition = trunkStore.getCurrentTestDefinition(testName);
+
         if (previousRevision.length() <= 0 && existingTestDefinition != null) {
             throw new IllegalArgumentException("Current tests exists with name : '" + testName + "'");
         }
