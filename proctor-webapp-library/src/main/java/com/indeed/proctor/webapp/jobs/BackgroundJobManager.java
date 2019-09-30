@@ -1,6 +1,7 @@
 package com.indeed.proctor.webapp.jobs;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.indeed.proctor.webapp.extensions.JobInfoStore;
@@ -14,9 +15,11 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import javax.annotation.Nullable;
+import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -36,7 +39,7 @@ public class BackgroundJobManager {
     private final ExecutorService service;
 
     static final int JOB_HISTORY_MAX_SIZE = 1000;
-    // synchronizing Map because put() and entrySet() may be called in parallel by different threads
+    // synchronizing Map because put() and iteration may be called in parallel by different threads
     private final Map<UUID, BackgroundJob<?>> jobHistoryMap = synchronizedMap(new LRUMap<>(JOB_HISTORY_MAX_SIZE));
 
     private final AtomicLong lastId = new AtomicLong(0);
@@ -118,9 +121,18 @@ public class BackgroundJobManager {
         if (jobInfoStore == null) {
             return;
         }
-
-        jobHistoryMap.entrySet().stream()
+        getJobHistoryEntries().stream()
                 .filter(entry -> jobInfoStore.shouldUpdateJobInfo(entry.getValue()))
                 .forEach(entry -> jobInfoStore.updateJobInfo(entry.getKey(), entry.getValue().getJobInfo()));
+
+    }
+
+    private Set<Map.Entry<UUID, BackgroundJob<?>>> getJobHistoryEntries() {
+        final Set<Map.Entry<UUID, BackgroundJob<?>>> entrySet = jobHistoryMap.entrySet();
+        // must synchronize copying, see Collections.synchronizedMap() javadoc
+        synchronized (jobHistoryMap) {
+            // returns copy of original so that it is possible to modify the original map while consuming it.
+            return ImmutableSet.copyOf(entrySet);
+        }
     }
 }
