@@ -57,6 +57,12 @@
             <artifactId>proctor-consumer</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <!-- Simulate a container -->
+            <scope>test</scope>
+        </dependency>
 
 
     </dependencies>

@@ -80,6 +80,11 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>com.indeed</groupId>
             <artifactId>proctor-store</artifactId>
             <version>${project.version}</version>
@@ -169,7 +174,6 @@
 
     <properties>
         <java.version>1.8</java.version>
-        <indeed-util.version>1.0.12</indeed-util.version>
     </properties>
 
 </project>
