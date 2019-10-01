@@ -1,23 +1,22 @@
 package com.indeed.proctor.webapp.jobs;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.indeed.proctor.webapp.extensions.JobInfoStore;
 import com.indeed.proctor.webapp.util.ThreadPoolExecutorVarExports;
 import com.indeed.proctor.webapp.util.threads.LogOnUncaughtExceptionHandler;
 import com.indeed.util.varexport.VarExporter;
-import org.apache.commons.collections4.map.LRUMap;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import javax.annotation.Nullable;
-import java.util.HashSet;
+import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -35,12 +34,17 @@ import static org.apache.commons.collections4.MapUtils.synchronizedMap;
 public class BackgroundJobManager {
     private static final Logger LOGGER = Logger.getLogger(BackgroundJobManager.class);
 
-    private final List<BackgroundJob<?>> backgroundJobs = Lists.newLinkedList();
     private final ExecutorService service;
 
     static final int JOB_HISTORY_MAX_SIZE = 1000;
     // synchronizing Map because put() and iteration may be called in parallel by different threads
-    private final Map<UUID, BackgroundJob<?>> jobHistoryMap = synchronizedMap(new LRUMap<>(JOB_HISTORY_MAX_SIZE));
+    private final Map<UUID, BackgroundJob<?>> jobHistoryMap = synchronizedMap(
+            new LinkedHashMap<UUID, BackgroundJob<?>>(JOB_HISTORY_MAX_SIZE + 1) {
+                @Override
+                protected boolean removeEldestEntry(final Map.Entry<UUID, BackgroundJob<?>> eldest) {
+                    return this.size() > JOB_HISTORY_MAX_SIZE;
+                }
+            });
 
     private final AtomicLong lastId = new AtomicLong(0);
 
@@ -77,7 +81,6 @@ public class BackgroundJobManager {
         job.setUUID(uuid);
         final Future<T> future = service.submit(job);
         job.setFuture(future);
-        backgroundJobs.add(job);
         jobHistoryMap.put(uuid, job);
         if (jobInfoStore != null) {
             jobInfoStore.updateJobInfo(uuid, job.getJobInfo());
@@ -85,17 +88,11 @@ public class BackgroundJobManager {
         LOGGER.info("a background job was submitted : id=" + id + " uuid=" + uuid + " title=" + job.getTitle());
     }
 
+    /**
+     * @return a list of recent background jobs at most 1000
+     */
     public List<BackgroundJob<?>> getRecentJobs() {
-        final List<BackgroundJob<?>> recent = Lists.newArrayListWithCapacity(backgroundJobs.size());
-        final ListIterator<BackgroundJob<?>> jobs = backgroundJobs.listIterator();
-        while (jobs.hasNext()) {
-            final BackgroundJob<?> job = jobs.next();
-            recent.add(job); // inactive jobs get to be returned once...
-            if (job.getFuture().isDone() || job.getFuture().isCancelled()) {
-                jobs.remove();
-            }
-        }
-        return recent;
+        return getBackgroundJobs();
     }
 
     public BackgroundJob<?> getJobForId(final UUID id) {
@@ -125,6 +122,15 @@ public class BackgroundJobManager {
                 .filter(entry -> jobInfoStore.shouldUpdateJobInfo(entry.getValue()))
                 .forEach(entry -> jobInfoStore.updateJobInfo(entry.getKey(), entry.getValue().getJobInfo()));
 
+    }
+
+    private List<BackgroundJob<?>> getBackgroundJobs() {
+        final Collection<BackgroundJob<?>> values = jobHistoryMap.values();
+        // must synchronize copying, see Collections.synchronizedMap() javadoc
+        synchronized (jobHistoryMap) {
+            // returns copy of original so that it is possible to modify the original map while consuming it.
+            return ImmutableList.copyOf(values);
+        }
     }
 
     private Set<Map.Entry<UUID, BackgroundJob<?>>> getJobHistoryEntries() {

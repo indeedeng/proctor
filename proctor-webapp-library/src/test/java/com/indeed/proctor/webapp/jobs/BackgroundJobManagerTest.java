@@ -3,6 +3,7 @@ package com.indeed.proctor.webapp.jobs;
 import com.indeed.proctor.webapp.extensions.JobInfoStore;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -22,11 +23,10 @@ import static org.mockito.Mockito.when;
 
 public class BackgroundJobManagerTest {
 
-
-    private BackgroundJobManager manager = new BackgroundJobManager(new ThreadPoolExecutor(1, 1,
+    private final BackgroundJobManager manager = new BackgroundJobManager(new ThreadPoolExecutor(1, 1,
             0L, TimeUnit.MILLISECONDS,
             new LinkedBlockingQueue<>()));
-    private JobInfoStore infoStoreMock = mock(JobInfoStore.class);
+    private final JobInfoStore infoStoreMock = mock(JobInfoStore.class);
 
     @Before
     public void setUp() {
@@ -42,12 +42,37 @@ public class BackgroundJobManagerTest {
         final BackgroundJob<?> job = mockBackgroundJob();
         manager.submit(job);
         assertThat(manager.getRecentJobs()).containsExactly(job);
-        assertThat(manager.getRecentJobs()).isEmpty();
 
         when(infoStoreMock.shouldUpdateJobInfo(isA(BackgroundJob.class))).thenReturn(true);
         manager.scheduledCacheUpdate();
         verify(infoStoreMock, times(1)).shouldUpdateJobInfo(job);
         verify(infoStoreMock, times(2)).updateJobInfo(any(UUID.class), any(BackgroundJob.JobInfo.class));
+    }
+
+    @Test
+    public void testEvictLeastRecentlyInsertedJobFromHistory() {
+        final BackgroundJob<?> firstJob = mockBackgroundJob();
+        manager.submit(firstJob);
+
+        // Get the first job id with argument capture
+        final ArgumentCaptor<UUID> argument = ArgumentCaptor.forClass(UUID.class);
+        verify(firstJob).setUUID(argument.capture());
+        final UUID firstJobId = argument.getValue();
+
+        final int firstHalfSize = BackgroundJobManager.JOB_HISTORY_MAX_SIZE / 2;
+        for (int i = 0; i < firstHalfSize; i++) {
+            manager.submit(mockBackgroundJob());
+        }
+        // expected to have job before reaching to the max size
+        // also accessing to the job will help to make sure it's not LRU.
+        assertThat(manager.getJobForId(firstJobId)).isNotNull();
+
+        final int secondHalfSize = BackgroundJobManager.JOB_HISTORY_MAX_SIZE - firstHalfSize;
+        for (int i = 0; i < secondHalfSize; i++) {
+            manager.submit(mockBackgroundJob());
+        }
+        // expected to have no history of the first job just after reaching to the max size
+        assertThat(manager.getJobForId(firstJobId)).isNull();
     }
 
     /**
