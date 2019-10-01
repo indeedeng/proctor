@@ -161,7 +161,7 @@ public abstract class AbstractGroups {
         if (proctorResult.getBuckets().isEmpty()) {
             return "";
         }
-        final StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder(proctorResult.getBuckets().size() * 10);
         for (final Entry<String, TestBucket> entry : proctorResult.getBuckets().entrySet()) {
             final String testName = entry.getKey();
             final TestBucket testBucket = entry.getValue();
@@ -191,19 +191,25 @@ public abstract class AbstractGroups {
             return "";
         }
         final StringBuilder sb = buildTestGroupString();
-        if (sb.length() == 0) {
-            return "";
+        // remove trailing comma
+        if (sb.length() > 0) {
+            sb.deleteCharAt(sb.length() - 1);
         }
-        sb.deleteCharAt(sb.length() - 1);
         return sb.toString();
     }
 
+    /**
+     * @return an empty string or a comma-separated, comma-finalized list of groups
+     */
     public StringBuilder buildTestGroupString() {
-        final StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder(proctorResult.getBuckets().size() * 10);
         appendTestGroups(sb);
         return sb;
     }
 
+    /**
+     * @return an empty string or a comma-separated, comma-finalized list of groups
+     */
     public void appendTestGroups(final StringBuilder sb) {
         appendTestGroups(sb, ',');
     }
@@ -229,6 +235,7 @@ public abstract class AbstractGroups {
      *
      * @param sb        a string builder
      * @param separator a char used as separator
+     * @return an empty string or a comma-separated, comma-finalized list of groups
      */
     public void appendTestGroups(final StringBuilder sb, final char separator) {
         final List<String> testNames = getLoggingTestNames();
