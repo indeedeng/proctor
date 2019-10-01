@@ -40,9 +40,11 @@
             <type>pom</type>
         </dependency>
         <dependency>
+            <!-- because consumer contains servlets -->
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
-            <version>3.1.0</version>
+            <!-- Let the container/application provide the servlet-api, to avoid conflicts -->
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <!-- For optional auxilliary controllers -->

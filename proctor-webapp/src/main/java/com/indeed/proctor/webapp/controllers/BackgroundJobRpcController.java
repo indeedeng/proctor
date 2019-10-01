@@ -87,7 +87,7 @@ public class BackgroundJobRpcController {
         final BackgroundJob<?> job = manager.getJobForId(jobId);
         if (job == null) {
             final String msg = "Failed to identify job for " + jobId;
-            final JsonResponse<String> err = new JsonResponse<String>(msg, false, msg);
+            final JsonResponse<String> err = new JsonResponse<>(msg, false, msg);
             return new JsonView(err);
         } else {
             if (job.getFuture() != null) {
@@ -132,12 +132,12 @@ public class BackgroundJobRpcController {
         manager.submit(job);
 
         final JsonResponse<BackgroundJobResponseModel> response =
-                new JsonResponse<BackgroundJobResponseModel>(new BackgroundJobResponseModel(job), true, null);
+                new JsonResponse<>(new BackgroundJobResponseModel(job), true, null);
         return new JsonView(response);
     }
 
     /**
-     * @deprecated Use
+     * @deprecated Use new BackgroundJobResponseModel(job)
      */
     @Deprecated
     public static Map<String, Object> buildJobJson(final BackgroundJob<?> job) {
