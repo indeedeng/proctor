@@ -96,15 +96,20 @@ public class BackgroundJobManager {
         return getBackgroundJobs();
     }
 
+    /**
+     * @param id id of the target BackgroundJob
+     * @return a background job, null if it's not found
+     * @throws JobInfoFoundWithoutBackgroundJobException if the job isn't in jobHistoryMap but JobInfo is in JobInfoStore
+     */
     @CheckForNull
-    public BackgroundJob<?> getJobForId(final UUID id) throws GetBackgroundJobException {
+    public BackgroundJob<?> getJobForId(final UUID id) throws JobInfoFoundWithoutBackgroundJobException {
         final BackgroundJob job = jobHistoryMap.get(id);
         if (job != null) {
             return job;
         }
         if (jobInfoStore != null && jobInfoStore.getJobInfo(id) != null) {
-            throw new GetBackgroundJobException(
-                    "Failed to get BackgroundJob for " + id +". Only JobInfo is available in JobInfoStore."
+            throw new JobInfoFoundWithoutBackgroundJobException(
+                    "Failed to get BackgroundJob for " + id + ". Only JobInfo is available in JobInfoStore."
             );
         }
         return null;
@@ -153,8 +158,8 @@ public class BackgroundJobManager {
         }
     }
 
-    public static class GetBackgroundJobException extends Exception {
-        public GetBackgroundJobException(final String message) {
+    public static class JobInfoFoundWithoutBackgroundJobException extends Exception {
+        public JobInfoFoundWithoutBackgroundJobException(final String message) {
             super(message);
         }
     }

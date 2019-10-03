@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.indeed.proctor.webapp.jobs.BackgroundJob;
 import com.indeed.proctor.webapp.jobs.BackgroundJobFactory;
 import com.indeed.proctor.webapp.jobs.BackgroundJobManager;
-import com.indeed.proctor.webapp.jobs.BackgroundJobManager.GetBackgroundJobException;
+import com.indeed.proctor.webapp.jobs.BackgroundJobManager.JobInfoFoundWithoutBackgroundJobException;
 import com.indeed.proctor.webapp.model.SessionViewModel;
 import com.indeed.proctor.webapp.model.WebappConfiguration;
 import com.indeed.proctor.webapp.model.api.BackgroundJobResponseModel;
@@ -88,7 +88,7 @@ public class BackgroundJobRpcController {
         final BackgroundJob job;
         try {
             job = manager.getJobForId(jobId);
-        } catch (final GetBackgroundJobException exception) {
+        } catch (final JobInfoFoundWithoutBackgroundJobException exception) {
             final String msg = exception.getMessage();
             final BackgroundJob.JobInfo jobInfo = manager.getJobInfo(jobId);
             final JsonResponse response = new JsonResponse<>(new BackgroundJobResponseModel(jobInfo), false, msg);

@@ -145,7 +145,7 @@ public class BackgroundJobManagerTest {
 
         // The job isn't in the history but in JobInfoStore
         assertThatThrownBy(() -> manager.getJobForId(jobId))
-                .isInstanceOf(BackgroundJobManager.GetBackgroundJobException.class);
+                .isInstanceOf(BackgroundJobManager.JobInfoFoundWithoutBackgroundJobException.class);
     }
 
     private BackgroundJob<?> mockBackgroundJob() {
