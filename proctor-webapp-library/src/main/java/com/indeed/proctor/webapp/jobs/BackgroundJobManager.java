@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -95,13 +96,23 @@ public class BackgroundJobManager {
         return getBackgroundJobs();
     }
 
-    public BackgroundJob<?> getJobForId(final UUID id) {
-        return jobHistoryMap.get(id);
+    @CheckForNull
+    public BackgroundJob<?> getJobForId(final UUID id) throws GetBackgroundJobException {
+        final BackgroundJob job = jobHistoryMap.get(id);
+        if (job != null) {
+            return job;
+        }
+        if (jobInfoStore != null && jobInfoStore.getJobInfo(id) != null) {
+            throw new GetBackgroundJobException(
+                    "Failed to get BackgroundJob for " + id +". Only JobInfo is available in JobInfoStore."
+            );
+        }
+        return null;
     }
 
     @Nullable
     public BackgroundJob.JobInfo getJobInfo(final UUID jobId) {
-        final BackgroundJob<?> job = getJobForId(jobId);
+        final BackgroundJob<?> job = jobHistoryMap.get(jobId);
         if (job != null) {
             return job.getJobInfo();
         } else if (jobInfoStore != null) {
@@ -139,6 +150,12 @@ public class BackgroundJobManager {
         synchronized (jobHistoryMap) {
             // returns copy of original so that it is possible to modify the original map while consuming it.
             return ImmutableSet.copyOf(entrySet);
+        }
+    }
+
+    public static class GetBackgroundJobException extends Exception {
+        public GetBackgroundJobException(final String message) {
+            super(message);
         }
     }
 }

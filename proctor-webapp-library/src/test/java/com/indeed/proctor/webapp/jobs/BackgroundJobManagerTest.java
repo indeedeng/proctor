@@ -13,6 +13,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.mock;
@@ -50,7 +51,7 @@ public class BackgroundJobManagerTest {
     }
 
     @Test
-    public void testEvictLeastRecentlyInsertedJobFromHistory() {
+    public void testEvictLeastRecentlyInsertedJobFromHistory() throws Exception {
         final BackgroundJob<?> firstJob = mockBackgroundJob();
         manager.submit(firstJob);
 
@@ -135,6 +136,16 @@ public class BackgroundJobManagerTest {
         // it's expected to have ConcurrentModificationException here if it's not threadsafe,
         // or to block until timeout on over synchronization
         cacheUpdateThread.join(5000);
+    }
+
+    @Test
+    public void testGetJobForIdThrowsGetBackgroundJobException() {
+        final UUID jobId = UUID.randomUUID();
+        when(infoStoreMock.getJobInfo(jobId)).thenReturn(mock(BackgroundJob.JobInfo.class));
+
+        // The job isn't in the history but in JobInfoStore
+        assertThatThrownBy(() -> manager.getJobForId(jobId))
+                .isInstanceOf(BackgroundJobManager.GetBackgroundJobException.class);
     }
 
     private BackgroundJob<?> mockBackgroundJob() {
