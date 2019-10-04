@@ -22,7 +22,7 @@ Use one of the following approaches to prevent user drift:
 
 * Assign groups starting at the "beginning" of your allocation ranges and increase allocations by using some `inactive` users:
   {% include range_allocation_table.html buckets='control test inactive' values="0 1 -1" ranges='10 10 80' %}
-  {% include range_allocation_table.html buckets='control test inactive control test' values="0 1 0 1 -1" ranges='10 10 10 10 60' %}
+  {% include range_allocation_table.html buckets='control test control test inactive' values="0 1 0 1 -1" ranges='10 10 10 10 60' %}
 
  Ensure that users do not drive from test to control during allocation changes.
 
