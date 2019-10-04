@@ -99,25 +99,15 @@ public class BackgroundJobManager {
     /**
      * @param id id of the target BackgroundJob
      * @return a background job, null if it's not found
-     * @throws JobInfoFoundWithoutBackgroundJobException if the job isn't in jobHistoryMap but JobInfo is in JobInfoStore
      */
     @CheckForNull
-    public BackgroundJob<?> getJobForId(final UUID id) throws JobInfoFoundWithoutBackgroundJobException {
-        final BackgroundJob job = jobHistoryMap.get(id);
-        if (job != null) {
-            return job;
-        }
-        if (jobInfoStore != null && jobInfoStore.getJobInfo(id) != null) {
-            throw new JobInfoFoundWithoutBackgroundJobException(
-                    "Failed to get BackgroundJob for " + id + ". Only JobInfo is available in JobInfoStore."
-            );
-        }
-        return null;
+    public BackgroundJob<?> getJobForId(final UUID id) {
+        return jobHistoryMap.get(id);
     }
 
     @Nullable
     public BackgroundJob.JobInfo getJobInfo(final UUID jobId) {
-        final BackgroundJob<?> job = jobHistoryMap.get(jobId);
+        final BackgroundJob<?> job = getJobForId(jobId);
         if (job != null) {
             return job.getJobInfo();
         } else if (jobInfoStore != null) {
@@ -155,12 +145,6 @@ public class BackgroundJobManager {
         synchronized (jobHistoryMap) {
             // returns copy of original so that it is possible to modify the original map while consuming it.
             return ImmutableSet.copyOf(entrySet);
-        }
-    }
-
-    public static class JobInfoFoundWithoutBackgroundJobException extends Exception {
-        public JobInfoFoundWithoutBackgroundJobException(final String message) {
-            super(message);
         }
     }
 }

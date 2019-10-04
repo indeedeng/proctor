@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableMap;
 import com.indeed.proctor.webapp.jobs.BackgroundJob;
 import com.indeed.proctor.webapp.jobs.BackgroundJobFactory;
 import com.indeed.proctor.webapp.jobs.BackgroundJobManager;
-import com.indeed.proctor.webapp.jobs.BackgroundJobManager.JobInfoFoundWithoutBackgroundJobException;
 import com.indeed.proctor.webapp.model.SessionViewModel;
 import com.indeed.proctor.webapp.model.WebappConfiguration;
 import com.indeed.proctor.webapp.model.api.BackgroundJobResponseModel;
@@ -85,16 +84,7 @@ public class BackgroundJobRpcController {
     @ApiOperation(value = "Cancel a background job")
     @RequestMapping(value = "/cancel", method = RequestMethod.GET)
     public View doCancelJob(@RequestParam("id") final UUID jobId) {
-        final BackgroundJob job;
-        try {
-            job = manager.getJobForId(jobId);
-        } catch (final JobInfoFoundWithoutBackgroundJobException exception) {
-            final String msg = exception.getMessage();
-            final BackgroundJob.JobInfo jobInfo = manager.getJobInfo(jobId);
-            final JsonResponse response = new JsonResponse<>(new BackgroundJobResponseModel(jobInfo), false, msg);
-            return new JsonView(response);
-        }
-
+        final BackgroundJob<?> job = manager.getJobForId(jobId);
         if (job == null) {
             final String msg = "Failed to identify job for " + jobId;
             final JsonResponse<String> err = new JsonResponse<>(msg, false, msg);
