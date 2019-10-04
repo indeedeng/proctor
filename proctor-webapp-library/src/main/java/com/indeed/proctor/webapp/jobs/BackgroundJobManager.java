@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -95,6 +96,11 @@ public class BackgroundJobManager {
         return getBackgroundJobs();
     }
 
+    /**
+     * @param id id of the target BackgroundJob
+     * @return a background job, null if it's not found
+     */
+    @CheckForNull
     public BackgroundJob<?> getJobForId(final UUID id) {
         return jobHistoryMap.get(id);
     }

@@ -7,10 +7,12 @@ import com.indeed.proctor.webapp.extensions.BeforeBackgroundJobExecute;
 import com.indeed.proctor.webapp.jobs.AutoPromoter.AutoPromoteFailedException;
 import org.apache.log4j.Logger;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -125,6 +127,11 @@ public abstract class BackgroundJob<T> implements Callable<T> {
 
     public void setEndMessage(final String endMessage) {
         this.endMessage = endMessage;
+    }
+
+    @CheckForNull
+    public String getErrorMessage() {
+        return Optional.ofNullable(error).map(Throwable::getMessage).orElse(null);
     }
 
     public Throwable getError() {
@@ -251,7 +258,8 @@ public abstract class BackgroundJob<T> implements Callable<T> {
 
     @Nonnull
     public JobInfo getJobInfo() {
-        return new JobInfo(getUUID(), getStatus(), getLog(), getTitle(), getUsername(), isRunning(), getUrls(), getEndMessage());
+        return new JobInfo(getUUID(), getStatus(), getLog(), getTitle(), getUsername(), isRunning(), getUrls(),
+                getEndMessage(), getErrorMessage());
     }
 
     public enum JobType {
@@ -310,6 +318,7 @@ public abstract class BackgroundJob<T> implements Callable<T> {
         private final boolean running;
         private final List<ResultUrl> urls;
         private final String endMessage;
+        private final String errorMessage;
 
         public JobInfo(final UUID jobId,
                        final JobStatus status,
@@ -318,7 +327,8 @@ public abstract class BackgroundJob<T> implements Callable<T> {
                        final String username,
                        final boolean running,
                        final List<ResultUrl> urls,
-                       final String endMessage
+                       final String endMessage,
+                       final String errorMessage
         ) {
             this.jobId = jobId;
             this.status = status;
@@ -328,6 +338,7 @@ public abstract class BackgroundJob<T> implements Callable<T> {
             this.running = running;
             this.urls = urls;
             this.endMessage = endMessage;
+            this.errorMessage = errorMessage;
         }
 
         public UUID getJobId() {
@@ -360,6 +371,10 @@ public abstract class BackgroundJob<T> implements Callable<T> {
 
         public String getEndMessage() {
             return endMessage;
+        }
+
+        public String getErrorMessage() {
+            return errorMessage;
         }
     }
 
