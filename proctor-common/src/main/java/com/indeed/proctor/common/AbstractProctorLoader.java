@@ -123,22 +123,19 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
             throw new MissingTestMatrixException("Failed to load Test Matrix from " + getSource());
         }
 
-        final ProctorLoadResult loadResult;
-        if (requiredTests == null) {
-            // Probably an absent specification.
-            loadResult = ProctorUtils.verifyWithoutSpecification(testMatrix, getSource());
-        } else {
-            final Set<String> dynamicTests = dynamicFilters.determineTests(testMatrix.getTests(), requiredTests.keySet());
-            exportDynamicTests(dynamicTests);
-            loadResult = ProctorUtils.verifyAndConsolidate(
-                    testMatrix,
-                    getSource(),
-                    requiredTests,
-                    functionMapper,
-                    providedContext,
-                    dynamicTests
-            );
-        }
+        final Set<String> dynamicTests = dynamicFilters.determineTests(
+                testMatrix.getTests(),
+                requiredTests.keySet()
+        );
+        exportDynamicTests(dynamicTests);
+        final ProctorLoadResult loadResult = ProctorUtils.verifyAndConsolidate(
+                testMatrix,
+                getSource(),
+                requiredTests,
+                functionMapper,
+                providedContext,
+                dynamicTests
+        );
 
         loadResult.getTestErrorMap().forEach((testName, exception) -> {
             LOGGER.error(String.format("Unable to load test matrix for a required test %s", testName), exception);
