@@ -8,7 +8,6 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.hash.Hashing;
 import com.indeed.proctor.common.ProctorLoadResult;
-import com.indeed.proctor.webapp.model.ProctorSpecifications;
 import com.indeed.proctor.common.ProctorUtils;
 import com.indeed.proctor.common.Serializers;
 import com.indeed.proctor.common.TestSpecification;
@@ -25,6 +24,7 @@ import com.indeed.proctor.webapp.ProctorSpecificationSource;
 import com.indeed.proctor.webapp.db.Environment;
 import com.indeed.proctor.webapp.model.AppVersion;
 import com.indeed.proctor.webapp.model.ProctorClientApplication;
+import com.indeed.proctor.webapp.model.ProctorSpecifications;
 import com.indeed.proctor.webapp.model.RemoteSpecificationResult;
 import com.indeed.proctor.webapp.model.SessionViewModel;
 import com.indeed.proctor.webapp.model.WebappConfiguration;
@@ -45,6 +45,7 @@ import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -62,7 +63,6 @@ public class ProctorController extends AbstractController {
     private static final Logger LOGGER = Logger.getLogger(ProctorController.class);
 
     private static final long FALLBACK_UPDATED_TIME = 0L;
-
 
     private static final ObjectMapper OBJECT_MAPPER = Serializers.strict();
 
@@ -169,15 +169,15 @@ public class ProctorController extends AbstractController {
 
         for (final AppVersion version : versions) {
             final ProctorSpecifications specifications = clients.get(version);
-            final Map<String, Set<TestSpecification>> requiredTests =
-                    specifications.getRequiredTests(definedTests.keySet());
+            final Map<String, Collection<TestSpecification>> requiredTests =
+                    specifications.getRequiredTests();
             final Set<String> dynamicTests =
                     specifications.getDynamicTests(definedTests);
 
-            for (final Entry<String, Set<TestSpecification>> testEntry :
+            for (final Entry<String, Collection<TestSpecification>> testEntry :
                     requiredTests.entrySet()) {
                 final String testName = testEntry.getKey();
-                final Set<TestSpecification> testSpecifications = testEntry.getValue();
+                final Collection<TestSpecification> testSpecifications = testEntry.getValue();
 
                 tests.computeIfAbsent(testName, k -> new CompatibilityRow())
                         .addVersion(
@@ -373,6 +373,7 @@ public class ProctorController extends AbstractController {
 
     /**
      * set spring Model attribute for view
+     *
      * @return view spring name
      */
     private String getArtifactForView(final Model model, final Environment branch, final ProctorView view) {
@@ -497,9 +498,9 @@ public class ProctorController extends AbstractController {
                 final AppVersion version,
                 final TestMatrixArtifact artifact,
                 final String testName,
-                final Set<TestSpecification> specifications
+                final Collection<TestSpecification> specifications
         ) {
-            final Map<String, Set<TestSpecification>> requiredTests =
+            final Map<String, Collection<TestSpecification>> requiredTests =
                     Collections.singletonMap(testName, specifications);
             final Set<String> dynamicTests = Collections.emptySet();
             return fromTests(
@@ -522,7 +523,7 @@ public class ProctorController extends AbstractController {
                 final TestMatrixArtifact artifact,
                 final String testName
         ) {
-            final Map<String, Set<TestSpecification>> requiredTests = Collections.emptyMap();
+            final Map<String, Collection<TestSpecification>> requiredTests = Collections.emptyMap();
             final Set<String> dynamicTests = Collections.singleton(testName);
             return fromTests(
                     matrixEnvironment,
@@ -548,7 +549,7 @@ public class ProctorController extends AbstractController {
                     artifactEnvironment,
                     version,
                     artifact,
-                    specifications.getRequiredTests(artifact.getTests().keySet()),
+                    specifications.getRequiredTests(),
                     specifications.getDynamicTests(artifact.getTests()),
                     (matrixSource, plr) ->
                             String.format("Incompatible: Tests Missing: %s Invalid Tests: %s for %s",
@@ -560,7 +561,7 @@ public class ProctorController extends AbstractController {
                 final Environment environment,
                 final AppVersion version,
                 final TestMatrixArtifact artifact,
-                final Map<String, Set<TestSpecification>> requiredTests,
+                final Map<String, Collection<TestSpecification>> requiredTests,
                 final Set<String> dynamicTests,
                 final BiFunction<String, ProctorLoadResult, String> errorMessageFunction
         ) {

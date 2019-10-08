@@ -1,7 +1,7 @@
 package com.indeed.proctor.webapp.model;
 
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.indeed.proctor.common.ProctorSpecification;
@@ -10,7 +10,6 @@ import com.indeed.proctor.common.model.ConsumableTestDefinition;
 
 import java.util.Collection;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -41,27 +40,20 @@ public class ProctorSpecifications {
     /**
      * For each test name, returns the specifications for which it is a required test
      */
-    public Map<String, Set<TestSpecification>> getRequiredTests(
-            final Set<String> definedTests
-    ) {
-        final ImmutableMap.Builder<String, Set<TestSpecification>> builder
-                = ImmutableMap.builder();
-        for (final String testName : definedTests) {
-            final Set<TestSpecification> specsForTest = specifications.stream()
-                    .map(ProctorSpecification::getTests)
-                    .map(x -> x.get(testName))
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toSet());
-            if (!specsForTest.isEmpty()) {
-                builder.put(testName, specsForTest);
-            }
-        }
-        return builder.build();
+    public Map<String, Collection<TestSpecification>> getRequiredTests() {
+        final ImmutableMultimap.Builder<String, TestSpecification> builder =
+                ImmutableMultimap.builder();
+        specifications.forEach(specification ->
+                specification.getTests().forEach(builder::put)
+        );
+        return builder.build().asMap();
     }
 
     /**
      * Returns a set of proctor test names that are resolved
      * by a dynamic filter defined in one of specifications.
+     *
+     * @param definedTests a map of test definitions in a test matrix used by dynamic filter.
      */
     public Set<String> getDynamicTests(
             final Map<String, ConsumableTestDefinition> definedTests
@@ -77,12 +69,16 @@ public class ProctorSpecifications {
     /**
      * Returns a set of proctor test names
      * that are resolved by a test specification or dynamic filters
+     * <p>
+     * Note that a test in a specification will be included
+     * even if it's not defined in a test matrix.
+     *
+     * @param definedTests a map of test definitions in a test matrix used by dynamic filter.
      */
     public Set<String> getResolvedTests(
             final Map<String, ConsumableTestDefinition> definedTests
     ) {
-        final Set<String> requiredTests =
-                getRequiredTests(definedTests.keySet()).keySet();
+        final Set<String> requiredTests = getRequiredTests().keySet();
         final Set<String> dynamicTests = getDynamicTests(definedTests);
         return Sets.union(requiredTests, dynamicTests);
     }
