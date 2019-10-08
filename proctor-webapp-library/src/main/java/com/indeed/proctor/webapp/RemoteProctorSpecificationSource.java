@@ -5,6 +5,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -281,6 +282,11 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
             } catch (final IOException e) {
                 failures.put(client, e);
             }
+        }
+        if (!failures.isEmpty()) {
+            LOGGER.debug("Failed to get specifications from " + version,
+                    Iterables.getFirst(failures.values(), null)
+            );
         }
         return RemoteSpecificationResult.failures(version, failures);
     }

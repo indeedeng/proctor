@@ -88,7 +88,7 @@ public class RemoteSpecificationResult {
     ) {
         return new RemoteSpecificationResult(
                 version,
-                Collections.emptyMap(),
+                failures,
                 null,
                 null
         );
