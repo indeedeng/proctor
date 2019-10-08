@@ -284,7 +284,7 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
             }
         }
         if (!failures.isEmpty()) {
-            LOGGER.debug("Failed to get specifications from " + version,
+            LOGGER.info("Failed to get specifications from " + version,
                     Iterables.getFirst(failures.values(), null)
             );
         }
