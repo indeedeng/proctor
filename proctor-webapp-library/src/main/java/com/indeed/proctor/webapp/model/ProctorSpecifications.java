@@ -38,7 +38,8 @@ public class ProctorSpecifications {
     }
 
     /**
-     * For each test name, returns the specifications for which it is a required test
+     * Returns a map where keys are names of required tests in any specification
+     * and values of each key are a collection of test specifications of the test.
      */
     public Map<String, Collection<TestSpecification>> getRequiredTests() {
         final ImmutableMultimap.Builder<String, TestSpecification> builder =
