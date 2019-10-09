@@ -537,7 +537,7 @@ public class ProctorTestDefinitionController extends AbstractController {
                                 .getDynamicTests(singleTestMatrix)
                                 .contains(testName)
                         && !specifications.get(appVersion)
-                                .getRequiredTests(singleTestMatrix.keySet())
+                                .getRequiredTests()
                                 .containsKey(testName)
                 )
                 .collect(Collectors.toSet());
