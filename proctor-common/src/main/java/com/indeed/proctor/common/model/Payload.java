@@ -36,6 +36,9 @@ public class Payload {
     private Map<String,Object> map;
     // Used for returning something when we can't return a null.
     public static final Payload EMPTY_PAYLOAD = new Payload();
+    // Error message for invalid user input
+    public static final String PAYLOAD_NULL_VALUE_EXCEPTION = "Payload map values can't be null: ";
+    public static final String PAYLOAD_OVERWRITE_EXCEPTION = "Expected all properties to be empty: ";
 
     public Payload() { /* intentionally empty */ }
 
@@ -118,6 +121,7 @@ public class Payload {
     }
     public void setMap(@Nullable final Map<String, Object> map) {
         precheckStateAllNull();
+        precheckValidMapValues(map);
         this.map = map;
     }
     // Sanity check precondition for above setters
@@ -126,7 +130,14 @@ public class Payload {
             || (longValue != null) || (longArray != null)
             || (stringValue != null) || (stringArray != null)
             || (map != null)) {
-            throw new IllegalStateException("Expected all properties to be empty: " + this);
+            throw new IllegalStateException(PAYLOAD_OVERWRITE_EXCEPTION + this);
+        }
+    }
+
+    // proctor-common assumes payload values are @Nonnull. Enforce it here.
+    private static void precheckValidMapValues(@Nullable final Map<String, Object> map) throws IllegalStateException {
+        if (map != null && map.containsValue(null)) {
+            throw new IllegalStateException(PAYLOAD_NULL_VALUE_EXCEPTION + map);
         }
     }
 
