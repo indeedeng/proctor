@@ -14,7 +14,7 @@
     <groupId>com.indeed</groupId>
     <artifactId>proctor-parent</artifactId>
     <!--This version is not used in latest release. See https://mvnrepository.com/artifact/com.indeed/proctor-parent -->
-    <version>9999-SNAPSHOT</version>
+    <version>1.9.4</version>
     <packaging>pom</packaging>
     <url>https://github.com/indeedeng</url>
 
