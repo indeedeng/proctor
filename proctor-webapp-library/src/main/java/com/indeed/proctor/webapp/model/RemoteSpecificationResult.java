@@ -1,5 +1,7 @@
 package com.indeed.proctor.webapp.model;
 
+import com.google.common.base.Strings;
+
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
 import java.util.Collections;
@@ -54,7 +56,8 @@ public class RemoteSpecificationResult {
         return failures.entrySet().stream()
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
-                        e -> e.getValue().getMessage()
+                        // getMessage() may return null
+                        e -> Strings.nullToEmpty(e.getValue().getMessage())
                 ));
     }
 
