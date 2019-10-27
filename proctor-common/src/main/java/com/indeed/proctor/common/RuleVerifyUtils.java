@@ -66,7 +66,7 @@ public class RuleVerifyUtils {
                     valueExpression.getValue(elContext);
                 } catch (final ELException e) {
                     if (isIgnorable(root, absentIdentifiers)) {
-                        LOGGER.debug(String.format("Rule %s contains uninstantiated identifier(s) in %s, ignore the failure", testRule, absentIdentifiers), e);
+                        LOGGER.debug(String.format("Rule %s contains uninstantiated identifier(s) in %s, ignoring the failure", testRule, absentIdentifiers));
                     } else {
                         throw new InvalidRuleException(e, String.format("Failed to evaluate a rule %s: " + e.getMessage(), testRule));
                     }
