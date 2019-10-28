@@ -2,8 +2,8 @@ package com.indeed.proctor.store;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.io.File;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
@@ -56,6 +56,12 @@ public class LocalDirectoryStore extends FileBasedProctorStore {
     @Nonnull
     @Override
     public List<Revision> getMatrixHistory(final int start, final int limit) throws StoreException {
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    @Nonnull
+    @Override
+    public List<Revision> getMatrixHistory(final Instant sinceInclusive, final Instant untilExclusive) throws StoreException {
         throw new UnsupportedOperationException("Not implemented yet");
     }
 

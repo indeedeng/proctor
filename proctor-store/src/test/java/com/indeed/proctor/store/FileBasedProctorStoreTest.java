@@ -17,6 +17,7 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -164,6 +165,12 @@ public class FileBasedProctorStoreTest {
         @Nonnull
         @Override
         public List<Revision> getMatrixHistory(final int start, final int limit) throws StoreException {
+            return null;
+        }
+
+        @Nonnull
+        @Override
+        public List<Revision> getMatrixHistory(final Instant sinceInclusive, final Instant untilExclusive) throws StoreException {
             return null;
         }
 

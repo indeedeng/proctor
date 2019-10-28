@@ -19,6 +19,7 @@ import org.apache.log4j.Logger;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -117,6 +118,12 @@ public class CachingProctorStore implements ProctorStore {
     @Nonnull
     @Override
     public List<Revision> getMatrixHistory(final int start, final int limit) throws StoreException {
+        return delegate.getMatrixHistory(start, limit);
+    }
+
+    @Nonnull
+    @Override
+    public List<Revision> getMatrixHistory(final Instant start, final Instant limit) throws StoreException {
         return delegate.getMatrixHistory(start, limit);
     }
 
