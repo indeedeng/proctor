@@ -4,7 +4,6 @@ import com.indeed.proctor.common.model.TestMatrixArtifact;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.el.FunctionMapper;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -30,8 +29,7 @@ public class UrlProctorLoader extends AbstractJsonProctorLoader {
     }
 
     public UrlProctorLoader(@Nonnull final ProctorSpecification specification, @Nonnull final URL inputUrl) {
-        super(UrlProctorLoader.class, specification, RuleEvaluator.FUNCTION_MAPPER);
-        this.inputURL = inputUrl;
+        this(specification, inputUrl, RuleEvaluator.FUNCTION_MAPPER);
     }
 
     public UrlProctorLoader(@Nonnull final ProctorSpecification specification, @Nonnull final URL inputUrl, final FunctionMapper functionMapper) {
@@ -47,12 +45,9 @@ public class UrlProctorLoader extends AbstractJsonProctorLoader {
 
     @CheckForNull
     @Override
-    protected TestMatrixArtifact loadTestMatrix() throws IOException, MissingTestMatrixException {
-        final Reader reader = new BufferedReader(new InputStreamReader(inputURL.openStream()));
-        try {
+    protected TestMatrixArtifact loadTestMatrix() throws IOException {
+        try (Reader reader = new BufferedReader(new InputStreamReader(inputURL.openStream()))) {
             return loadJsonTestMatrix(reader);
-        } finally {
-            reader.close();
         }
     }
 }

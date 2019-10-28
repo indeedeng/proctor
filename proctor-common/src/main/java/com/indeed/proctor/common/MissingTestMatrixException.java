@@ -1,6 +1,8 @@
 package com.indeed.proctor.common;
 
-public class MissingTestMatrixException extends Exception {
+import java.io.IOException;
+
+public class MissingTestMatrixException extends IOException {
     public MissingTestMatrixException(final String message) {
         super(message);
     }

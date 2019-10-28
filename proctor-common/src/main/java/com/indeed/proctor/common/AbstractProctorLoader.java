@@ -81,6 +81,9 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
     @CheckForNull
     abstract TestMatrixArtifact loadTestMatrix() throws IOException, MissingTestMatrixException;
 
+    /**
+     * @return informative String for log/error messages
+     */
     @Nonnull
     abstract String getSource();
 
@@ -120,33 +123,36 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
             throw new MissingTestMatrixException("Failed to load Test Matrix from " + getSource());
         }
 
-        final ProctorLoadResult loadResult;
-        if (requiredTests == null) {
-            // Probably an absent specification.
-            loadResult = ProctorUtils.verifyWithoutSpecification(testMatrix, getSource());
-        } else {
-            final Set<String> dynamicTests = dynamicFilters.determineTests(testMatrix.getTests(), requiredTests.keySet());
-            exportDynamicTests(dynamicTests);
-            loadResult = ProctorUtils.verifyAndConsolidate(
-                    testMatrix,
-                    getSource(),
-                    requiredTests,
-                    functionMapper,
-                    providedContext,
-                    dynamicTests
-            );
-        }
+        final Set<String> dynamicTests = dynamicFilters.determineTests(
+                testMatrix.getTests(),
+                requiredTests.keySet()
+        );
+        exportDynamicTests(dynamicTests);
+        final ProctorLoadResult loadResult = ProctorUtils.verifyAndConsolidate(
+                testMatrix,
+                getSource(),
+                requiredTests,
+                functionMapper,
+                providedContext,
+                dynamicTests
+        );
 
-        if (!loadResult.getTestErrorMap().isEmpty()) {
-            for (final Map.Entry<String, IncompatibleTestMatrixException> errorTest : loadResult.getTestErrorMap().entrySet()) {
-                final String testName = errorTest.getKey();
-                if (requiredTests.containsKey(testName)) {
-                    LOGGER.error(String.format("Unable to load test matrix for %s in a specification", testName), errorTest.getValue());
-                } else {
-                    LOGGER.warn(String.format("Unable to load test matrix for %s matching dynamic filters", testName), errorTest.getValue());
-                }
-            }
-        }
+        loadResult.getTestErrorMap().forEach((testName, exception) -> {
+            LOGGER.error(String.format("Unable to load test matrix for a required test %s", testName), exception);
+        });
+        loadResult.getMissingTests().forEach((testName) ->
+            LOGGER.error(String.format("A required test %s is missing from test matrix", testName))
+        );
+        loadResult.getDynamicTestErrorMap().forEach((testName, exception) -> {
+            // Intentionally not adding stack trace to log, to reduce log size,
+            // message contains all the information that is valuable.
+            LOGGER.warn(String.format(
+                    "Unable to load test matrix for a dynamic test %s. Cause: %s Message: %s",
+                    testName,
+                    exception.getCause(),
+                    exception.getMessage()
+            ));
+        });
 
         final Audit newAudit = testMatrix.getAudit();
         if (lastAudit != null) {

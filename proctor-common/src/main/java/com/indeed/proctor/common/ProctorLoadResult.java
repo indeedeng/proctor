@@ -1,17 +1,15 @@
 package com.indeed.proctor.common;
 
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
-
-import com.indeed.proctor.common.IncompatibleTestMatrixException;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author matts
@@ -26,6 +24,10 @@ public class ProctorLoadResult {
 
     private final boolean verifiedRules;
 
+    /**
+     * @deprecated Use {@link ProctorLoadResult#newBuilder()}
+     */
+    @Deprecated
     public ProctorLoadResult(
             @Nonnull final Set<String> testsWithErrors,
             @Nonnull Set<String> missingTests
@@ -33,6 +35,10 @@ public class ProctorLoadResult {
         this(testsWithErrors, missingTests, false);
     }
 
+    /**
+     * @deprecated Use {@link ProctorLoadResult#newBuilder()}
+     */
+    @Deprecated
     public ProctorLoadResult(
             @Nonnull final Set<String> testsWithErrors,
             @Nonnull Set<String> missingTests,
@@ -41,6 +47,10 @@ public class ProctorLoadResult {
         this(makeTestErrorMap(testsWithErrors), missingTests, verifiedRules);
     }
 
+    /**
+     * @deprecated Use {@link ProctorLoadResult#newBuilder()}
+     */
+    @Deprecated
     public ProctorLoadResult(
         @Nonnull final Map<String, IncompatibleTestMatrixException> testErrorMap,
         @Nonnull Set<String> missingTests,
@@ -54,6 +64,10 @@ public class ProctorLoadResult {
         );
     }
 
+    /**
+     * @deprecated Use {@link ProctorLoadResult#newBuilder()}
+     */
+    @Deprecated
     public ProctorLoadResult(
             @Nonnull final Map<String, IncompatibleTestMatrixException> testErrorMap,
             @Nonnull final Map<String, IncompatibleTestMatrixException> dynamicTestErrorMap,
@@ -81,6 +95,14 @@ public class ProctorLoadResult {
         return testErrorMap;
     }
 
+    /**
+     * Returns map from test name to incompatible test matrix exception for tests resolved by dynamic filter.
+     */
+    @Nonnull
+    public Map<String, IncompatibleTestMatrixException> getDynamicTestErrorMap() {
+        return dynamicTestErrorMap;
+    }
+
     @Nonnull
     public Set<String> getMissingTests() {
         return missingTests;
@@ -91,12 +113,9 @@ public class ProctorLoadResult {
     }
 
     private static Map<String, IncompatibleTestMatrixException> makeTestErrorMap(final Set<String> testsWithErrors) {
-        return Maps.asMap(testsWithErrors, new Function<String, IncompatibleTestMatrixException>() {
-            @Override
-            public IncompatibleTestMatrixException apply(final String testName) {
-                return new IncompatibleTestMatrixException(testName + " has an invalid specification");
-            }
-        });
+        return testsWithErrors.stream()
+                .collect(Collectors.toMap(Function.identity(),
+                        testName -> new IncompatibleTestMatrixException(testName + " has an invalid specification")));
     }
 
     @SuppressWarnings("UnusedDeclaration")
@@ -128,6 +147,9 @@ public class ProctorLoadResult {
             return this;
         }
 
+        /**
+         * Record incompatible test matrix exception thrown by {@link ProctorUtils#verify} for dynamic tests
+         */
         @Nonnull
         public Builder recordIncompatibleDynamicTest(final String testName, final IncompatibleTestMatrixException exception) {
             dynamicTestsWithErrors.put(testName, exception);

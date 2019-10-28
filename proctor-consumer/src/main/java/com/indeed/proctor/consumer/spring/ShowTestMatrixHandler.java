@@ -33,7 +33,7 @@ public class ShowTestMatrixHandler implements HttpRequestHandler{
 
         final PrintWriter writer = response.getWriter();
 
-        if(proctorSuppliers.isEmpty()) {
+        if (proctorSuppliers.isEmpty()) {
             writer.print("No Proctor instances found.");
             return;
         }
@@ -41,8 +41,8 @@ public class ShowTestMatrixHandler implements HttpRequestHandler{
         writer.print("[");
         boolean firstTime = true;
 
-        for(final Supplier<Proctor> proctorSupplier : proctorSuppliers) {
-            if(firstTime) {
+        for (final Supplier<Proctor> proctorSupplier : proctorSuppliers) {
+            if (firstTime) {
                 firstTime = false;
             } else {
                 writer.print(",");

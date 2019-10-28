@@ -1,7 +1,6 @@
 package com.indeed.proctor.groups;
 
 import com.google.common.base.Predicate;
-import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.io.CharStreams;
@@ -64,12 +63,7 @@ public class TestUnitTestGroupsManager {
     }
 
     private void setUp(final Proctor proctor) {
-        manager = new UnitTestGroupsManager(new Supplier<Proctor>() {
-            @Override
-            public Proctor get() {
-                return proctor;
-            }
-        });
+        manager = new UnitTestGroupsManager(() -> proctor);
     }
 
     private Proctor getProctor() throws IOException {
@@ -497,12 +491,12 @@ public class TestUnitTestGroupsManager {
         // Current behavior is mapping from { testName -> TestBucket }
 
 
-        for(final Iterator<Map.Entry<String, TestBucket>> iterator = proctorResult.getBuckets().entrySet().iterator(); iterator.hasNext(); ) {
+        for (final Iterator<Map.Entry<String, TestBucket>> iterator = proctorResult.getBuckets().entrySet().iterator(); iterator.hasNext(); ) {
             final Map.Entry<String, TestBucket> entry = iterator.next();
             final String testName = entry.getKey();
             final TestBucket testBucket = entry.getValue();
 
-            if(sb.length() > 0) {
+            if (sb.length() > 0) {
                 sb.append(",");
             }
             // String format is: {testName}:{testBucket.name}{testBucket.value}

@@ -13,6 +13,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
@@ -49,7 +51,7 @@ public class FileBasedProctorStoreTest {
         EasyMock.expectLastCall().anyTimes();
         replay(gitClient);
         coreMock = EasyMock.createMock(FileBasedPersisterCore.class);
-        DelegatingCore coreMockWrapper = new DelegatingCore(coreMock, temporaryFolder.getRoot(), gitClient);
+        final DelegatingCore coreMockWrapper = new DelegatingCore(coreMock, temporaryFolder.getRoot(), gitClient);
         store = new TestFileBasedProctorStore(coreMockWrapper);
     }
 
@@ -97,7 +99,7 @@ public class FileBasedProctorStoreTest {
             store.updateTestDefinition("fooUser", "fooPassw0rd", "fooAuthor", "r0",
                     definition, metadata, "fooComment");
             fail("Expected Exception");
-        } catch (StoreException.TestUpdateException tue) {
+        } catch (final StoreException.TestUpdateException tue) {
             assertEquals("Attempting to update non-existent test r0", tue.getCause().getMessage());
         }
     }
@@ -127,7 +129,7 @@ public class FileBasedProctorStoreTest {
             store.updateTestDefinition("fooUser", "fooPassw0rd", "fooAuthor", "r0",
                     definition, metadata, "fooComment");
             fail("Expected Exception");
-        } catch (StoreException.TestUpdateException tue) {
+        } catch (final StoreException.TestUpdateException tue) {
             assertEquals("Attempting to save test definition without changes for test r0", tue.getCause().getMessage());
         }
     }
@@ -153,26 +155,37 @@ public class FileBasedProctorStoreTest {
             return false;
         }
 
+        @Nonnull
         @Override
         public String getLatestVersion() throws StoreException {
             return null;
         }
 
+        @Nonnull
         @Override
         public List<Revision> getMatrixHistory(final int start, final int limit) throws StoreException {
             return null;
         }
 
+        @Nonnull
         @Override
         public List<Revision> getHistory(final String test, final int start, final int limit) throws StoreException {
             return null;
         }
 
+        @Nonnull
         @Override
         public List<Revision> getHistory(final String test, final String revision, final int start, final int limit) throws StoreException {
             return null;
         }
 
+        @CheckForNull
+        @Override
+        public RevisionDetails getRevisionDetails(final String revisionId) throws StoreException {
+            return null;
+        }
+
+        @Nonnull
         @Override
         public Map<String, List<Revision>> getAllHistories() throws StoreException {
             return null;
@@ -204,19 +217,10 @@ public class FileBasedProctorStoreTest {
         }
 
         @Override
-        public void doInWorkingDirectory(final String username, final String password, final String comment, final String previousVersion, final FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException {
+        public void doInWorkingDirectory(final ChangeMetadata changeMetadata, final String previousVersion, final FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException {
             try {
                 updater.doInWorkingDirectory(client, dir);
-            } catch (Exception e) {
-                throw new StoreException.TestUpdateException("test", e);
-            }
-        }
-
-        @Override
-        public void doInWorkingDirectory(final String username, final String password, final String author, final String comment, final String previousVersion, final FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException {
-            try {
-                updater.doInWorkingDirectory(client, dir);
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 throw new StoreException.TestUpdateException("test", e);
             }
         }

@@ -3,13 +3,12 @@ package com.indeed.proctor.store;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.indeed.proctor.common.Serializers;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.eclipse.jgit.api.CloneCommand;
@@ -25,6 +24,7 @@ import org.eclipse.jgit.errors.NoWorkTreeException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectLoader;
+import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.StoredConfig;
 import org.eclipse.jgit.lib.TextProgressMonitor;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -53,6 +54,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static com.indeed.proctor.store.GitProctorUtils.determineAuthorId;
 
 public class GitProctorCore implements FileBasedPersisterCore {
     private static final Logger LOGGER = Logger.getLogger(GitProctorCore.class);
@@ -214,7 +217,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
                     if (!gitDirectory.exists()) {
                         LOGGER.info("Local repository not found, creating a new clone...");
                         git = cloneRepository(workingDir);
-                    } else if(cleanInitialization) {
+                    } else if (cleanInitialization) {
                         LOGGER.info("Existing local repository found, but creating a new clone to clean up working directory...");
                         workspaceProvider.cleanWorkingDirectory();
                         git = cloneRepository(workingDir);
@@ -264,10 +267,13 @@ public class GitProctorCore implements FileBasedPersisterCore {
     }
 
     @Override
-    public <C> C getFileContents(final Class<C> c,
+    @Nullable
+    public <C> C getFileContents(
+            final Class<C> c,
             final String[] path,
-            final C defaultValue,
-            final String revision) throws StoreException.ReadException, JsonProcessingException {
+            @Nullable final C defaultValue,
+            final String revision
+    ) throws StoreException.ReadException, JsonProcessingException {
         try {
             if (!ObjectId.isId(revision)) {
                 throw new StoreException.ReadException("Malformed id " + revision);
@@ -283,12 +289,12 @@ public class GitProctorCore implements FileBasedPersisterCore {
                 final TreeWalk treeWalk2 = new TreeWalk(git.getRepository());
                 treeWalk2.addTree(commit.getTree());
                 treeWalk2.setRecursive(true);
-                //final String joinedPath = "matrices" + "/" + Joiner.on("/").join(path);
-                final String joinedPath = Joiner.on("/").join(path);
+                final String joinedPath = String.join("/", path);
                 treeWalk2.setFilter(PathFilter.create(joinedPath));
 
                 if (!treeWalk2.next()) {
-                    throw new StoreException.ReadException("Did not find expected file '" + joinedPath + "'");
+                    // it did not find expected file `joinPath` so return default value
+                    return defaultValue;
                 }
                 final ObjectId blobId = treeWalk2.getObjectId(0);
                 return getFileContents(c, blobId);
@@ -341,13 +347,13 @@ public class GitProctorCore implements FileBasedPersisterCore {
         }
 
         @Override
-        public void add(final File file) throws Exception {
+        public void add(final File file) throws GitAPIException {
             git.add().addFilepattern(testDefinitionsDirectory + "/" + file.getAbsoluteFile().getParentFile().getName() + "/" +
                     file.getName()).call();
         }
 
         @Override
-        public void delete(final File testDefinitionDirectory) throws Exception {
+        public void delete(final File testDefinitionDirectory) throws GitAPIException {
             for (final File file : testDefinitionDirectory.listFiles()) {
                 git.rm().addFilepattern(testDefinitionsDirectory + "/" + testDefinitionDirectory.getName()
                         + "/" + file.getName()).call();
@@ -361,12 +367,11 @@ public class GitProctorCore implements FileBasedPersisterCore {
     }
 
     @Override
-    public void doInWorkingDirectory(final String username,
-                                     final String password,
-                                     final String author,
-                                     final String comment,
-                                     final String previousVersion,
-                                     final FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException {
+    public void doInWorkingDirectory(
+            final ChangeMetadata changeMetadata,
+            final String previousVersion,
+            final FileBasedProctorStore.ProctorUpdater updater
+    ) throws StoreException.TestUpdateException {
         final UsernamePasswordCredentialsProvider user = new UsernamePasswordCredentialsProvider(username, password);
         final File workingDir = workspaceProvider.getRootDirectory();
 
@@ -391,20 +396,29 @@ public class GitProctorCore implements FileBasedPersisterCore {
                     if (thingsChanged) {
                         final Set<String> stagedTests = parseStagedTestNames();
                         if (LOGGER.isDebugEnabled()) {
-                            LOGGER.debug("Staged tests are " + Joiner.on(",").join(stagedTests));
+                            LOGGER.debug("Staged tests are " + String.join(",", stagedTests));
                         }
                         if (stagedTests != null && stagedTests.size() >= 2) {
-                            LOGGER.error("Multiple tests are going to be modified at the one commit : " + Joiner.on(",").join(stagedTests));
+                            LOGGER.error("Multiple tests are going to be modified at the one commit : " + String.join(",", stagedTests));
                             throw new IllegalStateException("Another test are staged unintentionally due to invalid local git state");
                         } else if (stagedTests != null && stagedTests.isEmpty()) {
                             LOGGER.warn("Failed to parse staged test names or no test files aren't staged");
                         }
 
                         git.commit()
-                                .setCommitter(username, username)
-                                .setAuthor(author, author)
-                                .setMessage(comment)
+                                .setCommitter(new PersonIdent(
+                                        username,
+                                        username,
+                                        Date.from(changeMetadata.getTimestamp()),
+                                        TimeZone.getTimeZone("UTC")))
+                                .setAuthor(new PersonIdent(
+                                        changeMetadata.getAuthor(),
+                                        changeMetadata.getAuthor(),
+                                        Date.from(changeMetadata.getTimestamp()),
+                                        TimeZone.getTimeZone("UTC")))
+                                .setMessage(changeMetadata.getComment())
                                 .call();
+
                         final Iterable<PushResult> pushResults = git.push()
                                 .setProgressMonitor(PROGRESS_MONITOR)
                                 .setCredentialsProvider(user)
@@ -443,15 +457,6 @@ public class GitProctorCore implements FileBasedPersisterCore {
                 return null;
             }
         });
-    }
-
-    @Override
-    public void doInWorkingDirectory(final String username,
-                                     final String password,
-                                     final String comment,
-                                     final String previousVersion,
-                                     final FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException {
-        doInWorkingDirectory(username, password, username, comment, previousVersion, updater);
     }
 
     @Nullable
@@ -497,7 +502,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
                     LOGGER.info("Undo local changes due to failure of git operations");
                     try {
                         git.rebase().setOperation(RebaseCommand.Operation.ABORT).call();
-                    } catch (WrongRepositoryStateException e) {
+                    } catch (final WrongRepositoryStateException e) {
                         // ignore rebasing exception when in wrong state
                     }
                     final String remoteBranch = Constants.R_REMOTES + Constants.DEFAULT_REMOTE_NAME + '/' + git.getRepository().getBranch();
@@ -552,7 +557,7 @@ public class GitProctorCore implements FileBasedPersisterCore {
             return new TestVersionResult(
                     tests,
                     new Date(Long.valueOf(headTree.getCommitTime()) * 1000 /* convert seconds to milliseconds */),
-                    headTree.getAuthorIdent().toExternalString(),
+                    determineAuthorId(headTree),
                     headTree.toObjectId().getName(),
                     headTree.getFullMessage()
             );

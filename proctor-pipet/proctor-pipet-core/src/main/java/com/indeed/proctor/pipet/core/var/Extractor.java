@@ -1,6 +1,5 @@
 package com.indeed.proctor.pipet.core.var;
 
-import com.google.common.base.Function;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -12,6 +11,7 @@ import com.indeed.proctor.pipet.core.web.BadRequestException;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * Extracts variables from the HTTP Request according to the pipet configuration.
@@ -37,23 +37,9 @@ public class Extractor {
         this.identifierList = identifierList;
     }
 
-    private static final Function<PrefixVariable, String> PREFIX_VARIABLE_STRING_FUNCTION = new Function<PrefixVariable, String>() {
-        @Override
-        public String apply(final PrefixVariable variable) {
-            return variable.getVarName();
-        }
-    };
-    private static final Function<Identifier, TestType> IDENTIFIER_TEST_TYPE_FUNCTION = new Function<Identifier, TestType>() {
-        @Override
-        public TestType apply(final Identifier variable) {
-            return variable.getTestType();
-        }
-    };
-
-
     public RawParameters extract(final HttpServletRequest request) {
-        final Map<String, String> contextMap = extractAllVars(request, contextList, PREFIX_VARIABLE_STRING_FUNCTION, true);
-        final Map<TestType, String> identifierMap = extractAllVars(request, identifierList, IDENTIFIER_TEST_TYPE_FUNCTION, false);
+        final Map<String, String> contextMap = extractAllVars(request, contextList, PrefixVariable::getVarName, true);
+        final Map<TestType, String> identifierMap = extractAllVars(request, identifierList, Identifier::getTestType, false);
 
         checkAtLeastOneIdentifier(identifierMap);
 

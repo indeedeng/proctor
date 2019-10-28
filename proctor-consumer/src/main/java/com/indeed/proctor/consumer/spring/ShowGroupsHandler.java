@@ -24,7 +24,7 @@ public class ShowGroupsHandler implements HttpRequestHandler {
         final PrintWriter writer = response.getWriter();
 
         AbstractGroups grps = groupsSupplier.determineGroups(request);
-        if(grps == null) {
+        if (grps == null) {
             writer.println("Did not determine any groups");
         } else {
             final StringBuilder sb = new StringBuilder();

@@ -13,10 +13,11 @@ public class Revision {
     private final String message;
 
     @JsonCreator
-    public Revision(@JsonProperty("revision") final String revision,
-                    @JsonProperty("author") final String author,
-                    @JsonProperty("date") final Date date,
-                    @JsonProperty("message") final String message
+    public Revision(
+            @JsonProperty("revision") final String revision,
+            @JsonProperty("author") final String author,
+            @JsonProperty("date") final Date date,
+            @JsonProperty("message") final String message
     ) {
         this.revision = revision;
         this.author = author;

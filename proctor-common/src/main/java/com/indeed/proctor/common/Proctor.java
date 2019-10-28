@@ -28,7 +28,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 /**
- * The sole entry point for client applications determining the test buckets for a particular client.  See {@link #determineTestGroups(Identifiers, Map, Map)}
+ * The sole entry point for client applications determining the test buckets for a particular client.
+ * Basically a Factory to create ProctorResult for a given identifier and context, based on a TestMatrix and a specification.
+ * Supposedly immutable result of loading a test matrix, so each reload creates a new instance of this class.
+ *
+ * See {@link #determineTestGroups(Identifiers, Map, Map)}
  * @author ketan
  */
 public class Proctor {
@@ -134,7 +138,11 @@ public class Proctor {
      */
     @SuppressWarnings("UnusedDeclaration") // TODO Remove deprecated
     @Nonnull
-    public ProctorResult determineTestGroups(final TestType testType, final String identifier, @Nonnull final Map<String, Object> context, @Nonnull final Map<String, Integer> forceGroups) {
+    public ProctorResult determineTestGroups(
+            final TestType testType,
+            final String identifier,
+            @Nonnull final Map<String, Object> context,
+            @Nonnull final Map<String, Integer> forceGroups) {
         final Identifiers identifiers = new Identifiers(testType, identifier);
 
         return determineTestGroups(identifiers, context, forceGroups);
@@ -153,7 +161,10 @@ public class Proctor {
      * @return a {@link ProctorResult} containing the test buckets that apply to this client as well as the versions of the tests that were executed
      */
     @Nonnull
-    public ProctorResult determineTestGroups(@Nonnull final Identifiers identifiers, @Nonnull final Map<String, Object> inputContext, @Nonnull final Map<String, Integer> forceGroups) {
+    public ProctorResult determineTestGroups(
+            @Nonnull final Identifiers identifiers,
+            @Nonnull final Map<String, Object> inputContext,
+            @Nonnull final Map<String, Integer> forceGroups) {
         return determineTestGroups(identifiers, inputContext, forceGroups, Collections.<String>emptyList());
     }
 
@@ -174,10 +185,11 @@ public class Proctor {
      * @return a {@link ProctorResult} containing the test buckets that apply to this client as well as the versions of the tests that were executed
      */
     @Nonnull
-    public ProctorResult determineTestGroups(@Nonnull final Identifiers identifiers,
-                                             @Nonnull final Map<String, Object> inputContext,
-                                             @Nonnull final Map<String, Integer> forceGroups,
-                                             @Nonnull final Collection<String> testNameFilter
+    public ProctorResult determineTestGroups(
+            @Nonnull final Identifiers identifiers,
+            @Nonnull final Map<String, Object> inputContext,
+            @Nonnull final Map<String, Integer> forceGroups,
+            @Nonnull final Collection<String> testNameFilter
     ) {
         final Map<String, TestBucket> testGroups = Maps.newLinkedHashMap();
         final Map<String, Allocation> testAllocations = Maps.newLinkedHashMap();

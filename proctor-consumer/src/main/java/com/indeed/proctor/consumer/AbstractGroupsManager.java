@@ -17,6 +17,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.Collections;
 import java.util.Map;
 
+import static java.util.Collections.emptyMap;
+
 /**
  * Doesn't really do much
  * @author ketan
@@ -39,14 +41,14 @@ public abstract class AbstractGroupsManager implements ProctorContextDescriptor 
      */
     @VisibleForTesting
     protected ProctorResult determineBucketsInternal(final TestType testType, final String identifier, final Map<String, Object> context) {
-        final Map<String, Integer> forcedGroups = Collections.emptyMap();
+        final Map<String, Integer> forcedGroups = emptyMap();
         final Identifiers identifiers = new Identifiers(testType, identifier);
         return determineBucketsInternal(identifiers, context, forcedGroups);
     }
 
     @VisibleForTesting
     protected ProctorResult determineBucketsInternal(final Identifiers identifiers, final Map<String, Object> context) {
-        return this.determineBucketsInternal(identifiers, context, Collections.<String, Integer>emptyMap());
+        return this.determineBucketsInternal(identifiers, context, emptyMap());
     }
 
     /**
@@ -73,8 +75,8 @@ public abstract class AbstractGroupsManager implements ProctorContextDescriptor 
             }
             return new ProctorResult(Audit.EMPTY_VERSION,
                     buckets,
-                    Collections.<String, Allocation>emptyMap(),
-                    Collections.<String, ConsumableTestDefinition>emptyMap()
+                    emptyMap(),
+                    emptyMap()
             );
         }
         final ProctorResult result = proctor.determineTestGroups(identifiers, context, forcedGroups);
@@ -90,7 +92,7 @@ public abstract class AbstractGroupsManager implements ProctorContextDescriptor 
             forcedGroups = ProctorConsumerUtils.parseForcedGroups(request);
             ProctorConsumerUtils.setForcedGroupsCookie(request, response, forcedGroups);
         } else {
-            forcedGroups = Collections.emptyMap();
+            forcedGroups = emptyMap();
         }
         return determineBucketsInternal(identifiers, context, forcedGroups);
     }

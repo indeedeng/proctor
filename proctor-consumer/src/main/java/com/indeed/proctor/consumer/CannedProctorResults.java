@@ -13,6 +13,8 @@ import com.indeed.proctor.common.model.TestType;
 import java.util.Collections;
 import java.util.Map;
 
+import static java.util.Collections.emptyMap;
+
 /**
  * @author matts
  */
@@ -36,7 +38,7 @@ public class CannedProctorResults {
             testDefinition.getBuckets().add(testBucket);
         }
 
-        return (new ProctorResult(Audit.EMPTY_VERSION, buckets, Collections.<String, Allocation>emptyMap(), testVersions));
+        return (new ProctorResult(Audit.EMPTY_VERSION, buckets, emptyMap(), testVersions));
     }
 
     public static ProctorResult of(
@@ -63,7 +65,7 @@ public class CannedProctorResults {
             testDefinition.getBuckets().add(testBucket);
         }
 
-        return (new ProctorResult(Audit.EMPTY_VERSION, buckets, Collections.<String, Allocation>emptyMap(), testVersions));
+        return (new ProctorResult(Audit.EMPTY_VERSION, buckets, emptyMap(), testVersions));
     }
 
 
@@ -76,9 +78,9 @@ public class CannedProctorResults {
                     null, // no rule
                     TestType.RANDOM,
                     null, // no salt
-                    Lists.<TestBucket>newArrayList(),
-                    Lists.<Allocation>newArrayListWithCapacity(1),
-                    Collections.<String, Object>emptyMap(),
+                    Lists.newArrayList(),
+                    Lists.newArrayListWithCapacity(1),
+                    emptyMap(),
                     null);
 
             testVersions.put(testName, testDefinition);

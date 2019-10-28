@@ -1,12 +1,10 @@
 package com.indeed.proctor.webapp.jobs;
 
-import com.google.common.base.CharMatcher;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.webapp.db.Environment;
+import org.apache.commons.lang3.StringUtils;
 
-import java.util.List;
 import java.util.Map;
 
 public abstract class AbstractJob {
@@ -20,14 +18,14 @@ public abstract class AbstractJob {
         );
     }
 
-    protected static void validateUsernamePassword(final String username, final String password) throws IllegalArgumentException {
-        if (CharMatcher.WHITESPACE.matchesAllOf(Strings.nullToEmpty(username)) || CharMatcher.WHITESPACE.matchesAllOf(Strings.nullToEmpty(password))) {
+    static void validateUsernamePassword(final String username, final String password) {
+        if (StringUtils.isBlank(username) || StringUtils.isBlank(password)) {
             throw new IllegalArgumentException("No username or password provided");
         }
     }
 
-    protected static void validateComment(final String comment) throws IllegalArgumentException {
-        if (CharMatcher.WHITESPACE.matchesAllOf(Strings.nullToEmpty(comment))) {
+    static void validateComment(final String comment) {
+        if (StringUtils.isBlank(comment)) {
             throw new IllegalArgumentException("Comment is required.");
         }
     }

@@ -1,13 +1,12 @@
 package com.indeed.proctor.store;
 
-import com.google.common.base.Joiner;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.indeed.proctor.common.Serializers;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.log4j.Logger;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -33,17 +32,17 @@ public class LocalDirectoryCore implements FileBasedPersisterCore {
 
     @Override
     public <C> C getFileContents(final Class<C> c, final String[] path_parts, final C defaultValue, final String revision) throws StoreException.ReadException, JsonProcessingException {
-        final String path = Joiner.on(File.separator).join(path_parts);
+        final String path = String.join(File.separator, path_parts);
         FileReader reader = null;
 
         try {
             final File file = new File(baseDir + File.separator + path);
-            if(file.exists()) {
+            if (file.exists()) {
                 reader = new FileReader(file);
                 final C testDefinition = objectMapper.readValue(reader, c);
                 return testDefinition;
             } else {
-                if(LOGGER.isInfoEnabled()) {
+                if (LOGGER.isInfoEnabled()) {
                     LOGGER.info(file + " does not exists, returning defaultValue.");
                 }
                 return defaultValue;
@@ -52,7 +51,7 @@ public class LocalDirectoryCore implements FileBasedPersisterCore {
             Throwables.propagateIfInstanceOf(e, JsonProcessingException.class);
             throw new StoreException.ReadException("Error reading " + path, e);
         } finally {
-            if(reader != null) {
+            if (reader != null) {
                 try {
                     reader.close();
                 } catch (final IOException e) {
@@ -85,7 +84,7 @@ public class LocalDirectoryCore implements FileBasedPersisterCore {
 
 
     @Override
-    public void doInWorkingDirectory(final String username, final String password, final String author, final String comment, final String previousVersion, final FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException {
+    public void doInWorkingDirectory(final ChangeMetadata changeMetadata, final String previousVersion, final FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException {
         try {
             final FileBasedProctorStore.RcsClient rcsClient = new LocalRcsClient();
             final boolean thingsChanged = updater.doInWorkingDirectory(rcsClient, baseDir);
@@ -93,11 +92,6 @@ public class LocalDirectoryCore implements FileBasedPersisterCore {
             throw new StoreException.TestUpdateException("LocalCore: Unable to perform operation: " + e.getMessage(), e);
         } finally {
         }
-    }
-
-    @Override
-    public void doInWorkingDirectory(final String username, final String password, final String comment, final String previousVersion, final FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException {
-        doInWorkingDirectory(username, password, username, comment, previousVersion, updater);
     }
 
     @Override

@@ -1,48 +1,86 @@
 @startuml
-participant GroupsManager
+participant Controller
+participant XYZ_GroupsManager
 participant ProctorLoader
+database Definitions
+note over Definitions: may change to\nchange allocations
+database Specification
+note over Specification: typically part of deploy\nused to generate\nXYZ_* classes
 participant Proctor
 collections TestChooser
 participant TestRangeSelector
+participant XYZ_ProctorGroups
+participant RequestHandler
 
--> ProctorLoader: reload()
-activate ProctorLoader
-  create TestChooser
-  ProctorLoader -> TestChooser: new
-  activate TestChooser
-    create TestRangeSelector
-    TestChooser -> TestRangeSelector:new
-  deactivate TestChooser
-  <- ProctorLoader
-deactivate ProctorLoader
-
--> GroupsManager
-activate GroupsManager
-GroupsManager -> ProctorLoader:get()
-GroupsManager -> Proctor:determineTestGroups()
-
-activate Proctor
-  loop for TestChooser
-    Proctor -> TestChooser:choose()
-    activate TestChooser
-      TestChooser -> TestRangeSelector:findMatchingRule()
-      activate TestRangeSelector
-        TestRangeSelector -> TestRangeSelector: evaluateRule(testDefinition.rule)
-        loop for this.rules
-          TestRangeSelector -> TestRangeSelector: evaluateRule()
-        end
-        TestChooser <- TestRangeSelector: ruleIndex
-      deactivate TestRangeSelector
-      alt isRandomChooser
-        TestChooser -> TestChooser:allocateRandomGroup()
-      else isStandardChooser
-      TestChooser -> TestChooser:chooseBucket()
+loop from startup every 30s
+  -> ProctorLoader: reload()
+  activate ProctorLoader
+    ProctorLoader -> Definitions: loadTestMatrix
+    ProctorLoader -> Specification: loadSpecification
+    ProctorLoader -> ProctorLoader: consolidate()
+    note over ProctorLoader: consolidate removes\nnon-required tests from matrix\nbased on specification
+    create Proctor
+    ProctorLoader -> Proctor: new
+    activate Proctor
+      loop for each testDefinition in consolidated Matrix
+        create TestChooser
+        Proctor -> TestChooser: new
+        activate TestChooser
+          create TestRangeSelector
+          TestChooser -> TestRangeSelector:new
+        deactivate TestChooser
       end
-      Proctor <- TestChooser: chooseResult
-    deactivate TestChooser
-  end
-  GroupsManager <- Proctor: proctorResult
-deactivate Proctor
-deactivate GroupsManager
+    deactivate Proctor
+    <- ProctorLoader
+  deactivate ProctorLoader
+end
+
+-> Controller: request
+activate Controller
+  Controller -> Controller:create Identifiers\nper TestType
+  Controller -> Controller:create Context\nfor Rule evaluation
+  Controller -> XYZ_GroupsManager:determineBuckets\n(request, identifiers)
+  activate XYZ_GroupsManager
+    XYZ_GroupsManager -> ProctorLoader:get Proctor
+    XYZ_GroupsManager -> Proctor:determineTestGroups()
+
+    activate Proctor
+      loop for testName in consolidated Matrix
+        Proctor -> Proctor: pick identifier\nfor given Testtype
+        Proctor -> Proctor: select TestChooser
+        Proctor -> TestChooser:choose()
+        activate TestChooser
+          TestChooser -> TestRangeSelector:findMatchingRule()
+          activate TestRangeSelector
+            TestRangeSelector -> TestRangeSelector: evaluateRule(testDefinition.rule)
+            loop for this.rules
+              TestRangeSelector -> TestRangeSelector: evaluateRule()
+            end
+            TestChooser <- TestRangeSelector: ruleIndex
+          deactivate TestRangeSelector
+          alt isRandomChooser
+            TestChooser -> TestChooser:allocateRandomGroup()
+          else isStandardChooser
+            TestChooser -> TestChooser:chooseBucket()
+          end
+          Proctor <- TestChooser: chooseResult
+        deactivate TestChooser
+      end
+      XYZ_GroupsManager <- Proctor: proctorResult
+    deactivate Proctor
+    Controller <- XYZ_GroupsManager: proctorResult
+  deactivate XYZ_GroupsManager
+  create XYZ_ProctorGroups
+  Controller -> XYZ_ProctorGroups:new(proctorResult)
+  note over XYZ_ProctorGroups: has generated methods\nfor each test in specification
+  note over Controller: All the above\ncan also happen\nin RequestInterceptor\npreHandle()
+  Controller -> RequestHandler: handle(proctorGroups)
+  activate RequestHandler
+    RequestHandler -> RequestHandler: proctorGroups.is_xyz1_bucket()
+    Controller <- RequestHandler
+  deactivate RequestHandler
+  note over Controller: typically write groups\nto log for analysis of\nexperiment results
+<- Controller: response
+deactivate Controller
 
 @enduml

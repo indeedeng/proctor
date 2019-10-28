@@ -9,7 +9,9 @@
         http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd">
 
         <bean id="revisionCommentFormatter" class="com.indeed.proctor.webapp.extensions.SimpleRevisionCommentFormatter" />
-        <bean id="commentFormatter" class="com.indeed.proctor.webapp.jobs.CommentFormatter" />
+        <bean id="commentFormatter" class="com.indeed.proctor.webapp.jobs.CommentFormatter">
+                <constructor-arg ref="revisionCommentFormatter"/>
+        </bean>
 
         <import resource="classpath:/com/indeed/proctor/webapp/spring/applicationContext.xml"/>
         <import resource="localExtensions.xml"/>

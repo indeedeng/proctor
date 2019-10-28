@@ -71,7 +71,7 @@ public class MatrixChecker {
         final TestMatrixDefinition tmd = new TestMatrixDefinition();
         // The potential test definition will be null for test deletions
         if (potential != null) {
-            tmd.setTests(ImmutableMap.<String, TestDefinition>of(testName, potential));
+            tmd.setTests(ImmutableMap.of(testName, potential));
         }
         tmv.setTestMatrixDefinition(tmd);
 
@@ -79,45 +79,38 @@ public class MatrixChecker {
         // Verify
         final Map<AppVersion, Future<ProctorLoadResult>> futures = Maps.newLinkedHashMap();
 
-        final Map<AppVersion, ProctorSpecification> toVerify = specificationSource.loadAllSuccessfulSpecifications(checkAgainst);
-        for (final Map.Entry<AppVersion, ProctorSpecification> entry : toVerify.entrySet()) {
-            final AppVersion appVersion = entry.getKey();
-            final ProctorSpecification specification = entry.getValue();
-            futures.put(appVersion, verifierExecutor.submit(() -> {
-                LOGGER.info("Verifying artifact against : cached " + appVersion + " for " + testName);
-                return verify(specification, artifact, testName, appVersion.toString());
-            }));
-        }
+        specificationSource.loadAllSuccessfulSpecifications(checkAgainst)
+                .forEach((appVersion, specifications) -> {
+                    for (final ProctorSpecification specification : specifications.asSet()) {
+                        futures.put(appVersion, verifierExecutor.submit(() -> {
+                            LOGGER.info("Verifying artifact against : cached "
+                                    + appVersion + " for " + testName);
+                            return verify(
+                                    specification,
+                                    artifact,
+                                    testName,
+                                    appVersion.toString()
+                            );
+                        }));
+                    }
+                });
 
         final ImmutableList.Builder<String> errorsBuilder = ImmutableList.builder();
-        while (!futures.isEmpty()) {
+        futures.forEach((version, future) -> {
             try {
-                Thread.sleep(10);
-            } catch (final InterruptedException e) {
-                LOGGER.error("Oh heavens", e);
-            }
-            for (final Iterator<Map.Entry<AppVersion, Future<ProctorLoadResult>>> iterator = futures.entrySet().iterator(); iterator.hasNext(); ) {
-                final Map.Entry<AppVersion, Future<ProctorLoadResult>> entry = iterator.next();
-                final AppVersion version = entry.getKey();
-                final Future<ProctorLoadResult> future = entry.getValue();
-                if (future.isDone()) {
-                    iterator.remove();
-                    try {
-                        final ProctorLoadResult proctorLoadResult = future.get();
-                        if (proctorLoadResult.hasInvalidTests()) {
-                            errorsBuilder.add(getErrorMessage(version, proctorLoadResult));
-                        }
-                    } catch (final InterruptedException e) {
-                        errorsBuilder.add(version.toString() + " failed. " + e.getMessage());
-                        LOGGER.error("Interrupted getting " + version, e);
-                    } catch (final ExecutionException e) {
-                        final Throwable cause = e.getCause();
-                        errorsBuilder.add(version.toString() + " failed. " + cause.getMessage());
-                        LOGGER.error("Unable to verify " + version, cause);
-                    }
+                final ProctorLoadResult proctorLoadResult = future.get();
+                if (proctorLoadResult.hasInvalidTests()) {
+                    errorsBuilder.add(getErrorMessage(version, proctorLoadResult));
                 }
+            } catch (final InterruptedException e) {
+                errorsBuilder.add(version.toString() + " failed. " + e.getMessage());
+                LOGGER.error("Interrupted getting " + version, e);
+            } catch (final ExecutionException e) {
+                final Throwable cause = e.getCause();
+                errorsBuilder.add(version.toString() + " failed. " + cause.getMessage());
+                LOGGER.error("Unable to verify " + version, cause);
             }
-        }
+        });
 
         final ImmutableList<String> errors = errorsBuilder.build();
         final boolean greatSuccess = errors.isEmpty();
@@ -129,7 +122,7 @@ public class MatrixChecker {
         final boolean isValid;
         final List<String> errors;
 
-        private CheckMatrixResult(boolean valid, List<String> errors) {
+        private CheckMatrixResult(final boolean valid, final List<String> errors) {
             isValid = valid;
             this.errors = errors;
         }

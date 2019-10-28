@@ -21,16 +21,25 @@ import javax.annotation.Nonnull;
 public class ProctorResult {
     public static final ProctorResult EMPTY = new ProctorResult(
             Audit.EMPTY_VERSION,
-            Collections.<String, TestBucket>emptyMap(),
-            Collections.<String, Allocation>emptyMap(),
-            Collections.<String, ConsumableTestDefinition>emptyMap()
+            Collections.emptyMap(),
+            Collections.emptyMap(),
+            Collections.emptyMap()
     );
 
     private final String matrixVersion;
+    /**
+     * maps from testname to bucket
+     */
     @Nonnull
     private final Map<String, TestBucket> buckets;
+    /**
+     * maps from testname to allocation
+     */
     @Nonnull
     private final Map<String, Allocation> allocations;
+    /**
+     * maps from testname to TestDefinition
+     */
     @Nonnull
     private final Map<String, ConsumableTestDefinition> testDefinitions;
 

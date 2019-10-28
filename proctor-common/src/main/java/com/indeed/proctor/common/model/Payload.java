@@ -1,8 +1,8 @@
 package com.indeed.proctor.common.model;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.google.common.base.Joiner;
 import com.google.common.collect.Maps;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -36,6 +36,9 @@ public class Payload {
     private Map<String,Object> map;
     // Used for returning something when we can't return a null.
     public static final Payload EMPTY_PAYLOAD = new Payload();
+    // Error message for invalid user input
+    public static final String PAYLOAD_NULL_VALUE_EXCEPTION = "Payload map values can't be null: ";
+    public static final String PAYLOAD_OVERWRITE_EXCEPTION = "Expected all properties to be empty: ";
 
     public Payload() { /* intentionally empty */ }
 
@@ -118,6 +121,7 @@ public class Payload {
     }
     public void setMap(@Nullable final Map<String, Object> map) {
         precheckStateAllNull();
+        precheckValidMapValues(map);
         this.map = map;
     }
     // Sanity check precondition for above setters
@@ -126,37 +130,44 @@ public class Payload {
             || (longValue != null) || (longArray != null)
             || (stringValue != null) || (stringArray != null)
             || (map != null)) {
-            throw new IllegalStateException("Expected all properties to be empty: " + this);
+            throw new IllegalStateException(PAYLOAD_OVERWRITE_EXCEPTION + this);
+        }
+    }
+
+    // proctor-common assumes payload values are @Nonnull. Enforce it here.
+    private static void precheckValidMapValues(@Nullable final Map<String, Object> map) throws IllegalStateException {
+        if (map != null && map.containsValue(null)) {
+            throw new IllegalStateException(PAYLOAD_NULL_VALUE_EXCEPTION + map);
         }
     }
 
     @Nonnull
     @Override
     public String toString() {
-        final StringBuilder s = new StringBuilder("{");
+        final StringBuilder s = new StringBuilder(50).append('{');
         // careful of the autoboxing...
         if (map != null) {
             s.append(" map : [");
-            for(Map.Entry<String,Object> Entry : map.entrySet()) {
-                s.append("(" + Entry.getKey() + "," + Entry.getValue() + ")");
+            for (final Map.Entry<String,Object> entry : map.entrySet()) {
+                s.append('(').append(entry.getKey()).append(',').append(entry.getValue()).append(')');
             }
-            s.append("]");
+            s.append(']');
         }
         if (doubleValue != null) {
             s.append(" doubleValue : ").append(doubleValue);
         }
         if (doubleArray != null) {
             s.append(" doubleArray : [");
-            Joiner.on(", ").appendTo(s, doubleArray);
-            s.append("]");
+            s.append(StringUtils.join(doubleArray, ", "));
+            s.append(']');
         }
         if (longValue != null) {
             s.append(" longValue : ").append(longValue);
         }
         if (longArray != null) {
             s.append(" longArray : [");
-            Joiner.on(", ").appendTo(s, longArray);
-            s.append("]");
+            s.append(StringUtils.join(longArray, ", "));
+            s.append(']');
         }
         if (stringValue != null) {
             s.append(" stringValue : \"").append(stringValue).append('"');
@@ -165,7 +176,7 @@ public class Payload {
             s.append(" stringArray : [");
             if (stringArray.length > 0) {
                 s.append('"');
-                Joiner.on("\", \"").appendTo(s, stringArray);
+                s.append(String.join("\", \"", stringArray));
                 s.append('"');
             }
             s.append(']');

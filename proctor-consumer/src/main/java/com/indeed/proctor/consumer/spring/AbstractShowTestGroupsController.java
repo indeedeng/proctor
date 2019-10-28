@@ -61,7 +61,7 @@ public abstract class AbstractShowTestGroupsController implements ShowGroupsHand
     }
 
     private void handle(final HttpServletRequest request, final HttpServletResponse response, final HttpRequestHandler handler) throws IOException, ServletException {
-        if(isAccessAllowed(request)) {
+        if (isAccessAllowed(request)) {
             handler.handleRequest(request, response);
         } else {
             response.sendError(getAccessDeniedStatusCode());

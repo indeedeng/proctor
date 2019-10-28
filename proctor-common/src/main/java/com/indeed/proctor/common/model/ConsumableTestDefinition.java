@@ -28,9 +28,14 @@ public class ConsumableTestDefinition {
     private TestType testType;
     @Nullable
     private String description;
+    @Nonnull
+    private List<String> metaTags = Collections.emptyList();
 
     public ConsumableTestDefinition() { /* intentionally empty */ }
 
+    /**
+     * @deprecated Use {@link #ConsumableTestDefinition(String, String, TestType, String, List, List, boolean, Map, String, List)}
+     */
     @Deprecated
     public ConsumableTestDefinition(
             final String version,
@@ -42,16 +47,22 @@ public class ConsumableTestDefinition {
             @Nonnull final Map<String, Object> constants,
             @Nullable final String description
     ) {
-        this.constants = constants;
-        this.version = version;
-        this.salt = salt;
-        this.rule = rule;
-        this.buckets = buckets;
-        this.allocations = allocations;
-        this.testType = testType;
-        this.description = description;
+        this(version,
+                rule,
+                testType,
+                salt,
+                buckets,
+                allocations,
+                false,
+                constants,
+                description,
+                Collections.emptyList());
     }
 
+    /**
+     * @deprecated Use {@link #ConsumableTestDefinition(String, String, TestType, String, List, List, boolean, Map, String, List)}
+     */
+    @Deprecated
     public ConsumableTestDefinition(
             final String version,
             @Nullable final String rule,
@@ -63,6 +74,30 @@ public class ConsumableTestDefinition {
             @Nonnull final Map<String, Object> constants,
             @Nullable final String description
     ) {
+        this(version,
+                rule,
+                testType,
+                salt,
+                buckets,
+                allocations,
+                silent,
+                constants,
+                description,
+                Collections.emptyList());
+    }
+
+    public ConsumableTestDefinition(
+            final String version,
+            @Nullable final String rule,
+            @Nonnull final TestType testType,
+            @Nullable final String salt,
+            @Nonnull final List<TestBucket> buckets,
+            @Nonnull final List<Allocation> allocations,
+            final boolean silent,
+            @Nonnull final Map<String, Object> constants,
+            @Nullable final String description,
+            @Nonnull final List<String> metaTags
+    ) {
         this.constants = constants;
         this.version = version;
         this.salt = salt;
@@ -72,6 +107,7 @@ public class ConsumableTestDefinition {
         this.silent = silent;
         this.testType = testType;
         this.description = description;
+        this.metaTags = metaTags;
     }
 
     @Nonnull
@@ -151,5 +187,17 @@ public class ConsumableTestDefinition {
 
     public void setDescription(@Nullable final String description) {
         this.description = description;
+    }
+
+    /**
+     * metaTags allow to group and filter tests.
+     */
+    @Nonnull
+    public List<String> getMetaTags() {
+        return this.metaTags;
+    }
+
+    public void setMetaTags(final List<String> metaTags) {
+        this.metaTags = metaTags;
     }
 }

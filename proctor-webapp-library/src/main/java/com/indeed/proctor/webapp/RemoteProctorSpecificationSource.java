@@ -2,19 +2,16 @@ package com.indeed.proctor.webapp;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Joiner;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.indeed.proctor.common.ProctorSpecification;
 import com.indeed.proctor.common.ProctorUtils;
 import com.indeed.proctor.common.Serializers;
-import com.indeed.proctor.common.SpecificationResult;
-import com.indeed.proctor.common.dynamic.DynamicFilters;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.TestDefinition;
 import com.indeed.proctor.common.model.TestMatrixArtifact;
@@ -24,34 +21,39 @@ import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.webapp.db.Environment;
 import com.indeed.proctor.webapp.model.AppVersion;
 import com.indeed.proctor.webapp.model.ProctorClientApplication;
+import com.indeed.proctor.webapp.model.ProctorSpecifications;
 import com.indeed.proctor.webapp.model.RemoteSpecificationResult;
+import com.indeed.proctor.webapp.util.VarExportedVariablesDeserializer;
 import com.indeed.proctor.webapp.util.threads.LogOnUncaughtExceptionHandler;
 import com.indeed.util.core.DataLoadingTimerTask;
-import com.indeed.util.core.Pair;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
+import java.util.stream.Collectors;
 
 /**
  * Regularly reloads specifications from applications where proctor client is deployed.
@@ -64,21 +66,33 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
     @Autowired(required = false)
     private final ProctorClientSource clientSource = new DefaultClientSource();
 
-    private final int httpTimeout;
     private final ExecutorService httpExecutor;
 
-    private final Map<Environment, ImmutableMap<AppVersion, RemoteSpecificationResult>> cache_ = Maps.newConcurrentMap();
+    private final Map<Environment, ImmutableMap<AppVersion, RemoteSpecificationResult>> applicationMapByEnvironment =
+            Maps.newConcurrentMap();
 
     private final Map<Environment, ProctorReader> proctorReaderMap;
 
-    public RemoteProctorSpecificationSource(final int httpTimeout,
+    private final HttpClient httpClient;
+
+    public RemoteProctorSpecificationSource(final int httpTimeoutMillis,
                                             final int executorThreads,
                                             final ProctorReader trunk,
                                             final ProctorReader qa,
                                             final ProctorReader production) {
         super(RemoteProctorSpecificationSource.class.getSimpleName());
-        this.httpTimeout = httpTimeout;
-        Preconditions.checkArgument(httpTimeout > 0, "verificationTimeout > 0");
+        Preconditions.checkArgument(httpTimeoutMillis > 0, "httpTimeoutMillis > 0");
+
+        this.httpClient = HttpClientBuilder.create()
+                .setDefaultRequestConfig(
+                        RequestConfig.custom()
+                                .setConnectTimeout(httpTimeoutMillis)
+                                .setSocketTimeout(httpTimeoutMillis)
+                                .build()
+                )
+                .disableCookieManagement() // to make it stateless
+                .build();
+
         final ThreadFactory threadFactory = new ThreadFactoryBuilder()
                 .setNameFormat("proctor-specification-source-Thread-%d")
                 .setUncaughtExceptionHandler(new LogOnUncaughtExceptionHandler())
@@ -94,83 +108,84 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
     @Override
     public RemoteSpecificationResult getRemoteResult(final Environment environment,
                                                      final AppVersion version) {
-        final ImmutableMap<AppVersion, RemoteSpecificationResult> results = cache_.get(environment);
-        if (results != null) {
-            final RemoteSpecificationResult result = results.get(version);
-            if (result != null) {
-                return result;
-            }
-        }
-        return RemoteSpecificationResult.newBuilder(version).build(Collections.<ProctorClientApplication>emptyList());
+        return Optional.ofNullable(applicationMapByEnvironment.get(environment))
+                .map(applicationMap -> applicationMap.get(version))
+                .orElseGet(() -> RemoteSpecificationResult
+                        .failures(version, Collections.emptyMap())
+                );
     }
 
     @Override
     public Map<AppVersion, RemoteSpecificationResult> loadAllSpecifications(final Environment environment) {
-        final ImmutableMap<AppVersion, RemoteSpecificationResult> cache = cache_.get(environment);
-        if (cache == null) {
+        final ImmutableMap<AppVersion, RemoteSpecificationResult> applicationsMap =
+                applicationMapByEnvironment.get(environment);
+        if (applicationsMap == null) {
             return Collections.emptyMap();
-        } else {
-            return cache;
         }
+
+        return applicationsMap;
     }
 
     @Override
-    public Map<AppVersion, ProctorSpecification> loadAllSuccessfulSpecifications(final Environment environment) {
-        final ImmutableMap<AppVersion, RemoteSpecificationResult> cache = cache_.get(environment);
-        if (cache == null) {
+    public Map<AppVersion, ProctorSpecifications> loadAllSuccessfulSpecifications(final Environment environment) {
+        final ImmutableMap<AppVersion, RemoteSpecificationResult> applicationsMap =
+                applicationMapByEnvironment.get(environment);
+        if (applicationsMap == null) {
             return Collections.emptyMap();
-        } else {
-            final Map<AppVersion, RemoteSpecificationResult> success = Maps.filterEntries(cache, input -> input.getValue().isSuccess());
-            return Maps.transformValues(success, input -> input.getSpecificationResult().getSpecification());
         }
+
+        return applicationsMap.entrySet().stream()
+                .filter(e -> e.getValue().getSpecifications() != null)
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        e -> e.getValue().getSpecifications()
+                ));
     }
 
     @Override
     public Set<AppVersion> activeClients(final Environment environment, final String testName) {
-        final Map<AppVersion, RemoteSpecificationResult> specifications = cache_.get(environment);
-        if (specifications == null) {
+        final Map<AppVersion, RemoteSpecificationResult> applicationsMap =
+                applicationMapByEnvironment.get(environment);
+        if (applicationsMap == null) {
             return Collections.emptySet();
         }
-        final Set<AppVersion> clients = Sets.newHashSet();
+
         final ConsumableTestDefinition testDefinition = getCurrentConsumableTestDefinition(environment, testName);
-        for (final Map.Entry<AppVersion, RemoteSpecificationResult> entry : specifications.entrySet()) {
-            final AppVersion version = entry.getKey();
-            final RemoteSpecificationResult rr = entry.getValue();
-            if (rr.isSuccess()) {
-                final ProctorSpecification specification = rr.getSpecificationResult().getSpecification();
-                final DynamicFilters filters = specification.getDynamicFilters();
-                if (containsTest(specification, testName) || willResolveTest(filters, testName, testDefinition)) {
-                    clients.add(version);
-                }
-            }
+        if (testDefinition == null) {
+            return Collections.emptySet();
         }
-        return clients;
+
+        final Map<String, ConsumableTestDefinition> singleTestMatrix
+                = ImmutableMap.of(testName, testDefinition);
+
+        return applicationsMap.entrySet().stream()
+                .filter(e -> e.getValue().getSpecifications() != null)
+                .filter(e -> e.getValue().getSpecifications()
+                        .getResolvedTests(singleTestMatrix)
+                        .contains(testName)
+                )
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toSet());
     }
 
     @Override
     public Set<String> activeTests(final Environment environment) {
-        final Map<AppVersion, RemoteSpecificationResult> specifications = cache_.get(environment);
-        if (specifications == null) {
+        final Map<AppVersion, RemoteSpecificationResult> applicationsMap =
+                applicationMapByEnvironment.get(environment);
+        if (applicationsMap == null) {
             return Collections.emptySet();
         }
 
         final TestMatrixArtifact testMatrixArtifact = getCurrentTestMatrixArtifact(environment);
-        Preconditions.checkNotNull(testMatrixArtifact, "Failed to get the current test matrix artifact");
+        Preconditions.checkNotNull(testMatrixArtifact,
+                "Failed to get the current test matrix artifact from Envirronment " + environment);
         final Map<String, ConsumableTestDefinition> definedTests = testMatrixArtifact.getTests();
 
-        final Set<String> tests = Sets.newHashSet();
-        for (final Map.Entry<AppVersion, RemoteSpecificationResult> entry : specifications.entrySet()) {
-            final RemoteSpecificationResult remoteResult = entry.getValue();
-            if (remoteResult.isSuccess()) {
-                final ProctorSpecification specification = remoteResult.getSpecificationResult().getSpecification();
-                final Set<String> requiredTests = specification.getTests().keySet();
-                final Set<String> dynamicTests = specification.getDynamicFilters()
-                        .determineTests(definedTests, requiredTests);
-                tests.addAll(requiredTests);
-                tests.addAll(dynamicTests);
-            }
-        }
-        return tests;
+        return applicationsMap.values().stream()
+                .map(RemoteSpecificationResult::getSpecifications)
+                .filter(Objects::nonNull)
+                .flatMap(s -> s.getResolvedTests(definedTests).stream())
+                .collect(Collectors.toSet());
     }
 
     @Override
@@ -191,7 +206,7 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
     }
 
     private boolean refreshInternalCache(final Environment environment) {
-        LOGGER.info("Refreshing internal list of ProctorSpecifications");
+        LOGGER.info("Refreshing internal list of ProctorSpecifications for environment " + environment);
 
         final List<ProctorClientApplication> clients = clientSource.loadClients(environment);
 
@@ -199,10 +214,10 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
 
         final ImmutableMap.Builder<AppVersion, RemoteSpecificationResult> allResults = ImmutableMap.builder();
         final Set<AppVersion> appVersionsToCheck = Sets.newLinkedHashSet();
-        final Set<AppVersion> skippedAppVersions = Sets.newLinkedHashSet();
 
         // Accumulate all clients that have equivalent AppVersion (APPLICATION_COMPARATOR)
-        final ImmutableListMultimap.Builder<AppVersion, ProctorClientApplication> builder = ImmutableListMultimap.builder();
+        final ImmutableListMultimap.Builder<AppVersion, ProctorClientApplication> builder =
+                ImmutableListMultimap.builder();
 
         for (final ProctorClientApplication client : clients) {
             final AppVersion appVersion = new AppVersion(client.getApplication(), client.getVersion());
@@ -215,55 +230,34 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
             final List<ProctorClientApplication> callableClients = apps.get(appVersion);
             assert !callableClients.isEmpty();
             futures.put(appVersion, httpExecutor.submit(
-                    () -> internalGet(appVersion, callableClients, httpTimeout)));
+                    () -> internalGet(appVersion, callableClients)));
 
         }
-        while (!futures.isEmpty()) {
+        futures.forEach((version, future) -> {
             try {
-                Thread.sleep(10);
-            } catch (final InterruptedException e) {
-                LOGGER.error("Oh heavens", e);
-            }
-            for (final Iterator<Map.Entry<AppVersion, Future<RemoteSpecificationResult>>> iterator = futures.entrySet().iterator(); iterator.hasNext(); ) {
-                final Map.Entry<AppVersion, Future<RemoteSpecificationResult>> entry = iterator.next();
-                final AppVersion appVersion = entry.getKey();
-                final Future<RemoteSpecificationResult> future = entry.getValue();
-                if (future.isDone()) {
-                    iterator.remove();
-                    try {
-                        final RemoteSpecificationResult result = future.get();
-                        allResults.put(appVersion, result);
-                        if (result.isSkipped()) {
-                            skippedAppVersions.add(result.getVersion());
-                            appVersionsToCheck.remove(result.getVersion());
-                        } else if (result.isSuccess()) {
-                            appVersionsToCheck.remove(result.getVersion());
-                        }
-                    } catch (final InterruptedException e) {
-                        LOGGER.error("Interrupted getting " + appVersion, e);
-                    } catch (final ExecutionException e) {
-                        final Throwable cause = e.getCause();
-                        LOGGER.error("Unable to fetch " + appVersion, cause);
-                    }
+                final RemoteSpecificationResult result = future.get();
+                allResults.put(version, result);
+                if (result.isSuccess()) {
+                    appVersionsToCheck.remove(result.getVersion());
                 }
+            } catch (final InterruptedException e) {
+                LOGGER.error("Interrupted getting " + version, e);
+            } catch (final ExecutionException e) {
+                final Throwable cause = e.getCause();
+                LOGGER.error("Unable to fetch " + version, cause);
             }
-        }
+        });
 
-        synchronized (cache_) {
-            cache_.put(environment, allResults.build());
-        }
+        applicationMapByEnvironment.put(environment, allResults.build());
 
         // TODO (parker) 9/6/12 - Fail if we do not have 1 specification for each <Application>.<Version>
         // should we update the cache?
         if (!appVersionsToCheck.isEmpty()) {
-            LOGGER.warn("Failed to load any specification for the following AppVersions: " + Joiner.on(",").join(appVersionsToCheck));
+            LOGGER.warn("Failed to load any specification for the following AppVersions: "
+                    + StringUtils.join(appVersionsToCheck, ','));
         }
 
-        if (!skippedAppVersions.isEmpty()) {
-            LOGGER.info("Skipped checking specification for the following AppVersions (/private/proctor/specification returned 404): " + Joiner.on(",").join(skippedAppVersions));
-        }
-
-        LOGGER.info("Finish refreshing internal list of ProctorSpecifications");
+        LOGGER.info("Finish refreshing internal list of ProctorSpecifications for " + environment);
         return appVersionsToCheck.isEmpty();
     }
 
@@ -271,105 +265,98 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
         httpExecutor.shutdownNow();
     }
 
-    private static RemoteSpecificationResult internalGet(final AppVersion version, final List<ProctorClientApplication> clients, final int timeout) {
-        // TODO (parker) 2/7/13 - priority queue them based on AUS datacenter, US DC, etc
-        final LinkedList<ProctorClientApplication> remaining = Lists.newLinkedList(clients);
-
-        final RemoteSpecificationResult.Builder results = RemoteSpecificationResult.newBuilder(version);
-        while (remaining.peek() != null) {
-            final ProctorClientApplication client = remaining.poll();
-            // really stupid method of pinging 1 of the applications.
-            final Pair<Integer, SpecificationResult> result = fetchSpecification(client, timeout);
-            final int statusCode = result.getFirst();
-            final SpecificationResult specificationResult = result.getSecond();
-            if (fetchSpecificationFailed(specificationResult)) {
-                if (statusCode == HttpURLConnection.HTTP_NOT_FOUND) {
-                    LOGGER.info("Client " + client.getBaseApplicationUrl() + " /private/proctor/specification returned 404 - skipping");
-                    results.skipped(client, specificationResult);
-                    break;
-                }
-
-                // Don't yell too load, the error is handled
-                LOGGER.info("Failed to read specification from: " + client.getBaseApplicationUrl() + " : " + specificationResult.getError());
-                results.failed(client, specificationResult);
-            } else {
-                results.success(client, specificationResult);
-                break;
+    /**
+     * Fetch a specification from a list of instances (for a single application and version)
+     * It iterates instances until it success to read specification or find it doesn't expose endpoint for spec.
+     */
+    private RemoteSpecificationResult internalGet(
+            final AppVersion version,
+            final List<ProctorClientApplication> clients
+    ) {
+        // ImmutableMap does not handle duplicate keys - use a HashMap for building instead
+        final Map<ProctorClientApplication, Throwable> failures = new HashMap<>();
+        for (final ProctorClientApplication client : clients) {
+            try {
+                final ProctorSpecifications specifications = fetchSpecification(client);
+                return RemoteSpecificationResult.success(version, client, specifications);
+            } catch (final IOException e) {
+                failures.put(client, e);
             }
         }
-        return results.build(remaining);
+        if (!failures.isEmpty()) {
+            LOGGER.info("Failed to get specifications from " + version,
+                    Iterables.getFirst(failures.values(), null)
+            );
+        }
+        return RemoteSpecificationResult.failures(version, failures);
     }
 
     /**
-     * Firstly try visiting specification API end point. If it's not exported, fetch from private/v instead.
-     *
-     * @param client
-     * @param timeout
-     * @return
+     * try visiting private/v or private/proctor/specification to get specification
+     * The specifications are used by proctor webapp to validate test edit/promotion
+     * or to detect usage of test definitions.
+     * <p>
+     * Applications are expected to expose their specifications via either of these endpoints
+     * <p>
+     * * /private/proctor/specification
+     * by com.indeed.proctor.consumer.ViewProctorSpecificationServlet
+     * <p>
+     * * /private/v?ns=JsonProctorLoaderFactory
+     * by com.indeed.util.varexport.servlet.ViewExportedVariablesServlet
+     * The variable is exposed in
+     * com.indeed.proctor.common.JsonProctorLoaderFactory
      */
-    private static Pair<Integer, SpecificationResult> fetchSpecification(final ProctorClientApplication client, final int timeout) {
+    private ProctorSpecifications fetchSpecification(
+            final ProctorClientApplication client
+    ) throws IOException {
+        // This URL is where we expose variables by ViewExportedVariablesServlet
+        final String varExportUrl = client.getBaseApplicationUrl()
+                + "/private/v?ns=JsonProctorLoaderFactory";
 
-        final Pair<Integer, SpecificationResult> apiSpec = fetchSpecificationFromApi(client, timeout);
-        if (fetchSpecificationFailed(apiSpec.getSecond())) {
-            return fetchSpecificationFromExportedVariable(client, timeout);
+        final ProctorSpecifications specFromVarExport = parseExportedVariables(
+                fetchContentFromUrl(varExportUrl),
+                client
+        );
+
+        // Use this spec if the var export contains multiple specifications
+        // because the other legacy endpoint contains only single.
+        //
+        // Otherwise, check the legacy endpoint first where a client choose
+        // what specification to expose.
+        if (specFromVarExport.asSet().size() > 1) {
+            return specFromVarExport;
         }
-        return apiSpec;
-    }
 
-    // @Nonnull
-    private static Pair<Integer, SpecificationResult> fetchSpecification(final String urlString, final int timeout, final SpecificationParser parser) {
-        int statusCode = -1;
-        InputStream inputStream = null;
+        // This URL is where we expose specification by ViewProctorSpecificationServlet
+        final String viewSpecUrl = client.getBaseApplicationUrl()
+                + "/private/proctor/specification";
         try {
-            final URL url = new URL(urlString);
-            LOGGER.debug("Trying to read specification from " + url.toString() + " using timeout " + timeout + " ms");
-            final HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-            urlConnection.setReadTimeout(timeout);
-            urlConnection.setConnectTimeout(timeout);
-
-            statusCode = urlConnection.getResponseCode();
-            inputStream = urlConnection.getInputStream();
-            //  map from testName => list of bucket names
-            final SpecificationResult result = parser.parse(inputStream);
-            return new Pair<>(statusCode, result);
-        } catch (final Throwable e) {
-            final SpecificationResult errorResult = createErrorResult(e);
-            return new Pair<>(statusCode, errorResult);
-        } finally {
-            try {
-                if (inputStream != null) {
-                    inputStream.close();
-                }
-            } catch (final IOException e) {
-                LOGGER.error("Unable to close stream to " + urlString, e);
-            }
+            return parseSpecificationFromServlet(
+                    fetchContentFromUrl(viewSpecUrl),
+                    client
+            );
+        } catch (final IOException e) {
+            // Fallback to the first version.
+            return specFromVarExport;
         }
     }
 
-    private static SpecificationResult createErrorResult(final Throwable t) {
-        final SpecificationResult result = new SpecificationResult();
-        final StringWriter sw = new StringWriter();
-        final PrintWriter writer = new PrintWriter(sw);
-        t.printStackTrace(writer);
-
-        result.setError(t.getMessage());
-        result.setException(sw.toString());
-        return result;
-    }
-
-    // Check if this test is defined in a specification by a client.
-    private static boolean containsTest(final ProctorSpecification specification, final String testName) {
-        return specification.getTests().containsKey(testName);
-    }
-
-    // Check if this test will be resolved by defined filters in a client.
-    private static boolean willResolveTest(final DynamicFilters filters, final String testName, final ConsumableTestDefinition testDefinition) {
-        return (filters != null) && StringUtils.isNotEmpty(testName) && (testDefinition != null) &&
-                filters.determineTests(ImmutableMap.of(testName, testDefinition), Collections.emptySet()).contains(testName);
+    private String fetchContentFromUrl(
+            final String urlString
+    ) throws IOException {
+        final HttpGet httpGet = new HttpGet(urlString);
+        return this.httpClient.execute(httpGet, r -> {
+            try (InputStream inputStream = r.getEntity().getContent()) {
+                return IOUtils.toString(inputStream, "UTF-8");
+            }
+        });
     }
 
     @Nullable
-    private ConsumableTestDefinition getCurrentConsumableTestDefinition(final Environment environment, final String testName) {
+    private ConsumableTestDefinition getCurrentConsumableTestDefinition(
+            final Environment environment,
+            final String testName
+    ) {
         try {
             final TestDefinition testDefinition = proctorReaderMap.get(environment).getCurrentTestDefinition(testName);
             if (testDefinition != null) {
@@ -382,9 +369,12 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
     }
 
     @Nullable
-    private TestMatrixArtifact getCurrentTestMatrixArtifact(final Environment environment) {
+    private TestMatrixArtifact getCurrentTestMatrixArtifact(
+            final Environment environment
+    ) {
         try {
-            final TestMatrixVersion testMatrix = proctorReaderMap.get(environment).getCurrentTestMatrix();
+            final TestMatrixVersion testMatrix =
+                    proctorReaderMap.get(environment).getCurrentTestMatrix();
             if (testMatrix != null) {
                 return ProctorUtils.convertToConsumableArtifact(testMatrix);
             }
@@ -394,45 +384,78 @@ public class RemoteProctorSpecificationSource extends DataLoadingTimerTask imple
         return null;
     }
 
-    private static Pair<Integer, SpecificationResult> fetchSpecificationFromApi(final ProctorClientApplication client, final int timeout) {
-        /*
-         * This needs to be moved to a separate checker class implementing some interface
-         */
-        final String apiUrl = client.getBaseApplicationUrl() + "/private/proctor/specification";
-        return fetchSpecification(apiUrl, timeout, new SpecificationParser() {
-            @Override
-            public SpecificationResult parse(final InputStream inputStream) throws IOException {
-                return OBJECT_MAPPER.readValue(inputStream, SpecificationResult.class);
-            }
-        });
-    }
-
-    private static Pair<Integer, SpecificationResult> fetchSpecificationFromExportedVariable(final ProctorClientApplication client, final int timeout) {
-        /*
-         * This needs to be moved to a separate checker class implementing some interface
-         */
-        final String urlStr = client.getBaseApplicationUrl() + "/private/v?ns=JsonProctorLoaderFactory&v=specification";
-        return fetchSpecification(urlStr, timeout, EXPORTED_VARIABLE_PARSER);
-    }
-
+    /**
+     * Parse generated string from
+     * com.indeed.util.varexport.servlet.ViewExportedVariablesServlet
+     * for variables in the namespace of JsonProctorLoaderFactory
+     * <p>
+     * JsonProctorLoaderFactory is expected to expose specification variable
+     * with the variable name
+     * - specification (earlier than 1.7.5)
+     * or
+     * - specification-file_name.json (1.7.5 or later)
+     *
+     * <p>
+     * Example string is
+     * <p>
+     * specification-spec.json={"providedContext"\:{"country"\:"String"}},"tests"\:{},"dynamicFilters"\:[]}
+     * exporter-start-time=2019-09-18T02\:28\:24CDT
+     */
     @VisibleForTesting
-    static final SpecificationParser EXPORTED_VARIABLE_PARSER = new SpecificationParser() {
-        @Override
-        public SpecificationResult parse(final InputStream inputStream) throws IOException {
-            final String json = IOUtils.toString(inputStream).replace("\\:", ":").trim();
-            final ProctorSpecification proctorSpecification = OBJECT_MAPPER.readValue(json, ProctorSpecification.class);
-            final SpecificationResult specificationResult = new SpecificationResult();
-            specificationResult.setSpecification(proctorSpecification);
-            return specificationResult;
+    static ProctorSpecifications parseExportedVariables(
+            final String content,
+            final ProctorClientApplication client
+    ) throws IOException {
+        final Properties exportedVariables = VarExportedVariablesDeserializer
+                .deserialize(content);
+
+        final Set<ProctorSpecification> specifications = new HashSet<>();
+        for (final String key : exportedVariables.stringPropertyNames()) {
+            // JsonProctorLoaderFactory is expected to expose json string of specifications
+            // with "specification" or "specification-file_name.json"
+            if (!key.startsWith("specification")) {
+                continue;
+            }
+            final String json = exportedVariables.getProperty(key);
+            try {
+                final ProctorSpecification specification =
+                        OBJECT_MAPPER.readValue(json, ProctorSpecification.class);
+                specifications.add(specification);
+            } catch (final IOException e) {
+                LOGGER.error("Failed to parse variable " + key
+                        + ": " + json + " from " + client, e);
+            }
         }
-    };
-
-    interface SpecificationParser {
-        SpecificationResult parse(final InputStream inputStream) throws IOException;
+        if (specifications.isEmpty()) {
+            throw new IOException(
+                    "no specification can be parsed from exported variables from "
+                            + client
+            );
+        }
+        return new ProctorSpecifications(specifications);
     }
 
-    private static boolean fetchSpecificationFailed(final SpecificationResult result) {
-        return result.getSpecification() == null;
-    }
+    private static ProctorSpecifications parseSpecificationFromServlet(
+            final String jsonString,
+            final ProctorClientApplication client
+    ) throws IOException {
+        final com.indeed.proctor.common.SpecificationResult specificationResult =
+                OBJECT_MAPPER.readValue(jsonString,
+                        com.indeed.proctor.common.SpecificationResult.class
+                );
 
+        if (specificationResult.getSpecification() == null) {
+            throw new IOException(
+                    "Failed to fetch from servlet: "
+                            + specificationResult.getError()
+                            + " from " + client
+            );
+        }
+
+        return new ProctorSpecifications(
+                Collections.singleton(
+                        specificationResult.getSpecification()
+                )
+        );
+    }
 }

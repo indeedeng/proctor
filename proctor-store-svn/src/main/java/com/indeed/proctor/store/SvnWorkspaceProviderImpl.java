@@ -2,10 +2,10 @@ package com.indeed.proctor.store;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import java.io.Closeable;
@@ -56,7 +56,7 @@ public class SvnWorkspaceProviderImpl extends TimerTask implements SvnWorkspaceP
         Preconditions.checkArgument(cleanupAgeMillis > 0, "cleanup age millis (%s) should be greater than zero", cleanupAgeMillis);
         Preconditions.checkArgument(rootDirectory.isDirectory(), "File %s should be a directory", rootDirectory.getAbsolutePath());
         Preconditions.checkArgument(rootDirectory.exists(), "File %s should exists", rootDirectory.getAbsolutePath());
-        Preconditions.checkArgument(!CharMatcher.WHITESPACE.matchesAllOf(Strings.nullToEmpty(prefix)), "Prefix should not be empty");
+        Preconditions.checkArgument(StringUtils.isNotBlank(prefix), "Prefix should not be empty");
     }
 
     @Override
@@ -82,13 +82,13 @@ public class SvnWorkspaceProviderImpl extends TimerTask implements SvnWorkspaceP
     @Override
     public void run() {
         try {
-            if(!shutdown.get()) {
+            if (!shutdown.get()) {
                 LOGGER.info("Actively cleaning up directories older than " + TimeUnit.MILLISECONDS.toHours(cleanupAgeMillis) + " hours");
                 final IOFileFilter olderThanFilter = FileFilterUtils.asFileFilter(olderThanFileFilter(cleanupAgeMillis));
                 final IOFileFilter tempDirFilter =
                     FileFilterUtils.prefixFileFilter(prefix);
 
-                /**
+                /*
                  * Delete directories that are:
                  * older than [clean up age millis]
                  * starts with temp-dir-prefix
@@ -144,7 +144,7 @@ public class SvnWorkspaceProviderImpl extends TimerTask implements SvnWorkspaceP
                                         final boolean deleteIfExists) throws IOException {
         final File dir = getUserDirectory(prefix, suffix, parent);
         if (dir.exists()) {
-            if(!dir.isDirectory()) {
+            if (!dir.isDirectory()) {
                 throw new IOException("File " + dir + " exists but is not a directory");
             }
             if (deleteIfExists) {
