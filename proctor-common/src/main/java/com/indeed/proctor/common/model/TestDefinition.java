@@ -2,7 +2,6 @@ package com.indeed.proctor.common.model;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Objects;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 import javax.annotation.Nonnull;
@@ -18,6 +17,11 @@ import java.util.Map;
  * @author ketan
  */
 public class TestDefinition {
+
+    /**
+     * "-1" when for definitions on the trunk branch.
+     * On other branches, the revision of the definition on the trunk branch from which it was promoted
+     */
     private String version;
     @Nonnull
     private Map<String, Object> constants = Collections.emptyMap();
@@ -33,6 +37,8 @@ public class TestDefinition {
     @Nonnull
     private List<Allocation> allocations = Collections.emptyList();
     private boolean silent;
+    @Nonnull
+    private List<String> metaTags = Collections.emptyList();
 
     /**
      * For advisory purposes only
@@ -44,6 +50,9 @@ public class TestDefinition {
 
     public TestDefinition() { /* intentionally empty */ }
 
+    /**
+     * @deprecated Use {@link #TestDefinition(String, String, TestType, String, List, List, boolean, Map, Map, String, List)}
+     */
     @Deprecated
     public TestDefinition(
             final String version,
@@ -65,9 +74,14 @@ public class TestDefinition {
                 false,
                 constants,
                 specialConstants,
-                description);
+                description,
+                Collections.emptyList());
     }
 
+    /**
+     * @deprecated Use {@link #TestDefinition(String, String, TestType, String, List, List, boolean, Map, Map, String, List)}
+     */
+    @Deprecated
     public TestDefinition(
             final String version,
             @Nullable final String rule,
@@ -80,6 +94,32 @@ public class TestDefinition {
             @Nonnull final Map<String, Object> specialConstants,
             @Nullable final String description
     ) {
+        this(version,
+                rule,
+                testType,
+                salt,
+                buckets,
+                allocations,
+                silent,
+                constants,
+                specialConstants,
+                description,
+                Collections.emptyList());
+    }
+
+    public TestDefinition(
+            final String version,
+            @Nullable final String rule,
+            @Nonnull final TestType testType,
+            @Nonnull final String salt,
+            @Nonnull final List<TestBucket> buckets,
+            @Nonnull final List<Allocation> allocations,
+            final boolean silent,
+            @Nonnull final Map<String, Object> constants,
+            @Nonnull final Map<String, Object> specialConstants,
+            @Nullable final String description,
+            @Nonnull final List<String> metaTags
+    ) {
         this.version = version;
         this.constants = constants;
         this.specialConstants = specialConstants;
@@ -90,6 +130,7 @@ public class TestDefinition {
         this.silent = silent;
         this.testType = testType;
         this.description = description;
+        this.metaTags = metaTags;
     }
 
     public TestDefinition(@Nonnull final TestDefinition other) {
@@ -99,6 +140,7 @@ public class TestDefinition {
         this.silent = other.silent;
         this.description = other.description;
 
+        // null checks for mocked TestDefinition in unit test
         if (other.constants != null) {
             this.constants = Maps.newHashMap(other.constants);
         }
@@ -108,18 +150,20 @@ public class TestDefinition {
         }
 
         if (other.buckets != null) {
-            this.buckets = new ArrayList<TestBucket>();
+            this.buckets = new ArrayList<>();
             for (final TestBucket bucket : other.buckets) {
                 this.buckets.add(new TestBucket(bucket));
             }
         }
 
         if (other.allocations != null) {
-            this.allocations = new ArrayList<Allocation>();
+            this.allocations = new ArrayList<>();
             for (final Allocation allocation : other.allocations) {
                 this.allocations.add(new Allocation(allocation));
             }
         }
+
+        this.metaTags = other.metaTags != null ? new ArrayList<>(other.metaTags) : Collections.emptyList();
 
         this.testType = other.testType;
     }
@@ -230,6 +274,18 @@ public class TestDefinition {
         return description;
     }
 
+    /**
+     * metaTags allow to group and filter tests.
+     */
+    @Nonnull
+    public List<String> getMetaTags() {
+        return this.metaTags;
+    }
+
+    public void setMetaTags(final List<String> metaTags) {
+        this.metaTags = metaTags;
+    }
+
     @Override
     public String toString() {
         return "TestDefinition{" +
@@ -243,6 +299,7 @@ public class TestDefinition {
                 ", silent=" + silent +
                 ", testType=" + testType +
                 ", description='" + description + '\'' +
+                ", metaTags=" + metaTags +
                 '}';
     }
 
@@ -260,7 +317,8 @@ public class TestDefinition {
                 });
             }
         }
-        return Objects.hashCode(version, constants, specialConstants, salt, rule, bucketWrappers, allocations, silent, testType, description);
+        return Objects.hashCode(version, constants, specialConstants, salt, rule, bucketWrappers, allocations, silent,
+                testType, description, metaTags);
     }
 
     /**
@@ -287,7 +345,8 @@ public class TestDefinition {
                 bucketListEqual(buckets, that.buckets) && // difference here
                 Objects.equal(allocations, that.allocations) &&
                 Objects.equal(testType, that.testType) &&
-                Objects.equal(description, that.description);
+                Objects.equal(description, that.description) &&
+                Objects.equal(metaTags, that.metaTags);
     }
 
     @VisibleForTesting

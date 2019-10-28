@@ -33,7 +33,7 @@ public class SvnDirectoryRefresher extends TimerTask {
     @Override
     public void run() {
         try {
-            if(!shutdown.get()) {
+            if (!shutdown.get()) {
                 svnPersisterCore.doWithClientAndRepository(new SvnPersisterCore.SvnOperation<Void>() {
                     @Override
                     public Void execute(final SVNRepository repo, final SVNClientManager clientManager) throws Exception {

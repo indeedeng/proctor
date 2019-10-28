@@ -8,12 +8,15 @@ import com.google.common.cache.CacheBuilder;
 import com.indeed.proctor.common.model.TestDefinition;
 import com.indeed.proctor.common.model.TestMatrixDefinition;
 import com.indeed.proctor.common.model.TestMatrixVersion;
+import com.indeed.proctor.store.ChangeMetadata;
 import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.store.Revision;
+import com.indeed.proctor.store.RevisionDetails;
 import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.store.utils.HistoryUtil;
 import org.apache.log4j.Logger;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.List;
@@ -83,6 +86,7 @@ public class CachingProctorStore implements ProctorStore {
         delegate.verifySetup();
     }
 
+    @Nonnull
     @Override
     public String getLatestVersion() throws StoreException {
         return cacheHolder.getCachedLatestVersion();
@@ -110,21 +114,31 @@ public class CachingProctorStore implements ProctorStore {
     /**
      * caching is not supported for this method
      **/
+    @Nonnull
     @Override
     public List<Revision> getMatrixHistory(final int start, final int limit) throws StoreException {
         return delegate.getMatrixHistory(start, limit);
     }
 
+    @Nonnull
     @Override
     public List<Revision> getHistory(final String test, final int start, final int limit) throws StoreException {
         return HistoryUtil.selectHistorySet(cacheHolder.getCachedHistory().get(test), start, limit);
     }
 
+    @Nonnull
     @Override
     public List<Revision> getHistory(final String test, final String revision, final int start, final int limit) throws StoreException {
         return HistoryUtil.selectRevisionHistorySetFrom(cacheHolder.getCachedHistory().get(test), revision, start, limit);
     }
 
+    @CheckForNull
+    @Override
+    public RevisionDetails getRevisionDetails(final String revisionId) throws StoreException {
+        return delegate.getRevisionDetails(revisionId);
+    }
+
+    @Nonnull
     @Override
     public Map<String, List<Revision>> getAllHistories() throws StoreException {
         return cacheHolder.getCachedHistory();
@@ -160,74 +174,40 @@ public class CachingProctorStore implements ProctorStore {
      * Following three methods make side-effect and it would trigger cache refreshing at once
      */
 
+
     @Override
-    public void updateTestDefinition(final String username,
-                                     final String password,
-                                     final String previousVersion,
-                                     final String testName,
-                                     final TestDefinition testDefinition,
-                                     final Map<String, String> metadata,
-                                     final String comment) throws StoreException.TestUpdateException {
-        delegate.updateTestDefinition(username, password, previousVersion, testName, testDefinition, metadata, comment);
+    public void updateTestDefinition(
+            final ChangeMetadata changeMetadata,
+            final String previousVersion,
+            final String testName,
+            final TestDefinition testDefinition,
+            final Map<String, String> metadata
+    ) throws StoreException.TestUpdateException {
+        delegate.updateTestDefinition(changeMetadata, previousVersion, testName, testDefinition, metadata);
         cacheHolder.startRefreshCacheTask();
     }
 
+
     @Override
-    public void updateTestDefinition(final String username,
-                                     final String password,
-                                     final String author,
-                                     final String previousVersion,
-                                     final String testName,
-                                     final TestDefinition testDefinition,
-                                     final Map<String, String> metadata,
-                                     final String comment) throws StoreException.TestUpdateException {
-        delegate.updateTestDefinition(username, password, author, previousVersion, testName, testDefinition, metadata, comment);
+    public void deleteTestDefinition(
+            final ChangeMetadata changeMetadata,
+            final String previousVersion,
+            final String testName,
+            final TestDefinition testDefinition
+    ) throws StoreException.TestUpdateException {
+        delegate.deleteTestDefinition(changeMetadata, previousVersion, testName, testDefinition);
         cacheHolder.startRefreshCacheTask();
     }
 
-    @Override
-    public void deleteTestDefinition(final String username,
-                                     final String password,
-                                     final String previousVersion,
-                                     final String testName,
-                                     final TestDefinition testDefinition,
-                                     final String comment) throws StoreException.TestUpdateException {
-        delegate.deleteTestDefinition(username, password, previousVersion, testName, testDefinition, comment);
-        cacheHolder.startRefreshCacheTask();
-    }
 
     @Override
-    public void deleteTestDefinition(final String username,
-                                     final String password,
-                                     final String author,
-                                     final String previousVersion,
-                                     final String testName,
-                                     final TestDefinition testDefinition,
-                                     final String comment) throws StoreException.TestUpdateException {
-        delegate.deleteTestDefinition(username, password, author, previousVersion, testName, testDefinition, comment);
-        cacheHolder.startRefreshCacheTask();
-    }
-
-    @Override
-    public void addTestDefinition(final String username,
-                                  final String password,
-                                  final String testName,
-                                  final TestDefinition testDefinition,
-                                  final Map<String, String> metadata,
-                                  final String comment) throws StoreException.TestUpdateException {
-        delegate.addTestDefinition(username, password, testName, testDefinition, metadata, comment);
-        cacheHolder.startRefreshCacheTask();
-    }
-
-    @Override
-    public void addTestDefinition(final String username,
-                                  final String password,
-                                  final String author,
-                                  final String testName,
-                                  final TestDefinition testDefinition,
-                                  final Map<String, String> metadata,
-                                  final String comment) throws StoreException.TestUpdateException {
-        delegate.addTestDefinition(username, password, author, testName, testDefinition, metadata, comment);
+    public void addTestDefinition(
+            final ChangeMetadata changeMetadata,
+            final String testName,
+            final TestDefinition testDefinition,
+            final Map<String, String> metadata
+    ) throws StoreException.TestUpdateException {
+        delegate.addTestDefinition(changeMetadata, testName, testDefinition, metadata);
         cacheHolder.startRefreshCacheTask();
     }
 
@@ -412,7 +392,7 @@ public class CachingProctorStore implements ProctorStore {
          */
         public void startRefreshCacheTask() {
             LOGGER.info(String.format("[%s] Rescheduling UpdateCacheTask due to new updates.", delegate.getName()));
-            /**
+            /*
              * cancel scheduled task, executing task is allowed to finish;
              */
             scheduledFuture.cancel(false);

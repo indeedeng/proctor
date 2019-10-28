@@ -2,7 +2,6 @@ package com.indeed.proctor.webapp.db;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 import com.indeed.proctor.store.CachedSvnPersisterCore;
 import com.indeed.proctor.store.FileBasedProctorStore;
 import com.indeed.proctor.store.ProctorStore;
@@ -11,7 +10,7 @@ import com.indeed.proctor.store.SvnPersisterCoreImpl;
 import com.indeed.proctor.store.SvnProctor;
 import com.indeed.proctor.store.SvnWorkspaceProviderImpl;
 import com.indeed.util.varexport.VarExporter;
-import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -54,7 +53,7 @@ public class SvnProctorStoreFactory implements TrunkQaProdStoresFactory {
                                   final String svnPath,
                                   final String svnUsername,
                                   final String svnPassword,
-                                  final String testDefinitionsDirectory) throws IOException, ConfigurationException {
+                                  final String testDefinitionsDirectory) throws IOException {
         this.executor = executor;
         this.cache = cache;
         this.tempDirCleanupAgeMillis = TimeUnit.MINUTES.toMillis(tempDirCleanupAgeMinutes);
@@ -85,7 +84,7 @@ public class SvnProctorStoreFactory implements TrunkQaProdStoresFactory {
         Preconditions.checkArgument(tempDirCleanupAgeMillis > 0, "tempDirCleanupAgeMillis %s must be greater than zero", tempDirCleanupAgeMillis);
         final File tempDirectory = createTempDirectoryForPath(relativePath);
 
-        Preconditions.checkArgument(!CharMatcher.WHITESPACE.matchesAllOf(Strings.nullToEmpty(svnPath)), "svn.path property cannot be empty");
+        Preconditions.checkArgument(StringUtils.isNotBlank(svnPath), "svn.path property cannot be empty");
         // TODO (parker) 9/13/12 - sanity check that path + relative path make a valid url
         final String fullPath = svnPath + relativePath;
 

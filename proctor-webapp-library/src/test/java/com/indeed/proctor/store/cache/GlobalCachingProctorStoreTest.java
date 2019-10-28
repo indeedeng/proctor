@@ -9,6 +9,7 @@ import com.indeed.proctor.common.model.TestDefinition;
 import com.indeed.proctor.common.model.TestMatrixDefinition;
 import com.indeed.proctor.common.model.TestMatrixVersion;
 import com.indeed.proctor.common.model.TestType;
+import com.indeed.proctor.store.ChangeMetadata;
 import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.store.StoreException;
@@ -34,6 +35,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -58,6 +60,12 @@ public class GlobalCachingProctorStoreTest {
     private static String REVISION = "abc";
     private static Map<String, String> METADATA = Collections.emptyMap();
     private static String COMMENT = "test comment";
+    final ChangeMetadata CHANGE_METADATA = ChangeMetadata.builder()
+            .setUsername(USERNAME)
+            .setPassword(PASSWORD)
+            .setAuthor(AUTHOR)
+            .setComment(COMMENT)
+            .build();
 
     @Before
     public void setUp() {
@@ -83,6 +91,7 @@ public class GlobalCachingProctorStoreTest {
         when(globalCacheStore.getCachedTestDefinition(Environment.PRODUCTION, TEST_NAME)).thenReturn(Optional.of(TEST_DEFINITION));
         final TestDefinition actualTestDefinition = globalCachingProctorStore.getCurrentTestDefinition(TEST_NAME);
         assertThat(actualTestDefinition).isEqualToComparingFieldByFieldRecursively(TEST_DEFINITION);
+        verifyNoMoreInteractions(delegate);
     }
 
     @Test
@@ -110,30 +119,21 @@ public class GlobalCachingProctorStoreTest {
 
     @Test
     public void testUpdateTestDefinition() throws StoreException {
-        doNothing().when(delegate).updateTestDefinition(
-                USERNAME, PASSWORD, AUTHOR, REVISION, TEST_NAME, TEST_DEFINITION, METADATA, COMMENT);
-        doNothing().when(globalCacheStore).updateCache(ENVIRONMENT, TEST_NAME, TEST_DEFINITION, HISTORY);
         when(delegate.getHistory(TEST_NAME, 0, Integer.MAX_VALUE)).thenReturn(HISTORY);
         globalCachingProctorStore.updateTestDefinition(
-                USERNAME,
-                PASSWORD,
-                AUTHOR,
+                CHANGE_METADATA,
                 REVISION,
                 TEST_NAME,
                 TEST_DEFINITION,
-                METADATA,
-                COMMENT
+                METADATA
         );
-        InOrder inOrder = Mockito.inOrder(delegate, globalCacheStore);
+        final InOrder inOrder = Mockito.inOrder(delegate, globalCacheStore);
         inOrder.verify(delegate, times(1)).updateTestDefinition(
-                USERNAME,
-                PASSWORD,
-                AUTHOR,
+                CHANGE_METADATA,
                 REVISION,
                 TEST_NAME,
                 TEST_DEFINITION,
-                METADATA,
-                COMMENT
+                METADATA
         );
         inOrder.verify(globalCacheStore, times(1)).updateCache(
                 ENVIRONMENT,
@@ -145,28 +145,19 @@ public class GlobalCachingProctorStoreTest {
 
     @Test
     public void testDeleteTestDefinition() throws StoreException {
-        doNothing().when(delegate).deleteTestDefinition(
-                USERNAME, PASSWORD, AUTHOR, REVISION, TEST_NAME, TEST_DEFINITION, COMMENT);
-        doNothing().when(globalCacheStore).updateCache(ENVIRONMENT, TEST_NAME, TEST_DEFINITION, HISTORY);
         when(delegate.getHistory(TEST_NAME, 0, Integer.MAX_VALUE)).thenReturn(HISTORY);
         globalCachingProctorStore.deleteTestDefinition(
-                USERNAME,
-                PASSWORD,
-                AUTHOR,
+                CHANGE_METADATA,
                 REVISION,
                 TEST_NAME,
-                TEST_DEFINITION,
-                COMMENT
+                TEST_DEFINITION
         );
-        InOrder inOrder = Mockito.inOrder(delegate, globalCacheStore);
+        final InOrder inOrder = Mockito.inOrder(delegate, globalCacheStore);
         inOrder.verify(delegate, times(1)).deleteTestDefinition(
-                USERNAME,
-                PASSWORD,
-                AUTHOR,
+                CHANGE_METADATA,
                 REVISION,
                 TEST_NAME,
-                TEST_DEFINITION,
-                COMMENT
+                TEST_DEFINITION
         );
         inOrder.verify(globalCacheStore, times(1)).updateCache(
                 ENVIRONMENT,
@@ -178,28 +169,20 @@ public class GlobalCachingProctorStoreTest {
 
     @Test
     public void testAddTestDefinition() throws StoreException {
-        doNothing().when(delegate).addTestDefinition(
-                USERNAME, PASSWORD, AUTHOR, TEST_NAME, TEST_DEFINITION, METADATA, COMMENT);
         doNothing().when(globalCacheStore).updateCache(ENVIRONMENT, TEST_NAME, TEST_DEFINITION, HISTORY);
         when(delegate.getHistory(TEST_NAME, 0, Integer.MAX_VALUE)).thenReturn(HISTORY);
         globalCachingProctorStore.addTestDefinition(
-                USERNAME,
-                PASSWORD,
-                AUTHOR,
+                CHANGE_METADATA,
                 TEST_NAME,
                 TEST_DEFINITION,
-                METADATA,
-                COMMENT
+                METADATA
         );
-        InOrder inOrder = Mockito.inOrder(delegate, globalCacheStore);
+        final InOrder inOrder = Mockito.inOrder(delegate, globalCacheStore);
         inOrder.verify(delegate, times(1)).addTestDefinition(
-                USERNAME,
-                PASSWORD,
-                AUTHOR,
+                CHANGE_METADATA,
                 TEST_NAME,
                 TEST_DEFINITION,
-                METADATA,
-                COMMENT
+                METADATA
         );
         inOrder.verify(globalCacheStore, times(1)).updateCache(
                 ENVIRONMENT,
@@ -228,6 +211,7 @@ public class GlobalCachingProctorStoreTest {
         when(globalCacheStore.getCachedTestDefinition(ENVIRONMENT, TEST_NAME, REVISION)).thenReturn(Optional.of(TEST_DEFINITION));
         final TestDefinition actualTestDefinition = globalCachingProctorStore.getTestDefinition(TEST_NAME, REVISION);
         assertThat(actualTestDefinition).isEqualToComparingFieldByFieldRecursively(actualTestDefinition);
+        verifyNoMoreInteractions(delegate);
     }
 
     @Test
@@ -250,6 +234,7 @@ public class GlobalCachingProctorStoreTest {
         when(globalCacheStore.getCachedHistory(ENVIRONMENT, TEST_NAME)).thenReturn(Optional.of(HISTORY));
         final List<Revision> actualHistory = globalCachingProctorStore.getHistory(TEST_NAME, 0, 10);
         assertThat(actualHistory).isEqualTo(HISTORY);
+        verifyNoMoreInteractions(delegate);
     }
 
     @Test
@@ -305,7 +290,8 @@ public class GlobalCachingProctorStoreTest {
                 false,
                 Collections.emptyMap(),
                 Collections.emptyMap(),
-                "SAND-1: test"
+                "SAND-1: test",
+                ImmutableList.of("example_tst_tag")
         );
     }
 

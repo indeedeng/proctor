@@ -15,6 +15,7 @@ import java.util.Set;
 
 import static com.indeed.proctor.common.ProctorUtils.isEmptyWhitespace;
 import static com.indeed.proctor.common.ProctorUtils.removeElExpressionBraces;
+import static com.indeed.proctor.common.RuleEvaluator.checkRuleIsBooleanType;
 
 public class RuleVerifyUtils {
 
@@ -63,6 +64,12 @@ public class RuleVerifyUtils {
 
                 // Evaluate rule with given context
                 try {
+                    try {
+                        checkRuleIsBooleanType(testRule, elContext, valueExpression);
+                    } catch (final IllegalArgumentException e) {
+                        throw new InvalidRuleException(e, "Rule is not a boolean condition '" + testRule + "' (e.g. unbalanced braces)");
+                    }
+
                     valueExpression.getValue(elContext);
                 } catch (final ELException e) {
                     if (isIgnorable(root, absentIdentifiers)) {

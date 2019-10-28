@@ -4,17 +4,27 @@
     <parent>
         <groupId>com.indeed</groupId>
         <artifactId>common-parent</artifactId>
-        <version>19</version>
+        <version>20</version>
     </parent>
 
     <prerequisites>
         <maven>3.3.9</maven>
     </prerequisites>
 
+    <groupId>com.indeed</groupId>
     <artifactId>proctor-parent</artifactId>
     <!--This version is not used in latest release. See https://mvnrepository.com/artifact/com.indeed/proctor-parent -->
     <version>9999-SNAPSHOT</version>
     <packaging>pom</packaging>
+    <url>https://github.com/indeedeng</url>
+
+    <developers>
+        <developer>
+            <id>IndeedEng</id>
+            <name>Indeed Engineering</name>
+            <url>https://github.com/indeedeng</url>
+        </developer>
+    </developers>
 
     <licenses>
         <license>
@@ -51,25 +61,30 @@
 
     <properties>
         <java.version>1.8</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <autoVersionSubmodules>true</autoVersionSubmodules>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <indeed-util.version>1.0.12</indeed-util.version>
+        <indeed-util.version>1.0.28</indeed-util.version>
         <apache-commons-pool2.version>2.2</apache-commons-pool2.version>
         <commons-lang3.version>3.3.2</commons-lang3.version>
+        <commons-io.version>2.4</commons-io.version>
         <!--
-        the version defined in javadev
+        the versions defined in javadev
         -->
-        <google-guava.version>16.0.1</google-guava.version>
-        <slf4j.version>1.7.2</slf4j.version>
+        <spring.version>4.3.18.RELEASE</spring.version>
+        <google-guava.version>19.0</google-guava.version>
+        <slf4j.version>1.7.25</slf4j.version>
         <log4j.version>1.2.14</log4j.version>
-        <!--
-        jackson.core and jackson-databind version can be unified when moving to >2.8.0
-        $jackson.version defined in parent pom for old codehaus jackson
-        -->
-        <jackson.core.version>2.7.9</jackson.core.version>
-        <jackson-databind.version>2.7.9.5</jackson-databind.version>
+        <jackson.core.version>2.9.10</jackson.core.version>
+        <tomcat-api7.version>7.0.8</tomcat-api7.version>
+        <ant.version>1.8.2</ant.version>
+        <svnkit.version>1.8.5</svnkit.version>
+        <jsr-305.version>1.3.9</jsr-305.version>
         <junit.version>4.12</junit.version>
-        <mockito.version>1.9.5</mockito.version>
+        <mockito.version>2.28.2</mockito.version>
+        <easymock.version>2.4</easymock.version>
         <assertj.version>3.6.2</assertj.version>
     </properties>
 
@@ -106,11 +121,20 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.0.0</version>
                 <configuration>
                     <additionalparam>-Xdoclint:none</additionalparam>
                     <additionalOptions>-Xdoclint:none</additionalOptions>
                     <additionalJOption>-Xdoclint:none</additionalJOption>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
         <pluginManagement>
@@ -163,8 +187,16 @@
                 <plugin>
                     <!--
                         Tomcat7 el library has better performance than Tomcat8 one.
-                        To avoid the performance issue on Tomcat8, proctor-common and related libraries should be independent of the version of the apache-el of the running environment.
+                        To avoid the performance issue on Tomcat8, proctor-common and related libraries should be
+                        independent of the version of the apache-el of the running environment.
                         This shaded el library doesn't allow to use Tomcat8 el syntax like assign, concat, arrows, maps.
+
+                        The current approach shades the classes in all proctor packages during packaging,
+                        which sadly causes jvm crashes when running mvn test twice without clean.
+                        Shading one module only in a maven multi-module project does not work cleanly.
+                        The clean way to use the shade plugin would be to package javax-el7 in a separate maven project,
+                        and use it as a library.
+                        Since maven has no incremental testing anyway, running mvn clean test is ok as workaround.
                     -->
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-shade-plugin</artifactId>
@@ -242,6 +274,7 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -264,11 +297,13 @@
         <dependency>
             <groupId>org.easymock</groupId>
             <artifactId>easymock</artifactId>
+            <version>${easymock.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.easymock</groupId>
             <artifactId>easymockclassextension</artifactId>
+            <version>${easymock.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -280,12 +315,101 @@
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
-                <version>${jackson-databind.version}</version>
+                <version>${jackson.core.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-core</artifactId>
                 <version>${jackson.core.version}</version>
+            </dependency>
+	    <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+                <version>${jackson.core.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.google.code.findbugs</groupId>
+                <artifactId>jsr305</artifactId>
+                <version>${jsr-305.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.servlet</groupId>
+                <artifactId>javax.servlet-api</artifactId>
+                <!-- Tomcat 7 requires servlet 3.0 -->
+                <version>3.0.1</version>
+                <!-- Let the container/application provide the servlet-api, to avoid conflicts -->
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>${commons-io.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-beans</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-context</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-core</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-jdbc</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-web</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-webmvc</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-test</artifactId>
+                <version>${spring.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.ant</groupId>
+                <artifactId>ant</artifactId>
+                <version>${ant.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.tmatesoft.svnkit</groupId>
+                <artifactId>svnkit</artifactId>
+                <version>${svnkit.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tomcat</groupId>
+                <artifactId>tomcat-el-api</artifactId>
+                <version>${tomcat-api7.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tomcat</groupId>
+                <artifactId>tomcat-jasper-el</artifactId>
+                <version>${tomcat-api7.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tomcat</groupId>
+                <artifactId>tomcat-jsp-api</artifactId>
+                <version>${tomcat-api7.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.tomcat</groupId>
+                <artifactId>tomcat-servlet-api</artifactId>
+                <version>${tomcat-api7.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

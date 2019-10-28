@@ -1,0 +1,3 @@
+# JsonProctorLoaderFactory variables at Aug 29, 2019 5:51:09 AM
+specification-spec.json={"providedContext"\:{"country"\:"String","lang"\:"String"},"tests"\:{"my_tst"\:{"fallbackValue"\:-1,"buckets"\:{"inactive"\:-1,"control"\:0,"sendReactivationEmail"\:1},"description"\:"KEY-45\: text with \"double quote\""}}}
+exporter-start-time=2019-08-27T01\:41\:05CDT

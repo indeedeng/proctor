@@ -37,7 +37,7 @@ public abstract class AbstractProctorMojo extends AbstractMojo {
         if (files == null) {
             return;
         }
-        for(final File entry : files) {
+        for (final File entry : files) {
             try {
                 if (entry.isDirectory()) {
                     recursiveSpecificationsFinder(entry, (packageNamePrefix == null) ? entry.getName() : packageNamePrefix + "/" + entry.getName());
@@ -48,7 +48,7 @@ public abstract class AbstractProctorMojo extends AbstractMojo {
                             entry.getName().substring(0, entry.getName().lastIndexOf(".json")));
                 }
 
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 throw new CodeGenException("Could not read from file " + entry.getName(),e);
             }
         }
@@ -65,14 +65,14 @@ public abstract class AbstractProctorMojo extends AbstractMojo {
         if (files == null) {
             return;
         }
-        for(File entry : files) {
+        for (final File entry : files) {
             try {
                 if (entry.isDirectory()) {
                     addNonPartialsToResources(entry, resource);
                 } else if (entry.getName().endsWith(".json") && ProctorUtils.readJsonFromFile(entry).has("tests")) {
                     resource.addInclude(entry.getPath().substring(getTopDirectory().getPath().length() + 1));
                 }
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 throw new CodeGenException("Could not read from file " + entry.getName(),e);
             }
 
@@ -102,7 +102,7 @@ public abstract class AbstractProctorMojo extends AbstractMojo {
                 throw new MojoExecutionException("Couldn't create total specification",e);
             }
         }
-        for (File entry : dir.listFiles()) {
+        for (final File entry : dir.listFiles()) {
             if (entry.isDirectory()) {
                 createTotalSpecifications(entry, (packageDirectory == null) ? entry.getName() : packageDirectory + File.separator + entry.getName());
             }
@@ -116,13 +116,13 @@ public abstract class AbstractProctorMojo extends AbstractMojo {
         resourceNonGenerated.setDirectory(getTopDirectory().getPath());
         try {
             addNonPartialsToResources(getTopDirectory(),resourceNonGenerated);
-        } catch (CodeGenException e) {
+        } catch (final CodeGenException e) {
             throw new MojoExecutionException("Couldn't add non partial specifications to resources");
         }
         if (resourceNonGenerated.getIncludes().isEmpty()) {
             resourceNonGenerated.addExclude("**/*");
         }
-        Resource resourceGenerated = new Resource();
+        final Resource resourceGenerated = new Resource();
         final File specificationOutputDir = getSpecificationOutput();
         resourceGenerated.setDirectory(specificationOutputDir.getPath());
         resourceGenerated.addInclude("**/*.json");
@@ -132,15 +132,15 @@ public abstract class AbstractProctorMojo extends AbstractMojo {
     }
 
     public void execute() throws MojoExecutionException {
-        File topDirectory = getTopDirectory();
-        if(topDirectory == null) {
+        final File topDirectory = getTopDirectory();
+        if (topDirectory == null) {
             getLog().error("topDirectory not substituted with configured value?");
             return;
         }
-        File specificationOutput = getSpecificationOutput();
+        final File specificationOutput = getSpecificationOutput();
         try {
             recursiveSpecificationsFinder(topDirectory, null);
-            if(specificationOutput!=null) {
+            if (specificationOutput!=null) {
                 recursiveSpecificationsFinder(specificationOutput,null);
             }
         } catch (final CodeGenException ex) {

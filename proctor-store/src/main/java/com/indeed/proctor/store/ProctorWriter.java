@@ -14,17 +14,144 @@ public interface ProctorWriter {
     boolean cleanUserWorkspace(String username);
 
     /**
-     * This is the normal operation that I expect to happen
+     * {@see other ProctorWriter.updateTestDefinition}, using username as author
+     * @deprecated  use ChangeMetadata
      */
-    void updateTestDefinition(String username, String password, String previousVersion, String testName, TestDefinition testDefinition, Map<String, String> metadata, String comment) throws StoreException.TestUpdateException;
+    @Deprecated
+    default void updateTestDefinition(
+            final String username,
+            final String password,
+            final String previousVersion,
+            final String testName,
+            final TestDefinition testDefinition,
+            final Map<String, String> metadata,
+            final String comment
+    ) throws StoreException.TestUpdateException {
+        updateTestDefinition(username, password, username, previousVersion, testName, testDefinition, metadata, comment);
+    }
 
-    void updateTestDefinition(String username, String password, String author, String previousVersion, String testName, TestDefinition testDefinition, Map<String, String> metadata, String comment) throws StoreException.TestUpdateException;
+    /**
+     * {@see other ProctorWriter.updateTestDefinition}, using Instant.now
+     * @deprecated  use ChangeMetadata
+     */
+    @Deprecated
+    default void updateTestDefinition(
+            final String username,
+            final String password,
+            final String author,
+            final String previousVersion,
+            final String testName,
+            final TestDefinition testDefinition,
+            final Map<String, String> metadata,
+            final String comment
+    ) throws StoreException.TestUpdateException {
+        updateTestDefinition(new ChangeMetadata(username, password, author, comment), previousVersion, testName, testDefinition, metadata);
+    }
 
-    void deleteTestDefinition(String username, String password, String previousVersion, String testName, TestDefinition testDefinition, String comment) throws StoreException.TestUpdateException;
+    /**
+     * Updates a test with testName that already exists in this store
+     *
+     * Fails with Exception when testName does not exist, or
+     * neither testDefinition nor metadata has changes to current version
+     *
+     * @throws StoreException.TestUpdateException
+     */
+    void updateTestDefinition(
+            ChangeMetadata changeMetadata,
+            String previousVersion,
+            String testName,
+            TestDefinition testDefinition,
+            Map<String, String> metadata
+    ) throws StoreException.TestUpdateException;
 
-    void deleteTestDefinition(String username, String password, String author, String previousVersion, String testName, TestDefinition testDefinition, String comment) throws StoreException.TestUpdateException;
+    /**
+     * {@see other ProctorWriter.deleteTestDefinition}, using username as author
+     * @deprecated  use ChangeMetadata
+     */
+    @Deprecated
+    default void deleteTestDefinition(
+            final String username,
+            final String password,
+            final String previousVersion,
+            final String testName,
+            final TestDefinition testDefinition,
+            final String comment
+    ) throws StoreException.TestUpdateException {
+        deleteTestDefinition(username, password, username, previousVersion, testName, testDefinition, comment);
+    }
 
-    void addTestDefinition(String username, String password, String testName, TestDefinition testDefinition, Map<String, String> metadata, String comment) throws StoreException.TestUpdateException;
+    /**
+     * {@see other ProctorWriter.deleteTestDefinition}, using Instant.now
+     * @deprecated  use ChangeMetadata
+     */
+    @Deprecated
+    default void deleteTestDefinition(
+            final String username,
+            final String password,
+            final String author,
+            final String previousVersion,
+            final String testName,
+            final TestDefinition testDefinition,
+            final String comment
+    ) throws StoreException.TestUpdateException {
+        deleteTestDefinition(new ChangeMetadata(username, password, author, comment), previousVersion, testName, testDefinition);
+    }
 
-    void addTestDefinition(String username, String password, String author, String testName, TestDefinition testDefinition, Map<String, String> metadata, String comment) throws StoreException.TestUpdateException;
+    /**
+     * @throws StoreException.TestUpdateException when
+     */
+    void deleteTestDefinition(
+            ChangeMetadata changeMetadata,
+            String previousVersion,
+            String testName,
+            TestDefinition testDefinition
+    ) throws StoreException.TestUpdateException;
+
+    /**
+     * {@see other ProctorWriter.addTestDefinition}, using username as author
+     * @deprecated  use ChangeMetadata
+     */
+    @Deprecated
+    default void addTestDefinition(
+            final String username,
+            final String password,
+            final String testName,
+            final TestDefinition testDefinition,
+            final Map<String, String> metadata,
+            final String comment
+    ) throws StoreException.TestUpdateException {
+        addTestDefinition(username, password, username, testName, testDefinition, metadata, comment);
+    }
+
+    /**
+     * {@see other ProctorWriter.addTestDefinition}, using Instant.now
+     * @deprecated  use ChangeMetadata
+     */
+    @Deprecated
+    default void addTestDefinition(
+            final String username,
+            final String password,
+            final String author,
+            final String testName,
+            final TestDefinition testDefinition,
+            final Map<String, String> metadata,
+            final String comment
+    ) throws StoreException.TestUpdateException {
+        addTestDefinition(new ChangeMetadata(username, password, author, comment), testName, testDefinition, metadata);
+    }
+
+
+    /**
+     * Add new test definition to this store.
+     *
+     * Fails with Exception when testName already exists
+     *
+     * @throws StoreException.TestUpdateException on invalid inputs
+     */
+    void addTestDefinition(
+            ChangeMetadata changeMetadata,
+            final String testName,
+            TestDefinition testDefinition,
+            Map<String, String> metadata
+    ) throws StoreException.TestUpdateException;
 }

@@ -1,26 +1,33 @@
 package com.indeed.proctor.common;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.indeed.util.varexport.ManagedVariable;
 import com.indeed.util.varexport.VarExporter;
+import org.apache.log4j.Logger;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.el.FunctionMapper;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class JsonProctorLoaderFactory {
     // Lenient parser used by consumer apps to prevent deployment order dependencies
+    private static final Logger LOGGER = Logger.getLogger(JsonProctorLoaderFactory.class);
     private static final ObjectMapper OBJECT_MAPPER = Serializers.lenient();
+
+    // Prefix of export variable name for specifications.
+    private static final String EXPORT_NAME_PREFIX_FOR_SPECIFICATION = "specification";
+
     protected static final VarExporter VAR_EXPORTER = VarExporter.forNamespace(JsonProctorLoaderFactory.class.getSimpleName());
 
     @Nullable
@@ -44,52 +51,38 @@ public class JsonProctorLoaderFactory {
     }
 
     public void setSpecificationResource(@Nonnull final Resource specificationResource) {
-        try {
-            readSpecificationResource(specificationResource.getInputStream(), specificationResource.toString());
-        } catch (IOException e) {
-            throw new IllegalArgumentException("Unable to read proctor specification from " + specificationResource, e);
-        }
-    }
-
-    public void setSpecificationResource(@Nonnull final String specificationResource) {
-        try {
-            if (specificationResource.startsWith("classpath:")) {
-                final String specificationResourceClasspath = specificationResource.replace("classpath:", "");
-                final InputStream is = this.getClass().getResourceAsStream(specificationResourceClasspath);
-                readSpecificationResource(is, specificationResource);
-                is.close();
-
-            } else {
-                final FileInputStream fis = new FileInputStream(specificationResource);
-                readSpecificationResource(fis, specificationResource);
-                fis.close();
-            }
-
-        } catch (@Nonnull final IOException e) {
-            throw new IllegalArgumentException("Unable to read proctor specification from " + specificationResource, e);
-        }
-    }
-
-    private void readSpecificationResource(@Nonnull final InputStream stream, @Nonnull final String specificationResource) {
-        try {
+        try (InputStream stream = specificationResource.getInputStream()) {
             this._specification = OBJECT_MAPPER.readValue(stream, ProctorSpecification.class);
-            exportJsonSpecification(OBJECT_MAPPER.writeValueAsString(_specification));
+        } catch (final IOException e) {
+            throw new IllegalArgumentException("Unable to read proctor specification from " + specificationResource, e);
+        }
 
-        } catch (@Nonnull final JsonParseException e) {
-            throw new IllegalArgumentException("Unable to read proctor specification from " + specificationResource, e);
-        } catch (@Nonnull final JsonMappingException e) {
-            throw new IllegalArgumentException("Unable to read proctor specification from " + specificationResource, e);
-        } catch (@Nonnull final IOException e) {
-            throw new IllegalArgumentException("Unable to read proctor specification from " + specificationResource, e);
+        exportJsonSpecification(
+                generateExportVariableName(specificationResource),
+                this._specification
+        );
+    }
+
+    public void setSpecificationResource(@Nonnull final String specificationLocation) {
+        if (specificationLocation.startsWith("classpath:")) {
+            final String specificationClasspath = specificationLocation.replace("classpath:", "");
+            setSpecificationResource(new ClassPathResource(specificationClasspath, this.getClass()));
+        } else {
+            setSpecificationResource(new FileSystemResource(specificationLocation));
         }
     }
 
-    @SuppressWarnings("UnusedDeclaration")
     /**
      * setSpecificationResource() is likely more convenient to use instead of this method.
      */
     public void setSpecification(@Nonnull final ProctorSpecification specification) {
-        this._specification = Preconditions.checkNotNull(specification, "Null specifications are not supported");
+        this._specification = Objects.requireNonNull(
+                specification,
+                "Null specifications are not supported"
+        );
+
+        // Setting variable name with no suffix as no file name is given.
+        exportJsonSpecification(EXPORT_NAME_PREFIX_FOR_SPECIFICATION, specification);
     }
 
     public void setFunctionMapper(@Nonnull final FunctionMapper functionMapper) {
@@ -123,19 +116,30 @@ public class JsonProctorLoaderFactory {
     @Deprecated
     public void setDiffReporter(final AbstractProctorDiffReporter diffReporter) {
         Preconditions.checkNotNull(diffReporter, "diff reporter can't be null use AbstractProctorDiffReporter for nop implementation");
-        setLoadReporters(ImmutableList.<ProctorLoadReporter>of(diffReporter));
+        setLoadReporters(ImmutableList.of(diffReporter));
     }
 
     public void setLoadReporters(final List<ProctorLoadReporter> reporters) {
         this.reporters = reporters;
     }
 
-    protected void exportJsonSpecification(final String jsonSpec) {
-        final ManagedVariable<String> managedVariable =
-                ManagedVariable.<String>builder()
-                        .setName("specification")
-                        .setValue(jsonSpec)
-                        .build();
-        VAR_EXPORTER.export(managedVariable);
+    private void exportJsonSpecification(
+            final String variableName,
+            final ProctorSpecification specification
+    ) {
+        try {
+            final ManagedVariable<String> managedVariable =
+                    ManagedVariable.<String>builder()
+                            .setName(variableName)
+                            .setValue(OBJECT_MAPPER.writeValueAsString(specification))
+                            .build();
+            VAR_EXPORTER.export(managedVariable);
+        } catch (final JsonProcessingException e) {
+            LOGGER.warn("Failed to expose json specification in VarExporter.", e);
+        }
+    }
+
+    private String generateExportVariableName(final Resource resource) {
+        return EXPORT_NAME_PREFIX_FOR_SPECIFICATION + "-" + resource.getFilename();
     }
 }

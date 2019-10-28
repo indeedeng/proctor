@@ -5,8 +5,10 @@ import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -251,6 +253,33 @@ public class TestPayload {
         verifyPayloadTypeComparisons(payloadsA, payloadsB);
         // Verify symmetric
         verifyPayloadTypeComparisons(payloadsB, payloadsA);
+    }
+
+    @Test
+    public void testSetMapWithNullValue(){
+        Payload payload = new Payload();
+
+        final Map<String, Object> mapWithNullValues = new HashMap<String, Object>() {{
+            put("validVal1", 0);
+            put("validVal2", "");
+            put("invalidVal", null);
+        }};
+
+        assertThatThrownBy(() -> payload.setMap(mapWithNullValues))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining(Payload.PAYLOAD_NULL_VALUE_EXCEPTION);
+    }
+
+    @Test
+    public void testOverwritePayload(){
+        Payload payload = new Payload();
+
+        payload.setStringValue("mapValue");
+
+        //Payload value is "immutable": can't be set more than once.
+        assertThatThrownBy(() -> payload.setDoubleValue(1.0))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining(Payload.PAYLOAD_OVERWRITE_EXCEPTION);
     }
 
     @Test

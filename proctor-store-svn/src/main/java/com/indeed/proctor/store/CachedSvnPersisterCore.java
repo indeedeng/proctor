@@ -1,12 +1,11 @@
 package com.indeed.proctor.store;
 
-import com.google.common.base.Joiner;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.indeed.proctor.store.cache.CachingProctorStore;
 import com.indeed.util.varexport.Export;
 import org.apache.log4j.Logger;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import org.tmatesoft.svn.core.SVNURL;
 
 import java.io.IOException;
@@ -33,7 +32,7 @@ public class CachedSvnPersisterCore implements SvnPersisterCore {
 
     final SvnPersisterCoreImpl core;
 
-    public CachedSvnPersisterCore(SvnPersisterCoreImpl core) {
+    public CachedSvnPersisterCore(final SvnPersisterCoreImpl core) {
         this.core = core;
     }
 
@@ -49,7 +48,7 @@ public class CachedSvnPersisterCore implements SvnPersisterCore {
     }
 
     @Override
-    public boolean cleanUserWorkspace(String username) {
+    public boolean cleanUserWorkspace(final String username) {
         return core.cleanUserWorkspace(username);
     }
 
@@ -80,13 +79,12 @@ public class CachedSvnPersisterCore implements SvnPersisterCore {
     }
 
     @Override
-    public void doInWorkingDirectory(String username, String password, String author, String comment, String previousVersion, FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException {
-        core.doInWorkingDirectory(username, password, author, comment, previousVersion, updater);
-    }
-
-    @Override
-    public void doInWorkingDirectory(String username, String password, String comment, String previousVersion, FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException {
-        core.doInWorkingDirectory(username, password, comment, previousVersion, updater);
+    public void doInWorkingDirectory(
+            final ChangeMetadata changeMetadata,
+            final String previousVersion,
+            final FileBasedProctorStore.ProctorUpdater updater
+    ) throws StoreException.TestUpdateException {
+        core.doInWorkingDirectory(changeMetadata, previousVersion, updater);
     }
 
     @Override
@@ -110,7 +108,7 @@ public class CachedSvnPersisterCore implements SvnPersisterCore {
     public void shutdown() {
         try {
             close();
-        } catch (IOException e) {
+        } catch (final IOException e) {
             LOGGER.error("Ignored exception during closing of core", e);
         }
     }
@@ -125,14 +123,14 @@ public class CachedSvnPersisterCore implements SvnPersisterCore {
         final String[] path;
         final long revision;
 
-        private FileContentsKey(Class c, String[] path, long revision) {
+        private FileContentsKey(final Class c, final String[] path, final long revision) {
             this.c = c;
             this.path = path;
             this.revision = revision;
         }
 
         @Override
-        public boolean equals(Object o) {
+        public boolean equals(final Object o) {
             if (this == o) {
                 return true;
             }
@@ -140,7 +138,7 @@ public class CachedSvnPersisterCore implements SvnPersisterCore {
                 return false;
             }
 
-            FileContentsKey that = (FileContentsKey) o;
+            final FileContentsKey that = (FileContentsKey) o;
 
             if (revision != that.revision) {
                 return false;
@@ -165,7 +163,7 @@ public class CachedSvnPersisterCore implements SvnPersisterCore {
 
         @Override
         public String toString() {
-            return Joiner.on('/').join(path) + "@r" + revision;
+            return String.join("/", path) + "@r" + revision;
         }
     }
 }

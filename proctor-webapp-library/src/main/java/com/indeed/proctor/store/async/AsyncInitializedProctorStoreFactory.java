@@ -2,7 +2,6 @@ package com.indeed.proctor.store.async;
 
 import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.webapp.db.TrunkQaProdStoresFactory;
-import org.apache.commons.configuration.ConfigurationException;
 
 import java.util.concurrent.ExecutorService;
 
@@ -35,7 +34,7 @@ public class AsyncInitializedProctorStoreFactory implements TrunkQaProdStoresFac
     }
 
     @Override
-    public ProctorStore createStore(final String relativePath) throws ConfigurationException {
+    public ProctorStore createStore(final String relativePath) {
         return wrappedFactory.createStore(relativePath);
     }
 }

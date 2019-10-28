@@ -72,7 +72,7 @@ public class LocalProctorBuilder extends ProctorBuilder {
         }
 
         @Override
-        protected void extract(CommandLine results)  {
+        protected void extract(final CommandLine results)  {
             super.extract(results);
             this.inputdir = results.getOptionValue("input");
             if (results.hasOption("test-definitions-directory")) {
@@ -102,7 +102,7 @@ public class LocalProctorBuilder extends ProctorBuilder {
                         new FileWriter(new File(arguments.getOutputdir(), arguments.getFilename())),
                     arguments.getAuthor(),
                     arguments.getVersion()).execute();
-        } catch (Exception e) {
+        } catch (final Exception e) {
             LOGGER.error("Failed to generates proctor artifact from " + arguments.getInputdir(), e);
             System.exit(1);
         }

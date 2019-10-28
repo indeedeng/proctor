@@ -6,6 +6,8 @@ branches:
 jdk:
   - oraclejdk8
 
+script: mvn clean test -B
+
 notifications:
   email:
     - $INDEED_TEAM_EMAIL

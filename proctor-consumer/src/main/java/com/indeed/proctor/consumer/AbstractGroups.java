@@ -11,13 +11,18 @@ import com.indeed.proctor.common.model.TestBucket;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+/**
+ * Gives access to experiment groups of one request.
+ */
 public abstract class AbstractGroups {
     private final ProctorResult proctorResult;
     private final LinkedHashMap<String, TestBucket> buckets;
@@ -27,6 +32,9 @@ public abstract class AbstractGroups {
      */
     protected static final char ALLOCATION_GROUP_SEPARATOR = ':';
 
+    /**
+     * Setup fields based on eagerly computed bucket allocations in ProctorResult.
+     */
     protected AbstractGroups(final ProctorResult proctorResult) {
         this.proctorResult = proctorResult;
         this.buckets = Maps.newLinkedHashMap();
@@ -36,10 +44,6 @@ public abstract class AbstractGroups {
         }
     }
 
-    public Map<String, String> getTestVersions() {
-        return proctorResult.getTestVersions();
-    }
-
     /**
      * @param testName test name
      * @param value bucket value
@@ -47,27 +51,37 @@ public abstract class AbstractGroups {
      * @deprecated Use {@link #isBucketActive(String, int, int)} instead
      */
     protected boolean isBucketActive(final String testName, final int value) {
-        final TestBucket testBucket = buckets.get(testName);
-        return ((testBucket != null) && (value == testBucket.getValue()));
+        return Optional.ofNullable(buckets.get(testName))
+                .filter(testBucket -> value == testBucket.getValue())
+                .isPresent();
     }
 
+    /**
+     * @return true if testname exists and resolved bucket has given value, else if value is defaultValue
+     */
     protected boolean isBucketActive(final String testName, final int value, final int defaultValue) {
-        final TestBucket testBucket = buckets.get(testName);
-        if (null == testBucket) {
-            return value == defaultValue;
-        } else {
-            return value == testBucket.getValue();
-        }
+        final int bucketValueOrDefault = Optional.ofNullable(buckets.get(testName))
+                .map(TestBucket::getValue)
+                .orElse(defaultValue);
+        return bucketValueOrDefault == value;
     }
 
     protected int getValue(final String testName, final int defaultValue) {
-        final TestBucket testBucket = buckets.get(testName);
-        if (testBucket == null) {
-            return defaultValue;
-        }
-        return testBucket.getValue();
+        return Optional.ofNullable(buckets.get(testName))
+                .map(TestBucket::getValue)
+                .orElse(defaultValue);
     }
 
+    /**
+     * @return map testname, definition-version
+     */
+    public Map<String, String> getTestVersions() {
+        return proctorResult.getTestVersions();
+    }
+
+    /**
+     * @return map testname, definition-version for given test names
+     */
     public Map<String, String> getTestVersions(final Set<String> tests) {
         final Map<String, String> selectedTestVersions = Maps.newLinkedHashMap();
         final Map<String, ConsumableTestDefinition> testDefinitions = proctorResult.getTestDefinitions();
@@ -92,41 +106,30 @@ public abstract class AbstractGroups {
     @Nonnull
     protected Payload getPayload(final String testName) {
         // Get the current bucket.
-        final TestBucket testBucket = buckets.get(testName);
-
-        // Lookup Payloads for this test
-        if (testBucket != null) {
-            final Payload payload = testBucket.getPayload();
-            if (null != payload) {
-                return payload;
-            }
-        }
-
-        return Payload.EMPTY_PAYLOAD;
+        return Optional.ofNullable(buckets.get(testName))
+                .map(TestBucket::getPayload)
+                .orElse(Payload.EMPTY_PAYLOAD);
     }
 
+    /**
+     * If Matrix has a testbucket for this testname, return its payload (or empty).
+     * If matrix does not have such a testbucket, looks up different bucket in the testdefinition and return it's payload
+     */
     @Nonnull
     protected Payload getPayload(final String testName, @Nonnull final Bucket<?> fallbackBucket) {
-        // Get the current bucket.
-        final TestBucket testBucket = buckets.get(testName);
 
-        // Lookup Payloads for this test
-        @Nullable final Payload payload;
-        if (testBucket != null) {
-            payload = testBucket.getPayload();
+        final Optional<TestBucket> testBucket = Optional.ofNullable(buckets.get(testName));
 
+        Optional<Payload> payload;
+        if (testBucket.isPresent()) {
+            payload = testBucket.map(TestBucket::getPayload);
         } else {
-            final TestBucket fallbackTestBucket = getTestBucketForBucket(testName, fallbackBucket);
-
-            if (null != fallbackTestBucket) {
-                payload = fallbackTestBucket.getPayload();
-
-            } else {
-                payload = null;
-            }
+            // if testBucket.getPayload() is null, the correct value to return is EMPTY, not fallback
+            payload = Optional.ofNullable(getTestBucketForBucket(testName, fallbackBucket))
+                    .map(TestBucket::getPayload);
         }
 
-        return payload != null ? payload : Payload.EMPTY_PAYLOAD;
+        return payload.orElse(Payload.EMPTY_PAYLOAD);
     }
 
     /**
@@ -141,28 +144,24 @@ public abstract class AbstractGroups {
      */
     @Nullable
     protected TestBucket getTestBucketForBucket(final String testName, final Bucket<?> targetBucket) {
-        final @Nullable Map<String, ConsumableTestDefinition> testDefinitions = proctorResult.getTestDefinitions();
-        if (testDefinitions != null) {
-            final @Nullable ConsumableTestDefinition testDefinition = testDefinitions.get(testName);
-            if (testDefinition != null) {
-                final @Nullable List<TestBucket> buckets = testDefinition.getBuckets();
-                if (buckets != null) {
-                    for (final TestBucket testBucket : buckets) {
-                        if (targetBucket.getValue() == testBucket.getValue()) {
-                            return testBucket;
-                        }
-                    }
-                }
-            }
-        }
-        return null;
+        return Optional.ofNullable(proctorResult.getTestDefinitions())
+                .map(testDefinitions -> testDefinitions.get(testName))
+                .map(ConsumableTestDefinition::getBuckets)
+                .map(buckets -> buckets.stream()
+                        .filter(testBucket -> targetBucket.getValue() == testBucket.getValue())
+                        .findFirst()
+                        .orElse(null))
+                .orElse(null);
     }
 
+    /**
+     * @return a comma-separated String of {testname}-{active-bucket-name} for ALL tests
+     */
     public String toLongString() {
         if (proctorResult.getBuckets().isEmpty()) {
             return "";
         }
-        final StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder(proctorResult.getBuckets().size() * 10);
         for (final Entry<String, TestBucket> entry : proctorResult.getBuckets().entrySet()) {
             final String testName = entry.getKey();
             final TestBucket testBucket = entry.getValue();
@@ -175,26 +174,42 @@ public abstract class AbstractGroups {
     /**
      * To be called when logging ONLY
      * @return formatted group string
+     * @deprecated use toLoggingString()
      */
     @Override
+    @Deprecated
     public String toString() {
+        return toLoggingString();
+    }
+
+    /**
+     * For historic reasons, contains two output formats per testname.
+     * @return a comma-separated List of {testname}{active-bucket-VALUE} and {AllocationId}{testname}{active-bucket-VALUE} for all ACTIVE tests
+     */
+    public String toLoggingString() {
         if (isEmpty()) {
             return "";
         }
         final StringBuilder sb = buildTestGroupString();
-        if (sb.length() == 0) {
-            return "";
+        // remove trailing comma
+        if (sb.length() > 0) {
+            sb.deleteCharAt(sb.length() - 1);
         }
-        sb.deleteCharAt(sb.length() - 1);
         return sb.toString();
     }
 
+    /**
+     * @return an empty string or a comma-separated, comma-finalized list of groups
+     */
     public StringBuilder buildTestGroupString() {
-        final StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder(proctorResult.getBuckets().size() * 10);
         appendTestGroups(sb);
         return sb;
     }
 
+    /**
+     * @return an empty string or a comma-separated, comma-finalized list of groups
+     */
     public void appendTestGroups(final StringBuilder sb) {
         appendTestGroups(sb, ',');
     }
@@ -220,6 +235,7 @@ public abstract class AbstractGroups {
      *
      * @param sb        a string builder
      * @param separator a char used as separator
+     * @return an empty string or a comma-separated, comma-finalized list of groups
      */
     public void appendTestGroups(final StringBuilder sb, final char separator) {
         final List<String> testNames = getLoggingTestNames();
@@ -281,17 +297,10 @@ public abstract class AbstractGroups {
      */
     public Map<String, Integer> getJavaScriptConfig() {
         // For now this is a simple mapping from {testName to bucketValue}
-        final Map<String, Integer> groups = Maps.newHashMapWithExpectedSize(proctorResult.getBuckets().size());
-        for (final Entry<String, TestBucket> entry : proctorResult.getBuckets().entrySet()) {
-            final String testName = entry.getKey();
-            final TestBucket testBucket = entry.getValue();
-            // mirrors appendTestGroups method by skipping *inactive* tests
-            if (testBucket.getValue() < 0) {
-                continue;
-            }
-            groups.put(testName, testBucket.getValue());
-        }
-        return groups;
+        return proctorResult.getBuckets().entrySet().stream()
+                // mirrors appendTestGroups method by skipping *inactive* tests
+                .filter(e -> e.getValue().getValue() >= 0)
+                .collect(Collectors.toMap(Entry::getKey, e -> e.getValue().getValue()));
     }
 
     /**
@@ -302,28 +311,14 @@ public abstract class AbstractGroups {
      *
      * @param tests an alphabetical list of Test enums from your generated proctor java subclass of {@link com.indeed.proctor.consumer.AbstractGroups}.
      * @param <E> Generic Type of Test
-     * @return a list of 2-element lists that hold the bucketValue and payloadValue for each test in alphabetical order
+     * @return a list of 2-element lists that hold the bucketValue and payloadValue for each test in the same order as the input
      */
     public <E extends Test> List<List<Object>> getJavaScriptConfig(final E[] tests) {
-        final Map<String, TestBucket> buckets = getProctorResult().getBuckets();
-        final List<List<Object>> groups = new ArrayList<List<Object>>(tests.length);
-        for (final E test : tests) {
-            final String testName = test.getName();
-            final Integer bucketValue = getValue(testName, test.getFallbackValue());
-            final Object payloadValue;
-            final TestBucket testBucket = buckets.get(testName);
-            if (testBucket != null && testBucket.getPayload() != null) {
-                final Payload payload = testBucket.getPayload();
-                payloadValue = payload.fetchAValue();
-            } else {
-                payloadValue = null;
-            }
-            final List<Object> definition = new ArrayList<Object>();
-            definition.add(bucketValue);
-            definition.add(payloadValue);
-            groups.add(definition);
-        }
-        return groups;
+        return Arrays.stream(tests)
+                .map(test -> Arrays.asList(
+                        getValue(test.getName(), test.getFallbackValue()),
+                        getPayload(test.getName()).fetchAValue()))
+                .collect(Collectors.toList());
     }
 
     public ProctorResult getProctorResult() {

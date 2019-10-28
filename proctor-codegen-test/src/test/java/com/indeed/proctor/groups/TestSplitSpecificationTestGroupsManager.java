@@ -1,6 +1,5 @@
 package com.indeed.proctor.groups;
 
-import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.CharStreams;
 import com.indeed.proctor.common.Identifiers;
@@ -27,7 +26,6 @@ import java.util.Map;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 public class TestSplitSpecificationTestGroupsManager {
@@ -47,12 +45,7 @@ public class TestSplitSpecificationTestGroupsManager {
     }
 
     private void setUp(final Proctor proctor) {
-        manager = new SplitSpecificationTestGroupsManager(new Supplier<Proctor>() {
-            @Override
-            public Proctor get() {
-                return proctor;
-            }
-        });
+        manager = new SplitSpecificationTestGroupsManager(() -> proctor);
     }
 
     private Proctor getProctor() throws IOException {
@@ -192,12 +185,12 @@ public class TestSplitSpecificationTestGroupsManager {
         // Current behavior is mapping from { testName -> TestBucket }
 
 
-        for(final Iterator<Map.Entry<String, TestBucket>> iterator = proctorResult.getBuckets().entrySet().iterator(); iterator.hasNext(); ) {
+        for (final Iterator<Map.Entry<String, TestBucket>> iterator = proctorResult.getBuckets().entrySet().iterator(); iterator.hasNext(); ) {
             final Map.Entry<String, TestBucket> entry = iterator.next();
             final String testName = entry.getKey();
             final TestBucket testBucket = entry.getValue();
 
-            if(sb.length() > 0) {
+            if (sb.length() > 0) {
                 sb.append(",");
             }
             // String format is: {testName}:{testBucket.name}{testBucket.value}

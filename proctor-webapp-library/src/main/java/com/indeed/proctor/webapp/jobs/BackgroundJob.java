@@ -4,12 +4,15 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
 import com.indeed.proctor.webapp.extensions.AfterBackgroundJobExecute;
 import com.indeed.proctor.webapp.extensions.BeforeBackgroundJobExecute;
+import com.indeed.proctor.webapp.jobs.AutoPromoter.AutoPromoteFailedException;
 import org.apache.log4j.Logger;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
@@ -22,7 +25,8 @@ public abstract class BackgroundJob<T> implements Callable<T> {
 
     private Future<T> future;
     private JobStatus status = JobStatus.PENDING;
-    protected final StringBuilder logBuilder = new StringBuilder();
+    // using StringBuffer because append() and toString() may be called in parallel by different threads
+    protected final StringBuffer logBuilder = new StringBuffer();
 
     private Long id;
     private UUID uuid;
@@ -61,7 +65,11 @@ public abstract class BackgroundJob<T> implements Callable<T> {
             if (future.isCancelled()) {
                 setStatus(JobStatus.CANCELLED);
             } else if (error != null) {
-                setStatus(JobStatus.FAILED);
+                if (error instanceof AutoPromoteFailedException) {
+                    setStatus(JobStatus.PARTIAL_SUCCESS);
+                } else {
+                    setStatus(JobStatus.FAILED);
+                }
             } else if (executeFinished) {
                 setStatus(JobStatus.DONE);
             }
@@ -121,6 +129,11 @@ public abstract class BackgroundJob<T> implements Callable<T> {
         this.endMessage = endMessage;
     }
 
+    @CheckForNull
+    public String getErrorMessage() {
+        return Optional.ofNullable(error).map(Throwable::getMessage).orElse(null);
+    }
+
     public Throwable getError() {
         return error;
     }
@@ -155,6 +168,15 @@ public abstract class BackgroundJob<T> implements Callable<T> {
 
     public void logFailedJob(final Throwable t) {
         logWithTiming("Failed:", "Failed");
+        logCauses(t);
+    }
+
+    public void logPartialSuccess(final AutoPromoteFailedException e) {
+        logWithTiming("Partial Success:", "Failed");
+        logCauses(e);
+    }
+
+    private void logCauses(final Throwable t) {
         Throwable cause = t;
         final StringBuilder level = new StringBuilder(10);
         while (cause != null) {
@@ -236,7 +258,8 @@ public abstract class BackgroundJob<T> implements Callable<T> {
 
     @Nonnull
     public JobInfo getJobInfo() {
-        return new JobInfo(getUUID(), getStatus(), getLog(), getTitle(), getUsername(), isRunning(), getUrls(), getEndMessage());
+        return new JobInfo(getUUID(), getStatus(), getLog(), getTitle(), getUsername(), isRunning(), getUrls(),
+                getEndMessage(), getErrorMessage());
     }
 
     public enum JobType {
@@ -267,7 +290,8 @@ public abstract class BackgroundJob<T> implements Callable<T> {
         PENDING("PENDING"),
         DONE("DONE"),
         CANCELLED("CANCELLED"),
-        FAILED("FAILED");
+        FAILED("FAILED"),
+        PARTIAL_SUCCESS("PARTIAL SUCCESS"); // Succeeded to create/edit but failed to promote
 
         private final String name;
 
@@ -294,6 +318,7 @@ public abstract class BackgroundJob<T> implements Callable<T> {
         private final boolean running;
         private final List<ResultUrl> urls;
         private final String endMessage;
+        private final String errorMessage;
 
         public JobInfo(final UUID jobId,
                        final JobStatus status,
@@ -302,7 +327,8 @@ public abstract class BackgroundJob<T> implements Callable<T> {
                        final String username,
                        final boolean running,
                        final List<ResultUrl> urls,
-                       final String endMessage
+                       final String endMessage,
+                       final String errorMessage
         ) {
             this.jobId = jobId;
             this.status = status;
@@ -312,6 +338,7 @@ public abstract class BackgroundJob<T> implements Callable<T> {
             this.running = running;
             this.urls = urls;
             this.endMessage = endMessage;
+            this.errorMessage = errorMessage;
         }
 
         public UUID getJobId() {
@@ -344,6 +371,10 @@ public abstract class BackgroundJob<T> implements Callable<T> {
 
         public String getEndMessage() {
             return endMessage;
+        }
+
+        public String getErrorMessage() {
+            return errorMessage;
         }
     }
 

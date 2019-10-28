@@ -1,6 +1,7 @@
 package com.indeed.proctor.store;
 
-import com.google.common.base.Joiner;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
@@ -9,8 +10,6 @@ import com.indeed.util.varexport.Export;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.pool2.ObjectPool;
 import org.apache.log4j.Logger;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.tmatesoft.svn.core.SVNAuthenticationException;
 import org.tmatesoft.svn.core.SVNDepth;
 import org.tmatesoft.svn.core.SVNDirEntry;
@@ -241,7 +240,7 @@ public class SvnPersisterCoreImpl implements SvnPersisterCore, Closeable {
     @Override
     public <C> C getFileContents(final Class<C> c, final String[] path_parts, final C defaultValue, final String version) throws StoreException.ReadException, JsonProcessingException {
         checkShutdownState();
-        final String path = Joiner.on("/").join(path_parts);
+        final String path = String.join("/", path_parts);
         return doReadWithClientAndRepository(new SvnOperation<C>() {
             @Override
             public C execute(final SVNRepository repo, final SVNClientManager clientManager) throws Exception {
@@ -297,18 +296,18 @@ public class SvnPersisterCoreImpl implements SvnPersisterCore, Closeable {
     }
 
     @Override
-    public void doInWorkingDirectory(final String username,
-                                     final String password,
-                                     final String author,
-                                     final String comment,
-                                     final String previousVersion,
-                                     final FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException {
+    public void doInWorkingDirectory(
+            final ChangeMetadata changeMetadata,
+            final String previousVersion,
+            final FileBasedProctorStore.ProctorUpdater updater
+    ) throws StoreException.TestUpdateException {
         checkShutdownState();
 
+        final String username = changeMetadata.getUsername();
         try {
             final File workingDir = this.getWorkingDirForUser(username);
 
-            SvnProctorUtils.doInWorkingDirectory(LOGGER, workingDir, username, password, svnUrl, updater, comment);
+            SvnProctorUtils.doInWorkingDirectory(LOGGER, workingDir, username, changeMetadata.getPassword(), svnUrl, updater, changeMetadata.getComment());
         } catch (final SVNAuthenticationException e) {
             throw new StoreException.TestUpdateException("Invalid credentials provided for " + username, e);
         } catch (final SVNException e) {
@@ -320,20 +319,11 @@ public class SvnPersisterCoreImpl implements SvnPersisterCore, Closeable {
         }
     }
 
-    @Override
-    public void doInWorkingDirectory(final String username,
-                                     final String password,
-                                     final String comment,
-                                     final String previousVersion,
-                                     final FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException {
-        doInWorkingDirectory(username, password, username, comment, previousVersion, updater);
-    }
-
     private File getOrCreateSvnUserDirectory(final String username) throws IOException {
         final File userDirectory = workspaceProvider.createWorkspace(username, false);
         try {
             if (userDirectory.list().length == 0) {
-                if(templateSvnDir.exists()) {
+                if (templateSvnDir.exists()) {
                     if (LOGGER.isDebugEnabled()) {
                         LOGGER.debug("copying base svn directory (" + templateSvnDir + ") into user " + username + " directory (" + userDirectory + ")");
                     }
@@ -401,7 +391,7 @@ public class SvnPersisterCoreImpl implements SvnPersisterCore, Closeable {
     public void close() throws IOException{
         if (shutdown.compareAndSet(false, true)) {
             LOGGER.info("[close] Deleting working directories");
-            if(this.shutdownProvider) {
+            if (this.shutdownProvider) {
                 LOGGER.info("[close] workspaceProvider.close()");
                 workspaceProvider.close();
             }

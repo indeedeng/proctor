@@ -1,24 +1,24 @@
 package com.indeed.proctor.consumer.gen;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.indeed.proctor.common.PayloadType;
 import com.indeed.proctor.common.ProctorSpecification;
 import com.indeed.proctor.common.ProctorUtils;
 import com.indeed.proctor.common.Serializers;
 import com.indeed.proctor.common.TestSpecification;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-import com.indeed.proctor.common.dynamic.DynamicFilter;
 import com.indeed.proctor.common.dynamic.DynamicFilters;
 import org.apache.commons.lang3.StringEscapeUtils;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,26 +46,26 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
      * contents, using the individual TestDefinition jsons and a providedcontext.json and dynamicfilters.json to create one large
      * temporary ProctorSpecification json to be used for code generation
      */
-    public static File makeTotalSpecification(File dir, String targetDir) throws CodeGenException {
+    public static File makeTotalSpecification(final File dir, final String targetDir) throws CodeGenException {
         //If no name is provided use the name of the containing folder
         return makeTotalSpecification(dir, targetDir,dir.getPath().substring(dir.getPath().lastIndexOf(File.separator) + 1) + "Groups.json");
     }
 
-    public static File makeTotalSpecification(File dir, String targetDir, String name) throws CodeGenException {
+    public static File makeTotalSpecification(final File dir, final String targetDir, final String name) throws CodeGenException {
         final File[] dirFiles = dir.listFiles();
         return makeTotalSpecification(Arrays.asList(dirFiles), targetDir, name);
     }
 
-    public static File makeTotalSpecification(List<File> files, String targetDir, String name) throws CodeGenException {
-        Map<String, TestSpecification> testSpec = new LinkedHashMap<String, TestSpecification>();
+    public static File makeTotalSpecification(final List<File> files, final String targetDir, final String name) throws CodeGenException {
+        final Map<String, TestSpecification> testSpec = new LinkedHashMap<String, TestSpecification>();
         Map<String, String> providedContext = new LinkedHashMap<String,String>();
         DynamicFilters dynamicFilters = new DynamicFilters();
-        for(File file : files) {
+        for (final File file : files) {
             final String fileName = file.getName();
-            if(fileName.equals(PROVIDED_CONTEXT_FILENAME)) {
+            if (fileName.equals(PROVIDED_CONTEXT_FILENAME)) {
                 try {
                     providedContext = OBJECT_MAPPER.readValue(file, Map.class);
-                } catch (IOException e) {
+                } catch (final IOException e) {
                     throw new CodeGenException("Could not read json correctly " + file.getAbsolutePath() + " for provided context", e);
                 }
             } else if (fileName.equals(DYNAMIC_FILTERS_FILENAME)) {
@@ -78,7 +78,7 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
                 final TestSpecification spec;
                 try {
                     spec = OBJECT_MAPPER.readValue(file, TestSpecification.class);
-                } catch (IOException e) {
+                } catch (final IOException e) {
                     throw new CodeGenException("Could not read json correctly " + file.getAbsolutePath() + " for a test specification", e);
                 }
                 final String specName = fileName.substring(0, fileName.indexOf(".json"));
@@ -93,13 +93,42 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
         proctorSpecification.setProvidedContext(providedContext);
         proctorSpecification.setDynamicFilters(dynamicFilters);
 
+        validateProctorSpecification(proctorSpecification);
+
         final File output =  new File(targetDir, name);
         try {
             OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValue(output, proctorSpecification);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new CodeGenException("Could not write to temp file " + output.getAbsolutePath(),e);
         }
         return output;
+    }
+
+    /**
+     * Validate proctor specification at build time. Throws {@link CodeGenException} if an error is found.
+     */
+    private static void validateProctorSpecification(final ProctorSpecification spec) throws CodeGenException {
+        for (final Map.Entry<String, TestSpecification> entry : spec.getTests().entrySet()) {
+            final String testName = entry.getKey();
+            final TestSpecification testSpecification = entry.getValue();
+            validateTestSpecification(testName, testSpecification);
+        }
+    }
+
+    @VisibleForTesting
+    static void validateTestSpecification(
+            final String testName,
+            final TestSpecification testSpec
+    ) throws CodeGenException {
+        final Set<Integer> bucketValueSet = new HashSet<>();
+        for (final Integer bucketValue : testSpec.getBuckets().values()) {
+            if (bucketValue == null) {
+                throw new CodeGenException("specification of " + testName + " has null bucket value");
+            }
+            if (!bucketValueSet.add(bucketValue)) {
+                throw new CodeGenException("specification of " + testName + " has duplicated bucket value " + bucketValue);
+            }
+        }
     }
 
     @Override
@@ -120,7 +149,7 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
 
         // Sort buckets and test names, to have consistent iterator
         final SortedSet<String> sortedTestNames = new TreeSet<String>(tests.keySet());
-        for (String testName : sortedTestNames) {
+        for (final String testName : sortedTestNames) {
             final Set<Map<String, ?>> buckets = Sets.newLinkedHashSet();
 
             final TestSpecification testSpecification = tests.get(testName);
@@ -174,13 +203,13 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
             if (testSpecification.getPayload() != null) {
                 final String specifiedPayloadTypeName = testSpecification.getPayload().getType();
                 final PayloadType specifiedPayloadType = PayloadType.payloadTypeForName(specifiedPayloadTypeName);
-                if(specifiedPayloadType == PayloadType.MAP) {
+                if (specifiedPayloadType == PayloadType.MAP) {
                     testDef.put("isMap","true");
-                    for(Map.Entry<String,String> entry : testSpecification.getPayload().getSchema().entrySet()) {
+                    for (final Map.Entry<String,String> entry : testSpecification.getPayload().getSchema().entrySet()) {
                         final Map<String,String> nestedPayloadsMap = Maps.newHashMap();
                         nestedPayloadsMap.put("key",entry.getKey());
                         final PayloadType payloadTypeForValue = PayloadType.payloadTypeForName(entry.getValue());
-                        if(payloadTypeForValue != PayloadType.MAP) {
+                        if (payloadTypeForValue != PayloadType.MAP) {
                             nestedPayloadsMap.put("value", payloadTypeForValue.javaClassName);
                             nestedPayloadsMap.put("valueWithoutArray",
                                     payloadTypeForValue.javaClassName.substring(0, payloadTypeForValue.javaClassName.length() - 2));

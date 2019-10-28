@@ -1,110 +1,99 @@
 package com.indeed.proctor.webapp.model;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.indeed.proctor.common.SpecificationResult;
+import com.google.common.base.Strings;
 
-import java.util.HashMap;
-import java.util.List;
+import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
-* @author parker
-*/
+ * A result of attempt to fetch specifications of a single app version from multiple instances
+ * This class has either of the following two states
+ * <p>
+ * - succeed to fetch specifications from one of instances.
+ * `clientApplication` and `specifications` is not null
+ * <p>
+ * - failed to fetch specifications from all instances.
+ * `clientApplication` and `specifications` is null
+ * `remaining` may be non-empty when it's identified that no instance likely doesn't expose specifications
+ * <p>
+ * This class is exposed in a endpoint
+ * /proctor/specification?branch=qa&version=***&app=***
+ */
 public class RemoteSpecificationResult {
-    final AppVersion version;
-    final Map<ProctorClientApplication, SpecificationResult> failures;
-    final ProctorClientApplication skipped;
-    final List<ProctorClientApplication> remaining;
-    final ProctorClientApplication clientApplication;
-    final SpecificationResult specificationResult;
+    private final AppVersion version;
 
-    public RemoteSpecificationResult(final AppVersion version,
-                                     final Map<ProctorClientApplication, SpecificationResult> failures,
-                                     final ProctorClientApplication skipped,
-                                     final List<ProctorClientApplication> remaining,
-                                     final ProctorClientApplication _clientApplication,
-                                     final SpecificationResult specificationResult) {
+    private final Map<ProctorClientApplication, Throwable> failures;
+
+    @Nullable
+    private final ProctorClientApplication clientApplication;
+    @Nullable
+    private final ProctorSpecifications specifications;
+
+    private RemoteSpecificationResult(
+            final AppVersion version,
+            final Map<ProctorClientApplication, Throwable> failures,
+            @Nullable final ProctorClientApplication clientApplication,
+            @Nullable final ProctorSpecifications specifications
+    ) {
         this.version = version;
         this.failures = failures;
-        this.skipped = skipped;
-        this.remaining = remaining;
-        this.clientApplication = _clientApplication;
-        this.specificationResult = specificationResult;
+        this.clientApplication = clientApplication;
+        this.specifications = specifications;
     }
 
     public boolean isSuccess() {
-        return specificationResult != null && specificationResult.getSpecification() != null;
-    }
-
-    public boolean isSkipped() {
-        return skipped != null;
+        return specifications != null;
     }
 
     public AppVersion getVersion() {
         return version;
     }
 
-    public Map<ProctorClientApplication, SpecificationResult> getFailures() {
-        return failures;
+    public Map<ProctorClientApplication, String> getFailures() {
+        return failures.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        // getMessage() may return null
+                        e -> Strings.nullToEmpty(e.getValue().getMessage())
+                ));
     }
 
-    public List<ProctorClientApplication> getRemaining() {
-        return remaining;
-    }
-
+    // exposed as json
+    @CheckForNull
     public ProctorClientApplication getClientApplication() {
         return clientApplication;
     }
 
-    public SpecificationResult getSpecificationResult() {
-        return specificationResult;
+    @CheckForNull
+    public ProctorSpecifications getSpecifications() {
+        return specifications;
     }
 
-    public static Builder newBuilder(final AppVersion version) {
-        return new Builder(version);
-    }
-
-    public static class Builder {
-        final AppVersion version;
-        // ImmutableMap does not handle duplicate keys - use a HashMap for building instead
-        final Map<ProctorClientApplication, SpecificationResult> failures = Maps.newHashMap();
-        ProctorClientApplication skipped;
-        ProctorClientApplication success;
-        SpecificationResult result;
-
-        private Builder(AppVersion version) {
-            this.version = version;
-        }
-
-        public RemoteSpecificationResult build(List<ProctorClientApplication> remaining) {
-            return new RemoteSpecificationResult(
+    public static RemoteSpecificationResult success(
+            final AppVersion version,
+            final ProctorClientApplication client,
+            final ProctorSpecifications result
+    ) {
+        return new RemoteSpecificationResult(
                 version,
-                ImmutableMap.copyOf(failures),
-                skipped,
-                Lists.<ProctorClientApplication>newArrayList(remaining),
-                success,
+                Collections.emptyMap(),
+                client,
                 result
-            );
-        }
+        );
+    }
 
-        public Builder skipped(final ProctorClientApplication app, final SpecificationResult result) {
-            this.skipped = app;
-            this.result = result;
-            return this;
-        }
-
-        public Builder failed(final ProctorClientApplication app, final SpecificationResult result) {
-            failures.put(app, result);
-            return this;
-        }
-
-        public Builder success(final ProctorClientApplication client, final SpecificationResult result) {
-            this.success = client;
-            this.result = result;
-            return this;
-        }
-
+    public static RemoteSpecificationResult failures(
+            final AppVersion version,
+            final Map<ProctorClientApplication, Throwable> failures
+    ) {
+        return new RemoteSpecificationResult(
+                version,
+                failures,
+                null,
+                null
+        );
     }
 }

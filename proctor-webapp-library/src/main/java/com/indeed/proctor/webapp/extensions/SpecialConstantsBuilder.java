@@ -21,7 +21,7 @@ public class SpecialConstantsBuilder {
         specialConstantsHtml.append("<div class='nine columns'></div>");
 
         final Object[] supportedConstantsArray = supportedConstants.toArray();
-        for(int columnNum = 0; columnNum < 9; columnNum++) {
+        for (int columnNum = 0; columnNum < 9; columnNum++) {
             specialConstantsHtml.append("<div class='one columns'>");
             for (int step = columnNum; step < supportedConstantsArray.length; step +=9) {
                 final String constant = (String) supportedConstantsArray[step];

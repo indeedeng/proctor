@@ -1,12 +1,12 @@
 package com.indeed.proctor.consumer;
 
-import com.google.common.base.CharMatcher;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.indeed.proctor.common.Identifiers;
 import com.indeed.proctor.common.Proctor;
 import com.indeed.proctor.common.ProctorResult;
 import com.indeed.proctor.common.model.TestType;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import javax.annotation.Nonnull;
@@ -139,7 +139,7 @@ public class ProctorConsumerUtils {
         }
 
         //  be sure to quote cookies because they have characters that are not allowed raw
-        final StringBuilder sb = new StringBuilder(10*forceGroups.size());
+        final StringBuilder sb = new StringBuilder(10 * forceGroups.size());
         sb.append('"');
         for (final Iterator<Entry<String, Integer>> iterator = forceGroups.entrySet().iterator(); iterator.hasNext(); ) {
             final Entry<String, Integer> next = iterator.next();
@@ -152,7 +152,7 @@ public class ProctorConsumerUtils {
 
         final String contextPath = request.getContextPath();
         final String cookiePath;
-        if (CharMatcher.WHITESPACE.matchesAllOf(Strings.nullToEmpty(contextPath))) {
+        if (StringUtils.isBlank(contextPath)) {
             cookiePath = "/";
         } else {
             cookiePath = contextPath;

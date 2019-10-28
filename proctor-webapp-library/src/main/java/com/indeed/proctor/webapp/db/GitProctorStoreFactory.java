@@ -2,7 +2,6 @@ package com.indeed.proctor.webapp.db;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Strings;
 import com.indeed.proctor.store.FileBasedProctorStore;
 import com.indeed.proctor.store.GitProctor;
 import com.indeed.proctor.store.GitProctorCore;
@@ -12,7 +11,7 @@ import com.indeed.proctor.store.cache.CachingProctorStore;
 import com.indeed.proctor.store.cache.GlobalCachingProctorStore;
 import com.indeed.proctor.webapp.extensions.GlobalCacheStore;
 import com.indeed.util.varexport.VarExporter;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
 import javax.annotation.Nullable;
@@ -141,7 +140,7 @@ public class GitProctorStoreFactory implements TrunkQaProdStoresFactory {
     public ProctorStore createStore(final String relativePath) {
         final File tempDirectory = createTempDirectoryForPath(relativePath);
 
-        Preconditions.checkArgument(!CharMatcher.WHITESPACE.matchesAllOf(Strings.nullToEmpty(gitUrl)), "scm.path property cannot be empty");
+        Preconditions.checkArgument(StringUtils.isNotBlank(gitUrl), "scm.path property cannot be empty");
 
         final GitWorkspaceProviderImpl provider = new GitWorkspaceProviderImpl(tempDirectory, gitDirectoryLockTimeoutSeconds);
         final GitProctorCore gitCore = new GitProctorCore(gitUrl, gitUsername, gitPassword, testDefinitionsDirectory,

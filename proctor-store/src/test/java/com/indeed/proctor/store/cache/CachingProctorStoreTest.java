@@ -1,19 +1,19 @@
 package com.indeed.proctor.store.cache;
 
 import com.indeed.proctor.common.model.TestDefinition;
-import com.indeed.proctor.store.InMemoryProctorStore;
+import com.indeed.proctor.store.ChangeMetadata;
 import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.store.StoreException.TestUpdateException;
+import com.indeed.proctor.store.utils.test.InMemoryProctorStore;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Collections;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 
-import static com.indeed.proctor.store.InMemoryProctorStoreTest.createDummyTestDefinition;
+import static com.indeed.proctor.store.utils.test.InMemoryProctorStoreTest.createDummyTestDefinition;
+import static java.util.Collections.emptyMap;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -23,11 +23,9 @@ import static org.junit.Assert.fail;
 
 public class CachingProctorStoreTest {
 
-    private static final Thread.UncaughtExceptionHandler ASSERTION_FAILURE_HANDLER = new Thread.UncaughtExceptionHandler() {
-        public void uncaughtException(final Thread thread, final Throwable throwable) {
-            if (throwable instanceof AssertionError) {
-                fail();
-            }
+    private static final Thread.UncaughtExceptionHandler ASSERTION_FAILURE_HANDLER = (thread, throwable) -> {
+        if (throwable instanceof AssertionError) {
+            fail();
         }
     };
 
@@ -37,12 +35,24 @@ public class CachingProctorStoreTest {
     @Before
     public void setUpTestee() throws TestUpdateException {
         delegate = new InMemoryProctorStore();
-        delegate.addTestDefinition("Mike", "pwd", "tst1",
+        delegate.addTestDefinition(
+                ChangeMetadata.builder()
+                        .setUsernameAndAuthor("Mike")
+                        .setPassword("pwd")
+                        .setComment("commit tst1")
+                        .build(),
+                "tst1",
                 createDummyTestDefinition("1", "tst1"),
-                Collections.<String, String>emptyMap(), "commit tst1");
-        delegate.addTestDefinition("William", "pwd", "tst2",
+                emptyMap());
+        delegate.addTestDefinition(
+                ChangeMetadata.builder()
+                        .setUsernameAndAuthor("William")
+                        .setPassword("pwd")
+                        .setComment("commit tst2")
+                        .build(),
+                "tst2",
                 createDummyTestDefinition("2", "tst2"),
-                Collections.<String, String>emptyMap(), "commit tst2");
+                emptyMap());
         testee = new CachingProctorStore(delegate);
         /* we stop the background refresh task to perform in order to do better unit test */
         testee.getRefreshTaskFuture().cancel(false);
@@ -52,14 +62,17 @@ public class CachingProctorStoreTest {
     public void testAddTestDefinition() throws StoreException, InterruptedException {
         final TestDefinition tst3 = createDummyTestDefinition("3", "tst3");
 
-        final Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    testee.addTestDefinition("Mike", "pwd", "tst3", tst3, Collections.<String, String>emptyMap(), "Create tst2");
-                } catch (final TestUpdateException e) {
-                    fail();
-                }
+        final Thread thread = new Thread(() -> {
+            try {
+                testee.addTestDefinition(
+                        ChangeMetadata.builder()
+                                .setUsernameAndAuthor("Mike")
+                                .setPassword("pwd")
+                                .setComment("Create tst2")
+                                .build(),
+                        "tst3", tst3, emptyMap());
+            } catch (final TestUpdateException e) {
+                fail();
             }
         });
         assertEquals("2", testee.getLatestVersion());
@@ -79,14 +92,17 @@ public class CachingProctorStoreTest {
     public void testUpdateTestDefinition() throws StoreException, InterruptedException {
         final TestDefinition newTst1 = createDummyTestDefinition("3", "tst1");
         newTst1.setDescription("updated description tst1");
-        final Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    testee.updateTestDefinition("Mike", "pwd", "2", "tst1", newTst1, Collections.<String, String>emptyMap(), "Update description of tst1");
-                } catch (final TestUpdateException e) {
-                    fail();
-                }
+        final Thread thread = new Thread(() -> {
+            try {
+                testee.updateTestDefinition(
+                        ChangeMetadata.builder()
+                                .setUsernameAndAuthor("Mike")
+                                .setPassword("pwd")
+                                .setComment("Update description of tst1")
+                                .build(),
+                        "2", "tst1", newTst1, emptyMap());
+            } catch (final TestUpdateException e) {
+                fail();
             }
         });
         assertEquals("description of tst1", testee.getCurrentTestDefinition("tst1").getDescription());
@@ -103,15 +119,17 @@ public class CachingProctorStoreTest {
         final String incorrectPreviousVersion = "1";
         final TestDefinition newTst1 = createDummyTestDefinition("3", "tst1");
         newTst1.setDescription("updated description tst1");
-        final Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    testee.updateTestDefinition("Mike", "pwd", incorrectPreviousVersion, "tst1", newTst1, Collections.<String, String>emptyMap(), "Update description of tst1");
-                    fail();
-                } catch (final TestUpdateException e) {
-                    /* expected */
-                }
+        final Thread thread = new Thread(() -> {
+            try {
+                testee.updateTestDefinition(ChangeMetadata.builder()
+                        .setUsernameAndAuthor("Mike")
+                        .setPassword("pwd")
+                        .setComment("Update description of tst1")
+                        .build(),
+                        incorrectPreviousVersion, "tst1", newTst1, emptyMap());
+                fail();
+            } catch (final TestUpdateException e) {
+                /* expected */
             }
         });
         thread.start();
@@ -139,15 +157,17 @@ public class CachingProctorStoreTest {
     }
 
     private FutureTask<Boolean> getFutureTaskUpdateTestDefinition(final String previousVersion, final String testName, final TestDefinition test, final String comment) {
-        return new FutureTask<>(new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                try {
-                    testee.updateTestDefinition("Mike", "pwd", previousVersion, testName, test, Collections.<String, String>emptyMap(), comment);
-                    return true;
-                } catch (final TestUpdateException e) {
-                    return false;
-                }
+        return new FutureTask<>(() -> {
+            try {
+                testee.updateTestDefinition(ChangeMetadata.builder()
+                        .setUsernameAndAuthor("Mike")
+                        .setPassword("pwd")
+                        .setComment(comment)
+                        .build(),
+                        previousVersion, testName, test, emptyMap());
+                return true;
+            } catch (final TestUpdateException e) {
+                return false;
             }
         });
     }
@@ -159,14 +179,17 @@ public class CachingProctorStoreTest {
         final TestDefinition tst4 = createDummyTestDefinition("4", "tst4");
 
         final FutureTask<Boolean> updateFuture = getFutureTaskUpdateTestDefinition("2", "tst1", newTst1, "Update description of tst1");
-        final Thread addThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    testee.addTestDefinition("Tom", "pwd", "tst4", tst4, Collections.<String, String>emptyMap(), "Create tst4");
-                } catch (final TestUpdateException e) {
-                    fail();
-                }
+        final Thread addThread = new Thread(() -> {
+            try {
+                testee.addTestDefinition(
+                        ChangeMetadata.builder()
+                                .setUsernameAndAuthor("Tom")
+                                .setPassword("pwd")
+                                .setComment("Create tst4")
+                                .build(),
+                        "tst4", tst4, emptyMap());
+            } catch (final TestUpdateException e) {
+                fail();
             }
         });
         assertEquals(1, testee.getHistory("tst1", 0, 4).size());
@@ -184,14 +207,17 @@ public class CachingProctorStoreTest {
     public void testDelete() throws StoreException, InterruptedException {
         final TestDefinition tst1 = createDummyTestDefinition("3", "tst1"); /* this would not be actually used */
 
-        final Thread deleteThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    testee.deleteTestDefinition("Mike", "pwd", "2", "tst1", tst1, "Delete tst1");
-                } catch (final TestUpdateException e) {
-                    fail();
-                }
+        final Thread deleteThread = new Thread(() -> {
+            try {
+                testee.deleteTestDefinition(
+                        ChangeMetadata.builder()
+                                .setUsernameAndAuthor("Mike")
+                                .setPassword("pwd")
+                                .setComment("Delete tst1")
+                                .build(),
+                        "2", "tst1", tst1);
+            } catch (final TestUpdateException e) {
+                fail();
             }
         });
         startThreadsAndSleep(deleteThread);
@@ -200,6 +226,12 @@ public class CachingProctorStoreTest {
         assertNotNull(testee.getTestDefinition("tst1", "revision-1"));
     }
 
+    /*
+     * Note this is not a useful way to test multithreading, and in this class it
+     * is also used single-threaded for no good reason.
+     *
+     * Not cleaning it up because this file is due to be deleted soon
+     */
     private static void startThreadsAndSleep(final Thread... threads) throws InterruptedException {
         for (final Thread thread : threads) {
             thread.setUncaughtExceptionHandler(ASSERTION_FAILURE_HANDLER);

@@ -2,18 +2,23 @@ package com.indeed.proctor.store.cache;
 
 import com.indeed.proctor.common.model.TestDefinition;
 import com.indeed.proctor.common.model.TestMatrixVersion;
+import com.indeed.proctor.store.ChangeMetadata;
 import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.store.Revision;
+import com.indeed.proctor.store.RevisionDetails;
 import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.store.utils.HistoryUtil;
 import com.indeed.proctor.webapp.db.Environment;
 import com.indeed.proctor.webapp.extensions.GlobalCacheStore;
 import org.apache.log4j.Logger;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * A decorator class for ProctorStore
@@ -47,8 +52,11 @@ public class GlobalCachingProctorStore implements ProctorStore {
 
     @Override
     public TestDefinition getCurrentTestDefinition(final String test) throws StoreException {
-        return globalCacheStore.getCachedTestDefinition(environment, test)
-                .orElse(delegate.getCurrentTestDefinition(test));
+        final Optional<TestDefinition> cachedDefinitionOpt = globalCacheStore.getCachedTestDefinition(environment, test);
+        if (cachedDefinitionOpt.isPresent()) {
+            return cachedDefinitionOpt.get();
+        }
+        return delegate.getCurrentTestDefinition(test);
     }
 
     @Override
@@ -62,41 +70,40 @@ public class GlobalCachingProctorStore implements ProctorStore {
     }
 
     @Override
-    public void updateTestDefinition(final String username, final String password, final String previousVersion, final String testName, final TestDefinition testDefinition, final Map<String, String> metadata, final String comment) throws StoreException.TestUpdateException {
-        delegate.updateTestDefinition(username, password, previousVersion, testName, testDefinition, metadata, comment);
+    public void updateTestDefinition(
+            final ChangeMetadata changeMetadata,
+            final String previousVersion,
+            final String testName,
+            final TestDefinition testDefinition,
+            final Map<String, String> metadata
+    ) throws StoreException.TestUpdateException {
+        delegate.updateTestDefinition(changeMetadata, previousVersion, testName, testDefinition, metadata);
         updateGlobalCache(testName, testDefinition);
     }
 
     @Override
-    public void updateTestDefinition(final String username, final String password, final String author, final String previousVersion, final String testName, final TestDefinition testDefinition, final Map<String, String> metadata, final String comment) throws StoreException.TestUpdateException {
-        delegate.updateTestDefinition(username, password, author, previousVersion, testName, testDefinition, metadata, comment);
-        updateGlobalCache(testName, testDefinition);
-    }
-
-    @Override
-    public void deleteTestDefinition(final String username, final String password, final String previousVersion, final String testName, final TestDefinition testDefinition, final String comment) throws StoreException.TestUpdateException {
-        delegate.deleteTestDefinition(username, password, previousVersion, testName, testDefinition, comment);
+    public void deleteTestDefinition(
+            final ChangeMetadata changeMetadata,
+            final String previousVersion,
+            final String testName,
+            final TestDefinition testDefinition
+    ) throws StoreException.TestUpdateException {
+        delegate.deleteTestDefinition(changeMetadata, previousVersion, testName, testDefinition);
         updateGlobalCache(testName, null);
     }
 
     @Override
-    public void deleteTestDefinition(final String username, final String password, final String author, final String previousVersion, final String testName, final TestDefinition testDefinition, final String comment) throws StoreException.TestUpdateException {
-        delegate.deleteTestDefinition(username, password, author, previousVersion, testName, testDefinition, comment);
-        updateGlobalCache(testName, null);
-    }
-
-    @Override
-    public void addTestDefinition(final String username, final String password, final String testName, final TestDefinition testDefinition, final Map<String, String> metadata, final String comment) throws StoreException.TestUpdateException {
-        delegate.addTestDefinition(username, password, testName, testDefinition, metadata, comment);
+    public void addTestDefinition(
+            final ChangeMetadata changeMetadata,
+            final String testName,
+            final TestDefinition testDefinition,
+            final Map<String, String> metadata
+    ) throws StoreException.TestUpdateException {
+        delegate.addTestDefinition(changeMetadata, testName, testDefinition, metadata);
         updateGlobalCache(testName, testDefinition);
     }
 
-    @Override
-    public void addTestDefinition(final String username, final String password, final String author, final String testName, final TestDefinition testDefinition, final Map<String, String> metadata, final String comment) throws StoreException.TestUpdateException {
-        delegate.addTestDefinition(username, password, author, testName, testDefinition, metadata, comment);
-        updateGlobalCache(testName, testDefinition);
-    }
-
+    @Nonnull
     @Override
     public String getLatestVersion() throws StoreException {
         return delegate.getLatestVersion();
@@ -109,29 +116,48 @@ public class GlobalCachingProctorStore implements ProctorStore {
 
     @Override
     public TestDefinition getTestDefinition(final String test, final String fetchRevision) throws StoreException {
-        return globalCacheStore.getCachedTestDefinition(environment, test, fetchRevision)
-                .orElse(delegate.getTestDefinition(test, fetchRevision));
+        final Optional<TestDefinition> cachedDefinitionOpt = globalCacheStore.getCachedTestDefinition(environment, test, fetchRevision);
+        if (cachedDefinitionOpt.isPresent()) {
+            return cachedDefinitionOpt.get();
+        }
+        return delegate.getTestDefinition(test, fetchRevision);
     }
 
+    @Nonnull
     @Override
     public List<Revision> getMatrixHistory(final int start, final int limit) throws StoreException {
         return delegate.getMatrixHistory(start, limit);
     }
 
+    @Nonnull
     @Override
     public List<Revision> getHistory(final String test, final int start, final int limit) throws StoreException {
-        return globalCacheStore.getCachedHistory(environment, test).map(
-                history -> HistoryUtil.selectHistorySet(history, start, limit)
-        ).orElse(delegate.getHistory(test, start, limit));
+        final Optional<List<Revision>> cachedHistoryOpt = globalCacheStore.getCachedHistory(environment, test).map(
+                history -> HistoryUtil.selectHistorySet(history, start, limit));
+        if (cachedHistoryOpt.isPresent()) {
+            return cachedHistoryOpt.get();
+        }
+        return delegate.getHistory(test, start, limit);
     }
 
+    @Nonnull
     @Override
     public List<Revision> getHistory(final String test, final String revision, final int start, final int limit) throws StoreException {
-        return globalCacheStore.getCachedHistory(environment, test).map(
-                history -> HistoryUtil.selectRevisionHistorySetFrom(history, revision, start, limit)
-        ).orElse(delegate.getHistory(test, revision, start, limit));
+        final Optional<List<Revision>> cachedHistoryOpt = globalCacheStore.getCachedHistory(environment, test).map(
+                history -> HistoryUtil.selectRevisionHistorySetFrom(history, revision, start, limit));
+        if (cachedHistoryOpt.isPresent()) {
+            return cachedHistoryOpt.get();
+        }
+        return delegate.getHistory(test, revision, start, limit);
     }
 
+    @CheckForNull
+    @Override
+    public RevisionDetails getRevisionDetails(final String revisionId) throws StoreException {
+        return delegate.getRevisionDetails(revisionId);
+    }
+
+    @Nonnull
     @Override
     public Map<String, List<Revision>> getAllHistories() throws StoreException {
         return delegate.getAllHistories();

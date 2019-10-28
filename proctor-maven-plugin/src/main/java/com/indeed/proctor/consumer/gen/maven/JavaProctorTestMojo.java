@@ -40,7 +40,7 @@ public class JavaProctorTestMojo extends AbstractJavaProctorMojo {
         project.addTestCompileSourceRoot(getOutputDirectory().getPath());
         super.createTotalSpecifications(getTopDirectory(),null);
         final Resource[] resources = getResources();
-        for(final Resource resource : resources) {
+        for (final Resource resource : resources) {
             project.addTestResource(resource);
         }
         super.execute();

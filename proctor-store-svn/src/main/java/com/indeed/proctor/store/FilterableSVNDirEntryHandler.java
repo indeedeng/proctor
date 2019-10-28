@@ -1,10 +1,9 @@
 package com.indeed.proctor.store;
 
-import com.google.common.base.CharMatcher;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
-import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import org.apache.commons.lang3.StringUtils;
 import org.tmatesoft.svn.core.ISVNDirEntryHandler;
 import org.tmatesoft.svn.core.SVNDirEntry;
 import org.tmatesoft.svn.core.SVNException;
@@ -36,7 +35,7 @@ class FilterableSVNDirEntryHandler implements ISVNDirEntryHandler {
         // from the svn docs: The directory entry for url is reported using an empty path.
         // If SVNDepth.IMMEDIATES, lists its immediate file and directory entries
         // So identify the parent as the one with an empty relative path
-        if (CharMatcher.WHITESPACE.matchesAllOf(Strings.nullToEmpty(svnDirEntry.getRelativePath()))) {
+        if (StringUtils.isBlank(svnDirEntry.getRelativePath())) {
             this.parent = svnDirEntry;
         } else if (childFilter.apply(svnDirEntry)) {
             this.children.add(svnDirEntry);

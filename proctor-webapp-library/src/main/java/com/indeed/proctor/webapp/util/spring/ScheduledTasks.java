@@ -43,7 +43,7 @@ public class ScheduledTasks implements InitializingBean {
     public void afterPropertiesSet() throws Exception {
         scheduledExecutorService.scheduleWithFixedDelay(proctorSpecificationSource, 1, 10, TimeUnit.MINUTES);
 
-        if(scheduledExecutorService instanceof ThreadPoolExecutor) {
+        if (scheduledExecutorService instanceof ThreadPoolExecutor) {
             VarExporter.forNamespace(getClass().getSimpleName()).export(new ThreadPoolExecutorVarExports((ThreadPoolExecutor) scheduledExecutorService), "pool-");
         }
     }

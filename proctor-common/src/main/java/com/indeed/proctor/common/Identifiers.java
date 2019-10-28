@@ -9,6 +9,10 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * Convenience wrapper for Map<TestType, String>, used to select an identifier suitable to resolve test groups
+ * for the given experiment.
+ */
 public class Identifiers {
     @Nonnull
     private final Map<TestType, String> identifierMap;

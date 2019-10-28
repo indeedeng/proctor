@@ -1,24 +1,21 @@
 package com.indeed.proctor.consumer;
 
-import com.google.common.base.CharMatcher;
-import com.google.common.base.Strings;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.indeed.proctor.common.ProctorSpecification;
 import com.indeed.proctor.common.Serializers;
 import com.indeed.proctor.common.SpecificationResult;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.apache.log4j.Logger;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 public class ViewProctorSpecificationServlet extends HttpServlet {
     private static final Logger LOGGER = Logger.getLogger(ViewProctorSpecificationServlet.class);
@@ -33,7 +30,7 @@ public class ViewProctorSpecificationServlet extends HttpServlet {
     public void init(final ServletConfig config) throws ServletException {
         super.init(config);
         final String proctorSpecPathParameter = config.getInitParameter("proctorSpecPath");
-        if (! CharMatcher.WHITESPACE.matchesAllOf(Strings.nullToEmpty(proctorSpecPathParameter))) {
+        if (StringUtils.isNotBlank(proctorSpecPathParameter)) {
             proctorSpecPath = proctorSpecPathParameter;
         }
     }

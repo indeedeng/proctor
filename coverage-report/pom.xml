@@ -119,6 +119,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-gpg-plugin</artifactId>
+                <version>1.6</version>
                 <configuration>
                     <!-- only tests, nothing to sign -->
                     <skip>true</skip>
