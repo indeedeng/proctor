@@ -4,11 +4,13 @@ import com.indeed.proctor.common.model.Payload;
 import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.consumer.AbstractGroupsPayload;
 
+import javax.annotation.Generated;
 import javax.annotation.Nullable;
 
 /*
 * GENERATED source; do not edit directly
 */
+@Generated("com.indeed.proctor.consumer.gen.TestGroupsGenerator")
 public final class ${mainClassName} {
     private ${mainClassName}() { }
 

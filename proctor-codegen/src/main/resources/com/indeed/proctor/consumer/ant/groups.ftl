@@ -4,6 +4,7 @@ import com.indeed.proctor.common.*;
 import com.indeed.proctor.common.model.Payload;
 import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.consumer.*;
+import javax.annotation.Generated;
 import javax.annotation.Nullable;
 import javax.annotation.Nonnull;
 import java.lang.Override;
@@ -13,6 +14,7 @@ import java.util.Map;
  * GENERATED source; do not edit directly
  * (but you can extend me.  you'll want to override {@link #toString()}, using {@link #buildTestGroupString()} or {@link #appendTestGroups(StringBuilder)} instead)
  */
+@Generated("com.indeed.proctor.consumer.gen.TestGroupsGenerator")
 public class ${mainClassName} extends AbstractGroups {
 
     public static final ${mainClassName} EMPTY = new ${mainClassName}(ProctorResult.EMPTY);
