@@ -103,6 +103,7 @@ public abstract class AbstractGroups {
      * @return pay load attached to the current active bucket
      * @deprecated Use {@link #getPayload(String, Bucket)} instead
      */
+    @Deprecated
     @Nonnull
     protected Payload getPayload(final String testName) {
         // Get the current bucket.
@@ -120,7 +121,7 @@ public abstract class AbstractGroups {
 
         final Optional<TestBucket> testBucket = Optional.ofNullable(buckets.get(testName));
 
-        Optional<Payload> payload;
+        final Optional<Payload> payload;
         if (testBucket.isPresent()) {
             payload = testBucket.map(TestBucket::getPayload);
         } else {

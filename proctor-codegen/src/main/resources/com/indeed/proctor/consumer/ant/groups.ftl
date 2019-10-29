@@ -14,6 +14,7 @@ import java.util.Map;
  * GENERATED source; do not edit directly
  * (but you can extend me.  you'll want to override {@link #toString()}, using {@link #buildTestGroupString()} or {@link #appendTestGroups(StringBuilder)} instead)
  */
+@SuppressWarnings("deprecation")
 @Generated("com.indeed.proctor.consumer.gen.TestGroupsGenerator")
 public class ${mainClassName} extends AbstractGroups {
 
