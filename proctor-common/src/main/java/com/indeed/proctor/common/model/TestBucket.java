@@ -1,17 +1,22 @@
 package com.indeed.proctor.common.model;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.indeed.proctor.common.ProctorResult;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
  * Models a single bucket in a test, generally meant to have one bucket per varying behavior
+ *
  * @author ketan
  */
-@JsonSerialize(include=JsonSerialize.Inclusion.NON_NULL)
+@JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
+@JsonDeserialize(builder = TestBucket.Builder.class)
 public class TestBucket {
     @Nonnull
     private String name = "";
@@ -21,6 +26,11 @@ public class TestBucket {
     @Nullable
     private Payload payload;
 
+    /**
+     * @deprecated Use {@link TestBucket(String, int, String, Payload)} or
+     * {@link TestBucket#builder()} to construct an instance.
+     */
+    @Deprecated
     public TestBucket() { /* intentionally empty */ }
 
     // For backward compatiblity with pre-payload code.
@@ -56,12 +66,18 @@ public class TestBucket {
         }
     }
 
-
     @Nonnull
     public String getName() {
         return name;
     }
 
+    /**
+     * @deprecated Use {@link TestBucket#builder()} and {@link Builder#name} instead.
+     * Using setter of bucket is a possible cause of a major bug
+     * that invalidate A/B testing result because two {@link ProctorResult} share same object.
+     * This will be removed in a future release.
+     */
+    @Deprecated
     public void setName(@Nonnull final String name) {
         this.name = Strings.nullToEmpty(name);
     }
@@ -70,6 +86,13 @@ public class TestBucket {
         return value;
     }
 
+    /**
+     * @deprecated Use {@link TestBucket#builder()} and {@link Builder#value} instead.
+     * Using setter of bucket is a possible cause of a major bug
+     * that invalidate A/B testing result because two {@link ProctorResult} share same object.
+     * This will be removed in a future release.
+     */
+    @Deprecated
     public void setValue(final int value) {
         this.value = value;
     }
@@ -79,6 +102,13 @@ public class TestBucket {
         return description;
     }
 
+    /**
+     * @deprecated Use {@link TestBucket#builder()} and {@link Builder#description} instead.
+     * Using setter of bucket is a possible cause of a major bug
+     * that invalidate A/B testing result because two {@link ProctorResult} share same object.
+     * This will be removed in a future release.
+     */
+    @Deprecated
     public void setDescription(@Nullable final String description) {
         this.description = description;
     }
@@ -88,6 +118,13 @@ public class TestBucket {
         return payload;
     }
 
+    /**
+     * @deprecated Use {@link TestBucket#builder()} and {@link Builder#payload} instead.
+     * Using setter of bucket is a possible cause of a major bug
+     * that invalidate A/B testing result because two {@link ProctorResult} share same object.
+     * This will be removed in a future release.
+     */
+    @Deprecated
     public void setPayload(@Nullable final Payload payload) {
         this.payload = payload;
     }
@@ -139,4 +176,58 @@ public class TestBucket {
         return Objects.hashCode(name, value, description, payload);
     }
 
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    @JsonPOJOBuilder(withPrefix = "")
+    public static class Builder {
+        @Nonnull
+        private String name = "";
+        private int value;
+        @Nullable
+        private String description;
+        @Nullable
+        private Payload payload;
+
+        private Builder() {
+        }
+
+        public Builder from(@Nonnull final TestBucket bucket) {
+            this.name = bucket.name;
+            this.value = bucket.value;
+            this.description = bucket.description;
+            this.payload = bucket.payload;
+            return this;
+        }
+
+        public Builder name(@Nonnull final String name) {
+            this.name = Strings.nullToEmpty(name);
+            return this;
+        }
+
+        public Builder value(final int value) {
+            this.value = value;
+            return this;
+        }
+
+        public Builder description(@Nullable final String description) {
+            this.description = description;
+            return this;
+        }
+
+        public Builder payload(@Nullable final Payload payload) {
+            this.payload = payload;
+            return this;
+        }
+
+        public TestBucket build() {
+            return new TestBucket(
+                    this.name,
+                    this.value,
+                    this.description,
+                    this.payload
+            );
+        }
+    }
 }
