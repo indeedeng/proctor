@@ -76,7 +76,7 @@ public class TestTestDefinition {
 
     private static List<TestBucket> sampleStringArrayBuckets() {
         final Payload p1 = new Payload();
-        p1.setStringArray(new String[] {"foo", "bar"});
+        p1.setStringArray(new String[]{"foo", "bar"});
         return Lists.newArrayList(
                 new TestBucket(
                         "inactive",
@@ -86,7 +86,6 @@ public class TestTestDefinition {
                 )
         );
     }
-
 
     @Test
     public void testEqualityWithAlmostEmptyTestDefinition() {

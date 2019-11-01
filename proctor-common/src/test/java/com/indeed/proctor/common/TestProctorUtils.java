@@ -29,7 +29,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import static com.indeed.proctor.common.ProctorUtils.*;
+import static com.indeed.proctor.common.ProctorUtils.convertContextToTestableMap;
+import static com.indeed.proctor.common.ProctorUtils.convertToConsumableTestDefinition;
+import static com.indeed.proctor.common.ProctorUtils.generateSpecification;
+import static com.indeed.proctor.common.ProctorUtils.isEmptyWhitespace;
+import static com.indeed.proctor.common.ProctorUtils.removeElExpressionBraces;
+import static com.indeed.proctor.common.ProctorUtils.verifyAndConsolidate;
+import static com.indeed.proctor.common.ProctorUtils.verifyInternallyConsistentDefinition;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
@@ -59,7 +65,7 @@ public class TestProctorUtils {
         // rule: null
         // rule: ""
         // rule: " "
-        final String[] emptyRules = new String[] { null, "", " " };
+        final String[] emptyRules = new String[]{null, "", " "};
         final Range range = new Range(0, 1.0d);
 
         final String version = "100";
@@ -107,7 +113,6 @@ public class TestProctorUtils {
         }
     }
 
-
     /**
      * Checks that allocation and top level rules can optionally be surrounded by ${ ... }
      */
@@ -127,8 +132,7 @@ public class TestProctorUtils {
         final String description = "test description";
         final List<String> metaTags = emptyList();
 
-
-        for (final String rule : new String[] { "lang == 'en'", "${lang == 'en'}"})  {
+        for (final String rule : new String[]{"lang == 'en'", "${lang == 'en'}"}) {
             final Allocation allocation = new Allocation(rule, singletonList(range));
             final TestDefinition testDefinition = new TestDefinition(
                     version,
@@ -176,7 +180,7 @@ public class TestProctorUtils {
 
         final Allocation allocation = new Allocation(null, singletonList(range));
 
-        for (final String tdRule : new String[] { "lang == 'en'", "${lang == 'en'}"}) {
+        for (final String tdRule : new String[]{"lang == 'en'", "${lang == 'en'}"}) {
             final TestDefinition testDefinition = new TestDefinition(
                     version,
                     tdRule,
@@ -236,7 +240,6 @@ public class TestProctorUtils {
         assertFalse(isEmptyWhitespace("/"));
     }
 
-
     @Test
     public void verifyAndConsolidateShouldTestAllocationSum() {
         final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
@@ -244,8 +247,8 @@ public class TestProctorUtils {
         {
             final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
             tests.put(TEST_A, constructDefinition(buckets,
-                                                      // Allocations do not add up to 1
-                                                      fromCompactAllocationFormat("ruleA|-1:0.5,0:0.5,1:0.0", "-1:0.0,0:0.0,1:0.0")));
+                    // Allocations do not add up to 1
+                    fromCompactAllocationFormat("ruleA|-1:0.5,0:0.5,1:0.0", "-1:0.0,0:0.0,1:0.0")));
 
             final TestMatrixArtifact matrix = constructArtifact(tests);
 
@@ -257,8 +260,8 @@ public class TestProctorUtils {
         {
             final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
             tests.put(TEST_A, constructDefinition(buckets,
-                                                      // Allocations do not add up to 1
-                                                      fromCompactAllocationFormat("ruleA|-1:0.5,0:0.5,1:0.0", "-1:0.0,0:0.0,1:0.0")));
+                    // Allocations do not add up to 1
+                    fromCompactAllocationFormat("ruleA|-1:0.5,0:0.5,1:0.0", "-1:0.0,0:0.0,1:0.0")));
 
             final TestMatrixArtifact matrix = constructArtifact(tests);
 
@@ -270,8 +273,8 @@ public class TestProctorUtils {
         {
             final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
             tests.put(TEST_A, constructDefinition(buckets,
-                                                      // Allocations do not add up to 1
-                                                      fromCompactAllocationFormat("ruleA|-1:0.5,0:0.5,1:0.0", "-1:0.5,0:0.5,1:0.5")));
+                    // Allocations do not add up to 1
+                    fromCompactAllocationFormat("ruleA|-1:0.5,0:0.5,1:0.0", "-1:0.5,0:0.5,1:0.5")));
 
             final TestMatrixArtifact matrix = constructArtifact(tests);
 
@@ -283,8 +286,8 @@ public class TestProctorUtils {
         {
             final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
             tests.put(TEST_A, constructDefinition(buckets,
-                                                      // Allocations do not add up to 1
-                                                      fromCompactAllocationFormat("ruleA|-1:0.5,0:0.5,1:0.0", "-1:0.5,0:0.5,1:0.5")));
+                    // Allocations do not add up to 1
+                    fromCompactAllocationFormat("ruleA|-1:0.5,0:0.5,1:0.0", "-1:0.5,0:0.5,1:0.5")));
 
             final TestMatrixArtifact matrix = constructArtifact(tests);
 
@@ -296,8 +299,8 @@ public class TestProctorUtils {
         {
             final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
             tests.put(TEST_A, constructDefinition(buckets,
-                                                      // Allocations add up to 1.0
-                                                      fromCompactAllocationFormat("ruleA|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25")));
+                    // Allocations add up to 1.0
+                    fromCompactAllocationFormat("ruleA|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25")));
 
             final TestMatrixArtifact matrix = constructArtifact(tests);
 
@@ -308,8 +311,8 @@ public class TestProctorUtils {
         {
             final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
             tests.put(TEST_A, constructDefinition(buckets,
-                                                      // Allocations add up to 1.0
-                                                      fromCompactAllocationFormat("ruleA|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25")));
+                    // Allocations add up to 1.0
+                    fromCompactAllocationFormat("ruleA|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25")));
 
             final TestMatrixArtifact matrix = constructArtifact(tests);
 
@@ -341,6 +344,7 @@ public class TestProctorUtils {
         verifyInternallyConsistentDefinition("testELevalProctor", "test el recognition", testDefVal1);
 
     }
+
     @Test
     public void testELValidity_inProctorBuilderTestRule() throws IncompatibleTestMatrixException {
         final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
@@ -500,7 +504,7 @@ public class TestProctorUtils {
             assertThatThrownBy(() ->
                     verifyInternallyConsistentDefinition("testELevalwithcontext", "test context recognition", testDefValConstants2, RuleEvaluator.FUNCTION_MAPPER,
                             convertContextToTestableMap(providedContext2))
-                    )
+            )
                     .isInstanceOf(IncompatibleTestMatrixException.class)
                     .hasMessage(
                             "Invalid allocation rule ${proctor:now()>time} in testELevalwithcontext: " +
@@ -512,7 +516,7 @@ public class TestProctorUtils {
                     fromCompactAllocationFormat("${time eq ''}|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25"));
 
             assertThatThrownBy(() ->
-                    verifyInternallyConsistentDefinition("testProvidedContextMissing", "test Provided Context Missing", testDef, RuleEvaluator.FUNCTION_MAPPER, new ProvidedContext(ProvidedContext.EMPTY_CONTEXT,true))
+                    verifyInternallyConsistentDefinition("testProvidedContextMissing", "test Provided Context Missing", testDef, RuleEvaluator.FUNCTION_MAPPER, new ProvidedContext(ProvidedContext.EMPTY_CONTEXT, true))
             )
                     .as("expected IncompatibleTestMatrixException due to missing provided Context")
                     .isInstanceOf(IncompatibleTestMatrixException.class)
@@ -560,7 +564,7 @@ public class TestProctorUtils {
                     fromCompactAllocationFormat("${proctor:notafunction()}|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25"));
 
             assertThatThrownBy(() ->
-                    verifyInternallyConsistentDefinition("testProvidedContextConversion", "test Provided Context Conversion Class", testDef, RuleEvaluator.FUNCTION_MAPPER, new ProvidedContext(ProvidedContext.EMPTY_CONTEXT,true))
+                    verifyInternallyConsistentDefinition("testProvidedContextConversion", "test Provided Context Conversion Class", testDef, RuleEvaluator.FUNCTION_MAPPER, new ProvidedContext(ProvidedContext.EMPTY_CONTEXT, true))
             )
                     .as("expected IncompatibleTestMatrixException due to missing function")
                     .isInstanceOf(IncompatibleTestMatrixException.class)
@@ -571,7 +575,6 @@ public class TestProctorUtils {
         }
     }
 
-
     @Test
     public void verifyAndConsolidateShouldFailIfMissingDefaultAllocation() {
         final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
@@ -579,8 +582,8 @@ public class TestProctorUtils {
         {
             final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
             tests.put(TEST_A, constructDefinition(buckets,
-                                                      // Allocations all have rules
-                                                      fromCompactAllocationFormat("ruleA|-1:0.0,0:0.0,1:1.0", "ruleB|-1:0.5,0:0.5,1:0.0")));
+                    // Allocations all have rules
+                    fromCompactAllocationFormat("ruleA|-1:0.0,0:0.0,1:1.0", "ruleB|-1:0.5,0:0.5,1:0.0")));
 
             assertValid("test missing empty rule is not required", constructArtifact(tests), Collections.emptyMap());
             assertMissing("test missing empty rule is required", constructArtifact(Collections.emptyMap()), requiredTests);
@@ -588,8 +591,8 @@ public class TestProctorUtils {
         {
             final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
             tests.put(TEST_A, constructDefinition(buckets,
-                                                      // non-final allocation lacks a non-empty rule
-                                                      fromCompactAllocationFormat("|-1:0.0,0:0.0,1:1.0", "-1:0.5,0:0.5,1:0.0")));
+                    // non-final allocation lacks a non-empty rule
+                    fromCompactAllocationFormat("|-1:0.0,0:0.0,1:1.0", "-1:0.5,0:0.5,1:0.0")));
 
             assertInvalid("non-final rule lacks non-empty rule", constructArtifact(tests), requiredTests);
             assertValid("non-final rule lacks non-empty rule is allowed when not required", constructArtifact(tests), Collections.emptyMap());
@@ -597,14 +600,14 @@ public class TestProctorUtils {
         {
             final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
             tests.put(TEST_A, constructDefinition(buckets,
-                fromCompactAllocationFormat("ruleA|-1:0.0,0:0.0,1:1.0", "|-1:0.5,0:0.5,1:0.0")));
+                    fromCompactAllocationFormat("ruleA|-1:0.0,0:0.0,1:1.0", "|-1:0.5,0:0.5,1:0.0")));
 
             assertValid("allocation with '' rule is valid for final last allocation", constructArtifact(tests), requiredTests);
         }
         {
             final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
             tests.put(TEST_A, constructDefinition(buckets,
-                fromCompactAllocationFormat("ruleA|-1:0.0,0:0.0,1:1.0", "ruleB|-1:0.5,0:0.5,1:0.0")));
+                    fromCompactAllocationFormat("ruleA|-1:0.0,0:0.0,1:1.0", "ruleB|-1:0.5,0:0.5,1:0.0")));
 
             assertValid("allocation with non-empty rule is valid for final last allocation", constructArtifact(tests), requiredTests);
         }
@@ -613,15 +616,15 @@ public class TestProctorUtils {
         {
             final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
             tests.put(TEST_A, constructDefinition(buckets,
-                                                      // non-final allocation lacks a non-empty rule
-                                                      fromCompactAllocationFormat("${}|-1:0.0,0:0.0,1:1.0", "-1:0.5,0:0.5,1:0.0")));
+                    // non-final allocation lacks a non-empty rule
+                    fromCompactAllocationFormat("${}|-1:0.0,0:0.0,1:1.0", "-1:0.5,0:0.5,1:0.0")));
 
             assertInvalid("non-final rule of '${}' should be treated as empty rule", constructArtifact(tests), requiredTests);
         }
         {
             final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
             tests.put(TEST_A, constructDefinition(buckets,
-                                                      fromCompactAllocationFormat("${}|-1:0.5,0:0.5,1:0.0")));
+                    fromCompactAllocationFormat("${}|-1:0.5,0:0.5,1:0.0")));
 
             assertValid("allocation with '${}' rule is valid for final last allocation", constructArtifact(tests), requiredTests);
         }
@@ -725,7 +728,7 @@ public class TestProctorUtils {
 
     @Test
     public void internallyUnknownBucketWithAllocationGreaterThanZero() {
-         // The test-matrix has 3 buckets
+        // The test-matrix has 3 buckets
         final List<TestBucket> buckets = fromCompactBucketFormat("zero:0,one:1,two:2");
         final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets));
 
@@ -753,7 +756,7 @@ public class TestProctorUtils {
 
     @Test
     public void requiredTestBucketsMissing() {
-         // The test-matrix has fewer buckets than the required tests
+        // The test-matrix has fewer buckets than the required tests
         final List<TestBucket> buckets_matrix = fromCompactBucketFormat("zero:0,one:1");
         final List<TestBucket> buckets_required = fromCompactBucketFormat("zero:0,one:1,two:2,three:3");
         final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets_required));
@@ -776,7 +779,7 @@ public class TestProctorUtils {
             final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
             // The Bucket Names and Values intentionally do not match
             tests.put(TEST_A, constructDefinition(fromCompactBucketFormat("zero:1,one:0"),
-                                                  fromCompactAllocationFormat("0:0,1:1.0")));
+                    fromCompactAllocationFormat("0:0,1:1.0")));
 
             final TestMatrixArtifact matrix = constructArtifact(tests);
 
@@ -787,7 +790,7 @@ public class TestProctorUtils {
             final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
             // The Bucket Names and Values intentionally do not match
             tests.put(TEST_A, constructDefinition(fromCompactBucketFormat("zero:0,one:2"),
-                                                  fromCompactAllocationFormat("0:0,2:1.0")));
+                    fromCompactAllocationFormat("0:0,2:1.0")));
 
             final TestMatrixArtifact matrix = constructArtifact(tests);
 
@@ -797,7 +800,7 @@ public class TestProctorUtils {
 
     @Test
     public void requiredTestIsMissing() {
-         // The test-matrix has 3 buckets
+        // The test-matrix has 3 buckets
         final List<TestBucket> buckets_A = fromCompactBucketFormat("zero:0,one:1,two:2");
         final TestSpecification testSpecA = transformTestBuckets(buckets_A);
 
@@ -970,17 +973,23 @@ public class TestProctorUtils {
         {
             final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
             Payload p = new Payload();
-            p.setMap(ImmutableMap.of("val1",1.0,"val2","one","val3",new ArrayList<String>()));
+            p.setMap(ImmutableMap.of("val1", 1.0, "val2", "one", "val3", new ArrayList<String>()));
             buckets.get(0).setPayload(p);
             p = new Payload();
-            p.setMap(ImmutableMap.of("val1",2.0,"val2","tw","val3",new ArrayList<String>(){{add("a");add("c");}}));
+            p.setMap(ImmutableMap.of("val1", 2.0, "val2", "tw", "val3", new ArrayList<String>() {{
+                add("a");
+                add("c");
+            }}));
             buckets.get(1).setPayload(p);
             p = new Payload();
-            p.setMap(ImmutableMap.of("val1",2.0,"val2","th","val3",new ArrayList<String>(){{add("foo");add("bar");}}));
+            p.setMap(ImmutableMap.of("val1", 2.0, "val2", "th", "val3", new ArrayList<String>() {{
+                add("foo");
+                add("bar");
+            }}));
             buckets.get(2).setPayload(p);
 
-            final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets,"map",
-                    ImmutableMap.of("val1","doubleValue","val2","stringValue","val3","stringArray"), null));
+            final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets, "map",
+                    ImmutableMap.of("val1", "doubleValue", "val2", "stringValue", "val3", "stringArray"), null));
             final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
 
             tests.put(TEST_A, constructDefinition(buckets, fromCompactAllocationFormat("-1:0.2,0:0.4,1:0.4")));
@@ -992,17 +1001,17 @@ public class TestProctorUtils {
         {
             final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
             Payload p = new Payload();
-            p.setMap(ImmutableMap.of("val1",1.0,"val2",3.0,"val3",1.0));
+            p.setMap(ImmutableMap.of("val1", 1.0, "val2", 3.0, "val3", 1.0));
             buckets.get(0).setPayload(p);
             p = new Payload();
-            p.setMap(ImmutableMap.of("val1",2.0,"val3",1.0,"val4",3.0));
+            p.setMap(ImmutableMap.of("val1", 2.0, "val3", 1.0, "val4", 3.0));
             buckets.get(1).setPayload(p);
             p = new Payload();
-            p.setMap(ImmutableMap.of("val1",2.0,"val2",2.0,"val3",2.0));
+            p.setMap(ImmutableMap.of("val1", 2.0, "val2", 2.0, "val3", 2.0));
             buckets.get(2).setPayload(p);
 
-            final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets,"map",
-                    ImmutableMap.of("val1","doubleValue","val2","doubleValue","val3","doubleValue"), null));
+            final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets, "map",
+                    ImmutableMap.of("val1", "doubleValue", "val2", "doubleValue", "val3", "doubleValue"), null));
             final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
 
             tests.put(TEST_A, constructDefinition(buckets, fromCompactAllocationFormat("-1:0.2,0:0.4,1:0.4")));
@@ -1015,17 +1024,17 @@ public class TestProctorUtils {
         {
             final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
             Payload p = new Payload();
-            p.setMap(ImmutableMap.of("val1",1.0,"val2","yea1","val3",1.0));
+            p.setMap(ImmutableMap.of("val1", 1.0, "val2", "yea1", "val3", 1.0));
             buckets.get(0).setPayload(p);
             p = new Payload();
-            p.setMap(ImmutableMap.of("val1",2.0,"val2","yea2","val3",3.0));
+            p.setMap(ImmutableMap.of("val1", 2.0, "val2", "yea2", "val3", 3.0));
             buckets.get(1).setPayload(p);
             p = new Payload();
-            p.setMap(ImmutableMap.of("val1",2.0,"val2","yea3","val3",2.0));
+            p.setMap(ImmutableMap.of("val1", 2.0, "val2", "yea3", "val3", 2.0));
             buckets.get(2).setPayload(p);
 
-            final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets,"map",
-                    ImmutableMap.of("val1","doubleValue","val2","doubleValue","val3","doubleValue"), null));
+            final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets, "map",
+                    ImmutableMap.of("val1", "doubleValue", "val2", "doubleValue", "val3", "doubleValue"), null));
             final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
 
             tests.put(TEST_A, constructDefinition(buckets, fromCompactAllocationFormat("-1:0.2,0:0.4,1:0.4")));
@@ -1038,17 +1047,17 @@ public class TestProctorUtils {
         {
             final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
             Payload p = new Payload();
-            p.setMap(ImmutableMap.of("val1",1.0,"val2",3.0,"val3",1.0));
+            p.setMap(ImmutableMap.of("val1", 1.0, "val2", 3.0, "val3", 1.0));
             buckets.get(0).setPayload(p);
             p = new Payload();
-            p.setMap(ImmutableMap.of("val1",2.0,"val2",1.0,"val3",3.0));
+            p.setMap(ImmutableMap.of("val1", 2.0, "val2", 1.0, "val3", 3.0));
             buckets.get(1).setPayload(p);
             p = new Payload();
-            p.setMap(ImmutableMap.of("val1",2.0,"val2",2.0,"val3",2.0));
+            p.setMap(ImmutableMap.of("val1", 2.0, "val2", 2.0, "val3", 2.0));
             buckets.get(2).setPayload(p);
 
-            final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets,"map",
-                    ImmutableMap.of("val1","doubleValue","val2","doubleValue","val3","doubleValue","val4","doubleArray"), null));
+            final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets, "map",
+                    ImmutableMap.of("val1", "doubleValue", "val2", "doubleValue", "val3", "doubleValue", "val4", "doubleArray"), null));
             final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
 
             tests.put(TEST_A, constructDefinition(buckets, fromCompactAllocationFormat("-1:0.2,0:0.4,1:0.4")));
@@ -1061,17 +1070,19 @@ public class TestProctorUtils {
         {
             final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
             Payload p = new Payload();
-            p.setMap(ImmutableMap.of("val1",1.0,"val2",3.0,"val3",1.0));
+            p.setMap(ImmutableMap.of("val1", 1.0, "val2", 3.0, "val3", 1.0));
             buckets.get(0).setPayload(p);
             p = new Payload();
-            p.setMap(ImmutableMap.of("val1",2.0,"val2",new ArrayList<Double>(){{add(1.0D);}},"val3",3.0));
+            p.setMap(ImmutableMap.of("val1", 2.0, "val2", new ArrayList<Double>() {{
+                add(1.0D);
+            }}, "val3", 3.0));
             buckets.get(1).setPayload(p);
             p = new Payload();
-            p.setMap(ImmutableMap.of("val1",2.0,"val2",2.0,"val3",2.0));
+            p.setMap(ImmutableMap.of("val1", 2.0, "val2", 2.0, "val3", 2.0));
             buckets.get(2).setPayload(p);
 
-            final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets,"map",
-                    ImmutableMap.of("val1","doubleValue","val2","doubleValue","val3","doubleValue"), null));
+            final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets, "map",
+                    ImmutableMap.of("val1", "doubleValue", "val2", "doubleValue", "val3", "doubleValue"), null));
             final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
 
             tests.put(TEST_A, constructDefinition(buckets, fromCompactAllocationFormat("-1:0.2,0:0.4,1:0.4")));
@@ -1084,17 +1095,17 @@ public class TestProctorUtils {
         {
             final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
             Payload p = new Payload();
-            p.setMap(ImmutableMap.of("val1",1.0,"val2",ImmutableMap.<String,Object>of("a",1,"b",2),"val3",1.0));
+            p.setMap(ImmutableMap.of("val1", 1.0, "val2", ImmutableMap.<String, Object>of("a", 1, "b", 2), "val3", 1.0));
             buckets.get(0).setPayload(p);
             p = new Payload();
-            p.setMap(ImmutableMap.of("val1",2.0,"val2",ImmutableMap.<String,Object>of("c",3,"d",4),"val3",3.0));
+            p.setMap(ImmutableMap.of("val1", 2.0, "val2", ImmutableMap.<String, Object>of("c", 3, "d", 4), "val3", 3.0));
             buckets.get(1).setPayload(p);
             p = new Payload();
-            p.setMap(ImmutableMap.of("val1",2.0,"val2",ImmutableMap.<String,Object>of("e",5,"f",6),"val3",2.0));
+            p.setMap(ImmutableMap.of("val1", 2.0, "val2", ImmutableMap.<String, Object>of("e", 5, "f", 6), "val3", 2.0));
             buckets.get(2).setPayload(p);
 
-            final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets,"map",
-                    ImmutableMap.of("val1","doubleValue","val2","map","val3","doubleValue"), null));
+            final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets, "map",
+                    ImmutableMap.of("val1", "doubleValue", "val2", "map", "val3", "doubleValue"), null));
             final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
 
             tests.put(TEST_A, constructDefinition(buckets, fromCompactAllocationFormat("-1:0.2,0:0.4,1:0.4")));
@@ -1107,17 +1118,23 @@ public class TestProctorUtils {
         {
             final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
             Payload p = new Payload();
-            p.setMap(ImmutableMap.of("val1",1.0,"val2","one","val3",new ArrayList<String>()));
+            p.setMap(ImmutableMap.of("val1", 1.0, "val2", "one", "val3", new ArrayList<String>()));
             buckets.get(0).setPayload(p);
             p = new Payload();
-            p.setMap(ImmutableMap.of("val1",2.0,"val2","tw","val3",new ArrayList<String>(){{add("a");add("c");}}));
+            p.setMap(ImmutableMap.of("val1", 2.0, "val2", "tw", "val3", new ArrayList<String>() {{
+                add("a");
+                add("c");
+            }}));
             buckets.get(1).setPayload(p);
             p = new Payload();
-            p.setMap(ImmutableMap.of("val1",2.0,"val2","th","val3",new ArrayList(){{add(2.1D);add("bar");}}));
+            p.setMap(ImmutableMap.of("val1", 2.0, "val2", "th", "val3", new ArrayList() {{
+                add(2.1D);
+                add("bar");
+            }}));
             buckets.get(2).setPayload(p);
 
-            final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets,"map",
-                    ImmutableMap.of("val1","doubleValue","val2","stringValue","val3","stringArray"), null));
+            final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets, "map",
+                    ImmutableMap.of("val1", "doubleValue", "val2", "stringValue", "val3", "stringArray"), null));
             final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
 
             tests.put(TEST_A, constructDefinition(buckets, fromCompactAllocationFormat("-1:0.2,0:0.4,1:0.4")));
@@ -1265,16 +1282,16 @@ public class TestProctorUtils {
         {
             final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
             Payload p = new Payload();
-            p.setMap(ImmutableMap.of("val1",1.0,"val2",3.0,"val3",1.0));
+            p.setMap(ImmutableMap.of("val1", 1.0, "val2", 3.0, "val3", 1.0));
             buckets.get(0).setPayload(p);
             p = new Payload();
-            p.setMap(ImmutableMap.of("val1",2.0,"val2",4.0,"val3",1.0));
+            p.setMap(ImmutableMap.of("val1", 2.0, "val2", 4.0, "val3", 1.0));
             buckets.get(1).setPayload(p);
             p = new Payload();
-            p.setMap(ImmutableMap.of("val1",2.0,"val2",2.0,"val3",2.0));
+            p.setMap(ImmutableMap.of("val1", 2.0, "val2", 2.0, "val3", 2.0));
             buckets.get(2).setPayload(p);
 
-            final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets, "map", ImmutableMap.of("val1","doubleValue","val2","doubleValue","val3","doubleValue"), "${val1 + val2 + val3 < 10}"));
+            final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets, "map", ImmutableMap.of("val1", "doubleValue", "val2", "doubleValue", "val3", "doubleValue"), "${val1 + val2 + val3 < 10}"));
             final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
 
             tests.put(TEST_A, constructDefinition(buckets, fromCompactAllocationFormat("-1:0.2,0:0.4,1:0.4")));
@@ -1287,16 +1304,16 @@ public class TestProctorUtils {
         {
             final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
             Payload p = new Payload();
-            p.setMap(ImmutableMap.of("val1",1.0,"val2",3.0,"val3",1.0));
+            p.setMap(ImmutableMap.of("val1", 1.0, "val2", 3.0, "val3", 1.0));
             buckets.get(0).setPayload(p);
             p = new Payload();
-            p.setMap(ImmutableMap.of("val1",2.0,"val2",4.0,"val3",1.0));
+            p.setMap(ImmutableMap.of("val1", 2.0, "val2", 4.0, "val3", 1.0));
             buckets.get(1).setPayload(p);
             p = new Payload();
-            p.setMap(ImmutableMap.of("val1",2.0,"val2",6.0,"val3",2.0));
+            p.setMap(ImmutableMap.of("val1", 2.0, "val2", 6.0, "val3", 2.0));
             buckets.get(2).setPayload(p);
 
-            final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets, "map", ImmutableMap.of("val1","doubleValue","val2","doubleValue","val3","doubleValue"), "${val1 + val2 + val3 < 10}"));
+            final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets, "map", ImmutableMap.of("val1", "doubleValue", "val2", "doubleValue", "val3", "doubleValue"), "${val1 + val2 + val3 < 10}"));
             final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
 
             tests.put(TEST_A, constructDefinition(buckets, fromCompactAllocationFormat("-1:0.2,0:0.4,1:0.4")));
@@ -1454,8 +1471,8 @@ public class TestProctorUtils {
             final ConsumableTestDefinition replacement = matrix.getTests().values().iterator().next();
             assertEquals(TestType.RANDOM, replacement.getTestType());
             assertEquals("Expected buckets to expand to include all buckets from the specification",
-                         buckets.size(),
-                         replacement.getBuckets().size());
+                    buckets.size(),
+                    replacement.getBuckets().size());
             assertEquals(-1, replacement.getBuckets().iterator().next().getValue());
         }
 
@@ -1473,8 +1490,8 @@ public class TestProctorUtils {
             final ConsumableTestDefinition stillOriginal = matrix.getTests().values().iterator().next();
             assertEquals(unrecognizedTestType, stillOriginal.getTestType());
             assertEquals("Expected buckets to expand to include all buckets from the specification",
-                         buckets.size(),
-                         stillOriginal.getBuckets().size());
+                    buckets.size(),
+                    stillOriginal.getBuckets().size());
         }
     }
 
@@ -1535,7 +1552,6 @@ public class TestProctorUtils {
         assertEquals(control.getValue(), values.get(1).intValue());
         assertEquals(test.getValue(), values.get(2).intValue());
 
-
     }
 
     @Test
@@ -1543,7 +1559,7 @@ public class TestProctorUtils {
         final String description = "this test has a payload buckets";
         final TestBucket inactiveBucket = new TestBucket("inactive", 0, "status quo");
         final Payload inactivePayload = new Payload();
-        inactivePayload.setDoubleArray(new Double[] { 1.4d, 4.5d });
+        inactivePayload.setDoubleArray(new Double[]{1.4d, 4.5d});
         inactiveBucket.setPayload(inactivePayload);
         final TestBucket control = new TestBucket("control", 0, "control bucket");
         final Payload controlPayload = new Payload();
@@ -1587,9 +1603,9 @@ public class TestProctorUtils {
         final TestBucket bucket = new TestBucket("inactive", -3, "status quo");
         final Payload inactivePayload = new Payload();
         inactivePayload.setMap(ImmutableMap.of(
-            "da", new Double[] { 1.4d, 4.5d },
-            "lv", 5L,
-            "sa", new String[] { "foo", "bar" }
+                "da", new Double[]{1.4d, 4.5d},
+                "lv", 5L,
+                "sa", new String[]{"foo", "bar"}
         ));
         bucket.setPayload(inactivePayload);
         final TestDefinition empty = new TestDefinition(
@@ -1649,7 +1665,7 @@ public class TestProctorUtils {
                 "",
                 requiredTests,
                 RuleEvaluator.FUNCTION_MAPPER,
-                new ProvidedContext(ProvidedContext.EMPTY_CONTEXT,false),
+                new ProvidedContext(ProvidedContext.EMPTY_CONTEXT, false),
                 dynamicTests
         );
 
@@ -1693,7 +1709,7 @@ public class TestProctorUtils {
                 "",
                 requiredTests,
                 RuleEvaluator.FUNCTION_MAPPER,
-                new ProvidedContext(ProvidedContext.EMPTY_CONTEXT,true),
+                new ProvidedContext(ProvidedContext.EMPTY_CONTEXT, true),
                 dynamicTests
         );
 
@@ -1729,7 +1745,7 @@ public class TestProctorUtils {
 
         for (final TestBucket bucket : definitionA.getBuckets()) {
             final Payload payload = new Payload();
-            payload.setLongValue((long)bucket.getValue());
+            payload.setLongValue((long) bucket.getValue());
             bucket.setPayload(payload);
         }
 
@@ -1740,7 +1756,7 @@ public class TestProctorUtils {
 
         for (final TestBucket bucket : definitionB.getBuckets()) {
             final Payload payload = new Payload();
-            payload.setLongValue((long)bucket.getValue());
+            payload.setLongValue((long) bucket.getValue());
             bucket.setPayload(payload);
         }
 
@@ -1760,7 +1776,7 @@ public class TestProctorUtils {
                 "",
                 requiredTests,
                 RuleEvaluator.FUNCTION_MAPPER,
-                new ProvidedContext(ProvidedContext.EMPTY_CONTEXT,false),
+                new ProvidedContext(ProvidedContext.EMPTY_CONTEXT, false),
                 dynamicTests
         );
 
@@ -1788,12 +1804,15 @@ public class TestProctorUtils {
     private void assertInvalid(final String msg, final TestMatrixArtifact matrix, final Map<String, TestSpecification> requiredTests) {
         assertErrorCreated(false, true, msg, matrix, requiredTests);
     }
+
     private void assertMissing(final String msg, final TestMatrixArtifact matrix, final Map<String, TestSpecification> requiredTests) {
         assertErrorCreated(true, false, msg, matrix, requiredTests);
     }
+
     private void assertValid(final String msg, final TestMatrixArtifact matrix, final Map<String, TestSpecification> requiredTests) {
         assertErrorCreated(false, false, msg, matrix, requiredTests);
     }
+
     private void assertErrorCreated(final boolean hasMissing, final boolean hasInvalid, final String msg, final TestMatrixArtifact matrix, final Map<String, TestSpecification> requiredTests) {
         final ProctorLoadResult proctorLoadResult = verifyAndConsolidate(matrix, "[ testcase: " + msg + " ]", requiredTests, RuleEvaluator.FUNCTION_MAPPER);
 
@@ -1801,9 +1820,8 @@ public class TestProctorUtils {
         assertEquals(msg + " missing tests is not empty", hasMissing, !missingTests.isEmpty());
 
         final Set<String> testsWithErrors = proctorLoadResult.getTestsWithErrors();
-        assertEquals(msg+ " invalid tests is not empty", hasInvalid, !testsWithErrors.isEmpty());
+        assertEquals(msg + " invalid tests is not empty", hasInvalid, !testsWithErrors.isEmpty());
     }
-
 
     private TestMatrixArtifact constructArtifact(final Map<String, ConsumableTestDefinition> tests) {
         final TestMatrixArtifact matrix = new TestMatrixArtifact();
@@ -1842,11 +1860,12 @@ public class TestProctorUtils {
         allocations and bucket values than to use string JSON
      *  ********************************************************************* */
 
-    public static List<Allocation> fromCompactAllocationFormat(final String ... allocations) {
+    public static List<Allocation> fromCompactAllocationFormat(final String... allocations) {
         final List<String> allocationList = Lists.newArrayListWithExpectedSize(allocations.length);
         allocationList.addAll(Arrays.asList(allocations));
         return fromCompactAllocationFormat(allocationList);
     }
+
     private static List<Allocation> fromCompactAllocationFormat(final List<String> allocations) {
         final List<Allocation> allocationList = Lists.newArrayListWithExpectedSize(allocations.size());
         // rule|0:0,0:.0.1,0:.2
@@ -1873,7 +1892,7 @@ public class TestProctorUtils {
         return allocationList;
     }
 
-    public static List<TestBucket> fromCompactBucketFormat(final String sBuckets){
+    public static List<TestBucket> fromCompactBucketFormat(final String sBuckets) {
         final String[] bucketParts = sBuckets.split(",");
         final List<TestBucket> buckets = Lists.newArrayListWithCapacity(bucketParts.length);
         for (int i = 0; i < bucketParts.length; i++) {
@@ -1893,7 +1912,8 @@ public class TestProctorUtils {
         testSpec.setBuckets(buckets);
         return testSpec;
     }
-    private TestSpecification transformTestBuckets(final List<TestBucket> testBuckets, final String payloadType, final Map<String,String> schema, final String validator) {
+
+    private TestSpecification transformTestBuckets(final List<TestBucket> testBuckets, final String payloadType, final Map<String, String> schema, final String validator) {
         final TestSpecification testSpec = transformTestBuckets(testBuckets);
         final PayloadSpecification payloadSpec = new PayloadSpecification();
         payloadSpec.setType(payloadType);
@@ -1902,6 +1922,7 @@ public class TestProctorUtils {
         testSpec.setPayload(payloadSpec);
         return testSpec;
     }
+
     private TestSpecification transformTestBuckets(final List<TestBucket> testBuckets, final String payloadType, final String validator) {
         final TestSpecification testSpec = transformTestBuckets(testBuckets);
         final PayloadSpecification payloadSpec = new PayloadSpecification();
