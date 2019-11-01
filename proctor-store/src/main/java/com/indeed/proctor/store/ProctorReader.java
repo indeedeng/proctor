@@ -101,8 +101,10 @@ public interface ProctorReader {
      * Get all the revisions for all tests in history
      * Same revision may appear in two or more lists if multiple tests are modified in the revision.
      * @return a list of revisions grouped by a test. Each list is ordered by recency.
+     * @deprecated does not scale, avoid if possible, prefer getMatrixHistory and getRevisionDetails methods
      */
     @Nonnull
+    @Deprecated
     Map<String, List<Revision>> getAllHistories() throws StoreException;
 
     /**

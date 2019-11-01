@@ -10,13 +10,14 @@ import java.util.Objects;
 
 public class ProctorSpecification {
     @Nonnull
-    private Map<String, String> providedContext = Collections.emptyMap();
+    private Map<String, String> providedContext;
     @Nonnull
-    private Map<String, TestSpecification> tests = Collections.emptyMap();
+    private Map<String, TestSpecification> tests;
     @Nonnull
-    private DynamicFilters dynamicFilters = new DynamicFilters();
+    private DynamicFilters dynamicFilters;
 
     public ProctorSpecification() {
+        this(Collections.emptyMap(), Collections.emptyMap(), new DynamicFilters());
     }
 
     public ProctorSpecification(
@@ -30,9 +31,7 @@ public class ProctorSpecification {
     }
 
     public ProctorSpecification(@Nonnull final ProctorSpecification other) {
-        this.providedContext = new HashMap<>(other.providedContext);
-        this.tests = new HashMap<>(other.tests);
-        this.dynamicFilters = other.dynamicFilters;
+        this(other.providedContext, new HashMap<>(other.tests), other.dynamicFilters);
     }
 
     @Nonnull

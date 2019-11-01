@@ -103,10 +103,10 @@ public class Extractor {
      * @return A mapping of var name to string var value.
      */
     private <KeyType, VariableType extends PrefixVariable> Map<KeyType, String> extractAllVars(
-        final HttpServletRequest request,
-        final List<VariableType> varList,
-        final Function<? super VariableType, KeyType> mapKeyFn,
-        boolean isMissingError
+            final HttpServletRequest request,
+            final List<VariableType> varList,
+            final Function<? super VariableType, KeyType> mapKeyFn,
+            final boolean isMissingError
     ) {
         final Map<KeyType, String> ret = Maps.newHashMap();
 
