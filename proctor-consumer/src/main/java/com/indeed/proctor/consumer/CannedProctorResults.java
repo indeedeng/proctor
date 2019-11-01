@@ -51,10 +51,7 @@ public class CannedProctorResults {
             final String testName = result.testVal.getClass().getSimpleName().toLowerCase();
             final int testValue = result.testVal.getValue();
 
-            final TestBucket testBucket = new TestBucket(testName, testValue, testName);
-            if (result.payload != null) {
-                testBucket.setPayload(result.payload);
-            }
+            final TestBucket testBucket = new TestBucket(testName, testValue, testName, result.payload);
 
             Preconditions.checkState(!buckets.containsKey(testName), "Attempted to provide two values for dummy test bucket %s", testName);
             buckets.put(testName, testBucket);

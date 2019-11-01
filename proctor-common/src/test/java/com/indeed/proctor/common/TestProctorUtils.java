@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.indeed.proctor.common.ProctorUtils.convertContextToTestableMap;
 import static com.indeed.proctor.common.ProctorUtils.convertToConsumableTestDefinition;
@@ -866,13 +867,13 @@ public class TestProctorUtils {
             final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
             Payload p = new Payload();
             p.setLongValue(-1L);
-            buckets.get(0).setPayload(p);
+            setPayload(buckets, 0, p);
             p = new Payload();
             p.setLongValue(1L);
-            buckets.get(1).setPayload(p);
+            setPayload(buckets, 1, p);
             p = new Payload();
             p.setLongValue(1L);
-            buckets.get(2).setPayload(p);
+            setPayload(buckets, 2, p);
 
             final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets, "longValue", null));
             final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
@@ -888,11 +889,11 @@ public class TestProctorUtils {
             final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
             Payload p = new Payload();
             p.setLongValue(-1L);
-            buckets.get(0).setPayload(p);
+            setPayload(buckets, 0, p);
             // bucket 1 is missing a payload here.
             p = new Payload();
             p.setLongValue(1L);
-            buckets.get(2).setPayload(p);
+            setPayload(buckets, 2, p);
 
             final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets, "longValue", null));
             final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
@@ -908,13 +909,13 @@ public class TestProctorUtils {
             final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
             Payload p = new Payload();
             p.setStringValue("inact");
-            buckets.get(0).setPayload(p);
+            setPayload(buckets, 0, p);
             p = new Payload();
             p.setStringValue("foo");
-            buckets.get(1).setPayload(p);
+            setPayload(buckets, 1, p);
             p = new Payload();
             p.setStringValue("bar");
-            buckets.get(2).setPayload(p);
+            setPayload(buckets, 2, p);
 
             final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets, "longValue", null));
             final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
@@ -930,13 +931,13 @@ public class TestProctorUtils {
             final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
             Payload p = new Payload();
             p.setLongValue(-1L);
-            buckets.get(0).setPayload(p);
+            setPayload(buckets, 0, p);
             p = new Payload();
             p.setLongValue(0L);
-            buckets.get(1).setPayload(p);
+            setPayload(buckets, 1, p);
             p = new Payload();
             p.setStringValue("foo");
-            buckets.get(2).setPayload(p);
+            setPayload(buckets, 2, p);
 
             final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets, "longValue", null));
             final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
@@ -952,13 +953,13 @@ public class TestProctorUtils {
             final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
             Payload p = new Payload();
             p.setStringArray(new String[]{});  // empty arrays are allowed.
-            buckets.get(0).setPayload(p);
+            setPayload(buckets, 0, p);
             p = new Payload();
             p.setStringArray(new String[]{"foo", "bar"});
-            buckets.get(1).setPayload(p);
+            setPayload(buckets, 1, p);
             p = new Payload();
             p.setStringArray(new String[]{"baz", "quux", "xyzzy"});
-            buckets.get(2).setPayload(p);
+            setPayload(buckets, 2, p);
 
             final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets, "stringArray", null));
             final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
@@ -974,19 +975,19 @@ public class TestProctorUtils {
             final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
             Payload p = new Payload();
             p.setMap(ImmutableMap.of("val1", 1.0, "val2", "one", "val3", new ArrayList<String>()));
-            buckets.get(0).setPayload(p);
+            setPayload(buckets, 0, p);
             p = new Payload();
             p.setMap(ImmutableMap.of("val1", 2.0, "val2", "tw", "val3", new ArrayList<String>() {{
                 add("a");
                 add("c");
             }}));
-            buckets.get(1).setPayload(p);
+            setPayload(buckets, 1, p);
             p = new Payload();
             p.setMap(ImmutableMap.of("val1", 2.0, "val2", "th", "val3", new ArrayList<String>() {{
                 add("foo");
                 add("bar");
             }}));
-            buckets.get(2).setPayload(p);
+            setPayload(buckets, 2, p);
 
             final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets, "map",
                     ImmutableMap.of("val1", "doubleValue", "val2", "stringValue", "val3", "stringArray"), null));
@@ -1002,13 +1003,13 @@ public class TestProctorUtils {
             final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
             Payload p = new Payload();
             p.setMap(ImmutableMap.of("val1", 1.0, "val2", 3.0, "val3", 1.0));
-            buckets.get(0).setPayload(p);
+            setPayload(buckets, 0, p);
             p = new Payload();
             p.setMap(ImmutableMap.of("val1", 2.0, "val3", 1.0, "val4", 3.0));
-            buckets.get(1).setPayload(p);
+            setPayload(buckets, 1, p);
             p = new Payload();
             p.setMap(ImmutableMap.of("val1", 2.0, "val2", 2.0, "val3", 2.0));
-            buckets.get(2).setPayload(p);
+            setPayload(buckets, 2, p);
 
             final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets, "map",
                     ImmutableMap.of("val1", "doubleValue", "val2", "doubleValue", "val3", "doubleValue"), null));
@@ -1025,13 +1026,13 @@ public class TestProctorUtils {
             final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
             Payload p = new Payload();
             p.setMap(ImmutableMap.of("val1", 1.0, "val2", "yea1", "val3", 1.0));
-            buckets.get(0).setPayload(p);
+            setPayload(buckets, 0, p);
             p = new Payload();
             p.setMap(ImmutableMap.of("val1", 2.0, "val2", "yea2", "val3", 3.0));
-            buckets.get(1).setPayload(p);
+            setPayload(buckets, 1, p);
             p = new Payload();
             p.setMap(ImmutableMap.of("val1", 2.0, "val2", "yea3", "val3", 2.0));
-            buckets.get(2).setPayload(p);
+            setPayload(buckets, 2, p);
 
             final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets, "map",
                     ImmutableMap.of("val1", "doubleValue", "val2", "doubleValue", "val3", "doubleValue"), null));
@@ -1048,13 +1049,13 @@ public class TestProctorUtils {
             final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
             Payload p = new Payload();
             p.setMap(ImmutableMap.of("val1", 1.0, "val2", 3.0, "val3", 1.0));
-            buckets.get(0).setPayload(p);
+            setPayload(buckets, 0, p);
             p = new Payload();
             p.setMap(ImmutableMap.of("val1", 2.0, "val2", 1.0, "val3", 3.0));
-            buckets.get(1).setPayload(p);
+            setPayload(buckets, 1, p);
             p = new Payload();
             p.setMap(ImmutableMap.of("val1", 2.0, "val2", 2.0, "val3", 2.0));
-            buckets.get(2).setPayload(p);
+            setPayload(buckets, 2, p);
 
             final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets, "map",
                     ImmutableMap.of("val1", "doubleValue", "val2", "doubleValue", "val3", "doubleValue", "val4", "doubleArray"), null));
@@ -1071,15 +1072,15 @@ public class TestProctorUtils {
             final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
             Payload p = new Payload();
             p.setMap(ImmutableMap.of("val1", 1.0, "val2", 3.0, "val3", 1.0));
-            buckets.get(0).setPayload(p);
+            setPayload(buckets, 0, p);
             p = new Payload();
             p.setMap(ImmutableMap.of("val1", 2.0, "val2", new ArrayList<Double>() {{
                 add(1.0D);
             }}, "val3", 3.0));
-            buckets.get(1).setPayload(p);
+            setPayload(buckets, 1, p);
             p = new Payload();
             p.setMap(ImmutableMap.of("val1", 2.0, "val2", 2.0, "val3", 2.0));
-            buckets.get(2).setPayload(p);
+            setPayload(buckets, 2, p);
 
             final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets, "map",
                     ImmutableMap.of("val1", "doubleValue", "val2", "doubleValue", "val3", "doubleValue"), null));
@@ -1096,13 +1097,13 @@ public class TestProctorUtils {
             final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
             Payload p = new Payload();
             p.setMap(ImmutableMap.of("val1", 1.0, "val2", ImmutableMap.<String, Object>of("a", 1, "b", 2), "val3", 1.0));
-            buckets.get(0).setPayload(p);
+            setPayload(buckets, 0, p);
             p = new Payload();
             p.setMap(ImmutableMap.of("val1", 2.0, "val2", ImmutableMap.<String, Object>of("c", 3, "d", 4), "val3", 3.0));
-            buckets.get(1).setPayload(p);
+            setPayload(buckets, 1, p);
             p = new Payload();
             p.setMap(ImmutableMap.of("val1", 2.0, "val2", ImmutableMap.<String, Object>of("e", 5, "f", 6), "val3", 2.0));
-            buckets.get(2).setPayload(p);
+            setPayload(buckets, 2, p);
 
             final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets, "map",
                     ImmutableMap.of("val1", "doubleValue", "val2", "map", "val3", "doubleValue"), null));
@@ -1119,19 +1120,19 @@ public class TestProctorUtils {
             final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
             Payload p = new Payload();
             p.setMap(ImmutableMap.of("val1", 1.0, "val2", "one", "val3", new ArrayList<String>()));
-            buckets.get(0).setPayload(p);
+            setPayload(buckets, 0, p);
             p = new Payload();
             p.setMap(ImmutableMap.of("val1", 2.0, "val2", "tw", "val3", new ArrayList<String>() {{
                 add("a");
                 add("c");
             }}));
-            buckets.get(1).setPayload(p);
+            setPayload(buckets, 1, p);
             p = new Payload();
             p.setMap(ImmutableMap.of("val1", 2.0, "val2", "th", "val3", new ArrayList() {{
                 add(2.1D);
                 add("bar");
             }}));
-            buckets.get(2).setPayload(p);
+            setPayload(buckets, 2, p);
 
             final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets, "map",
                     ImmutableMap.of("val1", "doubleValue", "val2", "stringValue", "val3", "stringArray"), null));
@@ -1151,13 +1152,13 @@ public class TestProctorUtils {
             final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
             Payload p = new Payload();
             p.setDoubleValue(0D);
-            buckets.get(0).setPayload(p);
+            setPayload(buckets, 0, p);
             p = new Payload();
             p.setDoubleValue(10D);
-            buckets.get(1).setPayload(p);
+            setPayload(buckets, 1, p);
             p = new Payload();
             p.setDoubleValue(20D);
-            buckets.get(2).setPayload(p);
+            setPayload(buckets, 2, p);
 
             final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets, "doubleValue", "${value >= 0}"));
             final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
@@ -1173,13 +1174,13 @@ public class TestProctorUtils {
             final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
             Payload p = new Payload();
             p.setDoubleValue(0D);
-            buckets.get(0).setPayload(p);
+            setPayload(buckets, 0, p);
             p = new Payload();
             p.setDoubleValue(10D);
-            buckets.get(1).setPayload(p);
+            setPayload(buckets, 1, p);
             p = new Payload();
             p.setDoubleValue(-1D);
-            buckets.get(2).setPayload(p);
+            setPayload(buckets, 2, p);
 
             final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets, "doubleValue", "${value >= 0}"));
             final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
@@ -1195,13 +1196,13 @@ public class TestProctorUtils {
             final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
             Payload p = new Payload();
             p.setLongValue(0L);
-            buckets.get(0).setPayload(p);
+            setPayload(buckets, 0, p);
             p = new Payload();
             p.setLongValue(10L);
-            buckets.get(1).setPayload(p);
+            setPayload(buckets, 1, p);
             p = new Payload();
             p.setLongValue(20L);
-            buckets.get(2).setPayload(p);
+            setPayload(buckets, 2, p);
 
             final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets, "longValue", "${value >= 0}"));
             final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
@@ -1217,13 +1218,13 @@ public class TestProctorUtils {
             final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
             Payload p = new Payload();
             p.setLongValue(0L);
-            buckets.get(0).setPayload(p);
+            setPayload(buckets, 0, p);
             p = new Payload();
             p.setLongValue(10L);
-            buckets.get(1).setPayload(p);
+            setPayload(buckets, 1, p);
             p = new Payload();
             p.setLongValue(-1L);
-            buckets.get(2).setPayload(p);
+            setPayload(buckets, 2, p);
 
             final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets, "longValue", "${value >= 0}"));
             final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
@@ -1239,13 +1240,13 @@ public class TestProctorUtils {
             final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
             Payload p = new Payload();
             p.setStringValue("inactive");
-            buckets.get(0).setPayload(p);
+            setPayload(buckets, 0, p);
             p = new Payload();
             p.setStringValue("foo");
-            buckets.get(1).setPayload(p);
+            setPayload(buckets, 1, p);
             p = new Payload();
             p.setStringValue("bar");
-            buckets.get(2).setPayload(p);
+            setPayload(buckets, 2, p);
 
             final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets, "stringValue", "${value >= \"b\"}"));
             final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
@@ -1261,13 +1262,13 @@ public class TestProctorUtils {
             final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
             Payload p = new Payload();
             p.setStringValue("inactive");
-            buckets.get(0).setPayload(p);
+            setPayload(buckets, 0, p);
             p = new Payload();
             p.setStringValue("foo");
-            buckets.get(1).setPayload(p);
+            setPayload(buckets, 1, p);
             p = new Payload();
             p.setStringValue("abba");
-            buckets.get(2).setPayload(p);
+            setPayload(buckets, 2, p);
 
             final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets, "stringValue", "${value >= \"b\"}"));
             final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
@@ -1283,13 +1284,13 @@ public class TestProctorUtils {
             final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
             Payload p = new Payload();
             p.setMap(ImmutableMap.of("val1", 1.0, "val2", 3.0, "val3", 1.0));
-            buckets.get(0).setPayload(p);
+            setPayload(buckets, 0, p);
             p = new Payload();
             p.setMap(ImmutableMap.of("val1", 2.0, "val2", 4.0, "val3", 1.0));
-            buckets.get(1).setPayload(p);
+            setPayload(buckets, 1, p);
             p = new Payload();
             p.setMap(ImmutableMap.of("val1", 2.0, "val2", 2.0, "val3", 2.0));
-            buckets.get(2).setPayload(p);
+            setPayload(buckets, 2, p);
 
             final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets, "map", ImmutableMap.of("val1", "doubleValue", "val2", "doubleValue", "val3", "doubleValue"), "${val1 + val2 + val3 < 10}"));
             final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
@@ -1305,13 +1306,13 @@ public class TestProctorUtils {
             final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
             Payload p = new Payload();
             p.setMap(ImmutableMap.of("val1", 1.0, "val2", 3.0, "val3", 1.0));
-            buckets.get(0).setPayload(p);
+            setPayload(buckets, 0, p);
             p = new Payload();
             p.setMap(ImmutableMap.of("val1", 2.0, "val2", 4.0, "val3", 1.0));
-            buckets.get(1).setPayload(p);
+            setPayload(buckets, 1, p);
             p = new Payload();
             p.setMap(ImmutableMap.of("val1", 2.0, "val2", 6.0, "val3", 2.0));
-            buckets.get(2).setPayload(p);
+            setPayload(buckets, 2, p);
 
             final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets, "map", ImmutableMap.of("val1", "doubleValue", "val2", "doubleValue", "val3", "doubleValue"), "${val1 + val2 + val3 < 10}"));
             final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
@@ -1334,13 +1335,13 @@ public class TestProctorUtils {
             final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
             Payload p = new Payload();
             p.setLongValue(-1L);
-            buckets.get(0).setPayload(p);
+            setPayload(buckets, 0, p);
             p = new Payload();
             p.setLongValue(0L);
-            buckets.get(1).setPayload(p);
+            setPayload(buckets, 1, p);
             p = new Payload();
             p.setLongValue(1L);
-            buckets.get(2).setPayload(p);
+            setPayload(buckets, 2, p);
 
             final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets)); // no payload type specified
             final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
@@ -1368,13 +1369,14 @@ public class TestProctorUtils {
             final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
             Payload p = new Payload();
             p.setLongValue(-1L);
-            buckets.get(0).setPayload(p);
+            setPayload(buckets, 0, p);
+
             p = new Payload();
             p.setLongValue(0L);
-            buckets.get(1).setPayload(p);
+            setPayload(buckets, 1, p);
             p = new Payload();
             p.setStringValue("foo");
-            buckets.get(2).setPayload(p);
+            setPayload(buckets, 2, p);
 
             final Map<String, TestSpecification> requiredTests = ImmutableMap.of(TEST_A, transformTestBuckets(buckets)); // no payload type specified
             final Map<String, ConsumableTestDefinition> tests = Maps.newHashMap();
@@ -1557,18 +1559,19 @@ public class TestProctorUtils {
     @Test
     public void testGenerateSpecificationPayload() {
         final String description = "this test has a payload buckets";
-        final TestBucket inactiveBucket = new TestBucket("inactive", 0, "status quo");
+
         final Payload inactivePayload = new Payload();
         inactivePayload.setDoubleArray(new Double[]{1.4d, 4.5d});
-        inactiveBucket.setPayload(inactivePayload);
-        final TestBucket control = new TestBucket("control", 0, "control bucket");
+        final TestBucket inactiveBucket = new TestBucket("inactive", 0, "status quo", inactivePayload);
+
         final Payload controlPayload = new Payload();
         controlPayload.setDoubleArray(new Double[]{0.0, 2.4d});
-        control.setPayload(controlPayload);
-        final TestBucket test = new TestBucket("test", 1, "test bucket");
+        final TestBucket control = new TestBucket("control", 0, "control bucket", controlPayload);
+
         final Payload testPayload = new Payload();
         testPayload.setDoubleArray(new Double[]{22.22, 33.33});
-        test.setPayload(controlPayload);
+        final TestBucket test = new TestBucket("test", 1, "test bucket", testPayload);
+
         final TestDefinition empty = new TestDefinition(
                 "buckets",
                 "",
@@ -1600,14 +1603,13 @@ public class TestProctorUtils {
     @Test
     public void testGenerateSpecificationPayloadMapSchema() {
         final String description = "this test has a payload buckets";
-        final TestBucket bucket = new TestBucket("inactive", -3, "status quo");
         final Payload inactivePayload = new Payload();
         inactivePayload.setMap(ImmutableMap.of(
                 "da", new Double[]{1.4d, 4.5d},
                 "lv", 5L,
                 "sa", new String[]{"foo", "bar"}
         ));
-        bucket.setPayload(inactivePayload);
+        final TestBucket bucket = new TestBucket("inactive", -3, "status quo", inactivePayload);
         final TestDefinition empty = new TestDefinition(
                 "buckets",
                 "",
@@ -1743,22 +1745,40 @@ public class TestProctorUtils {
                 fromCompactAllocationFormat("1:1.0")
         );
 
-        for (final TestBucket bucket : definitionA.getBuckets()) {
-            final Payload payload = new Payload();
-            payload.setLongValue((long) bucket.getValue());
-            bucket.setPayload(payload);
-        }
+        definitionA.setBuckets(
+                definitionA.getBuckets()
+                        .stream()
+                        .map(bucket -> {
+                            final Payload payload = new Payload();
+                            payload.setLongValue((long) bucket.getValue());
+                            return TestBucket.builder()
+                                    .from(bucket)
+                                    .payload(payload)
+                                    .build();
+                        })
+                        .collect(Collectors.toList())
+
+        );
 
         final ConsumableTestDefinition definitionB = constructDefinition(
                 fromCompactBucketFormat("inactive:-1,control:0,test:1"),
                 fromCompactAllocationFormat("1:1.0")
         );
 
-        for (final TestBucket bucket : definitionB.getBuckets()) {
-            final Payload payload = new Payload();
-            payload.setLongValue((long) bucket.getValue());
-            bucket.setPayload(payload);
-        }
+        definitionB.setBuckets(
+                definitionB.getBuckets()
+                        .stream()
+                        .map(bucket -> {
+                            final Payload payload = new Payload();
+                            payload.setLongValue((long) bucket.getValue());
+                            return TestBucket.builder()
+                                    .from(bucket)
+                                    .payload(payload)
+                                    .build();
+                        })
+                        .collect(Collectors.toList())
+
+        );
 
         tests.put(TEST_A, definitionA);
         tests.put(TEST_B, definitionB);
@@ -1797,6 +1817,15 @@ public class TestProctorUtils {
                     bucket.getPayload().getLongValue()
             );
         }
+    }
+
+    private static void setPayload(final List<TestBucket> buckets, final int index, final Payload newPayload) {
+        buckets.set(index,
+                TestBucket.builder()
+                        .from(buckets.get(index))
+                        .payload(newPayload)
+                        .build()
+        );
     }
 
     /* Test Helper Methods Below */
