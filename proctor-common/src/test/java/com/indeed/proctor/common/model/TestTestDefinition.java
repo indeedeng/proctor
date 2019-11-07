@@ -222,7 +222,6 @@ public class TestTestDefinition {
                 input -> {
                     final Payload p2 = new Payload();
                     p2.setStringValue("1");
-                    p2.setDoubleValue(42.1);
                     input.getBuckets().set(0,
                             TestBucket.builder()
                                     .from(input.getBuckets().get(0))
