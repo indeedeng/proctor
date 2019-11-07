@@ -18,7 +18,6 @@ import java.util.Collections;
 
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -45,18 +44,21 @@ public class TestAbstractGroups {
     public void setUp() throws Exception {
         final ProctorResult proctorResult = new ProctorResult(
                 "0",
+                // buckets
                 ImmutableMap.of(
                         CONTROL_TESTNAME, new TestBucket("control", 0, "control", createStringPayload("controlPayload")),
                         ACTIVE_TESTNAME, new TestBucket("active", 1, "active", createStringPayload("activePayload")),
                         GROUP_WITH_FALLBACK_TESTNAME, new TestBucket("active", 2, "active"),
                         INACTIVE_TESTNAME, new TestBucket("inactive", -1, "inactive")
                 ),
+                // allocations
                 ImmutableMap.of(
                         CONTROL_TESTNAME, new Allocation(null, Arrays.asList(new Range(0, 1.0)), "#A1"),
                         ACTIVE_TESTNAME, new Allocation(null, Arrays.asList(new Range(1, 1.0)), "#B2"),
                         GROUP_WITH_FALLBACK_TESTNAME, new Allocation(null, Arrays.asList(new Range(2, 1.0)), "#B2"),
                         INACTIVE_TESTNAME, new Allocation(null, Arrays.asList(new Range(-1, 1.0)), "#C3")
                 ),
+                // definitions
                 ImmutableMap.of(
                         CONTROL_TESTNAME, stubDefinitionWithVersion("vControl"),
                         ACTIVE_TESTNAME, stubDefinitionWithVersion("vActive"),
@@ -81,13 +83,13 @@ public class TestAbstractGroups {
         groups = new TestGroups(proctorResult);
     }
 
-    private Payload createStringPayload(final String value) {
+    private static Payload createStringPayload(final String value) {
         final Payload payload = new Payload();
         payload.setStringValue(value);
         return payload;
     }
 
-    private ConsumableTestDefinition stubDefinitionWithVersion(final String version, TestBucket... buckets) {
+    private static ConsumableTestDefinition stubDefinitionWithVersion(final String version, final TestBucket... buckets) {
         final ConsumableTestDefinition testDefinition = new ConsumableTestDefinition();
         testDefinition.setVersion(version);
         testDefinition.setBuckets(Arrays.asList(buckets));
@@ -162,40 +164,30 @@ public class TestAbstractGroups {
 
     @Test
     public void testGetLoggingTestNames() {
-        assertEquals(
-                Sets.newHashSet(CONTROL_TESTNAME, ACTIVE_TESTNAME, GROUP_WITH_FALLBACK_TESTNAME),
-                Sets.newHashSet(groups.getLoggingTestNames())
-        );
+        assertThat(Sets.newHashSet(groups.getLoggingTestNames()))
+                .containsExactly(CONTROL_TESTNAME, ACTIVE_TESTNAME, GROUP_WITH_FALLBACK_TESTNAME);
     }
 
     @Test
     public void testAppendTestGroupsWithoutAllocations() {
         final StringBuilder builder = new StringBuilder();
         groups.appendTestGroupsWithoutAllocations(builder, ',', Lists.newArrayList(CONTROL_TESTNAME, ACTIVE_TESTNAME));
-        assertEquals(
-                Sets.newHashSet("bgtst0", "abtst1"),
-                Sets.newHashSet(builder.toString().split(","))
-        );
+        assertThat(builder.toString().split(",")).containsExactly("bgtst0", "abtst1");
     }
 
     @Test
     public void testAppendTestGroupsWithAllocations() {
         final StringBuilder builder = new StringBuilder();
         groups.appendTestGroupsWithAllocations(builder, ',', Lists.newArrayList(CONTROL_TESTNAME, ACTIVE_TESTNAME));
-        assertEquals(
-                Sets.newHashSet("#A1:bgtst0", "#B2:abtst1"),
-                Sets.newHashSet(builder.toString().split(","))
-        );
+        assertThat(builder.toString().split(",")).containsExactly("#A1:bgtst0", "#B2:abtst1");
     }
 
     @Test
     public void testAppendTestGroups() {
         final StringBuilder builder = new StringBuilder();
         groups.appendTestGroups(builder, ',');
-        assertEquals(
-                Sets.newHashSet("groupwithfallbacktst2", "bgtst0", "abtst1", "#A1:bgtst0", "#B2:abtst1", "#B2:groupwithfallbacktst2"),
-                Sets.newHashSet(builder.toString().split(","))
-        );
+        assertThat(builder.toString().split(","))
+                .containsExactly("groupwithfallbacktst2", "bgtst0", "abtst1", "#A1:bgtst0", "#B2:abtst1", "#B2:groupwithfallbacktst2");
     }
 
     @Test
@@ -242,7 +234,7 @@ public class TestAbstractGroups {
     }
 
 
-    private static Bucket createModelBucket(int value) {
+    private static Bucket createModelBucket(final int value) {
         return new Bucket() {
             @Override
             public Enum getTest() {

@@ -2,7 +2,6 @@ package com.indeed.proctor.consumer;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Maps;
 import com.indeed.proctor.common.ProctorResult;
 import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
@@ -21,7 +20,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Gives access to experiment groups of one request.
+ * Wraps a ProctorResult to provide some utility functions. The main purpose is to support proctor-codegen,
+ * but also provides String-building function to experiment eligibilities, and functions to help serialize
+ * data and use in generated with Javascript code.
  */
 public abstract class AbstractGroups {
     private final ProctorResult proctorResult;
@@ -37,19 +38,15 @@ public abstract class AbstractGroups {
      */
     protected AbstractGroups(final ProctorResult proctorResult) {
         this.proctorResult = proctorResult;
-        this.buckets = Maps.newLinkedHashMap();
-        for (final Entry<String, TestBucket> entry : proctorResult.getBuckets().entrySet()) {
-            final TestBucket testBucket = entry.getValue();
-            this.buckets.put(entry.getKey(), testBucket);
-        }
+        buckets = new LinkedHashMap<>(proctorResult.getBuckets());
     }
 
     /**
-     * @param testName test name
-     * @param value bucket value
-     * @return true if bucket is active
-     * @deprecated Use {@link #isBucketActive(String, int, int)} instead
+     * @return true if testname exists and resolved bucket has given value
+     * @deprecated Use/Override {@link #isBucketActive(String, int, int)} instead
      */
+    @Deprecated
+    // used from generated code
     protected boolean isBucketActive(final String testName, final int value) {
         return Optional.ofNullable(buckets.get(testName))
                 .filter(testBucket -> value == testBucket.getValue())
@@ -57,8 +54,9 @@ public abstract class AbstractGroups {
     }
 
     /**
-     * @return true if testname exists and resolved bucket has given value, else if value is defaultValue
+     * @return true if testname exists and resolved bucket has given value, else if value equals defaultValue
      */
+    // used from generated code
     protected boolean isBucketActive(final String testName, final int value, final int defaultValue) {
         final int bucketValueOrDefault = Optional.ofNullable(buckets.get(testName))
                 .map(TestBucket::getValue)
@@ -74,16 +72,21 @@ public abstract class AbstractGroups {
 
     /**
      * @return map testname, definition-version
+     * @deprecated don't use, use proctorResult
      */
-    public Map<String, String> getTestVersions() {
+    @Deprecated
+    public final Map<String, String> getTestVersions() {
         return proctorResult.getTestVersions();
     }
 
     /**
      * @return map testname, definition-version for given test names
+     * @deprecated don't use, use proctorResult
      */
-    public Map<String, String> getTestVersions(final Set<String> tests) {
-        final Map<String, String> selectedTestVersions = Maps.newLinkedHashMap();
+    @Deprecated
+    public final Map<String, String> getTestVersions(final Set<String> tests) {
+        // in case set is SortedSet, keep ordering by using LinkedHashMap
+        final LinkedHashMap<String, String> selectedTestVersions = new LinkedHashMap<>();
         final Map<String, ConsumableTestDefinition> testDefinitions = proctorResult.getTestDefinitions();
         for (final String testName : tests) {
             final ConsumableTestDefinition testDefinition = testDefinitions.get(testName);
@@ -105,6 +108,7 @@ public abstract class AbstractGroups {
      */
     @Deprecated
     @Nonnull
+    // used from generated code
     protected Payload getPayload(final String testName) {
         // Get the current bucket.
         return Optional.ofNullable(buckets.get(testName))
@@ -117,6 +121,7 @@ public abstract class AbstractGroups {
      * If matrix does not have such a testbucket, looks up different bucket in the testdefinition and return it's payload
      */
     @Nonnull
+    // used from generated code
     protected Payload getPayload(final String testName, @Nonnull final Bucket<?> fallbackBucket) {
 
         final Optional<TestBucket> testBucket = Optional.ofNullable(buckets.get(testName));
@@ -159,11 +164,11 @@ public abstract class AbstractGroups {
      * @return a comma-separated String of {testname}-{active-bucket-name} for ALL tests
      */
     public String toLongString() {
-        if (proctorResult.getBuckets().isEmpty()) {
+        if (buckets.isEmpty()) {
             return "";
         }
-        final StringBuilder sb = new StringBuilder(proctorResult.getBuckets().size() * 10);
-        for (final Entry<String, TestBucket> entry : proctorResult.getBuckets().entrySet()) {
+        final StringBuilder sb = new StringBuilder(buckets.size() * 10);
+        for (final Entry<String, TestBucket> entry : buckets.entrySet()) {
             final String testName = entry.getKey();
             final TestBucket testBucket = entry.getValue();
             sb.append(testName).append('-').append(testBucket.getName()).append(',');
@@ -184,14 +189,19 @@ public abstract class AbstractGroups {
     }
 
     /**
-     * For historic reasons, contains two output formats per testname.
+     * String to be logged for experiment analysis.
+     * For historic reasons inside Indeed, contains two output formats per testname.
+     *
+     * Additional custom groups can be added by overriding getCustomGroupsForLogging().
+     *
      * @return a comma-separated List of {testname}{active-bucket-VALUE} and {AllocationId}{testname}{active-bucket-VALUE} for all ACTIVE tests
      */
     public String toLoggingString() {
         if (isEmpty()) {
             return "";
         }
-        final StringBuilder sb = buildTestGroupString();
+        final StringBuilder sb = new StringBuilder(proctorResult.getBuckets().size() * 10);
+        appendTestGroups(sb);
         // remove trailing comma
         if (sb.length() > 0) {
             sb.deleteCharAt(sb.length() - 1);
@@ -201,18 +211,13 @@ public abstract class AbstractGroups {
 
     /**
      * @return an empty string or a comma-separated, comma-finalized list of groups
+     * @deprecated use toLoggingString()
      */
-    public StringBuilder buildTestGroupString() {
+    @Deprecated
+    public final StringBuilder buildTestGroupString() {
         final StringBuilder sb = new StringBuilder(proctorResult.getBuckets().size() * 10);
         appendTestGroups(sb);
         return sb;
-    }
-
-    /**
-     * @return an empty string or a comma-separated, comma-finalized list of groups
-     */
-    public void appendTestGroups(final StringBuilder sb) {
-        appendTestGroups(sb, ',');
     }
 
     /**
@@ -222,30 +227,40 @@ public abstract class AbstractGroups {
      * @return true if empty
      */
     protected boolean isEmpty() {
-        return proctorResult.getBuckets().isEmpty();
+        return buckets.isEmpty();
     }
 
     /**
-     * Appends each test group in two forms to the StringBuilder using the separator to delimit them.
+     * appends an empty string or a comma-separated, comma-finalized list of groups
+     */
+    public void appendTestGroups(final StringBuilder sb) {
+        appendTestGroups(sb, ',');
+    }
+
+    /**
+     * For each testname returned by getLoggingTestNames(),
+     * appends each test group in two forms to the StringBuilder using the separator to delimit them.
      * The two forms are [test name + bucket value] and [allocation id + ":" + test name + bucket value].
      * For example, it appends "bgcolortst1,#A1:bgcolortst1" if test name is bgcolortst and allocation id is #A1 and separator is ",".
-     * If a test is silent or its bucket value is negative, it is skipped to append.
-     * the separator should be appended for each test group added to the string builder
+     *
+     * the separator should be appended after each test group added to the string builder
      * {@link #toString()}
      * {@link #buildTestGroupString()} or {@link #appendTestGroups(StringBuilder)}
      *
      * @param sb        a string builder
-     * @param separator a char used as separator
-     * @return an empty string or a comma-separated, comma-finalized list of groups
+     * @param separator a char used as separator x
+     * appends an empty string or a x-separated, x-finalized list of groups
      */
     public void appendTestGroups(final StringBuilder sb, final char separator) {
         final List<String> testNames = getLoggingTestNames();
+        // log all tests without allocations first, in case logging string gets cut off
         appendTestGroupsWithoutAllocations(sb, separator, testNames);
         appendTestGroupsWithAllocations(sb, separator, testNames);
     }
 
     /**
-     * Returns test names to format test groups of them for logging purpose.
+     * Return test names for tests that are non-silent and have a non-negative active bucket, in a stable sort
+     * Stable sort is beneficial for log string compression, for debugging, and may help in cases of size-limited output.
      */
     protected final List<String> getLoggingTestNames() {
         final Map<String, ConsumableTestDefinition> testDefinitions = proctorResult.getTestDefinitions();
@@ -267,7 +282,7 @@ public abstract class AbstractGroups {
      */
     protected final void appendTestGroupsWithoutAllocations(final StringBuilder sb, final char separator, final List<String> testNames) {
         for (final String testName : testNames) {
-            final TestBucket testBucket = proctorResult.getBuckets().get(testName);
+            final TestBucket testBucket = buckets.get(testName);
             if (testBucket != null) {
                 sb.append(testName).append(testBucket.getValue()).append(separator);
             }
@@ -279,7 +294,7 @@ public abstract class AbstractGroups {
      */
     protected final void appendTestGroupsWithAllocations(final StringBuilder sb, final char separator, final List<String> testNames) {
         for (final String testName : testNames) {
-            final TestBucket testBucket = proctorResult.getBuckets().get(testName);
+            final TestBucket testBucket = buckets.get(testName);
             final Allocation allocation = proctorResult.getAllocations().get(testName);
             if ((testBucket != null) && (allocation != null) && !Strings.isNullOrEmpty(allocation.getId())) {
                 sb.append(allocation.getId())
@@ -290,22 +305,26 @@ public abstract class AbstractGroups {
     }
 
     /**
-     * Generates a Map that be serialized to JSON and used with
+     * Generates a Map[testname, bucketValue] for bucketValues >= 0.
+     *
+     * The purpose is to conveniently support serializing this map to JSON and used with
      * indeed.proctor.groups.init and
      * indeed.proctor.groups.inGroup(tstName, bucketValue)
+     * from common/indeedjs library
      *
      * @return a {@link Map} of config JSON
      */
     public Map<String, Integer> getJavaScriptConfig() {
         // For now this is a simple mapping from {testName to bucketValue}
-        return proctorResult.getBuckets().entrySet().stream()
+        return buckets.entrySet().stream()
                 // mirrors appendTestGroups method by skipping *inactive* tests
                 .filter(e -> e.getValue().getValue() >= 0)
                 .collect(Collectors.toMap(Entry::getKey, e -> e.getValue().getValue()));
     }
 
     /**
-     * Generates a list of [bucketValue, payloadValue]'s for each test defined in the client app's proctor spec.
+     * Generates a list of [bucketValue, payloadValue]'s for each test in the input array
+     * The purpose is to provide payloads in the order of tests defined in the client app's proctor spec.
      *
      * To be used with generated javascript files from 'ant generate-proctor-js' by serializing the list
      * to a string and passing it to {packageName}.init();
@@ -322,6 +341,11 @@ public abstract class AbstractGroups {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Since apps might pass around AbstractGroups, but some code might want to access
+     * ProctorResult directly, return wrapped instance for convenience.
+     * @return wrapped data.
+     */
     public ProctorResult getProctorResult() {
         return proctorResult;
     }
