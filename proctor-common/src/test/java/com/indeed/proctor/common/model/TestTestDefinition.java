@@ -76,7 +76,7 @@ public class TestTestDefinition {
 
     private static List<TestBucket> sampleStringArrayBuckets() {
         final Payload p1 = new Payload();
-        p1.setStringArray(new String[] {"foo", "bar"});
+        p1.setStringArray(new String[]{"foo", "bar"});
         return Lists.newArrayList(
                 new TestBucket(
                         "inactive",
@@ -86,7 +86,6 @@ public class TestTestDefinition {
                 )
         );
     }
-
 
     @Test
     public void testEqualityWithAlmostEmptyTestDefinition() {
@@ -174,31 +173,62 @@ public class TestTestDefinition {
                     return input;
                 },
                 input -> {
-                    input.getBuckets().get(0).setName("new bucket name");
+                    input.getBuckets().set(0,
+                            TestBucket.builder()
+                                    .from(input.getBuckets().get(0))
+                                    .name("new bucket name")
+                                    .build()
+                    );
                     return input;
                 },
                 input -> {
-                    input.getBuckets().get(0).setDescription("new bucket description");
+                    input.getBuckets().set(0,
+                            TestBucket.builder()
+                                    .from(input.getBuckets().get(0))
+                                    .description("new bucket description")
+                                    .build()
+                    );
                     return input;
                 },
                 input -> {
-                    input.getBuckets().get(0).setValue(42);
+                    input.getBuckets().set(0,
+                            TestBucket.builder()
+                                    .from(input.getBuckets().get(0))
+                                    .value(42)
+                                    .build()
+                    );
                     return input;
                 },
                 input -> {
-                    input.getBuckets().get(0).setPayload(Payload.EMPTY_PAYLOAD);
+                    input.getBuckets().set(0,
+                            TestBucket.builder()
+                                    .from(input.getBuckets().get(0))
+                                    .payload(Payload.EMPTY_PAYLOAD)
+                                    .build()
+                    );
                     return input;
                 },
                 input -> {
                     final Payload p2 = new Payload();
                     p2.setDoubleValue(42.1);
-                    input.getBuckets().get(0).setPayload(p2);
+                    input.getBuckets().set(0,
+                            TestBucket.builder()
+                                    .from(input.getBuckets().get(0))
+                                    .payload(p2)
+                                    .build()
+                    );
                     return input;
                 },
                 input -> {
                     final Payload p2 = new Payload();
                     p2.setStringValue("1");
-                    input.getBuckets().get(0).setPayload(p2);
+                    p2.setDoubleValue(42.1);
+                    input.getBuckets().set(0,
+                            TestBucket.builder()
+                                    .from(input.getBuckets().get(0))
+                                    .payload(p2)
+                                    .build()
+                    );
                     return input;
                 },
                 input -> {
@@ -228,7 +258,12 @@ public class TestTestDefinition {
         final TestDefinition otherTest = sample();
         final TestDefinition sampleTest = sample();
         assertEquals(sampleTest.hashCode(), otherTest.hashCode());
-        otherTest.getBuckets().get(0).setDescription("changed");
+        otherTest.getBuckets().set(0,
+                TestBucket.builder()
+                        .from(otherTest.getBuckets().get(0))
+                        .description("changed")
+                        .build()
+        );
         assertNotEquals(sampleTest.hashCode(), otherTest.hashCode());
     }
 

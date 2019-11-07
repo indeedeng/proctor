@@ -54,6 +54,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.joining;
 
@@ -493,12 +494,12 @@ public abstract class ProctorUtils {
     /**
      * Verifies that a single dynamic test is valid against {@link FunctionMapper} and {@link ProvidedContext}.
      *
-     * @param testName          the name of the test
-     * @param testDefinition    {@link ConsumableTestDefinition} of the test
-     * @param matrixSource      a {@link String} of the source of proctor artifact. For example a path of proctor artifact file.
-     * @param functionMapper    a given el {@link FunctionMapper}
-     * @param providedContext   a {@link Map} containing variables describing the context in which the request is executing.
-     *                          These will be supplied to verifying all rules.
+     * @param testName        the name of the test
+     * @param testDefinition  {@link ConsumableTestDefinition} of the test
+     * @param matrixSource    a {@link String} of the source of proctor artifact. For example a path of proctor artifact file.
+     * @param functionMapper  a given el {@link FunctionMapper}
+     * @param providedContext a {@link Map} containing variables describing the context in which the request is executing.
+     *                        These will be supplied to verifying all rules.
      * @throws IncompatibleTestMatrixException if validation is failed.
      */
     private static void verifyDynamicTest(
@@ -728,13 +729,23 @@ public abstract class ProctorUtils {
             final boolean noPayloads = (testSpec.getPayload() == null);
             final Set<Integer> bucketValues = Sets.newHashSet();
             List<TestBucket> buckets = testDefinition.getBuckets();
+
             for (final TestBucket bucket : buckets) {
                 // Note bucket values that exist in matrix.
                 bucketValues.add(bucket.getValue());
-                if (noPayloads && (bucket.getPayload() != null)) {
-                    // stomp the unexpected payloads.
-                    bucket.setPayload(null);
-                }
+            }
+
+            if (noPayloads) {
+                testDefinition.setBuckets(
+                        buckets.stream()
+                                .map(bucket ->
+                                        TestBucket.builder()
+                                                .from(bucket)
+                                                .payload(null) // stomp the unexpected payload if exists.
+                                                .build()
+                                )
+                                .collect(Collectors.toList())
+                );
             }
 
             boolean replaceBuckets = false;
