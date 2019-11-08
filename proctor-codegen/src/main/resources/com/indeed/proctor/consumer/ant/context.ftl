@@ -11,6 +11,7 @@ import com.google.common.base.Defaults;
 import com.indeed.proctor.common.Identifiers;
 import com.indeed.proctor.common.ProctorResult;
 
+import javax.annotation.Generated;
 import javax.annotation.Nonnull;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -19,6 +20,7 @@ import java.util.Map;
 /*
  * GENERATED source; do not edit directly
  */
+@Generated("com.indeed.proctor.consumer.gen.TestGroupsGenerator")
 public class ${mainClassName} {
 <#list contextArguments?keys as contextArgumentName>
     private final ${contextArguments[contextArgumentName]?replace('$', '.')} ${contextArgumentName};

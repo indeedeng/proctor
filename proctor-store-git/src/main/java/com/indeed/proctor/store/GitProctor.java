@@ -6,22 +6,19 @@ import org.apache.log4j.Logger;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.LogCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.diff.DiffFormatter;
-import org.eclipse.jgit.diff.RawTextComparator;
 import org.eclipse.jgit.errors.MissingObjectException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
-import org.eclipse.jgit.revwalk.RevWalk;
-import org.eclipse.jgit.util.io.DisabledOutputStream;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -143,6 +140,12 @@ public class GitProctor extends FileBasedProctorStore {
         } catch (final IOException e) {
             throw new StoreException("Could not get history for starting at " + getGitCore().getRefName(), e);
         }
+    }
+
+    @Nonnull
+    @Override
+    public List<Revision> getMatrixHistory(final Instant sinceInclusive, final Instant untilExclusive) throws StoreException {
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     @Nonnull

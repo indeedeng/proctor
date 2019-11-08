@@ -5,7 +5,7 @@ import com.indeed.proctor.common.model.TestMatrixVersion;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 
@@ -64,16 +64,25 @@ public interface ProctorReader {
 
     /**
      * @param start offset of the first revision (0-indexed)
-     * @param limit limit of the number of revisions
+     * @param limit limit of the number of revisions, -1 might be usable for unlimited (depending on implementation)
      * @return a list of revisions for all tests ordered by recency.
      */
     @Nonnull
     List<Revision> getMatrixHistory(int start, int limit) throws StoreException;
 
     /**
+     * @param sinceInclusive earliest date
+     * @param untilExclusive latest date
+     * @return a list of revisions for a test when test revision was made ordered by recency.
+     * @throws StoreException if the revision is not found, or date range is bigger than the implementation allows
+     */
+    @Nonnull
+    List<Revision> getMatrixHistory(Instant sinceInclusive, Instant untilExclusive) throws StoreException;
+
+    /**
      * @param testName name of the test
      * @param start offset of the first revision (0-indexed)
-     * @param limit limit of the number of revisions
+     * @param limit limit of the number of revisions, -1 might be usable for unlimited (depending on implementation)
      * @return a list of revisions for a test ordered by recency.
      */
     @Nonnull
@@ -82,7 +91,7 @@ public interface ProctorReader {
     /**
      * @param testName name of the test
      * @param start offset of the first revision (0-indexed)
-     * @param limit limit of the number of revisions
+     * @param limit limit of the number of revisions, -1 might be usable for unlimited (depending on implementation)
      * @return a list of revisions for a test when test revision was made ordered by recency.
      * @throws StoreException if the revision is not found.
      */
@@ -101,8 +110,10 @@ public interface ProctorReader {
      * Get all the revisions for all tests in history
      * Same revision may appear in two or more lists if multiple tests are modified in the revision.
      * @return a list of revisions grouped by a test. Each list is ordered by recency.
+     * @deprecated does not scale, avoid if possible, prefer getMatrixHistory and getRevisionDetails methods
      */
     @Nonnull
+    @Deprecated
     Map<String, List<Revision>> getAllHistories() throws StoreException;
 
     /**

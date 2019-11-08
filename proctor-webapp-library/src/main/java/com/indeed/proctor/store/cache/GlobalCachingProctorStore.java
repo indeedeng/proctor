@@ -16,6 +16,7 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -127,6 +128,12 @@ public class GlobalCachingProctorStore implements ProctorStore {
     @Override
     public List<Revision> getMatrixHistory(final int start, final int limit) throws StoreException {
         return delegate.getMatrixHistory(start, limit);
+    }
+
+    @Nonnull
+    @Override
+    public List<Revision> getMatrixHistory(final Instant sinceInclusive, final Instant untilExclusive) throws StoreException {
+        return delegate.getMatrixHistory(sinceInclusive, untilExclusive);
     }
 
     @Nonnull

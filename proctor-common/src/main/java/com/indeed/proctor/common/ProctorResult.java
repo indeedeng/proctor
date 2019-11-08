@@ -5,13 +5,14 @@ import com.indeed.proctor.common.model.Audit;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.TestBucket;
 
-import java.util.Collections;
+import javax.annotation.Nonnull;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 
-import com.google.common.collect.Maps;
-
-import javax.annotation.Nonnull;
+import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
+import static java.util.Collections.emptyMap;
 
 /**
  * Return value from {@link Proctor#determineTestGroups(Identifiers, java.util.Map, java.util.Map)}
@@ -21,9 +22,9 @@ import javax.annotation.Nonnull;
 public class ProctorResult {
     public static final ProctorResult EMPTY = new ProctorResult(
             Audit.EMPTY_VERSION,
-            Collections.emptyMap(),
-            Collections.emptyMap(),
-            Collections.emptyMap()
+            emptyMap(),
+            emptyMap(),
+            emptyMap()
     );
 
     private final String matrixVersion;
@@ -49,7 +50,7 @@ public class ProctorResult {
             @Nonnull final Map<String, TestBucket> buckets,
             @Nonnull final Map<String, ConsumableTestDefinition> testDefinitions
     ) {
-        this(new Integer(matrixVersion).toString(), buckets, Collections.<String, Allocation>emptyMap(), testDefinitions);
+        this(Integer.toString(matrixVersion), buckets, emptyMap(), testDefinitions);
     }
 
     @Deprecated
@@ -58,7 +59,7 @@ public class ProctorResult {
             @Nonnull final Map<String, TestBucket> buckets,
             @Nonnull final Map<String, ConsumableTestDefinition> testDefinitions
     ) {
-        this(matrixVersion, buckets, Collections.<String, Allocation>emptyMap(), testDefinitions);
+        this(matrixVersion, buckets, emptyMap(), testDefinitions);
     }
 
     public ProctorResult(
@@ -68,11 +69,9 @@ public class ProctorResult {
             @Nonnull final Map<String, ConsumableTestDefinition> testDefinitions
     ) {
         this.matrixVersion = matrixVersion;
-        this.buckets = Maps.newTreeMap();
-        this.buckets.putAll(buckets);
-        this.allocations = Maps.newTreeMap();
-        this.allocations.putAll(allocations);
-        this.testDefinitions = testDefinitions;
+        this.buckets = new TreeMap<>(buckets);
+        this.allocations = new TreeMap<>(allocations);
+        this.testDefinitions = new HashMap<>(testDefinitions);
     }
 
     @SuppressWarnings("UnusedDeclaration")
@@ -98,7 +97,7 @@ public class ProctorResult {
     @Nonnull
     public Map<String, String> getTestVersions() {
         // TODO ImmutableMap?
-        final Map<String, String> testVersions = Maps.newHashMap();
+        final Map<String, String> testVersions = newHashMapWithExpectedSize(testDefinitions.size());
         for (final Entry<String, ConsumableTestDefinition> entry : testDefinitions.entrySet()) {
             testVersions.put(entry.getKey(), entry.getValue().getVersion());
         }

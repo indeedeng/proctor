@@ -69,10 +69,6 @@ public abstract class AbstractGroupsManager implements ProctorContextDescriptor 
         final Proctor proctor = proctorSource.get();
         if (proctor == null) {
             final Map<String, TestBucket> buckets = getDefaultBucketValues();
-            final Map<String, Integer> versions = Maps.newHashMap();
-            for (final String testName : buckets.keySet()) {
-                versions.put(testName, Integer.valueOf(-1));
-            }
             return new ProctorResult(Audit.EMPTY_VERSION,
                     buckets,
                     emptyMap(),

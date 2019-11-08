@@ -17,6 +17,7 @@ import com.indeed.proctor.store.cache.CachingProctorStore;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -231,6 +232,22 @@ public class InMemoryProctorStore implements ProctorStore {
     public List<Revision> getMatrixHistory(final int start, final int limit) throws StoreException {
         return synchronizedRead(() -> {
             final List<RevisionAndTest> result = CachingProctorStore.selectHistorySet(revisionStorage, start, limit);
+            return castToRevisionList(result);
+        });
+    }
+
+    @Nonnull
+    @Override
+    public List<Revision> getMatrixHistory(final Instant sinceInclusive, final Instant untilExclusive) throws StoreException {
+        return synchronizedRead(() -> {
+            final List<RevisionAndTest> result = revisionStorage
+                    .stream()
+                    .filter(r -> {
+                        final Instant rDate = r.getDate().toInstant();
+                        return ((rDate.isAfter(sinceInclusive)) || rDate.equals(sinceInclusive))
+                                && (rDate.isBefore(untilExclusive));
+                    })
+                    .collect(Collectors.toList());
             return castToRevisionList(result);
         });
     }

@@ -22,9 +22,9 @@ import java.util.Map;
 public abstract class FileBasedProctorStore implements ProctorStore {
     private static final Logger LOGGER = Logger.getLogger(FileBasedProctorStore.class);
     private static final String SUFFIX = ".json";
+    private static final ObjectMapper OBJECT_MAPPER = Serializers.lenient();
     static final String TEST_METADATA_FILENAME = "metadata" + SUFFIX;
     static final String TEST_DEFINITION_FILENAME = "definition" + SUFFIX;
-    final ObjectMapper objectMapper = Serializers.lenient();
 
     public static final String DEFAULT_TEST_DEFINITIONS_DIRECTORY = "test-definitions";
     private final String testDefinitionsDirectory;
@@ -43,10 +43,10 @@ public abstract class FileBasedProctorStore implements ProctorStore {
     /**
      * @return true if the file has changed
      */
-    protected static <T> boolean writeIfChanged(final ObjectMapper mapper, final File f, final T newThing) throws StoreException.TestUpdateException {
+    protected static <T> boolean writeIfChanged(final File f, final T newThing) throws StoreException.TestUpdateException {
         if (f.exists()) {
             try {
-                final T currentThing = (T) mapper.readValue(f, newThing.getClass());
+                final T currentThing = (T) OBJECT_MAPPER.readValue(f, (Class<T>) newThing.getClass());
                 if (currentThing.equals(newThing)) {
                     return false;
                 }
@@ -54,13 +54,13 @@ public abstract class FileBasedProctorStore implements ProctorStore {
                 throw new StoreException.TestUpdateException("Unable to parse instance of " + newThing.getClass().getCanonicalName() + " from " + f, e);
             }
         }
-        FileBasedProctorStore.writeThing(mapper, f, newThing);
+        FileBasedProctorStore.writeThing(f, newThing);
         return true;
     }
 
-    protected static <T> void writeThing(final ObjectMapper mapper, final File f, final T newThing) throws StoreException.TestUpdateException {
+    protected static <T> void writeThing(final File f, final T newThing) throws StoreException.TestUpdateException {
         try {
-            mapper.writerWithDefaultPrettyPrinter().writeValue(f, newThing);
+            OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValue(f, newThing);
         } catch (final IOException e) {
             throw new StoreException.TestUpdateException("Unable to write instance of " + newThing.getClass().getCanonicalName() + " to " + f, e);
         }
@@ -151,8 +151,6 @@ public abstract class FileBasedProctorStore implements ProctorStore {
             return getFileContents(TestDefinition.class, new String[] { getTestDefinitionsDirectory(), testName, TEST_DEFINITION_FILENAME }, null, fetchRevision);
         } catch (final JsonProcessingException e) {
             throw new StoreException(String.format("Unable to deserialize JSON for %s r%s", testName, fetchRevision), e);
-        } catch (final StoreException.ReadException e) {
-            throw e;
         }
     }
 
@@ -175,7 +173,7 @@ public abstract class FileBasedProctorStore implements ProctorStore {
 
     protected final <T> boolean updateThing(final FileBasedProctorStore.RcsClient rcsClient, final File file, final T thing) throws Exception {
         final boolean thingExisted = file.exists();
-        final boolean thingChanged = FileBasedProctorStore.writeIfChanged(objectMapper, file, thing);
+        final boolean thingChanged = FileBasedProctorStore.writeIfChanged(file, thing);
         if (!thingExisted || rcsClient.getRevisionControlType().equals("git")) {
             rcsClient.add(file);
         }
@@ -235,10 +233,10 @@ public abstract class FileBasedProctorStore implements ProctorStore {
 
                 testDefinitionDirectory.mkdirs();
 
-                writeThing(objectMapper, testDefinitionFile, testDefinition);
+                writeThing(testDefinitionFile, testDefinition);
                 rcsClient.add(testDefinitionFile);
 
-                writeThing(objectMapper, metaDataFile, metadata);
+                writeThing(metaDataFile, metadata);
                 rcsClient.add(metaDataFile);
 
                 return true;

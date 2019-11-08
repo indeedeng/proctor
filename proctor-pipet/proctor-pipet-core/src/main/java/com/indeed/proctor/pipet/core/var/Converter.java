@@ -37,7 +37,7 @@ public class Converter {
     private Map<String, Object> convertContext(final Map<String, String> contextValues) {
         final Map<String, Object> converted = Maps.newHashMap();
 
-        for (ContextVariable context : contextList) {
+        for (final ContextVariable context : contextList) {
             final String varName = context.getVarName();
             final String rawValue = contextValues.get(varName);
 

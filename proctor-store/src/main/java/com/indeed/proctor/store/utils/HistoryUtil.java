@@ -7,6 +7,9 @@ import java.util.Collections;
 import java.util.List;
 
 public class HistoryUtil {
+    /**
+     * @return sublist avoiding any overflow from bad parameters
+     */
     public static <T> List<T> selectHistorySet(
             @Nullable final List<T> history,
             final int start,
@@ -20,6 +23,9 @@ public class HistoryUtil {
         return history.subList(s, s + l);
     }
 
+    /**
+     * @return sublist starting at from avoiding any overflow from bad parameters
+     */
     public static List<Revision> selectRevisionHistorySetFrom(
             @Nullable final List<Revision> history,
             final String from,

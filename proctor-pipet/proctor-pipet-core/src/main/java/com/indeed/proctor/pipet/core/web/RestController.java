@@ -36,6 +36,12 @@ import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.Map;
 
+/**
+ * pipet endpoints to
+ * - resolve groups for given identifiers and context variables
+ * - get the latest test matrix provided by the given loader
+ * - get config and metadata.
+ */
 @Controller
 public class RestController {
     private final AbstractProctorLoader loader;
@@ -57,6 +63,18 @@ public class RestController {
         this.loader = loader;
     }
 
+    /**
+     * main pipet endpoint identifying groups for one or more tests.
+     * Client needs to provide identifiers, context, testnames, and forceGroupss.
+     * Depending on configuration, value could be header-parameters, query parameters or a combination.
+     *
+     * Example using query parameters:
+     * /groups/identify
+     *     ?ctx.country=US&ctx.ua=1       // context to resolve rules
+     *     &id.tk=pa5xq0lz4n82            // ids to determine groups
+     *     &test=foo_test,bar_test        // tests for which to determine groups
+     *     &prforceGroups=foo_tst2        // forced groups
+     */
     @RequestMapping(value="/groups/identify", method=RequestMethod.GET)
     public JsonResponseView groupsIdentify(final HttpServletRequest request, final Model model) {
         final Proctor proctor = tryLoadProctor();
@@ -69,7 +87,7 @@ public class RestController {
             // Get all existing tests.
             // This can log many errors if not all context variables in the test matrix were provided.
             result = proctor.determineTestGroups(
-                    param.getIdentifiers(), param.getContext(), param.getForceGroups(), Collections.<String>emptyList());
+                    param.getIdentifiers(), param.getContext(), param.getForceGroups(), Collections.emptyList());
         } else if (param.getTest() == null || param.getTest().isEmpty()) {
             // Get zero tests.
             result = ProctorResult.EMPTY;
@@ -81,7 +99,7 @@ public class RestController {
 
         final JsonResult jsonResult = new JsonResult(
                 result, param.getContext(), loader.getLastAudit());
-        model.addAttribute(new JsonResponse<JsonResult>(jsonResult, new JsonMeta(HttpStatus.OK.value())));
+        model.addAttribute(new JsonResponse<>(jsonResult, new JsonMeta(HttpStatus.OK.value())));
         return new JsonResponseView();
     }
 
@@ -101,7 +119,7 @@ public class RestController {
      */
     @RequestMapping(value="/proctor/matrix/audit", method=RequestMethod.GET)
     public JsonResponseView proctorMatrixAudit(final Model model) {
-        model.addAttribute(new JsonResponse<Audit>(loader.getLastAudit(), new JsonMeta(HttpStatus.OK.value())));
+        model.addAttribute(new JsonResponse<>(loader.getLastAudit(), new JsonMeta(HttpStatus.OK.value())));
         return new JsonResponseView();
     }
 
@@ -120,7 +138,7 @@ public class RestController {
             throw new NotFoundException(String.format("'%s' test definition not found in test matrix.", testName));
         }
 
-        model.addAttribute(new JsonResponse<ConsumableTestDefinition>(testDef, new JsonMeta(HttpStatus.OK.value())));
+        model.addAttribute(new JsonResponse<>(testDef, new JsonMeta(HttpStatus.OK.value())));
         return new JsonResponseView();
     }
 
@@ -129,7 +147,7 @@ public class RestController {
      */
     @RequestMapping(value="/config/context")
     public JsonResponseView configContext(final Model model) {
-        model.addAttribute(new JsonResponse<Map<String, JsonContextVarConfig>>(
+        model.addAttribute(new JsonResponse<>(
                 jsonPipetConfig.getContext(), new JsonMeta(HttpStatus.OK.value())));
         return new JsonResponseView();
     }
@@ -139,7 +157,7 @@ public class RestController {
      */
     @RequestMapping(value="/config/identifiers")
     public JsonResponseView configIdentifiers(final Model model) {
-        model.addAttribute(new JsonResponse<Map<String, JsonVarConfig>>(
+        model.addAttribute(new JsonResponse<>(
                 jsonPipetConfig.getIdentifiers(), new JsonMeta(HttpStatus.OK.value())));
         return new JsonResponseView();
     }

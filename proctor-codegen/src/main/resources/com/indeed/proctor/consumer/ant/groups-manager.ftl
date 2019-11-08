@@ -4,6 +4,7 @@ import com.indeed.proctor.common.*;
 import com.indeed.proctor.common.model.*;
 import com.indeed.proctor.consumer.*;
 
+import javax.annotation.Generated;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -19,6 +20,7 @@ import com.google.common.base.Supplier;
 /*
  * GENERATED source; do not edit directly
  */
+@Generated("com.indeed.proctor.consumer.gen.TestGroupsGenerator")
 public class ${mainClassName} extends AbstractGroupsManager {
     private static final Map<String, String> PROVIDED_CONTEXT;
     static {

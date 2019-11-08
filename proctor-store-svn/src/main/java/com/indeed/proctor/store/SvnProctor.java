@@ -15,11 +15,9 @@ import org.tmatesoft.svn.core.wc.SVNClientManager;
 import org.tmatesoft.svn.core.wc.SVNLogClient;
 import org.tmatesoft.svn.core.wc.SVNRevision;
 
-import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -188,6 +186,12 @@ public class SvnProctor extends FileBasedProctorStore {
             }
         });
 
+    }
+
+    @Nonnull
+    @Override
+    public List<Revision> getMatrixHistory(final Instant sinceInclusive, final Instant untilExclusive) throws StoreException {
+        throw new UnsupportedOperationException("Not implemented");
     }
 
     private List<Revision> getSVNLogs(final SVNClientManager clientManager,
