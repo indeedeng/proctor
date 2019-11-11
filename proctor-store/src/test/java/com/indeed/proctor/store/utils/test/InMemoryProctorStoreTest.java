@@ -9,7 +9,6 @@ import com.indeed.proctor.common.model.TestMatrixVersion;
 import com.indeed.proctor.common.model.TestType;
 import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.store.StoreException;
-import com.indeed.proctor.store.utils.test.InMemoryProctorStore;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -17,10 +16,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 /**
  * @author yiqing
@@ -34,84 +32,91 @@ public class InMemoryProctorStoreTest {
         testee = new InMemoryProctorStore();
         testee.addTestDefinition("Mike", "pwd", "tst1",
                 createDummyTestDefinition("1", "tst1"),
-                Collections.<String, String>emptyMap(), "commit tst1");
+                Collections.emptyMap(), "commit tst1");
         testee.addTestDefinition("William", "pwd", "tst2",
                 createDummyTestDefinition("2", "tst2"),
-                Collections.<String, String>emptyMap(), "commit tst2");
+                Collections.emptyMap(), "commit tst2");
     }
 
     @Test
     public void testEmptyProctorStore() throws StoreException {
         testee = new InMemoryProctorStore();
-        assertTrue(testee.getAllHistories().isEmpty());
-        assertTrue(testee.getCurrentTestMatrix().getTestMatrixDefinition().getTests().isEmpty());
-        assertNull(testee.getTestMatrix("revision-1"));
+        assertThat(testee.getAllHistories()).isEmpty();
+        assertThat(testee.getCurrentTestMatrix().getTestMatrixDefinition().getTests()).isEmpty();
+        assertThatThrownBy(() -> testee.getTestMatrix("revision-1"))
+                .isInstanceOf(StoreException.class)
+                .hasMessageContaining("Cannot find revision revision-1");
+        assertThatThrownBy(() -> testee.getTestDefinition("tst1", "revision-1"))
+                .hasRootCauseInstanceOf(StoreException.class)
+                .hasStackTraceContaining("Cannot find revision revision-1");
         assertNull(testee.getCurrentTestDefinition("tst1"));
-        assertTrue(testee.getAllHistories().isEmpty());
-        assertTrue(testee.getMatrixHistory(0, 1).isEmpty());
-        assertTrue(testee.getHistory("tst1", 0, 1).isEmpty());
-        assertEquals("-1", testee.getLatestVersion());
+        assertThat(testee.getAllHistories()).isEmpty();
+        assertThat(testee.getMatrixHistory(0, 1)).isEmpty();
+        assertThat(testee.getHistory("tst1", 0, 1)).isEmpty();
+        assertThatThrownBy(() -> testee.getHistory("tst1", "revision-1", 0, 1))
+                .hasRootCauseInstanceOf(StoreException.class)
+                .hasStackTraceContaining("Cannot find revision revision-1");
+        assertThat(testee.getLatestVersion()).isEqualTo("-1");
     }
 
     @Test
     public void testAddTestDefinition() throws StoreException {
         final Map<String, List<Revision>> allHistories = testee.getAllHistories();
         final List<Revision> tst1 = allHistories.get("tst1");
-        assertEquals(1, tst1.size());
+        assertThat(tst1).hasSize(1);
         final Revision revision1 = tst1.get(0);
-        assertEquals("Mike", revision1.getAuthor());
-        assertEquals("revision-1", revision1.getRevision());
-        assertEquals("commit tst1", revision1.getMessage());
+        assertThat(revision1.getAuthor()).isEqualTo("Mike");
+        assertThat(revision1.getRevision()).isEqualTo("revision-1");
+        assertThat(revision1.getMessage()).isEqualTo("commit tst1");
         final List<Revision> tst2 = allHistories.get("tst2");
-        assertEquals(1, tst2.size());
+        assertThat(tst2).hasSize(1);
         final Revision revision2 = tst2.get(0);
-        assertEquals("William", revision2.getAuthor());
-        assertEquals("revision-2", revision2.getRevision());
-        assertEquals("commit tst2", revision2.getMessage());
+        assertThat(revision2.getAuthor()).isEqualTo("William");
+        assertThat(revision2.getRevision()).isEqualTo("revision-2");
+        assertThat(revision2.getMessage()).isEqualTo("commit tst2");
     }
 
     @Test
     public void testEditTest() throws StoreException {
         final TestDefinition dummyTestDefinition = createDummyTestDefinition("3", "tst1");
         dummyTestDefinition.setDescription("tst1 description has been updated");
-        testee.updateTestDefinition("Alex", "pwd", "2", "tst1", dummyTestDefinition, Collections.<String, String>emptyMap(), "update tst1 description");
+        testee.updateTestDefinition("Alex", "pwd", "2", "tst1", dummyTestDefinition, Collections.emptyMap(), "update tst1 description");
 
         /* verify tst1 history */
         final Map<String, List<Revision>> allHistories = testee.getAllHistories();
         final List<Revision> tstRevisions = allHistories.get("tst1");
-        assertEquals(2, tstRevisions.size());
+        assertThat(tstRevisions).hasSize(2);
         final Revision editRevision = tstRevisions.get(0);
-        assertEquals("update tst1 description", editRevision.getMessage());
-        assertEquals("Alex", editRevision.getAuthor());
-        assertEquals("revision-3", editRevision.getRevision());
+        assertThat(editRevision.getMessage()).isEqualTo("update tst1 description");
+        assertThat(editRevision.getAuthor()).isEqualTo("Alex");
+        assertThat(editRevision.getRevision()).isEqualTo("revision-3");
 
         /* verify tst2 history */
-        assertEquals(1, allHistories.get("tst2").size());
+        assertThat(allHistories.get("tst2")).hasSize(1);
 
         final TestMatrixVersion currentTestMatrix = testee.getCurrentTestMatrix();
-        assertEquals("3", currentTestMatrix.getVersion());
+        assertThat(currentTestMatrix.getVersion()).isEqualTo("3");
 
         final Map<String, TestDefinition> tests = currentTestMatrix.getTestMatrixDefinition().getTests();
-        assertEquals("tst1 description has been updated", tests.get("tst1").getDescription());
+        assertThat(tests.get("tst1").getDescription()).isEqualTo("tst1 description has been updated");
 
         final List<Revision> tst1 = testee.getHistory("tst1", 0, 3);
-        assertEquals(2, tst1.size());
-        assertEquals("revision-3", tst1.get(0).getRevision());
+        assertThat(tst1).hasSize(2);
+        assertThat(tst1.get(0).getRevision()).isEqualTo("revision-3");
 
-        assertEquals(0, testee.getHistory("tst1", 1, 0).size());
+        assertThat(testee.getHistory("tst1", 1, 0)).isEmpty();
         final List<Revision> tst11 = testee.getHistory("tst1", 1, 1);
-        assertEquals("revision-1", tst11.get(0).getRevision());
+        assertThat(tst11.get(0).getRevision()).isEqualTo("revision-1");
     }
 
     @Test
     public void testEditTestIncorrectPreviousRevision() {
         final TestDefinition dummyTestDefinition = createDummyTestDefinition("3", "tst1");
         dummyTestDefinition.setDescription("tst1 description has been updated");
-        try {
-            testee.updateTestDefinition("Alex", "pwd", "incorrectPreviousVersion", "tst1", dummyTestDefinition, Collections.<String, String>emptyMap(), "update tst1 description");
-            fail();
-        } catch (final StoreException.TestUpdateException e) {
-        }
+        assertThatThrownBy(() ->
+            testee.updateTestDefinition("Alex", "pwd", "incorrectPreviousVersion",
+                    "tst1", dummyTestDefinition, Collections.emptyMap(), "update tst1 description")
+        ).isInstanceOf(StoreException.TestUpdateException.class);
 
     }
 
@@ -119,7 +124,7 @@ public class InMemoryProctorStoreTest {
     public void testDeleteTest() throws StoreException {
         final TestDefinition dummyTestDefinition = createDummyTestDefinition("3", "tst1");
         testee.deleteTestDefinition("Alex", "pwd", "2", "tst1", dummyTestDefinition, "Delete tst1");
-        assertEquals("3", testee.getLatestVersion());
+        assertThat(testee.getLatestVersion()).isEqualTo("3");
         assertNull(testee.getCurrentTestDefinition("tst1"));
     }
 
