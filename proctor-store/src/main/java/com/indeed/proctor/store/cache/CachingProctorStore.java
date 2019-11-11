@@ -157,7 +157,7 @@ public class CachingProctorStore implements ProctorStore {
     }
 
     /**
-     * Please use {@link HistoryUtil#selectHistorySet(List, int, int)}
+     * @deprecated Please use {@link HistoryUtil#selectHistorySet(List, int, int)}
      */
     @Deprecated
     public static <T> List<T> selectHistorySet(final List<T> histories, final int start, final int limit) {
@@ -165,7 +165,7 @@ public class CachingProctorStore implements ProctorStore {
     }
 
     /**
-     * Please use {@link HistoryUtil#selectRevisionHistorySetFrom(List, String, int, int)}
+     * @deprecated Please use {@link HistoryUtil#selectRevisionHistorySetFrom(List, String, int, int)}
      */
     @Deprecated
     public static List<Revision> selectRevisionHistorySetFrom(final List<Revision> history, final String from, final int start, final int limit) {

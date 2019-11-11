@@ -210,6 +210,7 @@ public class InMemoryProctorStore implements ProctorStore {
 
     @Override
     public TestMatrixVersion getTestMatrix(final String fetchRevision) throws StoreException {
+        failIfRevisionNotInStore(fetchRevision);
         return synchronizedRead(() -> revisionMap.get(fetchRevision));
     }
 
@@ -265,6 +266,8 @@ public class InMemoryProctorStore implements ProctorStore {
     @Override
     public List<Revision> getHistory(final String test, final String revision, final int start, final int limit) throws StoreException {
         return synchronizedRead(() -> {
+            // check revision in store
+            failIfRevisionNotInStore(revision);
             final List<Revision> revisions = filterRevisionByTest(revisionStorage, test);
             return CachingProctorStore.selectRevisionHistorySetFrom(revisions, revision, start, limit);
         });
@@ -297,6 +300,13 @@ public class InMemoryProctorStore implements ProctorStore {
     public void refresh() throws StoreException {
     }
 
+    private void failIfRevisionNotInStore(final String revision) throws StoreException {
+        revisionStorage.stream()
+                .filter(revisionAndTest -> revisionAndTest.getRevision().equals(revision))
+                .findFirst()
+                .orElseThrow(() -> new StoreException("Cannot find revision " + revision));
+    }
+
     private void commitTestMatrixVersion(final String username, final String newVersion, final TestMatrixDefinition testMatrixDefinition,
                                          final String comment, final String testName) {
         final TestMatrixVersion newTestMatrixVersion = new TestMatrixVersion();
@@ -321,7 +331,7 @@ public class InMemoryProctorStore implements ProctorStore {
         revisionStorage.addFirst(revision);
     }
 
-    private TestMatrixDefinition cloneTestMatrixDefinition(final TestMatrixDefinition old) {
+    private static TestMatrixDefinition cloneTestMatrixDefinition(final TestMatrixDefinition old) {
         final Map<String, TestDefinition> tests = old.getTests();
         final Map<String, TestDefinition> newTests = new HashMap<String, TestDefinition>();
         for (final Map.Entry<String, TestDefinition> entry : tests.entrySet()) {
