@@ -1,17 +1,16 @@
 package com.indeed.proctor.webapp.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.indeed.proctor.common.model.TestDefinition;
 import com.indeed.proctor.common.model.TestMatrixVersion;
-import com.indeed.proctor.store.Revision;
-import com.indeed.proctor.store.RevisionDetails;
+import com.indeed.proctor.store.ChangeMetadata;
+import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.store.utils.test.InMemoryProctorStore;
 import com.indeed.proctor.webapp.db.Environment;
-import com.indeed.proctor.webapp.model.api.TestHistoriesResponseModel;
 import com.indeed.proctor.webapp.model.WebappConfiguration;
+import com.indeed.proctor.webapp.model.api.TestHistoriesResponseModel;
 import com.indeed.proctor.webapp.views.JsonView;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,20 +18,19 @@ import org.junit.Test;
 import javax.servlet.http.HttpServletResponse;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.time.Instant;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.LongSupplier;
 
-import static com.indeed.proctor.store.utils.test.InMemoryProctorStore.REVISION_PREFIX;
 import static java.util.Collections.emptyList;
-import static java.util.Collections.singleton;
+import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 public class TestTestMatrixApiController {
@@ -44,14 +42,22 @@ public class TestTestMatrixApiController {
     private InMemoryProctorStore qaStore;
     private InMemoryProctorStore prodStore;
 
-    private static final String TEST_NAME = "dummyTest";
+    private static final String STUB_TEST_NAME = "dummyTest";
+    private static final TestDefinition STUB_TEST_DEFINITION = new TestDefinition();
+
+    static {
+        STUB_TEST_DEFINITION.setSalt("&stub_test");
+        STUB_TEST_DEFINITION.setRule("country == \"US\"");
+    }
 
     @Before
     public void setUp() {
-        final WebappConfiguration configuration = new WebappConfiguration(false, false, 1000, 10);
-        trunkStore = spy(new InMemoryProctorStore());
-        qaStore = spy(new InMemoryProctorStore());
-        prodStore = spy(new InMemoryProctorStore());
+        final WebappConfiguration configuration =
+                new WebappConfiguration(false, false, 1000, 10);
+        final LongSupplier generator = new AtomicLong(0)::getAndIncrement;
+        trunkStore = new InMemoryProctorStore(generator);
+        qaStore = new InMemoryProctorStore(generator);
+        prodStore = new InMemoryProctorStore(generator);
         controller = new TestMatrixApiController(configuration, trunkStore, qaStore, prodStore);
     }
 
@@ -64,58 +70,51 @@ public class TestTestMatrixApiController {
 
     @Test
     public void testGetTestMatrixForBranch() throws Exception {
-        addStubTest(trunkStore, "foo0");
+        final String version = addTest(trunkStore, STUB_TEST_NAME, STUB_TEST_DEFINITION);
         final JsonView jsonView = controller.getTestMatrix(Environment.WORKING.getName());
         final String json = renderedJson(jsonView);
-        assertThat(json).contains("\"version\" : \"foo0\"");
+        assertThat(json).contains("\"version\" : \"" + version + "\"");
     }
 
     @Test
     public void testGetTestMatrixForRevision() throws Exception {
-        final String[] trunkVersions = new String[]{"111", "222", "333"};
-        final String[] qaVersions = new String[]{"123", "234", "345"};
-        final String[] prodVersions = new String[]{"146", "257", "369"};
+        final String trunkRevision = addStubTest(trunkStore);
+        final String qaRevision = addStubTest(qaStore);
+        final String prodRevision = addStubTest(prodStore);
 
-        addStubTest(trunkStore, trunkVersions);
-        addStubTest(qaStore, qaVersions);
-        addStubTest(prodStore, prodVersions);
+        final List<String> revisions = Arrays.asList(
+                trunkRevision,
+                qaRevision,
+                prodRevision
+        );
 
-        final List<String> versions = ImmutableList.<String>builder()
-                .add(trunkVersions)
-                .add(qaVersions)
-                .add(prodVersions)
-                .build();
-
-        for (final String version : versions) {
-            final JsonView jsonView = controller.getTestMatrix(constructRevision(version));
-            final TestMatrixVersion testMatrixVersion = parsedRenderedJson(jsonView, TestMatrixVersion.class);
+        for (final String revision : revisions) {
+            final JsonView jsonView = controller.getTestMatrix(revision);
+            final TestMatrixVersion testMatrixVersion = parsedRenderedJson(
+                    jsonView, TestMatrixVersion.class);
 
             assertThat(testMatrixVersion.getVersion())
-                    .isEqualTo(version);
+                    .isEqualTo(revision);
         }
     }
 
     @Test
     public void testGetTestMatrixHistoryForRevisionEmpty() throws Exception {
-        final String[] trunkVersions = new String[]{"111", "222", "333"};
-        final String[] qaVersions = new String[]{"123", "234", "345"};
-        final String[] prodVersions = new String[]{"146", "257", "369"};
+        final String trunkRevision = addStubTest(trunkStore);
+        final String qaRevision = addStubTest(qaStore);
+        final String prodRevision = addStubTest(prodStore);
 
-        addStubTest(trunkStore, trunkVersions);
-        addStubTest(qaStore, qaVersions);
-        addStubTest(prodStore, prodVersions);
+        final String unknownRevision = "1234";
+        assertThat(unknownRevision).isNotIn(trunkRevision, qaRevision, prodRevision);
 
-        assertThatThrownBy(() -> controller.getTestMatrixHistory("1234", 1, 100))
+        assertThatThrownBy(() -> controller.getTestMatrixHistory(unknownRevision, 1, 100))
                 .isInstanceOf(TestMatrixApiController.ResourceNotFoundException.class);
     }
 
     @Test
     public void testGetTestMatrixHistoryForBranchEmpty() throws Exception {
-        final String[] trunkVersions = new String[]{"111", "222", "333"};
-        final String[] qaVersions = new String[]{"123", "234", "345"};
-
-        addStubTest(trunkStore, trunkVersions);
-        addStubTest(qaStore, qaVersions);
+        addStubTest(trunkStore);
+        addStubTest(qaStore);
 
         final JsonView jsonView = controller.getTestMatrixHistory(Environment.PRODUCTION.getName(), 1, 100);
         assertThat(parsedRenderedJson(jsonView, List.class)).isEqualTo(emptyList());
@@ -123,188 +122,162 @@ public class TestTestMatrixApiController {
 
     @Test
     public void testGetTestDefinitionNotFound() throws Exception {
-        final String[] trunkVersions = new String[]{"111", "222", "333"};
-        final String[] qaVersions = new String[]{"123", "234", "345"};
-        final String[] prodVersions = new String[]{"146", "257", "369"};
+        final String trunkRevision = addStubTest(trunkStore);
 
-        addStubTest(trunkStore, trunkVersions);
-        addStubTest(qaStore, qaVersions);
-        addStubTest(prodStore, prodVersions);
+        final String unknownTestName = "fooTest";
+        assertThat(unknownTestName).isNotEqualTo(STUB_TEST_NAME);
 
-        assertThatThrownBy(() -> controller.getTestDefinition("123", "fooTest"))
+        assertThatThrownBy(() -> controller.getTestDefinition(trunkRevision, unknownTestName))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessageContaining("fooTest not found");
     }
 
     @Test
     public void testGetTestDefinitionHistoryNotFound() throws Exception {
-        final String[] trunkVersions = new String[]{"111", "222", "333"};
-        final String[] qaVersions = new String[]{"123", "234", "345"};
-        final String[] prodVersions = new String[]{"146", "257", "369"};
+        final String trunkRevision = addStubTest(trunkStore);
 
-        addStubTest(trunkStore, trunkVersions);
-        addStubTest(qaStore, qaVersions);
-        addStubTest(prodStore, prodVersions);
+        final String unknownTestName = "fooTest";
+        assertThat(unknownTestName).isNotEqualTo(STUB_TEST_NAME);
 
-        assertThatThrownBy(() -> controller.getTestDefinitionHistory("123", "fooTest", 1, 100))
+        assertThatThrownBy(() -> controller.getTestDefinitionHistory(trunkRevision, unknownTestName, 0, 100))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("fooTest not found");
     }
 
     @Test
     public void testGetTestDefinitionForBranch() throws Exception {
-        final String[] trunkVersions = new String[]{"111", "222", "333"};
-        final String[] qaVersions = new String[]{"123", "234", "345"};
-        final String[] prodVersions = new String[]{"146", "257", "369"};
+        addStubTest(trunkStore);
+        addStubTest(qaStore);
+        addStubTest(prodStore);
 
-        addStubTest(trunkStore, trunkVersions);
-        addStubTest(qaStore, qaVersions);
-        addStubTest(prodStore, prodVersions);
-
-        {
-            final JsonView jsonView = controller.getTestDefinition(Environment.WORKING.getName(), TEST_NAME);
+        for (final Environment environment : Environment.values()) {
+            final JsonView jsonView = controller.getTestDefinition(environment.getName(), STUB_TEST_NAME);
             final TestDefinition testDefinition = parsedRenderedJson(jsonView, TestDefinition.class);
-            assertThat(testDefinition.getVersion())
-                    .isEqualTo("333");
-        }
-        {
-            final JsonView jsonView = controller.getTestDefinition(Environment.QA.getName(), TEST_NAME);
-            final TestDefinition testDefinition = parsedRenderedJson(jsonView, TestDefinition.class);
-            assertThat(testDefinition.getVersion())
-                    .isEqualTo("345");
-        }
-        {
-            final JsonView jsonView = controller.getTestDefinition(Environment.PRODUCTION.getName(), TEST_NAME);
-            final TestDefinition testDefinition = parsedRenderedJson(jsonView, TestDefinition.class);
-            assertThat(testDefinition.getVersion())
-                    .isEqualTo("369");
+            assertThat(testDefinition).isEqualTo(STUB_TEST_DEFINITION);
         }
     }
 
     @Test
     public void testGetTestDefinitionForRevision() throws Exception {
-        final String[] trunkVersions = new String[]{"111", "222", "333"};
-        final String[] qaVersions = new String[]{"123", "234", "345"};
-        final String[] prodVersions = new String[]{"146", "257", "369"};
+        final String trunkRevision = addStubTest(trunkStore);
+        final String qaRevision = addStubTest(qaStore);
+        final String prodRevision = addStubTest(prodStore);
 
-        addStubTest(trunkStore, trunkVersions);
-        addStubTest(qaStore, qaVersions);
-        addStubTest(prodStore, prodVersions);
-
-        final List<String> versions = ImmutableList.<String>builder()
-                .add(trunkVersions)
-                .add(qaVersions)
-                .add(prodVersions)
-                .build();
-
-        for (final String version : versions) {
-            final JsonView jsonView = controller.getTestDefinition(constructRevision(version), TEST_NAME);
+        for (final String revision : Arrays.asList(trunkRevision, qaRevision, prodRevision)) {
+            final JsonView jsonView = controller.getTestDefinition(revision, STUB_TEST_NAME);
             final TestDefinition testDefinition = parsedRenderedJson(jsonView, TestDefinition.class);
-            assertThat(testDefinition.getVersion())
-                    .isEqualTo(version);
+            assertThat(testDefinition).isEqualTo(STUB_TEST_DEFINITION);
         }
     }
 
     @SuppressWarnings("unchecked")
     @Test
     public void testGetTestDefinitionHistoryForBranchAndRevision() throws Exception {
-        final String[] trunkVersions = new String[]{"111", "222", "333"};
-        final String[] qaVersions = new String[]{"123", "234", "345"};
-        final String[] prodVersions = new String[]{"146", "257", "369"};
+        final String trunkRevision1 = addStubTest(trunkStore);
+        final String qaRevision1 = addStubTest(qaStore);
+        final String prodRevision1 = addStubTest(prodStore);
+        final TestDefinition anotherTest = new TestDefinition(STUB_TEST_DEFINITION);
+        anotherTest.setSalt("different_salt");
+        final String qaRevision2 = addTest(qaStore, STUB_TEST_NAME, anotherTest);
 
-        addStubTest(trunkStore, trunkVersions);
-        addStubTest(qaStore, qaVersions);
-        addStubTest(prodStore, prodVersions);
-
         {
-            final JsonView jsonView = controller.getTestDefinitionHistory(Environment.WORKING.getName(), TEST_NAME, 1, 1);
+            final JsonView jsonView = controller.getTestDefinitionHistory(Environment.WORKING.getName(), STUB_TEST_NAME, 0, 1);
             final List<Map> revisions = parsedRenderedJson(jsonView, List.class);
             assertThat(revisions)
                     .extracting(r -> r.get("revision"))
-                    .containsExactly(constructRevision("222"));
+                    .containsExactly(trunkRevision1);
         }
         {
-            final JsonView jsonView = controller.getTestDefinitionHistory(Environment.QA.getName(), TEST_NAME, 0, 2);
+            final JsonView jsonView = controller.getTestDefinitionHistory(Environment.QA.getName(), STUB_TEST_NAME, 0, 2);
             final List<Map> revisions = parsedRenderedJson(jsonView, List.class);
             assertThat(revisions)
                     .extracting(r -> r.get("revision"))
-                    .containsExactly(constructRevision("345"), constructRevision("234"));
+                    .containsExactly(qaRevision2, qaRevision1);
         }
         {
-            final JsonView jsonView = controller.getTestDefinitionHistory(Environment.PRODUCTION.getName(), TEST_NAME, 2, 3);
+            final JsonView jsonView = controller.getTestDefinitionHistory(Environment.PRODUCTION.getName(), STUB_TEST_NAME, 0, 3);
             final List<Map> revisions = parsedRenderedJson(jsonView, List.class);
             assertThat(revisions)
                     .extracting(r -> r.get("revision"))
-                    .containsExactly(constructRevision("146"));
+                    .containsExactly(prodRevision1);
         }
         {
-            final JsonView jsonView = controller.getTestDefinitionHistory(constructRevision("234"), TEST_NAME, 0, 2);
+            final JsonView jsonView = controller.getTestDefinitionHistory(qaRevision1, STUB_TEST_NAME, 0, 2);
             final List<Map> revisions = parsedRenderedJson(jsonView, List.class);
             assertThat(revisions)
                     .extracting(r -> r.get("revision"))
-                    .containsExactly(constructRevision("234"), constructRevision("123"));
+                    .containsExactly(qaRevision1);
         }
     }
 
     @SuppressWarnings("unchecked")
     @Test
-    public void testGetTestDefinitionHistoryForBranchWithMock() throws Exception {
-        final String testName = "fooTest";
-        final Revision expected = new Revision("r1", "a1", new Date(), "m1");
-        when(qaStore.getHistory(testName, 1, 100)).thenReturn(singletonList(expected));
-        final JsonView testDefinitionHistory = controller.getTestDefinitionHistory(Environment.QA.getName(), testName, 1, 100);
+    public void testGetTestDefinitionHistoryForBranch() throws Exception {
+        trunkStore.addTestDefinition(
+                ChangeMetadata.builder()
+                        .setUsernameAndAuthor("testUser")
+                        .setPassword("")
+                        .setComment("testComment")
+                        .setTimestamp(Instant.EPOCH)
+                        .build(),
+                STUB_TEST_NAME,
+                STUB_TEST_DEFINITION,
+                emptyMap()
+        );
+
+        final String trunkRevision = trunkStore.getLatestVersion();
+        final JsonView testDefinitionHistory = controller.getTestDefinitionHistory(Environment.WORKING.getName(), STUB_TEST_NAME, 0, 100);
         assertThat(parsedRenderedJson(testDefinitionHistory, List.class))
                 .hasOnlyOneElementSatisfying(o -> assertThat((Map) o)
-                        .containsEntry("author", expected.getAuthor())
-                        .containsEntry("message", expected.getMessage())
-                        .containsEntry("revision", expected.getRevision()));
+                        .containsEntry("author", "testUser")
+                        .containsEntry("message", "testComment")
+                        .containsEntry("revision", trunkRevision));
     }
 
     @SuppressWarnings("unchecked")
     @Test
-    public void testGetTestDefinitionHistoryForRevisionWithMock() throws Exception {
-        final String testName = "fooTest";
-        final String revision = "1234";
-        final Revision expected = new Revision(revision, "a1", new Date(), "m1");
-        when(prodStore.getAllHistories()).thenReturn(ImmutableMap.of(testName, singletonList(expected)));
-        doReturn(singletonList(expected)).when(prodStore).getHistory(testName, revision, 1, 100);
-        final JsonView testDefinitionHistory = controller.getTestDefinitionHistory(revision, testName, 1, 100);
+    public void testGetTestDefinitionHistoryForRevision() throws Exception {
+        trunkStore.addTestDefinition(
+                ChangeMetadata.builder()
+                        .setUsernameAndAuthor("testUser")
+                        .setPassword("")
+                        .setComment("testComment")
+                        .setTimestamp(Instant.EPOCH)
+                        .build(),
+                STUB_TEST_NAME,
+                STUB_TEST_DEFINITION,
+                emptyMap()
+        );
+
+        final String trunkRevision = trunkStore.getLatestVersion();
+        final JsonView testDefinitionHistory = controller.getTestDefinitionHistory(trunkRevision, STUB_TEST_NAME, 0, 100);
         assertThat(parsedRenderedJson(testDefinitionHistory, List.class))
                 .hasOnlyOneElementSatisfying(o -> assertThat((Map) o)
-                        .containsEntry("author", expected.getAuthor())
-                        .containsEntry("message", expected.getMessage())
-                        .containsEntry("revision", expected.getRevision()));
+                        .containsEntry("author", "testUser")
+                        .containsEntry("message", "testComment")
+                        .containsEntry("revision", trunkRevision));
     }
-
 
     @Test
     public void testGetTestHistories() throws Exception {
         final String branch = "trunk";
         final int limit = 2;
 
-        final Revision revision1 = new Revision("1234", "user", new Date(), "message");
-        final Revision revision2 = new Revision("2345", "user", new Date(), "message");
-        final Revision revision3 = new Revision("3456", "user", new Date(), "message");
-
-        final Map<String, List<Revision>> histories = ImmutableMap.of(
-                "test1", ImmutableList.of(revision1),
-                "test2", ImmutableList.of(revision2),
-                "test3", ImmutableList.of(revision3)
-        );
-        when(trunkStore.getAllHistories()).thenReturn(histories);
-
-        final TestHistoriesResponseModel expected = new TestHistoriesResponseModel(
-                histories.size(),
-                ImmutableList.of(
-                        new TestHistoriesResponseModel.TestHistory("test1", ImmutableList.of(revision1)),
-                        new TestHistoriesResponseModel.TestHistory("test2", ImmutableList.of(revision2))
-                )
-        );
+        final String revision1 = addTest(trunkStore, "test1", STUB_TEST_DEFINITION);
+        final String revision2 = addTest(trunkStore, "test2", STUB_TEST_DEFINITION);
+        addTest(trunkStore, "test3", STUB_TEST_DEFINITION);
 
         final JsonView jsonView = controller.getTestHistories(branch, limit);
         final TestHistoriesResponseModel actual = parsedRenderedJson(jsonView, TestHistoriesResponseModel.class);
 
-        assertThat(actual).isEqualTo(expected);
+        assertThat(actual.getTotalNumberOfTests()).isEqualTo(3);
+        assertThat(actual.getTestHistories()).hasSize(2);
+        assertThat(actual.getTestHistories())
+                .extracting(TestHistoriesResponseModel.TestHistory::getTestName)
+                .containsExactly("test1", "test2");
+        assertThat(actual.getTestHistories())
+                .extracting(x -> x.getRevisions().get(0).getRevision())
+                .containsExactly(revision1, revision2);
     }
 
     @Test
@@ -318,22 +291,30 @@ public class TestTestMatrixApiController {
 
     @Test
     public void testGetRevisionDetails() throws Exception {
-        when(trunkStore.getRevisionDetails("123")).thenReturn(new RevisionDetails(
-                new Revision("123", "author1", new Date(0), "edit a super test"),
-                singleton("super_tst")
-        ));
+        trunkStore.addTestDefinition(
+                ChangeMetadata.builder()
+                        .setUsernameAndAuthor("testUser")
+                        .setPassword("")
+                        .setComment("testComment")
+                        .setTimestamp(Instant.EPOCH)
+                        .build(),
+                STUB_TEST_NAME,
+                STUB_TEST_DEFINITION,
+                emptyMap()
+        );
+        final String trunkRevision = trunkStore.getLatestVersion();
 
-        final JsonView jsonView = controller.getRevisionDetails("trunk", "123");
+        final JsonView jsonView = controller.getRevisionDetails("trunk", trunkRevision);
 
         final Map actual = parsedRenderedJson(jsonView, Map.class);
         final Map expected = ImmutableMap.of(
                 "revision", ImmutableMap.of(
-                        "revision", "123",
-                        "author", "author1",
+                        "revision", trunkRevision,
+                        "author", "testUser",
                         "date", "1970-01-01T00:00:00.000+0000",
-                        "message", "edit a super test"
+                        "message", "testComment"
                 ),
-                "modifiedTests", singletonList("super_tst")
+                "modifiedTests", singletonList(STUB_TEST_NAME)
         );
 
         assertThat(actual).isEqualTo(expected);
@@ -344,7 +325,7 @@ public class TestTestMatrixApiController {
         assertThatThrownBy(() -> controller.getRevisionDetails("new_branch", "123"))
                 .isInstanceOf(TestMatrixApiController.ResourceNotFoundException.class);
         assertThatThrownBy(() -> controller.getRevisionDetails("trunk", "007"))
-                .isInstanceOf(TestMatrixApiController.ResourceNotFoundException.class);
+                .isInstanceOf(StoreException.class);
     }
 
     private static <T> T parsedRenderedJson(final JsonView jsonView, final Class<T> clazz) throws Exception {
@@ -360,21 +341,50 @@ public class TestTestMatrixApiController {
         return stringWriter.toString();
     }
 
-    private static void addStubTest(final InMemoryProctorStore store, final String... versions) throws StoreException.TestUpdateException {
-        String lastVersion = null;
-        for (final String version : versions) {
-            final TestDefinition definition = new TestDefinition();
-            definition.setVersion(version);
-            if (lastVersion == null) {
-                store.addTestDefinition("testUser", "testPassword", TEST_NAME, definition, null, "testComment");
-            } else {
-                store.updateTestDefinition("testUser", "testPassword", lastVersion, TEST_NAME, definition, null, "testComment");
-            }
-            lastVersion = version;
-        }
+    /**
+     * Add a stub test definition and return its revision id
+     */
+
+    private static String addStubTest(
+            final ProctorStore store
+    ) throws StoreException {
+        return addTest(store, STUB_TEST_NAME, STUB_TEST_DEFINITION);
     }
 
-    private static String constructRevision(final String version) {
-        return REVISION_PREFIX + version;
+    private static String addTest(
+            final ProctorStore store,
+            final String testName,
+            final TestDefinition definition
+    ) throws StoreException {
+        if (store.getCurrentTestDefinition(testName) == null) {
+            store.addTestDefinition(
+                    ChangeMetadata.builder()
+                            .setUsernameAndAuthor("testUser")
+                            .setPassword("")
+                            .setComment("testComment")
+                            .build(),
+                    testName,
+                    definition,
+                    emptyMap()
+            );
+        } else {
+            final String previousRevision = store.getHistory(
+                    testName, 0, 1
+            ).get(0).getRevision();
+
+            store.updateTestDefinition(
+                    ChangeMetadata.builder()
+                            .setUsernameAndAuthor("testUser")
+                            .setPassword("")
+                            .setComment("testComment")
+                            .build(),
+                    previousRevision,
+                    testName,
+                    definition,
+                    emptyMap()
+            );
+        }
+
+        return store.getLatestVersion();
     }
 }

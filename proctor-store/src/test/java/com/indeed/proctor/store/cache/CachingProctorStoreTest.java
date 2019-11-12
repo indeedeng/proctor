@@ -16,6 +16,7 @@ import static com.indeed.proctor.store.utils.test.InMemoryProctorStoreTest.creat
 import static java.util.Collections.emptyMap;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -60,6 +61,7 @@ public class CachingProctorStoreTest {
 
     @Test
     public void testAddTestDefinition() throws StoreException, InterruptedException {
+        final String initialRevision = delegate.getLatestVersion();
         final TestDefinition tst3 = createDummyTestDefinition("3", "tst3");
 
         final Thread thread = new Thread(() -> {
@@ -75,7 +77,7 @@ public class CachingProctorStoreTest {
                 fail();
             }
         });
-        assertEquals("2", testee.getLatestVersion());
+        assertEquals(initialRevision, testee.getLatestVersion());
         assertNull(testee.getCurrentTestDefinition("tst3"));
         assertTrue(testee.getRefreshTaskFuture().isCancelled());
         assertEquals(2, testee.getAllHistories().size());
@@ -83,25 +85,31 @@ public class CachingProctorStoreTest {
         assertFalse(testee.getRefreshTaskFuture().isCancelled());
         testee.getRefreshTaskFuture().cancel(false);
         assertEquals(3, testee.getAllHistories().size());
-        assertEquals("3", testee.getLatestVersion());
+        assertNotEquals(initialRevision, delegate.getLatestVersion());
+        assertEquals(delegate.getLatestVersion(), testee.getLatestVersion());
         assertEquals("description of tst3", testee.getCurrentTestDefinition("tst3").getDescription());
-        assertEquals("description of tst3", testee.getTestDefinition("tst3", "revision-3").getDescription());
+        assertEquals("description of tst3", testee.getTestDefinition("tst3", testee.getLatestVersion()).getDescription());
     }
 
     @Test
     public void testUpdateTestDefinition() throws StoreException, InterruptedException {
+        final String initialRevision = delegate.getLatestVersion();
         final TestDefinition newTst1 = createDummyTestDefinition("3", "tst1");
         newTst1.setDescription("updated description tst1");
         final Thread thread = new Thread(() -> {
             try {
+                final String lastRevision =
+                        testee.getHistory(
+                                "tst1", 0, 1
+                        ).get(0).getRevision();
                 testee.updateTestDefinition(
                         ChangeMetadata.builder()
                                 .setUsernameAndAuthor("Mike")
                                 .setPassword("pwd")
                                 .setComment("Update description of tst1")
                                 .build(),
-                        "2", "tst1", newTst1, emptyMap());
-            } catch (final TestUpdateException e) {
+                        lastRevision, "tst1", newTst1, emptyMap());
+            } catch (final StoreException e) {
                 fail();
             }
         });
@@ -110,8 +118,8 @@ public class CachingProctorStoreTest {
         startThreadsAndSleep(thread);
         assertEquals("updated description tst1", testee.getCurrentTestDefinition("tst1").getDescription());
         assertEquals(2, testee.getHistory("tst1", 0, 2).size());
-        assertEquals("updated description tst1", testee.getTestDefinition("tst1", "revision-3").getDescription());
-        assertEquals("description of tst1", testee.getTestDefinition("tst1", "revision-1").getDescription());
+        assertEquals("updated description tst1", testee.getTestDefinition("tst1", delegate.getLatestVersion()).getDescription());
+        assertEquals("description of tst1", testee.getTestDefinition("tst1", initialRevision).getDescription());
     }
 
     @Test
@@ -146,8 +154,12 @@ public class CachingProctorStoreTest {
         final String description2 = "updated description tst1 from newTst2";
         newTst2.setDescription(description2);
 
-        final FutureTask<Boolean> future1 = getFutureTaskUpdateTestDefinition("2", "tst1", newTst1, "update description tst1");
-        final FutureTask<Boolean> future2 = getFutureTaskUpdateTestDefinition("2", "tst1", newTst2, "update description tst1");
+        final String lastRevision =
+                testee.getHistory(
+                        "tst1", 0, 1
+                ).get(0).getRevision();
+        final FutureTask<Boolean> future1 = getFutureTaskUpdateTestDefinition(lastRevision, "tst1", newTst1, "update description tst1");
+        final FutureTask<Boolean> future2 = getFutureTaskUpdateTestDefinition(lastRevision, "tst1", newTst2, "update description tst1");
         startThreadsAndSleep(new Thread(future1), new Thread(future2));
         final boolean thread1UpdateSuccess = future1.get();
         final boolean thread2UpdateSuccess = future2.get();
@@ -205,25 +217,34 @@ public class CachingProctorStoreTest {
 
     @Test
     public void testDelete() throws StoreException, InterruptedException {
+        final String initialRevision = delegate.getLatestVersion();
         final TestDefinition tst1 = createDummyTestDefinition("3", "tst1"); /* this would not be actually used */
 
         final Thread deleteThread = new Thread(() -> {
             try {
+                final String lastRevision =
+                        testee.getHistory(
+                                "tst1", 0, 1
+                        ).get(0).getRevision();
                 testee.deleteTestDefinition(
                         ChangeMetadata.builder()
                                 .setUsernameAndAuthor("Mike")
                                 .setPassword("pwd")
                                 .setComment("Delete tst1")
                                 .build(),
-                        "2", "tst1", tst1);
-            } catch (final TestUpdateException e) {
+                        lastRevision,
+                        "tst1",
+                        tst1
+                );
+            } catch (final StoreException e) {
                 fail();
             }
         });
         startThreadsAndSleep(deleteThread);
-        assertEquals("3", testee.getLatestVersion());
+        assertNotEquals(initialRevision, delegate.getLatestVersion());
+        assertEquals(delegate.getLatestVersion(), testee.getLatestVersion());
         assertNull(testee.getCurrentTestDefinition("tst1"));
-        assertNotNull(testee.getTestDefinition("tst1", "revision-1"));
+        assertNotNull(testee.getTestDefinition("tst1", initialRevision));
     }
 
     /*
