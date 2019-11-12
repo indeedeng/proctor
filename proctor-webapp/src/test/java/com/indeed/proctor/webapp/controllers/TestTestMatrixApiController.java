@@ -30,6 +30,7 @@ import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -266,7 +267,7 @@ public class TestTestMatrixApiController {
         final String revision = "1234";
         final Revision expected = new Revision(revision, "a1", new Date(), "m1");
         when(prodStore.getAllHistories()).thenReturn(ImmutableMap.of(testName, singletonList(expected)));
-        when(prodStore.getHistory(testName, revision, 1, 100)).thenReturn(singletonList(expected));
+        doReturn(singletonList(expected)).when(prodStore).getHistory(testName, revision, 1, 100);
         final JsonView testDefinitionHistory = controller.getTestDefinitionHistory(revision, testName, 1, 100);
         assertThat(parsedRenderedJson(testDefinitionHistory, List.class))
                 .hasOnlyOneElementSatisfying(o -> assertThat((Map) o)

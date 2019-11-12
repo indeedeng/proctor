@@ -6,6 +6,7 @@ import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.TestBucket;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -48,7 +49,7 @@ public class ProctorResult {
     public ProctorResult(
             final int matrixVersion,
             @Nonnull final Map<String, TestBucket> buckets,
-            @Nonnull final Map<String, ConsumableTestDefinition> testDefinitions
+            @Nullable final Map<String, ConsumableTestDefinition> testDefinitions
     ) {
         this(Integer.toString(matrixVersion), buckets, emptyMap(), testDefinitions);
     }
@@ -57,7 +58,7 @@ public class ProctorResult {
     public ProctorResult(
             final String matrixVersion,
             @Nonnull final Map<String, TestBucket> buckets,
-            @Nonnull final Map<String, ConsumableTestDefinition> testDefinitions
+            @Nullable final Map<String, ConsumableTestDefinition> testDefinitions
     ) {
         this(matrixVersion, buckets, emptyMap(), testDefinitions);
     }
@@ -66,12 +67,13 @@ public class ProctorResult {
             final String matrixVersion,
             @Nonnull final Map<String, TestBucket> buckets,
             @Nonnull final Map<String, Allocation> allocations,
-            @Nonnull final Map<String, ConsumableTestDefinition> testDefinitions
+            // allowing null for historical reasons
+            @Nullable final Map<String, ConsumableTestDefinition> testDefinitions
     ) {
         this.matrixVersion = matrixVersion;
         this.buckets = new TreeMap<>(buckets);
         this.allocations = new TreeMap<>(allocations);
-        this.testDefinitions = new HashMap<>(testDefinitions);
+        this.testDefinitions = (testDefinitions == null) ? emptyMap() : new HashMap<>(testDefinitions);
     }
 
     @SuppressWarnings("UnusedDeclaration")
