@@ -110,18 +110,17 @@ public class InMemoryProctorStore implements ProctorStore {
 
     @Override
     public synchronized TestMatrixVersion getTestMatrix(final String revisionId) throws StoreException {
-        final UpdateRecord startRecord = getUpdateRecord(revisionId);
-
-        final List<UpdateRecord> history = dropWhile(globalHistory, r -> !r.equals(startRecord));
         final Map<String, TestDefinition> allTests = new HashMap<>();
-        for (final UpdateRecord record : history) {
+        for (final UpdateRecord record : getHistoryFromRevision(revisionId)) {
             final TestEdit testEdit = record.testEdit;
-            if (testEdit != null && !allTests.containsKey(testEdit.testName)) {
+            if (testEdit != null
+                    && !allTests.containsKey(testEdit.testName) // if this is the latest update of the test
+            ) {
                 allTests.put(testEdit.testName, testEdit.definition);
             }
         }
 
-        final Revision revision = startRecord.revision;
+        final Revision revision = getUpdateRecord(revisionId).revision;
         return new TestMatrixVersion(
                 new TestMatrixDefinition(
                         Maps.filterValues(allTests, Objects::nonNull) // remove deleted tests
@@ -139,9 +138,7 @@ public class InMemoryProctorStore implements ProctorStore {
             final String testName,
             final String revisionId
     ) throws StoreException {
-        final UpdateRecord startRecord = getUpdateRecord(revisionId);
-
-        return dropWhile(globalHistory, r -> !r.equals(startRecord))
+        return getHistoryFromRevision(revisionId)
                 .stream()
                 .filter(r -> r.modifiedTests().contains(testName))
                 .findFirst()
@@ -181,9 +178,7 @@ public class InMemoryProctorStore implements ProctorStore {
             final int start,
             final int limit
     ) throws StoreException {
-        final UpdateRecord startRecord = getUpdateRecord(revisionId);
-
-        return dropWhile(globalHistory, r -> !r.equals(startRecord))
+        return getHistoryFromRevision(revisionId)
                 .stream()
                 .filter(r -> r.modifiedTests().contains(testName))
                 .map(r -> r.revision)
@@ -351,6 +346,13 @@ public class InMemoryProctorStore implements ProctorStore {
         return globalHistory.stream()
                 .filter(x -> x.modifiedTests().contains(testName))
                 .findFirst();
+    }
+
+    private List<UpdateRecord> getHistoryFromRevision(
+            final String revisionId
+    ) throws StoreException {
+        final UpdateRecord startRecord = getUpdateRecord(revisionId);
+        return dropWhile(globalHistory, r -> !r.equals(startRecord));
     }
 
     /**
