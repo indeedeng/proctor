@@ -103,6 +103,13 @@ public class InMemoryProctorStoreTest {
         assertThat(editRevision.getMessage()).isEqualTo("update tst1 description");
         assertThat(editRevision.getAuthor()).isEqualTo("Alex");
         assertThat(editRevision.getRevision()).isEqualTo("3");
+        assertThat(testee.getTestDefinition("tst1", "0")).isNull();
+        assertThat(testee.getTestDefinition("tst1", "1")).isEqualTo(
+                createDummyTestDefinition("1", "tst1")
+        );
+        assertThat(testee.getTestDefinition("tst1", "3")).isEqualTo(
+                dummyTestDefinition
+        );
 
         /* verify tst2 history */
         assertThat(allHistories.get("tst2")).hasSize(1);

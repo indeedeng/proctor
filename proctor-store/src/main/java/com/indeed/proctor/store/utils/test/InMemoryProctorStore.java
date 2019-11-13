@@ -352,7 +352,7 @@ public class InMemoryProctorStore implements ProctorStore {
             final String revisionId
     ) throws StoreException {
         final UpdateRecord startRecord = getUpdateRecord(revisionId);
-        return dropWhile(globalHistory, r -> !r.equals(startRecord));
+        return dropWhile(globalHistory, r -> !r.revision.equals(startRecord.revision));
     }
 
     /**
@@ -403,24 +403,6 @@ public class InMemoryProctorStore implements ProctorStore {
                     ? Collections.emptySet()
                     : Collections.singleton(testEdit.testName);
         }
-
-        @Override
-        public boolean equals(final Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-            final UpdateRecord record = (UpdateRecord) o;
-            return Objects.equals(revision, record.revision) &&
-                    Objects.equals(testEdit, record.testEdit);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(revision, testEdit);
-        }
     }
 
     private static class TestEdit {
@@ -434,24 +416,6 @@ public class InMemoryProctorStore implements ProctorStore {
         ) {
             this.testName = Objects.requireNonNull(testName);
             this.definition = definition;
-        }
-
-        @Override
-        public boolean equals(final Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-            final TestEdit testEdit = (TestEdit) o;
-            return Objects.equals(testName, testEdit.testName) &&
-                    Objects.equals(definition, testEdit.definition);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(testName, definition);
         }
     }
 }
