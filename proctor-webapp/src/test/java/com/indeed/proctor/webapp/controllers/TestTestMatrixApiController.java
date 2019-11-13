@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.LongSupplier;
+import java.util.function.Supplier;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
@@ -54,7 +55,7 @@ public class TestTestMatrixApiController {
     public void setUp() {
         final WebappConfiguration configuration =
                 new WebappConfiguration(false, false, 1000, 10);
-        final LongSupplier generator = new AtomicLong(0)::getAndIncrement;
+        final Supplier<String> generator = InMemoryProctorStore.autoincrementRevisionIdGenerator();
         trunkStore = new InMemoryProctorStore(generator);
         qaStore = new InMemoryProctorStore(generator);
         prodStore = new InMemoryProctorStore(generator);
