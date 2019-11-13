@@ -378,6 +378,12 @@ public class InMemoryProctorStore implements ProctorStore {
         return res;
     }
 
+    /**
+     * revision metadata + test edit data in the revision
+     *
+     * This assumes single test is modified in a revision
+     * as current write interface doesn't allow multiple test edits.
+     */
     private static class UpdateRecord {
         private final Revision revision;
         @Nullable
@@ -405,6 +411,11 @@ public class InMemoryProctorStore implements ProctorStore {
         }
     }
 
+    /**
+     * a model of an edit of single test
+     * it stores test name and definition after the edit.
+     * definition is null if it's deleted.
+     */
     private static class TestEdit {
         private final String testName;
         @Nullable
