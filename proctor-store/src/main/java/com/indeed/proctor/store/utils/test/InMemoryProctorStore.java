@@ -324,15 +324,15 @@ public class InMemoryProctorStore implements ProctorStore {
             final ChangeMetadata changeMetadata,
             @Nullable final TestEdit testEdit
     ) {
-        final Revision revision = new Revision(
-                revisionIdGenerator.get(),
-                changeMetadata.getAuthor(),
-                Date.from(changeMetadata.getTimestamp()),
-                changeMetadata.getComment()
-        );
-        final UpdateRecord record = new UpdateRecord(revision, testEdit);
-
-        globalHistory.add(0, record);
+        globalHistory.add(0, new UpdateRecord(
+                new Revision(
+                        revisionIdGenerator.get(),
+                        changeMetadata.getAuthor(),
+                        Date.from(changeMetadata.getTimestamp()),
+                        changeMetadata.getComment()
+                ),
+                testEdit
+        ));
     }
 
     private UpdateRecord getUpdateRecord(final String revisionId) throws StoreException {
