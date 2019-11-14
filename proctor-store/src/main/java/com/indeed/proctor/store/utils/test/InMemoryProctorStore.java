@@ -27,6 +27,8 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.mapping;
@@ -110,20 +112,21 @@ public class InMemoryProctorStore implements ProctorStore {
 
     @Override
     public synchronized TestMatrixVersion getTestMatrix(final String revisionId) throws StoreException {
-        final Map<String, TestDefinition> allTests = new HashMap<>();
-        for (final UpdateRecord record : getHistoryFromRevision(revisionId)) {
-            final TestEdit testEdit = record.testEdit;
-            if (testEdit != null
-                    && !allTests.containsKey(testEdit.testName) // if this is the latest update of the test
-            ) {
-                allTests.put(testEdit.testName, testEdit.definition);
-            }
-        }
+        final Map<String, Optional<TestDefinition>> allTests = getHistoryFromRevision(revisionId)
+                .filter(r -> r.testEdit != null)
+                .collect(Collectors.toMap(
+                        r -> r.testEdit.testName,
+                        r -> Optional.ofNullable(r.testEdit.definition), // returning null causes runtime error
+                        (a, b) -> a // pick up the latest update of the test
+                ));
 
         final Revision revision = getUpdateRecord(revisionId).revision;
         return new TestMatrixVersion(
                 new TestMatrixDefinition(
-                        Maps.filterValues(allTests, Objects::nonNull) // remove deleted tests
+                        Maps.filterValues(
+                                Maps.transformValues(allTests, x -> x.orElse(null)),
+                                Objects::nonNull
+                        ) // remove deleted tests
                 ),
                 revision.getDate(),
                 revision.getRevision(),
@@ -139,7 +142,6 @@ public class InMemoryProctorStore implements ProctorStore {
             final String revisionId
     ) throws StoreException {
         return getHistoryFromRevision(revisionId)
-                .stream()
                 .filter(r -> r.modifiedTests().contains(testName))
                 .findFirst()
                 .map(r -> Objects.requireNonNull(r.testEdit))
@@ -179,7 +181,6 @@ public class InMemoryProctorStore implements ProctorStore {
             final int limit
     ) throws StoreException {
         return getHistoryFromRevision(revisionId)
-                .stream()
                 .filter(r -> r.modifiedTests().contains(testName))
                 .map(r -> r.revision)
                 .skip(start)
@@ -348,34 +349,11 @@ public class InMemoryProctorStore implements ProctorStore {
                 .findFirst();
     }
 
-    private List<UpdateRecord> getHistoryFromRevision(
+    private Stream<UpdateRecord> getHistoryFromRevision(
             final String revisionId
     ) throws StoreException {
         final UpdateRecord startRecord = getUpdateRecord(revisionId);
-        return dropWhile(globalHistory, r -> !r.revision.equals(startRecord.revision));
-    }
-
-    /**
-     * Equivalent to the following in Java 9
-     * list.stream()
-     * .dropWhile(predicate)
-     * .collect(toList())
-     */
-    private static <T> List<T> dropWhile(
-            final List<T> list,
-            final Predicate<T> predicate
-    ) {
-        final List<T> res = new ArrayList<>(list.size());
-        boolean take = false;
-        for (final T x : list) {
-            if (!predicate.test(x)) {
-                take = true;
-            }
-            if (take) {
-                res.add(x);
-            }
-        }
-        return res;
+        return globalHistory.subList(globalHistory.indexOf(startRecord), globalHistory.size()).stream();
     }
 
     /**
