@@ -256,21 +256,6 @@ public class TestPayload {
     }
 
     @Test
-    public void testSetMapWithNullValue(){
-        Payload payload = new Payload();
-
-        final Map<String, Object> mapWithNullValues = new HashMap<String, Object>() {{
-            put("validVal1", 0);
-            put("validVal2", "");
-            put("invalidVal", null);
-        }};
-
-        assertThatThrownBy(() -> payload.setMap(mapWithNullValues))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining(Payload.PAYLOAD_NULL_VALUE_EXCEPTION);
-    }
-
-    @Test
     public void testOverwritePayload(){
         Payload payload = new Payload();
 
