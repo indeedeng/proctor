@@ -1,44 +1,75 @@
 package com.indeed.proctor.consumer;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
 import com.indeed.proctor.common.ProctorResult;
 import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.Payload;
 import com.indeed.proctor.common.model.TestBucket;
+import org.apache.log4j.Logger;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import java.util.AbstractMap;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.stream.Collectors;
 
 /**
  * Wraps a ProctorResult to provide some utility functions. The main purpose is to support proctor-codegen,
  * but also provides String-building function to experiment eligibilities, and functions to help serialize
  * data and use in generated with Javascript code.
+ *
+ * Subclasses should strive to override only a minimal number of methods, such as overrideDeterminedBucketValue()
+ * to change determined buckets, or toLoggingString() to change logging.
  */
 public abstract class AbstractGroups {
+    private static final Logger LOGGER = Logger.getLogger(AbstractGroups.class);
     private final ProctorResult proctorResult;
-    private final LinkedHashMap<String, TestBucket> buckets;
 
+    /**
+     * A character to separate groups in logging output.
+     */
+    protected static final char GROUPS_SEPARATOR = ',';
     /**
      * A character to separate allocation id and test name for a formatted test group with an allocation.
      */
     protected static final char ALLOCATION_GROUP_SEPARATOR = ':';
+    protected static final char TESTNAME_BUCKET_CONNECTOR = '-';
 
     /**
      * Setup fields based on eagerly computed bucket allocations in ProctorResult.
      */
     protected AbstractGroups(final ProctorResult proctorResult) {
         this.proctorResult = proctorResult;
-        buckets = new LinkedHashMap<>(proctorResult.getBuckets());
+    }
+
+    /**
+     * Allows to use a different bucket value than the determined one.
+     * Default Behavior is to return determinedBucket.getValue().
+     *
+     * Overriding this will also changes the output of logging methods like toLoggingString().
+     *
+     * Note: This method is the only one to change when developers want to customize group ownership,
+     *       such as for implementing hold-out groups. Customizers are encouraged to
+     *       use meta-tags to drive customization, see getProctorResult().
+     *       Use proctorResult.getTestDefinitions().get(testName).getBuckets() to select a different valid bucket value.
+     *
+     *       Also note that if calling other methods of this class inside this method, it is easily possible to
+     *       create infinite loops (stackoverflow), so be careful and write unit tests
+     *
+     * @return the value bucket that has been determined by the current proctorResult
+     */
+    // returning int instead of TestBucket to prevent e.g. values that are inconsistent with definition
+    protected int overrideDeterminedBucketValue(final String testName, @Nonnull final TestBucket determinedBucket) {
+        return determinedBucket.getValue();
     }
 
     /**
@@ -48,7 +79,8 @@ public abstract class AbstractGroups {
     @Deprecated
     // used from generated code
     protected boolean isBucketActive(final String testName, final int value) {
-        return Optional.ofNullable(buckets.get(testName))
+        // using getActiveBucket to allow overrides
+        return getActiveBucket(testName)
                 .filter(testBucket -> value == testBucket.getValue())
                 .isPresent();
     }
@@ -58,16 +90,51 @@ public abstract class AbstractGroups {
      */
     // used from generated code
     protected boolean isBucketActive(final String testName, final int value, final int defaultValue) {
-        final int bucketValueOrDefault = Optional.ofNullable(buckets.get(testName))
-                .map(TestBucket::getValue)
-                .orElse(defaultValue);
-        return bucketValueOrDefault == value;
+        return value == getValue(testName, defaultValue);
     }
 
+    /**
+     * @return value of the active bucket if present else default
+     *
+     * Prefer to override getActiveBucket to overriding this method. Else make sure to use getActiveBucket for consistency.
+     */
+    // used from generated code. This method should rather be final, but is currently overridden, to be made final in the future
     protected int getValue(final String testName, final int defaultValue) {
-        return Optional.ofNullable(buckets.get(testName))
+        // using getActiveBucket to allow overrides
+        return getActiveBucket(testName)
                 .map(TestBucket::getValue)
                 .orElse(defaultValue);
+    }
+
+    /**
+     * @return the bucket that has been determined by the current proctorResult, or override bucket if valid, or empty if testname not valid
+     */
+    // intentionally final, other developers should only override overrideDeterminedBucketValue()
+    protected final Optional<TestBucket> getActiveBucket(final String testName) {
+        // intentionally not allowing subclasses to override returning empty for testnames that do not exist in ProctorResult
+        // the semantics of this class would become too confusing
+        // if clients somehow need that, they should provide a proctorResult instance having additional testNames with buckets
+        final TestBucket bucket = proctorResult.getBuckets().get(testName);
+        if (bucket == null) {
+            return Optional.empty();
+        }
+        // allow users to select a different testbucket, if testname was valid
+        final int overrideBucketValue = overrideDeterminedBucketValue(testName, bucket);
+        if ((overrideBucketValue != bucket.getValue())) {
+            // get bucket from definition with that override value from Definition
+            final Optional<TestBucket> overrideBucketOpt = Optional.ofNullable(proctorResult.getTestDefinitions().get(testName))
+                    .map(ConsumableTestDefinition::getBuckets)
+                    .orElse(Collections.emptyList())
+                    .stream()
+                    .filter(b -> b.getValue() == overrideBucketValue)
+                    .findFirst();
+            if (overrideBucketOpt.isPresent()) {
+                return overrideBucketOpt;
+            }
+            LOGGER.warn("Overriding bucket value " + overrideBucketValue + " for test '" + testName
+                    + "' does not match any bucket in test definition, using determined bucket value " + bucket.getValue());
+        }
+        return Optional.of(bucket);
     }
 
     /**
@@ -111,9 +178,7 @@ public abstract class AbstractGroups {
     // used from generated code
     protected Payload getPayload(final String testName) {
         // Get the current bucket.
-        return Optional.ofNullable(buckets.get(testName))
-                .map(TestBucket::getPayload)
-                .orElse(Payload.EMPTY_PAYLOAD);
+        return Optional.ofNullable(getPayloadElseNull(testName)).orElse(Payload.EMPTY_PAYLOAD);
     }
 
     /**
@@ -123,19 +188,19 @@ public abstract class AbstractGroups {
     @Nonnull
     // used from generated code
     protected Payload getPayload(final String testName, @Nonnull final Bucket<?> fallbackBucket) {
+        return Optional.ofNullable(getPayloadElseNull(testName)).orElseGet(
+                () -> Optional.ofNullable(getTestBucketForBucket(testName, fallbackBucket))
+                        .map(TestBucket::getPayload)
+                        .orElse(Payload.EMPTY_PAYLOAD));
+    }
 
-        final Optional<TestBucket> testBucket = Optional.ofNullable(buckets.get(testName));
-
-        final Optional<Payload> payload;
-        if (testBucket.isPresent()) {
-            payload = testBucket.map(TestBucket::getPayload);
-        } else {
-            // if testBucket.getPayload() is null, the correct value to return is EMPTY, not fallback
-            payload = Optional.ofNullable(getTestBucketForBucket(testName, fallbackBucket))
-                    .map(TestBucket::getPayload);
-        }
-
-        return payload.orElse(Payload.EMPTY_PAYLOAD);
+    // this method could be made protected and the two invoking method made final in a single commit, breaking clients with a clear migration path
+    @CheckForNull
+    private Payload getPayloadElseNull(final String testName) {
+        // using getActiveBucket to allow overrides
+        return getActiveBucket(testName)
+                .map(TestBucket::getPayload)
+                .orElse(null);
     }
 
     /**
@@ -148,8 +213,9 @@ public abstract class AbstractGroups {
      * @param targetBucket target bucket
      * @return the TestBucket. Return null if not found.
      */
-    @Nullable
-    protected TestBucket getTestBucketForBucket(final String testName, final Bucket<?> targetBucket) {
+    @CheckForNull
+    // used in generated code
+    protected final TestBucket getTestBucketForBucket(final String testName, final Bucket<?> targetBucket) {
         return Optional.ofNullable(proctorResult.getTestDefinitions())
                 .map(testDefinitions -> testDefinitions.get(testName))
                 .map(ConsumableTestDefinition::getBuckets)
@@ -164,14 +230,15 @@ public abstract class AbstractGroups {
      * @return a comma-separated String of {testname}-{active-bucket-name} for ALL tests
      */
     public String toLongString() {
-        if (buckets.isEmpty()) {
+        if (isEmpty()) {
             return "";
         }
+        final SortedMap<String, TestBucket> buckets = proctorResult.getBuckets();
         final StringBuilder sb = new StringBuilder(buckets.size() * 10);
-        for (final Entry<String, TestBucket> entry : buckets.entrySet()) {
-            final String testName = entry.getKey();
-            final TestBucket testBucket = entry.getValue();
-            sb.append(testName).append('-').append(testBucket.getName()).append(',');
+        for (final String testName : buckets.keySet()) {
+            sb.append(testName).append(TESTNAME_BUCKET_CONNECTOR).append(getActiveBucket(testName)
+                    .map(TestBucket::getName).orElse("unknown"))
+                    .append(GROUPS_SEPARATOR);
         }
         return sb.deleteCharAt(sb.length() - 1)
                 .toString();
@@ -227,14 +294,14 @@ public abstract class AbstractGroups {
      * @return true if empty
      */
     protected boolean isEmpty() {
-        return buckets.isEmpty();
+        return proctorResult.getBuckets().isEmpty();
     }
 
     /**
      * appends an empty string or a comma-separated, comma-finalized list of groups
      */
-    public void appendTestGroups(final StringBuilder sb) {
-        appendTestGroups(sb, ',');
+    public final void appendTestGroups(final StringBuilder sb) {
+        appendTestGroups(sb, GROUPS_SEPARATOR);
     }
 
     /**
@@ -264,17 +331,17 @@ public abstract class AbstractGroups {
      */
     protected final List<String> getLoggingTestNames() {
         final Map<String, ConsumableTestDefinition> testDefinitions = proctorResult.getTestDefinitions();
-        final ImmutableList.Builder<String> builder = ImmutableList.builder();
-        for (final Entry<String, TestBucket> entry : proctorResult.getBuckets().entrySet()) {
-            final String testName = entry.getKey();
-            final TestBucket testBucket = entry.getValue();
-            final ConsumableTestDefinition testDefinition = testDefinitions.get(testName);
-            if ((testDefinition != null && testDefinition.getSilent()) || testBucket.getValue() < 0) {
-                continue;
-            }
-            builder.add(testName);
-        }
-        return builder.build();
+        // following lines should preserve the order in the map to ensure logging values are stable
+        // declaring SortedMap variable here to ensure compiler error happens if proctorResult map is changed.
+        final SortedMap<String, TestBucket> buckets = proctorResult.getBuckets();
+        return buckets.keySet().stream()
+                .filter(testBucket -> {
+                    final ConsumableTestDefinition consumableTestDefinition = testDefinitions.get(testBucket);
+                    return (consumableTestDefinition != null) && !consumableTestDefinition.getSilent();
+                })
+                // call to getValuePrivate() to allow overrides of getActiveBucket
+                .filter(testName -> getValue(testName, -1) >= 0)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -282,10 +349,8 @@ public abstract class AbstractGroups {
      */
     protected final void appendTestGroupsWithoutAllocations(final StringBuilder sb, final char separator, final List<String> testNames) {
         for (final String testName : testNames) {
-            final TestBucket testBucket = buckets.get(testName);
-            if (testBucket != null) {
-                sb.append(testName).append(testBucket.getValue()).append(separator);
-            }
+            getActiveBucket(testName).ifPresent(testBucket ->
+                sb.append(testName).append(testBucket.getValue()).append(separator));
         }
     }
 
@@ -294,13 +359,15 @@ public abstract class AbstractGroups {
      */
     protected final void appendTestGroupsWithAllocations(final StringBuilder sb, final char separator, final List<String> testNames) {
         for (final String testName : testNames) {
-            final TestBucket testBucket = buckets.get(testName);
-            final Allocation allocation = proctorResult.getAllocations().get(testName);
-            if ((testBucket != null) && (allocation != null) && !Strings.isNullOrEmpty(allocation.getId())) {
-                sb.append(allocation.getId())
-                        .append(ALLOCATION_GROUP_SEPARATOR)
-                        .append(testName).append(testBucket.getValue()).append(separator);
-            }
+            getActiveBucket(testName).ifPresent(testBucket -> {
+                // no allocation might exist for this testbucket
+                final Allocation allocation = proctorResult.getAllocations().get(testName);
+                if ((allocation != null) && !Strings.isNullOrEmpty(allocation.getId())) {
+                    sb.append(allocation.getId())
+                            .append(ALLOCATION_GROUP_SEPARATOR)
+                            .append(testName).append(testBucket.getValue()).append(separator);
+                }
+            });
         }
     }
 
@@ -314,12 +381,14 @@ public abstract class AbstractGroups {
      *
      * @return a {@link Map} of config JSON
      */
-    public Map<String, Integer> getJavaScriptConfig() {
+    public final Map<String, Integer> getJavaScriptConfig() {
         // For now this is a simple mapping from {testName to bucketValue}
-        return buckets.entrySet().stream()
+        return proctorResult.getBuckets().keySet().stream()
                 // mirrors appendTestGroups method by skipping *inactive* tests
-                .filter(e -> e.getValue().getValue() >= 0)
-                .collect(Collectors.toMap(Entry::getKey, e -> e.getValue().getValue()));
+                // call to getValuePrivate() to allow overrides of getActiveBucket
+                .map(testName -> new AbstractMap.SimpleEntry<>(testName, getValue(testName, -1)))
+                .filter(e -> e.getValue() >= 0)
+                .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
     }
 
     /**
@@ -333,9 +402,10 @@ public abstract class AbstractGroups {
      * @param <E> Generic Type of Test
      * @return a list of 2-element lists that hold the bucketValue and payloadValue for each test in the same order as the input
      */
-    public <E extends Test> List<List<Object>> getJavaScriptConfig(final E[] tests) {
+    public final <E extends Test> List<List<Object>> getJavaScriptConfig(final E[] tests) {
         return Arrays.stream(tests)
                 .map(test -> Arrays.asList(
+                        // call to getValuePrivate() to allow overrides of getActiveBucket
                         getValue(test.getName(), test.getFallbackValue()),
                         getPayload(test.getName()).fetchAValue()))
                 .collect(Collectors.toList());
