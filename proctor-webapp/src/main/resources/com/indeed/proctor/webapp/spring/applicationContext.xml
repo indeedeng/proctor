@@ -47,7 +47,7 @@
     <bean id="backgroundJobFactory" class="com.indeed.proctor.webapp.jobs.BackgroundJobFactory"/>
 
     <bean id="proctorSpecificationSource" class="com.indeed.proctor.webapp.RemoteProctorSpecificationSource" destroy-method="shutdown">
-        <constructor-arg name="httpTimeout" value="${verify.http.timeout:1000}"/>
+        <constructor-arg name="httpTimeoutMillis" value="${verify.http.timeout:1000}"/>
         <constructor-arg name="executorThreads" value="${verify.executor.threads:10}"/>
         <constructor-arg name="trunk" ref="trunk" />
         <constructor-arg name="qa" ref="qa" />
