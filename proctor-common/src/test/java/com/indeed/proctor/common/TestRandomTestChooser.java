@@ -44,7 +44,7 @@ public class TestRandomTestChooser {
 
         final RandomTestChooser rtc = initializeRandomTestChooser(ranges, buckets);
 
-        int[] found = { 0, 0 };
+        final int[] found = { 0, 0 };
         final Map<String, Object> values = Collections.emptyMap();
         for (int i = 0; i < 1000; i++) {
             final TestChooser.Result chosen = rtc.choose(null, values);
@@ -68,7 +68,7 @@ public class TestRandomTestChooser {
 
         final RandomTestChooser rtc = initializeRandomTestChooser(ranges, buckets);
 
-        int[] found = { 0, 0, 0 };
+        final int[] found = { 0, 0, 0 };
         final Map<String, Object> values = Collections.emptyMap();
         for (int i = 0; i < 1000; i++) {
             final TestChooser.Result chosen = rtc.choose(null, values);
@@ -93,7 +93,7 @@ public class TestRandomTestChooser {
         final FunctionMapper functionMapper = RuleEvaluator.FUNCTION_MAPPER;
 
         final ConsumableTestDefinition testDefinition = new ConsumableTestDefinition();
-        testDefinition.setConstants(Collections.<String, Object>emptyMap());
+        testDefinition.setConstants(Collections.emptyMap());
 
         testDefinition.setBuckets(buckets);
 

@@ -12,20 +12,23 @@ import javax.annotation.Nullable;
 */
 @Generated("com.indeed.proctor.consumer.gen.TestGroupsGenerator")
 public final class ${mainClassName} {
+    <#-- Prevent instantiation -->
     private ${mainClassName}() { }
 
-    <#list testDefs as testDef>
-    <#if (testDef.payloadJavaClass)??>
+<#list testDefs as testDef>
+  <#if (testDef.payloadJavaClass)??>
     <#if (testDef.isMap)??>
     public static final class ${testDef.name?cap_first} extends AbstractGroupsPayload {
         <#list testDef.nestedPayloadsList as nestedPayloadsMap>
         private final ${nestedPayloadsMap.value} ${nestedPayloadsMap.key};
         </#list>
 
+        <#-- Constructor based on Bucket -->
         public ${testDef.name?cap_first}(@Nullable TestBucket bucket) {
             this(bucket != null ? bucket.getPayload() : null);
         }
 
+        <#-- Constructor based on Payload -->
         public ${testDef.name?cap_first}(@Nullable Payload payload) {
             <#list testDef.nestedPayloadsList as nestedPayloadsMap>
             this.${nestedPayloadsMap.key} = super.convertTo${nestedPayloadsMap.payloadTypeName?cap_first}(payload, "${nestedPayloadsMap.key}");
@@ -39,6 +42,6 @@ public final class ${mainClassName} {
         </#list>
     }
     </#if>
-    </#if>
-    </#list>
+  </#if>
+</#list>
 }

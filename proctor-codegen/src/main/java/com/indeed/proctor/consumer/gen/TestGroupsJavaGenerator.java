@@ -1,6 +1,5 @@
 package com.indeed.proctor.consumer.gen;
 
-
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.indeed.proctor.common.PayloadType;
@@ -21,12 +20,12 @@ public class TestGroupsJavaGenerator extends TestGroupsGenerator {
         final String groupsManagerTemplateName = "groups-manager.ftl";
         final String payloadTemplateName = "payload.ftl";
         final String contextTemplateName = "context.ftl";
-        final String payloadClass = groupsClass + "Payload";
+        final String payloadClass = groupsClass + "Payload"; // must be same as in groups.ftl: "${mainClassName}Payload"
         final String fileExtension = ".java";
         final Map<String, Object> baseContext = Maps.newHashMap();
         baseContext.put("groupsClassName", groupsClass);
         baseContext.put("groupsManagerClassName", groupsManagerClass);
-        baseContext.put("payloadClassName",groupsClass + "Payload");
+        baseContext.put("payloadClassName", payloadClass);
         if (!Strings.isNullOrEmpty(groupsClass)) {
             generate(input, target, baseContext, packageName, groupsClass, templatePath, groupsTemplateName, fileExtension);
         }

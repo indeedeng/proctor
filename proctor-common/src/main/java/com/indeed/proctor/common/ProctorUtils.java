@@ -79,7 +79,7 @@ public abstract class ProctorUtils {
             @Nonnull final ExpressionFactory expressionFactory,
             @Nonnull final Map<String, Object> values
     ) {
-        final Map<String, ValueExpression> context = new HashMap<String, ValueExpression>(values.size());
+        final Map<String, ValueExpression> context = new HashMap<>(values.size());
         for (final Entry<String, Object> entry : values.entrySet()) {
             final ValueExpression ve = expressionFactory.createValueExpression(entry.getValue(), Object.class);
             context.put(entry.getKey(), ve);
@@ -245,7 +245,7 @@ public abstract class ProctorUtils {
                 requiredTests,
                 functionMapper,
                 new ProvidedContext(ProvidedContext.EMPTY_CONTEXT, false),
-                Collections.<String>emptySet()
+                Collections.emptySet()
         );
     }
 
@@ -262,7 +262,7 @@ public abstract class ProctorUtils {
                 requiredTests,
                 functionMapper,
                 providedContext,
-                Collections.<String>emptySet()
+                Collections.emptySet()
         );
     }
 
@@ -340,7 +340,7 @@ public abstract class ProctorUtils {
                 requiredTests,
                 RuleEvaluator.FUNCTION_MAPPER,
                 new ProvidedContext(ProvidedContext.EMPTY_CONTEXT, false), //use default function mapper
-                Collections.<String>emptySet()
+                Collections.emptySet()
         );
     }
 
@@ -379,7 +379,7 @@ public abstract class ProctorUtils {
                 requiredTests,
                 functionMapper,
                 providedContext,
-                Collections.<String>emptySet()
+                Collections.emptySet()
         );
     }
 
@@ -679,7 +679,7 @@ public abstract class ProctorUtils {
     }
 
     /**
-     * minimizes TestMatrix by removing non-required test definitions, also add definitions fro missing tests
+     * minimizes TestMatrix by removing non-required test definitions, also add definitions from missing tests
      */
     private static void consolidate(
             @Nonnull final TestMatrixArtifact testMatrix,
@@ -787,12 +787,12 @@ public abstract class ProctorUtils {
                         missingTestSoleBucketDescription)),
                 // Force a nonnull allocation just in case something somewhere assumes 1.0 total allocation
                 Collections.singletonList(allocation),
-                Collections.<String, Object>emptyMap(),
+                Collections.emptyMap(),
                 testName);
     }
 
     public static ProvidedContext convertContextToTestableMap(final Map<String, String> providedContext) {
-        return convertContextToTestableMap(providedContext, Collections.<String, Object>emptyMap());
+        return convertContextToTestableMap(providedContext, Collections.emptyMap());
     }
 
     public static ProvidedContext convertContextToTestableMap(
@@ -800,7 +800,7 @@ public abstract class ProctorUtils {
             final Map<String, Object> ruleVerificationContext
     ) {
         final ExpressionFactory expressionFactory = new ExpressionFactoryImpl();
-        final Map<String, Object> primitiveVals = new HashMap<String, Object>();
+        final Map<String, Object> primitiveVals = new HashMap<>();
         primitiveVals.put("int", 0);
         primitiveVals.put("integer", 0);
         primitiveVals.put("long", (long) 0);
@@ -814,7 +814,7 @@ public abstract class ProctorUtils {
         primitiveVals.put("byte", (byte) 0);
 
         if (providedContext != null) {
-            final Map<String, Object> newProvidedContext = new HashMap<String, Object>();
+            final Map<String, Object> newProvidedContext = new HashMap<>();
             final Set<String> uninstantiatedIdentifiers = Sets.newHashSet();
             for (final Entry<String, String> entry : providedContext.entrySet()) {
                 final String identifier = entry.getKey();
@@ -866,9 +866,23 @@ public abstract class ProctorUtils {
             final String testName, final String matrixSource,
             @Nonnull final ConsumableTestDefinition testDefinition
     ) throws IncompatibleTestMatrixException {
-        verifyInternallyConsistentDefinition(testName, matrixSource, testDefinition, RuleEvaluator.FUNCTION_MAPPER, new ProvidedContext(ProvidedContext.EMPTY_CONTEXT, false));
+        verifyInternallyConsistentDefinition(
+                testName,
+                matrixSource,
+                testDefinition,
+                RuleEvaluator.FUNCTION_MAPPER,
+                new ProvidedContext(ProvidedContext.EMPTY_CONTEXT, false)
+        );
     }
 
+    /**
+     * verify:
+     * - test/allocation rules has valid syntax
+     * - test/allocation rule evaluates to boolean
+     * - buckets have same payload type
+     *
+     * @throws IncompatibleTestMatrixException on violations
+     */
     public static void verifyInternallyConsistentDefinition(
             final String testName,
             final String matrixSource,
@@ -1006,12 +1020,13 @@ public abstract class ProctorUtils {
             fallbackValue = firstBucket.getValue(); // buckets are sorted, choose smallest value as the fallback value
 
             final PayloadSpecification payloadSpecification = new PayloadSpecification();
-            if (firstBucket.getPayload() != null && !firstBucket.getPayload().equals(Payload.EMPTY_PAYLOAD)) {
-                final PayloadType payloadType = PayloadType.payloadTypeForName(firstBucket.getPayload().fetchType());
+            final Payload firstBucketPayload = firstBucket.getPayload();
+            if ((firstBucketPayload != null) && !firstBucketPayload.equals(Payload.EMPTY_PAYLOAD)) {
+                final PayloadType payloadType = PayloadType.payloadTypeForName(firstBucketPayload.fetchType());
                 payloadSpecification.setType(payloadType.payloadTypeName);
                 if (payloadType == PayloadType.MAP) {
-                    final Map<String, String> payloadSpecificationSchema = new HashMap<String, String>();
-                    for (final Map.Entry<String, Object> entry : firstBucket.getPayload().getMap().entrySet()) {
+                    final Map<String, String> payloadSpecificationSchema = new HashMap<>();
+                    for (final Map.Entry<String, Object> entry : firstBucketPayload.getMap().entrySet()) {
                         payloadSpecificationSchema.put(entry.getKey(), PayloadType.payloadTypeForValue(entry.getValue()).payloadTypeName);
                     }
                     payloadSpecification.setSchema(payloadSpecificationSchema);
@@ -1019,8 +1034,7 @@ public abstract class ProctorUtils {
                 testSpecification.setPayload(payloadSpecification);
             }
 
-            for (int i = 0; i < testDefinitionBuckets.size(); i++) {
-                final TestBucket bucket = testDefinitionBuckets.get(i);
+            for (final TestBucket bucket : testDefinitionBuckets) {
                 buckets.put(bucket.getName(), bucket.getValue());
             }
         }

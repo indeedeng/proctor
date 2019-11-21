@@ -159,7 +159,7 @@ public enum PayloadType {
      */
     @Nonnull
     public static List<String> allTypeNames() {
-        final List<String> names = new ArrayList<String>();
+        final List<String> names = new ArrayList<>();
         for (final PayloadType p : PayloadType.values()) {
             names.add(p.payloadTypeName);
         }
