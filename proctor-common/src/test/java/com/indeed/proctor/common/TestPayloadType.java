@@ -119,7 +119,7 @@ public class TestPayloadType {
                     return p;
                 })
                 .collect(Collectors.toMap(
-                        e -> PayloadType.payloadTypeForName(e.fetchType()), e -> e));
+                        e -> e.fetchPayloadType().get(), e -> e));
     }
 
 }

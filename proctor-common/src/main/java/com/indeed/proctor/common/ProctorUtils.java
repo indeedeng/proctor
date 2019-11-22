@@ -53,6 +53,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -1015,18 +1016,20 @@ public abstract class ProctorUtils {
             }
         }).immutableSortedCopy(testDefinition.getBuckets());
         int fallbackValue = -1;
-        if (testDefinitionBuckets.size() > 0) {
+        if (!testDefinitionBuckets.isEmpty()) {
+            // buckets are sorted, choose smallest value as the fallback value
+            fallbackValue = testDefinitionBuckets.get(0).getValue();
             final TestBucket firstBucket = testDefinitionBuckets.get(0);
-            fallbackValue = firstBucket.getValue(); // buckets are sorted, choose smallest value as the fallback value
 
             final PayloadSpecification payloadSpecification = new PayloadSpecification();
-            final Payload firstBucketPayload = firstBucket.getPayload();
-            if ((firstBucketPayload != null) && !firstBucketPayload.equals(Payload.EMPTY_PAYLOAD)) {
-                final PayloadType payloadType = PayloadType.payloadTypeForName(firstBucketPayload.fetchType());
+            final Optional<Payload> firstBucketPayloadOpt = Optional.ofNullable(firstBucket.getPayload());
+            final Optional<PayloadType> firstBucketPayloadTypeOpt = firstBucketPayloadOpt.flatMap(Payload::fetchPayloadType);
+            if (firstBucketPayloadOpt.isPresent() && firstBucketPayloadTypeOpt.isPresent()) {
+                final PayloadType payloadType = firstBucketPayloadTypeOpt.get();
                 payloadSpecification.setType(payloadType.payloadTypeName);
                 if (payloadType == PayloadType.MAP) {
                     final Map<String, String> payloadSpecificationSchema = new HashMap<>();
-                    for (final Map.Entry<String, Object> entry : firstBucketPayload.getMap().entrySet()) {
+                    for (final Map.Entry<String, Object> entry : firstBucketPayloadOpt.get().getMap().entrySet()) {
                         payloadSpecificationSchema.put(entry.getKey(), PayloadType.payloadTypeForValue(entry.getValue()).payloadTypeName);
                     }
                     payloadSpecification.setSchema(payloadSpecificationSchema);

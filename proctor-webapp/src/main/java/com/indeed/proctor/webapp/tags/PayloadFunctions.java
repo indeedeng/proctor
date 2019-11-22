@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
+import java.util.Optional;
 
 /**
  * @author pwp
@@ -33,12 +34,11 @@ public class PayloadFunctions {
      * If o is a proctor Payload object, then return its type as a string, otherwise return "none".
      */
     public static String printPayloadType(final Object o) throws IOException, JsonGenerationException, JsonMappingException {
-        if (o != null && o instanceof Payload) {
-            final Payload p = (Payload) o;
-            return p.fetchType();
-        } else {
-            return "none";
-        }
+        return Optional.ofNullable(o)
+                .filter(ob -> ob instanceof Payload)
+                .flatMap(ob -> ((Payload) ob).fetchPayloadType())
+                .map(p -> p.payloadTypeName)
+                .orElse("none");
     }
 
     public static String[] allPayloadTypeStrings() {

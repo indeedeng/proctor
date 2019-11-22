@@ -6,6 +6,7 @@ import org.junit.Test;
 
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -58,7 +59,8 @@ public class TestPayload {
 
     // Test
     private void verifyPayload(final Payload payload, final PayloadType type) {
-
+        assertThat(payload.fetchPayloadType()).isEqualTo(Optional.ofNullable(type));
+        assertThat(payload.fetchType()).isEqualTo(Optional.ofNullable(type).map(t -> t.payloadTypeName).orElse("none"));
 
         if (type == null) {
             // payloads[0] is empty so all null.

@@ -1,14 +1,17 @@
 package com.indeed.proctor.common.model;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.indeed.proctor.common.PayloadType;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Models a payload value for a bucket in a test, generally meant to have one kind of value per bucket.
@@ -205,51 +208,59 @@ public class Payload {
     }
 
     /**
-     * @return the payload type as a string.  Used by Proctor Webapp.
+     * @return payloadType unless emptyPayload
      */
     @Nonnull
-    public String fetchType() {
-        if (doubleValue != null) {
-            return "doubleValue";
-        }
-        if (doubleArray != null) {
-            return "doubleArray";
-        }
-        if (longValue != null) {
-            return "longValue";
-        }
-        if (longArray != null) {
-            return "longArray";
-        }
-        if (stringValue != null) {
-            return "stringValue";
-        }
-        if (stringArray != null) {
-            return "stringArray";
-        }
-        if (map != null) {
-            return "map";
-        }
-        return "none";
+    public Optional<PayloadType> fetchPayloadType() {
+        return Optional.ofNullable(getPayloadType());
     }
 
-    public boolean sameType(@Nullable final Payload that) {
-        if (this == that) {
+    @CheckForNull
+    private PayloadType getPayloadType() {
+        final PayloadType type;
+        if (doubleValue != null) {
+            type = PayloadType.DOUBLE_VALUE;
+        } else if (doubleArray != null) {
+            type = PayloadType.DOUBLE_ARRAY;
+        } else if (longValue != null) {
+            type = PayloadType.LONG_VALUE;
+        } else if (longArray != null) {
+            type = PayloadType.LONG_ARRAY;
+        } else if (stringValue != null) {
+            type = PayloadType.STRING_VALUE;
+        } else if (stringArray != null) {
+            type = PayloadType.STRING_ARRAY;
+        } else if (map != null) {
+            type = PayloadType.MAP;
+        } else {
+            type = null;
+        }
+        return type;
+    }
+
+    /**
+     * @return the payload type as a string.  Used by Proctor Webapp.
+     * @deprecated use fetchPayloadType
+     */
+    @Nonnull
+    @Deprecated
+    public String fetchType() {
+        return fetchPayloadType()
+                .map(t -> t.payloadTypeName)
+                .orElse("none");
+    }
+
+    public boolean sameType(@Nullable final Payload other) {
+        if (this == other) {
             return true;
         }
-        if (that == null) {
+        if (other == null) {
             return false;
         }
 
         // Both this and that must have either null
         // or something filled in for each slot.
-        return (((doubleValue == null) == (that.doubleValue == null))
-                && ((doubleArray == null) == (that.doubleArray == null))
-                && ((longValue == null) == (that.longValue == null))
-                && ((longArray == null) == (that.longArray == null))
-                && ((stringValue == null) == (that.stringValue == null))
-                && ((stringArray == null) == (that.stringArray == null))
-                && ((map == null) == (that.map == null)));
+        return this.getPayloadType() == other.getPayloadType();
     }
 
     public int numFieldsDefined() {
