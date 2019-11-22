@@ -16,8 +16,10 @@ For SVN:
     * https://YOURSVN.com/svn/repos/proctor-data/branches/deploy/qa/matrices/test-definitions/
     * https://YOURSVN.com/svn/repos/proctor-data/branches/deploy/production/matrices/test-definitions/
 
-For git:
-    * TODO: Create local repository with trunk/qa/prod branches and matrices root folder on each branch...
+For Git:
+    * https://YOURGIT.com/YOURREPOS/proctor-data/tree/trunk/matrices/test-definitions/
+    * https://YOURGIT.com/YOURREPOS/proctor-data/tree/qa/matrices/test-definitions/
+    * https://YOURGIT.com/YOURREPOS/proctor-data/tree/production/matrices/test-definitions/
 
 # Deployment
 1. Use git to clone https://github.com/indeedeng/proctor-webapp
@@ -34,20 +36,13 @@ Two configuration files need to be provided to run Proctor-Webapp properly. The 
 
 1. **${config.dir}/proctor-config.properties**
 
-When using SVN as storage:
+When using SVN or Git as storage:
 
     ```bash
-    revision.control=svn
-    scm.path=https://YOURSVN.com/svn/repos/proctor-data/
-    scm.login=REPLACE_WITH_USER
-    scm.password=REPLACE_WITH_PASS
-    ```
-
-When using Git as storage:
-
-    ```bash
-    revision.control=git
-    # TODO
+    revision.control=[svn|git]
+    scm.path=[https://YOURSVN.com/svn/repos/proctor-data/|https://YOURGIT.com/YOURREPOS/proctor-data.git]
+    scm.login=REPLACE_WITH_REPO_USER
+    scm.password=REPLACE_WITH_REPO_PASS
     ```
 
 2. **${config.dir}/proctor-webapp.xml**
