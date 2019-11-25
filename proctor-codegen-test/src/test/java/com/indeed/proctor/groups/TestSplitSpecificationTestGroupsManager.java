@@ -1,28 +1,15 @@
 package com.indeed.proctor.groups;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.io.CharStreams;
 import com.indeed.proctor.common.Identifiers;
-import com.indeed.proctor.common.Proctor;
 import com.indeed.proctor.common.ProctorResult;
-import com.indeed.proctor.common.ProctorSpecification;
-import com.indeed.proctor.common.ProctorUtils;
-import com.indeed.proctor.common.StringProctorLoader;
-import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.common.model.TestType;
 import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringWriter;
-import java.util.Iterator;
-import java.util.Map;
-
+import static com.indeed.proctor.groups.UtilMethods.calcBuckets;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -36,39 +23,9 @@ public class TestSplitSpecificationTestGroupsManager {
     private SplitSpecificationTestGroupsManager manager;
 
 
-    public TestSplitSpecificationTestGroupsManager() {
-    }
-
     @Before()
     public void setUp() throws Exception {
-        setUp(getProctor());
-    }
-
-    private void setUp(final Proctor proctor) {
-        manager = new SplitSpecificationTestGroupsManager(() -> proctor);
-    }
-
-    private Proctor getProctor() throws IOException {
-        // just read from the resource .json file at the moment.ProctorUtils.java
-
-        final Reader matrixResource = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream(SPECIFICATION_MATRIX)));
-        final StringWriter matrixString = new StringWriter();
-        CharStreams.copy(matrixResource, matrixString);
-
-
-        final ProctorSpecification specification = getProctorSpecification();
-        final StringProctorLoader loader = new StringProctorLoader(specification, SPECIFICATION_MATRIX, matrixString.toString());
-        assertTrue("StringProctorLoader should load", loader.load());
-        return loader.get();
-    }
-
-    private ProctorSpecification getProctorSpecification() throws IOException {
-        final InputStream specicationStream = getClass().getResourceAsStream(SPECIFICATION_RESOURCE);
-        try {
-            return ProctorUtils.readSpecification(specicationStream);
-        } finally {
-            specicationStream.close();
-        }
+        manager = new SplitSpecificationTestGroupsManager(() -> UtilMethods.getProctor(SPECIFICATION_MATRIX, SPECIFICATION_RESOURCE));
     }
 
     @Test
@@ -86,7 +43,11 @@ public class TestSplitSpecificationTestGroupsManager {
                     .build());
 
             final ProctorResult result = testContext.getProctorResult(manager, identifiers);
-            assertEquals("one:test32,three:inactive-1,two:test22", calcBuckets(result));
+            assertThat(calcBuckets(result)).isEqualTo(ImmutableMap.builder()
+                    .put("one", "test32")
+                    .put("three", "inactive-1")
+                    .put("two", "test22")
+                    .build());
         }
         {
             final ImmutableMap<TestType, String> idMap = ImmutableMap.<TestType, String>builder()
@@ -97,7 +58,7 @@ public class TestSplitSpecificationTestGroupsManager {
             final Identifiers identifiers = new Identifiers(idMap, true);
 
             final ProctorResult result = testContext.getProctorResult(manager, identifiers);
-            assertEquals(result.getBuckets().get("one").getValue(),2);
+            assertEquals(2, result.getBuckets().get("one").getValue());
         }
     }
 
@@ -111,7 +72,10 @@ public class TestSplitSpecificationTestGroupsManager {
         {
             final Identifiers identifiers = new Identifiers(TestType.ANONYMOUS_USER, "16s2o7s01001d9vj");
             final ProctorResult result = testContext.getProctorResult(manager, identifiers);
-            assertEquals("three:inactive-1,two:test33", calcBuckets(result));
+            assertThat(calcBuckets(result)).isEqualTo(ImmutableMap.builder()
+                    .put("three", "inactive-1")
+                    .put("two", "test33")
+                    .build());
             // Check and make sure SpecificationCreationGroups respects these groups and works as expected.
             final SplitSpecificationTestGroups grps = new SplitSpecificationTestGroups(result);
 
@@ -143,10 +107,12 @@ public class TestSplitSpecificationTestGroupsManager {
                 .put(TestType.ANONYMOUS_USER, SPECIFICATION_MATRIX)
                 .build());
         final ProctorResult result = testContext.getProctorResult(manager, identifiers);
-        assertEquals("three:inactive-1,two:test22", calcBuckets(result));
+        assertThat(calcBuckets(result)).isEqualTo(ImmutableMap.builder()
+                .put("three", "inactive-1")
+                .put("two", "test22")
+            .build());
         // Check and make sure SpecificationCreationGroups respects these groups and works as expected.
         final SplitSpecificationTestGroups grps = new SplitSpecificationTestGroups(result);
-        System.out.println("grps == "+grps);
         assertNotNull(grps.getThree());
         assertEquals(-1, grps.getThreeValue(-99));
         // The "Inactive" condition should be true.
@@ -172,31 +138,16 @@ public class TestSplitSpecificationTestGroupsManager {
                 .build();
         final Identifiers identifiers = new Identifiers(TestType.USER, "16s2o7s01001d9vj");
         final ProctorResult result = testContext.getProctorResult(manager, identifiers);
-        assertEquals("three:inactive-1,two:test33", calcBuckets(result));
+        assertThat(calcBuckets(result)).isEqualTo(ImmutableMap.builder()
+                .put("three", "inactive-1")
+                .put("two", "test33")
+                .build());
         // Check and make sure SpecificationCreationGroups respects these groups and works as expected.
         final SplitSpecificationTestGroups grps = new SplitSpecificationTestGroups(result);
         //make sure getDescription method exists and returns the correct description
-        assertEquals(grps.getThreeDescription(),"2nd test");
-        assertEquals(grps.getOneDescription(),"3rd \n\t\"test");
+        assertEquals("2nd test", grps.getThreeDescription());
+        assertEquals("3rd \n\t\"test", grps.getOneDescription());
     }
 
-    private String calcBuckets(ProctorResult proctorResult) {
-        final StringBuilder sb = new StringBuilder();
-        // Current behavior is mapping from { testName -> TestBucket }
-
-
-        for (final Iterator<Map.Entry<String, TestBucket>> iterator = proctorResult.getBuckets().entrySet().iterator(); iterator.hasNext(); ) {
-            final Map.Entry<String, TestBucket> entry = iterator.next();
-            final String testName = entry.getKey();
-            final TestBucket testBucket = entry.getValue();
-
-            if (sb.length() > 0) {
-                sb.append(",");
-            }
-            // String format is: {testName}:{testBucket.name}{testBucket.value}
-            sb.append(testName).append(":").append(testBucket.getName()).append(testBucket.getValue());
-        }
-        return sb.toString();
-    }
 
 }
