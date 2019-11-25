@@ -8,6 +8,11 @@ import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+/**
+ * A dynamic filter that matches test name using regular expression
+ * @deprecated Use {@link MetaTagsFilter}
+ */
+@Deprecated
 @JsonTypeName("name_pattern")
 public class TestNamePatternFilter implements DynamicFilter {
     private final Pattern pattern;

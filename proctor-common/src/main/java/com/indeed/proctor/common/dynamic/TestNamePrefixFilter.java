@@ -7,6 +7,12 @@ import com.indeed.proctor.common.model.ConsumableTestDefinition;
 
 import java.util.Objects;
 
+
+/**
+ * A dynamic filter that matches test name using prefix string
+ * @deprecated Use {@link MetaTagsFilter}
+ */
+@Deprecated
 @JsonTypeName("name_prefix")
 public class TestNamePrefixFilter implements DynamicFilter {
     private final String prefix;
