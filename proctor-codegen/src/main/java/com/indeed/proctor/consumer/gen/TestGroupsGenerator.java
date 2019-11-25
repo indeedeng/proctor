@@ -46,7 +46,7 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
      * contents, using the individual TestDefinition jsons and a providedcontext.json and dynamicfilters.json to create one large
      * temporary ProctorSpecification json to be used for code generation
      */
-    public static File makeTotalSpecification(
+    public static ProctorSpecification makeTotalSpecification(
             final File inputDir,
             final String targetDir
     ) throws CodeGenException {
@@ -54,7 +54,7 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
         return makeTotalSpecification(inputDir, targetDir, inputDir.getPath().substring(inputDir.getPath().lastIndexOf(File.separator) + 1) + "Groups.json");
     }
 
-    public static File makeTotalSpecification(
+    public static ProctorSpecification makeTotalSpecification(
             final File inputDir,
             final String targetDir,
             final String outputFileName
@@ -67,9 +67,9 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
      * Combines all input files into a total proctor specification
      * and writes it to a file of the path `targetDir`/`outputFileName`.
      *
-     * @return File object for the generated specification
+     * @return combined total proctor specification
      */
-    public static File makeTotalSpecification(
+    public static ProctorSpecification makeTotalSpecification(
             final List<File> inputFiles,
             final String targetDir,
             final String outputFileName
@@ -118,7 +118,7 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
         } catch (final IOException e) {
             throw new CodeGenException("Could not write to temp file " + output.getAbsolutePath(), e);
         }
-        return output;
+        return proctorSpecification;
     }
 
     /**
@@ -150,20 +150,8 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
         }
     }
 
-    @Override
-    protected Map<String, Object> populateRootMap(
-            final String input,
-            final Map<String, Object> baseContext,
-            final String packageName,
-            final String className
-    ) {
-        final File inputFile = new File(input);
-        final ProctorSpecification spec = ProctorUtils.readSpecification(inputFile);
-
-        return populateRootMap(spec, baseContext, packageName, className);
-    }
-
     @VisibleForTesting
+    @Override
     Map<String, Object> populateRootMap(
             final ProctorSpecification spec,
             final Map<String, Object> baseContext,

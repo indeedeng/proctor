@@ -1,7 +1,10 @@
 package com.indeed.proctor.consumer.gen.ant;
 
 import com.google.common.base.Strings;
+import com.indeed.proctor.common.ProctorSpecification;
+import com.indeed.proctor.common.ProctorUtils;
 import com.indeed.proctor.consumer.gen.CodeGenException;
+import com.indeed.proctor.consumer.gen.TestGroupsGenerator;
 import org.apache.log4j.Logger;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
@@ -99,10 +102,11 @@ public abstract class TestGroupsGeneratorTask extends Task {
         this.specificationOutput = specificationOutput;
     }
 
-    /*
+    /**
      * Generates total specifications from any partial specifications found
+     * Output generate total specification to `specificationOutput`
      */
-    protected void totalSpecificationGenerator(final List<File> files) throws CodeGenException {
+    protected ProctorSpecification mergePartialSpecifications(final List<File> files) throws CodeGenException {
         if (files == null || files.size() == 0) {
             throw new CodeGenException("No specifications file input");
         }
@@ -123,7 +127,11 @@ public abstract class TestGroupsGeneratorTask extends Task {
             //make directory if it doesn't exist
             new File(specificationOutput.substring(0, specificationOutput.lastIndexOf(File.separator))).mkdirs();
             final File specificationOutputFile = new File(specificationOutput);
-            generateTotalSpecification(files, specificationOutputFile);
+            return TestGroupsGenerator.makeTotalSpecification(
+                    files,
+                    specificationOutputFile.getParent(),
+                    specificationOutputFile.getName()
+            );
         }
     }
 
@@ -160,14 +168,14 @@ public abstract class TestGroupsGeneratorTask extends Task {
             }
             if (isSingleSpecificationFile) {
                 try {
-                    generateFile();
+                    generateSourceFiles(ProctorUtils.readSpecification(new File(input)));
                 } catch (final CodeGenException ex) {
                     throw new BuildException("Unable to generate code: " + ex.getMessage(), ex);
                 }
             } else {
                 if (!Strings.isNullOrEmpty(getSpecificationOutput())) {
                     try {
-                        totalSpecificationGenerator(files);
+                        generateSourceFiles(mergePartialSpecifications(files));
                     } catch (final CodeGenException e) {
                         throw new BuildException("Unable to generate total specification: " + e.getMessage(), e);
                     }
@@ -178,10 +186,10 @@ public abstract class TestGroupsGeneratorTask extends Task {
         }
     }
 
-    protected abstract void generateTotalSpecification(
-            final List<File> files,
-            final File specificationOutputFile
-    ) throws CodeGenException;
-
-    protected abstract void generateFile() throws CodeGenException;
+    /**
+     * Generate source files from given proctor specification
+     *
+     * @param specification a input specification for source code generation
+     */
+    protected abstract void generateSourceFiles(final ProctorSpecification specification) throws CodeGenException;
 }

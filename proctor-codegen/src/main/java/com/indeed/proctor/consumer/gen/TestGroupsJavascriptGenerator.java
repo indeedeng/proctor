@@ -3,6 +3,7 @@ package com.indeed.proctor.consumer.gen;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.indeed.proctor.common.PayloadType;
+import com.indeed.proctor.common.ProctorSpecification;
 
 import java.util.Map;
 
@@ -14,7 +15,7 @@ import java.util.Map;
 public class TestGroupsJavascriptGenerator extends TestGroupsGenerator {
 
     public void generate(
-            final String input,
+            final ProctorSpecification specification,
             final String target,
             final String packageName,
             final String groupsClass,
@@ -28,7 +29,7 @@ public class TestGroupsJavascriptGenerator extends TestGroupsGenerator {
         baseContext.put("useClosure", useClosure);
         if (!Strings.isNullOrEmpty(packageName)) {
             generate(
-                    input,
+                    specification,
                     target,
                     baseContext,
                     packageName,
