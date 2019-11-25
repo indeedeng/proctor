@@ -28,25 +28,6 @@ public class TestGroupsJavascriptGeneratorTask extends TestGroupsGeneratorTask {
 
     @Override
     protected void generateTotalSpecification(
-            final File dir,
-            final File specificationOutputFile
-    ) throws CodeGenException {
-        final File output = gen.makeTotalSpecification(
-                dir,
-                specificationOutputFile.getParent(),
-                specificationOutputFile.getName()
-        );
-        gen.generate(
-                output.getPath(),
-                target,
-                packageName,
-                groupsClass,
-                useClosure
-        );
-    }
-
-    @Override
-    protected void generateTotalSpecification(
             final List<File> files,
             final File specificationOutputFile
     ) throws CodeGenException {

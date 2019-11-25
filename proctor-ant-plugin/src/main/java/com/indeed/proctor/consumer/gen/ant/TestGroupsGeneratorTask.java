@@ -99,16 +99,6 @@ public abstract class TestGroupsGeneratorTask extends Task {
         this.specificationOutput = specificationOutput;
     }
 
-    /**
-     * Use {@link TestGroupsGeneratorTask#totalSpecificationGenerator(List)} instead
-     *
-     * @deprecated
-     */
-    @Deprecated
-    protected void totalSpecificationGenerator(final File dir) throws CodeGenException {
-        totalSpecificationGenerator(Arrays.asList(dir.listFiles()));
-    }
-
     /*
      * Generates total specifications from any partial specifications found
      */
@@ -187,17 +177,6 @@ public abstract class TestGroupsGeneratorTask extends Task {
             }
         }
     }
-
-    /**
-     * Use {@link TestGroupsGeneratorTask#generateTotalSpecification(List, File)} instead
-     *
-     * @deprecated
-     */
-    @Deprecated
-    protected abstract void generateTotalSpecification(
-            final File dir,
-            final File specificationOutputFile
-    ) throws CodeGenException;
 
     protected abstract void generateTotalSpecification(
             final List<File> files,
