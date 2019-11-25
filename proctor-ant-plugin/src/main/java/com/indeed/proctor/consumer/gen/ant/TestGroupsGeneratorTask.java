@@ -21,10 +21,42 @@ import static com.indeed.proctor.consumer.gen.TestGroupsGenerator.PROVIDED_CONTE
  */
 public abstract class TestGroupsGeneratorTask extends Task {
     protected static final Logger LOGGER = Logger.getLogger(TestGroupsGeneratorTask.class);
+    /**
+     * Paths to input specification files separated by ","
+     * It allows two types of inputs
+     *
+     * 1. A single path to json file that is not named
+     * providedcontext.json or dynamicfilters.json
+     * The json file holds all tests specifications (total specification).
+     *
+     * 2. All other cases. one or more paths to json file
+     * or directory including json files, separated by comma.
+     * each json file is a single test specification
+     * or providedcontext.json or dynamicfilters.json.
+     *
+     * FIXME: current implementation is not strictly following this at this moment.
+     * Current limitations are
+     * * single path to "providedcontext.json" is handled as Type 1.
+     * * single path to "dynamicfilters.json" is handled as Type 1.
+     * * multiple paths to json files is handled as Type 1 and fails to parse.
+     */
     protected String input;
+    /**
+     * Target base directory to generate files
+     */
     protected String target;
+    /**
+     * Package of generated source files
+     */
     protected String packageName;
+    /**
+     * Name of generated group class
+     */
     protected String groupsClass;
+    /**
+     * Paths to generate a total specification json file.
+     * This is ignored when `input` specifies total specification json file.
+     */
     protected String specificationOutput;
 
     public String getInput() {
@@ -69,12 +101,14 @@ public abstract class TestGroupsGeneratorTask extends Task {
 
     /**
      * Use {@link TestGroupsGeneratorTask#totalSpecificationGenerator(List)} instead
+     *
      * @deprecated
      */
     @Deprecated
     protected void totalSpecificationGenerator(final File dir) throws CodeGenException {
         totalSpecificationGenerator(Arrays.asList(dir.listFiles()));
     }
+
     /*
      * Generates total specifications from any partial specifications found
      */
@@ -82,8 +116,8 @@ public abstract class TestGroupsGeneratorTask extends Task {
         if (files == null || files.size() == 0) {
             throw new CodeGenException("No specifications file input");
         }
-        final List<File> providedContextFiles =  new ArrayList<>();
-        final List<File> dynamicFiltersFiles =  new ArrayList<>();
+        final List<File> providedContextFiles = new ArrayList<>();
+        final List<File> dynamicFiltersFiles = new ArrayList<>();
         for (final File file : files) {
             if (PROVIDED_CONTEXT_FILENAME.equals(file.getName())) {
                 providedContextFiles.add(file);
@@ -97,20 +131,11 @@ public abstract class TestGroupsGeneratorTask extends Task {
             throw new CodeGenException("Incorrect amount of " + DYNAMIC_FILTERS_FILENAME + " in specified input folder");
         } else {
             //make directory if it doesn't exist
-            (new File(specificationOutput.substring(0, specificationOutput.lastIndexOf(File.separator)))).mkdirs();
+            new File(specificationOutput.substring(0, specificationOutput.lastIndexOf(File.separator))).mkdirs();
             final File specificationOutputFile = new File(specificationOutput);
             generateTotalSpecification(files, specificationOutputFile);
         }
     }
-
-    /**
-     * Use {@link TestGroupsGeneratorTask#generateTotalSpecification(List, File)} instead
-     * @deprecated
-     */
-    @Deprecated
-    protected abstract void generateTotalSpecification(final File dir, final File specificationOutputFile) throws CodeGenException;
-
-    protected abstract void generateTotalSpecification(final List<File> files, final File specificationOutputFile) throws CodeGenException;
 
     @Override
     public void execute() throws BuildException {
@@ -162,6 +187,22 @@ public abstract class TestGroupsGeneratorTask extends Task {
             }
         }
     }
+
+    /**
+     * Use {@link TestGroupsGeneratorTask#generateTotalSpecification(List, File)} instead
+     *
+     * @deprecated
+     */
+    @Deprecated
+    protected abstract void generateTotalSpecification(
+            final File dir,
+            final File specificationOutputFile
+    ) throws CodeGenException;
+
+    protected abstract void generateTotalSpecification(
+            final List<File> files,
+            final File specificationOutputFile
+    ) throws CodeGenException;
 
     protected abstract void generateFile() throws CodeGenException;
 }

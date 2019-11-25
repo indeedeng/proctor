@@ -1,11 +1,5 @@
 package com.indeed.proctor.consumer.gen;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.Map;
-import java.util.regex.Matcher;
-
 import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapper;
 import freemarker.template.SimpleHash;
@@ -13,13 +7,24 @@ import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateModel;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Map;
+import java.util.regex.Matcher;
+
 /**
  * Possibly destined for another home one day
- * @author ketan
  *
+ * @author ketan
  */
 public abstract class FreeMarkerCodeGenerator {
-    abstract Map<String, Object> populateRootMap(String input, Map<String, Object> baseContext, String packageName, String className);
+    abstract Map<String, Object> populateRootMap(
+            String input,
+            Map<String, Object> baseContext,
+            String packageName,
+            String className
+    );
 
     public static String toJavaIdentifier(final String s) {
         final StringBuilder sb = new StringBuilder();
@@ -80,7 +85,16 @@ public abstract class FreeMarkerCodeGenerator {
         return config;
     }
 
-    protected void generate(final String input, final String target, final Map<String, Object> baseContext, final String packageName, final String className, final String templatePath, final String templateName, final String fileExtension) throws CodeGenException {
+    protected void generate(
+            final String input,
+            final String target,
+            final Map<String, Object> baseContext,
+            final String packageName,
+            final String className,
+            final String templatePath,
+            final String templateName,
+            final String fileExtension
+    ) throws CodeGenException {
         final Configuration config = getFreemarkerConfiguration(templatePath);
 
         final Template template = loadTemplate(templateName, templatePath, config);
@@ -95,14 +109,18 @@ public abstract class FreeMarkerCodeGenerator {
 
             template.process(model, out);
             out.close();
-        } catch (TemplateException e) {
+        } catch (final TemplateException e) {
             throw new RuntimeException("Unable to run template " + templateName + " to: " + fullPath, e);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new RuntimeException("Unable to write to target file: " + fullPath, e);
         }
     }
 
-    public static Template loadTemplate(final String templateName, final String templatePath, final Configuration config) throws CodeGenException {
+    public static Template loadTemplate(
+            final String templateName,
+            final String templatePath,
+            final Configuration config
+    ) throws CodeGenException {
         try {
             return config.getTemplate(templateName);
         } catch (final IOException e) {

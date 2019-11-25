@@ -14,12 +14,26 @@ public abstract class AbstractJavaProctorMojo extends AbstractProctorMojo {
 
     private final TestGroupsJavaGenerator gen = new TestGroupsJavaGenerator();
 
-    protected void processFile(final File file, final String packageName, final String className) throws CodeGenException {
+    protected void processFile(
+            final File file,
+            final String packageName,
+            final String className
+    ) throws CodeGenException {
         getLog().info(String.format("Building resources for %s", packageName));
-        gen.generate(file.getPath(), getOutputDirectory().getPath(), packageName, className, className + "Manager", className + "Context");
+        gen.generate(
+                file.getPath(),
+                getOutputDirectory().getPath(),
+                packageName,
+                className,
+                className + "Manager",
+                className + "Context"
+        );
     }
 
-    protected void generateTotalSpecification(final File parent, final File outputDir) throws CodeGenException {
+    protected void generateTotalSpecification(
+            final File parent,
+            final File outputDir
+    ) throws CodeGenException {
         gen.makeTotalSpecification(parent, outputDir.getPath());
     }
 }
