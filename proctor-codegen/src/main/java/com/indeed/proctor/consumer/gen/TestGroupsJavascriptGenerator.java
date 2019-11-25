@@ -48,21 +48,4 @@ public class TestGroupsJavascriptGenerator extends TestGroupsGenerator {
         testDef.put("payloadJavascriptType", specifiedPayloadType.javascriptTypeName);
         testDef.put("payloadDefaultValue", specifiedPayloadType.getDefaultJavascriptValue());
     }
-
-    public static void main(final String[] args) throws CodeGenException {
-        if (args.length != 5) {
-            System.err.println("java "
-                    + TestGroupsJavascriptGenerator.class.getCanonicalName()
-                    + " input.json outputDirectory packageName groupsClassName useClosure"
-            );
-            System.exit(-4);
-        }
-        final TestGroupsJavascriptGenerator generator = new TestGroupsJavascriptGenerator();
-        final String input = args[0];
-        final String target = args[1];
-        final String packageName = args[2];
-        final String groupsClass = args[3];
-        final boolean useClosure = Boolean.parseBoolean(args[4]);
-        generator.generate(input, target, packageName, groupsClass, useClosure);
-    }
 }

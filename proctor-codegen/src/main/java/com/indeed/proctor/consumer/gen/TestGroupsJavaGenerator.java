@@ -91,22 +91,4 @@ public class TestGroupsJavaGenerator extends TestGroupsGenerator {
         testDef.put("payloadJavaClass", specifiedPayloadType.javaClassName);
         testDef.put("payloadAccessorName", specifiedPayloadType.javaAccessorName);
     }
-
-    public static void main(final String[] args) throws CodeGenException {
-        if (args.length != 6) {
-            System.err.println("java "
-                    + TestGroupsJavaGenerator.class.getCanonicalName()
-                    + " input.json outputDirectory packageName groupsClassName groupsManagerClassName contextClassName"
-            );
-            System.exit(-4);
-        }
-        final TestGroupsJavaGenerator generator = new TestGroupsJavaGenerator();
-        final String input = args[0];
-        final String target = args[1];
-        final String packageName = args[2];
-        final String groupsClass = args[3];
-        final String groupsManagerClass = args[4];
-        final String contextClass = args[5];
-        generator.generate(input, target, packageName, groupsClass, groupsManagerClass, contextClass);
-    }
 }
