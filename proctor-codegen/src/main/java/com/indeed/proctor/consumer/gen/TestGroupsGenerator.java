@@ -6,7 +6,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.indeed.proctor.common.PayloadType;
 import com.indeed.proctor.common.ProctorSpecification;
-import com.indeed.proctor.common.ProctorUtils;
 import com.indeed.proctor.common.Serializers;
 import com.indeed.proctor.common.TestSpecification;
 import com.indeed.proctor.common.dynamic.DynamicFilters;
@@ -74,6 +73,29 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
             final String targetDir,
             final String outputFileName
     ) throws CodeGenException {
+        final List<File> providedContextFiles = new ArrayList<>();
+        final List<File> dynamicFiltersFiles = new ArrayList<>();
+        for (final File file : inputFiles) {
+            if (PROVIDED_CONTEXT_FILENAME.equals(file.getName())) {
+                providedContextFiles.add(file);
+            } else if (DYNAMIC_FILTERS_FILENAME.equals(file.getName())) {
+                dynamicFiltersFiles.add(file);
+            }
+        }
+
+        if (providedContextFiles.size() != 1) {
+            throw new CodeGenException(
+                    "Incorrect amount of " + PROVIDED_CONTEXT_FILENAME + " in specified input folder."
+                            + " expected 1 but" + +providedContextFiles.size() + ": " + providedContextFiles
+            );
+        }
+        if (dynamicFiltersFiles.size() > 1) {
+            throw new CodeGenException(
+                    "Incorrect amount of " + DYNAMIC_FILTERS_FILENAME + " in specified input folder."
+                            + " expected 0 or 1 but " + dynamicFiltersFiles.size() + ": " + dynamicFiltersFiles
+            );
+        }
+
         final Map<String, TestSpecification> testSpec = new LinkedHashMap<>();
         Map<String, String> providedContext = new LinkedHashMap<>();
         DynamicFilters dynamicFilters = new DynamicFilters();

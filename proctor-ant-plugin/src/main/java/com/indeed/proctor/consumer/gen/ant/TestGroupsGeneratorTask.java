@@ -14,9 +14,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.indeed.proctor.consumer.gen.TestGroupsGenerator.DYNAMIC_FILTERS_FILENAME;
-import static com.indeed.proctor.consumer.gen.TestGroupsGenerator.PROVIDED_CONTEXT_FILENAME;
-
 /**
  * Ant task for generating Proctor test groups files.
  *
@@ -110,29 +107,15 @@ public abstract class TestGroupsGeneratorTask extends Task {
         if (files == null || files.size() == 0) {
             throw new CodeGenException("No specifications file input");
         }
-        final List<File> providedContextFiles = new ArrayList<>();
-        final List<File> dynamicFiltersFiles = new ArrayList<>();
-        for (final File file : files) {
-            if (PROVIDED_CONTEXT_FILENAME.equals(file.getName())) {
-                providedContextFiles.add(file);
-            } else if (DYNAMIC_FILTERS_FILENAME.equals(file.getName())) {
-                dynamicFiltersFiles.add(file);
-            }
-        }
-        if (providedContextFiles.size() != 1) {
-            throw new CodeGenException("Incorrect amount of " + PROVIDED_CONTEXT_FILENAME + " in specified input folder");
-        } else if (dynamicFiltersFiles.size() > 1) {
-            throw new CodeGenException("Incorrect amount of " + DYNAMIC_FILTERS_FILENAME + " in specified input folder");
-        } else {
-            //make directory if it doesn't exist
-            new File(specificationOutput.substring(0, specificationOutput.lastIndexOf(File.separator))).mkdirs();
-            final File specificationOutputFile = new File(specificationOutput);
-            return TestGroupsGenerator.makeTotalSpecification(
-                    files,
-                    specificationOutputFile.getParent(),
-                    specificationOutputFile.getName()
-            );
-        }
+
+        //make directory if it doesn't exist
+        new File(specificationOutput.substring(0, specificationOutput.lastIndexOf(File.separator))).mkdirs();
+        final File specificationOutputFile = new File(specificationOutput);
+        return TestGroupsGenerator.makeTotalSpecification(
+                files,
+                specificationOutputFile.getParent(),
+                specificationOutputFile.getName()
+        );
     }
 
     @Override
