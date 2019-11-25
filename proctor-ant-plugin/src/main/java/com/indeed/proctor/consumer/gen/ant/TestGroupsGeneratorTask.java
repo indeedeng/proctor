@@ -8,6 +8,7 @@ import com.indeed.proctor.consumer.gen.TestGroupsGenerator;
 import org.apache.log4j.Logger;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
+import org.apache.tools.ant.types.LogLevel;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -21,6 +22,17 @@ import java.util.List;
  */
 public abstract class TestGroupsGeneratorTask extends Task {
     protected static final Logger LOGGER = Logger.getLogger(TestGroupsGeneratorTask.class);
+
+    /**
+     * A period of sleep to display warning messages to users
+     */
+    private static final int SLEEP_TIME_FOR_WARNING = 3;
+
+    /**
+     * URL to the page for the dynamic filters migration
+     */
+    private static final String DYNAMIC_FILTERS_MIGRATION_URL = "https://github.com/indeedeng/proctor/issues/47";
+
     /**
      * Paths to input specification files separated by ","
      * It allows two types of inputs
@@ -107,6 +119,9 @@ public abstract class TestGroupsGeneratorTask extends Task {
         if (files == null || files.size() == 0) {
             throw new CodeGenException("No specifications file input");
         }
+        if (Strings.isNullOrEmpty(getSpecificationOutput())) {
+            throw new CodeGenException("`specificationOutput` is not given");
+        }
 
         //make directory if it doesn't exist
         new File(specificationOutput.substring(0, specificationOutput.lastIndexOf(File.separator))).mkdirs();
@@ -149,23 +164,48 @@ public abstract class TestGroupsGeneratorTask extends Task {
                     files.add(inputFile);
                 }
             }
+
+            final ProctorSpecification specification;
             if (isSingleSpecificationFile) {
-                try {
-                    generateSourceFiles(ProctorUtils.readSpecification(new File(input)));
-                } catch (final CodeGenException ex) {
-                    throw new BuildException("Unable to generate code: " + ex.getMessage(), ex);
-                }
+                specification = ProctorUtils.readSpecification(new File(input));
             } else {
-                if (!Strings.isNullOrEmpty(getSpecificationOutput())) {
-                    try {
-                        generateSourceFiles(mergePartialSpecifications(files));
-                    } catch (final CodeGenException e) {
-                        throw new BuildException("Unable to generate total specification: " + e.getMessage(), e);
-                    }
-                } else {
-                    throw new BuildException("Undefined output folder for generated specification");
+                try {
+                    specification = mergePartialSpecifications(files);
+                } catch (final CodeGenException e) {
+                    throw new BuildException("Unable to generate total specification: " + e.getMessage(), e);
                 }
             }
+
+            validateSpecification(specification);
+
+            try {
+                generateSourceFiles(specification);
+            } catch (final CodeGenException e) {
+                throw new BuildException("Unable to generate source file: " + e.getMessage(), e);
+            }
+        }
+    }
+
+    /**
+     * Validate input specification and log messages
+     */
+    private void validateSpecification(final ProctorSpecification specification) {
+        final boolean hasDuplicatedFilters = specification.getDynamicFilters()
+                .asCollection()
+                .stream()
+                .anyMatch(filter -> filter.getClass().isAnnotationPresent(Deprecated.class));
+
+        if (hasDuplicatedFilters) {
+            log(String.join("\n",
+                    "=================================================================================",
+                    "Warning: Proctor detected this application is using deprecated dynamic filters.",
+                    "Please migrate to meta tags based filters.",
+                    "See " + DYNAMIC_FILTERS_MIGRATION_URL + " for details.",
+                    "",
+                    "Sleeping " + SLEEP_TIME_FOR_WARNING + " seconds",
+                    "================================================================================="
+                    ), LogLevel.WARN.getLevel()
+            );
         }
     }
 

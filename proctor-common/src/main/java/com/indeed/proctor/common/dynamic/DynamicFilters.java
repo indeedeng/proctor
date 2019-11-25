@@ -81,6 +81,13 @@ public class DynamicFilters implements JsonSerializable {
         return builder.build();
     }
 
+    /**
+     * @return unmodifiable view of underlying dynamic filters
+     */
+    public Collection<DynamicFilter> asCollection() {
+        return Collections.unmodifiableCollection(filters);
+    }
+
     @Override
     public boolean equals(final Object o) {
         if (this == o) {
