@@ -20,9 +20,8 @@ import java.util.Map;
 import static java.util.Collections.emptyMap;
 
 /**
- * Doesn't really do much
- * @author ketan
- *
+ * Provides ability to determine buckets using a supplier to fetch a recent test definition.
+ * Subclasses should only pass context Maps to determineBucketsInternal that are compatible to the schema in getProvidedContext();
  */
 public abstract class AbstractGroupsManager implements ProctorContextDescriptor {
     private final Supplier<Proctor> proctorSource;
@@ -75,12 +74,14 @@ public abstract class AbstractGroupsManager implements ProctorContextDescriptor 
                     emptyMap()
             );
         }
-        final ProctorResult result = proctor.determineTestGroups(identifiers, context, forcedGroups);
-        return result;
+        return proctor.determineTestGroups(identifiers, context, forcedGroups);
     }
 
     protected abstract Map<String, TestBucket> getDefaultBucketValues();
 
+    /**
+     * servlet-based-application friendly version of determineBucketsInternal, also enabling forcing groups via request headers and cookies
+     */
     protected ProctorResult determineBucketsInternal(final HttpServletRequest request, final HttpServletResponse response, final Identifiers identifiers,
             final Map<String, Object> context, final boolean allowForcedGroups) {
         final Map<String, Integer> forcedGroups;

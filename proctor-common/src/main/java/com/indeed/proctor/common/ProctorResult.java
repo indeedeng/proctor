@@ -10,6 +10,7 @@ import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.SortedMap;
 import java.util.TreeMap;
 
 import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
@@ -33,12 +34,12 @@ public class ProctorResult {
      * maps from testname to bucket
      */
     @Nonnull
-    private final Map<String, TestBucket> buckets;
+    private final SortedMap<String, TestBucket> buckets;
     /**
      * maps from testname to allocation
      */
     @Nonnull
-    private final Map<String, Allocation> allocations;
+    private final SortedMap<String, Allocation> allocations;
     /**
      * maps from testname to TestDefinition
      */
@@ -81,13 +82,19 @@ public class ProctorResult {
         return matrixVersion;
     }
 
+    /**
+     * Returns a map ordered by testname
+     */
     @Nonnull
-    public Map<String, TestBucket> getBuckets() {
+    public SortedMap<String, TestBucket> getBuckets() {
         return buckets;
     }
 
+    /**
+     * Returns a map ordered by testname
+     */
     @Nonnull
-    public Map<String, Allocation> getAllocations() {
+    public SortedMap<String, Allocation> getAllocations() {
         return allocations;
     }
 
