@@ -1,12 +1,12 @@
 package com.indeed.proctor.common.model;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -39,6 +39,34 @@ public class Payload {
     // Error message for invalid user input
     public static final String PAYLOAD_OVERWRITE_EXCEPTION = "Expected all properties to be empty: ";
 
+    public Payload(final String value) {
+        this.stringValue = value;
+    }
+
+    public Payload(final Double value) {
+        this.doubleValue = value;
+    }
+
+    public Payload(final Long value) {
+        this.longValue = value;
+    }
+
+    public Payload(final Map<String, Object> value) {
+        this.map = new HashMap<>(value);
+    }
+
+    public Payload(final String[] values) {
+        this.stringArray = Arrays.copyOf(values, values.length);
+    }
+
+    public Payload(final Double[] values) {
+        this.doubleArray = Arrays.copyOf(values, values.length);
+    }
+
+    public Payload(final Long[] values) {
+        this.longArray = Arrays.copyOf(values, values.length);
+    }
+
     public Payload() { /* intentionally empty */ }
 
     public Payload(@Nonnull final Payload other) {
@@ -55,7 +83,7 @@ public class Payload {
             this.stringArray = Arrays.copyOf(other.stringArray, other.stringArray.length);
         }
         if (other.map != null) {
-            this.map = Maps.newHashMap(other.map);
+            this.map = new HashMap<>(other.map);
         }
     }
 

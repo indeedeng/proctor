@@ -104,8 +104,8 @@ public class TestAbstractGroups {
     @Before
     public void setUp() throws Exception {
         final TestBucket inactiveBucket = new TestBucket("inactive", -1, "inactive");
-        final TestBucket controlBucketWithPayload = new TestBucket("control", 0, "control", createStringPayload("controlPayload"));
-        final TestBucket activeBucketWithPayload = new TestBucket("active", 1, "active", createStringPayload("activePayload"));
+        final TestBucket controlBucketWithPayload = new TestBucket("control", 0, "control", new Payload("controlPayload"));
+        final TestBucket activeBucketWithPayload = new TestBucket("active", 1, "active", new Payload("activePayload"));
         final TestBucket activeBucket = new TestBucket("active", 2, "active");
         final ProctorResult proctorResult = new ProctorResult(
                 "0",
@@ -137,7 +137,7 @@ public class TestAbstractGroups {
                                         "fallbackBucket",
                                         FALLBACK_BUCKET.getValue(),
                                         "fallbackDesc",
-                                        createStringPayload("fallback")),
+                                        new Payload("fallback")),
                                 inactiveBucket, activeBucket))
                         // has no buckets in result, but in definition
                         .put(NO_BUCKETS_WITH_FALLBACK_TESTNAME, stubDefinitionWithVersion(
@@ -146,7 +146,7 @@ public class TestAbstractGroups {
                                         "fallbackBucket",
                                         FALLBACK_BUCKET.getValue(),
                                         "fallbackDesc",
-                                        createStringPayload("fallback")),
+                                        new Payload("fallback")),
                                 inactiveBucket, activeBucket))
                         .build()
         );
@@ -155,12 +155,6 @@ public class TestAbstractGroups {
         groups = new TestGroups(proctorResult);
         groupsWithForced = new TestGroupsWithForced(proctorResult);
         groupsWithHoldOut = new TestGroupsWithHoldout(proctorResult);
-    }
-
-    private static Payload createStringPayload(final String value) {
-        final Payload payload = new Payload();
-        payload.setStringValue(value);
-        return payload;
     }
 
     private static ConsumableTestDefinition stubDefinitionWithVersion(final String version, final TestBucket... buckets) {
@@ -250,26 +244,26 @@ public class TestAbstractGroups {
     @Test
     public void testGetPayload() {
         assertThat(groups.getPayload(INACTIVE_TESTNAME)).isEqualTo(Payload.EMPTY_PAYLOAD);
-        assertThat(groups.getPayload(ACTIVE_TESTNAME)).isEqualTo(createStringPayload("activePayload"));
-        assertThat(groups.getPayload(CONTROL_TESTNAME)).isEqualTo(createStringPayload("controlPayload"));
-        assertThat(groups.getPayload(ACTIVE_TESTNAME, FALLBACK_BUCKET)).isEqualTo(createStringPayload("activePayload"));
-        assertThat(groups.getPayload(CONTROL_TESTNAME, FALLBACK_BUCKET)).isEqualTo(createStringPayload("controlPayload"));
-        assertThat(groups.getPayload(GROUP_WITH_FALLBACK_TESTNAME, FALLBACK_BUCKET)).isEqualTo(createStringPayload("fallback"));
-        assertThat(groups.getPayload(NO_BUCKETS_WITH_FALLBACK_TESTNAME, FALLBACK_BUCKET)).isEqualTo(createStringPayload("fallback"));
+        assertThat(groups.getPayload(ACTIVE_TESTNAME)).isEqualTo(new Payload("activePayload"));
+        assertThat(groups.getPayload(CONTROL_TESTNAME)).isEqualTo(new Payload("controlPayload"));
+        assertThat(groups.getPayload(ACTIVE_TESTNAME, FALLBACK_BUCKET)).isEqualTo(new Payload("activePayload"));
+        assertThat(groups.getPayload(CONTROL_TESTNAME, FALLBACK_BUCKET)).isEqualTo(new Payload("controlPayload"));
+        assertThat(groups.getPayload(GROUP_WITH_FALLBACK_TESTNAME, FALLBACK_BUCKET)).isEqualTo(new Payload("fallback"));
+        assertThat(groups.getPayload(NO_BUCKETS_WITH_FALLBACK_TESTNAME, FALLBACK_BUCKET)).isEqualTo(new Payload("fallback"));
         assertThat(groups.getPayload(NO_BUCKETS_WITH_FALLBACK_TESTNAME, FALLBACK_NOPAYLOAD_BUCKET)).isEqualTo(Payload.EMPTY_PAYLOAD);
         assertThat(groups.getPayload("notexist")).isEqualTo(Payload.EMPTY_PAYLOAD);
 
         assertThat(groupsWithForced.getPayload(INACTIVE_TESTNAME)).isEqualTo(Payload.EMPTY_PAYLOAD);
-        assertThat(groupsWithForced.getPayload(ACTIVE_TESTNAME)).isEqualTo(createStringPayload("controlPayload")); // forced
-        assertThat(groupsWithForced.getPayload(CONTROL_TESTNAME)).isEqualTo(createStringPayload("controlPayload"));
+        assertThat(groupsWithForced.getPayload(ACTIVE_TESTNAME)).isEqualTo(new Payload("controlPayload")); // forced
+        assertThat(groupsWithForced.getPayload(CONTROL_TESTNAME)).isEqualTo(new Payload("controlPayload"));
 
         assertThat(groupsWithHoldOut.getPayload(INACTIVE_TESTNAME)).isEqualTo(Payload.EMPTY_PAYLOAD);
         assertThat(groupsWithHoldOut.getPayload(ACTIVE_TESTNAME)).isEqualTo(Payload.EMPTY_PAYLOAD);
         assertThat(groupsWithHoldOut.getPayload(CONTROL_TESTNAME)).isEqualTo(Payload.EMPTY_PAYLOAD);
         assertThat(groupsWithHoldOut.getPayload(ACTIVE_TESTNAME, FALLBACK_BUCKET)).isEqualTo(Payload.EMPTY_PAYLOAD);
         assertThat(groupsWithHoldOut.getPayload(CONTROL_TESTNAME, FALLBACK_BUCKET)).isEqualTo(Payload.EMPTY_PAYLOAD);
-        assertThat(groupsWithHoldOut.getPayload(GROUP_WITH_FALLBACK_TESTNAME, FALLBACK_BUCKET)).isEqualTo(createStringPayload("fallback"));
-        assertThat(groupsWithHoldOut.getPayload(NO_BUCKETS_WITH_FALLBACK_TESTNAME, FALLBACK_BUCKET)).isEqualTo(createStringPayload("fallback"));
+        assertThat(groupsWithHoldOut.getPayload(GROUP_WITH_FALLBACK_TESTNAME, FALLBACK_BUCKET)).isEqualTo(new Payload("fallback"));
+        assertThat(groupsWithHoldOut.getPayload(NO_BUCKETS_WITH_FALLBACK_TESTNAME, FALLBACK_BUCKET)).isEqualTo(new Payload("fallback"));
         assertThat(groupsWithHoldOut.getPayload(NO_BUCKETS_WITH_FALLBACK_TESTNAME, FALLBACK_NOPAYLOAD_BUCKET)).isEqualTo(Payload.EMPTY_PAYLOAD);
         assertThat(groupsWithHoldOut.getPayload("notexist")).isEqualTo(Payload.EMPTY_PAYLOAD);
         assertThat(emptyGroup.getPayload("notexist")).isEqualTo(Payload.EMPTY_PAYLOAD);

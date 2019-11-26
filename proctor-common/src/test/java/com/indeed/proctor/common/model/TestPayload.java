@@ -212,9 +212,7 @@ public class TestPayload {
 
     @Test
     public void testOverwritePayload(){
-        final Payload payload = new Payload();
-
-        payload.setStringValue("mapValue");
+        final Payload payload = new Payload("mapValue");
 
         //Payload value is "immutable": can't be set more than once.
         assertThatThrownBy(() -> payload.setDoubleValue(1.0))

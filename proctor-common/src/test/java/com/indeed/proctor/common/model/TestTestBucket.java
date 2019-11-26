@@ -8,10 +8,10 @@ import org.junit.Test;
 
 import java.io.IOException;
 
-import static junit.framework.TestCase.assertTrue;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class TestTestBucket {
     @Test
@@ -54,18 +54,16 @@ public class TestTestBucket {
 
     @Test
     public void testSerializeAndDeserialize() throws IOException {
-        final Payload payload = new Payload();
-        payload.setMap(ImmutableMap.of(
-                "k", 10,
-                "v", 100.0,
-                "s", ImmutableList.of(10, 20, 30)
-        ));
 
         final TestBucket bucket = TestBucket.builder()
                 .name("grp1")
                 .value(1)
                 .description("group 1")
-                .payload(payload)
+                .payload(new Payload(ImmutableMap.of(
+                        "k", 10,
+                        "v", 100.0,
+                        "s", ImmutableList.of(10, 20, 30)
+                )))
                 .build();
 
         final TestBucket converted = deserialize(
@@ -79,8 +77,7 @@ public class TestTestBucket {
 
     @Test
     public void testBuilder() {
-        final Payload payload = new Payload();
-        payload.setLongValue(10L);
+        final Payload payload = new Payload(10L);
 
         final TestBucket expected =
                 new TestBucket(
@@ -113,11 +110,9 @@ public class TestTestBucket {
         assertEquals(new TestBucket("foo", 1, "d1"), new TestBucket("foo", 1, "d1"));
         assertEquals(new TestBucket("foo", 1, "d1"), new TestBucket("foo", 2, "d1"));
         assertEquals(new TestBucket("foo", 1, "d1"), new TestBucket("foo", 1, "d2"));
-        final Payload p1 = new Payload();
-        p1.setStringValue("p1String");
-        final Payload p2 = new Payload();
-        p2.setDoubleValue(0.4);
-        assertEquals(new TestBucket("foo", 1, "d1", p1), new TestBucket("foo", 1, "d1", p2));
+        assertEquals(
+                new TestBucket("foo", 1, "d1", new Payload("p1String")),
+                new TestBucket("foo", 1, "d1", new Payload(0.4)));
     }
 
     @Test
@@ -128,14 +123,9 @@ public class TestTestBucket {
         assertTrue(new TestBucket("foo", 1, "d1").fullEquals(new TestBucket("foo", 1, "d1")));
         assertFalse(new TestBucket("foo", 1, "d1").fullEquals(new TestBucket("foo", 2, "d1")));
         assertFalse(new TestBucket("foo", 1, "d1").fullEquals(new TestBucket("foo", 1, "d2")));
-        final Payload p1 = new Payload();
-        p1.setStringValue("p1String");
-        final Payload p1b = new Payload();
-        p1b.setStringValue("p1String");
-        final Payload p2 = new Payload();
-        p2.setDoubleValue(0.4);
-        assertTrue(new TestBucket("foo", 1, "d1", p1).fullEquals(new TestBucket("foo", 1, "d1", p1b)));
-        assertFalse(new TestBucket("foo", 1, "d1", p1).fullEquals(new TestBucket("foo", 1, "d1", p2)));
+        final Payload p1 = new Payload("p1String");
+        assertTrue(new TestBucket("foo", 1, "d1", p1).fullEquals(new TestBucket("foo", 1, "d1", new Payload("p1String"))));
+        assertFalse(new TestBucket("foo", 1, "d1", p1).fullEquals(new TestBucket("foo", 1, "d1", new Payload(0.4))));
     }
 
     private static String serialize(final TestBucket testBucket) throws JsonProcessingException {

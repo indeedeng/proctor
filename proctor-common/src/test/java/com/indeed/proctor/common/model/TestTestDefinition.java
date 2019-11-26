@@ -62,27 +62,23 @@ public class TestTestDefinition {
     }
 
     private static List<TestBucket> sampleDoublePayloadBuckets() {
-        final Payload p1 = new Payload();
-        p1.setDoubleValue(1.0);
         return Lists.newArrayList(
                 new TestBucket(
                         "inactive",
                         -1,
                         "inactive",
-                        p1
+                        new Payload(1.0)
                 )
         );
     }
 
     private static List<TestBucket> sampleStringArrayBuckets() {
-        final Payload p1 = new Payload();
-        p1.setStringArray(new String[]{"foo", "bar"});
         return Lists.newArrayList(
                 new TestBucket(
                         "inactive",
                         -1,
                         "inactive",
-                        p1
+                        new Payload(new String[]{"foo", "bar"})
                 )
         );
     }
@@ -209,23 +205,19 @@ public class TestTestDefinition {
                     return input;
                 },
                 input -> {
-                    final Payload p2 = new Payload();
-                    p2.setDoubleValue(42.1);
                     input.getBuckets().set(0,
                             TestBucket.builder()
                                     .from(input.getBuckets().get(0))
-                                    .payload(p2)
+                                    .payload(new Payload(42.1))
                                     .build()
                     );
                     return input;
                 },
                 input -> {
-                    final Payload p2 = new Payload();
-                    p2.setStringValue("1");
                     input.getBuckets().set(0,
                             TestBucket.builder()
                                     .from(input.getBuckets().get(0))
-                                    .payload(p2)
+                                    .payload(new Payload("1"))
                                     .build()
                     );
                     return input;
