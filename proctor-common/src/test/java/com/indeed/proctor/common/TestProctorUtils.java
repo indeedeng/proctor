@@ -31,7 +31,6 @@ import java.util.stream.Collectors;
 
 import static com.indeed.proctor.common.ProctorUtils.convertContextToTestableMap;
 import static com.indeed.proctor.common.ProctorUtils.convertToConsumableTestDefinition;
-import static com.indeed.proctor.common.ProctorUtils.generateSpecification;
 import static com.indeed.proctor.common.ProctorUtils.isEmptyWhitespace;
 import static com.indeed.proctor.common.ProctorUtils.removeElExpressionBraces;
 import static com.indeed.proctor.common.ProctorUtils.verifyAndConsolidate;
@@ -1430,93 +1429,6 @@ public class TestProctorUtils {
         }
     }
 
-    @Test
-    public void testGenerateSpecificationFromEmptyDefinition() {
-        final String description = "this is an empty test with no buckets";
-        final TestDefinition empty = stubTestDefinition(description, emptyList());
-        empty.setDescription(description);
-        final TestSpecification specification = generateSpecification(empty);
-        assertEquals(description, specification.getDescription());
-        assertEquals(0, specification.getBuckets().size());
-        assertEquals(-1, specification.getFallbackValue());
-        assertNull(specification.getPayload());
-    }
-
-    @Test
-    public void testGenerateSpecificationWithBuckets() {
-        final String description = "this test has 3 buckets";
-        final TestBucket control = new TestBucket("control", 0, "control bucket");
-        final TestBucket inactiveBucket = new TestBucket("inactive", -3, "status quo");
-        final TestBucket test = new TestBucket("test", 1, "test bucket");
-        final TestDefinition empty = stubTestDefinition(description, Arrays.asList(control, inactiveBucket, test));
-        final TestSpecification specification = generateSpecification(empty);
-        assertEquals(description, specification.getDescription());
-        assertEquals(3, specification.getBuckets().size());
-        assertEquals(inactiveBucket.getValue(), specification.getFallbackValue());
-        assertNull(specification.getPayload());
-        final Map<String, Integer> buckets = specification.getBuckets();
-        assertEquals(inactiveBucket.getValue(), (int) buckets.get(inactiveBucket.getName()));
-        assertEquals(control.getValue(), (int) buckets.get(control.getName()));
-        assertEquals(test.getValue(), (int) buckets.get(test.getName()));
-        // buckets should be ordered by value ascending
-        final List<Integer> values = new ArrayList<>(buckets.values());
-        assertEquals(inactiveBucket.getValue(), values.get(0).intValue());
-        assertEquals(control.getValue(), values.get(1).intValue());
-        assertEquals(test.getValue(), values.get(2).intValue());
-    }
-
-    @Test
-    public void testGenerateSpecificationDoubleArrayPayload() {
-        final String description = "this test has a payload buckets";
-        final TestBucket inactiveBucket = new TestBucket("inactive", 0, "status quo", new Payload(new Double[]{1.4d, 4.5d}));
-        final TestBucket control = new TestBucket("control", 0, "control bucket", new Payload(new Double[]{0.0, 2.4d}));
-        final TestBucket test = new TestBucket("test", 1, "test bucket", new Payload(new Double[]{22.22, 33.33}));
-
-        final TestDefinition empty = stubTestDefinition(description, Arrays.asList(inactiveBucket, control, test));
-        final TestSpecification specification = generateSpecification(empty);
-        assertEquals(description, specification.getDescription());
-        assertEquals(3, specification.getBuckets().size());
-        assertEquals(inactiveBucket.getValue(), specification.getFallbackValue());
-        final PayloadSpecification payload = specification.getPayload();
-        assertNotNull(payload);
-        assertEquals(PayloadType.DOUBLE_ARRAY.payloadTypeName, payload.getType());
-        assertNull(payload.getSchema());
-        assertNull(payload.getValidator());
-        final Map<String, Integer> buckets = specification.getBuckets();
-        assertEquals(inactiveBucket.getValue(), (int) buckets.get(inactiveBucket.getName()));
-        assertEquals(control.getValue(), (int) buckets.get(control.getName()));
-        assertEquals(test.getValue(), (int) buckets.get(test.getName()));
-    }
-
-    @Test
-    public void testGenerateSpecificationPayloadMapSchema() {
-        final String description = "this test has a payload buckets";
-        final Payload inactivePayload = new Payload(ImmutableMap.of(
-                "da", new Double[]{1.4d, 4.5d},
-                "lv", 5L,
-                "sa", new String[]{"foo", "bar"}
-        ));
-        final TestBucket bucket = new TestBucket("inactive", -3, "status quo", inactivePayload);
-        final TestDefinition empty = stubTestDefinition(description, singletonList(bucket));
-        final TestSpecification specification = generateSpecification(empty);
-        assertEquals(description, specification.getDescription());
-        assertEquals(1, specification.getBuckets().size());
-        assertEquals(bucket.getValue(), specification.getFallbackValue());
-        final PayloadSpecification payload = specification.getPayload();
-        assertNotNull(payload);
-        assertEquals(PayloadType.MAP.payloadTypeName, payload.getType());
-        final Map<String, String> schema = payload.getSchema();
-        assertNotNull(schema);
-        assertEquals(4, schema.size());
-        assertEquals(PayloadType.DOUBLE_ARRAY.payloadTypeName, schema.get("da"));
-        assertEquals(PayloadType.STRING_ARRAY.payloadTypeName, schema.get("sa"));
-        assertEquals(PayloadType.STRING_ARRAY.payloadTypeName, schema.get("ea"));
-        assertEquals(PayloadType.LONG_VALUE.payloadTypeName, schema.get("lv"));
-        assertNull(payload.getValidator());
-
-        final Map<String, Integer> buckets = specification.getBuckets();
-        assertEquals(bucket.getValue(), (int) buckets.get(bucket.getName()));
-    }
 
     @Test
     public void testVerifyAndConsolidateShouldResolveDynamicTests() {
@@ -1559,10 +1471,10 @@ public class TestProctorUtils {
         final Map<String, ConsumableTestDefinition> tests = new HashMap<>();
         final ConsumableTestDefinition definition = constructDefinition(
                 fromCompactBucketFormat("inactive:-1,control:0,test:1"),
-                Arrays.asList(
+                singletonList(
                         new Allocation(
                                 "${unknownField==\"abc\"}",
-                                Arrays.asList(
+                                singletonList(
                                         new Range(
                                                 1,
                                                 1.0

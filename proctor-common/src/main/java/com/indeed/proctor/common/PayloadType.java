@@ -22,43 +22,50 @@ public enum PayloadType {
             "Double",
             "number",
             "-1",
-            "getDoubleValue"),
+            "getDoubleValue",
+            false),
     DOUBLE_ARRAY(
             "doubleArray",
             "Double[]",
             "Array.<number>",
             "[]",
-            "getDoubleArray"),
+            "getDoubleArray",
+            true),
     LONG_VALUE(
             "longValue",
             "Long",
             "number",
             "-1",
-            "getLongValue"),
+            "getLongValue",
+            false),
     LONG_ARRAY(
             "longArray",
             "Long[]",
             "Array.<number>",
             "[]",
-            "getLongArray"),
+            "getLongArray",
+            true),
     STRING_VALUE(
             "stringValue",
             "String",
             "string",
             "''",
-            "getStringValue"),
+            "getStringValue",
+            false),
     STRING_ARRAY(
             "stringArray",
             "String[]",
             "Array.<string>",
             "[]",
-            "getStringArray"),
+            "getStringArray",
+            true),
     MAP(
             "map",
             "Map<String,Object>",
             "Object.<string, Object>",
             "{}",
-            "getMap");
+            "getMap",
+            false);
 
     @Nonnull
     public final String payloadTypeName;
@@ -70,19 +77,22 @@ public enum PayloadType {
     private final String javascriptDefaultValue;
     @Nonnull
     public final String javaAccessorName;
+    private final boolean isArraysType;
 
     PayloadType(
             @Nonnull final String payloadTypeName,
             @Nonnull final String javaClassName,
             @Nonnull final String javascriptTypeName,
             @Nonnull String javascriptDefaultValue,
-            @Nonnull final String javaAccessorName
+            @Nonnull final String javaAccessorName,
+            boolean isArraysType
     ) {
         this.payloadTypeName = payloadTypeName;
         this.javaClassName = javaClassName;
         this.javascriptTypeName = javascriptTypeName;
         this.javascriptDefaultValue = javascriptDefaultValue;
         this.javaAccessorName = javaAccessorName;
+        this.isArraysType = isArraysType;
     }
 
     /**
@@ -186,5 +196,9 @@ public enum PayloadType {
             names.add(p.payloadTypeName);
         }
         return names;
+    }
+
+    public boolean isArrayType() {
+        return isArraysType;
     }
 }

@@ -8,10 +8,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
-import com.google.common.primitives.Ints;
 import com.indeed.proctor.common.el.MulticontextReadOnlyVariableMapper;
 import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.Audit;
@@ -46,14 +44,12 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -1000,51 +996,15 @@ public abstract class ProctorUtils {
 
     /**
      * Generates a usable test specification for a given test definition
-     * Uses the first bucket as the fallback value
+     * Uses the bucket with smallest value as the fallback value
      *
      * @param testDefinition a {@link TestDefinition}
      * @return a {@link TestSpecification} which corresponding to given test definition.
+     * @deprecated use SpecificationGenerator
      */
+    @Deprecated
     public static TestSpecification generateSpecification(@Nonnull final TestDefinition testDefinition) {
-        final TestSpecification testSpecification = new TestSpecification();
-        // Sort buckets by value ascending
-        final Map<String, Integer> buckets = Maps.newLinkedHashMap();
-        final List<TestBucket> testDefinitionBuckets = Ordering.from(new Comparator<TestBucket>() {
-            @Override
-            public int compare(final TestBucket lhs, final TestBucket rhs) {
-                return Ints.compare(lhs.getValue(), rhs.getValue());
-            }
-        }).immutableSortedCopy(testDefinition.getBuckets());
-        int fallbackValue = -1;
-        if (!testDefinitionBuckets.isEmpty()) {
-            // buckets are sorted, choose smallest value as the fallback value
-            fallbackValue = testDefinitionBuckets.get(0).getValue();
-            final TestBucket firstBucket = testDefinitionBuckets.get(0);
-
-            final PayloadSpecification payloadSpecification = new PayloadSpecification();
-            final Optional<Payload> firstBucketPayloadOpt = Optional.ofNullable(firstBucket.getPayload());
-            final Optional<PayloadType> firstBucketPayloadTypeOpt = firstBucketPayloadOpt.flatMap(Payload::fetchPayloadType);
-            if (firstBucketPayloadOpt.isPresent() && firstBucketPayloadTypeOpt.isPresent()) {
-                final PayloadType payloadType = firstBucketPayloadTypeOpt.get();
-                payloadSpecification.setType(payloadType.payloadTypeName);
-                if (payloadType == PayloadType.MAP) {
-                    final Map<String, String> payloadSpecificationSchema = new HashMap<>();
-                    for (final Map.Entry<String, Object> entry : firstBucketPayloadOpt.get().getMap().entrySet()) {
-                        payloadSpecificationSchema.put(entry.getKey(), PayloadType.payloadTypeForValue(entry.getValue()).payloadTypeName);
-                    }
-                    payloadSpecification.setSchema(payloadSpecificationSchema);
-                }
-                testSpecification.setPayload(payloadSpecification);
-            }
-
-            for (final TestBucket bucket : testDefinitionBuckets) {
-                buckets.put(bucket.getName(), bucket.getValue());
-            }
-        }
-        testSpecification.setBuckets(buckets);
-        testSpecification.setDescription(testDefinition.getDescription());
-        testSpecification.setFallbackValue(fallbackValue);
-        return testSpecification;
+        return new SpecificationGenerator().generateSpecification(testDefinition);
     }
 
     /**

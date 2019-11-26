@@ -211,6 +211,7 @@ public class Payload {
     }
 
     /**
+     * infers payloadtype based on the value that is set.
      * @return payloadType unless emptyPayload
      */
     @Nonnull
