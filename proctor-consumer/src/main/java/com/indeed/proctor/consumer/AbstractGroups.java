@@ -13,12 +13,10 @@ import javax.annotation.Nonnull;
 import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -135,33 +133,6 @@ public abstract class AbstractGroups {
                     + "' does not match any bucket in test definition, using determined bucket value " + bucket.getValue());
         }
         return Optional.of(bucket);
-    }
-
-    /**
-     * @return map testname, definition-version
-     * @deprecated don't use, use proctorResult
-     */
-    @Deprecated
-    public final Map<String, String> getTestVersions() {
-        return proctorResult.getTestVersions();
-    }
-
-    /**
-     * @return map testname, definition-version for given test names
-     * @deprecated don't use, use proctorResult
-     */
-    @Deprecated
-    public final Map<String, String> getTestVersions(final Set<String> tests) {
-        // in case set is SortedSet, keep ordering by using LinkedHashMap
-        final LinkedHashMap<String, String> selectedTestVersions = new LinkedHashMap<>();
-        final Map<String, ConsumableTestDefinition> testDefinitions = proctorResult.getTestDefinitions();
-        for (final String testName : tests) {
-            final ConsumableTestDefinition testDefinition = testDefinitions.get(testName);
-            if (testDefinition != null) {
-                selectedTestVersions.put(testName, testDefinition.getVersion());
-            }
-        }
-        return selectedTestVersions;
     }
 
     /**
