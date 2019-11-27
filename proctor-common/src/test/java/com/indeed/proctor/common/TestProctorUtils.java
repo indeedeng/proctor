@@ -197,7 +197,9 @@ public class TestProctorUtils {
             );
 
             final ConsumableTestDefinition ctd = convertToConsumableTestDefinition(testDefinition);
-            assertEquals(String.format("TestDefinition rule '%s' should convert to ${proctor:contains(__COUNTRIES, country) && lang == 'en'} ConsumableTestDefinition.rule", tdRule), "${proctor:contains(__COUNTRIES, country) && lang == 'en'}", ctd.getRule());
+            assertEquals(
+                    String.format("TestDefinition rule '%s' should convert to ${proctor:contains(__COUNTRIES, country) && lang == 'en'} ConsumableTestDefinition.rule", tdRule),
+                    "${proctor:contains(__COUNTRIES, country) && lang == 'en'}", ctd.getRule());
             assertEquals(1, ctd.getConstants().size());
             assertEquals("special constants should be added to constants", Lists.newArrayList("US", "CA"), ctd.getConstants().get("__COUNTRIES"));
         }
@@ -394,7 +396,13 @@ public class TestProctorUtils {
             final Map<String, String> providedContextString = new HashMap<>();
             providedContextString.put("time", "String");
             final ProvidedContext providedContext = convertContextToTestableMap(providedContextString);
-            verifyInternallyConsistentDefinition("testProvidedContextConversion", "test Provided Context Conversion String", testDef, RuleEvaluator.FUNCTION_MAPPER, providedContext);
+            verifyInternallyConsistentDefinition(
+                    "testProvidedContextConversion",
+                    "test Provided Context Conversion String",
+                    testDef,
+                    RuleEvaluator.FUNCTION_MAPPER,
+                    providedContext
+            );
             //checking to make sure it can evaluate with converted provided context
         }
         { //verify primitive types convert correctly
@@ -403,7 +411,13 @@ public class TestProctorUtils {
             final Map<String, String> providedContextInteger = new HashMap<>();
             providedContextInteger.put("time", "int");
             final ProvidedContext providedContext = convertContextToTestableMap(providedContextInteger);
-            verifyInternallyConsistentDefinition("testProvidedContextConversion", "test Provided Context Conversion Integer", testDef, RuleEvaluator.FUNCTION_MAPPER, providedContext);
+            verifyInternallyConsistentDefinition(
+                    "testProvidedContextConversion",
+                    "test Provided Context Conversion Integer",
+                    testDef,
+                    RuleEvaluator.FUNCTION_MAPPER,
+                    providedContext
+            );
             //checking to make sure it can evaluate with converted provided context
         }
         { //verify primitive types convert correctly
@@ -412,7 +426,13 @@ public class TestProctorUtils {
             final Map<String, String> providedContextChar = new HashMap<>();
             providedContextChar.put("time", "char");
             final ProvidedContext providedContext = convertContextToTestableMap(providedContextChar);
-            verifyInternallyConsistentDefinition("testProvidedContextConversion", "test Provided Context Conversion Char", testDef, RuleEvaluator.FUNCTION_MAPPER, providedContext);
+            verifyInternallyConsistentDefinition(
+                    "testProvidedContextConversion",
+                    "test Provided Context Conversion Char",
+                    testDef,
+                    RuleEvaluator.FUNCTION_MAPPER,
+                    providedContext
+            );
             //checking to make sure it can evaluate with converted provided context
         }
         { //verify primitive types convert correctly
@@ -421,7 +441,13 @@ public class TestProctorUtils {
             final Map<String, String> providedContextBoolean = new HashMap<>();
             providedContextBoolean.put("time", "Boolean");
             final ProvidedContext providedContext = convertContextToTestableMap(providedContextBoolean);
-            verifyInternallyConsistentDefinition("testProvidedContextConversion", "test Provided Context Conversion Boolean", testDef, RuleEvaluator.FUNCTION_MAPPER, providedContext);
+            verifyInternallyConsistentDefinition(
+                    "testProvidedContextConversion",
+                    "test Provided Context Conversion Boolean",
+                    testDef,
+                    RuleEvaluator.FUNCTION_MAPPER,
+                    providedContext
+            );
             //checking to make sure it can evaluate with converted provided context
         }
         { //verify User Defined enum Classes convert correctly
@@ -430,7 +456,13 @@ public class TestProctorUtils {
             final Map<String, String> providedContextClass = new HashMap<>();
             providedContextClass.put("time", "com.indeed.proctor.common.TestEnumType");
             final ProvidedContext providedContext = convertContextToTestableMap(providedContextClass);
-            verifyInternallyConsistentDefinition("testProvidedContextConversion", "test Provided Context Conversion Class", testDef, RuleEvaluator.FUNCTION_MAPPER, providedContext);
+            verifyInternallyConsistentDefinition(
+                    "testProvidedContextConversion",
+                    "test Provided Context Conversion Class",
+                    testDef,
+                    RuleEvaluator.FUNCTION_MAPPER,
+                    providedContext
+            );
             //checking to make sure it can evaluate with converted provided context
         }
         { //verify enums are actually used and an error is thrown with a nonexistent constant
@@ -441,7 +473,13 @@ public class TestProctorUtils {
             final ProvidedContext providedContext = convertContextToTestableMap(providedContextClass);
 
             assertThatThrownBy(() ->
-                    verifyInternallyConsistentDefinition("testProvidedContextConversion", "test Provided Context Conversion Class", testDef, RuleEvaluator.FUNCTION_MAPPER, providedContext)
+                    verifyInternallyConsistentDefinition(
+                            "testProvidedContextConversion",
+                            "test Provided Context Conversion Class",
+                            testDef,
+                            RuleEvaluator.FUNCTION_MAPPER,
+                            providedContext
+                    )
             )
                     .as("expected IncompatibleTestMatrixException due to nonexistent enum constant")
                     .isInstanceOf(IncompatibleTestMatrixException.class)
@@ -466,7 +504,13 @@ public class TestProctorUtils {
             providedContextNoConstructor.put("time", "com.indeed.proctor.common.AbstractProctorLoader");
             final ProvidedContext providedContext = convertContextToTestableMap(providedContextNoConstructor);
             assertTrue(providedContext.shouldEvaluate());
-            verifyInternallyConsistentDefinition("testProvidedContextConversion", "test Provided Context Conversion Class", testDef, RuleEvaluator.FUNCTION_MAPPER, providedContext);
+            verifyInternallyConsistentDefinition(
+                    "testProvidedContextConversion",
+                    "test Provided Context Conversion Class",
+                    testDef,
+                    RuleEvaluator.FUNCTION_MAPPER,
+                    providedContext
+            );
             /* Should ignore checking failure because time was not instantiated */
         }
         { // Verify rule when class not found
@@ -476,7 +520,13 @@ public class TestProctorUtils {
             providedContextNoClass.put("time", "com.indeed.proctor.common.NotFoundClass");
             final ProvidedContext providedContext = convertContextToTestableMap(providedContextNoClass);
             assertTrue(providedContext.shouldEvaluate());
-            verifyInternallyConsistentDefinition("testProvidedContextConversion", "test Provided Context Conversion Class", testDef, RuleEvaluator.FUNCTION_MAPPER, providedContext);
+            verifyInternallyConsistentDefinition(
+                    "testProvidedContextConversion",
+                    "test Provided Context Conversion Class",
+                    testDef,
+                    RuleEvaluator.FUNCTION_MAPPER,
+                    providedContext
+            );
             /* Should ignore checking failure because time was not instantiated */
         }
     }
@@ -517,7 +567,12 @@ public class TestProctorUtils {
                     fromCompactAllocationFormat("${time eq ''}|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25"));
 
             assertThatThrownBy(() ->
-                    verifyInternallyConsistentDefinition("testProvidedContextMissing", "test Provided Context Missing", testDef, RuleEvaluator.FUNCTION_MAPPER, new ProvidedContext(ProvidedContext.EMPTY_CONTEXT, true))
+                    verifyInternallyConsistentDefinition(
+                            "testProvidedContextMissing",
+                            "test Provided Context Missing",
+                            testDef,
+                            RuleEvaluator.FUNCTION_MAPPER,
+                            new ProvidedContext(ProvidedContext.EMPTY_CONTEXT, true))
             )
                     .as("expected IncompatibleTestMatrixException due to missing provided Context")
                     .isInstanceOf(IncompatibleTestMatrixException.class)
@@ -532,7 +587,11 @@ public class TestProctorUtils {
             final ConsumableTestDefinition testDefValContextTestRule = constructDefinition(buckets,
                     fromCompactAllocationFormat("${proctor:now()>-1}|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25"));
             testDefValContextTestRule.setRule("${proctor:now()>time}");
-            verifyInternallyConsistentDefinition("testELevalwithcontext", "test context recognition in test rule", testDefValContextTestRule, RuleEvaluator.FUNCTION_MAPPER,
+            verifyInternallyConsistentDefinition(
+                    "testELevalwithcontext",
+                    "test context recognition in test rule",
+                    testDefValContextTestRule,
+                    RuleEvaluator.FUNCTION_MAPPER,
                     convertContextToTestableMap(providedContextVal));
         }
         { //testing that invalid properties are recognized
@@ -542,7 +601,12 @@ public class TestProctorUtils {
             providedContextClass.put("ua", "com.indeed.proctor.common.TestRulesClass");
             final ProvidedContext providedContext = convertContextToTestableMap(providedContextClass);
             assertThatThrownBy(() ->
-                    verifyInternallyConsistentDefinition("testProvidedContextConversion", "test Provided Context Conversion Class", testDef, RuleEvaluator.FUNCTION_MAPPER, providedContext)
+                    verifyInternallyConsistentDefinition(
+                            "testProvidedContextConversion",
+                            "test Provided Context Conversion Class",
+                            testDef,
+                            RuleEvaluator.FUNCTION_MAPPER,
+                            providedContext)
             )
                     .as("expected IncompatibleTestMatrixException due to missing attribute")
                     .isInstanceOf(IncompatibleTestMatrixException.class)
@@ -558,14 +622,26 @@ public class TestProctorUtils {
             final Map<String, String> providedContextClass = new HashMap<>();
             providedContextClass.put("ua", "com.indeed.proctor.common.TestRulesClass");
             final ProvidedContext providedContext = convertContextToTestableMap(providedContextClass);
-            verifyInternallyConsistentDefinition("testProvidedContextConversion", "test Provided Context Conversion Class", testDef, RuleEvaluator.FUNCTION_MAPPER, providedContext);
+            verifyInternallyConsistentDefinition(
+                    "testProvidedContextConversion",
+                    "test Provided Context Conversion Class",
+                    testDef,
+                    RuleEvaluator.FUNCTION_MAPPER,
+                    providedContext
+            );
         }
         { //testing that invalid functions are recognized
             final ConsumableTestDefinition testDef = constructDefinition(buckets,
                     fromCompactAllocationFormat("${proctor:notafunction()}|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25"));
 
             assertThatThrownBy(() ->
-                    verifyInternallyConsistentDefinition("testProvidedContextConversion", "test Provided Context Conversion Class", testDef, RuleEvaluator.FUNCTION_MAPPER, new ProvidedContext(ProvidedContext.EMPTY_CONTEXT, true))
+                    verifyInternallyConsistentDefinition(
+                            "testProvidedContextConversion",
+                            "test Provided Context Conversion Class",
+                            testDef,
+                            RuleEvaluator.FUNCTION_MAPPER,
+                            new ProvidedContext(ProvidedContext.EMPTY_CONTEXT, true)
+                    )
             )
                     .as("expected IncompatibleTestMatrixException due to missing function")
                     .isInstanceOf(IncompatibleTestMatrixException.class)
@@ -1842,7 +1918,13 @@ public class TestProctorUtils {
         assertErrorCreated(false, false, msg, matrix, requiredTests);
     }
 
-    private void assertErrorCreated(final boolean hasMissing, final boolean hasInvalid, final String msg, final TestMatrixArtifact matrix, final Map<String, TestSpecification> requiredTests) {
+    private void assertErrorCreated(
+            final boolean hasMissing,
+            final boolean hasInvalid,
+            final String msg,
+            final TestMatrixArtifact matrix,
+            final Map<String, TestSpecification> requiredTests
+    ) {
         final ProctorLoadResult proctorLoadResult = verifyAndConsolidate(matrix, "[ testcase: " + msg + " ]", requiredTests, RuleEvaluator.FUNCTION_MAPPER);
 
         final Set<String> missingTests = proctorLoadResult.getMissingTests();

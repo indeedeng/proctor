@@ -3,7 +3,6 @@ package com.indeed.proctor.consumer.gen;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.indeed.proctor.common.PayloadType;
 import com.indeed.proctor.common.ProctorSpecification;
@@ -18,6 +17,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -29,7 +29,7 @@ import java.util.TreeSet;
 /**
  * Handles combining multiple proctor specs into one and building a root map for generating a
  * Proctor test groups file.
- *
+ * <p>
  * Note: heavily based off of the original TestGroupsJavaGenerator. populateRootMap
  * may still have some code only needed for Java.
  *
@@ -48,7 +48,7 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
      */
     public static File makeTotalSpecification(final File dir, final String targetDir) throws CodeGenException {
         //If no name is provided use the name of the containing folder
-        return makeTotalSpecification(dir, targetDir,dir.getPath().substring(dir.getPath().lastIndexOf(File.separator) + 1) + "Groups.json");
+        return makeTotalSpecification(dir, targetDir, dir.getPath().substring(dir.getPath().lastIndexOf(File.separator) + 1) + "Groups.json");
     }
 
     public static File makeTotalSpecification(final File dir, final String targetDir, final String name) throws CodeGenException {
@@ -57,8 +57,8 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
     }
 
     public static File makeTotalSpecification(final List<File> files, final String targetDir, final String name) throws CodeGenException {
-        final Map<String, TestSpecification> testSpec = new LinkedHashMap<String, TestSpecification>();
-        Map<String, String> providedContext = new LinkedHashMap<String,String>();
+        final Map<String, TestSpecification> testSpec = new LinkedHashMap<>();
+        Map<String, String> providedContext = new LinkedHashMap<>();
         DynamicFilters dynamicFilters = new DynamicFilters();
         for (final File file : files) {
             final String fileName = file.getName();
@@ -74,7 +74,7 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
                 } catch (final IOException e) {
                     throw new CodeGenException("Could not read json correctly " + file.getAbsolutePath() + " for dynamic filters", e);
                 }
-            } else if (fileName.endsWith(".json")){
+            } else if (fileName.endsWith(".json")) {
                 final TestSpecification spec;
                 try {
                     spec = OBJECT_MAPPER.readValue(file, TestSpecification.class);
@@ -95,11 +95,11 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
 
         validateProctorSpecification(proctorSpecification);
 
-        final File output =  new File(targetDir, name);
+        final File output = new File(targetDir, name);
         try {
             OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValue(output, proctorSpecification);
         } catch (final IOException e) {
-            throw new CodeGenException("Could not write to temp file " + output.getAbsolutePath(),e);
+            throw new CodeGenException("Could not write to temp file " + output.getAbsolutePath(), e);
         }
         return output;
     }
@@ -141,14 +141,14 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
 
     @VisibleForTesting
     Map<String, Object> populateRootMap(final ProctorSpecification spec, final Map<String, Object> baseContext, final String packageName, final String className) {
-        final Map<String, Object> rootMap = Maps.newHashMap(baseContext);
+        final Map<String, Object> rootMap = new HashMap<>(baseContext);
 
         final Map<String, TestSpecification> tests = spec.getTests();
 
         final List<Object> testDefs = Lists.newArrayListWithCapacity(tests.size());
 
         // Sort buckets and test names, to have consistent iterator
-        final SortedSet<String> sortedTestNames = new TreeSet<String>(tests.keySet());
+        final SortedSet<String> sortedTestNames = new TreeSet<>(tests.keySet());
         for (final String testName : sortedTestNames) {
             final Set<Map<String, ?>> buckets = Sets.newLinkedHashSet();
 
@@ -169,7 +169,7 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
                 final String bucketName = bucket.getKey();
                 final String enumName = toEnumName(bucketName);
 
-                final Map<String, Object> bucketDef = Maps.newHashMap();
+                final Map<String, Object> bucketDef = new HashMap<>();
                 final String normalizedBucketName = toJavaIdentifier(bucketName);
                 bucketDef.put("value", bucket.getValue());
                 bucketDef.put("name", bucketName);
@@ -182,14 +182,14 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
                 foundFallbackValue = foundFallbackValue || (bucket.getValue() == testSpecification.getFallbackValue());
             }
 
-                if (!buckets.isEmpty() && !foundFallbackValue) {
-                    throw new IllegalArgumentException("Specified fallback value " + testSpecification.getFallbackValue() + " for test " + testName + " is not in the list of standard values: " + Arrays.toString(sortedBuckets));
-                }
+            if (!buckets.isEmpty() && !foundFallbackValue) {
+                throw new IllegalArgumentException("Specified fallback value " + testSpecification.getFallbackValue() + " for test " + testName + " is not in the list of standard values: " + Arrays.toString(sortedBuckets));
+            }
 
             final String name = toJavaIdentifier(testName);
             final String enumName = toEnumName(name);
 
-            final Map<String, Object> testDef = Maps.newHashMap();
+            final Map<String, Object> testDef = new HashMap<>();
             testDef.put("name", testName);
             testDef.put("normalizedName", name);
             testDef.put("enumName", enumName);
@@ -197,17 +197,17 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
             testDef.put("javaClassName", uppercaseFirstChar(name));
             testDef.put("buckets", buckets);
             testDef.put("defaultValue", testSpecification.getFallbackValue());
-            final List<Map<String, String>> nestedPayloadsList = new ArrayList<Map<String,String>>();
+            final List<Map<String, String>> nestedPayloadsList = new ArrayList<>();
             // Only define testDef.payloadJavaClass if the API user has
             // claimed she expects a payload.
             if (testSpecification.getPayload() != null) {
                 final String specifiedPayloadTypeName = testSpecification.getPayload().getType();
                 final PayloadType specifiedPayloadType = PayloadType.payloadTypeForName(specifiedPayloadTypeName);
                 if (specifiedPayloadType == PayloadType.MAP) {
-                    testDef.put("isMap","true");
-                    for (final Map.Entry<String,String> entry : testSpecification.getPayload().getSchema().entrySet()) {
-                        final Map<String,String> nestedPayloadsMap = Maps.newHashMap();
-                        nestedPayloadsMap.put("key",entry.getKey());
+                    testDef.put("isMap", "true");
+                    for (final Map.Entry<String, String> entry : testSpecification.getPayload().getSchema().entrySet()) {
+                        final Map<String, String> nestedPayloadsMap = new HashMap<>();
+                        nestedPayloadsMap.put("key", entry.getKey());
                         final PayloadType payloadTypeForValue = PayloadType.payloadTypeForName(entry.getValue());
                         if (payloadTypeForValue != PayloadType.MAP) {
                             nestedPayloadsMap.put("value", payloadTypeForValue.javaClassName);
@@ -229,7 +229,7 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
             if (testSpecification.getDescription() != null) {
                 testDef.put("description", StringEscapeUtils.escapeJava(testSpecification.getDescription()));
             }
-            testDef.put("nestedPayloadsList",nestedPayloadsList);
+            testDef.put("nestedPayloadsList", nestedPayloadsList);
 
             testDefs.add(testDef);
         }

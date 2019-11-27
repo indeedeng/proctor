@@ -1,13 +1,8 @@
-package com.indeed.proctor;
+package com.indeed.proctor.common;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.indeed.proctor.common.Identifiers;
-import com.indeed.proctor.common.Proctor;
-import com.indeed.proctor.common.ProctorLoadResult;
-import com.indeed.proctor.common.ProctorResult;
-import com.indeed.proctor.common.RuleEvaluator;
 import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.Audit;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
@@ -31,7 +26,7 @@ import static org.junit.Assert.assertEquals;
  * @author ketan
  *
  */
-public class TestProctor {
+public class TestProctorIntegration {
     @Test
     public void test() {
         final Proctor proctor = constructProctor();

@@ -1,39 +1,26 @@
 package com.indeed.proctor.common.model;
 
 import com.google.common.collect.ImmutableMap;
+import com.indeed.proctor.common.PayloadType;
 import org.junit.Test;
 
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
-/**
- * @author pwp
- */
 public class TestPayload {
-    // Set up
-    private Payload[] getTestPayloads() {
-        Payload[] payloads = new Payload[8];
-        for (int i = 0; i < payloads.length; i++)
-            payloads[i] = new Payload();
-        // payload[0] is empty.
-        payloads[1].setDoubleValue(47.0D);
-        payloads[2].setDoubleArray(new Double[]{98.0D, -137D});
-        payloads[3].setLongValue(42L);
-        payloads[4].setLongArray(new Long[]{9L, 8L, 7L, 6L, 5L, 4L});
-        payloads[5].setStringValue("foobar");
-        payloads[6].setStringArray(new String[]{"foo", "bar", "baz"});
-        payloads[7].setMap(ImmutableMap.of("a", new Double(1.0D), "b", new Double[]{57.0D, -8.0D, 79.97D}, "c", (Object) "somevals"));
-        return payloads;
-    }
 
     /**
      * Verify that the fields for a Payload are effectively jointly static:
@@ -43,176 +30,141 @@ public class TestPayload {
      */
     @Test
     public void verifyPayloadSetters() {
-        final Payload[] payloads = getTestPayloads();
+        final Map<PayloadType, Payload> payloads = getPayloadTypePayloadSampleMap(0);
 
-        try {
-            payloads[1].setStringArray(new String[]{"foo", "bar", "baz"});
-            assertFalse("should have thrown IllegalStateException on setStringArray()", true);
-        } catch (IllegalStateException e) {
-            // expected.
-        }
-        try {
-            payloads[2].setStringValue("foobar");
-            assertFalse("should have thrown IllegalStateException on setStringValue()", true);
-        } catch (IllegalStateException e) {
-            // expected.
-        }
-        try {
-            payloads[3].setLongArray(new Long[]{9L, 8L, 7L, 6L, 5L, 4L});
-            assertFalse("should have thrown IllegalStateException on setLongArray()", true);
-        } catch (IllegalStateException e) {
-            // expected.
-        }
-        try {
-            payloads[4].setLongValue(42L);
-            assertFalse("should have thrown IllegalStateException on setLongValue()", true);
-        } catch (IllegalStateException e) {
-            // expected.
-        }
-        try {
-            payloads[5].setDoubleArray(new Double[]{98.0D, -137D});
-            assertFalse("should have thrown IllegalStateException on setDoubleArray()", true);
-        } catch (IllegalStateException e) {
-            // expected.
-        }
-        try {
-            payloads[6].setDoubleValue(47.0D);
-            assertFalse("should have thrown IllegalStateException on setDoubleValue()", true);
-        } catch (IllegalStateException e) {
-            // expected.
-        }
-        try {
-            payloads[7].setMap(Collections.<String, Object>emptyMap());
-            assertFalse("should have thrown IllegalStateException on setMap()", true);
-        } catch (IllegalStateException e) {
-            // expected.
-        }
+        assertThatThrownBy(() ->
+                payloads.get(PayloadType.DOUBLE_VALUE).setStringArray(new String[]{"foo", "bar", "baz"}))
+                .isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() ->
+                payloads.get(PayloadType.DOUBLE_ARRAY).setStringValue("foobar"))
+                .isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() ->
+                payloads.get(PayloadType.LONG_VALUE).setLongArray(new Long[]{9L, 8L, 7L, 6L, 5L, 4L}))
+                .isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() ->
+                payloads.get(PayloadType.LONG_ARRAY).setLongValue(42L))
+                .isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() ->
+                payloads.get(PayloadType.STRING_VALUE).setDoubleArray(new Double[]{98.0D, -137D}))
+                .isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() ->
+                payloads.get(PayloadType.STRING_ARRAY).setDoubleValue(47.0D))
+                .isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() ->
+                payloads.get(PayloadType.MAP).setMap(Collections.<String, Object>emptyMap()))
+                .isInstanceOf(IllegalStateException.class);
     }
 
-    private Payload[] getDifferentTestPayloads() {
-        Payload[] payloads = new Payload[8];
-        for (int i = 0; i < payloads.length; i++)
-            payloads[i] = new Payload();
-        // payload[0] is empty.
-        payloads[1].setDoubleValue(12.0D);
-        payloads[2].setDoubleArray(new Double[]{57.0D, -8.0D, 79.97D});
-        payloads[3].setLongValue(17L);
-        payloads[4].setLongArray(new Long[]{1L, 3L, 5L, 7L});
-        payloads[5].setStringValue("xyzzy");
-        payloads[6].setStringArray(new String[]{"quux", "toad"});
-        payloads[7].setMap(ImmutableMap.of("a", new Double(2.0D), "b", new Double[]{37.0D, -4.0D, 97D}, "c", (Object) "somevals2"));
-        return payloads;
-    }
 
     // Test
-    private void verifyPayload(Payload[] payloads, int k) {
-        if (k == 0) {
+    private void verifyPayload(final Payload payload, final PayloadType type) {
+
+
+        if (type == null) {
             // payloads[0] is empty so all null.
-            assertEquals(0, payloads[k].numFieldsDefined());
-            assertTrue(payloads[k].fetchAValue() == null);
+            assertEquals(0, payload.numFieldsDefined());
+            assertNull(payload.fetchAValue());
         } else {
             // Only one field defined.
-            assertEquals(1, payloads[k].numFieldsDefined());
+            assertEquals(1, payload.numFieldsDefined());
         }
 
-        if (k == 1) {
-            assertNotNull(payloads[k].getDoubleValue());
-            assertTrue(payloads[k].fetchAValue() == payloads[k].getDoubleValue());
+        if (type == PayloadType.DOUBLE_VALUE) {
+            assertNotNull(payload.getDoubleValue());
+            assertSame(payload.fetchAValue(), payload.getDoubleValue());
         } else {
-            assertNull(payloads[k].getDoubleValue());
+            assertNull(payload.getDoubleValue());
         }
 
-        if (k == 2) {
-            assertNotNull(payloads[k].getDoubleArray());
-            assertTrue(payloads[k].fetchAValue() == payloads[k].getDoubleArray());
+        if (type == PayloadType.DOUBLE_ARRAY) {
+            assertNotNull(payload.getDoubleArray());
+            assertSame(payload.fetchAValue(), payload.getDoubleArray());
         } else {
-            assertNull(payloads[k].getDoubleArray());
+            assertNull(payload.getDoubleArray());
         }
 
-        if (k == 3) {
-            assertNotNull(payloads[k].getLongValue());
-            assertTrue(payloads[k].fetchAValue() == payloads[k].getLongValue());
+        if (type == PayloadType.LONG_VALUE) {
+            assertNotNull(payload.getLongValue());
+            assertSame(payload.fetchAValue(), payload.getLongValue());
         } else {
-            assertNull(payloads[k].getLongValue());
+            assertNull(payload.getLongValue());
         }
 
-        if (k == 4) {
-            assertNotNull(payloads[k].getLongArray());
-            assertTrue(payloads[k].fetchAValue() == payloads[k].getLongArray());
+        if (type == PayloadType.LONG_ARRAY) {
+            assertNotNull(payload.getLongArray());
+            assertSame(payload.fetchAValue(), payload.getLongArray());
         } else {
-            assertNull(payloads[k].getLongArray());
+            assertNull(payload.getLongArray());
         }
 
-        if (k == 5) {
-            assertNotNull(payloads[k].getStringValue());
-            assertTrue(payloads[k].fetchAValue() == payloads[k].getStringValue());
+        if (type == PayloadType.STRING_VALUE) {
+            assertNotNull(payload.getStringValue());
+            assertSame(payload.fetchAValue(), payload.getStringValue());
         } else {
-            assertNull(payloads[k].getStringValue());
+            assertNull(payload.getStringValue());
         }
 
-        if (k == 6) {
-            assertNotNull(payloads[k].getStringArray());
-            assertTrue(payloads[k].fetchAValue() == payloads[k].getStringArray());
+        if (type == PayloadType.STRING_ARRAY) {
+            assertNotNull(payload.getStringArray());
+            assertSame(payload.fetchAValue(), payload.getStringArray());
         } else {
-            assertNull(payloads[k].getStringArray());
+            assertNull(payload.getStringArray());
         }
 
-        if (k == 7) {
-            assertNotNull(payloads[k].getMap());
-            assertTrue(payloads[k].fetchAValue() == payloads[k].getMap());
+        if (type == PayloadType.MAP) {
+            assertNotNull(payload.getMap());
+            assertSame(payload.fetchAValue(), payload.getMap());
         } else {
-            assertNull(payloads[k].getMap());
+            assertNull(payload.getMap());
         }
 
-        switch(k) {
-          case 0:
-              // Nothing to test: payloads[0] is all empty: completely tested
-              // by code above.
-            break;
-          case 1:
-            assertTrue(47D == payloads[k].getDoubleValue()); // should auto-unbox
-            break;
-          case 2:
-            Double[] da = payloads[k].getDoubleArray();
-            assertNotNull(da);
-            assertEquals(2, da.length);
-            assertTrue(98D == da[0]);      // auto-unbox
-            assertTrue(-137D == da[1]);    // auto-unbox
-            break;
-          case 3:
-            assertTrue(42L == payloads[k].getLongValue()); // should auto-unbox
-            break;
-          case 4:
-            Long[] la = payloads[k].getLongArray();
-            assertNotNull(la);
-            assertEquals(6, la.length);
-            assertTrue(9L == la[0]);      // auto-unbox
-            assertTrue(8L == la[1]);      // auto-unbox
-            assertTrue(7L == la[2]);      // auto-unbox
-            assertTrue(6L == la[3]);      // auto-unbox
-            assertTrue(5L == la[4]);      // auto-unbox
-            assertTrue(4L == la[5]);      // auto-unbox
-            break;
-          case 5:
-            assertTrue("foobar".equals(payloads[k].getStringValue()));
-            break;
-          case 6:
-            String[] sa = payloads[k].getStringArray();
-            assertNotNull(sa);
-            assertEquals(3, sa.length);
-            assertTrue("foo".equals(sa[0]));
-            assertTrue("bar".equals(sa[1]));
-            assertTrue("baz".equals(sa[2]));
-            break;
-          case 7:
-            final Map<String,Object> ma = payloads[k].getMap();
-            assertNotNull(ma);
-            assertTrue(Double.compare(1.0D, (Double)(ma.get("a")))==0);
-            assertTrue(Arrays.equals(new Double[]{57.0D, -8.0D, 79.97D}, (Double[]) ma.get("b")));
-            assertTrue("somevals".equals(ma.get("c")));
-            break;
-          default:
-            assertTrue(false);  // default case should never be reached.
+        if (type != null) {
+            switch (type) {
+                case DOUBLE_VALUE:
+                    assertEquals(47D, payload.getDoubleValue(), 0.0); // should auto-unbox
+                    break;
+                case DOUBLE_ARRAY:
+                    final Double[] da = payload.getDoubleArray();
+                    assertNotNull(da);
+                    assertEquals(2, da.length);
+                    assertEquals(98D, da[0], 0.0);      // auto-unbox
+                    assertEquals(-137D, da[1], 0.0);    // auto-unbox
+                    break;
+                case LONG_VALUE:
+                    assertEquals(42L, (long) payload.getLongValue()); // should auto-unbox
+                    break;
+                case LONG_ARRAY:
+                    final Long[] la = payload.getLongArray();
+                    assertNotNull(la);
+                    assertEquals(6, la.length);
+                    assertEquals(9L, (long) la[0]);      // auto-unbox
+                    assertEquals(8L, (long) la[1]);      // auto-unbox
+                    assertEquals(7L, (long) la[2]);      // auto-unbox
+                    assertEquals(6L, (long) la[3]);      // auto-unbox
+                    assertEquals(5L, (long) la[4]);      // auto-unbox
+                    assertEquals(4L, (long) la[5]);      // auto-unbox
+                    break;
+                case STRING_VALUE:
+                    assertEquals("foobar0", payload.getStringValue());
+                    break;
+                case STRING_ARRAY:
+                    final String[] sa = payload.getStringArray();
+                    assertNotNull(sa);
+                    assertEquals(3, sa.length);
+                    assertEquals("foo", sa[0]);
+                    assertEquals("bar", sa[1]);
+                    assertEquals("baz0", sa[2]);
+                    break;
+                case MAP:
+                    final Map<String, Object> ma = payload.getMap();
+                    assertNotNull(ma);
+                    assertEquals(0, Double.compare(1.0D, (Double) (ma.get("a"))));
+                    assertArrayEquals(new Double[]{57.0D, -8.0D, 79.97D}, (Double[]) ma.get("b"));
+                    assertEquals("somevals0", ma.get("c"));
+                    break;
+                default:
+                    fail();  // default case should never be reached.
+            }
         }
     }
 
@@ -220,31 +172,34 @@ public class TestPayload {
      * Given two vectors of test Payloads, confirms that:
      *  type(payloadsA[i]) == type(payloadsA[j]) iff i==j
      */
-    private void verifyPayloadTypeComparisons(Payload[] payloadsA, Payload[] payloadsB) {
-        for (int i = 0; i < payloadsA.length; i++) {
-            for (int j = 0; j < payloadsB.length; j++) {
-                if (i == j) {
-                    assertTrue("should be true: payloadsA["+i+"].sameType(payloadsB["+j+"])", payloadsA[i].sameType(payloadsB[j]));
-                } else {
-                    assertFalse("should be false: payloadsA["+i+"].sameType(payloadsB["+j+"])", payloadsA[i].sameType(payloadsB[j]));
-                }
-            }
-        }
+    private void verifyPayloadTypeComparisons(final Map<PayloadType, Payload> payloadsA, final Map<PayloadType, Payload> payloadsB) {
+        assertThat(payloadsA.keySet()).isEqualTo(payloadsB.keySet());
+        payloadsA.forEach((typeA, payloadA) ->
+                payloadsB.forEach((typeB, payloadB) -> {
+                            if (typeA == typeB) {
+                                assertTrue("should be true: " + payloadA + "].sameType(payloadsB[" + payloadB + "])",
+                                        payloadA.sameType(payloadB));
+                            } else {
+                                assertFalse("should be false: payloadsA[" + payloadA + "].sameType(payloadsB[" + payloadA + "])",
+                                        payloadA.sameType(payloadB));
+                            }
+                        }
+                ));
     }
 
     @Test
     public void testPayloadFields() {
-        final Payload[] payloads = getTestPayloads();
-
-        for (int i = 0; i < payloads.length; i++) {
-            verifyPayload(payloads, i);
-        }
+        verifyPayload(Payload.EMPTY_PAYLOAD, null);
+        getPayloadTypePayloadSampleMap(0)
+                .forEach((type, payload) ->
+                        verifyPayload(payload, type)
+                );
     }
 
     @Test
     public void testPayloadTypeComparisons() {
-        final Payload[] payloadsA = getTestPayloads();
-        final Payload[] payloadsB = getDifferentTestPayloads();
+        final Map<PayloadType, Payload> payloadsA = getPayloadTypePayloadSampleMap(0);
+        final Map<PayloadType, Payload> payloadsB = getPayloadTypePayloadSampleMap(1);
 
         // Verify payloads are the same type as themselves.
         verifyPayloadTypeComparisons(payloadsA, payloadsA);
@@ -257,7 +212,7 @@ public class TestPayload {
 
     @Test
     public void testOverwritePayload(){
-        Payload payload = new Payload();
+        final Payload payload = new Payload();
 
         payload.setStringValue("mapValue");
 
@@ -269,32 +224,56 @@ public class TestPayload {
 
     @Test
     public void testPayloadToString() {
-        final Payload[] payloads = getTestPayloads();
+        final Map<PayloadType, Payload> payloads = getPayloadTypePayloadSampleMap(0);
 
-        assertTrue(payloads[1].toString().contains("doubleValue"));
-        assertTrue(payloads[1].toString().contains("47"));
+        assertThat(payloads.get(PayloadType.DOUBLE_VALUE).toString())
+                .contains("doubleValue")
+                .contains("47");
 
-        assertTrue(payloads[2].toString().contains("doubleArray"));
-        assertTrue(payloads[2].toString().contains("98"));
-        assertTrue(payloads[2].toString().contains("-137"));
+        assertThat(payloads.get(PayloadType.DOUBLE_ARRAY).toString())
+                .contains("doubleArray")
+                .contains("98")
+                .contains("-137");
 
-        assertTrue(payloads[3].toString().contains("longValue"));
-        assertTrue(payloads[3].toString().contains("42"));
+        assertThat(payloads.get(PayloadType.LONG_VALUE).toString())
+                .contains("longValue")
+                .contains("42");
 
-        assertTrue(payloads[4].toString().contains("longArray"));
-        assertTrue(payloads[4].toString().contains("9,"));
-        assertTrue(payloads[4].toString().contains("8,"));
-        assertTrue(payloads[4].toString().contains("7,"));
-        assertTrue(payloads[4].toString().contains("6,"));
-        assertTrue(payloads[4].toString().contains("5,"));
-        assertTrue(payloads[4].toString().contains("4"));
+        assertThat(payloads.get(PayloadType.LONG_ARRAY).toString())
+                .contains("longArray")
+                .contains("9,")
+                .contains("8,")
+                .contains("7,")
+                .contains("6,")
+                .contains("5,")
+                .contains("4");
 
-        assertTrue(payloads[5].toString().contains("stringValue"));
-        assertTrue(payloads[5].toString().contains("foobar"));
+        assertThat(payloads.get(PayloadType.STRING_VALUE).toString())
+                .contains("stringValue")
+                .contains("foobar");
 
-        assertTrue(payloads[6].toString().contains("stringArray"));
-        assertTrue(payloads[6].toString().contains("foo"));
-        assertTrue(payloads[6].toString().contains("bar"));
-        assertTrue(payloads[6].toString().contains("baz"));
+        assertThat(payloads.get(PayloadType.STRING_ARRAY).toString())
+                .contains("stringArray")
+                .contains("foo")
+                .contains("bar")
+                .contains("baz");
+    }
+
+    private static Map<PayloadType, Payload> getPayloadTypePayloadSampleMap(final int seed) {
+        final ImmutableMap<PayloadType, Consumer<Payload>> map = ImmutableMap.<PayloadType, Consumer<Payload>>builder()
+                .put(PayloadType.DOUBLE_VALUE, p -> p.setDoubleValue(47.0D + seed))
+                .put(PayloadType.DOUBLE_ARRAY, p -> p.setDoubleArray(new Double[]{98.0D, -137D + seed}))
+                .put(PayloadType.LONG_VALUE, p -> p.setLongValue(42L + seed))
+                .put(PayloadType.LONG_ARRAY, p -> p.setLongArray(new Long[]{9L, 8L, 7L, 6L, 5L, 4L + seed}))
+                .put(PayloadType.STRING_VALUE, p -> p.setStringValue("foobar" + seed))
+                .put(PayloadType.STRING_ARRAY, p -> p.setStringArray(new String[]{"foo", "bar", "baz" + seed}))
+                .put(PayloadType.MAP, p -> p.setMap(ImmutableMap.of("a", 1.0D, "b", new Double[]{57.0D, -8.0D, 79.97D}, "c", "somevals" + seed)))
+                .build();
+        return map.entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, e -> {
+                    final Payload p = new Payload();
+                    e.getValue().accept(p);
+                    return p;
+                }));
     }
 }

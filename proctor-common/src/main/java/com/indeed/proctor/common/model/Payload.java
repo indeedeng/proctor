@@ -33,7 +33,7 @@ public class Payload {
     @Nullable
     private String[] stringArray;
     @Nullable
-    private Map<String,Object> map;
+    private Map<String, Object> map;
     // Used for returning something when we can't return a null.
     public static final Payload EMPTY_PAYLOAD = new Payload();
     // Error message for invalid user input
@@ -115,7 +115,7 @@ public class Payload {
     }
 
     @Nullable
-    public Map<String,Object> getMap() {
+    public Map<String, Object> getMap() {
         return map;
     }
     public void setMap(@Nullable final Map<String, Object> map) {
@@ -139,7 +139,7 @@ public class Payload {
         // careful of the autoboxing...
         if (map != null) {
             s.append(" map : [");
-            for (final Map.Entry<String,Object> entry : map.entrySet()) {
+            for (final Map.Entry<String, Object> entry : map.entrySet()) {
                 s.append('(').append(entry.getKey()).append(',').append(entry.getValue()).append(')');
             }
             s.append(']');

@@ -450,7 +450,10 @@ public class EditAndPromoteJob extends AbstractJob {
         }
     }
 
-
+    /**
+     * Validate required fields, metattag syntax, allocations and buckets
+     * @throws IllegalArgumentException for violations
+     */
     private static void validateBasicInformation(
             final TestDefinition definition,
             final BackgroundJob<Void> backgroundJob
@@ -477,6 +480,11 @@ public class EditAndPromoteJob extends AbstractJob {
         validateAllocationsAndBuckets(definition, backgroundJob);
     }
 
+    /**
+     * checks bucket names, allocation size sanity
+     * logs warnings for dodgy data
+     * @throws IllegalArgumentException for violations
+     */
     private static void validateAllocationsAndBuckets(
             final TestDefinition definition,
             final BackgroundJob<Void> backgroundJob

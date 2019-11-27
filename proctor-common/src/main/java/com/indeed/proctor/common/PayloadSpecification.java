@@ -11,14 +11,14 @@ import java.util.Map;
  *
  * @author pwp
  */
-@JsonSerialize(include= JsonSerialize.Inclusion.NON_NULL)
+@JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
 public class PayloadSpecification {
     @Nullable
     private String type;
     @Nullable
     private String validator;
     @Nullable
-    private Map<String,String> schema;
+    private Map<String, String> schema;
 
     @CheckForNull
     public String getType() {
@@ -29,11 +29,11 @@ public class PayloadSpecification {
         this.type = type;
     }
 
-    public Map<String,String> getSchema() {
+    public Map<String, String> getSchema() {
         return schema;
     }
 
-    public void setSchema(@Nullable final Map<String,String> schema) {
+    public void setSchema(@Nullable final Map<String, String> schema) {
         this.schema = schema;
     }
 
