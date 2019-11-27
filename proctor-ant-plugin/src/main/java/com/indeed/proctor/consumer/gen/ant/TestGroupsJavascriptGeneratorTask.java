@@ -1,5 +1,6 @@
 package com.indeed.proctor.consumer.gen.ant;
 
+import com.indeed.proctor.common.ProctorSpecification;
 import com.indeed.proctor.consumer.gen.CodeGenException;
 import com.indeed.proctor.consumer.gen.TestGroupsJavascriptGenerator;
 import org.apache.log4j.Logger;
@@ -27,47 +28,9 @@ public class TestGroupsJavascriptGeneratorTask extends TestGroupsGeneratorTask {
     }
 
     @Override
-    protected void generateTotalSpecification(
-            final File dir,
-            final File specificationOutputFile
-    ) throws CodeGenException {
-        final File output = gen.makeTotalSpecification(
-                dir,
-                specificationOutputFile.getParent(),
-                specificationOutputFile.getName()
-        );
+    protected void generateSourceFiles(final ProctorSpecification specification) throws CodeGenException {
         gen.generate(
-                output.getPath(),
-                target,
-                packageName,
-                groupsClass,
-                useClosure
-        );
-    }
-
-    @Override
-    protected void generateTotalSpecification(
-            final List<File> files,
-            final File specificationOutputFile
-    ) throws CodeGenException {
-        final File output = gen.makeTotalSpecification(
-                files,
-                specificationOutputFile.getParent(),
-                specificationOutputFile.getName()
-        );
-        gen.generate(
-                output.getPath(),
-                target,
-                packageName,
-                groupsClass,
-                useClosure
-        );
-    }
-
-    @Override
-    protected void generateFile() throws CodeGenException {
-        gen.generate(
-                input,
+                specification,
                 target,
                 packageName,
                 groupsClass,

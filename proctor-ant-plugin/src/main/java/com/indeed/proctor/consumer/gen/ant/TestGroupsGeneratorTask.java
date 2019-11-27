@@ -1,18 +1,19 @@
 package com.indeed.proctor.consumer.gen.ant;
 
 import com.google.common.base.Strings;
+import com.indeed.proctor.common.ProctorSpecification;
+import com.indeed.proctor.common.ProctorUtils;
 import com.indeed.proctor.consumer.gen.CodeGenException;
+import com.indeed.proctor.consumer.gen.TestGroupsGenerator;
 import org.apache.log4j.Logger;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
+import org.apache.tools.ant.types.LogLevel;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import static com.indeed.proctor.consumer.gen.TestGroupsGenerator.DYNAMIC_FILTERS_FILENAME;
-import static com.indeed.proctor.consumer.gen.TestGroupsGenerator.PROVIDED_CONTEXT_FILENAME;
 
 /**
  * Ant task for generating Proctor test groups files.
@@ -21,6 +22,17 @@ import static com.indeed.proctor.consumer.gen.TestGroupsGenerator.PROVIDED_CONTE
  */
 public abstract class TestGroupsGeneratorTask extends Task {
     protected static final Logger LOGGER = Logger.getLogger(TestGroupsGeneratorTask.class);
+
+    /**
+     * A period of sleep to display warning messages to users
+     */
+    private static final int SLEEP_TIME_FOR_WARNING = 3;
+
+    /**
+     * URL to the page for the dynamic filters migration
+     */
+    private static final String DYNAMIC_FILTERS_MIGRATION_URL = "https://github.com/indeedeng/proctor/issues/47";
+
     /**
      * Paths to input specification files separated by ","
      * It allows two types of inputs
@@ -100,41 +112,25 @@ public abstract class TestGroupsGeneratorTask extends Task {
     }
 
     /**
-     * Use {@link TestGroupsGeneratorTask#totalSpecificationGenerator(List)} instead
-     *
-     * @deprecated
-     */
-    @Deprecated
-    protected void totalSpecificationGenerator(final File dir) throws CodeGenException {
-        totalSpecificationGenerator(Arrays.asList(dir.listFiles()));
-    }
-
-    /*
      * Generates total specifications from any partial specifications found
+     * Output generate total specification to `specificationOutput`
      */
-    protected void totalSpecificationGenerator(final List<File> files) throws CodeGenException {
+    protected ProctorSpecification mergePartialSpecifications(final List<File> files) throws CodeGenException {
         if (files == null || files.size() == 0) {
             throw new CodeGenException("No specifications file input");
         }
-        final List<File> providedContextFiles = new ArrayList<>();
-        final List<File> dynamicFiltersFiles = new ArrayList<>();
-        for (final File file : files) {
-            if (PROVIDED_CONTEXT_FILENAME.equals(file.getName())) {
-                providedContextFiles.add(file);
-            } else if (DYNAMIC_FILTERS_FILENAME.equals(file.getName())) {
-                dynamicFiltersFiles.add(file);
-            }
+        if (Strings.isNullOrEmpty(getSpecificationOutput())) {
+            throw new CodeGenException("`specificationOutput` is not given");
         }
-        if (providedContextFiles.size() != 1) {
-            throw new CodeGenException("Incorrect amount of " + PROVIDED_CONTEXT_FILENAME + " in specified input folder");
-        } else if (dynamicFiltersFiles.size() > 1) {
-            throw new CodeGenException("Incorrect amount of " + DYNAMIC_FILTERS_FILENAME + " in specified input folder");
-        } else {
-            //make directory if it doesn't exist
-            new File(specificationOutput.substring(0, specificationOutput.lastIndexOf(File.separator))).mkdirs();
-            final File specificationOutputFile = new File(specificationOutput);
-            generateTotalSpecification(files, specificationOutputFile);
-        }
+
+        //make directory if it doesn't exist
+        new File(specificationOutput.substring(0, specificationOutput.lastIndexOf(File.separator))).mkdirs();
+        final File specificationOutputFile = new File(specificationOutput);
+        return TestGroupsGenerator.makeTotalSpecification(
+                files,
+                specificationOutputFile.getParent(),
+                specificationOutputFile.getName()
+        );
     }
 
     @Override
@@ -168,41 +164,55 @@ public abstract class TestGroupsGeneratorTask extends Task {
                     files.add(inputFile);
                 }
             }
+
+            final ProctorSpecification specification;
             if (isSingleSpecificationFile) {
-                try {
-                    generateFile();
-                } catch (final CodeGenException ex) {
-                    throw new BuildException("Unable to generate code: " + ex.getMessage(), ex);
-                }
+                specification = ProctorUtils.readSpecification(new File(input));
             } else {
-                if (!Strings.isNullOrEmpty(getSpecificationOutput())) {
-                    try {
-                        totalSpecificationGenerator(files);
-                    } catch (final CodeGenException e) {
-                        throw new BuildException("Unable to generate total specification: " + e.getMessage(), e);
-                    }
-                } else {
-                    throw new BuildException("Undefined output folder for generated specification");
+                try {
+                    specification = mergePartialSpecifications(files);
+                } catch (final CodeGenException e) {
+                    throw new BuildException("Unable to generate total specification: " + e.getMessage(), e);
                 }
+            }
+
+            validateSpecification(specification);
+
+            try {
+                generateSourceFiles(specification);
+            } catch (final CodeGenException e) {
+                throw new BuildException("Unable to generate source file: " + e.getMessage(), e);
             }
         }
     }
 
     /**
-     * Use {@link TestGroupsGeneratorTask#generateTotalSpecification(List, File)} instead
-     *
-     * @deprecated
+     * Validate input specification and log messages
      */
-    @Deprecated
-    protected abstract void generateTotalSpecification(
-            final File dir,
-            final File specificationOutputFile
-    ) throws CodeGenException;
+    private void validateSpecification(final ProctorSpecification specification) {
+        final boolean hasDuplicatedFilters = specification.getDynamicFilters()
+                .asCollection()
+                .stream()
+                .anyMatch(filter -> filter.getClass().isAnnotationPresent(Deprecated.class));
 
-    protected abstract void generateTotalSpecification(
-            final List<File> files,
-            final File specificationOutputFile
-    ) throws CodeGenException;
+        if (hasDuplicatedFilters) {
+            log(String.join("\n",
+                    "=================================================================================",
+                    "Warning: Proctor detected this application is using deprecated dynamic filters.",
+                    "Please migrate to meta tags based filters.",
+                    "See " + DYNAMIC_FILTERS_MIGRATION_URL + " for details.",
+                    "",
+                    "Sleeping " + SLEEP_TIME_FOR_WARNING + " seconds",
+                    "================================================================================="
+                    ), LogLevel.WARN.getLevel()
+            );
+        }
+    }
 
-    protected abstract void generateFile() throws CodeGenException;
+    /**
+     * Generate source files from given proctor specification
+     *
+     * @param specification a input specification for source code generation
+     */
+    protected abstract void generateSourceFiles(final ProctorSpecification specification) throws CodeGenException;
 }

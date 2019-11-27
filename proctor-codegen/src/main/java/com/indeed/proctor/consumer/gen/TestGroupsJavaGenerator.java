@@ -3,6 +3,7 @@ package com.indeed.proctor.consumer.gen;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 import com.indeed.proctor.common.PayloadType;
+import com.indeed.proctor.common.ProctorSpecification;
 
 import java.util.Map;
 
@@ -15,7 +16,7 @@ import java.util.Map;
 public class TestGroupsJavaGenerator extends TestGroupsGenerator {
 
     public void generate(
-            final String input,
+            final ProctorSpecification specification,
             final String target,
             final String packageName,
             final String groupsClass,
@@ -35,7 +36,7 @@ public class TestGroupsJavaGenerator extends TestGroupsGenerator {
         baseContext.put("payloadClassName", payloadClass);
         if (!Strings.isNullOrEmpty(groupsClass)) {
             generate(
-                    input,
+                    specification,
                     target,
                     baseContext,
                     packageName,
@@ -47,7 +48,7 @@ public class TestGroupsJavaGenerator extends TestGroupsGenerator {
         }
         if (!Strings.isNullOrEmpty(groupsManagerClass)) {
             generate(
-                    input,
+                    specification,
                     target,
                     baseContext,
                     packageName,
@@ -59,7 +60,7 @@ public class TestGroupsJavaGenerator extends TestGroupsGenerator {
         }
         if (!Strings.isNullOrEmpty(groupsClass)) {
             generate(
-                    input,
+                    specification,
                     target,
                     baseContext,
                     packageName,
@@ -71,7 +72,7 @@ public class TestGroupsJavaGenerator extends TestGroupsGenerator {
         }
         if (!Strings.isNullOrEmpty(contextClass)) {
             generate(
-                    input,
+                    specification,
                     target,
                     baseContext,
                     packageName,
@@ -90,23 +91,5 @@ public class TestGroupsJavaGenerator extends TestGroupsGenerator {
     ) {
         testDef.put("payloadJavaClass", specifiedPayloadType.javaClassName);
         testDef.put("payloadAccessorName", specifiedPayloadType.javaAccessorName);
-    }
-
-    public static void main(final String[] args) throws CodeGenException {
-        if (args.length != 6) {
-            System.err.println("java "
-                    + TestGroupsJavaGenerator.class.getCanonicalName()
-                    + " input.json outputDirectory packageName groupsClassName groupsManagerClassName contextClassName"
-            );
-            System.exit(-4);
-        }
-        final TestGroupsJavaGenerator generator = new TestGroupsJavaGenerator();
-        final String input = args[0];
-        final String target = args[1];
-        final String packageName = args[2];
-        final String groupsClass = args[3];
-        final String groupsManagerClass = args[4];
-        final String contextClass = args[5];
-        generator.generate(input, target, packageName, groupsClass, groupsManagerClass, contextClass);
     }
 }

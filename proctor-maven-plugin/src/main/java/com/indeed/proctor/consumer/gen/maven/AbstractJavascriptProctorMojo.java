@@ -1,6 +1,8 @@
 package com.indeed.proctor.consumer.gen.maven;
 
+import com.indeed.proctor.common.ProctorUtils;
 import com.indeed.proctor.consumer.gen.CodeGenException;
+import com.indeed.proctor.consumer.gen.TestGroupsGenerator;
 import com.indeed.proctor.consumer.gen.TestGroupsJavascriptGenerator;
 import org.apache.maven.plugins.annotations.Parameter;
 
@@ -29,7 +31,7 @@ public abstract class AbstractJavascriptProctorMojo extends AbstractProctorMojo 
     ) throws CodeGenException {
         getLog().info(String.format("Building resources for %s", packageName));
         gen.generate(
-                file.getPath(),
+                ProctorUtils.readSpecification(file),
                 getOutputDirectory().getPath(),
                 packageName,
                 className,
@@ -41,6 +43,6 @@ public abstract class AbstractJavascriptProctorMojo extends AbstractProctorMojo 
             final File parent,
             final File outputDir
     ) throws CodeGenException {
-        gen.makeTotalSpecification(parent, outputDir.getPath());
+        TestGroupsGenerator.makeTotalSpecification(parent, outputDir.getPath());
     }
 }

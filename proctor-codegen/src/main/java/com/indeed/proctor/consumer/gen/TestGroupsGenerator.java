@@ -6,7 +6,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.indeed.proctor.common.PayloadType;
 import com.indeed.proctor.common.ProctorSpecification;
-import com.indeed.proctor.common.ProctorUtils;
 import com.indeed.proctor.common.Serializers;
 import com.indeed.proctor.common.TestSpecification;
 import com.indeed.proctor.common.dynamic.DynamicFilters;
@@ -46,7 +45,7 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
      * contents, using the individual TestDefinition jsons and a providedcontext.json and dynamicfilters.json to create one large
      * temporary ProctorSpecification json to be used for code generation
      */
-    public static File makeTotalSpecification(
+    public static ProctorSpecification makeTotalSpecification(
             final File inputDir,
             final String targetDir
     ) throws CodeGenException {
@@ -54,7 +53,7 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
         return makeTotalSpecification(inputDir, targetDir, inputDir.getPath().substring(inputDir.getPath().lastIndexOf(File.separator) + 1) + "Groups.json");
     }
 
-    public static File makeTotalSpecification(
+    public static ProctorSpecification makeTotalSpecification(
             final File inputDir,
             final String targetDir,
             final String outputFileName
@@ -67,13 +66,36 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
      * Combines all input files into a total proctor specification
      * and writes it to a file of the path `targetDir`/`outputFileName`.
      *
-     * @return File object for the generated specification
+     * @return combined total proctor specification
      */
-    public static File makeTotalSpecification(
+    public static ProctorSpecification makeTotalSpecification(
             final List<File> inputFiles,
             final String targetDir,
             final String outputFileName
     ) throws CodeGenException {
+        final List<File> providedContextFiles = new ArrayList<>();
+        final List<File> dynamicFiltersFiles = new ArrayList<>();
+        for (final File file : inputFiles) {
+            if (PROVIDED_CONTEXT_FILENAME.equals(file.getName())) {
+                providedContextFiles.add(file);
+            } else if (DYNAMIC_FILTERS_FILENAME.equals(file.getName())) {
+                dynamicFiltersFiles.add(file);
+            }
+        }
+
+        if (providedContextFiles.size() != 1) {
+            throw new CodeGenException(
+                    "Incorrect amount of " + PROVIDED_CONTEXT_FILENAME + " in specified input folder."
+                            + " expected 1 but" + +providedContextFiles.size() + ": " + providedContextFiles
+            );
+        }
+        if (dynamicFiltersFiles.size() > 1) {
+            throw new CodeGenException(
+                    "Incorrect amount of " + DYNAMIC_FILTERS_FILENAME + " in specified input folder."
+                            + " expected 0 or 1 but " + dynamicFiltersFiles.size() + ": " + dynamicFiltersFiles
+            );
+        }
+
         final Map<String, TestSpecification> testSpec = new LinkedHashMap<>();
         Map<String, String> providedContext = new LinkedHashMap<>();
         DynamicFilters dynamicFilters = new DynamicFilters();
@@ -118,7 +140,7 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
         } catch (final IOException e) {
             throw new CodeGenException("Could not write to temp file " + output.getAbsolutePath(), e);
         }
-        return output;
+        return proctorSpecification;
     }
 
     /**
@@ -150,20 +172,8 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
         }
     }
 
-    @Override
-    protected Map<String, Object> populateRootMap(
-            final String input,
-            final Map<String, Object> baseContext,
-            final String packageName,
-            final String className
-    ) {
-        final File inputFile = new File(input);
-        final ProctorSpecification spec = ProctorUtils.readSpecification(inputFile);
-
-        return populateRootMap(spec, baseContext, packageName, className);
-    }
-
     @VisibleForTesting
+    @Override
     Map<String, Object> populateRootMap(
             final ProctorSpecification spec,
             final Map<String, Object> baseContext,

@@ -1,5 +1,6 @@
 package com.indeed.proctor.consumer.gen;
 
+import com.indeed.proctor.common.ProctorSpecification;
 import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapper;
 import freemarker.template.SimpleHash;
@@ -20,7 +21,7 @@ import java.util.regex.Matcher;
  */
 public abstract class FreeMarkerCodeGenerator {
     abstract Map<String, Object> populateRootMap(
-            String input,
+            ProctorSpecification specification,
             Map<String, Object> baseContext,
             String packageName,
             String className
@@ -86,7 +87,7 @@ public abstract class FreeMarkerCodeGenerator {
     }
 
     protected void generate(
-            final String input,
+            final ProctorSpecification specification,
             final String target,
             final Map<String, Object> baseContext,
             final String packageName,
@@ -103,7 +104,7 @@ public abstract class FreeMarkerCodeGenerator {
             fullPath.getParentFile().mkdirs();
             final PrintWriter out = new PrintWriter(fullPath);
 
-            final Map<String, Object> rootMap = populateRootMap(input, baseContext, packageName, className);
+            final Map<String, Object> rootMap = populateRootMap(specification, baseContext, packageName, className);
 
             final TemplateModel model = new SimpleHash(rootMap);
 
