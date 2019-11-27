@@ -22,12 +22,25 @@ public abstract class AbstractJavascriptProctorMojo extends AbstractProctorMojo 
         return useClosure;
     }
 
-    protected void processFile(final File file, final String packageName, final String className) throws CodeGenException {
+    protected void processFile(
+            final File file,
+            final String packageName,
+            final String className
+    ) throws CodeGenException {
         getLog().info(String.format("Building resources for %s", packageName));
-        gen.generate(file.getPath(), getOutputDirectory().getPath(), packageName, className, useClosure);
+        gen.generate(
+                file.getPath(),
+                getOutputDirectory().getPath(),
+                packageName,
+                className,
+                useClosure
+        );
     }
 
-    protected void generateTotalSpecification(final File parent, final File outputDir) throws CodeGenException {
+    protected void generateTotalSpecification(
+            final File parent,
+            final File outputDir
+    ) throws CodeGenException {
         gen.makeTotalSpecification(parent, outputDir.getPath());
     }
 }
