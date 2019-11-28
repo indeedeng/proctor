@@ -15,13 +15,48 @@ import java.util.Map;
  * @author pwp
  */
 public enum PayloadType {
-    DOUBLE_VALUE ("doubleValue", "Double", "number", "getDoubleValue"),
-    DOUBLE_ARRAY ("doubleArray", "Double[]", "Array.<number>", "getDoubleArray"),
-    LONG_VALUE   ("longValue", "Long", "number", "getLongValue"),
-    LONG_ARRAY   ("longArray", "Long[]", "Array.<number>", "getLongArray"),
-    STRING_VALUE ("stringValue", "String", "string", "getStringValue"),
-    STRING_ARRAY ("stringArray", "String[]", "Array.<string>", "getStringArray"),
-    MAP ("map", "Map<String,Object>", "Object.<string, Object>", "getMap");
+    DOUBLE_VALUE(
+            "doubleValue",
+            "Double",
+            "number",
+            "-1",
+            "getDoubleValue"),
+    DOUBLE_ARRAY(
+            "doubleArray",
+            "Double[]",
+            "Array.<number>",
+            "[]",
+            "getDoubleArray"),
+    LONG_VALUE(
+            "longValue",
+            "Long",
+            "number",
+            "-1",
+            "getLongValue"),
+    LONG_ARRAY(
+            "longArray",
+            "Long[]",
+            "Array.<number>",
+            "[]",
+            "getLongArray"),
+    STRING_VALUE(
+            "stringValue",
+            "String",
+            "string",
+            "''",
+            "getStringValue"),
+    STRING_ARRAY(
+            "stringArray",
+            "String[]",
+            "Array.<string>",
+            "[]",
+            "getStringArray"),
+    MAP(
+            "map",
+            "Map<String,Object>",
+            "Object.<string, Object>",
+            "{}",
+            "getMap");
 
     @Nonnull
     public final String payloadTypeName;
@@ -30,17 +65,21 @@ public enum PayloadType {
     @Nonnull
     public final String javascriptTypeName;
     @Nonnull
+    private final String javascriptDefaultValue;
+    @Nonnull
     public final String javaAccessorName;
 
-    private PayloadType(
+    PayloadType(
             @Nonnull final String payloadTypeName,
             @Nonnull final String javaClassName,
             @Nonnull final String javascriptTypeName,
+            @Nonnull String javascriptDefaultValue,
             @Nonnull final String javaAccessorName
     ) {
         this.payloadTypeName = payloadTypeName;
         this.javaClassName = javaClassName;
         this.javascriptTypeName = javascriptTypeName;
+        this.javascriptDefaultValue = javascriptDefaultValue;
         this.javaAccessorName = javaAccessorName;
     }
 
@@ -51,47 +90,15 @@ public enum PayloadType {
      *
      * @param payload A payload
      * @return true if the payload has the type
+     * @deprecated use Payload.hasType
      */
+    @Deprecated
     public boolean payloadHasThisType(@Nullable Payload payload) {
-        if (payload == null) {
-            return false;
-        }
-        switch (this) {
-            case DOUBLE_VALUE:
-                return (payload.getDoubleValue() != null);
-            case DOUBLE_ARRAY:
-                return (payload.getDoubleArray() != null);
-            case LONG_VALUE:
-                return (payload.getLongValue() != null);
-            case LONG_ARRAY:
-                return (payload.getLongArray() != null);
-            case STRING_VALUE:
-                return (payload.getStringValue() != null);
-            case STRING_ARRAY:
-                return (payload.getStringArray() != null);
-            case MAP:
-                return (payload.getMap() != null);
-            default:
-                throw new IllegalStateException("Unknown payload type: " + this);
-        }
+        return Payload.hasType(payload, this);
     }
 
     public String getDefaultJavascriptValue() {
-        switch (this) {
-            case DOUBLE_VALUE:
-            case LONG_VALUE:
-                return "-1";
-            case STRING_VALUE:
-                return "''";
-            case DOUBLE_ARRAY:
-            case LONG_ARRAY:
-            case STRING_ARRAY:
-                return "[]";
-            case MAP:
-                return "{}";
-            default:
-                throw new IllegalStateException("Unknown payload type: " + this);
-        }
+        return javascriptDefaultValue;
     }
 
     /**

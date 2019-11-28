@@ -1,6 +1,7 @@
 package com.indeed.proctor.common.model;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.collect.ImmutableMap;
 import com.indeed.proctor.common.PayloadType;
 import org.apache.commons.lang3.StringUtils;
 
@@ -12,6 +13,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 /**
  * Models a payload value for a bucket in a test, generally meant to have one kind of value per bucket.
@@ -215,27 +218,20 @@ public class Payload {
         return Optional.ofNullable(getPayloadType());
     }
 
+    public static boolean hasType(final Payload payload, final PayloadType payloadType) {
+        if (payload == null) {
+            return false;
+        }
+        final Function<Payload, Object> resolver = resolvers.get(payloadType);
+        return resolver != null && resolver.apply(payload) != null;
+    }
+
     @CheckForNull
     private PayloadType getPayloadType() {
-        final PayloadType type;
-        if (doubleValue != null) {
-            type = PayloadType.DOUBLE_VALUE;
-        } else if (doubleArray != null) {
-            type = PayloadType.DOUBLE_ARRAY;
-        } else if (longValue != null) {
-            type = PayloadType.LONG_VALUE;
-        } else if (longArray != null) {
-            type = PayloadType.LONG_ARRAY;
-        } else if (stringValue != null) {
-            type = PayloadType.STRING_VALUE;
-        } else if (stringArray != null) {
-            type = PayloadType.STRING_ARRAY;
-        } else if (map != null) {
-            type = PayloadType.MAP;
-        } else {
-            type = null;
-        }
-        return type;
+        return Stream.of(PayloadType.values())
+                .filter(pt -> resolvers.get(pt).apply(this) != null)
+                .findFirst()
+                .orElse(null);
     }
 
     /**
@@ -264,29 +260,9 @@ public class Payload {
     }
 
     public int numFieldsDefined() {
-        int i = 0;
-        if (map != null) {
-            i++;
-        }
-        if (doubleValue != null) {
-            i++;
-        }
-        if (doubleArray != null) {
-            i++;
-        }
-        if (longValue != null) {
-            i++;
-        }
-        if (longArray != null) {
-            i++;
-        }
-        if (stringValue != null) {
-            i++;
-        }
-        if (stringArray != null) {
-            i++;
-        }
-        return i;
+        return (int) Stream.of(PayloadType.values())
+                .filter(pt -> resolvers.get(pt).apply(this) != null)
+                .count();
     }
 
     /**
@@ -297,30 +273,13 @@ public class Payload {
      * We don't want the JsonSerializer to know about this, so
      * renamed to not begin with "get".
      */
-    @Nullable
+    @CheckForNull
     public Object fetchAValue() {
-        if (doubleValue != null) {
-            return doubleValue;
-        }
-        if (doubleArray != null) {
-            return doubleArray;
-        }
-        if (longValue != null) {
-            return longValue;
-        }
-        if (longArray != null) {
-            return longArray;
-        }
-        if (stringValue != null) {
-            return stringValue;
-        }
-        if (stringArray != null) {
-            return stringArray;
-        }
-        if (map != null) {
-            return map;
-        }
-        return null;
+        return Stream.of(PayloadType.values())
+                .map(pt -> resolvers.get(pt).apply(this))
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse(null);
     }
 
     @Override
@@ -353,4 +312,15 @@ public class Payload {
         result = 31 * result + Arrays.hashCode(stringArray);
         return result;
     }
+
+
+    private final static Map<PayloadType, Function<Payload, Object>> resolvers = ImmutableMap.<PayloadType, Function<Payload, Object>>builder()
+            .put(PayloadType.DOUBLE_VALUE, Payload::getDoubleValue)
+            .put(PayloadType.DOUBLE_ARRAY, Payload::getDoubleArray)
+            .put(PayloadType.LONG_VALUE, Payload::getLongValue)
+            .put(PayloadType.LONG_ARRAY, Payload::getLongArray)
+            .put(PayloadType.STRING_VALUE, Payload::getStringValue)
+            .put(PayloadType.STRING_ARRAY, Payload::getStringArray)
+            .put(PayloadType.MAP, Payload::getMap)
+            .build();
 }

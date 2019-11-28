@@ -589,7 +589,7 @@ public abstract class ProctorUtils {
             for (final TestBucket bucket : buckets) {
                 final Payload payload = bucket.getPayload();
                 if (payload != null) {
-                    if (!specifiedPayloadType.payloadHasThisType(payload)) {
+                    if (!Payload.hasType(payload, specifiedPayloadType)) {
                         throw new IncompatibleTestMatrixException("For test " + testName + " from " + matrixSource + " expected payload of type " + specifiedPayloadType.payloadTypeName + " but matrix has a test bucket payload with wrong type: " + bucket);
                     }
                     if (specifiedPayloadType == PayloadType.MAP) {
