@@ -3,6 +3,7 @@ package com.indeed.proctor.common;
 import com.indeed.proctor.common.el.LibraryFunctionMapperBuilder;
 import com.indeed.proctor.common.el.MulticontextReadOnlyVariableMapper;
 import org.apache.commons.lang3.ClassUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.el.ExpressionFactoryImpl;
 import org.apache.log4j.Logger;
 
@@ -113,7 +114,7 @@ public class RuleEvaluator {
     }
 
     public boolean evaluateBooleanRule(final String rule, @Nonnull final Map<String, Object> values) throws IllegalArgumentException {
-        if (ProctorUtils.isEmptyWhitespace(rule)) {
+        if (StringUtils.isBlank(rule)) {
             return true;
         }
         if (!rule.startsWith("${") || !rule.endsWith("}")) {
@@ -121,7 +122,7 @@ public class RuleEvaluator {
             return false;
         }
         final String bareRule = ProctorUtils.removeElExpressionBraces(rule);
-        if (ProctorUtils.isEmptyWhitespace(bareRule) || "true".equalsIgnoreCase(bareRule)) {
+        if (StringUtils.isBlank(bareRule) || "true".equalsIgnoreCase(bareRule)) {
             return true;    //  always passes
         }
         if ("false".equalsIgnoreCase(bareRule)) {

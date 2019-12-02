@@ -26,6 +26,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.el.ExpressionFactoryImpl;
 import org.apache.log4j.Logger;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.el.ELContext;
@@ -97,20 +98,36 @@ public abstract class ProctorUtils {
         serializeObject(writer, artifact);
     }
 
+    /**
+     * @deprecated Use serialization library like jackson
+     */
+    @Deprecated
     public static void serializeArtifact(final JsonGenerator jsonGenerator, final Proctor proctor) throws IOException {
         jsonGenerator.writeObject(proctor.getArtifact());
     }
 
+    /**
+     * @deprecated Use serialization library like jackson
+     */
+    @Deprecated
     @SuppressWarnings("UnusedDeclaration") // TODO Remove?
     public static void serializeTestDefinition(final Writer writer, final TestDefinition definition) throws IOException {
         serializeObject(writer, definition);
     }
 
+    /**
+     * @deprecated Use serialization library like jackson
+     */
+    @Deprecated
     @SuppressWarnings("UnusedDeclaration")
     public static JsonNode readJsonFromFile(final File input) throws IOException {
         return OBJECT_MAPPER.readValue(input, JsonNode.class);
     }
 
+    /**
+     * @deprecated Use serialization library like jackson
+     */
+    @Deprecated
     public static void serializeTestSpecification(final Writer writer, final TestSpecification specification) throws IOException {
         serializeObject(writer, specification);
     }
@@ -156,7 +173,7 @@ public abstract class ProctorUtils {
             ruleComponents.add("proctor:contains(__COUNTRIES, country)");
         }
         final String rawRule = removeElExpressionBraces(td.getRule());
-        if (!isEmptyWhitespace(rawRule)) {
+        if (!StringUtils.isBlank(rawRule)) {
             ruleComponents.add(rawRule);
         }
 
@@ -170,7 +187,7 @@ public abstract class ProctorUtils {
         final List<Allocation> allocations = td.getAllocations();
         for (final Allocation alloc : allocations) {
             final String rawAllocRule = removeElExpressionBraces(alloc.getRule());
-            if (isEmptyWhitespace(rawAllocRule)) {
+            if (StringUtils.isBlank(rawAllocRule)) {
                 alloc.setRule(null);
             } else {
                 // ensure that all rules in the generated test-matrix are wrapped in "${" ... "}"
@@ -944,7 +961,7 @@ public abstract class ProctorUtils {
             final String rule = allocation.getRule();
             final boolean lastAllocation = i == (allocations.size() - 1);
             final String bareRule = removeElExpressionBraces(rule);
-            if (!lastAllocation && isEmptyWhitespace(bareRule)) {
+            if (!lastAllocation && StringUtils.isBlank(bareRule)) {
                 throw new IncompatibleTestMatrixException("Allocation[" + i + "] for test " + testName + " from " + matrixSource + " has empty rule: " + allocation.getRule());
             }
 
@@ -990,7 +1007,9 @@ public abstract class ProctorUtils {
      *
      * @param s a string
      * @return true if the string is null, empty or only contains whitespace characters
+     * @deprecated Use StringUtils.isBlank
      */
+    @Deprecated
     static boolean isEmptyWhitespace(@Nullable final String s) {
         return StringUtils.isBlank(s);
     }
@@ -1014,9 +1033,9 @@ public abstract class ProctorUtils {
      * @param rule a given rule String.
      * @return the given rule with the most outside braces stripped
      */
-    @Nullable
+    @CheckForNull
     static String removeElExpressionBraces(@Nullable final String rule) {
-        if (isEmptyWhitespace(rule)) {
+        if (StringUtils.isBlank(rule)) {
             return null;
         }
         int startchar = 0; // inclusive
