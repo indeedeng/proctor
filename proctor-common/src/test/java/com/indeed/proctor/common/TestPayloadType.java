@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.indeed.proctor.common.model.Payload;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -80,10 +81,21 @@ public class TestPayloadType {
 
     @Test
     public void testUnknownPayloadTypeForValue() {
+        assertThatThrownBy(() -> payloadTypeForValue(null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Cannot infer payload type");
         assertThatThrownBy(() -> payloadTypeForValue(emptyList()))
-                .isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> payloadTypeForValue(PayloadType.DOUBLE_VALUE))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Cannot infer payload type for list []");
+        assertThatThrownBy(() -> payloadTypeForValue(new Object()))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("does not correspond to a payload type");
+        assertThatThrownBy(() -> payloadTypeForValue(singletonList(new Object())))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("does not correspond to a payload type");
+        assertThatThrownBy(() -> payloadTypeForValue(Arrays.asList("foo", 42)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Cannot infer payload type");
     }
 
     @Test

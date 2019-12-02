@@ -5,8 +5,10 @@ import com.indeed.proctor.common.model.Payload;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * enum for dealing with Payload types.  Used in code generation for
@@ -124,29 +126,31 @@ public enum PayloadType {
      *
      * @param payloadValue a payload value
      * @return the payload type determined from the given value
+     * @throws IllegalArgumentException if type cannot be determined
      */
     @Nonnull
-    public static PayloadType payloadTypeForValue(@Nonnull final Object payloadValue) throws IllegalArgumentException {
-        if (payloadValue instanceof List) {
-            if (((List)payloadValue).size() > 0) {
-                final Object firstValue = ((List) payloadValue).get(0);
-                if (firstValue instanceof Long || firstValue instanceof Integer) {
-                    return PayloadType.LONG_ARRAY;
-                } else if (firstValue instanceof Double || firstValue instanceof Float) {
-                    return PayloadType.DOUBLE_ARRAY;
-                } else if (firstValue instanceof String) {
-                    return PayloadType.STRING_ARRAY;
-                }
-                throw new IllegalArgumentException("Cannot determine array-type from " + firstValue);
-            } else {
-                throw new IllegalArgumentException("No items in payload List, cannot determine type");
+    public static PayloadType payloadTypeForValue(@Nullable final Object payloadValue) throws IllegalArgumentException {
+        if (payloadValue == null) {
+            throw new IllegalArgumentException("Cannot infer payload type for null value");
+        } else if (payloadValue instanceof List) {
+            final Set<PayloadType> types = new HashSet<>();
+            for (final Object value: ((List) payloadValue)) {
+                types.add(payloadTypeForValue(value));
             }
-        } else if (payloadValue instanceof Long || payloadValue instanceof Integer) {
-            return PayloadType.LONG_VALUE;
-        } else if (payloadValue instanceof Double || payloadValue instanceof Float) {
-            return PayloadType.DOUBLE_VALUE;
-        } else if (payloadValue instanceof String) {
-            return PayloadType.STRING_VALUE;
+            if (types.size() != 1) {
+                throw new IllegalArgumentException("Cannot infer payload type for list " + payloadValue);
+            }
+            switch(types.iterator().next()) {
+                case LONG_VALUE:
+                    return PayloadType.LONG_ARRAY;
+                case DOUBLE_VALUE:
+                    return PayloadType.DOUBLE_ARRAY;
+                case STRING_VALUE:
+                    return PayloadType.STRING_ARRAY;
+                default:
+                    // should never happen
+                    throw new IllegalStateException("Bug: unexpected type returned from " + types);
+            }
         } else if (payloadValue instanceof String[]) {
             return PayloadType.STRING_ARRAY;
         } else if (payloadValue instanceof Long[] || payloadValue instanceof Integer[]) {
@@ -156,7 +160,18 @@ public enum PayloadType {
         } else if (payloadValue instanceof Map) {
             return PayloadType.MAP;
         }
-        throw new IllegalArgumentException("Payload value " + payloadValue.getClass().getSimpleName() + " : " + payloadValue + "  does not correspond to a payload type");
+        return payloadTypeForPrimitiveValue(payloadValue);
+    }
+
+    private static PayloadType payloadTypeForPrimitiveValue(@Nonnull final Object payloadValue) {
+        if (payloadValue instanceof Long || payloadValue instanceof Integer) {
+            return PayloadType.LONG_VALUE;
+        } else if (payloadValue instanceof Double || payloadValue instanceof Float) {
+            return PayloadType.DOUBLE_VALUE;
+        } else if (payloadValue instanceof String) {
+            return PayloadType.STRING_VALUE;
+        }
+        throw new IllegalArgumentException("Payload value " + payloadValue.getClass().getSimpleName() + " : " + payloadValue + " does not correspond to a payload type");
     }
 
     /**
