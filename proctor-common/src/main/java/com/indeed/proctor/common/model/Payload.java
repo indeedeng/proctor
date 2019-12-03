@@ -1,14 +1,20 @@
 package com.indeed.proctor.common.model;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.google.common.collect.Maps;
+import com.google.common.collect.ImmutableMap;
+import com.indeed.proctor.common.PayloadType;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 /**
  * Models a payload value for a bucket in a test, generally meant to have one kind of value per bucket.
@@ -39,6 +45,34 @@ public class Payload {
     // Error message for invalid user input
     public static final String PAYLOAD_OVERWRITE_EXCEPTION = "Expected all properties to be empty: ";
 
+    public Payload(final String value) {
+        this.stringValue = value;
+    }
+
+    public Payload(final Double value) {
+        this.doubleValue = value;
+    }
+
+    public Payload(final Long value) {
+        this.longValue = value;
+    }
+
+    public Payload(final Map<String, Object> value) {
+        this.map = new HashMap<>(value);
+    }
+
+    public Payload(final String[] values) {
+        this.stringArray = Arrays.copyOf(values, values.length);
+    }
+
+    public Payload(final Double[] values) {
+        this.doubleArray = Arrays.copyOf(values, values.length);
+    }
+
+    public Payload(final Long[] values) {
+        this.longArray = Arrays.copyOf(values, values.length);
+    }
+
     public Payload() { /* intentionally empty */ }
 
     public Payload(@Nonnull final Payload other) {
@@ -55,7 +89,7 @@ public class Payload {
             this.stringArray = Arrays.copyOf(other.stringArray, other.stringArray.length);
         }
         if (other.map != null) {
-            this.map = Maps.newHashMap(other.map);
+            this.map = new HashMap<>(other.map);
         }
     }
 
@@ -177,77 +211,59 @@ public class Payload {
     }
 
     /**
-     * @return the payload type as a string.  Used by Proctor Webapp.
+     * infers payloadtype based on the value that is set.
+     * @return payloadType unless emptyPayload
      */
     @Nonnull
-    public String fetchType() {
-        if (doubleValue != null) {
-            return "doubleValue";
-        }
-        if (doubleArray != null) {
-            return "doubleArray";
-        }
-        if (longValue != null) {
-            return "longValue";
-        }
-        if (longArray != null) {
-            return "longArray";
-        }
-        if (stringValue != null) {
-            return "stringValue";
-        }
-        if (stringArray != null) {
-            return "stringArray";
-        }
-        if (map != null) {
-            return "map";
-        }
-        return "none";
+    public Optional<PayloadType> fetchPayloadType() {
+        return Optional.ofNullable(getPayloadType());
     }
 
-    public boolean sameType(@Nullable final Payload that) {
-        if (this == that) {
+    public static boolean hasType(final Payload payload, final PayloadType payloadType) {
+        if (payload == null) {
+            return false;
+        }
+        final Function<Payload, Object> resolver = resolvers.get(payloadType);
+        return resolver != null && resolver.apply(payload) != null;
+    }
+
+    @CheckForNull
+    private PayloadType getPayloadType() {
+        return Stream.of(PayloadType.values())
+                .filter(pt -> resolvers.get(pt).apply(this) != null)
+                .findFirst()
+                .orElse(null);
+    }
+
+    /**
+     * @return the payload type as a string.  Used by Proctor Webapp.
+     * @deprecated use fetchPayloadType
+     */
+    @Nonnull
+    @Deprecated
+    public String fetchType() {
+        return fetchPayloadType()
+                .map(t -> t.payloadTypeName)
+                .orElse("none");
+    }
+
+    public boolean sameType(@Nullable final Payload other) {
+        if (this == other) {
             return true;
         }
-        if (that == null) {
+        if (other == null) {
             return false;
         }
 
         // Both this and that must have either null
         // or something filled in for each slot.
-        return (((doubleValue == null) == (that.doubleValue == null))
-                && ((doubleArray == null) == (that.doubleArray == null))
-                && ((longValue == null) == (that.longValue == null))
-                && ((longArray == null) == (that.longArray == null))
-                && ((stringValue == null) == (that.stringValue == null))
-                && ((stringArray == null) == (that.stringArray == null))
-                && ((map == null) == (that.map == null)));
+        return this.getPayloadType() == other.getPayloadType();
     }
 
     public int numFieldsDefined() {
-        int i = 0;
-        if (map != null) {
-            i++;
-        }
-        if (doubleValue != null) {
-            i++;
-        }
-        if (doubleArray != null) {
-            i++;
-        }
-        if (longValue != null) {
-            i++;
-        }
-        if (longArray != null) {
-            i++;
-        }
-        if (stringValue != null) {
-            i++;
-        }
-        if (stringArray != null) {
-            i++;
-        }
-        return i;
+        return (int) Stream.of(PayloadType.values())
+                .filter(pt -> resolvers.get(pt).apply(this) != null)
+                .count();
     }
 
     /**
@@ -258,30 +274,13 @@ public class Payload {
      * We don't want the JsonSerializer to know about this, so
      * renamed to not begin with "get".
      */
-    @Nullable
+    @CheckForNull
     public Object fetchAValue() {
-        if (doubleValue != null) {
-            return doubleValue;
-        }
-        if (doubleArray != null) {
-            return doubleArray;
-        }
-        if (longValue != null) {
-            return longValue;
-        }
-        if (longArray != null) {
-            return longArray;
-        }
-        if (stringValue != null) {
-            return stringValue;
-        }
-        if (stringArray != null) {
-            return stringArray;
-        }
-        if (map != null) {
-            return map;
-        }
-        return null;
+        return Stream.of(PayloadType.values())
+                .map(pt -> resolvers.get(pt).apply(this))
+                .filter(Objects::nonNull)
+                .findFirst()
+                .orElse(null);
     }
 
     @Override
@@ -314,4 +313,15 @@ public class Payload {
         result = 31 * result + Arrays.hashCode(stringArray);
         return result;
     }
+
+
+    private final static Map<PayloadType, Function<Payload, Object>> resolvers = ImmutableMap.<PayloadType, Function<Payload, Object>>builder()
+            .put(PayloadType.DOUBLE_VALUE, Payload::getDoubleValue)
+            .put(PayloadType.DOUBLE_ARRAY, Payload::getDoubleArray)
+            .put(PayloadType.LONG_VALUE, Payload::getLongValue)
+            .put(PayloadType.LONG_ARRAY, Payload::getLongArray)
+            .put(PayloadType.STRING_VALUE, Payload::getStringValue)
+            .put(PayloadType.STRING_ARRAY, Payload::getStringArray)
+            .put(PayloadType.MAP, Payload::getMap)
+            .build();
 }
