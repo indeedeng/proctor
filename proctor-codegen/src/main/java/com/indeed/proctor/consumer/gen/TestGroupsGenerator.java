@@ -9,6 +9,7 @@ import com.indeed.proctor.common.ProctorSpecification;
 import com.indeed.proctor.common.Serializers;
 import com.indeed.proctor.common.TestSpecification;
 import com.indeed.proctor.common.dynamic.DynamicFilters;
+import com.indeed.proctor.common.model.NameObfuscator;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 
@@ -37,6 +38,7 @@ import java.util.TreeSet;
  */
 public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
     private static final ObjectMapper OBJECT_MAPPER = Serializers.lenient();
+    private static final NameObfuscator TEST_NAME_OBFUSCATOR = new NameObfuscator();
 
     public static final String PROVIDED_CONTEXT_FILENAME = "providedcontext.json";
     public static final String DYNAMIC_FILTERS_FILENAME = "dynamicfilters.json";
@@ -187,6 +189,7 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
         final Map<String, TestSpecification> tests = spec.getTests();
 
         final List<Object> testDefs = Lists.newArrayListWithCapacity(tests.size());
+        final Map<String, Object> testDefsMap = new HashMap<>(tests.size());
 
         // Sort buckets and test names, to have consistent iterator
         final SortedSet<String> sortedTestNames = new TreeSet<>(tests.keySet());
@@ -281,6 +284,8 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
             testDef.put("nestedPayloadsList", nestedPayloadsList);
 
             testDefs.add(testDef);
+            final String hashedProctorName = TEST_NAME_OBFUSCATOR.obfuscateTestName(testName);
+            testDefsMap.put(hashedProctorName, testDef);
         }
 
         rootMap.put("contextArguments", spec.getProvidedContext());
@@ -288,6 +293,7 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
         rootMap.put("packageName", packageName);
         rootMap.put("testEnumName", "Test");
         rootMap.put("testDefs", testDefs);
+        rootMap.put("testDefsMap", testDefsMap);
 
         return rootMap;
     }

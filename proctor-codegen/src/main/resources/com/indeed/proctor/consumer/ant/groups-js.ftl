@@ -34,25 +34,45 @@ ${packageName} = (function() {
    * @private
    * @constructor
    */
-  var ${groupsClassName}_ = function(opt_values) {
-    if (opt_values) {
-      var testDef;
-      <#list testDefs as testDef>
-      testDef = opt_values[${testDef_index}];
-      this.${testDef.normalizedName}Value_ = testDef[0];
-      <#if (testDef.payloadJavascriptType)??>
-      this.${testDef.normalizedName}PayloadValue_ = testDef[1];
-      </#if>
-      </#list>
-    } else {
-      <#list testDefs as testDef>
-      this.${testDef.normalizedName}Value_ = ${testDef.defaultValue};
-      <#if (testDef.payloadJavascriptType)??>
-      this.${testDef.normalizedName}PayloadValue_ = ${testDef.payloadDefaultValue};
-      </#if>
-      </#list>
-    }
-  };
+    var ${groupsClassName}_ = function(opt_values) {
+        if (opt_values) {
+            if (Array.isArray(opt_values)) {
+                <#--    If the value passed in is an array we expect it to be the alphabetized list of proctor values-->
+                var testDef;
+                <#list testDefs as testDef>
+                testDef = opt_values[${testDef_index}];
+                this.${testDef.normalizedName}Value_ = testDef[0];
+                <#if (testDef.payloadJavascriptType)??>
+                this.${testDef.normalizedName}PayloadValue_ = testDef[1];
+                </#if>
+                </#list>
+            } else {
+                <#--    Otherwise we expect a map of obfuscated proctor names to proctor values -->
+                var testDef;
+                <#list testDefsMap?keys as key>
+                testDef = opt_values["${key}"];
+                if (!testDef) {
+                    this.${testDefsMap[key].normalizedName}Value_ = ${testDefsMap[key].defaultValue};
+                    <#if (testDefsMap[key].payloadJavascriptType)??>
+                    this.${testDefsMap[key].normalizedName}PayloadValue_ = ${testDefsMap[key].payloadDefaultValue};
+                    </#if>
+                } else {
+                    this.${testDefsMap[key].normalizedName}Value_ = testDef[0];
+                    <#if (testDefsMap[key].payloadJavascriptType)??>
+                    this.${testDefsMap[key].normalizedName}PayloadValue_ = testDef[1];
+                    </#if>
+                }
+                </#list>
+            }
+        } else {
+            <#list testDefs as testDef>
+            this.${testDef.normalizedName}Value_ = ${testDef.defaultValue};
+            <#if (testDef.payloadJavascriptType)??>
+            this.${testDef.normalizedName}PayloadValue_ = ${testDef.payloadDefaultValue};
+            </#if>
+            </#list>
+        }
+    };
 
 
   <#list testDefs as testDef>
