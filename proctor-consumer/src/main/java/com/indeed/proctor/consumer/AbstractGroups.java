@@ -402,8 +402,11 @@ public abstract class AbstractGroups {
      * @param tests an alphabetical list of Test enums from your generated proctor java subclass of {@link com.indeed.proctor.consumer.AbstractGroups}.
      * @param <E> Generic Type of Test
      * @return a list of 2-element lists that hold the bucketValue and payloadValue for each test in the same order as the input
+     * @deprecated Please instead create an instance of {@link com.indeed.proctor.consumer.ProctorJavascriptPayloadBuilder} and call the method {@link ProctorJavascriptPayloadBuilder#buildAlphabetizedListJavascriptConfig()}
      */
+    @Deprecated
     public <E extends Test> List<List<Object>> getJavaScriptConfig(final E[] tests) {
+        //@TODO Move this logic to {@link com.indeed.proctor.consumer.ProctorJavascriptPayloadBuilder} and remove this method
         return Arrays.stream(tests)
                 .map(test -> Arrays.asList(
                         // call to getValuePrivate() to allow overrides of getActiveBucket
