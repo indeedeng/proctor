@@ -34,17 +34,19 @@ public class ProctorConsumerUtils {
         return determineBuckets(request, response, proctor, identifiers, context, allowForcedGroups);
     }
 
+    /**
+     * calculates ProctorResult (determined groups) and also handles forcedGroups, setting cookie if necessary
+     */
     public static ProctorResult determineBuckets(final HttpServletRequest request, final HttpServletResponse response, final Proctor proctor,
                                                     final Identifiers identifiers, final Map<String, Object> context, final boolean allowForcedGroups) {
         final Map<String, Integer> forcedGroups;
         if (allowForcedGroups) {
             forcedGroups = parseForcedGroups(request);
-            setForcedGroupsCookie(request, response, forcedGroups);
+            response.addCookie(ProctorConsumerUtils.createForcedGroupsCookie(request.getContextPath(), forcedGroups));
         } else {
             forcedGroups = Collections.emptyMap();
         }
-        final ProctorResult result = proctor.determineTestGroups(identifiers, context, forcedGroups);
-        return result;
+        return proctor.determineTestGroups(identifiers, context, forcedGroups);
     }
 
     /**
@@ -131,11 +133,25 @@ public class ProctorConsumerUtils {
      * @param request request
      * @param response response
      * @param forceGroups parsed force groups
+     * @deprecated use {@link ProctorConsumerUtils#createForcedGroupsCookie}, modify as needed, then add to the response
      */
+    @Deprecated
     public static void setForcedGroupsCookie(final HttpServletRequest request, final HttpServletResponse response, final Map<String, Integer> forceGroups) {
         //  don't overwrite with empty; this would be relevant in a race condition where there is a forceGroups request simultaneous with a non-forceGroups request
         if (forceGroups.isEmpty()) {
             return;
+        }
+        response.addCookie(createForcedGroupsCookie(request.getContextPath(), forceGroups));
+    }
+
+    /**
+     * Create a cookie that will be parsed by {@link #parseForcedGroups(HttpServletRequest)}.  Cookie expires at end of browser session
+     * @param contextPath request.contextPath
+     * @param forceGroups parsed force groups
+     */
+    public static Cookie createForcedGroupsCookie(final String contextPath, final Map<String, Integer> forceGroups) {
+        if (forceGroups.isEmpty()) {
+            throw new IllegalArgumentException("Cannot create forcedGroup cookie for empty force groups map");
         }
 
         //  be sure to quote cookies because they have characters that are not allowed raw
@@ -150,7 +166,6 @@ public class ProctorConsumerUtils {
         }
         sb.append('"');
 
-        final String contextPath = request.getContextPath();
         final String cookiePath;
         if (StringUtils.isBlank(contextPath)) {
             cookiePath = "/";
@@ -160,6 +175,7 @@ public class ProctorConsumerUtils {
 
         final Cookie cookie = new Cookie(FORCE_GROUPS_COOKIE_NAME, sb.toString());
         cookie.setPath(cookiePath);
-        response.addCookie(cookie);
+
+        return cookie;
     }
 }

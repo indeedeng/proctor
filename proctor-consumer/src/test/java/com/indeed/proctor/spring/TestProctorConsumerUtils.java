@@ -2,14 +2,23 @@ package com.indeed.proctor.spring;
 
 import com.google.common.collect.ImmutableMap;
 import com.indeed.proctor.consumer.ProctorConsumerUtils;
-
 import org.junit.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.Collections;
 import java.util.Map;
 
+import static com.indeed.proctor.consumer.ProctorConsumerUtils.createForcedGroupsCookie;
+import static com.indeed.proctor.consumer.ProctorConsumerUtils.setForcedGroupsCookie;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 /**
  * @author gaurav
@@ -194,4 +203,27 @@ public class TestProctorConsumerUtils {
                             .build());
         }
     }
+
+    @Test
+    public void testSetForcedGroupsCookie() {
+        final HttpServletRequest httpRequestMock = mock(HttpServletRequest.class);
+        final HttpServletResponse httpResponseMock = mock(HttpServletResponse.class);
+        setForcedGroupsCookie(httpRequestMock, httpResponseMock, Collections.emptyMap());
+        verifyNoMoreInteractions(httpRequestMock, httpResponseMock);
+
+        setForcedGroupsCookie(httpRequestMock, httpResponseMock, Collections.singletonMap("foo", 2));
+        verify(httpResponseMock, times(1)).addCookie(isA(Cookie.class));
+        verify(httpRequestMock, times(1)).getContextPath();
+        verifyNoMoreInteractions(httpRequestMock, httpResponseMock);
+    }
+
+    @Test
+    public void testCreateForcedGroupsCookie() {
+        final Cookie cookie = createForcedGroupsCookie("myapp", Collections.singletonMap("foo", 2));
+        assertThat(cookie.getName()).isEqualTo("prforceGroups");
+        assertThat(cookie.getValue()).isEqualTo("\"foo2\"");
+        assertThat(cookie.getPath()).isEqualTo("myapp");
+        assertThat(cookie.getVersion()).isEqualTo(0);
+    }
+
 }
