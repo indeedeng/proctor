@@ -54,6 +54,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.joining;
 
 /**
@@ -787,9 +788,12 @@ public abstract class ProctorUtils {
             @Nonnull final TestSpecification testSpecification
     ) {
         final String missingTestSoleBucketName = "inactive";
-        final String missingTestSoleBucketDescription = "inactive";
-        final Allocation allocation = new Allocation();
-        allocation.setRanges(ImmutableList.of(new Range(testSpecification.getFallbackValue(), 1.0)));
+        final String missingTestSoleBucketDescription = "fallback because missing in matrix";
+        final int fallbackValue = testSpecification.getFallbackValue();
+        final Allocation allocation = new Allocation(
+                null,
+                Collections.singletonList(new Range(fallbackValue, 1.0)));
+
 
         return new ConsumableTestDefinition(
                 "default",
@@ -798,12 +802,15 @@ public abstract class ProctorUtils {
                 testName,
                 ImmutableList.of(new TestBucket(
                         missingTestSoleBucketName,
-                        testSpecification.getFallbackValue(),
+                        fallbackValue,
                         missingTestSoleBucketDescription)),
                 // Force a nonnull allocation just in case something somewhere assumes 1.0 total allocation
                 Collections.singletonList(allocation),
+                // non-silent, though typically fallbackValue -1 has same effect
+                false,
                 Collections.emptyMap(),
-                testName);
+                testName,
+                emptyList());
     }
 
     public static ProvidedContext convertContextToTestableMap(final Map<String, String> providedContext) {
