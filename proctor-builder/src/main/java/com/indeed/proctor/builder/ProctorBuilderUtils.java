@@ -1,8 +1,11 @@
 package com.indeed.proctor.builder;
 
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Strings;
 import com.indeed.proctor.common.IncompatibleTestMatrixException;
 import com.indeed.proctor.common.ProctorUtils;
+import com.indeed.proctor.common.Serializers;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.TestMatrixArtifact;
 import com.indeed.proctor.common.model.TestMatrixVersion;
@@ -18,6 +21,10 @@ import java.util.Map;
  * @author parker
  */
 class ProctorBuilderUtils {
+
+    private static final ObjectWriter OBJECT_WRITER = Serializers
+            .lenient()
+            .configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false).writerWithDefaultPrettyPrinter();
 
     static void generateArtifact(final ProctorReader proctorPersister, final Writer outputSink,
                                            final String authorOverride, final String versionOverride
@@ -42,7 +49,6 @@ class ProctorBuilderUtils {
         for (final Map.Entry<String, ConsumableTestDefinition> td : artifact.getTests().entrySet()) {
             ProctorUtils.verifyInternallyConsistentDefinition(td.getKey(), matrixSource, td.getValue());
         }
-
-        ProctorUtils.serializeArtifact(outputSink, artifact);
+        OBJECT_WRITER.writeValue(outputSink, artifact);
     }
 }

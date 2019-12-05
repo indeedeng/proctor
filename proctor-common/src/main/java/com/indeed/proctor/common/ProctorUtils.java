@@ -3,6 +3,7 @@ package com.indeed.proctor.common;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -61,7 +62,10 @@ import static java.util.stream.Collectors.joining;
  * Helper functions mostly to verify TestMatrix instances.
  */
 public abstract class ProctorUtils {
-    private static final ObjectMapper OBJECT_MAPPER_NON_AUTOCLOSE = Serializers.lenient().configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
+    private static final ObjectMapper OBJECT_MAPPER_NON_AUTOCLOSE = Serializers
+            .lenient()
+            .configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
+    private static final ObjectWriter OBJECT_WRITER = OBJECT_MAPPER_NON_AUTOCLOSE.writerWithDefaultPrettyPrinter();
     private static final ObjectMapper OBJECT_MAPPER = Serializers.lenient();
     private static final Logger LOGGER = Logger.getLogger(ProctorUtils.class);
     private static final SpecificationGenerator SPECIFICATION_GENERATOR = new SpecificationGenerator();
@@ -89,12 +93,17 @@ public abstract class ProctorUtils {
 
     @SuppressWarnings("UnusedDeclaration") // TODO Remove?
     public static String convertToArtifact(@Nonnull final TestMatrixVersion testMatrix) throws IOException {
-        final StringWriter sw = new StringWriter();
-        final TestMatrixArtifact artifact = convertToConsumableArtifact(testMatrix);
-        serializeArtifact(sw, artifact);
-        return sw.toString();
+        try (final StringWriter sw = new StringWriter()) {
+            final TestMatrixArtifact artifact = convertToConsumableArtifact(testMatrix);
+            serializeArtifact(sw, artifact);
+            return sw.toString();
+        }
     }
 
+    /**
+     * @deprecated Use serialization library like jackson
+     */
+    @Deprecated
     public static void serializeArtifact(final Writer writer, final TestMatrixArtifact artifact) throws IOException {
         serializeObject(writer, artifact);
     }
@@ -134,7 +143,7 @@ public abstract class ProctorUtils {
     }
 
     private static <T> void serializeObject(final Writer writer, final T artifact) throws IOException {
-        OBJECT_MAPPER_NON_AUTOCLOSE.writerWithDefaultPrettyPrinter().writeValue(writer, artifact);
+        OBJECT_WRITER.writeValue(writer, artifact);
     }
 
     @Nonnull
