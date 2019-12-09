@@ -19,7 +19,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.stream.Collectors;
 
 /**
@@ -233,7 +232,7 @@ public abstract class AbstractGroups {
         if (isEmpty()) {
             return "";
         }
-        final SortedMap<String, TestBucket> buckets = proctorResult.getBuckets();
+        final Map<String, TestBucket> buckets = proctorResult.getBuckets();
         final StringBuilder sb = new StringBuilder(buckets.size() * 10);
         for (final String testName : buckets.keySet()) {
             sb.append(testName).append(TESTNAME_BUCKET_CONNECTOR).append(getActiveBucket(testName)
@@ -333,7 +332,7 @@ public abstract class AbstractGroups {
         final Map<String, ConsumableTestDefinition> testDefinitions = proctorResult.getTestDefinitions();
         // following lines should preserve the order in the map to ensure logging values are stable
         // declaring SortedMap variable here to ensure compiler error happens if proctorResult map is changed.
-        final SortedMap<String, TestBucket> buckets = proctorResult.getBuckets();
+        final Map<String, TestBucket> buckets = proctorResult.getBuckets();
         return buckets.keySet().stream()
                 .filter(testBucket -> {
                     final ConsumableTestDefinition consumableTestDefinition = testDefinitions.get(testBucket);
