@@ -86,7 +86,8 @@ public class ProctorResult {
      * Returns a map ordered by testname
      */
     @Nonnull
-    public SortedMap<String, TestBucket> getBuckets() {
+    // returning Map instead of SortedMap for historic reasons
+    public Map<String, TestBucket> getBuckets() {
         return buckets;
     }
 
@@ -94,7 +95,8 @@ public class ProctorResult {
      * Returns a map ordered by testname
      */
     @Nonnull
-    public SortedMap<String, Allocation> getAllocations() {
+    // returning Map instead of SortedMap for historic reasons
+    public Map<String, Allocation> getAllocations() {
         return allocations;
     }
 
