@@ -32,6 +32,10 @@ public class TestAbstractGroups {
     private static final String GROUP_WITH_FALLBACK_TESTNAME = "groupwithfallbacktst";
     private static final String INACTIVE_TESTNAME = "btntst";
 
+    // proctor-test to test situation where bucket and allocation is available but definition is not.
+    // This is expected to be happen only in artificial case such as in testing.
+    private static final String NO_DEFINITION_TESTNAME = "no_definition_tst";
+
     private static final String NO_BUCKETS_WITH_FALLBACK_TESTNAME = "nobucketfallbacktst";
     private static final Bucket FALLBACK_BUCKET = createModelBucket(42);
     private static final Bucket FALLBACK_NOPAYLOAD_BUCKET = createModelBucket(66);
@@ -110,21 +114,23 @@ public class TestAbstractGroups {
         final ProctorResult proctorResult = new ProctorResult(
                 "0",
                 // buckets
-                ImmutableMap.of(
-                        HOLDOUT_TESTNAME, activeBucket,
-                        CONTROL_TESTNAME, controlBucketWithPayload,
-                        ACTIVE_TESTNAME, activeBucketWithPayload,
-                        GROUP_WITH_FALLBACK_TESTNAME, activeBucket,
-                        INACTIVE_TESTNAME, inactiveBucket
-                ),
+                ImmutableMap.<String, TestBucket>builder()
+                        .put(HOLDOUT_TESTNAME, activeBucket)
+                        .put(CONTROL_TESTNAME, controlBucketWithPayload)
+                        .put(ACTIVE_TESTNAME, activeBucketWithPayload)
+                        .put(GROUP_WITH_FALLBACK_TESTNAME, activeBucket)
+                        .put(INACTIVE_TESTNAME, inactiveBucket)
+                        .put(NO_DEFINITION_TESTNAME, activeBucket)
+                        .build(),
                 // allocations
-                ImmutableMap.of(
-                        HOLDOUT_TESTNAME, new Allocation(null, Arrays.asList(new Range(activeBucket.getValue(), 1.0)), "#A1"),
-                        CONTROL_TESTNAME, new Allocation(null, Arrays.asList(new Range(controlBucketWithPayload.getValue(), 1.0)), "#A1"),
-                        ACTIVE_TESTNAME, new Allocation(null, Arrays.asList(new Range(activeBucketWithPayload.getValue(), 1.0)), "#B2"),
-                        GROUP_WITH_FALLBACK_TESTNAME, new Allocation(null, Arrays.asList(new Range(activeBucket.getValue(), 1.0)), "#B2"),
-                        INACTIVE_TESTNAME, new Allocation(null, Arrays.asList(new Range(inactiveBucket.getValue(), 1.0)), "#C3")
-                ),
+                ImmutableMap.<String, Allocation>builder()
+                        .put(HOLDOUT_TESTNAME, new Allocation(null, Arrays.asList(new Range(activeBucket.getValue(), 1.0)), "#A1"))
+                        .put(CONTROL_TESTNAME, new Allocation(null, Arrays.asList(new Range(controlBucketWithPayload.getValue(), 1.0)), "#A1"))
+                        .put(ACTIVE_TESTNAME, new Allocation(null, Arrays.asList(new Range(activeBucketWithPayload.getValue(), 1.0)), "#B2"))
+                        .put(GROUP_WITH_FALLBACK_TESTNAME, new Allocation(null, Arrays.asList(new Range(activeBucket.getValue(), 1.0)), "#B2"))
+                        .put(INACTIVE_TESTNAME, new Allocation(null, Arrays.asList(new Range(inactiveBucket.getValue(), 1.0)), "#C3"))
+                        .put(NO_DEFINITION_TESTNAME, new Allocation(null, Arrays.asList(new Range(activeBucket.getValue(), 1.0)), "#A5"))
+                        .build(),
                 // definitions
                 ImmutableMap.<String, ConsumableTestDefinition>builder()
                         .put(HOLDOUT_TESTNAME, stubDefinitionWithVersion("vInactive", inactiveBucket, activeBucket))
@@ -279,23 +285,23 @@ public class TestAbstractGroups {
     @Test
     public void testToLongString() {
         assertThat(emptyGroup.toLongString()).isEmpty();
-        assertThat(groups.toLongString()).isEqualTo("abtst-active,bgtst-control,btntst-inactive,groupwithfallbacktst-active,holdout_tst-active");
-        assertThat(groupsWithForced.toLongString()).isEqualTo("abtst-control,bgtst-control,btntst-inactive,groupwithfallbacktst-active,holdout_tst-active");
-        assertThat(groupsWithHoldOut.toLongString()).isEqualTo("abtst-inactive,bgtst-inactive,btntst-inactive,groupwithfallbacktst-inactive,holdout_tst-active");
+        assertThat(groups.toLongString()).isEqualTo("abtst-active,bgtst-control,btntst-inactive,groupwithfallbacktst-active,holdout_tst-active,no_definition_tst-active");
+        assertThat(groupsWithForced.toLongString()).isEqualTo("abtst-control,bgtst-control,btntst-inactive,groupwithfallbacktst-active,holdout_tst-active,no_definition_tst-active");
+        assertThat(groupsWithHoldOut.toLongString()).isEqualTo("abtst-inactive,bgtst-inactive,btntst-inactive,groupwithfallbacktst-inactive,holdout_tst-active,no_definition_tst-active");
     }
 
     @Test
     public void testToLoggingString() {
         assertThat(new TestGroups(new ProctorResult("0", emptyMap(), emptyMap(), emptyMap())).toLoggingString()).isEmpty();
-        assertThat(groups.toLoggingString()).isEqualTo("abtst1,bgtst0,groupwithfallbacktst2,holdout_tst2,#B2:abtst1,#A1:bgtst0,#B2:groupwithfallbacktst2,#A1:holdout_tst2");
-        assertThat(groupsWithForced.toLoggingString()).isEqualTo("abtst0,bgtst0,groupwithfallbacktst2,holdout_tst2,#B2:abtst0,#A1:bgtst0,#B2:groupwithfallbacktst2,#A1:holdout_tst2");
-        assertThat(groupsWithHoldOut.toLoggingString()).isEqualTo("holdout_tst2,#A1:holdout_tst2");
+        assertThat(groups.toLoggingString()).isEqualTo("abtst1,bgtst0,groupwithfallbacktst2,holdout_tst2,no_definition_tst2,#B2:abtst1,#A1:bgtst0,#B2:groupwithfallbacktst2,#A1:holdout_tst2,#A5:no_definition_tst2");
+        assertThat(groupsWithForced.toLoggingString()).isEqualTo("abtst0,bgtst0,groupwithfallbacktst2,holdout_tst2,no_definition_tst2,#B2:abtst0,#A1:bgtst0,#B2:groupwithfallbacktst2,#A1:holdout_tst2,#A5:no_definition_tst2");
+        assertThat(groupsWithHoldOut.toLoggingString()).isEqualTo("holdout_tst2,no_definition_tst2,#A1:holdout_tst2,#A5:no_definition_tst2");
     }
 
     @Test
     public void testGetLoggingTestNames() {
         assertThat(Sets.newHashSet(groups.getLoggingTestNames()))
-                .containsExactlyInAnyOrder(CONTROL_TESTNAME, ACTIVE_TESTNAME, GROUP_WITH_FALLBACK_TESTNAME, HOLDOUT_TESTNAME);
+                .containsExactlyInAnyOrder(CONTROL_TESTNAME, ACTIVE_TESTNAME, GROUP_WITH_FALLBACK_TESTNAME, HOLDOUT_TESTNAME, NO_DEFINITION_TESTNAME);
     }
 
     @Test
@@ -336,13 +342,15 @@ public class TestAbstractGroups {
         assertThat(builder.toString().split(","))
                 .containsExactlyInAnyOrder(
                         "groupwithfallbacktst2", "bgtst0", "abtst1", "holdout_tst2",
-                        "#A1:bgtst0", "#B2:abtst1", "#B2:groupwithfallbacktst2", "#A1:holdout_tst2");
+                        "#A1:bgtst0", "#B2:abtst1", "#B2:groupwithfallbacktst2", "#A1:holdout_tst2",
+                        "#A5:no_definition_tst2", "no_definition_tst2");
         builder = new StringBuilder();
         groupsWithForced.appendTestGroups(builder, ',');
         assertThat(builder.toString().split(","))
                 .containsExactlyInAnyOrder(
                         "groupwithfallbacktst2", "bgtst0", "abtst0", "holdout_tst2",
-                        "#A1:bgtst0", "#B2:abtst0", "#B2:groupwithfallbacktst2", "#A1:holdout_tst2");
+                        "#A1:bgtst0", "#B2:abtst0", "#B2:groupwithfallbacktst2", "#A1:holdout_tst2",
+                        "#A5:no_definition_tst2", "no_definition_tst2");
     }
 
     @Test
@@ -352,22 +360,26 @@ public class TestAbstractGroups {
                 .hasSize(0);
 
         assertThat(groups.getJavaScriptConfig())
-                .hasSize(4)
+                .hasSize(5)
                 .containsEntry(ACTIVE_TESTNAME, 1)
                 .containsEntry(CONTROL_TESTNAME, 0)
                 .containsEntry(GROUP_WITH_FALLBACK_TESTNAME, 2)
-                .containsEntry(HOLDOUT_TESTNAME, 2);
+                .containsEntry(HOLDOUT_TESTNAME, 2)
+                .containsEntry(NO_DEFINITION_TESTNAME, 2);
 
         assertThat(groupsWithForced.getJavaScriptConfig())
-                .hasSize(4)
+                .hasSize(5)
                 .containsEntry(ACTIVE_TESTNAME, 0) // forced
                 .containsEntry(CONTROL_TESTNAME, 0)
                 .containsEntry(GROUP_WITH_FALLBACK_TESTNAME, 2)
-                .containsEntry(HOLDOUT_TESTNAME, 2);
+                .containsEntry(HOLDOUT_TESTNAME, 2)
+                .containsEntry(NO_DEFINITION_TESTNAME, 2);
 
         assertThat(groupsWithHoldOut.getJavaScriptConfig())
-                .hasSize(1)
-                .containsEntry(HOLDOUT_TESTNAME, 2);
+                .hasSize(2)
+                .containsEntry(HOLDOUT_TESTNAME, 2)
+                .containsEntry(NO_DEFINITION_TESTNAME, 2) // continue to return due to absent definition
+                ;
     }
 
     @Test
