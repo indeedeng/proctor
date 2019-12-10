@@ -336,7 +336,8 @@ public abstract class AbstractGroups {
         return buckets.keySet().stream()
                 .filter(testBucket -> {
                     final ConsumableTestDefinition consumableTestDefinition = testDefinitions.get(testBucket);
-                    return (consumableTestDefinition != null) && !consumableTestDefinition.getSilent();
+                    // fallback to non-silent when test definition is not available
+                    return (consumableTestDefinition == null) || !consumableTestDefinition.getSilent();
                 })
                 // call to getValuePrivate() to allow overrides of getActiveBucket
                 .filter(testName -> getValue(testName, -1) >= 0)
