@@ -325,7 +325,8 @@ public abstract class AbstractGroups {
     }
 
     /**
-     * Return test names for tests that are non-silent and have a non-negative active bucket, in a stable sort
+     * Return test names for tests that are non-silent or doesn't have available definition,
+     * and have a non-negative active bucket, in a stable sort.
      * Stable sort is beneficial for log string compression, for debugging, and may help in cases of size-limited output.
      */
     protected final List<String> getLoggingTestNames() {
