@@ -403,7 +403,7 @@ public abstract class AbstractGroups {
      * @param <E> Generic Type of Test
      * @return a list of 2-element lists that hold the bucketValue and payloadValue for each test in the same order as the input
      */
-    public final <E extends Test> List<List<Object>> getJavaScriptConfig(final E[] tests) {
+    public <E extends Test> List<List<Object>> getJavaScriptConfig(final E[] tests) {
         return Arrays.stream(tests)
                 .map(test -> Arrays.asList(
                         // call to getValuePrivate() to allow overrides of getActiveBucket
