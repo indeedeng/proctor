@@ -140,38 +140,20 @@ public class TestDefinition {
     }
 
     public TestDefinition(@Nonnull final TestDefinition other) {
-        this.version = other.version;
-        this.salt = other.salt;
-        this.rule = other.rule;
-        this.silent = other.silent;
-        this.description = other.description;
-
-        // null checks for mocked TestDefinition in unit test
-        if (other.constants != null) {
-            this.constants = new HashMap<>(other.constants);
-        }
-
-        if (other.specialConstants != null) {
-            this.specialConstants = new HashMap<>(other.specialConstants);
-        }
-
-        if (other.buckets != null) {
-            this.buckets = new ArrayList<>();
-            for (final TestBucket bucket : other.buckets) {
-                this.buckets.add(new TestBucket(bucket));
-            }
-        }
-
-        if (other.allocations != null) {
-            this.allocations = new ArrayList<>();
-            for (final Allocation allocation : other.allocations) {
-                this.allocations.add(new Allocation(allocation));
-            }
-        }
-
-        this.metaTags = other.metaTags != null ? new ArrayList<>(other.metaTags) : Collections.emptyList();
-
-        this.testType = other.testType;
+        //  technically other fields should not be null, but we have no guarantee
+        this(
+                other.version,
+                other.rule,
+                other.testType,
+                other.salt,
+                (other.buckets == null) ? null : new ArrayList<>(other.buckets),
+                (other.allocations == null) ? null : new ArrayList<>(other.allocations),
+                other.silent,
+                (other.constants == null) ? null : new HashMap<>(other.constants),
+                (other.specialConstants == null) ? null : new HashMap<>(other.specialConstants),
+                other.description,
+                (other.metaTags == null) ? emptyList(): new ArrayList<>(other.metaTags)
+        );
     }
 
 
