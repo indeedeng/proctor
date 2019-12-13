@@ -398,11 +398,49 @@ public abstract class AbstractGroups {
     }
 
     /**
-     * Since apps might pass around AbstractGroups, but some code might want to access
-     * ProctorResult directly, return wrapped instance for convenience.
-     * @return wrapped data.
+     * returns the proctor result derived from applying rules and hashing the identifier, and
+     * also applying any custom logic from overriding overrideDeterminedBucketValue().
+     *
+     * For clients not overriding any methods, this should be the same as getRawProctorResult(),
+     * but it's safer to use getAsProctorResult().
+     *
+     * @return wrapped raw data.
      */
+    public ProctorResult getAsProctorResult() {
+        final Map<String, TestBucket> customBuckets = proctorResult.getBuckets().entrySet().stream()
+                .collect(Collectors.toMap(Entry::getKey, e -> getActiveBucket(e.getKey()).get()));
+        return new ProctorResult(
+                proctorResult.getMatrixVersion(),
+                customBuckets,
+                proctorResult.getAllocations(),
+                proctorResult.getTestDefinitions());
+    }
+
+    /**
+     * returns a new copy of the raw proctor result derived from applying rules and hashing the identifier.
+     * In most cases getAsProctorResult() should be preferred.
+     * This does not take into account customizations from overriding overrideDeterminedBucketValue or other methods.
+     *
+     * Since apps might pass around AbstractGroups, but some code might want to access
+     * ProctorResult directly, return wrapped data for convenience.
+     *
+     * @return wrapped raw data.
+     */
+    public ProctorResult getRawProctorResult() {
+        return new ProctorResult(
+                proctorResult.getMatrixVersion(),
+                proctorResult.getBuckets(),
+                proctorResult.getAllocations(),
+                proctorResult.getTestDefinitions());
+    }
+
+    /**
+     * historically exposed the mutable private wrapped object
+     * @deprecated Use getAsProctorResult() or getRawProctorResult(), as appropriate.
+     */
+    @Deprecated
     public ProctorResult getProctorResult() {
         return proctorResult;
     }
+
 }

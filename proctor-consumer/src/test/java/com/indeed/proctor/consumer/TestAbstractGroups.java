@@ -98,6 +98,7 @@ public class TestAbstractGroups {
         }
     }
 
+    private ProctorResult proctorResult;
     private TestGroups emptyGroup;
     private TestGroups groups;
     private TestGroupsWithForced groupsWithForced;
@@ -109,7 +110,7 @@ public class TestAbstractGroups {
         final TestBucket controlBucketWithPayload = new TestBucket("control", 0, "control", new Payload("controlPayload"));
         final TestBucket activeBucketWithPayload = new TestBucket("active", 1, "active", new Payload("activePayload"));
         final TestBucket activeBucket = new TestBucket("active", 2, "active");
-        final ProctorResult proctorResult = new ProctorResult(
+        proctorResult = new ProctorResult(
                 "0",
                 // buckets
                 ImmutableMap.<String, TestBucket>builder()
@@ -388,6 +389,33 @@ public class TestAbstractGroups {
                         Arrays.asList(-1, null),
                         Arrays.asList(-1, null)
                 );
+    }
+
+    @Test
+    public void testProctorResults() {
+        // same instance, which was historically exposed
+        assertThat(groups.getProctorResult()).isSameAs(proctorResult);
+
+        // same data, but not same instance
+        assertThat(groups.getRawProctorResult()).isNotSameAs(proctorResult);
+        assertThat(groups.getRawProctorResult().getMatrixVersion()).isEqualTo(proctorResult.getMatrixVersion());
+        assertThat(groups.getRawProctorResult().getBuckets()).isEqualTo(proctorResult.getBuckets());
+        assertThat(groups.getRawProctorResult().getAllocations()).isEqualTo(proctorResult.getAllocations());
+        assertThat(groups.getRawProctorResult().getTestDefinitions()).isEqualTo(proctorResult.getTestDefinitions());
+
+        // same data, but not same instance
+        assertThat(groups.getAsProctorResult()).isNotSameAs(proctorResult);
+        assertThat(groups.getAsProctorResult().getMatrixVersion()).isEqualTo(proctorResult.getMatrixVersion());
+        assertThat(groups.getAsProctorResult().getBuckets()).isEqualTo(proctorResult.getBuckets());
+        assertThat(groups.getAsProctorResult().getAllocations()).isEqualTo(proctorResult.getAllocations());
+        assertThat(groups.getAsProctorResult().getTestDefinitions()).isEqualTo(proctorResult.getTestDefinitions());
+
+        // different data for bucket, else same, but not same instance
+        assertThat(groupsWithHoldOut.getAsProctorResult()).isNotSameAs(proctorResult);
+        assertThat(groupsWithHoldOut.getAsProctorResult().getMatrixVersion()).isEqualTo(proctorResult.getMatrixVersion());
+        assertThat(groupsWithHoldOut.getAsProctorResult().getBuckets()).isNotEqualTo(proctorResult.getBuckets()); // not equal
+        assertThat(groupsWithHoldOut.getAsProctorResult().getAllocations()).isEqualTo(proctorResult.getAllocations());
+        assertThat(groupsWithHoldOut.getAsProctorResult().getTestDefinitions()).isEqualTo(proctorResult.getTestDefinitions());
     }
 
     private static class StubTest implements com.indeed.proctor.consumer.Test {
