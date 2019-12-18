@@ -87,7 +87,7 @@ public abstract class AbstractGroupsManager implements ProctorContextDescriptor 
         final Map<String, Integer> forcedGroups;
         if (allowForcedGroups) {
             forcedGroups = ProctorConsumerUtils.parseForcedGroups(request);
-            ProctorConsumerUtils.setForcedGroupsCookie(request, response, forcedGroups);
+            response.addCookie(ProctorConsumerUtils.createForcedGroupsCookie(request.getContextPath(), forcedGroups));
         } else {
             forcedGroups = emptyMap();
         }
