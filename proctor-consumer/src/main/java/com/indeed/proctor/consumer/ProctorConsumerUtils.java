@@ -150,10 +150,6 @@ public class ProctorConsumerUtils {
      * @param forceGroups parsed force groups
      */
     public static Cookie createForcedGroupsCookie(final String contextPath, final Map<String, Integer> forceGroups) {
-        if (forceGroups.isEmpty()) {
-            throw new IllegalArgumentException("Cannot create forcedGroup cookie for empty force groups map");
-        }
-
         //  be sure to quote cookies because they have characters that are not allowed raw
         final StringBuilder sb = new StringBuilder(10 * forceGroups.size());
         sb.append('"');

@@ -219,7 +219,14 @@ public class TestProctorConsumerUtils {
 
     @Test
     public void testCreateForcedGroupsCookie() {
-        final Cookie cookie = createForcedGroupsCookie("myapp", Collections.singletonMap("foo", 2));
+        Cookie cookie = createForcedGroupsCookie("myapp", Collections.emptyMap());
+        assertThat(cookie.getName()).isEqualTo("prforceGroups");
+        assertThat(cookie.getValue()).isEqualTo("\"\"");
+        assertThat(cookie.getPath()).isEqualTo("myapp");
+        assertThat(cookie.getVersion()).isEqualTo(0);
+
+
+        cookie = createForcedGroupsCookie("myapp", Collections.singletonMap("foo", 2));
         assertThat(cookie.getName()).isEqualTo("prforceGroups");
         assertThat(cookie.getValue()).isEqualTo("\"foo2\"");
         assertThat(cookie.getPath()).isEqualTo("myapp");
