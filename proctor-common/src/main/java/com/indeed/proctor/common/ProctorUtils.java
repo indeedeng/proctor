@@ -62,6 +62,7 @@ public abstract class ProctorUtils {
     private static final ObjectMapper OBJECT_MAPPER_NON_AUTOCLOSE = Serializers.lenient().configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
     private static final ObjectMapper OBJECT_MAPPER = Serializers.lenient();
     private static final Logger LOGGER = Logger.getLogger(ProctorUtils.class);
+    private static final SpecificationGenerator SPECIFICATION_GENERATOR = new SpecificationGenerator();
 
     public static MessageDigest createMessageDigest() {
         try {
@@ -1004,7 +1005,7 @@ public abstract class ProctorUtils {
      */
     @Deprecated
     public static TestSpecification generateSpecification(@Nonnull final TestDefinition testDefinition) {
-        return new SpecificationGenerator().generateSpecification(testDefinition);
+        return SPECIFICATION_GENERATOR.generateSpecification(testDefinition);
     }
 
     /**

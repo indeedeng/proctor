@@ -18,6 +18,9 @@ import javax.annotation.Nullable;
 @JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
 @JsonDeserialize(builder = TestBucket.Builder.class)
 public class TestBucket {
+    /**
+     * Validated by IdentifierValidationUtil
+     */
     @Nonnull
     private String name = "";
     private int value;

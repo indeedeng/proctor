@@ -59,7 +59,8 @@ public abstract class AbstractGroups {
      * Note: This method is the only one to change when developers want to customize group ownership,
      *       such as for implementing hold-out groups. Customizers are encouraged to
      *       use meta-tags to drive customization, see getProctorResult().
-     *       Use proctorResult.getTestDefinitions().get(testName).getBuckets() to select a different valid bucket value.
+     *       Use getProctorResult().getTestDefinitions().get(testName).getBuckets() to
+     *       select a different valid bucket value.
      *
      *       Also note that if calling other methods of this class inside this method, it is easily possible to
      *       create infinite loops (stackoverflow), so be careful and write unit tests

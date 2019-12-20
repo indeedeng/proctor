@@ -2,15 +2,17 @@ package com.indeed.proctor.common.model;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Objects;
-import com.google.common.collect.Maps;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import static java.util.Collections.emptyList;
 
 /**
  * Models a single test
@@ -32,13 +34,17 @@ public class TestDefinition {
     @Nullable
     private String rule;
     @Nonnull
-    private List<TestBucket> buckets = Collections.emptyList();
+    private List<TestBucket> buckets = emptyList();
     //  there are multiple ways to allocate the buckets based on rules, but most tests will probably just have one Allocation
     @Nonnull
-    private List<Allocation> allocations = Collections.emptyList();
+    private List<Allocation> allocations = emptyList();
     private boolean silent;
+    /**
+     * Mutable tags used by applications for any kind of purpose (filtering, special treatments)
+     * Validated by IdentifierValidationUtil
+     */
     @Nonnull
-    private List<String> metaTags = Collections.emptyList();
+    private List<String> metaTags = emptyList();
 
     /**
      * For advisory purposes only
@@ -75,7 +81,7 @@ public class TestDefinition {
                 constants,
                 specialConstants,
                 description,
-                Collections.emptyList());
+                emptyList());
     }
 
     /**
@@ -104,7 +110,7 @@ public class TestDefinition {
                 constants,
                 specialConstants,
                 description,
-                Collections.emptyList());
+                emptyList());
     }
 
     public TestDefinition(
@@ -142,11 +148,11 @@ public class TestDefinition {
 
         // null checks for mocked TestDefinition in unit test
         if (other.constants != null) {
-            this.constants = Maps.newHashMap(other.constants);
+            this.constants = new HashMap<>(other.constants);
         }
 
         if (other.specialConstants != null) {
-            this.specialConstants = Maps.newHashMap(other.specialConstants);
+            this.specialConstants = new HashMap<>(other.specialConstants);
         }
 
         if (other.buckets != null) {
