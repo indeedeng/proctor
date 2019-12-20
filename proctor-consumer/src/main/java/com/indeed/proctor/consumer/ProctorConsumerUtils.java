@@ -94,16 +94,18 @@ public class ProctorConsumerUtils {
         if (payload == null) {
             return Collections.emptyMap();
         }
-        final String[] pieces = payload.split(",+");
-        final Map<String, Integer> forcedGroups = Maps.newHashMap();
-        for (int i = 0; i < pieces.length; i++) {
-            final String piece = pieces[i].trim();
-            if (piece.length() == 0) {
+        // using single char in split regex avoids Pattern creation since java8
+        final String[] pieces = payload.split(",");
+        final Map<String, Integer> forcedGroups = Maps.newHashMapWithExpectedSize(pieces.length);
+        // detect integer number from end of string
+        for (final String rawPiece : pieces) {
+            final String piece = rawPiece.trim();
+            if (piece.isEmpty()) {
                 continue;
             }
             int bucketValueStart = piece.length() - 1;
             for (; bucketValueStart >= 0; bucketValueStart--) {
-                if (! Character.isDigit(piece.charAt(bucketValueStart))) {
+                if (!Character.isDigit(piece.charAt(bucketValueStart))) {
                     break;
                 }
             }
@@ -117,7 +119,7 @@ public class ProctorConsumerUtils {
             }
             //  bucketValueStart should now be the index of the minus sign or the first digit in a run of digits going to the end of the word
             final String testName = piece.substring(0, bucketValueStart).trim();
-            final String bucketValueStr = piece.substring(bucketValueStart, piece.length());
+            final String bucketValueStr = piece.substring(bucketValueStart);
             try {
                 final Integer bucketValue = Integer.valueOf(bucketValueStr);
                 forcedGroups.put(testName, bucketValue);

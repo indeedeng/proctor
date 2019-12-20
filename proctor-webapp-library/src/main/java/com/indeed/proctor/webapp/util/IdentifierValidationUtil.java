@@ -9,6 +9,10 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class IdentifierValidationUtil {
+    /**
+     * Testname startswith letter or underscores, ends with letter or underscore, has letters, numbers or underscores in the middle, has maximum of 100 letters.
+     * The goal is to keep testnames parseable when concatenated with (positive and negative) numbers.
+     */
     private static final Pattern VALID_TEST_NAME_PATTERN = Pattern.compile("^([a-z]([a-z0-9_]*[a-z_])?|_+([a-z]|[a-z0-9][a-z0-9_]*[a-z_]))$", Pattern.CASE_INSENSITIVE);
     private static final Pattern VALID_META_TAG_PATTERN = Pattern.compile("^_*[a-z0-9][a-z0-9_]*$", Pattern.CASE_INSENSITIVE);
     private static final Pattern VALID_BUCKET_NAME_PATTERN = Pattern.compile("^[a-z_][a-z0-9_]*$", Pattern.CASE_INSENSITIVE);
