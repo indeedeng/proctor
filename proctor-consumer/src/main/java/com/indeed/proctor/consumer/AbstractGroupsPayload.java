@@ -42,6 +42,7 @@ public abstract class AbstractGroupsPayload {
 
     @SuppressWarnings("unchecked")
     protected String[] convertToStringArray(final Payload payload, final String payloadMapKey) throws IllegalArgumentException {
+        // historically, null values are allowed in the result, reasons unknown
         return extractNonNullValueFromMapPayload(payload, payloadMapKey, o -> (List<String>) o).toArray(new String[0]);
     }
 
@@ -50,7 +51,7 @@ public abstract class AbstractGroupsPayload {
      */
     @SuppressWarnings("unchecked")
     protected Long[] convertToLongArray(final Payload payload, final String payloadMapKey) throws IllegalArgumentException {
-        return extractNonNullValueFromMapPayload(payload, payloadMapKey, o -> (List<Number>) o).stream()
+        return extractListWithouNullsFromMapPayload(payload, payloadMapKey, o -> (List<Number>) o).stream()
                 .map(LONG_CONVERTER).toArray(Long[]::new);
     }
 
@@ -59,8 +60,24 @@ public abstract class AbstractGroupsPayload {
      */
     @SuppressWarnings("unchecked")
     protected Double[] convertToDoubleArray(final Payload payload, final String payloadMapKey) throws IllegalArgumentException {
-        return extractNonNullValueFromMapPayload(payload, payloadMapKey, o -> (List<Number>) o).stream()
+        return extractListWithouNullsFromMapPayload(payload, payloadMapKey, o -> (List<Number>) o).stream()
                 .map(DOUBLE_CONVERTER).toArray(Double[]::new);
+    }
+
+    /**
+     * Extracts a list, and checks the list contains no nulls, throws NullPointerException else
+     */
+    @Nonnull
+    private static <T> List<T> extractListWithouNullsFromMapPayload(
+            final Payload payload,
+            final String payloadMapKey,
+            final Function<Object, List<T>> converter
+    ) {
+        final List<T> list = extractNonNullValueFromMapPayload(payload, payloadMapKey, converter);
+        if (list.contains(null)) {
+            throw new NullPointerException("Null payload list value for constructor for key '" + payloadMapKey + '\'' + " in Payload: " + payload);
+        }
+        return list;
     }
 
     /**

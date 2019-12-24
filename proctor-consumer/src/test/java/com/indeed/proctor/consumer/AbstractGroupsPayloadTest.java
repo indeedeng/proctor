@@ -67,6 +67,9 @@ public class AbstractGroupsPayloadTest {
         assertThatThrownBy(() -> subclass.convertToDoubleArray(makeStubMapPayload(MAP_KEY, null), MAP_KEY))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessageContaining(MAP_KEY);
+        assertThatThrownBy(() -> subclass.convertToDoubleArray(makeStubMapPayload(MAP_KEY, singletonList(null)), MAP_KEY))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessageContaining(MAP_KEY);
         assertThat(subclass.convertToDoubleArray(makeStubMapPayload(MAP_KEY, singletonList(42)), MAP_KEY)).isEqualTo(new Double[]{42.0});
         assertThatThrownBy(() -> subclass.convertToDoubleArray(makeStubMapPayload("notexist", "footest"), MAP_KEY))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -77,6 +80,9 @@ public class AbstractGroupsPayloadTest {
     @Test
     public void testConvertToLongArray() {
         assertThatThrownBy(() -> subclass.convertToLongArray(makeStubMapPayload(MAP_KEY, null), MAP_KEY))
+                .isInstanceOf(NullPointerException.class)
+                .hasMessageContaining(MAP_KEY);
+        assertThatThrownBy(() -> subclass.convertToLongArray(makeStubMapPayload(MAP_KEY, singletonList(null)), MAP_KEY))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessageContaining(MAP_KEY);
         assertThat(subclass.convertToLongArray(makeStubMapPayload(MAP_KEY, singletonList(42)), MAP_KEY)).isEqualTo(new Long[]{42L});
