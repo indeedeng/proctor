@@ -6,6 +6,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.reflect.Array;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 
 public abstract class AbstractGroupsPayload {
@@ -21,68 +23,66 @@ public abstract class AbstractGroupsPayload {
 
     @Nullable
     protected String convertToStringValue(final Payload payload, final String payloadMapKey) throws IllegalArgumentException {
-        checkPayloadExist(payload, payloadMapKey);
         // historically, null was allowed for String, reasons unknown
-        return (String) payload.getMap().get(payloadMapKey);
+        return extractValueFromMapPayload(payload, payloadMapKey, o -> (String) o).orElse(null);
     }
 
     protected Long convertToLongValue(final Payload payload, final String payloadMapKey) throws IllegalArgumentException {
-        checkPayloadExist(payload, payloadMapKey);
         return extractNonNullValueFromMapPayload(payload, payloadMapKey, LONG_CONVERTER);
     }
 
     protected Double convertToDoubleValue(final Payload payload, final String payloadMapKey) throws IllegalArgumentException {
-        checkPayloadExist(payload, payloadMapKey);
         return extractNonNullValueFromMapPayload(payload, payloadMapKey, DOUBLE_CONVERTER);
     }
 
     @SuppressWarnings("unchecked")
     protected String[] convertToStringArray(final Payload payload, final String payloadMapKey) throws IllegalArgumentException {
-        checkPayloadExist(payload, payloadMapKey);
         final List<Object> list = extractNonNullValueFromMapPayload(payload, payloadMapKey, o -> (List) o);
         return convertToTypedArray(list, o -> (String) o, String.class);
     }
 
     @SuppressWarnings("unchecked")
     protected Long[] convertToLongArray(final Payload payload, final String payloadMapKey) throws IllegalArgumentException {
-        checkPayloadExist(payload, payloadMapKey);
         final List<Object> list = extractNonNullValueFromMapPayload(payload, payloadMapKey, o -> (List) o);
         return convertToTypedArray(list, LONG_CONVERTER, Long.class);
     }
 
     @SuppressWarnings("unchecked")
     protected Double[] convertToDoubleArray(final Payload payload, final String payloadMapKey) throws IllegalArgumentException {
-        checkPayloadExist(payload, payloadMapKey);
         final List<Object> list = extractNonNullValueFromMapPayload(payload, payloadMapKey, o -> (List) o);
         return convertToTypedArray(list, DOUBLE_CONVERTER, Double.class);
     }
 
-    private static void checkPayloadExist(final Payload payload, final String payloadMapKey) {
-        if (payload != null && payload.getMap() != null && payload.getMap().containsKey(payloadMapKey)) {
-            return;
-        }
-        throw new IllegalArgumentException(
-                "Missing payload for constructor for key '" + payloadMapKey + '\'' + " in Payload: " + payload);
-    }
-
     /**
+     * @throws IllegalArgumentException when payload is null, payload.map is null, map does not contain key
      * @throws NullPointerException else if map value is null
-     * @return extracted payload Value cast to given class if not null
+     * @return extracted payload Value converted to given class if not null
      */
     @Nonnull
-    @SuppressWarnings("unchecked")
     private static <T> T extractNonNullValueFromMapPayload(
             final Payload payload,
             final String payloadMapKey,
             final Function<Object, T> converter
     ) {
-        // assumes (from checkPayloadExist) that payload != null, payload.getMap() != null, ...
-        final T result = converter.apply(payload.getMap().get(payloadMapKey));
-        if (result != null) {
-            return result;
+        return extractValueFromMapPayload(payload, payloadMapKey, converter).orElseThrow(() ->
+                new NullPointerException("Null payload value for constructor for key '" + payloadMapKey + '\'' + " in Payload: " + payload));
+    }
+
+    /**
+     * @throws IllegalArgumentException when payload is null, payload.map is null, map does not contain key
+     * @return optional of extracted payload Value converted to given class
+     */
+    @Nonnull
+    private static <T> Optional<T> extractValueFromMapPayload(
+            final Payload payload,
+            final String payloadMapKey,
+            final Function<Object, T> converter
+    ) {
+        final Optional<Map<String, Object>> payloadMapOpt = Optional.ofNullable(payload).map(Payload::getMap);
+        if (payloadMapOpt.isPresent() && payloadMapOpt.get().containsKey(payloadMapKey)) {
+            return payloadMapOpt.map(m -> m.get(payloadMapKey)).map(converter);
         }
-        throw new NullPointerException(
-                "Null payload value for constructor for key '" + payloadMapKey + '\'' + " in Payload: " + payload);
+        throw new IllegalArgumentException("Missing payload for constructor for key '" + payloadMapKey + '\'' + " in Payload: " + payload);
     }
 
     @SuppressWarnings("unchecked")
