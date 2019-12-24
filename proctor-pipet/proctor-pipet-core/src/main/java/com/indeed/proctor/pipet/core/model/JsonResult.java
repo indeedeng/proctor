@@ -1,11 +1,12 @@
 package com.indeed.proctor.pipet.core.model;
 
-import com.google.common.collect.Maps;
+import com.google.common.annotations.VisibleForTesting;
 import com.indeed.proctor.common.ProctorResult;
 import com.indeed.proctor.common.model.Audit;
-import com.indeed.proctor.common.model.TestBucket;
+import com.indeed.proctor.common.model.ConsumableTestDefinition;
 
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * ProctorResult intended for JSON serialization for the /groups/identify method.
@@ -28,21 +29,17 @@ public class JsonResult {
         groups = generateJsonBuckets(result);
     }
 
-    private Map<String, JsonTestBucket> generateJsonBuckets(final ProctorResult result) {
-        final Map<String, JsonTestBucket> jsonBuckets = Maps.newHashMap();
 
+    @VisibleForTesting
+    static Map<String, JsonTestBucket> generateJsonBuckets(final ProctorResult result) {
+        final Map<String, ConsumableTestDefinition> definitions = result.getTestDefinitions();
         // As we process each TestBucket into a JsonBucket, we also need to obtain a version for that test.
-        final Map<String, String> versions = result.getTestVersions();
-
-        for (Map.Entry<String, TestBucket> e : result.getBuckets().entrySet()) {
-            final String testName = e.getKey();
-            final TestBucket testBucket = e.getValue();
-
-            final JsonTestBucket jsonBucket = new JsonTestBucket(testBucket, versions.get(testName));
-            jsonBuckets.put(testName, jsonBucket);
-        }
-
-        return jsonBuckets;
+        return result.getBuckets().entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        e -> new JsonTestBucket(
+                                e.getValue(),
+                                definitions.get(e.getKey()).getVersion())));
     }
 
     public Map<String, JsonTestBucket> getGroups() {

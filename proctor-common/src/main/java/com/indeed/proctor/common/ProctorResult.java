@@ -9,11 +9,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
 import static java.util.Collections.emptyMap;
 
 /**
@@ -105,13 +103,5 @@ public class ProctorResult {
         return testDefinitions;
     }
 
-    @Nonnull
-    public Map<String, String> getTestVersions() {
-        // TODO ImmutableMap?
-        final Map<String, String> testVersions = newHashMapWithExpectedSize(testDefinitions.size());
-        for (final Entry<String, ConsumableTestDefinition> entry : testDefinitions.entrySet()) {
-            testVersions.put(entry.getKey(), entry.getValue().getVersion());
-        }
-        return testVersions;
-    }
+
 }

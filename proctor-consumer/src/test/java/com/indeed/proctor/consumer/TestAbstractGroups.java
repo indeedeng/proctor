@@ -1,7 +1,6 @@
 package com.indeed.proctor.consumer;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.indeed.proctor.common.ProctorResult;
@@ -15,7 +14,6 @@ import org.junit.Test;
 
 import javax.annotation.Nonnull;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Optional;
 
@@ -133,12 +131,11 @@ public class TestAbstractGroups {
                         .build(),
                 // definitions
                 ImmutableMap.<String, ConsumableTestDefinition>builder()
-                        .put(HOLDOUT_TESTNAME, stubDefinitionWithVersion("vInactive", inactiveBucket, activeBucket))
-                        .put(CONTROL_TESTNAME, stubDefinitionWithVersion("vControl", inactiveBucket, controlBucketWithPayload, activeBucketWithPayload))
-                        .put(ACTIVE_TESTNAME, stubDefinitionWithVersion("vActive", inactiveBucket, controlBucketWithPayload, activeBucketWithPayload))
-                        .put(INACTIVE_TESTNAME, stubDefinitionWithVersion("vInactive", inactiveBucket, activeBucket))
-                        .put(GROUP_WITH_FALLBACK_TESTNAME, stubDefinitionWithVersion(
-                                "vGroupWithFallback",
+                        .put(HOLDOUT_TESTNAME, stubDefinitionForBuckets(inactiveBucket, activeBucket))
+                        .put(CONTROL_TESTNAME, stubDefinitionForBuckets(inactiveBucket, controlBucketWithPayload, activeBucketWithPayload))
+                        .put(ACTIVE_TESTNAME, stubDefinitionForBuckets(inactiveBucket, controlBucketWithPayload, activeBucketWithPayload))
+                        .put(INACTIVE_TESTNAME, stubDefinitionForBuckets(inactiveBucket, activeBucket))
+                        .put(GROUP_WITH_FALLBACK_TESTNAME, stubDefinitionForBuckets(
                                 new TestBucket(
                                         "fallbackBucket",
                                         FALLBACK_BUCKET.getValue(),
@@ -146,8 +143,7 @@ public class TestAbstractGroups {
                                         new Payload("fallback")),
                                 inactiveBucket, activeBucket))
                         // has no buckets in result, but in definition
-                        .put(NO_BUCKETS_WITH_FALLBACK_TESTNAME, stubDefinitionWithVersion(
-                                "vNoBuckets",
+                        .put(NO_BUCKETS_WITH_FALLBACK_TESTNAME, stubDefinitionForBuckets(
                                 new TestBucket(
                                         "fallbackBucket",
                                         FALLBACK_BUCKET.getValue(),
@@ -163,9 +159,8 @@ public class TestAbstractGroups {
         groupsWithHoldOut = new TestGroupsWithHoldout(proctorResult);
     }
 
-    private static ConsumableTestDefinition stubDefinitionWithVersion(final String version, final TestBucket... buckets) {
+    private ConsumableTestDefinition stubDefinitionForBuckets(final TestBucket... buckets) {
         final ConsumableTestDefinition testDefinition = new ConsumableTestDefinition();
-        testDefinition.setVersion(version);
         testDefinition.setBuckets(Arrays.asList(buckets));
         return testDefinition;
     }
@@ -227,24 +222,6 @@ public class TestAbstractGroups {
         assertThat(groupsWithHoldOut.getValue("notexist", 42)).isEqualTo(42); // no fallback bucket
 
         assertThat(emptyGroup.getValue("notexist", 42)).isEqualTo(42); // no fallback bucket
-    }
-
-    @Test
-    public void testGetTestVersions() {
-        assertThat(groups.getTestVersions()).isEqualTo(ImmutableMap.builder()
-                .put(CONTROL_TESTNAME, "vControl")
-                .put(ACTIVE_TESTNAME, "vActive")
-                .put(INACTIVE_TESTNAME, "vInactive")
-                .put(GROUP_WITH_FALLBACK_TESTNAME, "vGroupWithFallback")
-                .put(NO_BUCKETS_WITH_FALLBACK_TESTNAME, "vNoBuckets")
-                .put(HOLDOUT_TESTNAME, "vInactive")
-                .build());
-
-        assertThat(groups.getTestVersions(Collections.emptySet())).isEqualTo(emptyMap());
-
-        assertThat(groups.getTestVersions(ImmutableSet.of(CONTROL_TESTNAME, "notexist"))).isEqualTo(ImmutableMap.builder()
-                .put(CONTROL_TESTNAME, "vControl")
-                .build());
     }
 
     @Test
