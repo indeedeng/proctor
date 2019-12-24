@@ -4,7 +4,9 @@ import com.indeed.proctor.common.model.Payload;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.reflect.Array;
 import java.util.List;
+import java.util.function.Function;
 
 public abstract class AbstractGroupsPayload {
 
@@ -25,22 +27,25 @@ public abstract class AbstractGroupsPayload {
         return extractNonNullValueFromMapPayload(payload, payloadMapKey, Number.class).doubleValue();
     }
 
+    @SuppressWarnings("unchecked")
     protected String[] convertToStringArray(final Payload payload, final String payloadMapKey) throws IllegalArgumentException {
         checkPayloadExist(payload, payloadMapKey);
-        final Object[] toConvert = extractNonNullValueFromMapPayload(payload, payloadMapKey, List.class).toArray();
-        return convertObjectArrToStringArr(toConvert);
+        final List<Object> list = extractNonNullValueFromMapPayload(payload, payloadMapKey, List.class);
+        return convertToTypedArray(list, o -> (String) o, String.class);
     }
 
+    @SuppressWarnings("unchecked")
     protected Long[] convertToLongArray(final Payload payload, final String payloadMapKey) throws IllegalArgumentException {
         checkPayloadExist(payload, payloadMapKey);
-        final Object[] toConvert = extractNonNullValueFromMapPayload(payload, payloadMapKey, List.class).toArray();
-        return convertObjectArrToLongArr(toConvert);
+        final List<Object> list = extractNonNullValueFromMapPayload(payload, payloadMapKey, List.class);
+        return convertToTypedArray(list, i -> ((Number) i).longValue(), Long.class);
     }
 
+    @SuppressWarnings("unchecked")
     protected Double[] convertToDoubleArray(final Payload payload, final String payloadMapKey) throws IllegalArgumentException {
         checkPayloadExist(payload, payloadMapKey);
-        final Object[] toConvert = extractNonNullValueFromMapPayload(payload, payloadMapKey, List.class).toArray();
-        return convertObjectArrToDoubleArr(toConvert);
+        final List<Object> list = extractNonNullValueFromMapPayload(payload, payloadMapKey, List.class);
+        return convertToTypedArray(list, i -> ((Number) i).doubleValue(), Double.class);
     }
 
     private static void checkPayloadExist(final Payload payload, final String payloadMapKey) {
@@ -71,34 +76,11 @@ public abstract class AbstractGroupsPayload {
                 "Null payload value for constructor for key '" + payloadMapKey + '\'' + " in Payload: " + payload);
     }
 
-    /*
-     * Used because ObjectMapper does not always read in doubles as doubles
-     * When it is a Map<String,Object>
-     */
-    private static Double[] convertObjectArrToDoubleArr(final Object[] list) {
-        final Double[] toReturn = new Double[list.length];
-        for (int i = 0; i < list.length; i++) {
-            toReturn[i] = ((Number)list[i]).doubleValue();
-        }
-        return toReturn;
-    }
-
-    /*
-    * Used because ObjectMapper does not always read in longs as longs (can be integer)
-     * When it is a Map<String,Object>
-     */
-    private static Long[] convertObjectArrToLongArr(final Object[] list) {
-        final Long[] toReturn = new Long[list.length];
-        for (int i = 0; i < list.length; i++) {
-            toReturn[i] = ((Number)list[i]).longValue();
-        }
-        return toReturn;
-    }
-
-    private static String[] convertObjectArrToStringArr(final Object[] list) {
-        final String[] toReturn = new String[list.length];
-        for (int i = 0; i < list.length; i++) {
-            toReturn[i] = (String)list[i];
+    @SuppressWarnings("unchecked")
+    private static <T> T[] convertToTypedArray(final List<Object> list, final Function<Object, T> converter, final Class<T> clazz) {
+        final T[] toReturn = (T[]) Array.newInstance(clazz, list.size());
+        for (int i = 0; i < list.size(); i++) {
+            toReturn[i] = converter.apply(list.get(i));
         }
         return toReturn;
     }
