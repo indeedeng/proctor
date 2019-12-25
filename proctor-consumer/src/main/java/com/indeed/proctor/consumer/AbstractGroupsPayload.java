@@ -4,12 +4,14 @@ import com.indeed.proctor.common.model.Payload;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.lang.reflect.Array;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
+/**
+ * Superclass of generated Payload classes, provides utility methods
+ */
 public abstract class AbstractGroupsPayload {
 
     /**
@@ -21,6 +23,9 @@ public abstract class AbstractGroupsPayload {
      */
     private static final Function<Object, Double> DOUBLE_CONVERTER = o -> ((Number) o).doubleValue();
 
+    /**
+     * @return String value contained in payload map map for given key
+     */
     @Nullable
     protected String convertToStringValue(final Payload payload, final String payloadMapKey) throws IllegalArgumentException {
         // historically, null was allowed for String, reasons unknown
@@ -37,26 +42,32 @@ public abstract class AbstractGroupsPayload {
 
     @SuppressWarnings("unchecked")
     protected String[] convertToStringArray(final Payload payload, final String payloadMapKey) throws IllegalArgumentException {
-        final List<Object> list = extractNonNullValueFromMapPayload(payload, payloadMapKey, o -> (List) o);
-        return convertToTypedArray(list, o -> (String) o, String.class);
-    }
-
-    @SuppressWarnings("unchecked")
-    protected Long[] convertToLongArray(final Payload payload, final String payloadMapKey) throws IllegalArgumentException {
-        final List<Object> list = extractNonNullValueFromMapPayload(payload, payloadMapKey, o -> (List) o);
-        return convertToTypedArray(list, LONG_CONVERTER, Long.class);
-    }
-
-    @SuppressWarnings("unchecked")
-    protected Double[] convertToDoubleArray(final Payload payload, final String payloadMapKey) throws IllegalArgumentException {
-        final List<Object> list = extractNonNullValueFromMapPayload(payload, payloadMapKey, o -> (List) o);
-        return convertToTypedArray(list, DOUBLE_CONVERTER, Double.class);
+        return extractNonNullValueFromMapPayload(payload, payloadMapKey, o -> (List<String>) o).toArray(new String[0]);
     }
 
     /**
+     * Converts a list of Numbers in map payload to Array of Long if not possible
+     */
+    @SuppressWarnings("unchecked")
+    protected Long[] convertToLongArray(final Payload payload, final String payloadMapKey) throws IllegalArgumentException {
+        return extractNonNullValueFromMapPayload(payload, payloadMapKey, o -> (List<Number>) o).stream()
+                .map(LONG_CONVERTER).toArray(Long[]::new);
+    }
+
+    /**
+     * Converts a list of Numbers in map payload to Array of Double, throws RuntimeException if not possible
+     */
+    @SuppressWarnings("unchecked")
+    protected Double[] convertToDoubleArray(final Payload payload, final String payloadMapKey) throws IllegalArgumentException {
+        return extractNonNullValueFromMapPayload(payload, payloadMapKey, o -> (List<Number>) o).stream()
+                .map(DOUBLE_CONVERTER).toArray(Double[]::new);
+    }
+
+    /**
+     * @param converter: is applied if map value is not null, must not return null.
      * @throws IllegalArgumentException when payload is null, payload.map is null, map does not contain key
      * @throws NullPointerException else if map value is null
-     * @return extracted payload Value converted to given class if not null
+     * @return extracted payload Value converted to given class if not null, else throws NPE
      */
     @Nonnull
     private static <T> T extractNonNullValueFromMapPayload(
@@ -69,6 +80,7 @@ public abstract class AbstractGroupsPayload {
     }
 
     /**
+     * @param converter: is applied if map value is not null, must not return null
      * @throws IllegalArgumentException when payload is null, payload.map is null, map does not contain key
      * @return optional of extracted payload Value converted to given class
      */
@@ -83,14 +95,5 @@ public abstract class AbstractGroupsPayload {
             return payloadMapOpt.map(m -> m.get(payloadMapKey)).map(converter);
         }
         throw new IllegalArgumentException("Missing payload for constructor for key '" + payloadMapKey + '\'' + " in Payload: " + payload);
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <T> T[] convertToTypedArray(final List<Object> list, final Function<Object, T> converter, final Class<T> clazz) {
-        final T[] toReturn = (T[]) Array.newInstance(clazz, list.size());
-        for (int i = 0; i < list.size(); i++) {
-            toReturn[i] = converter.apply(list.get(i));
-        }
-        return toReturn;
     }
 }
