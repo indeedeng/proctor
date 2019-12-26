@@ -17,19 +17,28 @@ public abstract class AbstractGroupsPayload {
     /**
      * Used because ObjectMapper does not always read in longs as longs (can be integer)
      */
-    private static final Function<Object, Long> LONG_CONVERTER = o -> ((Number) o).longValue();
+    private static final Function<Object, Long> LONG_CONVERTER = o -> convertToNumber(o).longValue();
     /**
      * Used because ObjectMapper does not always read in doubles as doubles (can be integer)
      */
-    private static final Function<Object, Double> DOUBLE_CONVERTER = o -> ((Number) o).doubleValue();
+    private static final Function<Object, Double> DOUBLE_CONVERTER = o -> convertToNumber(o).doubleValue();
+    /**
+     * Used only to provide better error messages for bad type, allows null (reason unknown)
+     */
+    public static final Function<Object, String> STRING_CONVERTER = o -> {
+        if ((o == null) || (o instanceof String)) {
+            return (String) o;
+        }
+        throw new ClassCastException("Cannot convert '" + o + "' to String");
+    };
 
     /**
-     * @return String value contained in payload map map for given key
+     * @return String value contained in payload map for given key
      */
     @Nullable
     protected String convertToStringValue(final Payload payload, final String payloadMapKey) throws IllegalArgumentException {
         // historically, null was allowed for String, reasons unknown
-        return extractValueFromMapPayload(payload, payloadMapKey, o -> (String) o).orElse(null);
+        return extractValueFromMapPayload(payload, payloadMapKey, STRING_CONVERTER).orElse(null);
     }
 
     protected Long convertToLongValue(final Payload payload, final String payloadMapKey) throws IllegalArgumentException {
@@ -40,28 +49,41 @@ public abstract class AbstractGroupsPayload {
         return extractNonNullValueFromMapPayload(payload, payloadMapKey, DOUBLE_CONVERTER);
     }
 
-    @SuppressWarnings("unchecked")
     protected String[] convertToStringArray(final Payload payload, final String payloadMapKey) throws IllegalArgumentException {
         // historically, null values are allowed in the result, reasons unknown
-        return extractNonNullValueFromMapPayload(payload, payloadMapKey, o -> (List<String>) o).toArray(new String[0]);
+        return extractNonNullValueFromMapPayload(payload, payloadMapKey, o -> convertToList(o)).stream()
+                .map(STRING_CONVERTER).toArray(String[]::new);
     }
 
     /**
      * Converts a list of Numbers in map payload to Array of Long if not possible
      */
-    @SuppressWarnings("unchecked")
     protected Long[] convertToLongArray(final Payload payload, final String payloadMapKey) throws IllegalArgumentException {
-        return extractListWithouNullsFromMapPayload(payload, payloadMapKey, o -> (List<Number>) o).stream()
+        return extractListWithouNullsFromMapPayload(payload, payloadMapKey, o -> convertToList(o)).stream()
                 .map(LONG_CONVERTER).toArray(Long[]::new);
     }
 
     /**
      * Converts a list of Numbers in map payload to Array of Double, throws RuntimeException if not possible
      */
-    @SuppressWarnings("unchecked")
     protected Double[] convertToDoubleArray(final Payload payload, final String payloadMapKey) throws IllegalArgumentException {
-        return extractListWithouNullsFromMapPayload(payload, payloadMapKey, o -> (List<Number>) o).stream()
+        return extractListWithouNullsFromMapPayload(payload, payloadMapKey, o -> convertToList(o)).stream()
                 .map(DOUBLE_CONVERTER).toArray(Double[]::new);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> List<T> convertToList(final Object o) {
+        if (o instanceof List) {
+            return (List<T>) o;
+        }
+        throw new ClassCastException("Cannot convert '" + o + "' to List");
+    }
+
+    private static Number convertToNumber(final Object o) {
+        if (o instanceof Number) {
+            return (Number) o;
+        }
+        throw new ClassCastException("Cannot convert '" + o + "' to Number");
     }
 
     /**
