@@ -257,7 +257,6 @@ public class Proctor {
         return Collections.unmodifiableSet(matrix.getTests().keySet());
     }
 
-    @SuppressWarnings("UnusedDeclaration") // TODO Needed?
     public ConsumableTestDefinition getTestDefinition(final String name) {
         return matrix.getTests().get(name);
     }
@@ -270,7 +269,6 @@ public class Proctor {
         appendTests(sb, Predicates.alwaysTrue());
     }
 
-    @SuppressWarnings("UnusedDeclaration") // TODO needed?
     public void appendTests(final Writer sb, final TestType type) {
         appendTests(sb, new Predicate<TestChooser<?>>() {
             @Override
