@@ -9,6 +9,7 @@ import com.indeed.proctor.common.ProctorSpecification;
 import com.indeed.proctor.common.Serializers;
 import com.indeed.proctor.common.TestSpecification;
 import com.indeed.proctor.common.dynamic.DynamicFilters;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 
 import java.io.File;
@@ -97,8 +98,8 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
         }
 
         final Map<String, TestSpecification> testSpec = new LinkedHashMap<>();
-        Map<String, String> providedContext = new LinkedHashMap<>();
-        DynamicFilters dynamicFilters = new DynamicFilters();
+        Map<String, String> providedContext = null;
+        DynamicFilters dynamicFilters = null;
         for (final File file : inputFiles) {
             final String fileName = file.getName();
             if (fileName.equals(PROVIDED_CONTEXT_FILENAME)) {
@@ -127,10 +128,11 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
                 testSpec.put(specName, spec);
             }
         }
-        final ProctorSpecification proctorSpecification = new ProctorSpecification();
-        proctorSpecification.setTests(testSpec);
-        proctorSpecification.setProvidedContext(providedContext);
-        proctorSpecification.setDynamicFilters(dynamicFilters);
+        final ProctorSpecification proctorSpecification = new ProctorSpecification(
+                ObjectUtils.defaultIfNull(providedContext, new LinkedHashMap<>()),
+                testSpec,
+                ObjectUtils.defaultIfNull(dynamicFilters, new DynamicFilters())
+        );
 
         validateProctorSpecification(proctorSpecification);
 
