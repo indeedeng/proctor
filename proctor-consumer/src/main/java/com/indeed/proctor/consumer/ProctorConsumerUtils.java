@@ -18,11 +18,13 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 public class ProctorConsumerUtils {
     private static final Logger LOGGER = Logger.getLogger(ProctorConsumerUtils.class);
     /**
      * plain old "forceGroups" is already in use by JASX for SERP groups
+     * @param allowForcedGroups if true, parses force group parameters from request / cookie, sets new cookie
      */
     public static final String FORCE_GROUPS_PARAMETER = "prforceGroups";
     public static final String FORCE_GROUPS_COOKIE_NAME = "prforceGroups";
@@ -36,13 +38,15 @@ public class ProctorConsumerUtils {
 
     /**
      * calculates ProctorResult (determined groups) and also handles forcedGroups, setting cookie if necessary
+     * @param allowForcedGroups if true, parses force group parameters from request / cookie, sets new cookie
      */
     public static ProctorResult determineBuckets(final HttpServletRequest request, final HttpServletResponse response, final Proctor proctor,
                                                     final Identifiers identifiers, final Map<String, Object> context, final boolean allowForcedGroups) {
         final Map<String, Integer> forcedGroups;
         if (allowForcedGroups) {
             forcedGroups = parseForcedGroups(request);
-            response.addCookie(ProctorConsumerUtils.createForcedGroupsCookie(request.getContextPath(), forcedGroups));
+            createForcedGroupsCookieUnlessEmpty(request.getContextPath(), forcedGroups)
+                    .ifPresent(response::addCookie);
         } else {
             forcedGroups = Collections.emptyMap();
         }
@@ -61,6 +65,9 @@ public class ProctorConsumerUtils {
         return parseForceGroupsList(forceGroupsList);
     }
 
+    /**
+     * @return proctor force groups if set in request, returns first found of: parameter, header, cookie
+     */
     @Nonnull
     public static String getForceGroupsStringFromRequest(@Nonnull final HttpServletRequest request) {
 
@@ -131,19 +138,16 @@ public class ProctorConsumerUtils {
     }
 
     /**
-     * Set a cookie that will be parsed by {@link #parseForcedGroups(HttpServletRequest)}.  Cookie expires at end of browser session
-     * @param request request
-     * @param response response
+     * Unless forceGroups is empty, set a cookie that will be parsed by {@link #parseForcedGroups(HttpServletRequest)}.
+     * Cookie expires at end of browser session
+     *
      * @param forceGroups parsed force groups
-     * @deprecated use {@link ProctorConsumerUtils#createForcedGroupsCookie}, modify as needed, then add to the response
+     * @deprecated use {@link ProctorConsumerUtils#createForcedGroupsCookieUnlessEmpty}, modify as needed, then add to the response
      */
     @Deprecated
     public static void setForcedGroupsCookie(final HttpServletRequest request, final HttpServletResponse response, final Map<String, Integer> forceGroups) {
-        //  don't overwrite with empty; this would be relevant in a race condition where there is a forceGroups request simultaneous with a non-forceGroups request
-        if (forceGroups.isEmpty()) {
-            return;
-        }
-        response.addCookie(createForcedGroupsCookie(request.getContextPath(), forceGroups));
+        createForcedGroupsCookieUnlessEmpty(request.getContextPath(), forceGroups)
+                .ifPresent(response::addCookie);
     }
 
     /**
@@ -151,6 +155,20 @@ public class ProctorConsumerUtils {
      * @param contextPath request.contextPath
      * @param forceGroups parsed force groups
      */
+    @SuppressWarnings("deprecated")
+    public static Optional<Cookie> createForcedGroupsCookieUnlessEmpty(final String contextPath, final Map<String, Integer> forceGroups) {
+        //  don't overwrite other cookie with empty; this would be relevant in a race condition where
+        //  there is a forceGroups request simultaneous with a non-forceGroups request
+        if (forceGroups.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.of(createForcedGroupsCookie(contextPath, forceGroups));
+    }
+
+    /**
+     * @Deprecated use {@link ProctorConsumerUtils#createForcedGroupsCookieUnlessEmpty}
+     */
+    @Deprecated // not safe, see comment in createForcedGroupsCookieUnlessEmpty
     public static Cookie createForcedGroupsCookie(final String contextPath, final Map<String, Integer> forceGroups) {
         //  be sure to quote cookies because they have characters that are not allowed raw
         final StringBuilder sb = new StringBuilder(10 * forceGroups.size());
