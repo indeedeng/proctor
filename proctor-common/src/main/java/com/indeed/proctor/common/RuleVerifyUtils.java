@@ -1,6 +1,7 @@
 package com.indeed.proctor.common;
 
 import com.google.common.collect.Lists;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.el.lang.ExpressionBuilder;
 import org.apache.el.parser.AstIdentifier;
 import org.apache.el.parser.Node;
@@ -32,7 +33,7 @@ public class RuleVerifyUtils {
             final Set<String> absentIdentifiers
     ) throws InvalidRuleException {
         final String bareRule = removeElExpressionBraces(testRule);
-        if (!isEmptyWhitespace(bareRule)) {
+        if (!StringUtils.isBlank(bareRule)) {
             final ValueExpression valueExpression;
             try {
                 valueExpression = expressionFactory.createValueExpression(elContext, testRule, Boolean.class);

@@ -140,8 +140,10 @@ public class TestRangeSelector {
         return testName;
     }
 
+    /**
+     * appends testbuckets in a notation a bit similar to Json
+     */
     protected void printTestBuckets(@Nonnull final PrintWriter writer, @Nonnull final Map<String, String> parameters) {
-        // TODO (parker) 5/4/12 - figure out why jasx RandomChooser uses a ThreadLocal NumberFormatter
         final NumberFormat fmt = NumberFormat.getPercentInstance(Locale.US);
         fmt.setMaximumFractionDigits(2);
 

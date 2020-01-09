@@ -1,5 +1,7 @@
 package com.indeed.proctor.common;
 
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
@@ -20,10 +22,8 @@ import javax.el.FunctionMapper;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
-import java.text.NumberFormat;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -38,6 +38,9 @@ import java.util.Set;
  */
 public class Proctor {
     public static final Proctor EMPTY = createEmptyProctor();
+    private static final ObjectWriter OBJECT_WRITER = Serializers
+            .lenient()
+            .configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false).writerWithDefaultPrettyPrinter();
 
     /**
      * Factory method to do the setup and transformation of inputs
@@ -254,7 +257,6 @@ public class Proctor {
         return Collections.unmodifiableSet(matrix.getTests().keySet());
     }
 
-    @SuppressWarnings("UnusedDeclaration") // TODO Needed?
     public ConsumableTestDefinition getTestDefinition(final String name) {
         return matrix.getTests().get(name);
     }
@@ -267,7 +269,6 @@ public class Proctor {
         appendTests(sb, Predicates.alwaysTrue());
     }
 
-    @SuppressWarnings("UnusedDeclaration") // TODO needed?
     public void appendTests(final Writer sb, final TestType type) {
         appendTests(sb, new Predicate<TestChooser<?>>() {
             @Override
@@ -290,9 +291,6 @@ public class Proctor {
     }
 
     public void appendTests(final Writer sb, @Nonnull final Predicate<TestChooser<?>> shouldIncludeTest) {
-        final NumberFormat fmt = NumberFormat.getPercentInstance(Locale.US);
-        fmt.setMaximumFractionDigits(2);
-
         final PrintWriter writer = new PrintWriter(sb);
         for (final Entry<String, TestChooser<?>> entry : testChoosers.entrySet()) {
             final String testName = entry.getKey();
@@ -305,17 +303,23 @@ public class Proctor {
         }
     }
 
+    /**
+     * appends json representation of testmatrix. Does not close the writer.
+     */
     public void appendTestMatrix(final Writer writer) throws IOException {
-        ProctorUtils.serializeArtifact(writer, this.matrix);
+        OBJECT_WRITER.writeValue(writer, this.matrix);
     }
 
+    /**
+     * appends json representation of testmatrix with only given testnames. Does not close the writer.
+     */
     public void appendTestMatrixFiltered(final Writer writer, final Collection<String> testNameFilter) throws IOException {
         // Create new matrix object copied from the old one,
         // but keep only the tests with names in testNameFilter.
         final TestMatrixArtifact filtered = new TestMatrixArtifact();
         filtered.setAudit(this.matrix.getAudit());
         filtered.setTests(Maps.filterKeys(this.matrix.getTests(), Predicates.in(testNameFilter)));
-        ProctorUtils.serializeArtifact(writer, filtered);
+        OBJECT_WRITER.writeValue(writer, filtered);
     }
 
 }

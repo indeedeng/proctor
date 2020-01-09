@@ -3,6 +3,7 @@ package com.indeed.proctor.common;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -26,6 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.el.ExpressionFactoryImpl;
 import org.apache.log4j.Logger;
 
+import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.el.ELContext;
@@ -53,13 +55,17 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.joining;
 
 /**
  * Helper functions mostly to verify TestMatrix instances.
  */
 public abstract class ProctorUtils {
-    private static final ObjectMapper OBJECT_MAPPER_NON_AUTOCLOSE = Serializers.lenient().configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
+    private static final ObjectMapper OBJECT_MAPPER_NON_AUTOCLOSE = Serializers
+            .lenient()
+            .configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
+    private static final ObjectWriter OBJECT_WRITER = OBJECT_MAPPER_NON_AUTOCLOSE.writerWithDefaultPrettyPrinter();
     private static final ObjectMapper OBJECT_MAPPER = Serializers.lenient();
     private static final Logger LOGGER = Logger.getLogger(ProctorUtils.class);
     private static final SpecificationGenerator SPECIFICATION_GENERATOR = new SpecificationGenerator();
@@ -87,36 +93,57 @@ public abstract class ProctorUtils {
 
     @SuppressWarnings("UnusedDeclaration") // TODO Remove?
     public static String convertToArtifact(@Nonnull final TestMatrixVersion testMatrix) throws IOException {
-        final StringWriter sw = new StringWriter();
-        final TestMatrixArtifact artifact = convertToConsumableArtifact(testMatrix);
-        serializeArtifact(sw, artifact);
-        return sw.toString();
+        try (final StringWriter sw = new StringWriter()) {
+            final TestMatrixArtifact artifact = convertToConsumableArtifact(testMatrix);
+            serializeArtifact(sw, artifact);
+            return sw.toString();
+        }
     }
 
+    /**
+     * @deprecated Use serialization library like jackson
+     */
+    @Deprecated
     public static void serializeArtifact(final Writer writer, final TestMatrixArtifact artifact) throws IOException {
         serializeObject(writer, artifact);
     }
 
+    /**
+     * @deprecated Use serialization library like jackson
+     */
+    @Deprecated
     public static void serializeArtifact(final JsonGenerator jsonGenerator, final Proctor proctor) throws IOException {
         jsonGenerator.writeObject(proctor.getArtifact());
     }
 
+    /**
+     * @deprecated Use serialization library like jackson
+     */
+    @Deprecated
     @SuppressWarnings("UnusedDeclaration") // TODO Remove?
     public static void serializeTestDefinition(final Writer writer, final TestDefinition definition) throws IOException {
         serializeObject(writer, definition);
     }
 
+    /**
+     * @deprecated Use serialization library like jackson
+     */
+    @Deprecated
     @SuppressWarnings("UnusedDeclaration")
     public static JsonNode readJsonFromFile(final File input) throws IOException {
         return OBJECT_MAPPER.readValue(input, JsonNode.class);
     }
 
+    /**
+     * @deprecated Use serialization library like jackson
+     */
+    @Deprecated
     public static void serializeTestSpecification(final Writer writer, final TestSpecification specification) throws IOException {
         serializeObject(writer, specification);
     }
 
     private static <T> void serializeObject(final Writer writer, final T artifact) throws IOException {
-        OBJECT_MAPPER_NON_AUTOCLOSE.writerWithDefaultPrettyPrinter().writeValue(writer, artifact);
+        OBJECT_WRITER.writeValue(writer, artifact);
     }
 
     @Nonnull
@@ -156,7 +183,7 @@ public abstract class ProctorUtils {
             ruleComponents.add("proctor:contains(__COUNTRIES, country)");
         }
         final String rawRule = removeElExpressionBraces(td.getRule());
-        if (!isEmptyWhitespace(rawRule)) {
+        if (!StringUtils.isBlank(rawRule)) {
             ruleComponents.add(rawRule);
         }
 
@@ -170,7 +197,7 @@ public abstract class ProctorUtils {
         final List<Allocation> allocations = td.getAllocations();
         for (final Allocation alloc : allocations) {
             final String rawAllocRule = removeElExpressionBraces(alloc.getRule());
-            if (isEmptyWhitespace(rawAllocRule)) {
+            if (StringUtils.isBlank(rawAllocRule)) {
                 alloc.setRule(null);
             } else {
                 // ensure that all rules in the generated test-matrix are wrapped in "${" ... "}"
@@ -770,9 +797,12 @@ public abstract class ProctorUtils {
             @Nonnull final TestSpecification testSpecification
     ) {
         final String missingTestSoleBucketName = "inactive";
-        final String missingTestSoleBucketDescription = "inactive";
-        final Allocation allocation = new Allocation();
-        allocation.setRanges(ImmutableList.of(new Range(testSpecification.getFallbackValue(), 1.0)));
+        final String missingTestSoleBucketDescription = "fallback because missing in matrix";
+        final int fallbackValue = testSpecification.getFallbackValue();
+        final Allocation allocation = new Allocation(
+                null,
+                Collections.singletonList(new Range(fallbackValue, 1.0)));
+
 
         return new ConsumableTestDefinition(
                 "default",
@@ -781,12 +811,15 @@ public abstract class ProctorUtils {
                 testName,
                 ImmutableList.of(new TestBucket(
                         missingTestSoleBucketName,
-                        testSpecification.getFallbackValue(),
+                        fallbackValue,
                         missingTestSoleBucketDescription)),
                 // Force a nonnull allocation just in case something somewhere assumes 1.0 total allocation
                 Collections.singletonList(allocation),
+                // non-silent, though typically fallbackValue -1 has same effect
+                false,
                 Collections.emptyMap(),
-                testName);
+                testName,
+                emptyList());
     }
 
     public static ProvidedContext convertContextToTestableMap(final Map<String, String> providedContext) {
@@ -944,7 +977,7 @@ public abstract class ProctorUtils {
             final String rule = allocation.getRule();
             final boolean lastAllocation = i == (allocations.size() - 1);
             final String bareRule = removeElExpressionBraces(rule);
-            if (!lastAllocation && isEmptyWhitespace(bareRule)) {
+            if (!lastAllocation && StringUtils.isBlank(bareRule)) {
                 throw new IncompatibleTestMatrixException("Allocation[" + i + "] for test " + testName + " from " + matrixSource + " has empty rule: " + allocation.getRule());
             }
 
@@ -990,7 +1023,9 @@ public abstract class ProctorUtils {
      *
      * @param s a string
      * @return true if the string is null, empty or only contains whitespace characters
+     * @deprecated Use StringUtils.isBlank
      */
+    @Deprecated
     static boolean isEmptyWhitespace(@Nullable final String s) {
         return StringUtils.isBlank(s);
     }
@@ -1014,9 +1049,9 @@ public abstract class ProctorUtils {
      * @param rule a given rule String.
      * @return the given rule with the most outside braces stripped
      */
-    @Nullable
+    @CheckForNull
     static String removeElExpressionBraces(@Nullable final String rule) {
-        if (isEmptyWhitespace(rule)) {
+        if (StringUtils.isBlank(rule)) {
             return null;
         }
         int startchar = 0; // inclusive
