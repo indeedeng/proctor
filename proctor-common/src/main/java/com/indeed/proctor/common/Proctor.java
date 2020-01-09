@@ -166,7 +166,7 @@ public class Proctor {
             @Nonnull final Identifiers identifiers,
             @Nonnull final Map<String, Object> inputContext,
             @Nonnull final Map<String, Integer> forceGroups) {
-        return determineTestGroups(identifiers, inputContext, forceGroups, Collections.<String>emptyList());
+        return determineTestGroups(identifiers, inputContext, forceGroups, Collections.emptyList());
     }
 
     /**
@@ -251,7 +251,7 @@ public class Proctor {
     }
 
     public Set<String> getTestNames() {
-        return matrix.getTests().keySet();
+        return Collections.unmodifiableSet(matrix.getTests().keySet());
     }
 
     @SuppressWarnings("UnusedDeclaration") // TODO Needed?
@@ -263,15 +263,15 @@ public class Proctor {
         return loadResult;
     }
 
-    public void appendAllTests(Writer sb) {
-        appendTests(sb, Predicates.<TestChooser<?>>alwaysTrue());
+    public void appendAllTests(final Writer sb) {
+        appendTests(sb, Predicates.alwaysTrue());
     }
 
     @SuppressWarnings("UnusedDeclaration") // TODO needed?
-    public void appendTests(Writer sb, final TestType type) {
+    public void appendTests(final Writer sb, final TestType type) {
         appendTests(sb, new Predicate<TestChooser<?>>() {
             @Override
-            public boolean apply(TestChooser<?> input) {
+            public boolean apply(final TestChooser<?> input) {
                 assert null != input;
                 return type == input.getTestDefinition().getTestType();
             }
@@ -282,14 +282,14 @@ public class Proctor {
     {
         final Function<TestChooser<?>, String> getTestName = new Function<TestChooser<?>, String>() {
             @Override
-            public String apply(TestChooser<?> input) {
+            public String apply(final TestChooser<?> input) {
                 return input.getTestName();
             }
         };
         appendTests(sb, Predicates.compose(Predicates.in(testNameFilter), getTestName));
     }
 
-    public void appendTests(Writer sb, @Nonnull Predicate<TestChooser<?>> shouldIncludeTest) {
+    public void appendTests(final Writer sb, @Nonnull final Predicate<TestChooser<?>> shouldIncludeTest) {
         final NumberFormat fmt = NumberFormat.getPercentInstance(Locale.US);
         fmt.setMaximumFractionDigits(2);
 
