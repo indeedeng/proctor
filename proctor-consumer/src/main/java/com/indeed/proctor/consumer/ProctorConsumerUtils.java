@@ -155,7 +155,6 @@ public class ProctorConsumerUtils {
      * @param contextPath request.contextPath
      * @param forceGroups parsed force groups
      */
-    @SuppressWarnings("deprecated")
     public static Optional<Cookie> createForcedGroupsCookieUnlessEmpty(final String contextPath, final Map<String, Integer> forceGroups) {
         //  don't overwrite other cookie with empty; this would be relevant in a race condition where
         //  there is a forceGroups request simultaneous with a non-forceGroups request
@@ -170,6 +169,11 @@ public class ProctorConsumerUtils {
      */
     @Deprecated // not safe, see comment in createForcedGroupsCookieUnlessEmpty
     public static Cookie createForcedGroupsCookie(final String contextPath, final Map<String, Integer> forceGroups) {
+        return doCreateForcedGroupsCookie(contextPath, forceGroups);
+    }
+
+    // TODO: can be merged into createForcedGroupsCookieUnlessEmpty once createForcedGroupsCookie() was deleted
+    private static Cookie doCreateForcedGroupsCookie(final String contextPath, final Map<String, Integer> forceGroups) {
         //  be sure to quote cookies because they have characters that are not allowed raw
         final StringBuilder sb = new StringBuilder(10 * forceGroups.size());
         sb.append('"');
