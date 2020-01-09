@@ -251,7 +251,7 @@ public class Proctor {
     }
 
     public Set<String> getTestNames() {
-        return matrix.getTests().keySet();
+        return Collections.unmodifiableSet(matrix.getTests().keySet());
     }
 
     @SuppressWarnings("UnusedDeclaration") // TODO Needed?
