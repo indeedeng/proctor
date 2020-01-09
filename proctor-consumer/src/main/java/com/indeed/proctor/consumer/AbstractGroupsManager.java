@@ -2,19 +2,15 @@ package com.indeed.proctor.consumer;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Supplier;
-import com.google.common.collect.Maps;
 import com.indeed.proctor.common.Identifiers;
 import com.indeed.proctor.common.Proctor;
 import com.indeed.proctor.common.ProctorResult;
-import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.Audit;
-import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.common.model.TestType;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.Collections;
 import java.util.Map;
 
 import static java.util.Collections.emptyMap;
@@ -87,7 +83,8 @@ public abstract class AbstractGroupsManager implements ProctorContextDescriptor 
         final Map<String, Integer> forcedGroups;
         if (allowForcedGroups) {
             forcedGroups = ProctorConsumerUtils.parseForcedGroups(request);
-            response.addCookie(ProctorConsumerUtils.createForcedGroupsCookie(request.getContextPath(), forcedGroups));
+            ProctorConsumerUtils.createForcedGroupsCookieUnlessEmpty(request.getContextPath(), forcedGroups)
+                    .ifPresent(response::addCookie);
         } else {
             forcedGroups = emptyMap();
         }
