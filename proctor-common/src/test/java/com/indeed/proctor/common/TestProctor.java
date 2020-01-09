@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -226,6 +227,26 @@ public class TestProctor {
         final List<String> lines = appendTestsNameFiltered_process(Collections.<String>emptyList());
 
         assertEquals(0, lines.size());
+    }
+    
+    @Test
+    public void testGetProctorTestNames() throws IOException {
+        final TestMatrixArtifact matrix = createThreeFakeTests();
+        final Proctor proctor = Proctor.construct(matrix, null, RuleEvaluator.FUNCTION_MAPPER);
+        final Writer writer = new StringWriter();
+        proctor.appendTestMatrix(writer);
+
+        final JsonNode root = new ObjectMapper().readTree(writer.toString());
+        assertTrue(root.has("tests"));
+        final JsonNode tests = root.get("tests");
+        assertEquals(3, tests.size());
+
+        Set<String> testNames = proctor.getTestNames();
+        assertTrue(testNames.size() == 3);
+        assertTrue(testNames.contains("one"));
+        assertTrue(testNames.contains("two"));
+        assertTrue(testNames.contains("three"));
+        assertFalse(testNames.contains("four"));
     }
 
     // Helper function to get the output from appendTestsNameFiltered

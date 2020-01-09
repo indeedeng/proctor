@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  * The sole entry point for client applications determining the test buckets for a particular client.
@@ -247,6 +248,10 @@ public class Proctor {
 
     TestMatrixArtifact getArtifact() {
         return matrix;
+    }
+
+    public Set<String> getTestNames() {
+        return matrix.getTests().keySet();
     }
 
     @SuppressWarnings("UnusedDeclaration") // TODO Needed?
