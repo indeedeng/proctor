@@ -6,54 +6,64 @@ import com.indeed.proctor.common.model.TestType;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import static com.indeed.proctor.webapp.util.IdentifierValidationUtil.isValidBucketName;
-import static com.indeed.proctor.webapp.util.IdentifierValidationUtil.isValidMetaTag;
 import static com.indeed.proctor.webapp.util.IdentifierValidationUtil.validateMetaTags;
 import static com.indeed.proctor.webapp.util.IdentifierValidationUtil.validateTestName;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 public class TestIdentifierValidationUtil {
 
     @Test
     public void testValidateTestName() {
-        final String shortName = StringUtils.repeat("a", 100);
-        final String longName = StringUtils.repeat("a", 101);
+        final String maxLengthName = StringUtils.repeat("a", 100);
+        final String tooLongName = StringUtils.repeat("a", 101);
 
         for (final String input : new String[]{"", "0", "_", "__", ".", "_0", "0_", "a_0", "0_a", "a#b"}) {
             assertThatThrownBy(() -> validateTestName(input))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("Test Name must be alpha-numeric underscore and not start/end with a number");
         }
-        assertThatThrownBy(() -> validateTestName(longName))
+        assertThatThrownBy(() -> validateTestName(tooLongName))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Test Name length can't be longer than 100");
 
         // Nothing happens for valid test names
-        for (final String input : new String[]{"a", "A", "a_a", "a1a", "_0_", "_0___", "_a_b_", "_a", "a_", shortName}) {
-            validateTestName(input);
-        }
+        assertThat(Arrays.asList(
+                "a", "A",
+                "a_a", "a1a",
+                "_0_", "_0___",
+                "_a_b_", "_a", "a_",
+                maxLengthName
+        )).allSatisfy(IdentifierValidationUtil::validateTestName);
     }
 
     @Test
     public void testIsValidMetaTag() {
-        final String shortName = StringUtils.repeat("a", 100);
-        final String longName = StringUtils.repeat("a", 101);
+        final String maxLengthName = StringUtils.repeat("a", 100);
+        final String tooLongName = StringUtils.repeat("a", 101);
 
-        final List<String> validNames = ImmutableList.of("a", "A", "a_a", "a_b", "a1a", "_0_", "_0___", "_a_b_",
-                "_a", "a_", "_0", "0", "0_", "a_0", "0_a", shortName);
+        assertThat(Arrays.asList(
+                "a", "A",
+                "a_a", "a_b", "0a", "a1a", "a.a", "a:a",
+                "_0_", "_0___",
+                "_a_b_", "_a", "a_",
+                "_0", "0", "0_",
+                "a_0", "0_a",
+                maxLengthName
+        )).allMatch(IdentifierValidationUtil::isValidMetaTag);
 
-        for (final String input : validNames) {
-            assertTrue(isValidMetaTag(input));
-        }
-
-        for (final String input : new String[]{"", "_", "__", ".", "a#b", longName}) {
-            assertFalse(isValidMetaTag(input));
-        }
+        assertThat(Arrays.asList(
+                "", "_", "__",
+                ",", ";",
+                ".", ":",
+                "a.", "a:", ".a", ":a",
+                "a#b", tooLongName
+        )).as("should be invalid").allMatch(metaTag -> !IdentifierValidationUtil.isValidMetaTag(metaTag));
     }
 
     @Test
@@ -92,9 +102,10 @@ public class TestIdentifierValidationUtil {
 
     @Test
     public void testIsValidBucketName() {
-        assertFalse(isValidBucketName(""));
-        assertTrue(isValidBucketName("valid_bucket_Name"));
-        assertTrue(isValidBucketName("valid_bucket_Name0"));
-        assertFalse(isValidBucketName("0invalid_bucket_Name"));
+        assertThat(Arrays.asList("", "0invalid_bucket_Name"))
+                .allMatch(name -> !isValidBucketName(name));
+        assertThat(Arrays.asList("valid_bucket_Name", "valid_bucket_Name0"))
+                .allMatch(name -> isValidBucketName(name));
+
     }
 }

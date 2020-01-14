@@ -14,7 +14,7 @@ public class IdentifierValidationUtil {
      * The goal is to keep testnames parseable when concatenated with (positive and negative) numbers.
      */
     private static final Pattern VALID_TEST_NAME_PATTERN = Pattern.compile("^([a-z]([a-z0-9_]*[a-z_])?|_+([a-z]|[a-z0-9][a-z0-9_]*[a-z_]))$", Pattern.CASE_INSENSITIVE);
-    private static final Pattern VALID_META_TAG_PATTERN = Pattern.compile("^_*[a-z0-9][a-z0-9_]*$", Pattern.CASE_INSENSITIVE);
+    private static final Pattern VALID_META_TAG_PATTERN = Pattern.compile("^_*[a-z0-9]([.:]?[a-z0-9_])*$", Pattern.CASE_INSENSITIVE);
     private static final Pattern VALID_BUCKET_NAME_PATTERN = Pattern.compile("^[a-z_][a-z0-9_]*$", Pattern.CASE_INSENSITIVE);
     private static final int TEST_NAME_LENGTH_LIMIT = 100;
     private static final int META_TAG_LENGTH_LIMIT = 100;
