@@ -51,8 +51,21 @@ public abstract class AbstractGroups {
     /**
      * Allows to use a different bucket value than the determined one.
      * Default Behavior is to return determinedBucket.getValue().
+     * The most common use-case would be to return a negative (inactive) value based on external conditions.
      *
      * Overriding this will also changes the output of logging methods like toLoggingString().
+     *
+     * Note: for experiments, this method should not modify the relative ratios of active test buckets to each other,
+     *       else experiment analysis may produce wrong results. E.g. if raw ratios are
+     *       - 10%:inactive
+     *       - 60%:group0
+     *       - 30%:group1
+     *       then group0 and group1 have ratio 2:1, and so it
+     *       would be valid to change this to 40/40/20, but invalid to change it to 40/30/30.
+     *
+     * Note: Because overriding this is local to each deployed application, using this for tests shared
+     *       with other applications is likely to produce wrong experiment analysis results, as other
+     *       applications would apply (and log) raw determined buckets.
      *
      * Note: This method is the only one to change when developers want to customize group ownership,
      *       such as for implementing hold-out groups. Customizers are encouraged to
