@@ -86,7 +86,7 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
         if (providedContextFiles.size() != 1) {
             throw new CodeGenException(
                     "Incorrect amount of " + PROVIDED_CONTEXT_FILENAME + " in specified input folder."
-                            + " expected 1 but" + +providedContextFiles.size() + ": " + providedContextFiles
+                            + " expected 1 but " + providedContextFiles.size() + ": " + providedContextFiles
             );
         }
         if (dynamicFiltersFiles.size() > 1) {
