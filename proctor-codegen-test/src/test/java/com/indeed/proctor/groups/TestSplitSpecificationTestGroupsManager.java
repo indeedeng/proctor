@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableMap;
 import com.indeed.proctor.common.Identifiers;
 import com.indeed.proctor.common.ProctorResult;
 import com.indeed.proctor.common.model.TestType;
-import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -15,8 +14,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+/**
+ * Tests a GroupsManager generated for a specification split over 4 files,
+ */
 public class TestSplitSpecificationTestGroupsManager {
-    private static final Logger LOGGER = Logger.getLogger(TestSplitSpecificationTestGroupsManager.class);
     private static final String SPECIFICATION_RESOURCE = "SplitSpecificationTestGroups.json";
     private static final String SPECIFICATION_MATRIX = "splitspecificationtest.proctor-matrix.json";
 

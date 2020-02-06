@@ -29,12 +29,14 @@ public class UtilMethods {
             // just read from the resource .json file at the moment.ProctorUtils.java
 
             final Reader matrixResource = new BufferedReader(new InputStreamReader(TestUnitTestGroupsManager.class.getResourceAsStream(matrixfilename)));
-            final StringWriter matrixString = new StringWriter();
-            CharStreams.copy(matrixResource, matrixString);
+            final String matrixString;
+            try (StringWriter matrixStringWriter = new StringWriter()) {
+                CharStreams.copy(matrixResource, matrixStringWriter);
+                matrixString = matrixStringWriter.toString();
+            }
 
-            final ProctorSpecification specification;
-            specification = getProctorSpecification(specificationFilename);
-            final StringProctorLoader loader = new StringProctorLoader(specification, matrixfilename, matrixString.toString());
+            final ProctorSpecification specification = getProctorSpecification(specificationFilename);
+            final StringProctorLoader loader = new StringProctorLoader(specification, matrixfilename, matrixString);
 
             assertTrue("StringProctorLoader should load", loader.load());
             return loader.get();
@@ -45,8 +47,8 @@ public class UtilMethods {
     }
 
     static ProctorSpecification getProctorSpecification(final String specificationFilename) throws IOException {
-        try (InputStream specicationStream = TestUnitTestGroupsManager.class.getResourceAsStream(specificationFilename)) {
-            return ProctorUtils.readSpecification(specicationStream);
+        try (InputStream specificationStream = TestUnitTestGroupsManager.class.getResourceAsStream(specificationFilename)) {
+            return ProctorUtils.readSpecification(specificationStream);
         }
     }
 

@@ -30,7 +30,7 @@ public class TestBucket {
     private Payload payload;
 
     /**
-     * @deprecated Use {@link TestBucket(String, int, String, Payload)} or
+     * @deprecated Use {@link TestBucket#TestBucket(String, int, String, Payload)} or
      * {@link TestBucket#builder()} to construct an instance.
      */
     @Deprecated

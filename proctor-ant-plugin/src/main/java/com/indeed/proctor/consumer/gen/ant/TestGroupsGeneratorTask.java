@@ -123,7 +123,7 @@ public abstract class TestGroupsGeneratorTask extends Task {
             throw new CodeGenException("`specificationOutput` is not given");
         }
 
-        //make directory if it doesn't exist
+        // make directory if it doesn't exist
         new File(specificationOutput.substring(0, specificationOutput.lastIndexOf(File.separator))).mkdirs();
         final File specificationOutputFile = new File(specificationOutput);
         return TestGroupsGenerator.makeTotalSpecification(
@@ -172,7 +172,7 @@ public abstract class TestGroupsGeneratorTask extends Task {
                 try {
                     specification = mergePartialSpecifications(files);
                 } catch (final CodeGenException e) {
-                    throw new BuildException("Unable to generate total specification: " + e.getMessage(), e);
+                    throw new BuildException("Unable to generate total specification for inputs " + inputs + " : " + e.getMessage(), e);
                 }
             }
 

@@ -1,22 +1,29 @@
 package com.indeed.proctor.consumer;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.indeed.proctor.common.ProctorResult;
-import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.Payload;
-import com.indeed.proctor.common.model.Range;
 import com.indeed.proctor.common.model.TestBucket;
+import com.indeed.proctor.consumer.ProctorGroupStubber.ProctorGroupsForTest;
+import com.indeed.proctor.consumer.ProctorGroupStubber.ProctorGroupsWithHoldout;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.annotation.Nonnull;
 import java.util.Arrays;
-import java.util.Comparator;
-import java.util.Optional;
 
+import static com.indeed.proctor.consumer.ProctorGroupStubber.ACTIVE_TESTNAME;
+import static com.indeed.proctor.consumer.ProctorGroupStubber.CONTROL_TESTNAME;
+import static com.indeed.proctor.consumer.ProctorGroupStubber.FALLBACK_BUCKET;
+import static com.indeed.proctor.consumer.ProctorGroupStubber.FALLBACK_NOPAYLOAD_BUCKET;
+import static com.indeed.proctor.consumer.ProctorGroupStubber.GROUP_WITH_FALLBACK_TESTNAME;
+import static com.indeed.proctor.consumer.ProctorGroupStubber.HOLDOUT_TESTNAME;
+import static com.indeed.proctor.consumer.ProctorGroupStubber.INACTIVE_TESTNAME;
+import static com.indeed.proctor.consumer.ProctorGroupStubber.NO_BUCKETS_WITH_FALLBACK_TESTNAME;
+import static com.indeed.proctor.consumer.ProctorGroupStubber.NO_DEFINITION_TESTNAME;
+import static com.indeed.proctor.consumer.ProctorGroupStubber.ProctorGroupsWithForced;
+import static com.indeed.proctor.consumer.ProctorGroupStubber.buildProctorResult;
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
@@ -24,140 +31,19 @@ import static org.junit.Assert.assertTrue;
 
 public class TestAbstractGroups {
 
-    private static final String HOLDOUT_TESTNAME = "holdout_tst";
-    private static final String CONTROL_TESTNAME = "bgtst";
-    private static final String ACTIVE_TESTNAME = "abtst";
-    private static final String GROUP_WITH_FALLBACK_TESTNAME = "groupwithfallbacktst";
-    private static final String INACTIVE_TESTNAME = "btntst";
-
-    // proctor-test to test situation where bucket and allocation is available but definition is not.
-    // This is expected to be happen only in artificial case such as in testing.
-    private static final String NO_DEFINITION_TESTNAME = "no_definition_tst";
-
-    private static final String NO_BUCKETS_WITH_FALLBACK_TESTNAME = "nobucketfallbacktst";
-    private static final Bucket FALLBACK_BUCKET = createModelBucket(42);
-    private static final Bucket FALLBACK_NOPAYLOAD_BUCKET = createModelBucket(66);
-
-    static class TestGroups extends AbstractGroups {
-        TestGroups(final ProctorResult proctorResult) {
-            super(proctorResult);
-        }
-    }
-
-    /**
-     * This is one simple example of a holdout-groupsWithCustom implementation that uses a hardcoded hold-out experiment,
-     * applies hold-out to all other experiments, uses the bucket with the smallest value in hold-out case,
-     * and uses the fallback value for most error cases.
-     *
-     * Better implementations might use meta-tags or other properties to identify hold-out experiment, and
-     * also to identify experiments subject to hold-out groupsWithCustom, and have better strategies for selecting
-     * the hold-out bucket to use.
-     */
-    static class TestGroupsWithHoldout extends TestGroups {
-        TestGroupsWithHoldout(final ProctorResult proctorResult) {
-            super(proctorResult);
-        }
-
-        @Override
-        protected int overrideDeterminedBucketValue(final String testName, @Nonnull final TestBucket determinedBucket) {
-            // for other experiments, if hold-out experiment is active, use bucket with value -1 if available.
-            if (!HOLDOUT_TESTNAME.equals(testName) && isBucketActive(HOLDOUT_TESTNAME, 2, -1)) {
-                // return bucket with smallest value
-                return Optional.ofNullable(getProctorResult().getTestDefinitions().get(testName))
-                        .map(ConsumableTestDefinition::getBuckets)
-                        .flatMap(buckets -> buckets.stream().min(Comparator.comparing(TestBucket::getValue)))
-                        .map(TestBucket::getValue)
-                        .orElse(determinedBucket.getValue());
-            }
-            return determinedBucket.getValue();
-        }
-    }
-
-    /**
-     * This is one simple example modifying a testbucket for whatever purpose.
-     * Some purposes could be to implement sub-experiments, or have special environments with forced groups.
-     */
-    static class TestGroupsWithForced extends TestGroups {
-        TestGroupsWithForced(final ProctorResult proctorResult) {
-            super(proctorResult);
-        }
-
-        @Override
-        protected int overrideDeterminedBucketValue(final String testName, @Nonnull final TestBucket determinedBucket) {
-            // for other experiments, if hold-out experiment is active, use bucket with value -1 if available.
-            if (ACTIVE_TESTNAME.equals(testName)) {
-                // return bucket with control value
-                return Optional.ofNullable(getProctorResult().getTestDefinitions().get(testName))
-                        .map(ConsumableTestDefinition::getBuckets)
-                        // use control bucket instead of active
-                        .flatMap(buckets -> buckets.stream().filter(b -> b.getValue() == 0).findFirst())
-                        .map(TestBucket::getValue)
-                        .orElse(determinedBucket.getValue());
-            }
-            return determinedBucket.getValue();
-        }
-    }
-
     private ProctorResult proctorResult;
-    private TestGroups emptyGroup;
-    private TestGroups groups;
-    private TestGroupsWithForced groupsWithForced;
-    private TestGroupsWithHoldout groupsWithHoldOut;
+    private ProctorGroupsForTest emptyGroup;
+    private ProctorGroupsForTest groups;
+    private ProctorGroupsWithForced groupsWithForced;
+    private ProctorGroupsWithHoldout groupsWithHoldOut;
 
     @Before
-    public void setUp() throws Exception {
-        final TestBucket inactiveBucket = new TestBucket("inactive", -1, "inactive");
-        final TestBucket controlBucketWithPayload = new TestBucket("control", 0, "control", new Payload("controlPayload"));
-        final TestBucket activeBucketWithPayload = new TestBucket("active", 1, "active", new Payload("activePayload"));
-        final TestBucket activeBucket = new TestBucket("active", 2, "active");
-        proctorResult = new ProctorResult(
-                "0",
-                // buckets
-                ImmutableMap.<String, TestBucket>builder()
-                        .put(HOLDOUT_TESTNAME, activeBucket)
-                        .put(CONTROL_TESTNAME, controlBucketWithPayload)
-                        .put(ACTIVE_TESTNAME, activeBucketWithPayload)
-                        .put(GROUP_WITH_FALLBACK_TESTNAME, activeBucket)
-                        .put(INACTIVE_TESTNAME, inactiveBucket)
-                        .put(NO_DEFINITION_TESTNAME, activeBucket)
-                        .build(),
-                // allocations
-                ImmutableMap.<String, Allocation>builder()
-                        .put(HOLDOUT_TESTNAME, new Allocation(null, Arrays.asList(new Range(activeBucket.getValue(), 1.0)), "#A1"))
-                        .put(CONTROL_TESTNAME, new Allocation(null, Arrays.asList(new Range(controlBucketWithPayload.getValue(), 1.0)), "#A1"))
-                        .put(ACTIVE_TESTNAME, new Allocation(null, Arrays.asList(new Range(activeBucketWithPayload.getValue(), 1.0)), "#B2"))
-                        .put(GROUP_WITH_FALLBACK_TESTNAME, new Allocation(null, Arrays.asList(new Range(activeBucket.getValue(), 1.0)), "#B2"))
-                        .put(INACTIVE_TESTNAME, new Allocation(null, Arrays.asList(new Range(inactiveBucket.getValue(), 1.0)), "#C3"))
-                        .put(NO_DEFINITION_TESTNAME, new Allocation(null, Arrays.asList(new Range(activeBucket.getValue(), 1.0)), "#A5"))
-                        .build(),
-                // definitions
-                ImmutableMap.<String, ConsumableTestDefinition>builder()
-                        .put(HOLDOUT_TESTNAME, stubDefinitionForBuckets(inactiveBucket, activeBucket))
-                        .put(CONTROL_TESTNAME, stubDefinitionForBuckets(inactiveBucket, controlBucketWithPayload, activeBucketWithPayload))
-                        .put(ACTIVE_TESTNAME, stubDefinitionForBuckets(inactiveBucket, controlBucketWithPayload, activeBucketWithPayload))
-                        .put(INACTIVE_TESTNAME, stubDefinitionForBuckets(inactiveBucket, activeBucket))
-                        .put(GROUP_WITH_FALLBACK_TESTNAME, stubDefinitionForBuckets(
-                                new TestBucket(
-                                        "fallbackBucket",
-                                        FALLBACK_BUCKET.getValue(),
-                                        "fallbackDesc",
-                                        new Payload("fallback")),
-                                inactiveBucket, activeBucket))
-                        // has no buckets in result, but in definition
-                        .put(NO_BUCKETS_WITH_FALLBACK_TESTNAME, stubDefinitionForBuckets(
-                                new TestBucket(
-                                        "fallbackBucket",
-                                        FALLBACK_BUCKET.getValue(),
-                                        "fallbackDesc",
-                                        new Payload("fallback")),
-                                inactiveBucket, activeBucket))
-                        .build()
-        );
-
-        emptyGroup = new TestGroups(new ProctorResult("0", emptyMap(), emptyMap(), emptyMap()));
-        groups = new TestGroups(proctorResult);
-        groupsWithForced = new TestGroupsWithForced(proctorResult);
-        groupsWithHoldOut = new TestGroupsWithHoldout(proctorResult);
+    public void setUp() {
+        proctorResult = buildProctorResult();
+        emptyGroup = new ProctorGroupsForTest(new ProctorResult("0", emptyMap(), emptyMap(), emptyMap()));
+        groups = new ProctorGroupsForTest(proctorResult);
+        groupsWithForced = new ProctorGroupsWithForced(proctorResult);
+        groupsWithHoldOut = new ProctorGroupsWithHoldout(proctorResult);
     }
 
     private ConsumableTestDefinition stubDefinitionForBuckets(final TestBucket... buckets) {
@@ -270,7 +156,7 @@ public class TestAbstractGroups {
 
     @Test
     public void testToLoggingString() {
-        assertThat(new TestGroups(new ProctorResult("0", emptyMap(), emptyMap(), emptyMap())).toLoggingString()).isEmpty();
+        assertThat(new ProctorGroupsForTest(new ProctorResult("0", emptyMap(), emptyMap(), emptyMap())).toLoggingString()).isEmpty();
         assertThat(groups.toLoggingString()).isEqualTo("abtst1,bgtst0,groupwithfallbacktst2,holdout_tst2,no_definition_tst2,#B2:abtst1,#A1:bgtst0,#B2:groupwithfallbacktst2,#A1:holdout_tst2,#A5:no_definition_tst2");
         assertThat(groupsWithForced.toLoggingString()).isEqualTo("abtst0,bgtst0,groupwithfallbacktst2,holdout_tst2,no_definition_tst2,#B2:abtst0,#A1:bgtst0,#B2:groupwithfallbacktst2,#A1:holdout_tst2,#A5:no_definition_tst2");
         assertThat(groupsWithHoldOut.toLoggingString()).isEqualTo("holdout_tst2,no_definition_tst2,#A1:holdout_tst2,#A5:no_definition_tst2");

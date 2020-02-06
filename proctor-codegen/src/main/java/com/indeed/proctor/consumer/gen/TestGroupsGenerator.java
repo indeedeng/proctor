@@ -9,6 +9,8 @@ import com.indeed.proctor.common.ProctorSpecification;
 import com.indeed.proctor.common.Serializers;
 import com.indeed.proctor.common.TestSpecification;
 import com.indeed.proctor.common.dynamic.DynamicFilters;
+import com.indeed.proctor.common.model.NameObfuscator;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 
 import java.io.File;
@@ -36,6 +38,7 @@ import java.util.TreeSet;
  */
 public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
     private static final ObjectMapper OBJECT_MAPPER = Serializers.lenient();
+    private static final NameObfuscator TEST_NAME_OBFUSCATOR = new NameObfuscator();
 
     public static final String PROVIDED_CONTEXT_FILENAME = "providedcontext.json";
     public static final String DYNAMIC_FILTERS_FILENAME = "dynamicfilters.json";
@@ -86,7 +89,7 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
         if (providedContextFiles.size() != 1) {
             throw new CodeGenException(
                     "Incorrect amount of " + PROVIDED_CONTEXT_FILENAME + " in specified input folder."
-                            + " expected 1 but" + +providedContextFiles.size() + ": " + providedContextFiles
+                            + " expected 1 but " + providedContextFiles.size() + ": " + providedContextFiles
             );
         }
         if (dynamicFiltersFiles.size() > 1) {
@@ -97,8 +100,8 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
         }
 
         final Map<String, TestSpecification> testSpec = new LinkedHashMap<>();
-        Map<String, String> providedContext = new LinkedHashMap<>();
-        DynamicFilters dynamicFilters = new DynamicFilters();
+        Map<String, String> providedContext = null;
+        DynamicFilters dynamicFilters = null;
         for (final File file : inputFiles) {
             final String fileName = file.getName();
             if (fileName.equals(PROVIDED_CONTEXT_FILENAME)) {
@@ -127,10 +130,11 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
                 testSpec.put(specName, spec);
             }
         }
-        final ProctorSpecification proctorSpecification = new ProctorSpecification();
-        proctorSpecification.setTests(testSpec);
-        proctorSpecification.setProvidedContext(providedContext);
-        proctorSpecification.setDynamicFilters(dynamicFilters);
+        final ProctorSpecification proctorSpecification = new ProctorSpecification(
+                ObjectUtils.defaultIfNull(providedContext, new LinkedHashMap<>()),
+                testSpec,
+                ObjectUtils.defaultIfNull(dynamicFilters, new DynamicFilters())
+        );
 
         validateProctorSpecification(proctorSpecification);
 
@@ -185,6 +189,7 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
         final Map<String, TestSpecification> tests = spec.getTests();
 
         final List<Object> testDefs = Lists.newArrayListWithCapacity(tests.size());
+        final Map<String, Object> testDefsMap = new HashMap<>(tests.size());
 
         // Sort buckets and test names, to have consistent iterator
         final SortedSet<String> sortedTestNames = new TreeSet<>(tests.keySet());
@@ -279,6 +284,8 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
             testDef.put("nestedPayloadsList", nestedPayloadsList);
 
             testDefs.add(testDef);
+            final String hashedProctorName = TEST_NAME_OBFUSCATOR.obfuscateTestName(testName);
+            testDefsMap.put(hashedProctorName, testDef);
         }
 
         rootMap.put("contextArguments", spec.getProvidedContext());
@@ -286,6 +293,7 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
         rootMap.put("packageName", packageName);
         rootMap.put("testEnumName", "Test");
         rootMap.put("testDefs", testDefs);
+        rootMap.put("testDefsMap", testDefsMap);
 
         return rootMap;
     }
