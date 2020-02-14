@@ -68,8 +68,8 @@ public class RuleEvaluator {
         final CompositeELResolver elResolver = new CompositeELResolver();
         elResolver.add(new ArrayELResolver());
         elResolver.add(new ListELResolver());
-        elResolver.add(new BeanELResolver());
         elResolver.add(new MapELResolver());
+        elResolver.add(new BeanELResolver()); // this must be last, because it throws Exception
         return elResolver;
     }
 
