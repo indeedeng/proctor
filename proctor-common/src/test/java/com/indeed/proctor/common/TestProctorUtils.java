@@ -400,7 +400,6 @@ public class TestProctorUtils {
                     "testProvidedContextConversion",
                     "test Provided Context Conversion String",
                     testDef,
-                    RuleEvaluator.FUNCTION_MAPPER,
                     providedContext
             );
             //checking to make sure it can evaluate with converted provided context
@@ -415,7 +414,6 @@ public class TestProctorUtils {
                     "testProvidedContextConversion",
                     "test Provided Context Conversion Integer",
                     testDef,
-                    RuleEvaluator.FUNCTION_MAPPER,
                     providedContext
             );
             //checking to make sure it can evaluate with converted provided context
@@ -430,7 +428,6 @@ public class TestProctorUtils {
                     "testProvidedContextConversion",
                     "test Provided Context Conversion Char",
                     testDef,
-                    RuleEvaluator.FUNCTION_MAPPER,
                     providedContext
             );
             //checking to make sure it can evaluate with converted provided context
@@ -445,7 +442,6 @@ public class TestProctorUtils {
                     "testProvidedContextConversion",
                     "test Provided Context Conversion Boolean",
                     testDef,
-                    RuleEvaluator.FUNCTION_MAPPER,
                     providedContext
             );
             //checking to make sure it can evaluate with converted provided context
@@ -460,7 +456,6 @@ public class TestProctorUtils {
                     "testProvidedContextConversion",
                     "test Provided Context Conversion Class",
                     testDef,
-                    RuleEvaluator.FUNCTION_MAPPER,
                     providedContext
             );
             //checking to make sure it can evaluate with converted provided context
@@ -477,7 +472,6 @@ public class TestProctorUtils {
                             "testProvidedContextConversion",
                             "test Provided Context Conversion Class",
                             testDef,
-                            RuleEvaluator.FUNCTION_MAPPER,
                             providedContext
                     )
             )
@@ -508,7 +502,6 @@ public class TestProctorUtils {
                     "testProvidedContextConversion",
                     "test Provided Context Conversion Class",
                     testDef,
-                    RuleEvaluator.FUNCTION_MAPPER,
                     providedContext
             );
             /* Should ignore checking failure because time was not instantiated */
@@ -524,7 +517,6 @@ public class TestProctorUtils {
                     "testProvidedContextConversion",
                     "test Provided Context Conversion Class",
                     testDef,
-                    RuleEvaluator.FUNCTION_MAPPER,
                     providedContext
             );
             /* Should ignore checking failure because time was not instantiated */
@@ -542,7 +534,10 @@ public class TestProctorUtils {
             providedConstantsVal.put("time", "1");
             testDefValConstants.setConstants(providedConstantsVal);
             final Map<String, String> providedContext = emptyMap();
-            verifyInternallyConsistentDefinition("testELevalwithcontext", "test context recognition", testDefValConstants, RuleEvaluator.FUNCTION_MAPPER,
+            verifyInternallyConsistentDefinition(
+                    "testELevalwithcontext",
+                    "test context recognition",
+                    testDefValConstants,
                     convertContextToTestableMap(providedContext));
         }
         {//test if the providedContext is read in correctly
@@ -553,7 +548,10 @@ public class TestProctorUtils {
             final Map<String, String> providedContext2 = spec.getProvidedContext(); //needs to read in empty provided context as Collections.emptyMap() and not null
 
             assertThatThrownBy(() ->
-                    verifyInternallyConsistentDefinition("testELevalwithcontext", "test context recognition", testDefValConstants2, RuleEvaluator.FUNCTION_MAPPER,
+                    verifyInternallyConsistentDefinition(
+                            "testELevalwithcontext",
+                            "test context recognition",
+                            testDefValConstants2,
                             convertContextToTestableMap(providedContext2))
             )
                     .isInstanceOf(IncompatibleTestMatrixException.class)
@@ -571,7 +569,6 @@ public class TestProctorUtils {
                             "testProvidedContextMissing",
                             "test Provided Context Missing",
                             testDef,
-                            RuleEvaluator.FUNCTION_MAPPER,
                             EMPTY_CONTEXT)
             )
                     .as("expected IncompatibleTestMatrixException due to missing provided Context")
@@ -591,7 +588,6 @@ public class TestProctorUtils {
                     "testELevalwithcontext",
                     "test context recognition in test rule",
                     testDefValContextTestRule,
-                    RuleEvaluator.FUNCTION_MAPPER,
                     convertContextToTestableMap(providedContextVal));
         }
         { //testing that invalid properties are recognized
@@ -605,7 +601,6 @@ public class TestProctorUtils {
                             "testProvidedContextConversion",
                             "test Provided Context Conversion Class",
                             testDef,
-                            RuleEvaluator.FUNCTION_MAPPER,
                             providedContext)
             )
                     .as("expected IncompatibleTestMatrixException due to missing attribute")
@@ -626,7 +621,6 @@ public class TestProctorUtils {
                     "testProvidedContextConversion",
                     "test Provided Context Conversion Class",
                     testDef,
-                    RuleEvaluator.FUNCTION_MAPPER,
                     providedContext
             );
         }
@@ -639,7 +633,6 @@ public class TestProctorUtils {
                             "testProvidedContextConversion",
                             "test Provided Context Conversion Class",
                             testDef,
-                            RuleEvaluator.FUNCTION_MAPPER,
                             EMPTY_CONTEXT
                     )
             )

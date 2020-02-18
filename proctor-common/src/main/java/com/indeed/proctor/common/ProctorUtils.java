@@ -895,18 +895,36 @@ public abstract class ProctorUtils {
     }
 
     /**
-     * verifyInternallyConsistentDefinition with default functionMapper and empty context
+     * verifyInternallyConsistentDefinition with default functionMapper, but do not evaluate rule against any context
      */
     public static void verifyInternallyConsistentDefinition(
-            final String testName, final String matrixSource,
+            final String testName,
+            final String matrixSource,
             @Nonnull final ConsumableTestDefinition testDefinition
     ) throws IncompatibleTestMatrixException {
         verifyInternallyConsistentDefinition(
                 testName,
                 matrixSource,
                 testDefinition,
-                RuleEvaluator.FUNCTION_MAPPER,
                 ProvidedContext.nonEvaluableContext()
+        );
+    }
+
+    /**
+     * verifyInternallyConsistentDefinition with default functionMapper and evaluate against context
+     */
+    public static void verifyInternallyConsistentDefinition(
+            final String testName,
+            final String matrixSource,
+            @Nonnull final ConsumableTestDefinition testDefinition,
+            final ProvidedContext providedContext
+    ) throws IncompatibleTestMatrixException {
+        verifyInternallyConsistentDefinition(
+                testName,
+                matrixSource,
+                testDefinition,
+                RuleEvaluator.FUNCTION_MAPPER,
+                providedContext
         );
     }
 
