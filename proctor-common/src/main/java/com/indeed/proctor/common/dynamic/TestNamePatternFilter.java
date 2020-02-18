@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 
+import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -36,8 +37,8 @@ public class TestNamePatternFilter implements DynamicFilter {
     }
 
     @Override
-    public boolean matches(final String testName, final ConsumableTestDefinition testDefinition) {
-        return pattern.matcher(testName).matches();
+    public boolean matches(@Nullable final String testName, final ConsumableTestDefinition testDefinition) {
+        return testName != null && pattern.matcher(testName).matches();
     }
 
     @Override
