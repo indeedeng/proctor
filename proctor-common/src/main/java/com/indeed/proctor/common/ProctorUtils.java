@@ -269,7 +269,7 @@ public abstract class ProctorUtils {
                 matrixSource,
                 requiredTests,
                 functionMapper,
-                new ProvidedContext(ProvidedContext.EMPTY_CONTEXT, false),
+                ProvidedContext.nonEvaluableContext(),
                 Collections.emptySet()
         );
     }
@@ -364,7 +364,7 @@ public abstract class ProctorUtils {
                 matrixSource,
                 requiredTests,
                 RuleEvaluator.FUNCTION_MAPPER,
-                new ProvidedContext(ProvidedContext.EMPTY_CONTEXT, false), //use default function mapper
+                ProvidedContext.nonEvaluableContext(), // use default function mapper
                 Collections.emptySet()
         );
     }
@@ -383,7 +383,7 @@ public abstract class ProctorUtils {
                 matrixSource,
                 requiredTests,
                 RuleEvaluator.FUNCTION_MAPPER,
-                new ProvidedContext(ProvidedContext.EMPTY_CONTEXT, false), //use default function mapper
+                ProvidedContext.nonEvaluableContext(), // use default function mapper
                 dynamicTests
         );
     }
@@ -885,14 +885,16 @@ public abstract class ProctorUtils {
                 newProvidedContext.put(identifier, toAdd);
             }
             /* evaluate the rule even if defaultConstructor method does not exist, */
-            return new ProvidedContext(ProctorUtils.convertToValueExpressionMap(expressionFactory, newProvidedContext),
-                    true,
+            return ProvidedContext.forValueExpressionMap(ProctorUtils.convertToValueExpressionMap(expressionFactory, newProvidedContext),
                     uninstantiatedIdentifiers);
 
         }
-        return new ProvidedContext(ProvidedContext.EMPTY_CONTEXT, false);
+        return ProvidedContext.nonEvaluableContext();
     }
 
+    /**
+     * verifyInternallyConsistentDefinition with default functionMapper and empty context
+     */
     public static void verifyInternallyConsistentDefinition(
             final String testName, final String matrixSource,
             @Nonnull final ConsumableTestDefinition testDefinition
@@ -902,14 +904,14 @@ public abstract class ProctorUtils {
                 matrixSource,
                 testDefinition,
                 RuleEvaluator.FUNCTION_MAPPER,
-                new ProvidedContext(ProvidedContext.EMPTY_CONTEXT, false)
+                ProvidedContext.nonEvaluableContext()
         );
     }
 
     /**
      * verify:
      * - test/allocation rules has valid syntax
-     * - test/allocation rule evaluates to boolean
+     * - test/allocation rule evaluates to boolean given provided context
      * - buckets have same payload type
      *
      * @throws IncompatibleTestMatrixException on violations

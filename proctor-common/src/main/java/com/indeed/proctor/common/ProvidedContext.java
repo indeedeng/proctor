@@ -7,13 +7,26 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Created by rrice on 7/1/14.
+ * May provide a map of identifiers to use for rule evaluation
  */
 public class ProvidedContext {
-    public static final Map<String,ValueExpression> EMPTY_CONTEXT = Collections.emptyMap();
-    private final Map<String,ValueExpression> context;
+    /**
+     * @deprecated Use factory method nonEvaluableContext()
+     */
+    @Deprecated
+    public static final Map<String, ValueExpression> EMPTY_CONTEXT = Collections.emptyMap();
+    private static final ProvidedContext NON_EVALUABLE = new ProvidedContext(ProvidedContext.EMPTY_CONTEXT, false);
+    private final Map<String, ValueExpression> context;
     private final Set<String> uninstantiatedIdentifiers;
+    /**
+     * if false, indicates that for rule verification, this context is unusable (empty)
+     */
     private final boolean shouldEvaluate;
+
+    /**
+     * @deprecated Use factory methods
+     */
+    @Deprecated
     public ProvidedContext(final Map<String, ValueExpression> context,
                            final boolean shouldEvaluate,
                            final Set<String> uninstantiatedIdentifiers) {
@@ -22,11 +35,33 @@ public class ProvidedContext {
         this.uninstantiatedIdentifiers = uninstantiatedIdentifiers;
     }
 
+    /**
+     * @deprecated Use factory methods
+     */
+    @Deprecated
     public ProvidedContext(final Map<String, ValueExpression> context, final boolean evaluable) {
-        this(context, evaluable, Collections.<String>emptySet());
+        this(context, evaluable, Collections.emptySet());
     }
 
-    public Map<String,ValueExpression> getContext() {
+    /**
+     * Create a context to validate rules based on the given map of known identifiers and uninstantiated identifiers
+     */
+    public static ProvidedContext forValueExpressionMap(
+            final Map<String, ValueExpression> context,
+            final Set<String> uninstantiatedIdentifiers
+    ) {
+        return new ProvidedContext(context, true, uninstantiatedIdentifiers);
+    }
+
+    /**
+     * Create a context indicating rule validation should not attempt to evaluate.
+     * This is a fallback when no context can be provided (no proctor specification present).
+     */
+    public static ProvidedContext nonEvaluableContext() {
+        return NON_EVALUABLE;
+    }
+
+    public Map<String, ValueExpression> getContext() {
         return context;
     }
 

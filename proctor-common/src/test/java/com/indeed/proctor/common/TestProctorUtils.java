@@ -37,6 +37,7 @@ import static com.indeed.proctor.common.ProctorUtils.verifyAndConsolidate;
 import static com.indeed.proctor.common.ProctorUtils.verifyInternallyConsistentDefinition;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
+import static java.util.Collections.emptySet;
 import static java.util.Collections.singletonList;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
@@ -53,6 +54,7 @@ public class TestProctorUtils {
     private static final String TEST_A = "testA";
     private static final String TEST_B = "testB";
     private static final String PATH_UNKNOWN_TEST_TYPE = "unknown-test-type.json";
+    private static final ProvidedContext EMPTY_CONTEXT = ProvidedContext.forValueExpressionMap(emptyMap(), emptySet());
 
     /**
      * Test that top level and allocation rules all respect the same definition
@@ -570,7 +572,7 @@ public class TestProctorUtils {
                             "test Provided Context Missing",
                             testDef,
                             RuleEvaluator.FUNCTION_MAPPER,
-                            new ProvidedContext(ProvidedContext.EMPTY_CONTEXT, true))
+                            EMPTY_CONTEXT)
             )
                     .as("expected IncompatibleTestMatrixException due to missing provided Context")
                     .isInstanceOf(IncompatibleTestMatrixException.class)
@@ -638,7 +640,7 @@ public class TestProctorUtils {
                             "test Provided Context Conversion Class",
                             testDef,
                             RuleEvaluator.FUNCTION_MAPPER,
-                            new ProvidedContext(ProvidedContext.EMPTY_CONTEXT, true)
+                            EMPTY_CONTEXT
                     )
             )
                     .as("expected IncompatibleTestMatrixException due to missing function")
@@ -1455,7 +1457,7 @@ public class TestProctorUtils {
                 "",
                 requiredTests,
                 RuleEvaluator.FUNCTION_MAPPER,
-                new ProvidedContext(ProvidedContext.EMPTY_CONTEXT, false),
+                ProvidedContext.nonEvaluableContext(),
                 dynamicTests
         );
 
@@ -1499,7 +1501,7 @@ public class TestProctorUtils {
                 "",
                 requiredTests,
                 RuleEvaluator.FUNCTION_MAPPER,
-                new ProvidedContext(ProvidedContext.EMPTY_CONTEXT, true),
+                EMPTY_CONTEXT,
                 dynamicTests
         );
 
@@ -1576,7 +1578,7 @@ public class TestProctorUtils {
                 "",
                 requiredTests,
                 RuleEvaluator.FUNCTION_MAPPER,
-                new ProvidedContext(ProvidedContext.EMPTY_CONTEXT, false),
+                ProvidedContext.nonEvaluableContext(),
                 dynamicTests
         );
 
