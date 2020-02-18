@@ -12,6 +12,7 @@ import javax.el.ELContext;
 import javax.el.ExpressionFactory;
 import javax.el.ValueExpression;
 import javax.el.VariableMapper;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +29,7 @@ public class TestRuleVerifyUtils {
                 TestProctorUtils.fromCompactAllocationFormat(String.format("%s|-1:0.5,0:0.5,1:0.0", testRule), "-1:0.25,0:0.5,1:0.25"));
         final Map<String, ValueExpression> testConstants = ProctorUtils.convertToValueExpressionMap(expressionFactory, testDefVal1.getConstants());
 
-        final ProvidedContext providedContext = new ProvidedContext(ProctorUtils.convertToValueExpressionMap(expressionFactory, context), true);
+        final ProvidedContext providedContext = ProvidedContext.forValueExpressionMap(ProctorUtils.convertToValueExpressionMap(expressionFactory, context), Collections.emptySet());
         final VariableMapper variableMapper = new MulticontextReadOnlyVariableMapper(testConstants, providedContext.getContext());
 
         final RuleEvaluator ruleEvaluator = new RuleEvaluator(expressionFactory, RuleEvaluator.FUNCTION_MAPPER, testDefVal1.getConstants());

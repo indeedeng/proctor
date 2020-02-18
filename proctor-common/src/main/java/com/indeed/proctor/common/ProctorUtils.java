@@ -269,7 +269,7 @@ public abstract class ProctorUtils {
                 matrixSource,
                 requiredTests,
                 functionMapper,
-                new ProvidedContext(ProvidedContext.EMPTY_CONTEXT, false),
+                ProvidedContext.nonEvaluableContext(),
                 Collections.emptySet()
         );
     }
@@ -364,7 +364,7 @@ public abstract class ProctorUtils {
                 matrixSource,
                 requiredTests,
                 RuleEvaluator.FUNCTION_MAPPER,
-                new ProvidedContext(ProvidedContext.EMPTY_CONTEXT, false), //use default function mapper
+                ProvidedContext.nonEvaluableContext(), // use default function mapper
                 Collections.emptySet()
         );
     }
@@ -383,7 +383,7 @@ public abstract class ProctorUtils {
                 matrixSource,
                 requiredTests,
                 RuleEvaluator.FUNCTION_MAPPER,
-                new ProvidedContext(ProvidedContext.EMPTY_CONTEXT, false), //use default function mapper
+                ProvidedContext.nonEvaluableContext(), // use default function mapper
                 dynamicTests
         );
     }
@@ -537,7 +537,9 @@ public abstract class ProctorUtils {
         verifyTest(
                 testName,
                 testDefinition,
+                // hack: use empty test spec to not verify buckets and payloads
                 new TestSpecification(),
+                // this parameter is ignored
                 Collections.emptySet(),
                 matrixSource,
                 functionMapper,
@@ -589,9 +591,6 @@ public abstract class ProctorUtils {
             }
         }
 
-        // TODO(pwp): add some test constants?
-        final RuleEvaluator ruleEvaluator = makeRuleEvaluator(RuleEvaluator.EXPRESSION_FACTORY, functionMapper);
-
         final PayloadSpecification payloadSpec = testSpecification.getPayload();
         if (payloadSpec != null) {
             final String specifiedPayloadTypeName = Preconditions.checkNotNull(payloadSpec.getType(), "Missing payload spec type");
@@ -609,8 +608,11 @@ public abstract class ProctorUtils {
                 throw new IncompatibleTestMatrixException("For test " + testName + " from " + matrixSource + " test specification payload type unknown: " + specifiedPayloadTypeName);
             }
             final String payloadValidatorRule = payloadSpec.getValidator();
-            final List<TestBucket> buckets = testDefinition.getBuckets();
-            for (final TestBucket bucket : buckets) {
+
+            // TODO(pwp): add some test constants?
+            final RuleEvaluator ruleEvaluator = makeRuleEvaluator(RuleEvaluator.EXPRESSION_FACTORY, functionMapper);
+
+            for (final TestBucket bucket : testDefinition.getBuckets()) {
                 final Payload payload = bucket.getPayload();
                 if (payload != null) {
                     if (!Payload.hasType(payload, specifiedPayloadType)) {
@@ -885,36 +887,57 @@ public abstract class ProctorUtils {
                 newProvidedContext.put(identifier, toAdd);
             }
             /* evaluate the rule even if defaultConstructor method does not exist, */
-            return new ProvidedContext(ProctorUtils.convertToValueExpressionMap(expressionFactory, newProvidedContext),
-                    true,
+            return ProvidedContext.forValueExpressionMap(ProctorUtils.convertToValueExpressionMap(expressionFactory, newProvidedContext),
                     uninstantiatedIdentifiers);
 
         }
-        return new ProvidedContext(ProvidedContext.EMPTY_CONTEXT, false);
+        return ProvidedContext.nonEvaluableContext();
     }
 
+    /**
+     * verifyInternallyConsistentDefinition with default functionMapper, but do not evaluate rule against any context
+     */
     public static void verifyInternallyConsistentDefinition(
-            final String testName, final String matrixSource,
+            final String testName,
+            final String matrixSource,
             @Nonnull final ConsumableTestDefinition testDefinition
     ) throws IncompatibleTestMatrixException {
         verifyInternallyConsistentDefinition(
                 testName,
                 matrixSource,
                 testDefinition,
+                ProvidedContext.nonEvaluableContext()
+        );
+    }
+
+    /**
+     * verifyInternallyConsistentDefinition with default functionMapper and evaluate against context
+     */
+    public static void verifyInternallyConsistentDefinition(
+            final String testName,
+            final String matrixSource,
+            @Nonnull final ConsumableTestDefinition testDefinition,
+            final ProvidedContext providedContext
+    ) throws IncompatibleTestMatrixException {
+        verifyInternallyConsistentDefinition(
+                testName,
+                matrixSource,
+                testDefinition,
                 RuleEvaluator.FUNCTION_MAPPER,
-                new ProvidedContext(ProvidedContext.EMPTY_CONTEXT, false)
+                providedContext
         );
     }
 
     /**
      * verify:
      * - test/allocation rules has valid syntax
-     * - test/allocation rule evaluates to boolean
+     * - if providedContext.shouldEvaluate, also verifies that rule contains only identifiers from context
+     * - if providedContext.shouldEvaluate, also verifies test/allocation rule evaluates to boolean
      * - buckets have same payload type
      *
      * @throws IncompatibleTestMatrixException on violations
      */
-    public static void verifyInternallyConsistentDefinition(
+    private static void verifyInternallyConsistentDefinition(
             final String testName,
             final String matrixSource,
             @Nonnull final ConsumableTestDefinition testDefinition,
@@ -944,7 +967,7 @@ public abstract class ProctorUtils {
         final List<TestBucket> buckets = testDefinition.getBuckets();
 
         /*
-         * test the matrix for consistency with itself
+         * test the definition for consistency with itself
          */
         final Set<Integer> definedBuckets = Sets.newHashSet();
         for (final TestBucket bucket : buckets) {
@@ -961,7 +984,7 @@ public abstract class ProctorUtils {
             double bucketTotal = 0;
             for (final Range range : ranges) {
                 bucketTotal += range.getLength();
-                // Internally consistent (within matrix itself)
+                // Internally consistent
                 if (!definedBuckets.contains(range.getBucketValue())) {
                     throw new IncompatibleTestMatrixException("Allocation range in " + testName + " from " + matrixSource + " refers to unknown bucket value " + range.getBucketValue());
                 }

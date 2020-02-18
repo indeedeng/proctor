@@ -14,7 +14,6 @@ import javax.el.ValueExpression;
 import java.util.List;
 import java.util.Set;
 
-import static com.indeed.proctor.common.ProctorUtils.isEmptyWhitespace;
 import static com.indeed.proctor.common.ProctorUtils.removeElExpressionBraces;
 import static com.indeed.proctor.common.RuleEvaluator.checkRuleIsBooleanType;
 
@@ -25,6 +24,10 @@ public class RuleVerifyUtils {
     private RuleVerifyUtils() {
     }
 
+    /**
+     * verifies EL syntax is correct, whether all identifiers are present in context, and whether it will evaluate to boolean
+     * @param shouldEvaluate if false, only checks syntax is correct
+     */
     public static void verifyRule(
             final String testRule,
             final boolean shouldEvaluate,
