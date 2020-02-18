@@ -7,6 +7,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import javax.el.ELException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static java.util.Collections.emptyMap;
@@ -103,6 +106,42 @@ public class TestRuleEvaluator {
         {
             final String rule = "${lang == 'fr'}";
             assertFalse("rule '" + rule + "' should be false for " + values, ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+    }
+
+    public static class Temp {
+        public String getY() {
+            return "barY";
+        }
+    }
+
+    @Test
+    public void testElPropertyResolvers() {
+        // Map
+        {
+            final Map<String, Object> values = singletonMap("context", ImmutableMap.of("foo", "bar"));
+            String rule = "${context['foo'] == 'bar'}";
+            assertTrue("rule '" + rule + "' should be true for " + values, ruleEvaluator.evaluateBooleanRule(rule, values));
+            rule = "${context.foo == 'bar'}";
+            assertTrue("rule '" + rule + "' should be true for " + values, ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+        // Array
+        {
+            final Map<String, Object> values = singletonMap("context", new String[]{"foo", "bar"});
+            final String rule = "${context[1] == 'bar'}";
+            assertTrue("rule '" + rule + "' should be true for " + values, ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+        // List
+        {
+            final Map<String, Object> values = singletonMap("context", Arrays.asList("foo", "bar"));
+            final String rule = "${context[1] == 'bar'}";
+            assertTrue("rule '" + rule + "' should be true for " + values, ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+        // bean property (getter)
+        {
+            final Map<String, Object> values = singletonMap("context", new Temp());
+            final String rule = "${context.y == 'barY'}";
+            assertTrue("rule '" + rule + "' should be true for " + values, ruleEvaluator.evaluateBooleanRule(rule, values));
         }
     }
 
