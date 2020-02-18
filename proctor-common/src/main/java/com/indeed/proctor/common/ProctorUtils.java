@@ -537,7 +537,9 @@ public abstract class ProctorUtils {
         verifyTest(
                 testName,
                 testDefinition,
+                // hack: use empty test spec to not verify buckets and payloads
                 new TestSpecification(),
+                // this parameter is ignored
                 Collections.emptySet(),
                 matrixSource,
                 functionMapper,
@@ -589,9 +591,6 @@ public abstract class ProctorUtils {
             }
         }
 
-        // TODO(pwp): add some test constants?
-        final RuleEvaluator ruleEvaluator = makeRuleEvaluator(RuleEvaluator.EXPRESSION_FACTORY, functionMapper);
-
         final PayloadSpecification payloadSpec = testSpecification.getPayload();
         if (payloadSpec != null) {
             final String specifiedPayloadTypeName = Preconditions.checkNotNull(payloadSpec.getType(), "Missing payload spec type");
@@ -609,8 +608,11 @@ public abstract class ProctorUtils {
                 throw new IncompatibleTestMatrixException("For test " + testName + " from " + matrixSource + " test specification payload type unknown: " + specifiedPayloadTypeName);
             }
             final String payloadValidatorRule = payloadSpec.getValidator();
-            final List<TestBucket> buckets = testDefinition.getBuckets();
-            for (final TestBucket bucket : buckets) {
+
+            // TODO(pwp): add some test constants?
+            final RuleEvaluator ruleEvaluator = makeRuleEvaluator(RuleEvaluator.EXPRESSION_FACTORY, functionMapper);
+
+            for (final TestBucket bucket : testDefinition.getBuckets()) {
                 final Payload payload = bucket.getPayload();
                 if (payload != null) {
                     if (!Payload.hasType(payload, specifiedPayloadType)) {
@@ -911,12 +913,13 @@ public abstract class ProctorUtils {
     /**
      * verify:
      * - test/allocation rules has valid syntax
-     * - test/allocation rule evaluates to boolean given provided context
+     * - if providedContext.shouldEvaluate, also verifies that rule contains only identifiers from context
+     * - if providedContext.shouldEvaluate, also verifies test/allocation rule evaluates to boolean
      * - buckets have same payload type
      *
      * @throws IncompatibleTestMatrixException on violations
      */
-    public static void verifyInternallyConsistentDefinition(
+    private static void verifyInternallyConsistentDefinition(
             final String testName,
             final String matrixSource,
             @Nonnull final ConsumableTestDefinition testDefinition,
@@ -946,7 +949,7 @@ public abstract class ProctorUtils {
         final List<TestBucket> buckets = testDefinition.getBuckets();
 
         /*
-         * test the matrix for consistency with itself
+         * test the definition for consistency with itself
          */
         final Set<Integer> definedBuckets = Sets.newHashSet();
         for (final TestBucket bucket : buckets) {
@@ -963,7 +966,7 @@ public abstract class ProctorUtils {
             double bucketTotal = 0;
             for (final Range range : ranges) {
                 bucketTotal += range.getLength();
-                // Internally consistent (within matrix itself)
+                // Internally consistent
                 if (!definedBuckets.contains(range.getBucketValue())) {
                     throw new IncompatibleTestMatrixException("Allocation range in " + testName + " from " + matrixSource + " refers to unknown bucket value " + range.getBucketValue());
                 }
