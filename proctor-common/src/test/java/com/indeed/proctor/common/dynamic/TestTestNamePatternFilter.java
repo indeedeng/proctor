@@ -44,4 +44,11 @@ public class TestTestNamePatternFilter {
             assertNotNull(e.getCause());
         }
     }
+
+    @Test
+    public void testNullOrEmptyTestName() {
+        final TestNamePatternFilter filter = new TestNamePatternFilter(".*");
+        assertFalse(filter.matches(null, new ConsumableTestDefinition()));
+        assertFalse(filter.matches("", new ConsumableTestDefinition()));
+    }
 }
