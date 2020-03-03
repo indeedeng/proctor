@@ -11,7 +11,7 @@ import javax.annotation.Nullable;
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
 public interface DynamicFilter {
     /**
-     * @param testName if null, only match testDefinition
+     * @param testName if null or empty string, only match testDefinition
      * @return true if the testname or the definition match the filter
      */
     boolean matches(@Nullable final String testName, final ConsumableTestDefinition testDefinition);

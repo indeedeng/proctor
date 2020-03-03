@@ -2,6 +2,7 @@ package com.indeed.proctor.common.dynamic;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import com.google.common.base.Strings;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 
 import javax.annotation.Nullable;
@@ -36,9 +37,13 @@ public class TestNamePatternFilter implements DynamicFilter {
         return pattern.pattern();
     }
 
+    /**
+     * @param testName if null or empty string, it doesn't match even if the pattern is like ".*".
+     * @return true if the testname matches the pattern
+     */
     @Override
     public boolean matches(@Nullable final String testName, final ConsumableTestDefinition testDefinition) {
-        return testName != null && pattern.matcher(testName).matches();
+        return !Strings.isNullOrEmpty(testName) && pattern.matcher(testName).matches();
     }
 
     @Override

@@ -3,6 +3,7 @@ package com.indeed.proctor.common.dynamic;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 
 import javax.annotation.Nullable;
@@ -35,7 +36,7 @@ public class TestNamePrefixFilter implements DynamicFilter {
 
     @Override
     public boolean matches(@Nullable final String testName, final ConsumableTestDefinition testDefinition) {
-        return testName != null && testName.startsWith(prefix);
+        return !Strings.isNullOrEmpty(testName) && testName.startsWith(prefix);
     }
 
     @Override

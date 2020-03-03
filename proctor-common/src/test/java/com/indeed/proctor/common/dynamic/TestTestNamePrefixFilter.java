@@ -26,4 +26,11 @@ public class TestTestNamePrefixFilter {
             assertTrue(e.getMessage().contains("empty"));
         }
     }
+
+    @Test
+    public void testNullOrEmptyTestName() {
+        final TestNamePrefixFilter filter = new TestNamePrefixFilter("n");
+        assertFalse(filter.matches(null, new ConsumableTestDefinition()));
+        assertFalse(filter.matches("", new ConsumableTestDefinition()));
+    }
 }
