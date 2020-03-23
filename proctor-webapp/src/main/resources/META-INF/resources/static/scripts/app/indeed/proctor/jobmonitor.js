@@ -24,7 +24,7 @@ goog.require('indeed.proctor.CenterWindowPosition');
  * @extends {goog.events.EventTarget}
  */
 indeed.proctor.JobMonitor = function(container, jobid) {
-  goog.base(this);
+  indeed.proctor.JobMonitor.base(this, 'constructor');
   /** @type {string} */
   this.jobid = jobid;
   /** @type {number} */
@@ -282,7 +282,7 @@ indeed.proctor.JobMonitor.EventTypes = {
 
 /** @override */
 indeed.proctor.JobMonitor.prototype.disposeInternal = function() {
-  goog.base(this, 'disposeInternal');
+  indeed.proctor.JobMonitor.base(this, 'disposeInternal');
   if (this.checkStatusTimerId_) {
     window.clearTimeout(this.checkStatusTimerId_);
   }

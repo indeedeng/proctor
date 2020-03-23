@@ -21,7 +21,7 @@ goog.require('indeed.proctor.forms');
  */
 indeed.proctor.editor.BucketsEditor =
     function(container, definition, isCreate) {
-  goog.base(this);
+  indeed.proctor.editor.BucketsEditor.base(this, 'constructor');
   /** @type {Element} Root Element */
   this.container = container;
   /** @type {goog.dom.DomHelper} @private */

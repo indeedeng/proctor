@@ -62,7 +62,7 @@
                                 <taskdef resource="net/sf/antcontrib/antlib.xml" classpathref="maven.plugin.classpath" />
                                 <if>
                                     <not>
-                                        <available file="${basedir}/target/compiler.jar" />
+                                        <available file="${basedir}/target/closure-compiler-v${closure-compiler.version}.jar" />
                                     </not>
                                     <then>
                                         <get src="${closure-compiler-url}" dest="${basedir}/target" />
@@ -116,16 +116,18 @@
                 <executions>
                     <execution>
                         <configuration>
-                            <executable>python</executable>
-                            <workingDirectory>${closure-library-dir}/closure/bin/build</workingDirectory>
+                            <executable>java</executable>
+                            <workingDirectory>${basedir}/target</workingDirectory>
                             <arguments>
-                                <argument>closurebuilder.py</argument>
-                                <argument>--root=${basedir}/src/main/resources/META-INF/resources/static/scripts/app/</argument>
-                                <argument>--root=${basedir}/target/closure-library/</argument>
-                                <argument>--namespace=indeed.proctor.app.editor</argument>
-                                <argument>--output_mode=compiled</argument>
-                                <argument>--compiler_jar=${basedir}/target/compiler.jar</argument>
-                                <argument>--output_file=${project.build.outputDirectory}/META-INF/resources/static/scripts/app/editor-compiled.js</argument>
+                                <argument>-jar</argument>
+                                <argument>${basedir}/target/closure-compiler-v${closure-compiler.version}.jar</argument>
+                                <argument>--js=${basedir}/src/main/resources/META-INF/resources/static/scripts/app/**.js</argument>
+                                <argument>--js=${basedir}/target/closure-library/closure-library-${closure-library.version}/closure/**.js</argument>
+                                <argument>--js=${basedir}/target/closure-library/closure-library-${closure-library.version}/third_party/**.js</argument>
+                                <argument>--js=!${basedir}/target/closure-library/**_test.js</argument>
+                                <argument>--js=!${basedir}/target/closure-library/**_tests.js</argument>
+                                <argument>--entry_point=goog:indeed.proctor.app.editor</argument>
+                                <argument>--js_output_file=${project.build.outputDirectory}/META-INF/resources/static/scripts/app/editor-compiled.js</argument>
                             </arguments>
                         </configuration>
                         <id>compile editor.js</id>
@@ -136,16 +138,18 @@
                     </execution>
                     <execution>
                         <configuration>
-                            <executable>python</executable>
-                            <workingDirectory>${closure-library-dir}/closure/bin/build</workingDirectory>
+                            <executable>java</executable>
+                            <workingDirectory>${basedir}/target</workingDirectory>
                             <arguments>
-                                <argument>closurebuilder.py</argument>
-                                <argument>--root=${basedir}/src/main/resources/META-INF/resources/static/scripts/app/</argument>
-                                <argument>--root=${basedir}/target/closure-library/</argument>
-                                <argument>--namespace=indeed.proctor.app.details</argument>
-                                <argument>--output_mode=compiled</argument>
-                                <argument>--compiler_jar=${basedir}/target/compiler.jar</argument>
-                                <argument>--output_file=${project.build.outputDirectory}/META-INF/resources/static/scripts/app/details-compiled.js</argument>
+                                <argument>-jar</argument>
+                                <argument>${basedir}/target/closure-compiler-v${closure-compiler.version}.jar</argument>
+                                <argument>--js=${basedir}/src/main/resources/META-INF/resources/static/scripts/app/**.js</argument>
+                                <argument>--js=${basedir}/target/closure-library/closure-library-${closure-library.version}/closure/**.js</argument>
+                                <argument>--js=${basedir}/target/closure-library/closure-library-${closure-library.version}/third_party/**.js</argument>
+                                <argument>--js=!${basedir}/target/closure-library/**_test.js</argument>
+                                <argument>--js=!${basedir}/target/closure-library/**_tests.js</argument>
+                                <argument>--entry_point=goog:indeed.proctor.app.details</argument>
+                                <argument>--js_output_file=${project.build.outputDirectory}/META-INF/resources/static/scripts/app/details-compiled.js</argument>
                             </arguments>
                         </configuration>
                         <id>compile details.js</id>
@@ -156,16 +160,18 @@
                     </execution>
                     <execution>
                         <configuration>
-                            <executable>python</executable>
-                            <workingDirectory>${closure-library-dir}/closure/bin/build</workingDirectory>
+                            <executable>java</executable>
+                            <workingDirectory>${basedir}/target</workingDirectory>
                             <arguments>
-                                <argument>closurebuilder.py</argument>
-                                <argument>--root=${basedir}/src/main/resources/META-INF/resources/static/scripts/app/</argument>
-                                <argument>--root=${basedir}/target/closure-library/</argument>
-                                <argument>--namespace=indeed.proctor.app.matrix.list</argument>
-                                <argument>--output_mode=compiled</argument>
-                                <argument>--compiler_jar=${basedir}/target/compiler.jar</argument>
-                                <argument>--output_file=${project.build.outputDirectory}/META-INF/resources/static/scripts/app/matrix-list-compiled.js</argument>
+                                <argument>-jar</argument>
+                                <argument>${basedir}/target/closure-compiler-v${closure-compiler.version}.jar</argument>
+                                <argument>--js=${basedir}/src/main/resources/META-INF/resources/static/scripts/app/**.js</argument>
+                                <argument>--js=${basedir}/target/closure-library/closure-library-${closure-library.version}/closure/**.js</argument>
+                                <argument>--js=${basedir}/target/closure-library/closure-library-${closure-library.version}/third_party/**.js</argument>
+                                <argument>--js=!${basedir}/target/closure-library/**_test.js</argument>
+                                <argument>--js=!${basedir}/target/closure-library/**_tests.js</argument>
+                                <argument>--entry_point=goog:indeed.proctor.app.matrix.list</argument>
+                                <argument>--js_output_file=${project.build.outputDirectory}/META-INF/resources/static/scripts/app/matrix-list-compiled.js</argument>
                             </arguments>
                         </configuration>
                         <id>compile matrix-list.js</id>
@@ -275,11 +281,11 @@
     </dependencies>
 
     <properties>
-        <closure-library.version>20160106</closure-library.version>
+        <closure-library.version>20200224</closure-library.version>
         <closure-library-zip>v${closure-library.version}.zip</closure-library-zip>
         <closure-library-url>https://github.com/google/closure-library/archive/${closure-library-zip}</closure-library-url>
         <closure-library-dir>${basedir}/target/closure-library/closure-library-${closure-library.version}</closure-library-dir>
-        <closure-compiler.version>20160315</closure-compiler.version>
+        <closure-compiler.version>20200315</closure-compiler.version>
         <closure-compiler-zip>compiler-${closure-compiler.version}.zip</closure-compiler-zip>
         <closure-compiler-url>http://dl.google.com/closure-compiler/${closure-compiler-zip}</closure-compiler-url>
     </properties>

@@ -22,7 +22,7 @@ goog.require('indeed.proctor.forms');
  * @extends {goog.events.EventTarget}
  */
 indeed.proctor.editor.BasicEditor = function(container, definition, isCreate) {
-  goog.base(this);
+  indeed.proctor.editor.BasicEditor.base(this, 'constructor');
 
   /** @type {Element} Container element */
   this.container = container;
