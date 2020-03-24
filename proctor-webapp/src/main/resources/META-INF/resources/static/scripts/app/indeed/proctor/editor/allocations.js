@@ -892,7 +892,7 @@ indeed.proctor.editor.AllocationEditor.prototype.toJSON = function() {
       );
   var definition = indeed.proctor.forms.toJSON(els);
   var allocation = definition['allocations'][this.index];
-  if (!goog.isDef(allocation['ranges'])) {
+  if (allocation['ranges'] === undefined) {
     allocation['ranges'] = [];
   }
   return allocation;

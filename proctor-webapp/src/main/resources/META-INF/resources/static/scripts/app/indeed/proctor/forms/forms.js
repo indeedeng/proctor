@@ -44,8 +44,7 @@ indeed.proctor.forms.toJSON = function(inputs) {
 indeed.proctor.forms.addInputToObject_ = function(input, obj) {
   // Handle input
   var value = goog.dom.forms.getValue(input);
-  if (goog.string.isEmpty(input.name) || input.disabled ||
-      !goog.isDefAndNotNull(value)) {
+  if (goog.string.isEmpty(input.name) || input.disabled || value == null) {
     return;
   }
   var isRawJson = indeed.proctor.forms.isRawJsonType_(input);
@@ -187,7 +186,7 @@ indeed.proctor.forms.addToObjectFromFieldInfo_ =
     function(obj, name, index, value, overwrite) {
   var field = obj[name], actualIndex;
   if (index >= 0 || index === indeed.proctor.forms.INDEX_ARRAY_PUSH) {
-    if (goog.isDef(field)) {
+    if (field !== undefined) {
       if (!goog.isArray(field)) {
         throw new Error('Invalid field: ' +
                         field + ' is not an array. From ' + name);
@@ -201,12 +200,12 @@ indeed.proctor.forms.addToObjectFromFieldInfo_ =
     } else {
       actualIndex = index;
     }
-    if (overwrite || !goog.isDef(obj[name][actualIndex])) {
+    if (overwrite || obj[name][actualIndex] === undefined) {
       obj[name][actualIndex] = value;
     }
     return obj[name][actualIndex];
   } else {
-    if (overwrite || !goog.isDef(obj[name])) {
+    if (overwrite || obj[name] === undefined) {
       obj[name] = value;
     }
     return obj[name];

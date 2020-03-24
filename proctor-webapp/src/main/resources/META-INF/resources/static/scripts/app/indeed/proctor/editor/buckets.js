@@ -456,7 +456,7 @@ indeed.proctor.editor.BucketsEditor.prototype.buildDescriptionInput_ =
 indeed.proctor.editor.BucketsEditor.prototype.buildPayloadInput_ =
   function(bucketIndex, payload, payloadType) {
     var valstr = this.prettyPrintPayloadValue_(payload);
-    if (!goog.isDefAndNotNull(valstr)) {
+    if (valstr == null) {
         valstr = "";   // We have to supply something here regardless.
     }
     var thing = goog.dom.createDom(goog.dom.TagName.TEXTAREA, {'rows': '1', 'cols' : '11',
@@ -477,23 +477,23 @@ indeed.proctor.editor.BucketsEditor.prototype.buildPayloadInput_ =
  */
 indeed.proctor.editor.BucketsEditor.prototype.prettyPrintPayloadValue_ =
   function(payload) {
-    if (!goog.isDefAndNotNull(payload)) {
+    if (payload == null) {
         return null;
     }
     var outputBuffer = new goog.string.StringBuffer();
-    if (goog.isDefAndNotNull(payload['doubleValue'])) {
+    if (payload['doubleValue'] != null) {
       this.ppObject_(payload['doubleValue'], outputBuffer);
-    } else if (goog.isDefAndNotNull(payload['longValue'])) {
+    } else if (payload['longValue'] != null) {
       this.ppObject_(payload['longValue'], outputBuffer);
-    } else if (goog.isDefAndNotNull(payload['stringValue'])) {
+    } else if (payload['stringValue'] != null) {
       this.ppObject_(payload['stringValue'], outputBuffer);
-    } else if (goog.isDefAndNotNull(payload['doubleArray'])) {
+    } else if (payload['doubleArray'] != null) {
       this.ppObject_(payload['doubleArray'], outputBuffer);
-    } else if (goog.isDefAndNotNull(payload['longArray'])) {
+    } else if (payload['longArray'] != null) {
       this.ppObject_(payload['longArray'], outputBuffer);
-    } else if (goog.isDefAndNotNull(payload['stringArray'])) {
+    } else if (payload['stringArray'] != null) {
       this.ppObject_(payload['stringArray'], outputBuffer);
-    } else if (goog.isDefAndNotNull(payload['map'])) {
+    } else if (payload['map'] != null) {
         this.ppObject_(payload['map'], outputBuffer);
     } else {
       return null;   // We don't know how to handle this type.
