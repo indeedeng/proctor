@@ -20,7 +20,7 @@ goog.require('indeed.proctor.forms');
  */
 indeed.proctor.editor.AllocationsEditor =
     function(container, definition, isCreate) {
-  goog.base(this);
+  indeed.proctor.editor.AllocationEditor.base(this, 'constructor');
 
   /** @type {Element} */
   this.container = container;
@@ -229,7 +229,7 @@ indeed.proctor.editor.AllocationsEditor.prototype.updateAllocationEditorIndices_
  */
 indeed.proctor.editor.AllocationEditor =
     function(container, index, buckets, allocation, isDefault, allocationsEditor) {
-  goog.base(this);
+  indeed.proctor.editor.AllocationEditor.base(this, 'constructor');
   /** @type {goog.dom.DomHelper} @private */
   this.dom_ = goog.dom.getDomHelper(container);
   /** @type {Element} */

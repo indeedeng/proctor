@@ -24,7 +24,7 @@ goog.require('goog.events.EventType');
  * @extends {goog.events.EventTarget}
  */
 indeed.foundation.Tabs = function(el) {
-  goog.base(this);
+  indeed.foundation.Tabs.base(this, 'constructor');
   /**
    * @type {Element} Container element
    */
@@ -133,7 +133,7 @@ indeed.foundation.Tabs.prototype.addSingleTab_ = function(elDD, index, arr) {
  */
 indeed.foundation.Tabs.prototype.selectTabById = function(id) {
   var index = this.idToIndex[id];
-  if (goog.isNumber(index)) {
+  if (typeof index === 'number') {
     this.selectTabByIndex(index);
   }
 };

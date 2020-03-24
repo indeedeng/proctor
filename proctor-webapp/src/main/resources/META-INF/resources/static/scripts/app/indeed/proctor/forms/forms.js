@@ -268,7 +268,7 @@ indeed.proctor.forms.getElementsByInputName_ =
   for (var i = 0, len = els.length; i < len; i++) {
     if (name === els[i].name) {
       found.push(els[i]);
-      if (goog.isNumber(opt_max) && found.length == opt_max) {
+      if (typeof opt_max === 'number' && found.length === opt_max) {
         break;
       }
     }

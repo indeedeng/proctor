@@ -23,7 +23,7 @@ goog.require('indeed.proctor.forms');
  * @extends {goog.events.EventTarget}
  */
 indeed.proctor.editor.SvnInfoEditor = function(container, shouldHandleSave) {
-  goog.base(this);
+  indeed.proctor.editor.SvnInfoEditor.base(this, 'constructor');
   this.container = container;
 
   if (this.container.tagName.toUpperCase() === goog.dom.TagName.FORM) {

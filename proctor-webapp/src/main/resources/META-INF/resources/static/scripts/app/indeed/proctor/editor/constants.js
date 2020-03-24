@@ -20,7 +20,7 @@ goog.require('indeed.proctor.forms');
  */
 indeed.proctor.editor.ConstantsEditor =
     function(container, definition, isCreate) {
-  goog.base(this);
+  indeed.proctor.editor.ConstantsEditor.base(this, 'constructor');
   /** @type {Element} */
   this.container = container;
   /** @type {goog.dom.DomHelper} @private */
