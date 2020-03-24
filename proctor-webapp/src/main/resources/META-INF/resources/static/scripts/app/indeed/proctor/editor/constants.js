@@ -225,7 +225,7 @@ indeed.proctor.editor.ConstantsEditor.prototype.hideError_ = function() {
  */
 indeed.proctor.editor.ConstantsEditor.prototype.validateConstants_ =
     function(constants) {
-  if (goog.isDefAndNotNull(constants) &&
+  if (constants != null &&
       goog.isObject(constants) &&
       !goog.isArray(constants) &&
       !goog.isFunction(constants)) {
