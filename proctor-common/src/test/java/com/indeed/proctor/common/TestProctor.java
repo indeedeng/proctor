@@ -3,6 +3,7 @@ package com.indeed.proctor.common;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.indeed.proctor.common.model.Allocation;
@@ -319,10 +320,9 @@ public class TestProctor {
 
     private static TestMatrixArtifact createTestMatrixWithOneRandomTest(final String testName) {
         final TestMatrixArtifact matrix = new TestMatrixArtifact();
-        final Map<String, ConsumableTestDefinition> testMap = Maps.newHashMap();
-        testMap.put(testName, new ConsumableTestDefinition());
-        testMap.get(testName).setTestType(TestType.RANDOM);
-        matrix.setTests(testMap);
+        final ConsumableTestDefinition testDefinition = new ConsumableTestDefinition();
+        testDefinition.setTestType(TestType.RANDOM);
+        matrix.setTests(ImmutableMap.of(testName, testDefinition));
         matrix.setAudit(new Audit());
 
         return matrix;
