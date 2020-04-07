@@ -27,6 +27,7 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -312,6 +313,8 @@ public class TestProctor {
 
         assertThat(proctorResult.getBuckets()).isEqualTo(Collections.emptyMap());
         assertThat(proctorResult.getAllocations()).isEqualTo(Collections.emptyMap());
+
+        verify(testChooser, times(0)).choose(any(), any());
     }
 
     private static TestMatrixArtifact createTestMatrixWithOneRandomTest(final String testName) {
