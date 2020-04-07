@@ -49,7 +49,11 @@ public class Identifiers {
         return new Identifiers(ImmutableMap.of(typeA, identifierA, typeB, identifierB, typeC, identifierC));
     }
 
-
+    /**
+     * If isRandomEnabled() == false, test groups for RANDOM tests are NOT assigned
+     *
+     * @return a flag whether test groups for RANDOM tests are assigned or not
+     */
     public boolean isRandomEnabled() {
         return randomEnabled;
     }
