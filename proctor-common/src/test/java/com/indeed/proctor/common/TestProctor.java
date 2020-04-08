@@ -1,14 +1,17 @@
 package com.indeed.proctor.common;
 
-import com.google.common.base.Splitter;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.indeed.proctor.common.model.Audit;
-import com.indeed.proctor.common.model.ConsumableTestDefinition;
-import com.indeed.proctor.common.model.TestMatrixArtifact;
-import com.indeed.proctor.common.model.TestType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.indeed.proctor.common.model.Allocation;
+import com.indeed.proctor.common.model.Audit;
+import com.indeed.proctor.common.model.ConsumableTestDefinition;
+import com.indeed.proctor.common.model.TestBucket;
+import com.indeed.proctor.common.model.TestMatrixArtifact;
+import com.indeed.proctor.common.model.TestType;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -21,9 +24,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * @author piotr
@@ -156,8 +164,7 @@ public class TestProctor {
         assertEquals(0, tests.size());
     }
 
-    private JsonNode appendTestMatrixFiltered_processAndGetRoot(final Collection<String> names) throws IOException
-    {
+    private JsonNode appendTestMatrixFiltered_processAndGetRoot(final Collection<String> names) throws IOException {
         final TestMatrixArtifact matrix = createThreeFakeTests();
         final Proctor proctor = Proctor.construct(matrix, null, RuleEvaluator.FUNCTION_MAPPER);
         final Writer writer = new StringWriter();
@@ -228,7 +235,7 @@ public class TestProctor {
 
         assertEquals(0, lines.size());
     }
-    
+
     @Test
     public void testGetProctorTestNames() throws IOException {
         final TestMatrixArtifact matrix = createThreeFakeTests();
@@ -249,9 +256,64 @@ public class TestProctor {
         assertFalse(testNames.contains("four"));
     }
 
+    @Test
+    public void testDetermineTestGroupsForRandomTestWithRandomEnabled() {
+        final String testName = "example_tst";
+        final RandomTestChooser testChooser = mock(RandomTestChooser.class);
+
+        final TestMatrixArtifact matrix = createTestMatrixWithOneRandomTest(testName);
+
+        final Proctor proctor = new Proctor(
+                matrix,
+                null,
+                Collections.singletonMap(testName, testChooser)
+        );
+
+        final Identifiers identifiersWithRandom = new Identifiers(Collections.emptyMap(), true);
+        final Identifiers identifiersWithoutRandom = new Identifiers(Collections.emptyMap(), false);
+
+        final Map<String, Object> inputContext = Collections.emptyMap();
+        final TestBucket testBucket = TestBucket.builder().build();
+        final Allocation allocation = new Allocation();
+        final TestChooser.Result result = new TestChooser.Result(
+                testBucket, allocation
+        );
+
+        when(testChooser.choose(null, inputContext)).thenReturn(result);
+
+        final ProctorResult proctorResultWithRandom = proctor.determineTestGroups(
+                identifiersWithRandom,
+                inputContext,
+                Collections.emptyMap()
+        );
+        final ProctorResult proctorResultWithoutRandom = proctor.determineTestGroups(
+                identifiersWithoutRandom,
+                inputContext,
+                Collections.emptyMap()
+        );
+
+        assertThat(proctorResultWithRandom.getBuckets()).isEqualTo(Collections.singletonMap(testName, result.getTestBucket()));
+        assertThat(proctorResultWithRandom.getAllocations()).isEqualTo(Collections.singletonMap(testName, result.getAllocation()));
+
+        assertThat(proctorResultWithoutRandom.getBuckets()).isEqualTo(Collections.emptyMap());
+        assertThat(proctorResultWithoutRandom.getAllocations()).isEqualTo(Collections.emptyMap());
+
+        // choose should not be called for identifiers with randomEnabled == false.
+        verify(testChooser, times(1)).choose(null, inputContext);
+    }
+
+    private static TestMatrixArtifact createTestMatrixWithOneRandomTest(final String testName) {
+        final TestMatrixArtifact matrix = new TestMatrixArtifact();
+        final ConsumableTestDefinition testDefinition = new ConsumableTestDefinition();
+        testDefinition.setTestType(TestType.RANDOM);
+        matrix.setTests(ImmutableMap.of(testName, testDefinition));
+        matrix.setAudit(new Audit());
+
+        return matrix;
+    }
+
     // Helper function to get the output from appendTestsNameFiltered
-    private List<String> appendTestsNameFiltered_process(final Collection<String> names)
-    {
+    private List<String> appendTestsNameFiltered_process(final Collection<String> names) {
         final TestMatrixArtifact matrix = createThreeFakeTests();
         final Proctor proctor = Proctor.construct(matrix, null, RuleEvaluator.FUNCTION_MAPPER);
         final Writer writer = new StringWriter();
@@ -262,8 +324,7 @@ public class TestProctor {
         return lines;
     }
 
-    private TestMatrixArtifact createThreeFakeTests()
-    {
+    private TestMatrixArtifact createThreeFakeTests() {
         final TestMatrixArtifact matrix = new TestMatrixArtifact();
         final Map<String, ConsumableTestDefinition> testMap = Maps.newHashMap();
         testMap.put("one", new ConsumableTestDefinition());

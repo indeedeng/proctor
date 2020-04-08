@@ -5,6 +5,7 @@ import com.indeed.proctor.common.model.TestType;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
@@ -22,6 +23,22 @@ public class Identifiers {
         this(identifierMap, false);
     }
 
+    /**
+     * This constructor can construct instances with randomEnabled == true, which only affects test with TestType.RANDOM,
+     * and enables the random behavior.
+     * For A/B testing, randomized behavior is typically harmful, because the same test units get different treatment every time,
+     * preventing analysis of effects.
+     * TestType.RANDOM can be used for non-experimentation purposes, such as gradual rollouts of migrations with e.g. 20% of traffic
+     * to be diverged to a different server.
+     * <p>
+     * TestType.RANDOM will only work with apps that use this constructor setting randomEnabled == true.
+     * Please refers to {@link Proctor#determineTestGroups(Identifiers, Map, Map, Collection)} to know how randomEnabled value
+     * is used to enable/disable random behavior for tests with TestType.RANDOM.
+     *
+     * @param identifierMap: A map from TestType to identifier to use (e.g. ctk, accountId). Note that it must not has
+     *                       an entry for TestType.RANDOM because proctor generates random values for this type.
+     * @param randomEnabled: A flag whether random behavior for tests with TestType.RANDOM is enabled or not. Default is false.
+     */
     public Identifiers(@Nonnull final Map<TestType, String> identifierMap, final boolean randomEnabled) {
         if (identifierMap.containsKey(TestType.RANDOM)) {
             throw new IllegalArgumentException("Cannot specify " + TestType.RANDOM + " in identifierMap");
@@ -49,7 +66,9 @@ public class Identifiers {
         return new Identifiers(ImmutableMap.of(typeA, identifierA, typeB, identifierB, typeC, identifierC));
     }
 
-
+    /**
+     * @return true if random test group assignment was enabled in constructor.
+     */
     public boolean isRandomEnabled() {
         return randomEnabled;
     }
