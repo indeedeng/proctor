@@ -5,7 +5,6 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableMap;
 import com.indeed.proctor.common.model.Audit;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.TestMatrixArtifact;
@@ -16,6 +15,7 @@ import javax.annotation.Nonnull;
 import javax.el.FunctionMapper;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -56,7 +56,7 @@ public abstract class AbstractJsonProctorLoader extends AbstractProctorLoader {
                         break;
 
                     case TEST_MATRIX_ARTIFACT_JSON_KEY_TESTS:
-                        testMatrixArtifact.setTests(extractRequiredTests(jsonParser));
+                        testMatrixArtifact.setTests(extractReferencedTests(jsonParser));
                         break;
 
                     default:
@@ -84,8 +84,9 @@ public abstract class AbstractJsonProctorLoader extends AbstractProctorLoader {
         }
     }
 
-    private Map<String, ConsumableTestDefinition> extractRequiredTests(@Nonnull final JsonParser jsonParser) throws IOException {
-        final ImmutableMap.Builder<String, ConsumableTestDefinition> builder = ImmutableMap.builder();
+    private Map<String, ConsumableTestDefinition> extractReferencedTests(@Nonnull final JsonParser jsonParser) throws IOException {
+        // use HashMap instead of ImmutableMap.Builder because null might be put
+        final Map<String, ConsumableTestDefinition> tests = new HashMap<>();
 
         while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
             Preconditions.checkState(jsonParser.currentToken() == JsonToken.FIELD_NAME);
@@ -93,28 +94,35 @@ public abstract class AbstractJsonProctorLoader extends AbstractProctorLoader {
             final String testName = jsonParser.currentName();
             jsonParser.nextToken();
 
+            final ConsumableTestDefinition testDefinition;
             if (jsonParser.currentToken() == JsonToken.VALUE_NULL) {
-                continue;
+                testDefinition = null;
+            } else {
+                Preconditions.checkState(jsonParser.currentToken() == JsonToken.START_OBJECT);
+
+                testDefinition = objectMapper.readValue(jsonParser, ConsumableTestDefinition.class);
             }
 
-            Preconditions.checkState(jsonParser.currentToken() == JsonToken.START_OBJECT);
-
-            final ConsumableTestDefinition testDefinition = objectMapper.readValue(jsonParser, ConsumableTestDefinition.class);
-
-            if (isTestRequired(testName, testDefinition)) {
-                builder.put(testName, testDefinition);
+            if (isTestReferenced(testName, testDefinition)) {
+                tests.put(testName, testDefinition);
             }
         }
 
-        return builder.build();
+        return tests;
     }
 
-    private boolean isTestRequired(final String testName, final ConsumableTestDefinition testDefinition) {
+    private boolean isTestReferenced(final String testName, final ConsumableTestDefinition testDefinition) {
         // check required tests
         if (Preconditions.checkNotNull(requiredTests).containsKey(testName)) {
             return true;
         }
 
+        // skip null test definition
+        if (testDefinition == null) {
+            return false;
+        }
+
+        // check dynamic filters
         return dynamicFilters.matches(testName, testDefinition);
     }
 }

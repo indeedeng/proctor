@@ -1,5 +1,6 @@
 package com.indeed.proctor.common.dynamic;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
@@ -9,6 +10,7 @@ import org.junit.Test;
 import java.util.Arrays;
 import java.util.Collections;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 public class TestDynamicFilters {
@@ -106,6 +108,23 @@ public class TestDynamicFilters {
                         Collections.<String>emptySet()
                 )
         );
+    }
+
+    @Test
+    public void testMatches() {
+        final DynamicFilters filters1 = new DynamicFilters(ImmutableList.of(
+                new AnyMatchFilter()
+        ));
+
+        assertThat(filters1.matches("any", constructTestDefinition(TestType.RANDOM)))
+                .isTrue();
+
+        final DynamicFilters filters2 = new DynamicFilters(ImmutableList.of(
+                new TestTypeFilter(TestType.EMAIL_ADDRESS)
+        ));
+
+        assertThat(filters2.matches("any", constructTestDefinition(TestType.RANDOM)))
+                .isFalse();
     }
 
     private ConsumableTestDefinition constructTestDefinition(final TestType testType) {

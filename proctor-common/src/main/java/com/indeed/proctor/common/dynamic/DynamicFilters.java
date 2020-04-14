@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -84,16 +85,12 @@ public class DynamicFilters implements JsonSerializable {
     }
 
     public boolean matches(
-            final String testName,
+            @Nullable final String testName,
             final ConsumableTestDefinition testDefinition
     ) {
-        for (final DynamicFilter filter : filters) {
-            if (filter.matches(testName, testDefinition)) {
-                return true;
-            }
-        }
-
-        return false;
+        return filters.stream().anyMatch(
+                filter -> filter.matches(testName, testDefinition)
+        );
     }
 
     /**
