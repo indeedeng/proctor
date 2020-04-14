@@ -118,7 +118,6 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
 
     @CheckForNull
     public Proctor doLoad() throws IOException, MissingTestMatrixException {
-        // begin
         final TestMatrixArtifact testMatrix = loadTestMatrix();
         if (testMatrix == null) {
             throw new MissingTestMatrixException("Failed to load Test Matrix from " + getSource());
@@ -137,7 +136,6 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
                 providedContext,
                 dynamicTests
         );
-        // end
 
         loadResult.getTestErrorMap().forEach((testName, exception) -> {
             LOGGER.error(String.format("Unable to load test matrix for a required test %s", testName), exception);
