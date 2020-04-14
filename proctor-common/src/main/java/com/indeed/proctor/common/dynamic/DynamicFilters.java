@@ -70,15 +70,30 @@ public class DynamicFilters implements JsonSerializable {
         for (final Map.Entry<String, ConsumableTestDefinition> entry : definedTests.entrySet()) {
             final String testName = entry.getKey();
             final ConsumableTestDefinition testDefinition = entry.getValue();
-            if ((testDefinition != null) && !requiredTests.contains(testName)) {
-                for (final DynamicFilter filter : filters) {
-                    if (filter.matches(testName, testDefinition)) {
-                        builder.add(testName);
-                    }
-                }
+
+            // Skip if testDefinition doesn't exist or it's already in requiredTests
+            if (testDefinition == null || requiredTests.contains(testName)) {
+                continue;
+            }
+
+            if (matches(testName, testDefinition)) {
+                builder.add(testName);
             }
         }
         return builder.build();
+    }
+
+    public boolean matches(
+            final String testName,
+            final ConsumableTestDefinition testDefinition
+    ) {
+        for (final DynamicFilter filter : filters) {
+            if (filter.matches(testName, testDefinition)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

@@ -1,5 +1,11 @@
 package com.indeed.proctor.common;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.indeed.proctor.common.model.Audit;
 import com.indeed.proctor.common.model.TestMatrixArtifact;
 import com.indeed.util.core.DataLoadTimer;
@@ -9,11 +15,12 @@ import org.junit.Test;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.io.IOException;
+import java.util.List;
 
-
+import static org.easymock.classextension.EasyMock.createMock;
 import static org.easymock.classextension.EasyMock.expect;
 import static org.easymock.classextension.EasyMock.replay;
-import static org.easymock.classextension.EasyMock.createMock;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -105,6 +112,68 @@ public class AbstractProctorLoaderTest {
             fail("Expected RTE");
         } catch (final RuntimeException rte) {
             assertEquals(exceptionStub, rte.getCause());
+        }
+    }
+
+    static class Sample {
+        final int value;
+        final List<Integer> array;
+
+        @JsonCreator
+        public Sample(
+                @JsonProperty("value") final int value,
+                @JsonProperty("array") final List<Integer> array
+        ) {
+            this.value = value;
+            this.array = array;
+        }
+
+        public int getValue() {
+            return value;
+        }
+
+        public List<Integer> getArray() {
+            return array;
+        }
+
+        @Override
+        public String toString() {
+            return "Sample{" +
+                    "value=" + value +
+                    ", array=" + array +
+                    '}';
+        }
+    }
+
+    @Test
+    public void testParsing() throws IOException {
+        final String json = "{\"A\": { \"value\": 1, \"array\": [1, 2, 3] }, \"B\": { \"value\": 3, \"array\": [3, 4, 5]}}";
+
+        final JsonFactory factory = new JsonFactory();
+        final JsonParser parser = factory.createParser(json);
+        final ObjectMapper objectMapper = new ObjectMapper();
+
+        System.out.print(parser.currentToken());
+        if (parser.nextToken() != JsonToken.START_OBJECT) {
+            throw new IllegalStateException("hogehoge");
+        }
+
+        while (parser.nextToken() != JsonToken.END_OBJECT) {
+            if (parser.currentToken() != JsonToken.FIELD_NAME) {
+                throw new IllegalStateException("gehogho");
+            }
+
+            final String key = parser.currentName();
+            parser.nextToken();
+            System.out.print(parser.currentToken());
+            if (key.equals("B")) {
+                parser.skipChildren();
+                continue;
+            }
+            final Sample sample = objectMapper.readValue(parser, Sample.class);
+
+            System.out.print(key);
+            System.out.print(sample);
         }
     }
 

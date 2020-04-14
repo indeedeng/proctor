@@ -85,6 +85,7 @@
       "description" : "An some test",
       "metaTags" : ["sometag"]
     },
+    "null_tst": null,
     "meta_tags_tst" : {
       "constants" : {
         "ENGLISH" : "en"

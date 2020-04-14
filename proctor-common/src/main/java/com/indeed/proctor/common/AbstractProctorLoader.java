@@ -41,13 +41,13 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
     @Nonnull
     private final FunctionMapper functionMapper;
     private final ProvidedContext providedContext;
-    private final DynamicFilters dynamicFilters;
+    protected final DynamicFilters dynamicFilters;
 
     private final List<ProctorLoadReporter> reporters = new ArrayList<>();
 
     /**
-     * @param cls name will be used as namespace for timer
-     * @param specification provides tests, context, dynamic filters
+     * @param cls            name will be used as namespace for timer
+     * @param specification  provides tests, context, dynamic filters
      * @param functionMapper evaluates functions in allocation rules
      */
     public AbstractProctorLoader(
@@ -118,6 +118,7 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
 
     @CheckForNull
     public Proctor doLoad() throws IOException, MissingTestMatrixException {
+        // begin
         final TestMatrixArtifact testMatrix = loadTestMatrix();
         if (testMatrix == null) {
             throw new MissingTestMatrixException("Failed to load Test Matrix from " + getSource());
@@ -136,12 +137,13 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
                 providedContext,
                 dynamicTests
         );
+        // end
 
         loadResult.getTestErrorMap().forEach((testName, exception) -> {
             LOGGER.error(String.format("Unable to load test matrix for a required test %s", testName), exception);
         });
         loadResult.getMissingTests().forEach((testName) ->
-            LOGGER.error(String.format("A required test %s is missing from test matrix", testName))
+                LOGGER.error(String.format("A required test %s is missing from test matrix", testName))
         );
         loadResult.getDynamicTestErrorMap().forEach((testName, exception) -> {
             // Intentionally not adding stack trace to log, to reduce log size,
@@ -195,6 +197,7 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
     }
 
     // this can be used in subclasses for healthchecks
+
     /**
      * @return true if there was a success and it came after the last error
      */
