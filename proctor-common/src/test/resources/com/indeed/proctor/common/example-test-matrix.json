@@ -5,6 +5,7 @@
     "updatedDate" : "2011-08-16T15:03-0500",
     "updatedBy" : "shoichi"
   },
+  "unknown_field": "should be ignored",
   "tests" : {
     "exampletst" : {
       "constants" : {

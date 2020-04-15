@@ -25,14 +25,36 @@ public abstract class AbstractJsonProctorLoader extends AbstractProctorLoader {
     private static final Logger LOGGER = Logger.getLogger(AbstractJsonProctorLoader.class);
     private static final String TEST_MATRIX_ARTIFACT_JSON_KEY_AUDIT = "audit";
     private static final String TEST_MATRIX_ARTIFACT_JSON_KEY_TESTS = "tests";
-
-    @Nonnull
-    private final ObjectMapper objectMapper = Serializers.lenient();
+    private static final ObjectMapper OBJECT_MAPPER = Serializers.lenient();
 
     public AbstractJsonProctorLoader(@Nonnull final Class<?> cls, @Nonnull final ProctorSpecification specification, @Nonnull final FunctionMapper functionMapper) {
         super(cls, specification, functionMapper);
     }
 
+    /**
+     * Load a part of test matrix json file as TestMatrixArtifact. Parsed test matrix json has the following structure:
+     * {
+     *     "audit": {
+     *         ... // audit fields
+     *     },
+     *     "tests": {
+     *         "test1": {
+     *             ... // test definition fields
+     *         },
+     *         "test2": {
+     *             ...
+     *         },
+     *         ...
+     *     }
+     * }.
+     * The value for "tests" includes all of proctor tests, so it is very huge. In order to avoid big memory footprints,
+     * this method only loads referenced tests, which are determined by requiredTests and dynamicFilters, by iterating over
+     * entries under the value for "tests".
+     *
+     * @param reader
+     * @return TestMatrixArtifact with referenced test definitions only
+     * @throws IOException
+     */
     @CheckForNull
     protected TestMatrixArtifact loadJsonTestMatrix(@Nonnull final Reader reader) throws IOException {
         try {
@@ -40,34 +62,41 @@ public abstract class AbstractJsonProctorLoader extends AbstractProctorLoader {
 
             final JsonFactory jsonFactory = new JsonFactory();
             final JsonParser jsonParser = jsonFactory.createParser(reader);
+            // At this point, currentToken() returns null.
 
-            Preconditions.checkState(jsonParser.nextToken() == JsonToken.START_OBJECT);
+            // Go to the next token, which must be "{".
+            // This condition will be verified in consumeJson.
+            jsonParser.nextToken();
 
-            while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
-                Preconditions.checkState(jsonParser.currentToken() == JsonToken.FIELD_NAME);
+            JsonParserUtils.consumeJson(
+                    jsonParser,
+                    (key, parser) -> {
+                        switch (key) {
+                            case TEST_MATRIX_ARTIFACT_JSON_KEY_AUDIT:
+                                // The value for "audit" field must be an object.
+                                Preconditions.checkState(parser.currentToken() == JsonToken.START_OBJECT);
 
-                final String key = jsonParser.currentName();
+                                testMatrixArtifact.setAudit(OBJECT_MAPPER.readValue(parser, Audit.class));
+                                break;
 
-                jsonParser.nextToken();
-                Preconditions.checkState(jsonParser.currentToken() == JsonToken.START_OBJECT);
-                switch (key) {
-                    case TEST_MATRIX_ARTIFACT_JSON_KEY_AUDIT:
-                        testMatrixArtifact.setAudit(objectMapper.readValue(jsonParser, Audit.class));
-                        break;
+                            case TEST_MATRIX_ARTIFACT_JSON_KEY_TESTS:
+                                // The value for "tests" field must be an object.
+                                Preconditions.checkState(parser.currentToken() == JsonToken.START_OBJECT);
 
-                    case TEST_MATRIX_ARTIFACT_JSON_KEY_TESTS:
-                        testMatrixArtifact.setTests(extractReferencedTests(jsonParser));
-                        break;
+                                testMatrixArtifact.setTests(extractReferencedTests(parser));
+                                break;
 
-                    default:
-                        LOGGER.warn("Unknown test matrix artifact json key: '" + key + "'");
-                        jsonParser.skipChildren();
-                        break;
-                }
-            }
+                            default:
+                                LOGGER.warn("Unknown test matrix artifact json key: '" + key + "'");
+                                // If key is not either "audit" or "tests", just skip the value.
+                                parser.skipChildren();
+                                break;
+                        }
+                    }
+            );
 
-            Preconditions.checkNotNull(testMatrixArtifact.getAudit());
-            Preconditions.checkNotNull(testMatrixArtifact.getTests());
+            Preconditions.checkNotNull(testMatrixArtifact.getAudit(), "Field \"audit\" was not found in json");
+            Preconditions.checkNotNull(testMatrixArtifact.getTests(), "Field \"tests\" was not found in json");
 
             return testMatrixArtifact;
         } catch (final IOException e) {
@@ -88,25 +117,23 @@ public abstract class AbstractJsonProctorLoader extends AbstractProctorLoader {
         // use HashMap instead of ImmutableMap.Builder because null might be put
         final Map<String, ConsumableTestDefinition> tests = new HashMap<>();
 
-        while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
-            Preconditions.checkState(jsonParser.currentToken() == JsonToken.FIELD_NAME);
+        JsonParserUtils.consumeJson(
+                jsonParser,
+                (testName, parser) -> {
+                    final ConsumableTestDefinition testDefinition;
+                    if (jsonParser.currentToken() == JsonToken.VALUE_NULL) {
+                        testDefinition = null;
+                    } else {
+                        Preconditions.checkState(jsonParser.currentToken() == JsonToken.START_OBJECT);
 
-            final String testName = jsonParser.currentName();
-            jsonParser.nextToken();
+                        testDefinition = OBJECT_MAPPER.readValue(jsonParser, ConsumableTestDefinition.class);
+                    }
 
-            final ConsumableTestDefinition testDefinition;
-            if (jsonParser.currentToken() == JsonToken.VALUE_NULL) {
-                testDefinition = null;
-            } else {
-                Preconditions.checkState(jsonParser.currentToken() == JsonToken.START_OBJECT);
-
-                testDefinition = objectMapper.readValue(jsonParser, ConsumableTestDefinition.class);
-            }
-
-            if (isTestReferenced(testName, testDefinition)) {
-                tests.put(testName, testDefinition);
-            }
-        }
+                    if (isTestReferenced(testName, testDefinition)) {
+                        tests.put(testName, testDefinition);
+                    }
+                }
+        );
 
         return tests;
     }
