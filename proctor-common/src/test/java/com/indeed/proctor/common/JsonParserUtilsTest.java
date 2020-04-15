@@ -6,9 +6,9 @@ import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 import org.junit.Test;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -19,22 +19,31 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class JsonParserUtilsTest {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-    private static final File JSON_FILE = new File(
-            JsonParserUtilsTest.class.getResource("test-case-for-json-parser-utils.json").getPath()
+    private static final String EMPTY = "{}";
+    private static final String TWO_VALUES = "" +
+            "{" +
+            "   \"object1\": {" +
+            "       \"a\": 1," +
+            "       \"b\": [1, 2, 3]" +
+            "   }," +
+            "   \"object2\": {" +
+            "       \"a\": 3," +
+            "       \"b\": []" +
+            "   }" +
+            "}";
+    private static final String TWO_VALUES_WITH_ONE_NULL = "" +
+            "{" +
+            "   \"object1\": null," +
+            "   \"object2\": {" +
+            "       \"a\": 4," +
+            "       \"b\": [1, 2]" +
+            "   }" +
+            "}";
+    private static final List<String> TEST_OBJECT_MAP_TEST_CASES = ImmutableList.of(
+            EMPTY,
+            TWO_VALUES,
+            TWO_VALUES_WITH_ONE_NULL
     );
-    private static final Map<String, TestObject> ALL_OBJECTS;
-
-    static {
-        try {
-            ALL_OBJECTS = OBJECT_MAPPER.readValue(
-                    JSON_FILE,
-                    new TypeReference<Map<String, TestObject>>() {
-                    }
-            );
-        } catch (final Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     private static class TestObject {
         private final int a;
@@ -69,22 +78,34 @@ public class JsonParserUtilsTest {
     }
 
     @Test
-    public void testConsumeJson() throws IOException {
+    public void testConsumeJsonWithTestObjectMap() throws IOException {
+        for (final String testCase : TEST_OBJECT_MAP_TEST_CASES) {
+            verifyTestObjectMap(testCase);
+        }
+    }
+
+    private static void verifyTestObjectMap(final String testObjectMapAsJsonString) throws IOException {
+        final Map<String, TestObject> expected = OBJECT_MAPPER.readValue(
+                testObjectMapAsJsonString,
+                new TypeReference<Map<String, TestObject>>() {
+                }
+        );
+
         final JsonFactory jsonFactory = new JsonFactory();
-        final JsonParser jsonParser = jsonFactory.createParser(JSON_FILE);
+        final JsonParser jsonParser = jsonFactory.createParser(testObjectMapAsJsonString);
 
         jsonParser.nextToken();
 
-        final Map<String, TestObject> testObjectMap = new HashMap<>();
+        final Map<String, TestObject> actual = new HashMap<>();
         JsonParserUtils.consumeJson(
                 jsonParser,
                 (key, parser) -> {
                     final TestObject testObject = OBJECT_MAPPER.readValue(parser, TestObject.class);
 
-                    testObjectMap.put(key, testObject);
+                    actual.put(key, testObject);
                 }
         );
 
-        assertThat(testObjectMap).isEqualTo(ALL_OBJECTS);
+        assertThat(actual).isEqualTo(expected);
     }
 }

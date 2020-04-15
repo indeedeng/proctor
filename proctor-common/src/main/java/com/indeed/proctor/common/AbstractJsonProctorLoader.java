@@ -120,14 +120,7 @@ public abstract class AbstractJsonProctorLoader extends AbstractProctorLoader {
         JsonParserUtils.consumeJson(
                 jsonParser,
                 (testName, parser) -> {
-                    final ConsumableTestDefinition testDefinition;
-                    if (jsonParser.currentToken() == JsonToken.VALUE_NULL) {
-                        testDefinition = null;
-                    } else {
-                        Preconditions.checkState(jsonParser.currentToken() == JsonToken.START_OBJECT);
-
-                        testDefinition = OBJECT_MAPPER.readValue(jsonParser, ConsumableTestDefinition.class);
-                    }
+                    final ConsumableTestDefinition testDefinition = OBJECT_MAPPER.readValue(jsonParser, ConsumableTestDefinition.class);
 
                     if (isTestReferenced(testName, testDefinition)) {
                         tests.put(testName, testDefinition);
