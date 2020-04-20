@@ -2,6 +2,7 @@ package com.indeed.proctor.store;
 
 import com.google.common.collect.Lists;
 import com.google.common.io.Files;
+import com.indeed.proctor.common.model.TestDefinition;
 import org.apache.log4j.Logger;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.LogCommand;
@@ -194,6 +195,12 @@ public class GitProctor extends FileBasedProctorStore {
         } catch (final IOException e) {
             throw new StoreException("Could not get detail for " + revisionId, e);
         }
+    }
+
+    @Nonnull
+    @Override
+    public List<TestDefinition> getTestDefinitions(final String testName, final String revision, final int start, final int limit) throws StoreException {
+        throw new UnsupportedOperationException("test definitions is not supported in Git store");
     }
 
     @Nonnull

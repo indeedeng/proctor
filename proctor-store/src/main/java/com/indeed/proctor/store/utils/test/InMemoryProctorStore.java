@@ -193,6 +193,12 @@ public class InMemoryProctorStore implements ProctorStore {
 
     @Nonnull
     @Override
+    public synchronized List<TestDefinition> getTestDefinitions(final String testName, final String revision, final int start, final int limit) throws StoreException {
+        throw new UnsupportedOperationException("test definitions is not supported in in-memory store");
+    }
+
+    @Nonnull
+    @Override
     public synchronized Map<String, List<Revision>> getAllHistories() {
         return globalHistory.stream()
                 .filter(r -> r.testEdit != null)

@@ -3,6 +3,7 @@ package com.indeed.proctor.store;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.io.Files;
+import com.indeed.proctor.common.model.TestDefinition;
 import com.indeed.proctor.common.model.TestMatrixDefinition;
 import org.apache.log4j.Logger;
 import org.tmatesoft.svn.core.SVNException;
@@ -116,6 +117,12 @@ public class SvnProctor extends FileBasedProctorStore {
     @Override
     public RevisionDetails getRevisionDetails(final String revisionId) {
         throw new UnsupportedOperationException("revision details is not supported in SVN store");
+    }
+
+    @Nonnull
+    @Override
+    public List<TestDefinition> getTestDefinitions(final String testName, final String revision, final int start, final int limit) throws StoreException {
+        throw new UnsupportedOperationException("test definitions is not supported in SVN store");
     }
 
     @Nonnull

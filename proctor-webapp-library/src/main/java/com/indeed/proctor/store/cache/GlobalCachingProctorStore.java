@@ -166,6 +166,12 @@ public class GlobalCachingProctorStore implements ProctorStore {
 
     @Nonnull
     @Override
+    public List<TestDefinition> getTestDefinitions(final String testName, final String revision, final int start, final int limit) throws StoreException {
+        return delegate.getTestDefinitions(testName, revision, start, limit);
+    }
+
+    @Nonnull
+    @Override
     public Map<String, List<Revision>> getAllHistories() throws StoreException {
         return delegate.getAllHistories();
     }
