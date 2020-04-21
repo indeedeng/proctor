@@ -194,7 +194,13 @@ public class InMemoryProctorStore implements ProctorStore {
     @Nonnull
     @Override
     public synchronized List<TestDefinition> getTestDefinitions(final String testName, final String revision, final int start, final int limit) throws StoreException {
-        throw new UnsupportedOperationException("test definitions is not supported in in-memory store");
+        return getHistoryFromRevision(revision)
+                .filter(r -> r.modifiedTests().contains(testName))
+                .map(r -> Objects.requireNonNull(r.testEdit))
+                .map(t -> t.definition)
+                .skip(start)
+                .limit(limit)
+                .collect(toList());
     }
 
     @Nonnull
@@ -361,7 +367,7 @@ public class InMemoryProctorStore implements ProctorStore {
 
     /**
      * revision metadata + test edit data in the revision
-     *
+     * <p>
      * This assumes single test is modified in a revision
      * as current write interface doesn't allow multiple test edits.
      */
