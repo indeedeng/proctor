@@ -156,6 +156,12 @@ public class AsyncInitializedProctorStore implements ProctorStore {
 
     @Nonnull
     @Override
+    public List<TestDefinition> getTestDefinitions(final String testName, final int start, final int limit) throws StoreException {
+        return getProctorStore().getTestDefinitions(testName, start, limit);
+    }
+
+    @Nonnull
+    @Override
     public List<TestDefinition> getTestDefinitions(final String testName, final String revision, final int start, final int limit) throws StoreException {
         return getProctorStore().getTestDefinitions(testName, revision, start, limit);
     }

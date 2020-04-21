@@ -121,6 +121,12 @@ public class SvnProctor extends FileBasedProctorStore {
 
     @Nonnull
     @Override
+    public List<TestDefinition> getTestDefinitions(final String testName, final int start, final int limit) throws StoreException {
+        throw new UnsupportedOperationException("test definitions is not supported in SVN store");
+    }
+
+    @Nonnull
+    @Override
     public List<TestDefinition> getTestDefinitions(final String testName, final String revision, final int start, final int limit) throws StoreException {
         throw new UnsupportedOperationException("test definitions is not supported in SVN store");
     }

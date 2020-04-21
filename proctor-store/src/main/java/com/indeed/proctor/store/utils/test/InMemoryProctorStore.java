@@ -193,6 +193,12 @@ public class InMemoryProctorStore implements ProctorStore {
 
     @Nonnull
     @Override
+    public synchronized List<TestDefinition> getTestDefinitions(final String testName, final int start, final int limit) throws StoreException {
+        return getTestDefinitions(testName, getLatestVersion(), start, limit);
+    }
+
+    @Nonnull
+    @Override
     public synchronized List<TestDefinition> getTestDefinitions(final String testName, final String revision, final int start, final int limit) throws StoreException {
         return getHistoryFromRevision(revision)
                 .filter(r -> r.modifiedTests().contains(testName))

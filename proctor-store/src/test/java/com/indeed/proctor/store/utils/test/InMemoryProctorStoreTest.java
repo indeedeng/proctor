@@ -179,6 +179,9 @@ public class InMemoryProctorStoreTest {
                 "comment"
         );
 
+        assertThat(testee.getTestDefinitions("foo", 0, 5))
+                .containsExactly(foo3, foo2, foo1);
+
         assertThat(testee.getTestDefinitions("foo", "3", 0, 5))
                 .containsExactly(foo3, foo2, foo1);
 
