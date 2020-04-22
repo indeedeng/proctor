@@ -1,5 +1,7 @@
 package com.indeed.proctor.store;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.indeed.proctor.common.model.TestDefinition;
 
 import javax.annotation.Nullable;
@@ -13,7 +15,11 @@ public class TestEdit {
     private final Revision revision;
     private final TestDefinition definition;
 
-    public TestEdit(final Revision revision, @Nullable final TestDefinition definition) {
+    @JsonCreator
+    public TestEdit(
+            @JsonProperty("revision") final Revision revision,
+            @JsonProperty("definition") @Nullable final TestDefinition definition
+    ) {
         this.revision = revision;
         this.definition = definition;
     }
