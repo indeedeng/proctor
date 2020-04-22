@@ -193,17 +193,19 @@ public class InMemoryProctorStore implements ProctorStore {
 
     @Nonnull
     @Override
-    public synchronized List<TestDefinition> getTestDefinitions(final String testName, final int start, final int limit) throws StoreException {
-        return getTestDefinitions(testName, getLatestVersion(), start, limit);
+    public synchronized List<com.indeed.proctor.store.TestEdit> getTestEdits(final String testName, final int start, final int limit) throws StoreException {
+        return getTestEdits(testName, getLatestVersion(), start, limit);
     }
 
     @Nonnull
     @Override
-    public synchronized List<TestDefinition> getTestDefinitions(final String testName, final String revision, final int start, final int limit) throws StoreException {
+    public synchronized List<com.indeed.proctor.store.TestEdit> getTestEdits(final String testName, final String revision, final int start, final int limit) throws StoreException {
         return getHistoryFromRevision(revision)
                 .filter(r -> r.modifiedTests().contains(testName))
-                .map(r -> Objects.requireNonNull(r.testEdit))
-                .map(t -> t.definition)
+                .map(r -> new com.indeed.proctor.store.TestEdit(
+                        r.revision,
+                        Objects.requireNonNull(r.testEdit).definition
+                ))
                 .skip(start)
                 .limit(limit)
                 .collect(toList());
@@ -379,7 +381,6 @@ public class InMemoryProctorStore implements ProctorStore {
      */
     private static class UpdateRecord {
         private final Revision revision;
-        @Nullable
         private final TestEdit testEdit;
 
         private UpdateRecord(

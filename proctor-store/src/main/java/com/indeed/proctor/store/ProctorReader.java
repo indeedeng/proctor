@@ -107,25 +107,25 @@ public interface ProctorReader {
     RevisionDetails getRevisionDetails(String revisionId) throws StoreException;
 
     /**
-     * @param testName to get test definitions
+     * @param testName to get test edits
      * @param start offset of the first revision (0-indexed)
-     * @param limit limit of the number of test definitions
-     * @return a list of test definitions for a test when test revision was made ordered by recency.
+     * @param limit limit of the number of test edits
+     * @return a list of test edits for a test when test revision was made ordered by recency.
      * @throws StoreException if the revision is not found
      */
     @Nonnull
-    List<TestDefinition> getTestDefinitions(String testName, int start, int limit) throws StoreException;
+    List<TestEdit> getTestEdits(String testName, int start, int limit) throws StoreException;
 
     /**
-     * @param testName to get test definitions
-     * @param revision from which the search of test definition is initiated
+     * @param testName to get test edits
+     * @param revision from which the search of test edit is initiated
      * @param start offset of the first revision (0-indexed)
-     * @param limit limit of the number of test definitions
-     * @return a list of test definitions for a test when test revision was made ordered by recency.
+     * @param limit limit of the number of test edits
+     * @return a list of test edits for a test when test revision was made ordered by recency.
      * @throws StoreException if the revision is not found
      */
     @Nonnull
-    List<TestDefinition> getTestDefinitions(String testName, String revision, int start, int limit) throws StoreException;
+    List<TestEdit> getTestEdits(String testName, String revision, int start, int limit) throws StoreException;
 
     /**
      * Get all the revisions for all tests in history

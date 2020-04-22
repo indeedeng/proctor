@@ -1,7 +1,5 @@
 package com.indeed.proctor.store;
 
-import com.indeed.proctor.common.model.TestDefinition;
-
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -57,13 +55,13 @@ public class LocalDirectoryStore extends FileBasedProctorStore {
 
     @Nonnull
     @Override
-    public List<TestDefinition> getTestDefinitions(final String testName, final int start, final int limit) throws StoreException {
+    public List<TestEdit> getTestEdits(final String testName, final int start, final int limit) throws StoreException {
         throw new UnsupportedOperationException("Not implemented yet");
     }
 
     @Nonnull
     @Override
-    public List<TestDefinition> getTestDefinitions(final String testName, final String revision, final int start, final int limit) throws StoreException {
+    public List<TestEdit> getTestEdits(final String testName, final String revision, final int start, final int limit) throws StoreException {
         throw new UnsupportedOperationException("Not implemented yet");
     }
 

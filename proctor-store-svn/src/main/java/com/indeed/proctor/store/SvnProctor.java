@@ -3,7 +3,6 @@ package com.indeed.proctor.store;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.io.Files;
-import com.indeed.proctor.common.model.TestDefinition;
 import com.indeed.proctor.common.model.TestMatrixDefinition;
 import org.apache.log4j.Logger;
 import org.tmatesoft.svn.core.SVNException;
@@ -98,7 +97,6 @@ public class SvnProctor extends FileBasedProctorStore {
 
                 final String[] targetPaths = {testPath};
 
-
                 final SVNRevision svnRevision = SVNRevision.create(revision);
                 return getSVNLogs(clientManager, targetPaths, svnRevision, start, limit);
             }
@@ -121,14 +119,14 @@ public class SvnProctor extends FileBasedProctorStore {
 
     @Nonnull
     @Override
-    public List<TestDefinition> getTestDefinitions(final String testName, final int start, final int limit) throws StoreException {
-        throw new UnsupportedOperationException("test definitions is not supported in SVN store");
+    public List<TestEdit> getTestEdits(final String testName, final int start, final int limit) throws StoreException {
+        throw new UnsupportedOperationException("test edits is not supported in SVN store");
     }
 
     @Nonnull
     @Override
-    public List<TestDefinition> getTestDefinitions(final String testName, final String revision, final int start, final int limit) throws StoreException {
-        throw new UnsupportedOperationException("test definitions is not supported in SVN store");
+    public List<TestEdit> getTestEdits(final String testName, final String revision, final int start, final int limit) throws StoreException {
+        throw new UnsupportedOperationException("test edits is not supported in SVN store");
     }
 
     @Nonnull
@@ -164,9 +162,9 @@ public class SvnProctor extends FileBasedProctorStore {
 
                 // In order to get history is "descending" order, the startRevision should be the one closer to HEAD
                 logClient.doLog(svnUrl, targetPaths, /* pegRevision */ SVNRevision.HEAD, svnRevision, SVNRevision.create(1),
-                                /* stopOnCopy */ false, /* discoverChangedPaths */ false, /* includeMergedRevisions */ false,
-                                /* limit */ 1,
-                                new String[]{SVNRevisionProperty.LOG}, handler);
+                        /* stopOnCopy */ false, /* discoverChangedPaths */ false, /* includeMergedRevisions */ false,
+                        /* limit */ 1,
+                        new String[]{SVNRevisionProperty.LOG}, handler);
                 final SVNLogEntry entry = handler.getLogEntries().size() > 0 ? handler.getLogEntries().get(0) : null;
                 return entry == null ? "-1" : String.valueOf(entry.getRevision());
             }
@@ -217,9 +215,9 @@ public class SvnProctor extends FileBasedProctorStore {
 
             // In order to get history is "descending" order, the startRevision should be the one closer to HEAD
             logClient.doLog(svnUrl, paths, /* pegRevision */ SVNRevision.HEAD, startRevision, SVNRevision.create(1),
-                            /* stopOnCopy */ false, /* discoverChangedPaths */ false, /* includeMergedRevisions */ false,
-                            /* limit */ start + limit,
-                            new String[]{SVNRevisionProperty.LOG, SVNRevisionProperty.AUTHOR, SVNRevisionProperty.DATE}, handler);
+                    /* stopOnCopy */ false, /* discoverChangedPaths */ false, /* includeMergedRevisions */ false,
+                    /* limit */ start + limit,
+                    new String[]{SVNRevisionProperty.LOG, SVNRevisionProperty.AUTHOR, SVNRevisionProperty.DATE}, handler);
 
             final List<SVNLogEntry> entries = handler.getLogEntries();
 

@@ -194,13 +194,13 @@ public class FileBasedProctorStoreTest {
 
         @Nonnull
         @Override
-        public List<TestDefinition> getTestDefinitions(final String testName, final int start, final int limit) throws StoreException {
+        public List<TestEdit> getTestEdits(final String testName, final int start, final int limit) throws StoreException {
             return null;
         }
 
         @Nonnull
         @Override
-        public List<TestDefinition> getTestDefinitions(final String testName, final String revision, final int start, final int limit) throws StoreException {
+        public List<TestEdit> getTestEdits(final String testName, final String revision, final int start, final int limit) throws StoreException {
             return null;
         }
 

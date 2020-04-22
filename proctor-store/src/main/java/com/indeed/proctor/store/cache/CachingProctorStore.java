@@ -13,6 +13,7 @@ import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.store.RevisionDetails;
 import com.indeed.proctor.store.StoreException;
+import com.indeed.proctor.store.TestEdit;
 import com.indeed.proctor.store.utils.HistoryUtil;
 import org.apache.log4j.Logger;
 
@@ -147,14 +148,14 @@ public class CachingProctorStore implements ProctorStore {
 
     @Nonnull
     @Override
-    public List<TestDefinition> getTestDefinitions(final String testName, final int start, final int limit) throws StoreException {
-        return delegate.getTestDefinitions(testName, start, limit);
+    public List<TestEdit> getTestEdits(final String testName, final int start, final int limit) throws StoreException {
+        return delegate.getTestEdits(testName, start, limit);
     }
 
     @Nonnull
     @Override
-    public List<TestDefinition> getTestDefinitions(final String testName, final String revision, final int start, final int limit) throws StoreException {
-        return delegate.getTestDefinitions(testName, revision, start, limit);
+    public List<TestEdit> getTestEdits(final String testName, final String revision, final int start, final int limit) throws StoreException {
+        return delegate.getTestEdits(testName, revision, start, limit);
     }
 
     @Nonnull
@@ -193,7 +194,6 @@ public class CachingProctorStore implements ProctorStore {
      * Following three methods make side-effect and it would trigger cache refreshing at once
      */
 
-
     @Override
     public void updateTestDefinition(
             final ChangeMetadata changeMetadata,
@@ -206,7 +206,6 @@ public class CachingProctorStore implements ProctorStore {
         cacheHolder.startRefreshCacheTask();
     }
 
-
     @Override
     public void deleteTestDefinition(
             final ChangeMetadata changeMetadata,
@@ -217,7 +216,6 @@ public class CachingProctorStore implements ProctorStore {
         delegate.deleteTestDefinition(changeMetadata, previousVersion, testName, testDefinition);
         cacheHolder.startRefreshCacheTask();
     }
-
 
     @Override
     public void addTestDefinition(
