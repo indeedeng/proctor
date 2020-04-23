@@ -193,6 +193,26 @@ public class InMemoryProctorStore implements ProctorStore {
 
     @Nonnull
     @Override
+    public synchronized List<com.indeed.proctor.store.TestEdit> getTestEdits(final String testName, final int start, final int limit) throws StoreException {
+        return getTestEdits(testName, getLatestVersion(), start, limit);
+    }
+
+    @Nonnull
+    @Override
+    public synchronized List<com.indeed.proctor.store.TestEdit> getTestEdits(final String testName, final String revision, final int start, final int limit) throws StoreException {
+        return getHistoryFromRevision(revision)
+                .filter(r -> r.modifiedTests().contains(testName))
+                .map(r -> new com.indeed.proctor.store.TestEdit(
+                        r.revision,
+                        Objects.requireNonNull(r.testEdit).definition
+                ))
+                .skip(start)
+                .limit(limit)
+                .collect(toList());
+    }
+
+    @Nonnull
+    @Override
     public synchronized Map<String, List<Revision>> getAllHistories() {
         return globalHistory.stream()
                 .filter(r -> r.testEdit != null)
@@ -355,13 +375,12 @@ public class InMemoryProctorStore implements ProctorStore {
 
     /**
      * revision metadata + test edit data in the revision
-     *
+     * <p>
      * This assumes single test is modified in a revision
      * as current write interface doesn't allow multiple test edits.
      */
     private static class UpdateRecord {
         private final Revision revision;
-        @Nullable
         private final TestEdit testEdit;
 
         private UpdateRecord(

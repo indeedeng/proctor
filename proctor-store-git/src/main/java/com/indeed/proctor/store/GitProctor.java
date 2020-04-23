@@ -73,10 +73,9 @@ public class GitProctor extends FileBasedProctorStore {
     }
 
     /**
-     *
-     * @param core a core with a defined remote and defined local working directory
+     * @param core                     a core with a defined remote and defined local working directory
      * @param testDefinitionsDirectory where test definitions are located inside the local git repository
-     * @param branchName stay on this branch if not null, else default branch from remote
+     * @param branchName               stay on this branch if not null, else default branch from remote
      */
     public GitProctor(final GitProctorCore core, final String testDefinitionsDirectory, @Nullable final String branchName) {
         super(core, testDefinitionsDirectory);
@@ -194,6 +193,18 @@ public class GitProctor extends FileBasedProctorStore {
         } catch (final IOException e) {
             throw new StoreException("Could not get detail for " + revisionId, e);
         }
+    }
+
+    @Nonnull
+    @Override
+    public List<TestEdit> getTestEdits(final String testName, final int start, final int limit) throws StoreException {
+        throw new UnsupportedOperationException("test edits is not supported in Git store");
+    }
+
+    @Nonnull
+    @Override
+    public List<TestEdit> getTestEdits(final String testName, final String revision, final int start, final int limit) throws StoreException {
+        throw new UnsupportedOperationException("test edits is not supported in Git store");
     }
 
     @Nonnull

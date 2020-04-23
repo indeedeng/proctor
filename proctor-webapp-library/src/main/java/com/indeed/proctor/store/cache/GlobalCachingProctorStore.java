@@ -7,6 +7,7 @@ import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.store.RevisionDetails;
 import com.indeed.proctor.store.StoreException;
+import com.indeed.proctor.store.TestEdit;
 import com.indeed.proctor.store.utils.HistoryUtil;
 import com.indeed.proctor.webapp.db.Environment;
 import com.indeed.proctor.webapp.extensions.GlobalCacheStore;
@@ -162,6 +163,18 @@ public class GlobalCachingProctorStore implements ProctorStore {
     @Override
     public RevisionDetails getRevisionDetails(final String revisionId) throws StoreException {
         return delegate.getRevisionDetails(revisionId);
+    }
+
+    @Nonnull
+    @Override
+    public List<TestEdit> getTestEdits(final String testName, final int start, final int limit) throws StoreException {
+        return delegate.getTestEdits(testName, start, limit);
+    }
+
+    @Nonnull
+    @Override
+    public List<TestEdit> getTestEdits(final String testName, final String revision, final int start, final int limit) throws StoreException {
+        return delegate.getTestEdits(testName, revision, start, limit);
     }
 
     @Nonnull

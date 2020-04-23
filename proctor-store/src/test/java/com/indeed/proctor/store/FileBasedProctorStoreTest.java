@@ -194,6 +194,18 @@ public class FileBasedProctorStoreTest {
 
         @Nonnull
         @Override
+        public List<TestEdit> getTestEdits(final String testName, final int start, final int limit) throws StoreException {
+            return null;
+        }
+
+        @Nonnull
+        @Override
+        public List<TestEdit> getTestEdits(final String testName, final String revision, final int start, final int limit) throws StoreException {
+            return null;
+        }
+
+        @Nonnull
+        @Override
         public Map<String, List<Revision>> getAllHistories() throws StoreException {
             return null;
         }

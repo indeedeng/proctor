@@ -9,6 +9,7 @@ import com.indeed.proctor.common.model.TestMatrixVersion;
 import com.indeed.proctor.common.model.TestType;
 import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.store.StoreException;
+import com.indeed.proctor.store.TestEdit;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -134,8 +135,8 @@ public class InMemoryProctorStoreTest {
         final TestDefinition dummyTestDefinition = createDummyTestDefinition("3", "tst1");
         dummyTestDefinition.setDescription("tst1 description has been updated");
         assertThatThrownBy(() ->
-            testee.updateTestDefinition("Alex", "pwd", "incorrectPreviousVersion",
-                    "tst1", dummyTestDefinition, Collections.emptyMap(), "update tst1 description")
+                testee.updateTestDefinition("Alex", "pwd", "incorrectPreviousVersion",
+                        "tst1", dummyTestDefinition, Collections.emptyMap(), "update tst1 description")
         ).isInstanceOf(StoreException.TestUpdateException.class);
 
     }
@@ -146,6 +147,72 @@ public class InMemoryProctorStoreTest {
         testee.deleteTestDefinition("Alex", "pwd", "1", "tst1", dummyTestDefinition, "Delete tst1");
         assertThat(testee.getLatestVersion()).isEqualTo("3");
         assertNull(testee.getCurrentTestDefinition("tst1"));
+    }
+
+    @Test
+    public void testGetTestEdits() throws StoreException {
+        testee = new InMemoryProctorStore();
+
+        final TestDefinition foo1 = createDummyTestDefinition("1", "foo");
+        final TestDefinition foo2 = createDummyTestDefinition("2", "foo");
+        final TestDefinition foo3 = createDummyTestDefinition("3", "foo");
+
+        testee.addTestDefinition(
+                "Bob", "bob", "foo",
+                foo1,
+                Collections.emptyMap(),
+                "comment"
+        );
+        final TestEdit edit1 = new TestEdit(getLatestRevision(), foo1);
+
+        testee.updateTestDefinition(
+                "Bob", "bob", "1",
+                "foo",
+                foo2,
+                Collections.emptyMap(),
+                "comment"
+        );
+        final TestEdit edit2 = new TestEdit(getLatestRevision(), foo2);
+
+        testee.updateTestDefinition(
+                "Bob", "bob", "2",
+                "foo",
+                foo3,
+                Collections.emptyMap(),
+                "comment"
+        );
+        final TestEdit edit3 = new TestEdit(getLatestRevision(), foo3);
+
+        assertThat(testee.getTestEdits("foo", 0, 5))
+                .containsExactly(edit3, edit2, edit1);
+
+        assertThat(testee.getTestEdits("foo", "3", 0, 5))
+                .containsExactly(edit3, edit2, edit1);
+
+        // test limit
+        assertThat(testee.getTestEdits("foo", "3", 0, 2))
+                .containsExactly(edit3, edit2);
+
+        // test start
+        assertThat(testee.getTestEdits("foo", "3", 1, 2))
+                .containsExactly(edit2, edit1);
+
+        // with old revision
+        assertThat(testee.getTestEdits("foo", "2", 0, 1))
+                .containsExactly(edit2);
+
+        // with unknown revision
+        assertThatThrownBy(() -> testee.getTestEdits("foo", "10", 0, 1))
+                .isInstanceOf(StoreException.class)
+                .hasMessageContaining("Unknown revision 1");
+
+        // with unknown test
+        assertThat(testee.getTestEdits("bar", "2", 0, 1))
+                .isEmpty();
+    }
+
+    private Revision getLatestRevision() throws StoreException {
+        return testee.getRevisionDetails(testee.getLatestVersion()).getRevision();
     }
 
     public static TestDefinition createDummyTestDefinition(final String version, final String testName) {
@@ -177,5 +244,4 @@ public class InMemoryProctorStoreTest {
                 "description of " + testName
         );
     }
-
 }

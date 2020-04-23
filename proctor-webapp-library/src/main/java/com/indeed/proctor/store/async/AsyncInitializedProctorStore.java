@@ -9,6 +9,7 @@ import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.store.RevisionDetails;
 import com.indeed.proctor.store.StoreException;
+import com.indeed.proctor.store.TestEdit;
 import com.indeed.proctor.webapp.util.RetryWithExponentialBackoff;
 import org.apache.log4j.Logger;
 
@@ -29,7 +30,7 @@ import java.util.function.Supplier;
  * This is delegating all overridden methods to proctorStore.
  * This initializes the delegated proctorStore in a background job when the constructor is called.
  * Before finishing the initialization, this throws NotInitializedException if proctorStore is referred.
- *
+ * <p>
  * If it fails to initialize proctorStore, it will retry to initialize up to MAX_ATTEMPT_COUNT with 2^(attemptCount - 1) seconds interval.
  */
 public class AsyncInitializedProctorStore implements ProctorStore {
@@ -86,7 +87,7 @@ public class AsyncInitializedProctorStore implements ProctorStore {
         final ProctorStore store;
         try {
             store = getProctorStore();
-        } catch(final Exception e) {
+        } catch (final Exception e) {
             LOGGER.warn("Exception thrown during closing ProctorStore", e);
             return;
         }
@@ -154,6 +155,17 @@ public class AsyncInitializedProctorStore implements ProctorStore {
         return getProctorStore().getRevisionDetails(revisionId);
     }
 
+    @Nonnull
+    @Override
+    public List<TestEdit> getTestEdits(final String testName, final int start, final int limit) throws StoreException {
+        return getProctorStore().getTestEdits(testName, start, limit);
+    }
+
+    @Nonnull
+    @Override
+    public List<TestEdit> getTestEdits(final String testName, final String revision, final int start, final int limit) throws StoreException {
+        return getProctorStore().getTestEdits(testName, revision, start, limit);
+    }
 
     @Nonnull
     @Override
