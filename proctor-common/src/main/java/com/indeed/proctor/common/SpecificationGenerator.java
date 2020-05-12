@@ -2,6 +2,7 @@ package com.indeed.proctor.common;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Ordering;
 import com.google.common.primitives.Ints;
@@ -10,7 +11,6 @@ import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.common.model.TestDefinition;
 
 import javax.annotation.Nonnull;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -117,12 +117,10 @@ public class SpecificationGenerator {
         }
 
         final Set<String> emptyListValuePayloadKeys = new HashSet<>();
-        final List<Map<String, PayloadType>> schemas = new ArrayList<>();
-        for (final Payload payload: payloads) {
-            inferSchemaForPayload(payload, schemas, emptyListValuePayloadKeys);
-        }
+        final List<Map<String, PayloadType>> schemas = payloads.stream()
+            .map(p -> inferSchemaForPayload(p, emptyListValuePayloadKeys))
+            .collect(Collectors.toList());
         final Map<String, PayloadType> resultPayloadMapSchema = mergeSchemas(schemas);
-
 
         for (final String key: emptyListValuePayloadKeys) {
             if (!resultPayloadMapSchema.containsKey(key) || !resultPayloadMapSchema.get(key).isArrayType()) {
@@ -136,14 +134,25 @@ public class SpecificationGenerator {
     @Nonnull
     private static Map<String, PayloadType> mergeSchemas(@Nonnull final List<Map<String, PayloadType>> schemas) {
         final Map<String, PayloadType> resultPayloadMapSchema = new HashMap<>();
+        final List<PayloadType> NUMBER_TYPES = ImmutableList.of(PayloadType.LONG_VALUE, PayloadType.DOUBLE_VALUE);
+        final List<PayloadType> NUMBER_ARRAY_TYPES = ImmutableList.of(PayloadType.LONG_ARRAY, PayloadType.DOUBLE_ARRAY);
 
         for (final Map<String, PayloadType> loopPayloadMapSchema: schemas) {
             for (final Map.Entry<String, PayloadType> entry : loopPayloadMapSchema.entrySet()) {
                 resultPayloadMapSchema.compute(entry.getKey(), (k, v) -> {
                     if (v != null && !v.equals(entry.getValue())) {
-                        throw new IllegalArgumentException("Ambiguous map schema for key " + k);
+                        // consolidate LONG and double to double
+                        if (NUMBER_TYPES.contains(v) && NUMBER_TYPES.contains(entry.getValue())) {
+                            return PayloadType.DOUBLE_VALUE;
+                        } else if (NUMBER_ARRAY_TYPES.contains(v) && NUMBER_ARRAY_TYPES.contains(entry.getValue())) {
+                            return PayloadType.DOUBLE_ARRAY;
+                        } else {
+                            throw new IllegalArgumentException("Ambiguous map schema for key " + k
+                                    + ": " + v + " != " + entry.getValue());
+                        }
+                    } else {
+                        return v == null ? entry.getValue() : v;
                     }
-                    return v == null ? entry.getValue() : v;
                 });
             }
         }
@@ -152,12 +161,10 @@ public class SpecificationGenerator {
 
     /**
      * @param payload a payload with PayloadType.MAP
-     * @param schemas accumulator for schemas, this method should add a map to this list
      * @param emptyListValuePayloadKeys accumulator for keys having no payload that have no clear type
      */
-    private static void inferSchemaForPayload(
+    private static  Map<String, PayloadType> inferSchemaForPayload(
             @Nonnull final Payload payload,
-            @Nonnull final List<Map<String, PayloadType>> schemas,
             @Nonnull final Set<String> emptyListValuePayloadKeys
     ) {
         Preconditions.checkState(
@@ -177,7 +184,7 @@ public class SpecificationGenerator {
                 }
             }
         }
-        schemas.add(loopPayloadMapSchema);
+        return loopPayloadMapSchema;
     }
 
 }
