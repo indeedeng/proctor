@@ -202,7 +202,7 @@ public class SpecificationGeneratorTest {
                         .put("longKey", singletonList(42L))
                         .build()),
                 new Payload(ImmutableMap.<String, Object>builder()
-                        .put("longKey", singletonList(42D)) // double instead of long for same key
+                        .put("longKey", singletonList("42")) // string instead of long for same key
                         .build())
         ))).isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Ambiguous map schema")
