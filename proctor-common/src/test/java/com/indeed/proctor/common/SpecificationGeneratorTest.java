@@ -115,6 +115,38 @@ public class SpecificationGeneratorTest {
     }
 
     @Test
+    public void testGenerateSpecificationMergeDoubleAndLong() {
+        final String description = "this test has a payload buckets";
+        final Payload activePayload = new Payload(ImmutableMap.of(
+                "da", new Double[]{1.4d, 4.5d},
+                "lv", 0.0d
+        ));
+        final Payload inactivePayload = new Payload(ImmutableMap.of(
+                "da", new Long[]{1L, 2L},
+                "lv", 0L
+        ));
+        final TestBucket active_bucket = new TestBucket("active", 1, "new feature", activePayload);
+        final TestBucket inactive_bucket = new TestBucket("inactive", -3, "status quo", inactivePayload);
+        final TestDefinition empty = stubTestDefinition(description, Arrays.asList(inactive_bucket, active_bucket));
+        final TestSpecification specification = generator.generateSpecification(empty);
+        assertEquals(description, specification.getDescription());
+        assertEquals(2, specification.getBuckets().size());
+        assertEquals(inactive_bucket.getValue(), specification.getFallbackValue());
+        final PayloadSpecification payload = specification.getPayload();
+        assertNotNull(payload);
+        assertEquals(PayloadType.MAP.payloadTypeName, payload.getType());
+        final Map<String, String> schema = payload.getSchema();
+        assertNotNull(schema);
+        assertEquals(2, schema.size());
+        assertEquals(PayloadType.DOUBLE_ARRAY.payloadTypeName, schema.get("da"));
+        assertEquals(PayloadType.DOUBLE_VALUE.payloadTypeName, schema.get("lv"));
+        assertNull(payload.getValidator());
+
+        final Map<String, Integer> buckets = specification.getBuckets();
+        assertEquals(inactive_bucket.getValue(), (int) buckets.get(inactive_bucket.getName()));
+    }
+
+    @Test
     public void testGeneratePayloadSpecification() {
         assertThat(generatePayloadSpecification(emptyList())).isNotPresent();
 
