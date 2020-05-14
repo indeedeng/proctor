@@ -7,10 +7,10 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 
+import javax.annotation.Nullable;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Immutable collection of dynamic filters which is defined in ProctorSpecification and consumed in AbstractProctorLoader
@@ -66,19 +67,24 @@ public class DynamicFilters implements JsonSerializable {
             final Map<String, ConsumableTestDefinition> definedTests,
             final Set<String> requiredTests
     ) {
-        final ImmutableSet.Builder<String> builder = ImmutableSet.builder();
-        for (final Map.Entry<String, ConsumableTestDefinition> entry : definedTests.entrySet()) {
-            final String testName = entry.getKey();
-            final ConsumableTestDefinition testDefinition = entry.getValue();
-            if ((testDefinition != null) && !requiredTests.contains(testName)) {
-                for (final DynamicFilter filter : filters) {
-                    if (filter.matches(testName, testDefinition)) {
-                        builder.add(testName);
-                    }
-                }
-            }
-        }
-        return builder.build();
+        return definedTests.entrySet().stream()
+                // Skip if testDefinition is null
+                .filter(entry -> entry.getValue() != null)
+                // Skip if testName exists in requiredTests
+                .filter(entry -> !requiredTests.contains(entry.getKey()))
+                // Check dynamicFilters
+                .filter(entry -> matches(entry.getKey(), entry.getValue()))
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toSet());
+    }
+
+    public final boolean matches(
+            @Nullable final String testName,
+            final ConsumableTestDefinition testDefinition
+    ) {
+        return filters.stream().anyMatch(
+                filter -> filter.matches(testName, testDefinition)
+        );
     }
 
     /**

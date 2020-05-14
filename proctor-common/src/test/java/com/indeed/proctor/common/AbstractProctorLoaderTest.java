@@ -10,10 +10,9 @@ import org.junit.Test;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-
+import static org.easymock.classextension.EasyMock.createMock;
 import static org.easymock.classextension.EasyMock.expect;
 import static org.easymock.classextension.EasyMock.replay;
-import static org.easymock.classextension.EasyMock.createMock;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
