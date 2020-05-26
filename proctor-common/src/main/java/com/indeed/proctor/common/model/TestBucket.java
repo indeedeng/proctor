@@ -1,8 +1,8 @@
 package com.indeed.proctor.common.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.indeed.proctor.common.ProctorResult;
@@ -15,7 +15,7 @@ import javax.annotation.Nullable;
  *
  * @author ketan
  */
-@JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonDeserialize(builder = TestBucket.Builder.class)
 public class TestBucket {
     /**

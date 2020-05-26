@@ -1,6 +1,6 @@
 package com.indeed.proctor.pipet.core.config;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 /**
  * Context variable configuration, which also requires type conversion.
@@ -20,7 +20,7 @@ public class JsonContextVarConfig extends JsonVarConfig {
         this.type = type;
     }
 
-    @JsonSerialize(include=JsonSerialize.Inclusion.NON_NULL)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public String getDefaultValue() {
         return defaultValue;
     }

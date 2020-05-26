@@ -1,6 +1,6 @@
 package com.indeed.proctor.common.model;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.common.collect.ImmutableMap;
 import com.indeed.proctor.common.PayloadType;
 import org.apache.commons.lang3.StringUtils;
@@ -24,7 +24,7 @@ import java.util.stream.Stream;
  * NOTE: if you add a payload type here, also please add it to
  * proctor webapp's buckets.js indeed.proctor.editor.BucketsEditor.prototype.prettyPrintPayloadValue_
  */
-@JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Payload {
     @Nullable
     private Double doubleValue;

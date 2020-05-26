@@ -1,6 +1,6 @@
 package com.indeed.proctor.pipet.core.var;
 
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.indeed.proctor.pipet.core.config.ExtractorSource;
@@ -102,7 +102,7 @@ public abstract class PrefixVariable {
         }
 
         protected String computeSourceKey() {
-            final String defaultedSourceKey = Objects.firstNonNull(Strings.emptyToNull(sourceKey), varName);
+            final String defaultedSourceKey = MoreObjects.firstNonNull(Strings.emptyToNull(sourceKey), varName);
             final String computedSourceKey;
             if (! Strings.isNullOrEmpty(prefix) && source == ExtractorSource.QUERY) {
                 computedSourceKey = prefix + "." + defaultedSourceKey;

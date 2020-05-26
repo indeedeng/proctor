@@ -21,7 +21,7 @@ import static org.mockito.Mockito.when;
 
 public class AsyncInitializedProctorStoreTest {
 
-    private static final ExecutorService EXECUTOR = MoreExecutors.sameThreadExecutor();
+    private static final ExecutorService EXECUTOR = MoreExecutors.newDirectExecutorService();
     private static final RetryWithExponentialBackoff RETRY_WITH_EXPONENTIAL_BACKOFF = new RetryWithExponentialBackoff() {
         @Override
         public void sleep(final long sleepTimeMillis) {
