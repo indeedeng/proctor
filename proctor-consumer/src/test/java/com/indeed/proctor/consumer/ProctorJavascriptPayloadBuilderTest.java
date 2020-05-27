@@ -11,6 +11,7 @@ import static com.indeed.proctor.consumer.ProctorGroupStubber.ProctorGroupsWithF
 import static com.indeed.proctor.consumer.ProctorGroupStubber.ProctorGroupsWithHoldout;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.CONTROL_SELECTED_TEST;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.GROUP1_SELECTED_TEST;
+import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.HOLDOUT_MASTER_TEST;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.buildSampleProctorResult;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -31,8 +32,12 @@ public class ProctorJavascriptPayloadBuilderTest {
     public void setUp() {
         final ProctorResult proctorResult = buildSampleProctorResult();
         groups = new AbstractGroups(proctorResult) {};
-        groupsWithForced = new ProctorGroupsWithForced(proctorResult);
-        groupsWithHoldOut = new ProctorGroupsWithHoldout(proctorResult);
+
+        // Using ProctorGroupsWithForced to make GROUP1_SELECTED_TEST select control instead of group1
+        groupsWithForced = new ProctorGroupsWithForced(proctorResult, GROUP1_SELECTED_TEST);
+
+        // using ProctorGroupsWithHoldout to make all tests except HOLDOUT_MASTER_TEST become inactive
+        groupsWithHoldOut = new ProctorGroupsWithHoldout(proctorResult, HOLDOUT_MASTER_TEST);
     }
 
     @Test

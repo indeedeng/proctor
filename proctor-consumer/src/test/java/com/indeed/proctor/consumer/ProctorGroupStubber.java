@@ -35,6 +35,9 @@ public class ProctorGroupStubber {
             "fallbackDesc",
             new Payload("fallback"));
 
+    /**
+     * Builds up a Proctor Result with given test definitions and selected buckets
+     */
     static class ProctorResultStubBuilder {
 
         private Map<StubTest, TestBucket[]> definedBucketSets = new TreeMap<>();
@@ -111,14 +114,17 @@ public class ProctorGroupStubber {
      * the hold-out bucket to use.
      */
     static class ProctorGroupsWithHoldout extends AbstractGroups {
-        ProctorGroupsWithHoldout(final ProctorResult proctorResult) {
+        final StubTest holdoutMaster;
+
+        ProctorGroupsWithHoldout(final ProctorResult proctorResult, final StubTest holdoutMaster) {
             super(proctorResult);
+            this.holdoutMaster = holdoutMaster;
         }
 
         @Override
         protected int overrideDeterminedBucketValue(final String testName, @Nonnull final TestBucket determinedBucket) {
             // for other experiments, if hold-out experiment is active, use bucket with value -1 if available.
-            if (!StubTest.HOLDOUT_MASTER_TEST.name.equals(testName) && isBucketActive(StubTest.HOLDOUT_MASTER_TEST.name, 2, -1)) {
+            if (!holdoutMaster.name.equals(testName) && isBucketActive(holdoutMaster.name, 2, -1)) {
                 // return bucket with smallest value
                 return Optional.ofNullable(getProctorResult().getTestDefinitions().get(testName))
                         .map(ConsumableTestDefinition::getBuckets)
@@ -135,14 +141,17 @@ public class ProctorGroupStubber {
      * Some purposes could be to implement sub-experiments, or have special environments with forced groups.
      */
     static class ProctorGroupsWithForced extends AbstractGroups {
-        ProctorGroupsWithForced(final ProctorResult proctorResult) {
+        private final StubTest testToForceToControl;
+
+        ProctorGroupsWithForced(final ProctorResult proctorResult, final StubTest testToForceToControl) {
             super(proctorResult);
+            this.testToForceToControl = testToForceToControl;
         }
 
         @Override
         protected int overrideDeterminedBucketValue(final String testName, @Nonnull final TestBucket determinedBucket) {
             // override determined bucket from group1 to control
-            if (StubTest.GROUP1_SELECTED_TEST.name.equals(testName)) {
+            if (testToForceToControl.name.equals(testName)) {
                 // return bucket with control value
                 return Optional.ofNullable(getProctorResult().getTestDefinitions().get(testName))
                         .map(ConsumableTestDefinition::getBuckets)

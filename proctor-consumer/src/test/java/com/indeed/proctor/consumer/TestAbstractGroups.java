@@ -42,8 +42,11 @@ public class TestAbstractGroups {
         proctorResult = buildSampleProctorResult();
         sampleGroups = new AbstractGroups(proctorResult) {};
 
-        sampleGroupsWithForced = new ProctorGroupsWithForced(proctorResult);
-        groupsWithHoldOut = new ProctorGroupsWithHoldout(proctorResult);
+        // Using ProctorGroupsWithForced to make GROUP1_SELECTED_TEST select control instead of group1
+        sampleGroupsWithForced = new ProctorGroupsWithForced(proctorResult, GROUP1_SELECTED_TEST);
+
+        // using ProctorGroupsWithHoldout to make all tests except HOLDOUT_MASTER_TEST become inactive
+        groupsWithHoldOut = new ProctorGroupsWithHoldout(proctorResult, HOLDOUT_MASTER_TEST);
     }
 
     @Test
