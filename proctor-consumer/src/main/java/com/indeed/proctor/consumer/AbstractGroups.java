@@ -173,12 +173,20 @@ public abstract class AbstractGroups {
     @Nonnull
     // used from generated code
     protected Payload getPayload(final String testName, @Nonnull final Bucket<?> fallbackBucket) {
+        return getPayload(testName, fallbackBucket.getValue());
+    }
+
+    /**
+     * If Matrix has a testbucket for this testname, return its payload (or empty).
+     * If matrix does not have such a testbucket, looks up different bucket in the testdefinition and return it's payload
+     */
+    final Payload getPayload(final String testName, final int fallbackBucketValue) {
         final Optional<TestBucket> activeBucketOpt = getActiveBucket(testName);
         final Optional<TestBucket> resultBucketOpt;
         if (activeBucketOpt.isPresent()) {
             resultBucketOpt = activeBucketOpt;
         } else {
-            resultBucketOpt = Optional.ofNullable(getTestBucketForBucket(testName, fallbackBucket));
+            resultBucketOpt = Optional.ofNullable(getTestBucketWithValue(testName, fallbackBucketValue));
         }
         return resultBucketOpt
                 .map(TestBucket::getPayload)
@@ -198,11 +206,16 @@ public abstract class AbstractGroups {
     @CheckForNull
     // used in generated code
     protected final TestBucket getTestBucketForBucket(final String testName, final Bucket<?> targetBucket) {
+        return getTestBucketWithValue(testName, targetBucket.getValue());
+    }
+
+    @CheckForNull
+    final TestBucket getTestBucketWithValue(final String testName, final int bucketValue) {
         return Optional.ofNullable(proctorResult.getTestDefinitions())
                 .map(testDefinitions -> testDefinitions.get(testName))
                 .map(ConsumableTestDefinition::getBuckets)
                 .map(buckets -> buckets.stream()
-                        .filter(testBucket -> targetBucket.getValue() == testBucket.getValue())
+                        .filter(testBucket -> bucketValue == testBucket.getValue())
                         .findFirst()
                         .orElse(null))
                 .orElse(null);
@@ -394,7 +407,7 @@ public abstract class AbstractGroups {
                 .map(test -> Arrays.asList(
                         // call to getValuePrivate() to allow overrides of getActiveBucket
                         getValue(test.getName(), test.getFallbackValue()),
-                        getPayload(test.getName()).fetchAValue()))
+                        getPayload(test.getName(), test.getFallbackValue()).fetchAValue()))
                 .collect(Collectors.toList());
     }
 
