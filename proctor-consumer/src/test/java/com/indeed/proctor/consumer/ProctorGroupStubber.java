@@ -7,13 +7,10 @@ import com.indeed.proctor.common.model.Payload;
 import com.indeed.proctor.common.model.Range;
 import com.indeed.proctor.common.model.TestBucket;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Map;
-import java.util.Optional;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
@@ -101,67 +98,6 @@ public class ProctorGroupStubber {
         testDefinition.setVersion(version);
         testDefinition.setBuckets(Arrays.asList(buckets));
         return testDefinition;
-    }
-
-
-    /**
-     * This is one simple example of a holdout-groupsWithCustom implementation that uses a hardcoded hold-out experiment,
-     * applies hold-out to all other experiments, uses the bucket with the smallest value in hold-out case,
-     * and uses the fallback value for most error cases.
-     * <p>
-     * Better implementations might use meta-tags or other properties to identify hold-out experiment, and
-     * also to identify experiments subject to hold-out groupsWithCustom, and have better strategies for selecting
-     * the hold-out bucket to use.
-     */
-    static class ProctorGroupsWithHoldout extends AbstractGroups {
-        final StubTest holdoutMaster;
-
-        ProctorGroupsWithHoldout(final ProctorResult proctorResult, final StubTest holdoutMaster) {
-            super(proctorResult);
-            this.holdoutMaster = holdoutMaster;
-        }
-
-        @Override
-        protected int overrideDeterminedBucketValue(final String testName, @Nonnull final TestBucket determinedBucket) {
-            // for other experiments, if hold-out experiment is active, use bucket with value -1 if available.
-            if (!holdoutMaster.name.equals(testName) && isBucketActive(holdoutMaster.name, 2, -1)) {
-                // return bucket with smallest value
-                return Optional.ofNullable(getProctorResult().getTestDefinitions().get(testName))
-                        .map(ConsumableTestDefinition::getBuckets)
-                        .flatMap(buckets -> buckets.stream().min(Comparator.comparing(TestBucket::getValue)))
-                        .map(TestBucket::getValue)
-                        .orElse(determinedBucket.getValue());
-            }
-            return determinedBucket.getValue();
-        }
-    }
-
-    /**
-     * This is one simple example modifying a testbucket for whatever purpose.
-     * Some purposes could be to implement sub-experiments, or have special environments with forced groups.
-     */
-    static class ProctorGroupsWithForced extends AbstractGroups {
-        private final StubTest testToForceToControl;
-
-        ProctorGroupsWithForced(final ProctorResult proctorResult, final StubTest testToForceToControl) {
-            super(proctorResult);
-            this.testToForceToControl = testToForceToControl;
-        }
-
-        @Override
-        protected int overrideDeterminedBucketValue(final String testName, @Nonnull final TestBucket determinedBucket) {
-            // override determined bucket from group1 to control
-            if (testToForceToControl.name.equals(testName)) {
-                // return bucket with control value
-                return Optional.ofNullable(getProctorResult().getTestDefinitions().get(testName))
-                        .map(ConsumableTestDefinition::getBuckets)
-                        // use control bucket instead of active
-                        .flatMap(buckets -> buckets.stream().filter(b -> b.getValue() == 0).findFirst())
-                        .map(TestBucket::getValue)
-                        .orElse(determinedBucket.getValue());
-            }
-            return determinedBucket.getValue();
-        }
     }
 
     /**

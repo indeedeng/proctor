@@ -7,11 +7,8 @@ import com.indeed.proctor.consumer.ProctorGroupStubber.FakeTest;
 import org.junit.Before;
 import org.junit.Test;
 
-import static com.indeed.proctor.consumer.ProctorGroupStubber.ProctorGroupsWithForced;
-import static com.indeed.proctor.consumer.ProctorGroupStubber.ProctorGroupsWithHoldout;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.CONTROL_SELECTED_TEST;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.GROUP1_SELECTED_TEST;
-import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.HOLDOUT_MASTER_TEST;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.buildSampleProctorResult;
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,19 +22,13 @@ public class ProctorJavascriptPayloadBuilderTest {
     private static final String ACTIVE_NAME_HASH = NAME_OBFUSCATOR.obfuscateTestName(GROUP1_SELECTED_TEST.getName());
 
     private AbstractGroups groups;
-    private ProctorGroupsWithForced groupsWithForced;
-    private ProctorGroupsWithHoldout groupsWithHoldOut;
 
     @Before
     public void setUp() {
         final ProctorResult proctorResult = buildSampleProctorResult();
         groups = new AbstractGroups(proctorResult) {};
 
-        // Using ProctorGroupsWithForced to make GROUP1_SELECTED_TEST select control instead of group1
-        groupsWithForced = new ProctorGroupsWithForced(proctorResult, GROUP1_SELECTED_TEST);
 
-        // using ProctorGroupsWithHoldout to make all tests except HOLDOUT_MASTER_TEST become inactive
-        groupsWithHoldOut = new ProctorGroupsWithHoldout(proctorResult, HOLDOUT_MASTER_TEST);
     }
 
     @Test
@@ -54,20 +45,6 @@ public class ProctorJavascriptPayloadBuilderTest {
                         asList(0, "controlPayload"),
                         asList(1, "activePayload")
                 );
-        final ProctorJavascriptPayloadBuilder groupsWithForcedBuilder = new ProctorJavascriptPayloadBuilder(groupsWithForced);
-        assertThat(groupsWithForcedBuilder.buildAlphabetizedListJavascriptConfig(stubTests))
-                .containsExactly(
-                        asList(42, null),
-                        asList(0, "controlPayload"),
-                        asList(0, "controlPayload") // forced
-                );
-        final ProctorJavascriptPayloadBuilder groupsWithHoldoutBuilder = new ProctorJavascriptPayloadBuilder(groupsWithHoldOut);
-        assertThat(groupsWithHoldoutBuilder.buildAlphabetizedListJavascriptConfig(stubTests))
-                .containsExactly(
-                        asList(42, null), // no fallback
-                        asList(-1, null),
-                        asList(-1, null)
-                );
     }
 
     @Test
@@ -83,22 +60,6 @@ public class ProctorJavascriptPayloadBuilderTest {
                         .put(NOTEXIST_NAME_HASH, asList(42, null))
                         .put(CONTROL_NAME_HASH, asList(0, "controlPayload"))
                         .put(ACTIVE_NAME_HASH, asList(1, "activePayload"))
-                        .build()
-                );
-        final ProctorJavascriptPayloadBuilder groupsWithForcedBuilder = new ProctorJavascriptPayloadBuilder(groupsWithForced);
-        assertThat(groupsWithForcedBuilder.buildObfuscatedJavaScriptConfigMap(stubTests))
-                .isEqualTo(new ImmutableMap.Builder<>()
-                        .put(NOTEXIST_NAME_HASH, asList(42, null))
-                        .put(CONTROL_NAME_HASH, asList(0, "controlPayload"))
-                        .put(ACTIVE_NAME_HASH, asList(0, "controlPayload")) // forced
-                        .build()
-                );
-        final ProctorJavascriptPayloadBuilder groupsWithHoldoutBuilder = new ProctorJavascriptPayloadBuilder(groupsWithHoldOut);
-        assertThat(groupsWithHoldoutBuilder.buildObfuscatedJavaScriptConfigMap(stubTests))
-                .isEqualTo(new ImmutableMap.Builder<>()
-                        .put(NOTEXIST_NAME_HASH, asList(42, null)) // no fallback
-                        .put(CONTROL_NAME_HASH, asList(-1, null))
-                        .put(ACTIVE_NAME_HASH, asList(-1, null))
                         .build()
                 );
     }
