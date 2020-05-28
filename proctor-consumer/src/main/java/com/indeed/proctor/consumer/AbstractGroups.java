@@ -161,8 +161,9 @@ public abstract class AbstractGroups {
     @Nonnull
     // used from generated code
     protected Payload getPayload(final String testName) {
-        // Get the current bucket.
-        return Optional.ofNullable(getPayloadElseNull(testName)).orElse(Payload.EMPTY_PAYLOAD);
+        return getActiveBucket(testName)
+                .map(TestBucket::getPayload)
+                .orElse(Payload.EMPTY_PAYLOAD);
     }
 
     /**
@@ -172,19 +173,16 @@ public abstract class AbstractGroups {
     @Nonnull
     // used from generated code
     protected Payload getPayload(final String testName, @Nonnull final Bucket<?> fallbackBucket) {
-        return Optional.ofNullable(getPayloadElseNull(testName)).orElseGet(
-                () -> Optional.ofNullable(getTestBucketForBucket(testName, fallbackBucket))
-                        .map(TestBucket::getPayload)
-                        .orElse(Payload.EMPTY_PAYLOAD));
-    }
-
-    // this method could be made protected and the two invoking method made final in a single commit, breaking clients with a clear migration path
-    @CheckForNull
-    private Payload getPayloadElseNull(final String testName) {
-        // using getActiveBucket to allow overrides
-        return getActiveBucket(testName)
+        final Optional<TestBucket> activeBucketOpt = getActiveBucket(testName);
+        final Optional<TestBucket> resultBucketOpt;
+        if (activeBucketOpt.isPresent()) {
+            resultBucketOpt = activeBucketOpt;
+        } else {
+            resultBucketOpt = Optional.ofNullable(getTestBucketForBucket(testName, fallbackBucket));
+        }
+        return resultBucketOpt
                 .map(TestBucket::getPayload)
-                .orElse(null);
+                .orElse(Payload.EMPTY_PAYLOAD);
     }
 
     /**

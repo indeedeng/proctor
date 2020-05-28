@@ -94,11 +94,14 @@ public class TestAbstractGroups {
         assertThat(sampleGroups.getPayload(GROUP1_SELECTED_TEST.getName())).isEqualTo(GROUP_1_BUCKET_WITH_PAYLOAD.getPayload());
         assertThat(sampleGroups.getPayload(CONTROL_SELECTED_TEST.getName())).isEqualTo(CONTROL_BUCKET_WITH_PAYLOAD.getPayload());
 
+        // Do not pick Fallback bucket for resolved buckets
         assertThat(sampleGroups.getPayload(GROUP1_SELECTED_TEST.getName(), FALLBACK_BUCKET)).isEqualTo(GROUP_1_BUCKET_WITH_PAYLOAD.getPayload());
         assertThat(sampleGroups.getPayload(CONTROL_SELECTED_TEST.getName(), FALLBACK_BUCKET)).isEqualTo(CONTROL_BUCKET_WITH_PAYLOAD.getPayload());
         assertThat(sampleGroups.getPayload(INACTIVE_SELECTED_TEST.getName(), FALLBACK_BUCKET)).isEqualTo(Payload.EMPTY_PAYLOAD);
 
-        assertThat(sampleGroups.getPayload(GROUP_WITH_FALLBACK_TEST.getName(), FALLBACK_BUCKET)).isEqualTo(FALLBACK_TEST_BUCKET.getPayload());
+        // Because group1 bucket here has no payload, return empty
+        assertThat(sampleGroups.getPayload(GROUP_WITH_FALLBACK_TEST.getName(), FALLBACK_BUCKET)).isEqualTo(Payload.EMPTY_PAYLOAD);
+        // because no bucket resolved, use fallback
         assertThat(sampleGroups.getPayload(NO_BUCKETS_WITH_FALLBACK_TEST.getName(), FALLBACK_BUCKET)).isEqualTo(FALLBACK_TEST_BUCKET.getPayload());
         assertThat(sampleGroups.getPayload(NO_BUCKETS_WITH_FALLBACK_TEST.getName(), FALLBACK_NOPAYLOAD_BUCKET)).isEqualTo(Payload.EMPTY_PAYLOAD);
         assertThat(sampleGroups.getPayload("notexist")).isEqualTo(Payload.EMPTY_PAYLOAD);

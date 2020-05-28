@@ -129,7 +129,7 @@ public class TestAbstractGroupsWithHoldout {
         assertThat(groupsWithHoldOut.getPayload(CONTROL_SELECTED_TEST.getName())).isEqualTo(Payload.EMPTY_PAYLOAD);
         assertThat(groupsWithHoldOut.getPayload(GROUP1_SELECTED_TEST.getName(), FALLBACK_BUCKET)).isEqualTo(Payload.EMPTY_PAYLOAD);
         assertThat(groupsWithHoldOut.getPayload(CONTROL_SELECTED_TEST.getName(), FALLBACK_BUCKET)).isEqualTo(Payload.EMPTY_PAYLOAD);
-        assertThat(groupsWithHoldOut.getPayload(GROUP_WITH_FALLBACK_TEST.getName(), FALLBACK_BUCKET)).isEqualTo(FALLBACK_TEST_BUCKET.getPayload());
+        assertThat(groupsWithHoldOut.getPayload(GROUP_WITH_FALLBACK_TEST.getName(), FALLBACK_BUCKET)).isEqualTo(Payload.EMPTY_PAYLOAD); // payload of group1
         assertThat(groupsWithHoldOut.getPayload(NO_BUCKETS_WITH_FALLBACK_TEST.getName(), FALLBACK_BUCKET)).isEqualTo(FALLBACK_TEST_BUCKET.getPayload());
         assertThat(groupsWithHoldOut.getPayload(NO_BUCKETS_WITH_FALLBACK_TEST.getName(), FALLBACK_NOPAYLOAD_BUCKET)).isEqualTo(Payload.EMPTY_PAYLOAD);
         assertThat(groupsWithHoldOut.getPayload("notexist")).isEqualTo(Payload.EMPTY_PAYLOAD);
