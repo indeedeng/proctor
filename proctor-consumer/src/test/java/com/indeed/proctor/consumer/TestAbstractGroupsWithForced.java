@@ -13,6 +13,7 @@ import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.Optional;
 
+import static com.indeed.proctor.consumer.ProctorGroupStubber.CONTROL_BUCKET_WITH_PAYLOAD;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.CONTROL_SELECTED_TEST;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.GROUP1_SELECTED_TEST;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.GROUP_WITH_FALLBACK_TEST;
@@ -85,8 +86,8 @@ public class TestAbstractGroupsWithForced {
     @Test
     public void testGetPayload() {
         assertThat(sampleGroupsWithForced.getPayload(INACTIVE_SELECTED_TEST.getName())).isEqualTo(Payload.EMPTY_PAYLOAD);
-        assertThat(sampleGroupsWithForced.getPayload(GROUP1_SELECTED_TEST.getName())).isEqualTo(new Payload("controlPayload")); // forced
-        assertThat(sampleGroupsWithForced.getPayload(CONTROL_SELECTED_TEST.getName())).isEqualTo(new Payload("controlPayload"));
+        assertThat(sampleGroupsWithForced.getPayload(GROUP1_SELECTED_TEST.getName())).isEqualTo(CONTROL_BUCKET_WITH_PAYLOAD.getPayload()); // forced
+        assertThat(sampleGroupsWithForced.getPayload(CONTROL_SELECTED_TEST.getName())).isEqualTo(CONTROL_BUCKET_WITH_PAYLOAD.getPayload());
     }
 
     @Test
@@ -156,8 +157,8 @@ public class TestAbstractGroupsWithForced {
                 new FakeTest(GROUP1_SELECTED_TEST.getName(), 44)}))
                 .containsExactly(
                         Arrays.asList(42, null),
-                        Arrays.asList(0, "controlPayload"),
-                        Arrays.asList(0, "controlPayload") // forced
+                        Arrays.asList(0, CONTROL_BUCKET_WITH_PAYLOAD.getPayload().getStringValue()),
+                        Arrays.asList(0, CONTROL_BUCKET_WITH_PAYLOAD.getPayload().getStringValue()) // forced
                 );
     }
 

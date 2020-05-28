@@ -7,6 +7,8 @@ import com.indeed.proctor.consumer.ProctorGroupStubber.FakeTest;
 import org.junit.Before;
 import org.junit.Test;
 
+import static com.indeed.proctor.consumer.ProctorGroupStubber.CONTROL_BUCKET_WITH_PAYLOAD;
+import static com.indeed.proctor.consumer.ProctorGroupStubber.GROUP_1_BUCKET_WITH_PAYLOAD;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.CONTROL_SELECTED_TEST;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.GROUP1_SELECTED_TEST;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.buildSampleProctorResult;
@@ -42,8 +44,8 @@ public class ProctorJavascriptPayloadBuilderTest {
         assertThat(groupsBuilder.buildAlphabetizedListJavascriptConfig(stubTests))
                 .containsExactly(
                         asList(42, null),
-                        asList(0, "controlPayload"),
-                        asList(1, "activePayload")
+                        asList(0, CONTROL_BUCKET_WITH_PAYLOAD.getPayload().getStringValue()),
+                        asList(1, GROUP_1_BUCKET_WITH_PAYLOAD.getPayload().getStringValue())
                 );
     }
 
@@ -58,8 +60,8 @@ public class ProctorJavascriptPayloadBuilderTest {
         assertThat(groupsBuilder.buildObfuscatedJavaScriptConfigMap(stubTests))
                 .isEqualTo(new ImmutableMap.Builder<>()
                         .put(NOTEXIST_NAME_HASH, asList(42, null))
-                        .put(CONTROL_NAME_HASH, asList(0, "controlPayload"))
-                        .put(ACTIVE_NAME_HASH, asList(1, "activePayload"))
+                        .put(CONTROL_NAME_HASH, asList(0, CONTROL_BUCKET_WITH_PAYLOAD.getPayload().getStringValue()))
+                        .put(ACTIVE_NAME_HASH, asList(1, GROUP_1_BUCKET_WITH_PAYLOAD.getPayload().getStringValue()))
                         .build()
                 );
     }
