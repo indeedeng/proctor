@@ -14,13 +14,12 @@ import java.util.Arrays;
 import java.util.Optional;
 
 import static com.indeed.proctor.consumer.ProctorGroupStubber.CONTROL_BUCKET_WITH_PAYLOAD;
+import static com.indeed.proctor.consumer.ProctorGroupStubber.GROUP_1_BUCKET;
+import static com.indeed.proctor.consumer.ProctorGroupStubber.GROUP_1_BUCKET_WITH_PAYLOAD;
+import static com.indeed.proctor.consumer.ProctorGroupStubber.INACTIVE_BUCKET;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.CONTROL_SELECTED_TEST;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.GROUP1_SELECTED_TEST;
-import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.GROUP_WITH_FALLBACK_TEST;
-import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.HOLDOUT_MASTER_TEST;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.INACTIVE_SELECTED_TEST;
-import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.MISSING_DEFINITION_TEST;
-import static com.indeed.proctor.consumer.ProctorGroupStubber.buildSampleProctorResult;
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
@@ -61,7 +60,14 @@ public class TestAbstractGroupsWithForced {
     @Before
     public void setUp() {
 
-        proctorResult = buildSampleProctorResult();
+        proctorResult = new ProctorGroupStubber.ProctorResultStubBuilder()
+                .withStubTest(ProctorGroupStubber.StubTest.CONTROL_SELECTED_TEST, CONTROL_BUCKET_WITH_PAYLOAD,
+                        INACTIVE_BUCKET, CONTROL_BUCKET_WITH_PAYLOAD, GROUP_1_BUCKET_WITH_PAYLOAD)
+                .withStubTest(ProctorGroupStubber.StubTest.GROUP1_SELECTED_TEST, GROUP_1_BUCKET_WITH_PAYLOAD,
+                        INACTIVE_BUCKET, CONTROL_BUCKET_WITH_PAYLOAD, GROUP_1_BUCKET_WITH_PAYLOAD)
+                .withStubTest(ProctorGroupStubber.StubTest.INACTIVE_SELECTED_TEST, INACTIVE_BUCKET,
+                        INACTIVE_BUCKET, GROUP_1_BUCKET)
+                .build();
 
         // Using ProctorGroupsWithForced to make GROUP1_SELECTED_TEST select control instead of group1
         sampleGroupsWithForced = new ProctorGroupsWithForced(proctorResult, GROUP1_SELECTED_TEST);
@@ -97,64 +103,59 @@ public class TestAbstractGroupsWithForced {
 
     @Test
     public void testToLongString() {
-        assertThat(sampleGroupsWithForced.toLongString()).isEqualTo("abtst-control,bgtst-control,btntst-inactive,groupwithfallbacktst-group1,holdout_tst-group1,no_definition_tst-group1");
+        assertThat(sampleGroupsWithForced.toLongString()).isEqualTo("abtst-control,bgtst-control,btntst-inactive");
     }
 
     @Test
     public void testToLoggingString() {
         assertThat((new AbstractGroups(new ProctorResult("0", emptyMap(), emptyMap(), emptyMap())) {}).toLoggingString()).isEmpty();
-        assertThat(sampleGroupsWithForced.toLoggingString()).isEqualTo("abtst0,bgtst0,groupwithfallbacktst2,holdout_tst2,no_definition_tst2,#A1:abtst0,#A1:bgtst0,#A1:groupwithfallbacktst2,#A1:holdout_tst2,#A1:no_definition_tst2");
+        assertThat(sampleGroupsWithForced.toLoggingString()).isEqualTo("abtst0,bgtst0,#A1:abtst0,#A1:bgtst0");
     }
 
     @Test
     public void testGetLoggingTestNames() {
         assertThat(Sets.newHashSet(sampleGroupsWithForced.getLoggingTestNames()))
-                .containsExactlyInAnyOrder(CONTROL_SELECTED_TEST.getName(), GROUP1_SELECTED_TEST.getName(), GROUP_WITH_FALLBACK_TEST.getName(), HOLDOUT_MASTER_TEST.getName(), MISSING_DEFINITION_TEST.getName());
+                .containsExactlyInAnyOrder(CONTROL_SELECTED_TEST.getName(), GROUP1_SELECTED_TEST.getName());
     }
 
     @Test
     public void testAppendTestGroupsWithoutAllocations() {
-        StringBuilder builder = new StringBuilder();
+        final StringBuilder builder = new StringBuilder();
         sampleGroupsWithForced.appendTestGroupsWithoutAllocations(builder, ',', Lists.newArrayList(CONTROL_SELECTED_TEST.getName(), GROUP1_SELECTED_TEST.getName()));
         assertThat(builder.toString().split(",")).containsExactly("bgtst0", "abtst0");
     }
 
     @Test
     public void testAppendTestGroupsWithAllocations() {
-        StringBuilder builder = new StringBuilder();
+        final StringBuilder builder = new StringBuilder();
         sampleGroupsWithForced.appendTestGroupsWithAllocations(builder, ',', Lists.newArrayList(CONTROL_SELECTED_TEST.getName(), GROUP1_SELECTED_TEST.getName()));
         assertThat(builder.toString().split(",")).containsExactly("#A1:bgtst0", "#A1:abtst0");
-        builder = new StringBuilder();
     }
 
     @Test
     public void testAppendTestGroups() {
-        StringBuilder builder = new StringBuilder();
+        final StringBuilder builder = new StringBuilder();
         sampleGroupsWithForced.appendTestGroups(builder, ',');
         assertThat(builder.toString().split(","))
                 .containsExactlyInAnyOrder(
-                        "groupwithfallbacktst2", "bgtst0", "abtst0", "holdout_tst2",
-                        "#A1:bgtst0", "#A1:abtst0", "#A1:groupwithfallbacktst2", "#A1:holdout_tst2",
-                        "#A1:no_definition_tst2", "no_definition_tst2");
+                        "bgtst0", "abtst0",
+                        "#A1:bgtst0", "#A1:abtst0");
     }
 
     @Test
     public void testGetJavaScriptConfig() {
         assertThat(sampleGroupsWithForced.getJavaScriptConfig())
-                .hasSize(5)
+                .hasSize(2)
                 .containsEntry(GROUP1_SELECTED_TEST.getName(), 0) // forced
-                .containsEntry(CONTROL_SELECTED_TEST.getName(), 0)
-                .containsEntry(GROUP_WITH_FALLBACK_TEST.getName(), 2)
-                .containsEntry(HOLDOUT_MASTER_TEST.getName(), 2)
-                .containsEntry(MISSING_DEFINITION_TEST.getName(), 2);
+                .containsEntry(CONTROL_SELECTED_TEST.getName(), 0);
     }
 
     @Test
     public void testGetJavaScriptConfigLists() {
-        assertThat(sampleGroupsWithForced.getJavaScriptConfig(new FakeTest[] {
-                new FakeTest("notexist", 42),
-                new FakeTest(CONTROL_SELECTED_TEST.getName(), 43),
-                new FakeTest(GROUP1_SELECTED_TEST.getName(), 44)}))
+        assertThat(sampleGroupsWithForced.getJavaScriptConfig(new ProctorGroupStubber.FakeTest[] {
+                new ProctorGroupStubber.FakeTest("notexist", 42),
+                new ProctorGroupStubber.FakeTest(CONTROL_SELECTED_TEST.getName(), 43),
+                new ProctorGroupStubber.FakeTest(GROUP1_SELECTED_TEST.getName(), 44)}))
                 .containsExactly(
                         Arrays.asList(42, null),
                         Arrays.asList(0, CONTROL_BUCKET_WITH_PAYLOAD.getPayload().getStringValue()),
@@ -162,26 +163,5 @@ public class TestAbstractGroupsWithForced {
                 );
     }
 
-
-    private static class FakeTest implements com.indeed.proctor.consumer.Test {
-
-        private final String name;
-        private final int value;
-
-        private FakeTest(final String name, final int value) {
-            this.name = name;
-            this.value = value;
-        }
-
-        @Override
-        public String getName() {
-            return name;
-        }
-
-        @Override
-        public int getFallbackValue() {
-            return value;
-        }
-    }
 
 }

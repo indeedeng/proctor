@@ -14,15 +14,15 @@ import static com.indeed.proctor.consumer.ProctorGroupStubber.CONTROL_BUCKET_WIT
 import static com.indeed.proctor.consumer.ProctorGroupStubber.FALLBACK_BUCKET;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.FALLBACK_NOPAYLOAD_BUCKET;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.FALLBACK_TEST_BUCKET;
+import static com.indeed.proctor.consumer.ProctorGroupStubber.GROUP_1_BUCKET;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.GROUP_1_BUCKET_WITH_PAYLOAD;
+import static com.indeed.proctor.consumer.ProctorGroupStubber.INACTIVE_BUCKET;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.CONTROL_SELECTED_TEST;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.GROUP1_SELECTED_TEST;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.GROUP_WITH_FALLBACK_TEST;
-import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.HOLDOUT_MASTER_TEST;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.INACTIVE_SELECTED_TEST;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.MISSING_DEFINITION_TEST;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.NO_BUCKETS_WITH_FALLBACK_TEST;
-import static com.indeed.proctor.consumer.ProctorGroupStubber.buildSampleProctorResult;
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
@@ -38,7 +38,21 @@ public class TestAbstractGroups {
     public void setUp() {
         emptyGroup = new AbstractGroups(new ProctorResult("0", emptyMap(), emptyMap(), emptyMap())) {};
 
-        proctorResult = buildSampleProctorResult();
+        proctorResult = new ProctorGroupStubber.ProctorResultStubBuilder()
+                .withStubTest(ProctorGroupStubber.StubTest.CONTROL_SELECTED_TEST, CONTROL_BUCKET_WITH_PAYLOAD,
+                        INACTIVE_BUCKET, CONTROL_BUCKET_WITH_PAYLOAD, GROUP_1_BUCKET_WITH_PAYLOAD)
+                .withStubTest(ProctorGroupStubber.StubTest.GROUP1_SELECTED_TEST, GROUP_1_BUCKET_WITH_PAYLOAD,
+                        INACTIVE_BUCKET, CONTROL_BUCKET_WITH_PAYLOAD, GROUP_1_BUCKET_WITH_PAYLOAD)
+                .withStubTest(ProctorGroupStubber.StubTest.INACTIVE_SELECTED_TEST, INACTIVE_BUCKET,
+                        INACTIVE_BUCKET, GROUP_1_BUCKET)
+                // provides reference to FALLBACK_BUCKET that can be used in tests
+                .withStubTest(ProctorGroupStubber.StubTest.GROUP_WITH_FALLBACK_TEST, GROUP_1_BUCKET,
+                        INACTIVE_BUCKET, GROUP_1_BUCKET, FALLBACK_TEST_BUCKET)
+                // provides reference to FALLBACK_BUCKET that can be used in tests, no resolved test
+                .withStubTest(ProctorGroupStubber.StubTest.NO_BUCKETS_WITH_FALLBACK_TEST, null,
+                        INACTIVE_BUCKET, GROUP_1_BUCKET, FALLBACK_TEST_BUCKET)
+                .withStubTest(ProctorGroupStubber.StubTest.MISSING_DEFINITION_TEST, GROUP_1_BUCKET)
+                .build();
         sampleGroups = new AbstractGroups(proctorResult) {};
     }
 
@@ -101,19 +115,19 @@ public class TestAbstractGroups {
     @Test
     public void testToLongString() {
         assertThat(emptyGroup.toLongString()).isEmpty();
-        assertThat(sampleGroups.toLongString()).isEqualTo("abtst-group1,bgtst-control,btntst-inactive,groupwithfallbacktst-group1,holdout_tst-group1,no_definition_tst-group1");
+        assertThat(sampleGroups.toLongString()).isEqualTo("abtst-group1,bgtst-control,btntst-inactive,groupwithfallbacktst-group1,no_definition_tst-group1");
     }
 
     @Test
     public void testToLoggingString() {
         assertThat((new AbstractGroups(new ProctorResult("0", emptyMap(), emptyMap(), emptyMap())) {}).toLoggingString()).isEmpty();
-        assertThat(sampleGroups.toLoggingString()).isEqualTo("abtst1,bgtst0,groupwithfallbacktst2,holdout_tst2,no_definition_tst2,#A1:abtst1,#A1:bgtst0,#A1:groupwithfallbacktst2,#A1:holdout_tst2,#A1:no_definition_tst2");
+        assertThat(sampleGroups.toLoggingString()).isEqualTo("abtst1,bgtst0,groupwithfallbacktst2,no_definition_tst2,#A1:abtst1,#A1:bgtst0,#A1:groupwithfallbacktst2,#A1:no_definition_tst2");
     }
 
     @Test
     public void testGetLoggingTestNames() {
         assertThat(Sets.newHashSet(sampleGroups.getLoggingTestNames()))
-                .containsExactlyInAnyOrder(CONTROL_SELECTED_TEST.getName(), GROUP1_SELECTED_TEST.getName(), GROUP_WITH_FALLBACK_TEST.getName(), HOLDOUT_MASTER_TEST.getName(), MISSING_DEFINITION_TEST.getName());
+                .containsExactlyInAnyOrder(CONTROL_SELECTED_TEST.getName(), GROUP1_SELECTED_TEST.getName(), GROUP_WITH_FALLBACK_TEST.getName(), MISSING_DEFINITION_TEST.getName());
     }
 
     @Test
@@ -143,8 +157,8 @@ public class TestAbstractGroups {
         sampleGroups.appendTestGroups(builder, ',');
         assertThat(builder.toString().split(","))
                 .containsExactlyInAnyOrder(
-                        "groupwithfallbacktst2", "bgtst0", "abtst1", "holdout_tst2",
-                        "#A1:bgtst0", "#A1:abtst1", "#A1:groupwithfallbacktst2", "#A1:holdout_tst2",
+                        "groupwithfallbacktst2", "bgtst0", "abtst1",
+                        "#A1:bgtst0", "#A1:abtst1", "#A1:groupwithfallbacktst2",
                         "#A1:no_definition_tst2", "no_definition_tst2");
     }
 
@@ -155,11 +169,10 @@ public class TestAbstractGroups {
                 .hasSize(0);
 
         assertThat(sampleGroups.getJavaScriptConfig())
-                .hasSize(5)
+                .hasSize(4)
                 .containsEntry(GROUP1_SELECTED_TEST.getName(), 1)
                 .containsEntry(CONTROL_SELECTED_TEST.getName(), 0)
                 .containsEntry(GROUP_WITH_FALLBACK_TEST.getName(), 2)
-                .containsEntry(HOLDOUT_MASTER_TEST.getName(), 2)
                 .containsEntry(MISSING_DEFINITION_TEST.getName(), 2);
     }
 

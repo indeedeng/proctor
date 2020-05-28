@@ -33,7 +33,8 @@ public class ProctorGroupStubber {
             new Payload("fallback"));
 
     /**
-     * Builds up a Proctor Result with given test definitions and selected buckets
+     * Builds up a Proctor Result with given test definitions and selected buckets.
+     * For simplicity, allocations will all be 100% selected bucket
      */
     static class ProctorResultStubBuilder {
 
@@ -70,27 +71,6 @@ public class ProctorGroupStubber {
                                     e -> stubDefinitionWithVersion("v1", e.getValue())))
             );
         }
-    }
-
-    static ProctorResult buildSampleProctorResult() {
-
-        return new ProctorResultStubBuilder()
-                .withStubTest(StubTest.HOLDOUT_MASTER_TEST, GROUP_1_BUCKET,
-                        INACTIVE_BUCKET, GROUP_1_BUCKET)
-                .withStubTest(StubTest.CONTROL_SELECTED_TEST, CONTROL_BUCKET_WITH_PAYLOAD,
-                        INACTIVE_BUCKET, CONTROL_BUCKET_WITH_PAYLOAD, GROUP_1_BUCKET_WITH_PAYLOAD)
-                .withStubTest(StubTest.GROUP1_SELECTED_TEST, GROUP_1_BUCKET_WITH_PAYLOAD,
-                        INACTIVE_BUCKET, CONTROL_BUCKET_WITH_PAYLOAD, GROUP_1_BUCKET_WITH_PAYLOAD)
-                .withStubTest(StubTest.INACTIVE_SELECTED_TEST, INACTIVE_BUCKET,
-                        INACTIVE_BUCKET, GROUP_1_BUCKET)
-                // provides reference to FALLBACK_BUCKET that can be used in tests
-                .withStubTest(StubTest.GROUP_WITH_FALLBACK_TEST, GROUP_1_BUCKET,
-                        INACTIVE_BUCKET, GROUP_1_BUCKET, FALLBACK_TEST_BUCKET)
-                // provides reference to FALLBACK_BUCKET that can be used in tests, no resolved test
-                .withStubTest(StubTest.NO_BUCKETS_WITH_FALLBACK_TEST, null,
-                        INACTIVE_BUCKET, GROUP_1_BUCKET, FALLBACK_TEST_BUCKET)
-                .withStubTest(StubTest.MISSING_DEFINITION_TEST, GROUP_1_BUCKET)
-                .build();
     }
 
     static ConsumableTestDefinition stubDefinitionWithVersion(final String version, final TestBucket... buckets) {

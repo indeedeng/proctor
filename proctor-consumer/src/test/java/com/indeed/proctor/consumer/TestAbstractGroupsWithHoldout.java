@@ -6,6 +6,7 @@ import com.indeed.proctor.common.ProctorResult;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.Payload;
 import com.indeed.proctor.common.model.TestBucket;
+import com.indeed.proctor.consumer.ProctorGroupStubber.FakeTest;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -14,9 +15,13 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Optional;
 
+import static com.indeed.proctor.consumer.ProctorGroupStubber.CONTROL_BUCKET_WITH_PAYLOAD;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.FALLBACK_BUCKET;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.FALLBACK_NOPAYLOAD_BUCKET;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.FALLBACK_TEST_BUCKET;
+import static com.indeed.proctor.consumer.ProctorGroupStubber.GROUP_1_BUCKET;
+import static com.indeed.proctor.consumer.ProctorGroupStubber.GROUP_1_BUCKET_WITH_PAYLOAD;
+import static com.indeed.proctor.consumer.ProctorGroupStubber.INACTIVE_BUCKET;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.CONTROL_SELECTED_TEST;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.GROUP1_SELECTED_TEST;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.GROUP_WITH_FALLBACK_TEST;
@@ -24,7 +29,6 @@ import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.HOLDOUT_M
 import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.INACTIVE_SELECTED_TEST;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.MISSING_DEFINITION_TEST;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.NO_BUCKETS_WITH_FALLBACK_TEST;
-import static com.indeed.proctor.consumer.ProctorGroupStubber.buildSampleProctorResult;
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
@@ -70,7 +74,23 @@ public class TestAbstractGroupsWithHoldout {
     @Before
     public void setUp() {
 
-        proctorResult = buildSampleProctorResult();
+        proctorResult = new ProctorGroupStubber.ProctorResultStubBuilder()
+                .withStubTest(ProctorGroupStubber.StubTest.HOLDOUT_MASTER_TEST, GROUP_1_BUCKET,
+                        INACTIVE_BUCKET, GROUP_1_BUCKET)
+                .withStubTest(ProctorGroupStubber.StubTest.CONTROL_SELECTED_TEST, CONTROL_BUCKET_WITH_PAYLOAD,
+                        INACTIVE_BUCKET, CONTROL_BUCKET_WITH_PAYLOAD, GROUP_1_BUCKET_WITH_PAYLOAD)
+                .withStubTest(ProctorGroupStubber.StubTest.GROUP1_SELECTED_TEST, GROUP_1_BUCKET_WITH_PAYLOAD,
+                        INACTIVE_BUCKET, CONTROL_BUCKET_WITH_PAYLOAD, GROUP_1_BUCKET_WITH_PAYLOAD)
+                .withStubTest(ProctorGroupStubber.StubTest.INACTIVE_SELECTED_TEST, INACTIVE_BUCKET,
+                        INACTIVE_BUCKET, GROUP_1_BUCKET)
+                // provides reference to FALLBACK_BUCKET that can be used in tests
+                .withStubTest(ProctorGroupStubber.StubTest.GROUP_WITH_FALLBACK_TEST, GROUP_1_BUCKET,
+                        INACTIVE_BUCKET, GROUP_1_BUCKET, FALLBACK_TEST_BUCKET)
+                // provides reference to FALLBACK_BUCKET that can be used in tests, no resolved test
+                .withStubTest(ProctorGroupStubber.StubTest.NO_BUCKETS_WITH_FALLBACK_TEST, null,
+                        INACTIVE_BUCKET, GROUP_1_BUCKET, FALLBACK_TEST_BUCKET)
+                .withStubTest(ProctorGroupStubber.StubTest.MISSING_DEFINITION_TEST, GROUP_1_BUCKET)
+                .build();
 
         // using ProctorGroupsWithHoldout to make all tests except HOLDOUT_MASTER_TEST become inactive
         groupsWithHoldOut = new ProctorGroupsWithHoldout(proctorResult, HOLDOUT_MASTER_TEST);
@@ -182,28 +202,6 @@ public class TestAbstractGroupsWithHoldout {
         assertThat(groupsWithHoldOut.getAsProctorResult().getBuckets()).isNotEqualTo(proctorResult.getBuckets()); // not equal
         assertThat(groupsWithHoldOut.getAsProctorResult().getAllocations()).isEqualTo(proctorResult.getAllocations());
         assertThat(groupsWithHoldOut.getAsProctorResult().getTestDefinitions()).isEqualTo(proctorResult.getTestDefinitions());
-    }
-
-
-    private static class FakeTest implements com.indeed.proctor.consumer.Test {
-
-        private final String name;
-        private final int value;
-
-        private FakeTest(final String name, final int value) {
-            this.name = name;
-            this.value = value;
-        }
-
-        @Override
-        public String getName() {
-            return name;
-        }
-
-        @Override
-        public int getFallbackValue() {
-            return value;
-        }
     }
 
 }
