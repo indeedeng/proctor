@@ -46,6 +46,7 @@ public class TestPayloadType {
         assertEquals(PayloadType.DOUBLE_ARRAY, payloadTypeForValue(singletonList(1.1D)));
         assertNotEquals(PayloadType.DOUBLE_ARRAY, payloadTypeForValue(singletonList(100L)));
         assertEquals(PayloadType.DOUBLE_ARRAY, payloadTypeForValue(singletonList(1.2F)));
+        assertEquals(PayloadType.DOUBLE_ARRAY, payloadTypeForValue(ImmutableList.of(1.2, 7))); // mix should be double
         assertEquals(PayloadType.DOUBLE_ARRAY, payloadTypeForValue(new Double[]{1.0D, 2.0D}));
         assertEquals(PayloadType.DOUBLE_ARRAY, payloadTypeForValue(new Float[]{1.0F, 2.0F}));
         assertNotEquals(PayloadType.DOUBLE_ARRAY, payloadTypeForValue(new Long[]{100L, 200L}));
