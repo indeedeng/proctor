@@ -56,7 +56,7 @@ public class ProctorJavascriptPayloadBuilder {
         for (final Test test : tests) {
             final List<Object> testValueAndPayload = Arrays.asList(
                     testGroups.getValue(test.getName(), test.getFallbackValue()),
-                    testGroups.getPayload(test.getName()).fetchAValue());
+                    testGroups.getPayload(test.getName(), test.getFallbackValue()).fetchAValue());
             final String hashedName = testNameObfuscator.obfuscateTestName(test.getName());
             result.put(hashedName, testValueAndPayload);
         }

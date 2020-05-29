@@ -1,5 +1,5 @@
 package com.indeed.proctor.pipet.core.model;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 public class JsonMeta {
     // HTTP Response Code
@@ -21,7 +21,7 @@ public class JsonMeta {
     }
 
     // No point in including an error message field if it's null.
-    @JsonSerialize(include=JsonSerialize.Inclusion.NON_NULL)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public String getError() {
         return error;
     }

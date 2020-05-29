@@ -1,6 +1,6 @@
 package com.indeed.proctor.pipet.core.model;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.indeed.proctor.common.model.Payload;
 import com.indeed.proctor.common.model.TestBucket;
 
@@ -42,7 +42,7 @@ public class JsonTestBucket {
     }
 
     // Many tests do not use payloads, so we should just omit this field if it's not set.
-    @JsonSerialize(include=JsonSerialize.Inclusion.NON_NULL)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public Object getPayload() {
         return payload;
     }

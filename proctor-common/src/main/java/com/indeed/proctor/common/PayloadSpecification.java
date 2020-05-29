@@ -1,6 +1,6 @@
 package com.indeed.proctor.common;
 
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
@@ -11,7 +11,7 @@ import java.util.Map;
  *
  * @author pwp
  */
-@JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class PayloadSpecification {
     @Nullable
     private String type;

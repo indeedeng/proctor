@@ -1,6 +1,6 @@
 package com.indeed.proctor.pipet.deploy.useragent;
 
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import eu.bitwalker.useragentutils.Browser;
@@ -104,7 +104,7 @@ public class UserAgent {
      */
     @Nonnull
     public Version getBrowserVersion() {
-        return Objects.firstNonNull(userAgent.getBrowserVersion(), UserAgentVersion.UNKNOWN_VERSION);
+        return MoreObjects.firstNonNull(userAgent.getBrowserVersion(), UserAgentVersion.UNKNOWN_VERSION);
     }
 
     @Nonnull
@@ -114,7 +114,7 @@ public class UserAgent {
 
     @Nonnull
     public OperatingSystem getOperatingSystem() {
-        return Objects.firstNonNull(userAgent.getOperatingSystem(), OperatingSystem.UNKNOWN);
+        return MoreObjects.firstNonNull(userAgent.getOperatingSystem(), OperatingSystem.UNKNOWN);
     }
 
     @Nonnull
@@ -125,7 +125,7 @@ public class UserAgent {
 
     @Nonnull
     public DeviceType getDeviceType() {
-        return Objects.firstNonNull(getOperatingSystem().getDeviceType(), DeviceType.UNKNOWN);
+        return MoreObjects.firstNonNull(getOperatingSystem().getDeviceType(), DeviceType.UNKNOWN);
     }
 
     @Nonnull
@@ -249,7 +249,7 @@ public class UserAgent {
             final eu.bitwalker.useragentutils.UserAgent userAgent =
                     eu.bitwalker.useragentutils.UserAgent.parseUserAgentString(userAgentString);
 
-            final eu.bitwalker.useragentutils.UserAgent userAgentToUse = Objects.firstNonNull(userAgent, UNKNOWN_USER_AGENT);
+            final eu.bitwalker.useragentutils.UserAgent userAgentToUse = MoreObjects.firstNonNull(userAgent, UNKNOWN_USER_AGENT);
             final UserAgentVersion version = UserAgentVersion.from(userAgent.getBrowserVersion());
 
             return new UserAgent(userAgentString, userAgentToUse, version);
