@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 import static com.indeed.proctor.common.PayloadType.payloadTypeForValue;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
+import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -97,6 +98,9 @@ public class TestPayloadType {
         assertThatThrownBy(() -> payloadTypeForValue(Arrays.asList("foo", 42)))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Cannot infer payload type");
+        assertThatThrownBy(() -> payloadTypeForValue(singletonList(singletonMap("foo", "bar"))))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Unsupported type returned for List content [MAP]");
     }
 
     @Test

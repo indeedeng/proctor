@@ -163,7 +163,7 @@ public enum PayloadType {
                     return PayloadType.STRING_ARRAY;
                 default:
                     // should never happen
-                    throw new IllegalStateException("Bug: unexpected type returned from " + types);
+                    throw new IllegalArgumentException("Unsupported type returned for List content " + types);
             }
         } else if (payloadValue instanceof String[]) {
             return PayloadType.STRING_ARRAY;
