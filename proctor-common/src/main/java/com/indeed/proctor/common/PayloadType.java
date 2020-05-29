@@ -147,6 +147,10 @@ public enum PayloadType {
             for (final Object value: ((List) payloadValue)) {
                 types.add(payloadTypeForValue(value));
             }
+            if (types.size() == 2 && types.contains(LONG_VALUE) && types.contains(DOUBLE_VALUE)) {
+                // treat a mix of doubles and longs as doubles, because some clients might treat 0.0 as 0
+                types.remove(LONG_VALUE);
+            }
             if (types.size() != 1) {
                 throw new IllegalArgumentException("Cannot infer payload type for list " + payloadValue);
             }
