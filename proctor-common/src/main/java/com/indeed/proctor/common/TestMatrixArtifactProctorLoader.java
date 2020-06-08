@@ -25,7 +25,9 @@ public class TestMatrixArtifactProctorLoader extends AbstractProctorLoader {
             @Nonnull final FunctionMapper functionMapper) {
         super(TestMatrixArtifactProctorLoader.class, proctorSpecification, functionMapper);
         this.source = source;
-        this.testMatrixArtifact = testMatrixArtifact;
+        this.testMatrixArtifact = new TestMatrixArtifact();
+        this.testMatrixArtifact.setAudit(testMatrixArtifact.getAudit());
+        this.testMatrixArtifact.setTests(testMatrixArtifact.getTests());
     }
 
     public TestMatrixArtifactProctorLoader(
