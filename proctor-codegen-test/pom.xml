@@ -6,7 +6,7 @@
         <groupId>com.indeed</groupId>
         <artifactId>proctor-parent</artifactId>
         <!--This version is not used in latest release. See https://mvnrepository.com/artifact/com.indeed/proctor-parent -->
-        <version>9999-SNAPSHOT</version>
+        <version>1.9.34</version>
     </parent>
 
     <artifactId>proctor-codegen-test</artifactId>
