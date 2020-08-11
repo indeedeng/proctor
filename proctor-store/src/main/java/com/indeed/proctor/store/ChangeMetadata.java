@@ -2,6 +2,7 @@ package com.indeed.proctor.store;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
+import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.Objects;
 
@@ -16,18 +17,26 @@ public class ChangeMetadata {
         this(username, password, author, Instant.now(), comment);
     }
 
-    public ChangeMetadata(final String username, final String password, final String author, final Instant timestamp, final String comment) {
-        this.username = Objects.requireNonNull(username);
-        this.password = Objects.requireNonNull(password);
+    public ChangeMetadata(
+            @Nullable final String username,
+            @Nullable final String password,
+            final String author,
+            final Instant timestamp,
+            final String comment
+    ) {
+        this.username = username;
+        this.password = password;
         this.author = Objects.requireNonNull(author);
         this.timestamp = Objects.requireNonNull(timestamp);
         this.comment = Objects.requireNonNull(comment);
     }
 
+    @Nullable
     public String getUsername() {
         return username;
     }
 
+    @Nullable
     public String getPassword() {
         return password;
     }
