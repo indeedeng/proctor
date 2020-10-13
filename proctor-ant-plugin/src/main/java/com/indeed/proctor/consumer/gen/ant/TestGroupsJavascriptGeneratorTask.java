@@ -5,9 +5,6 @@ import com.indeed.proctor.consumer.gen.CodeGenException;
 import com.indeed.proctor.consumer.gen.TestGroupsJavascriptGenerator;
 import org.apache.log4j.Logger;
 
-import java.io.File;
-import java.util.List;
-
 /**
  * Ant task for generating Javascript Proctor test groups files.
  *

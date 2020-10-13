@@ -4,9 +4,6 @@ import com.indeed.proctor.common.ProctorSpecification;
 import com.indeed.proctor.consumer.gen.CodeGenException;
 import com.indeed.proctor.consumer.gen.TestGroupsJavaGenerator;
 
-import java.io.File;
-import java.util.List;
-
 /**
  * Ant task for generating Java Proctor test groups files.
  *
