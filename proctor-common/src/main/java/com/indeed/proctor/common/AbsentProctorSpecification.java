@@ -2,6 +2,7 @@ package com.indeed.proctor.common;
 
 import com.indeed.proctor.common.dynamic.DynamicFilter;
 import com.indeed.proctor.common.dynamic.DynamicFilters;
+import com.indeed.proctor.common.dynamic.MatchAllFilter;
 
 import java.util.Collections;
 
@@ -16,8 +17,7 @@ import java.util.Collections;
 public class AbsentProctorSpecification extends ProctorSpecification {
     // filter that matches all proctor tests.
     // used to serve all tests with determineGroups()
-    private static final DynamicFilter MATCH_ALL_FILTER =
-            ((testName, testDefinition) -> true);
+    private static final DynamicFilter MATCH_ALL_FILTER = new MatchAllFilter();
 
     public AbsentProctorSpecification() {
         super();
