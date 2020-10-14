@@ -29,7 +29,8 @@ public class DynamicFilters implements JsonSerializable {
             Lists.newArrayList(
                     TestNamePrefixFilter.class,
                     TestNamePatternFilter.class,
-                    MetaTagsFilter.class
+                    MetaTagsFilter.class,
+                    MatchAllFilter.class
             )
     );
 

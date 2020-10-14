@@ -172,7 +172,7 @@ public abstract class TestGroupsGeneratorTask extends Task {
                 try {
                     specification = mergePartialSpecifications(files);
                 } catch (final CodeGenException e) {
-                    throw new BuildException("Unable to generate total specification for inputs " + inputs + " : " + e.getMessage(), e);
+                    throw new BuildException("Unable to generate total specification for inputs " + Arrays.asList(inputs) + " : " + e.getMessage(), e);
                 }
             }
 
