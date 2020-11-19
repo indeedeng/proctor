@@ -180,6 +180,7 @@ public abstract class AbstractGroups {
      * If Matrix has a testbucket for this testname, return its payload (or empty).
      * If matrix does not have such a testbucket, looks up different bucket in the testdefinition and return it's payload
      */
+    @Nonnull
     final Payload getPayload(final String testName, final int fallbackBucketValue) {
         final Optional<TestBucket> activeBucketOpt = getActiveBucket(testName);
         final Optional<TestBucket> resultBucketOpt;
@@ -328,11 +329,10 @@ public abstract class AbstractGroups {
     protected final List<String> getLoggingTestNames() {
         final Map<String, ConsumableTestDefinition> testDefinitions = proctorResult.getTestDefinitions();
         // following lines should preserve the order in the map to ensure logging values are stable
-        // declaring SortedMap variable here to ensure compiler error happens if proctorResult map is changed.
         final Map<String, TestBucket> buckets = proctorResult.getBuckets();
         return buckets.keySet().stream()
-                .filter(testBucket -> {
-                    final ConsumableTestDefinition consumableTestDefinition = testDefinitions.get(testBucket);
+                .filter(testName -> {
+                    final ConsumableTestDefinition consumableTestDefinition = testDefinitions.get(testName);
                     // fallback to non-silent when test definition is not available
                     return (consumableTestDefinition == null) || !consumableTestDefinition.getSilent();
                 })
