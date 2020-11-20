@@ -13,7 +13,6 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.util.AbstractMap;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -136,12 +135,7 @@ public abstract class AbstractGroups {
         final int overrideBucketValue = overrideDeterminedBucketValue(testName, bucket);
         if ((overrideBucketValue != bucket.getValue())) {
             // get bucket from definition with that override value from Definition
-            final Optional<TestBucket> overrideBucketOpt = Optional.ofNullable(proctorResult.getTestDefinitions().get(testName))
-                    .map(ConsumableTestDefinition::getBuckets)
-                    .orElse(Collections.emptyList())
-                    .stream()
-                    .filter(b -> b.getValue() == overrideBucketValue)
-                    .findFirst();
+            final Optional<TestBucket> overrideBucketOpt = getTestBucketWithValueOptional(proctorResult, testName, overrideBucketValue);
             if (overrideBucketOpt.isPresent()) {
                 return overrideBucketOpt;
             }
@@ -213,15 +207,22 @@ public abstract class AbstractGroups {
         return getTestBucketWithValue(testName, targetBucket.getValue());
     }
 
-    @CheckForNull
-    final TestBucket getTestBucketWithValue(final String testName, final int bucketValue) {
+    private static Optional<TestBucket> getTestBucketWithValueOptional(
+            final ProctorResult proctorResult,
+            final String testName,
+            final int bucketValue
+    ) {
         return Optional.ofNullable(proctorResult.getTestDefinitions())
                 .map(testDefinitions -> testDefinitions.get(testName))
                 .map(ConsumableTestDefinition::getBuckets)
-                .map(buckets -> buckets.stream()
-                        .filter(testBucket -> bucketValue == testBucket.getValue())
-                        .findFirst()
-                        .orElse(null))
+                .flatMap(buckets -> buckets.stream()
+                        .filter(testBucket -> testBucket.getValue() == bucketValue)
+                        .findFirst());
+    }
+
+    @CheckForNull
+    final TestBucket getTestBucketWithValue(final String testName, final int bucketValue) {
+        return getTestBucketWithValueOptional(proctorResult, testName, bucketValue)
                 .orElse(null);
     }
 
