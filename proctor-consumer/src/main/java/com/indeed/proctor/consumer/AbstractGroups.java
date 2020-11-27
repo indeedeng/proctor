@@ -261,7 +261,7 @@ public abstract class AbstractGroups {
      *
      * Additional custom groups can be added by overriding getCustomGroupsForLogging().
      *
-     * @return a comma-separated List of {testname}{active-bucket-VALUE} and {AllocationId}{testname}{active-bucket-VALUE} for all ACTIVE tests
+     * @return a comma-separated List of {testname}{active-bucket-VALUE} and {AllocationId}{testname}{active-bucket-VALUE} for all LIVE tests
      */
     public String toLoggingString() {
         if (isEmpty()) {
@@ -340,7 +340,7 @@ public abstract class AbstractGroups {
                     // fallback to non-silent when test definition is not available
                     return (consumableTestDefinition == null) || !consumableTestDefinition.getSilent();
                 })
-                // call to getValuePrivate() to allow overrides of getActiveBucket
+                // call to getValue() to allow overrides of getActiveBucket
                 .filter(testName -> getValue(testName, -1) >= 0)
                 .collect(Collectors.toList());
     }
