@@ -36,25 +36,32 @@ public class ProctorGroupStubber {
      * Builds up a Proctor Result with given test definitions and selected buckets.
      * For simplicity, allocations will all be 100% selected bucket
      */
-    static class ProctorResultStubBuilder {
+    public static class ProctorResultStubBuilder {
 
-        private Map<StubTest, TestBucket[]> definedBucketSets = new TreeMap<>();
-        private Map<StubTest, TestBucket> resolvedBuckets = new TreeMap<>();
+        private final Map<String, ConsumableTestDefinition> definitions = new TreeMap<>();
+        private final Map<StubTest, TestBucket> resolvedBuckets = new TreeMap<>();
 
         public ProctorResultStubBuilder withStubTest(
                 final StubTest stubTest,
                 @Nullable final TestBucket resolved,
                 final TestBucket... definedBuckets) {
+            return withStubTest(stubTest, resolved, stubDefinitionWithVersion("v1", definedBuckets));
+        }
+
+        public ProctorResultStubBuilder withStubTest(
+                final StubTest stubTest,
+                @Nullable final TestBucket resolved,
+                final ConsumableTestDefinition definition) {
             if (resolved != null) {
                 resolvedBuckets.put(stubTest, resolved);
             }
-            if (definedBuckets.length > 0) {
-                definedBucketSets.put(stubTest, definedBuckets);
+            if (definition != null) {
+                definitions.put(stubTest.getName(), definition);
             }
             return this;
         }
 
-        ProctorResult build() {
+        public ProctorResult build() {
             return new ProctorResult(
                     "0",
                     resolvedBuckets.entrySet().stream()
@@ -65,15 +72,12 @@ public class ProctorGroupStubber {
                             .collect(Collectors.toMap(
                                     e -> e.getKey().getName(),
                                     e -> new Allocation(null, Collections.singletonList(new Range(e.getValue().getValue(), 1.0)), "#A1"))),
-                    definedBucketSets.entrySet().stream()
-                            .collect(Collectors.toMap(
-                                    e -> e.getKey().getName(),
-                                    e -> stubDefinitionWithVersion("v1", e.getValue())))
+                    definitions
             );
         }
     }
 
-    static ConsumableTestDefinition stubDefinitionWithVersion(final String version, final TestBucket... buckets) {
+    public static ConsumableTestDefinition stubDefinitionWithVersion(final String version, final TestBucket... buckets) {
         final ConsumableTestDefinition testDefinition = new ConsumableTestDefinition();
         testDefinition.setVersion(version);
         testDefinition.setBuckets(Arrays.asList(buckets));
@@ -110,7 +114,7 @@ public class ProctorGroupStubber {
     /**
      * simulate generated enum from json
      */
-    enum StubTest implements com.indeed.proctor.consumer.Test {
+    public enum StubTest implements com.indeed.proctor.consumer.Test {
         HOLDOUT_MASTER_TEST("holdout_tst", -1),
 
         CONTROL_SELECTED_TEST("bgtst", -1),
@@ -121,6 +125,7 @@ public class ProctorGroupStubber {
         // proctor-test to test situation where bucket and allocation is available but definition is not.
         // This is expected to be happen only in artificial case such as in testing.
         MISSING_DEFINITION_TEST("no_definition_tst", -1),
+        SILENT_TEST("silent_tst", -1),
 
         NO_BUCKETS_WITH_FALLBACK_TEST("nobucketfallbacktst", -1);
 

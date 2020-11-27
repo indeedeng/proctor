@@ -3,6 +3,7 @@ package com.indeed.proctor.consumer;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.indeed.proctor.common.ProctorResult;
+import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.Payload;
 import com.indeed.proctor.consumer.ProctorGroupStubber.FakeTest;
 import org.junit.Before;
@@ -51,7 +52,7 @@ public class TestAbstractGroups {
                 // provides reference to FALLBACK_BUCKET that can be used in tests, no resolved test
                 .withStubTest(ProctorGroupStubber.StubTest.NO_BUCKETS_WITH_FALLBACK_TEST, null,
                         INACTIVE_BUCKET, GROUP_1_BUCKET, FALLBACK_TEST_BUCKET)
-                .withStubTest(ProctorGroupStubber.StubTest.MISSING_DEFINITION_TEST, GROUP_1_BUCKET)
+                .withStubTest(ProctorGroupStubber.StubTest.MISSING_DEFINITION_TEST, GROUP_1_BUCKET, (ConsumableTestDefinition) null)
                 .build();
         sampleGroups = new AbstractGroups(proctorResult) {};
     }
