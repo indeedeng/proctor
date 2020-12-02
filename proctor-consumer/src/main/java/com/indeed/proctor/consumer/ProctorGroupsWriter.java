@@ -3,8 +3,11 @@ package com.indeed.proctor.consumer;
 import com.indeed.proctor.common.ProctorResult;
 import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
+import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.consumer.logging.TestGroupFormatter;
+import org.apache.commons.lang3.StringUtils;
 
+import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 import java.util.ArrayList;
 import java.util.List;
@@ -82,12 +85,17 @@ public class ProctorGroupsWriter {
         for (final TestGroupFormatter formatter: formatters) {
             for (final String testName : filteredTestNames) {
                 // no allocation might exist for this testbucket
+                @Nullable
                 final Allocation allocation = proctorResult.getAllocations().get(testName);
-                final int lengthBefore = stringBuilder.length();
-                formatter.appendProctorTestGroup(stringBuilder, testName, allocation.getId(), proctorResult.getBuckets().get(testName));
-                // append separator unless formatter did not append anything
-                if (lengthBefore < stringBuilder.length()) {
-                    stringBuilder.append(groupsSeparator);
+                // allocation should never be null, guarding against NPE anyway
+                // id can be blank for historical data
+                if (allocation != null && StringUtils.isNotBlank(allocation.getId())) {
+                    final int lengthBefore = stringBuilder.length();
+                    formatter.appendProctorTestGroup(stringBuilder, testName, allocation.getId(), proctorResult.getBuckets().get(testName));
+                    // append separator unless formatter did not append anything
+                    if (lengthBefore < stringBuilder.length()) {
+                        stringBuilder.append(groupsSeparator);
+                    }
                 }
             }
         }
@@ -189,7 +197,8 @@ public class ProctorGroupsWriter {
                     // by default, same logic as in AbstractGroups.toLoggingString()
                     (testName, proctorResult) -> {
                         final Map<String, ConsumableTestDefinition> testDefinitions = proctorResult.getTestDefinitions();
-
+                        // testDefinition should never be null, guarding against NPE anyway
+                        @Nullable
                         final ConsumableTestDefinition consumableTestDefinition = testDefinitions.get(testName);
                         if (consumableTestDefinition == null && !includeTestWithoutDefinition) {
                             return false;
@@ -198,8 +207,9 @@ public class ProctorGroupsWriter {
                         if (consumableTestDefinition != null && consumableTestDefinition.getSilent() && !includeSilentTests) {
                             return false;
                         }
-                        // only live buckets
-                        if (proctorResult.getBuckets().get(testName).getValue() < 0 && !includeInactiveGroups) {
+                        // only live buckets. testBucket should never be null, guarding against NPE anyway
+                        final TestBucket testBucket = proctorResult.getBuckets().get(testName);
+                        if (testBucket != null && testBucket.getValue() < 0 && !includeInactiveGroups) {
                             return false;
                         }
                         if (additionalFilter != null) {
