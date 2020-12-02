@@ -6,12 +6,15 @@ import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.Payload;
 import com.indeed.proctor.common.model.TestBucket;
+import com.indeed.proctor.consumer.logging.TestUsageObserver;
 import org.apache.log4j.Logger;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import java.util.AbstractMap;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -29,6 +32,10 @@ import java.util.stream.Collectors;
 public abstract class AbstractGroups {
     private static final Logger LOGGER = Logger.getLogger(AbstractGroups.class);
     private final ProctorResult proctorResult;
+
+    // Option using injected Observer
+    @CheckForNull
+    private TestUsageObserver testUsageObserver;
 
     /**
      * A character to separate groups in logging output.
@@ -116,11 +123,34 @@ public abstract class AbstractGroups {
                 .orElse(defaultValue);
     }
 
+    protected int getValueWithouMarkingUsage(final String testName, final int defaultValue) {
+        // using getActiveBucket to allow overrides
+        return doGetActiveBucketWithoutMarkingUsage(testName)
+                .map(TestBucket::getValue)
+                .orElse(defaultValue);
+    }
+
     /**
      * @return the bucket that has been determined by the current proctorResult, or override bucket if valid, or empty if testname not valid
      */
     // intentionally final, other developers should only override overrideDeterminedBucketValue()
     protected final Optional<TestBucket> getActiveBucket(final String testName) {
+
+        Optional<TestBucket> bucketOpt = doGetActiveBucketWithoutMarkingUsage(testName);
+        bucketOpt.ifPresent(bucket -> {
+            if (testUsageObserver != null) {
+                testUsageObserver.testsUsed(Collections.singleton(testName));
+            }
+
+        });
+        return bucketOpt;
+    }
+
+    /**
+     * @return the bucket that has been determined by the current proctorResult, or override bucket if valid, or empty if testname not valid
+     */
+    // intentionally final, other developers should only override overrideDeterminedBucketValue()
+    private Optional<TestBucket> doGetActiveBucketWithoutMarkingUsage(final String testName) {
         // intentionally not allowing subclasses to override returning empty for testnames that do not exist in ProctorResult
         // the semantics of this class would become too confusing
         // if clients somehow need that, they should provide a proctorResult instance having additional testNames with buckets
@@ -224,6 +254,17 @@ public abstract class AbstractGroups {
     }
 
     /**
+     * mark tests to additionally be included in getAsUsedTestsProctorResult(), even when no corresponding
+     * method has been called.
+     * for usecases where exposure happens without calls to generated methods calling getValue()
+     */
+    public final void markTestsAsUsed(final Collection<String> testNames) {
+        if (testUsageObserver != null) {
+            testUsageObserver.testsUsed(testNames);
+        }
+    }
+
+    /**
      * @return a comma-separated String of {testname}-{active-bucket-name} for ALL tests
      */
     public String toLongString() {
@@ -233,7 +274,7 @@ public abstract class AbstractGroups {
         final Map<String, TestBucket> buckets = proctorResult.getBuckets();
         final StringBuilder sb = new StringBuilder(buckets.size() * 10);
         for (final String testName : buckets.keySet()) {
-            sb.append(testName).append(TESTNAME_BUCKET_CONNECTOR).append(getActiveBucket(testName)
+            sb.append(testName).append(TESTNAME_BUCKET_CONNECTOR).append(doGetActiveBucketWithoutMarkingUsage(testName)
                     .map(TestBucket::getName).orElse("unknown"))
                     .append(GROUPS_SEPARATOR);
         }
@@ -337,8 +378,8 @@ public abstract class AbstractGroups {
                     // fallback to non-silent when test definition is not available
                     return (consumableTestDefinition == null) || !consumableTestDefinition.getSilent();
                 })
-                // call to getValue() to allow overrides of getActiveBucket
-                .filter(testName -> getValue(testName, -1) >= 0)
+                // call to getValueWithouMarkingUsage() to allow overrides of getActiveBucket, but avoid marking
+                .filter(testName -> getValueWithouMarkingUsage(testName, -1) >= 0)
                 .collect(Collectors.toList());
     }
 
@@ -347,7 +388,7 @@ public abstract class AbstractGroups {
      */
     protected final void appendTestGroupsWithoutAllocations(final StringBuilder sb, final char separator, final List<String> testNames) {
         for (final String testName : testNames) {
-            getActiveBucket(testName).ifPresent(testBucket ->
+            doGetActiveBucketWithoutMarkingUsage(testName).ifPresent(testBucket ->
                 sb.append(testName).append(testBucket.getValue()).append(separator));
         }
     }
@@ -357,7 +398,7 @@ public abstract class AbstractGroups {
      */
     protected final void appendTestGroupsWithAllocations(final StringBuilder sb, final char separator, final List<String> testNames) {
         for (final String testName : testNames) {
-            getActiveBucket(testName).ifPresent(testBucket -> {
+            doGetActiveBucketWithoutMarkingUsage(testName).ifPresent(testBucket -> {
                 // no allocation might exist for this testbucket
                 final Allocation allocation = proctorResult.getAllocations().get(testName);
                 if ((allocation != null) && !Strings.isNullOrEmpty(allocation.getId())) {
@@ -380,10 +421,25 @@ public abstract class AbstractGroups {
      * @return a {@link Map} of config JSON
      */
     public final Map<String, Integer> getJavaScriptConfig() {
+        return getJavaScriptConfig(proctorResult.getBuckets().keySet());
+    }
+
+    /**
+     * Generates a Map[testname, bucketValue] for given testnames, for bucketValues >= 0.
+     *
+     * The purpose is to conveniently support serializing this map to JSON and used with
+     * indeed.proctor.groups.init and
+     * indeed.proctor.groups.inGroup(tstName, bucketValue)
+     * from common/indeedjs library
+     *
+     * @return a {@link Map} of config JSON
+     */
+    public final Map<String, Integer> getJavaScriptConfig(final Collection<String> testNames) {
         // For now this is a simple mapping from {testName to bucketValue}
         return proctorResult.getBuckets().keySet().stream()
                 // mirrors appendTestGroups method by skipping *inactive* tests
                 // call to getValuePrivate() to allow overrides of getActiveBucket
+                .filter(testNames::contains)
                 .map(testName -> new AbstractMap.SimpleEntry<>(testName, getValue(testName, -1)))
                 .filter(e -> e.getValue() >= 0)
                 .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
@@ -413,6 +469,14 @@ public abstract class AbstractGroups {
     }
 
     /**
+     * Inject a class to notify every time a test is used
+     */
+    public AbstractGroups setTestUsageObserver(@CheckForNull TestUsageObserver testUsageObserver) {
+        this.testUsageObserver = testUsageObserver;
+        return this;
+    }
+
+    /**
      * returns the proctor result derived from applying rules and hashing the identifier, and
      * also applying any custom logic from overriding overrideDeterminedBucketValue().
      *
@@ -423,12 +487,13 @@ public abstract class AbstractGroups {
      */
     public ProctorResult getAsProctorResult() {
         final Map<String, TestBucket> customBuckets = proctorResult.getBuckets().entrySet().stream()
-                .collect(Collectors.toMap(Entry::getKey, e -> getActiveBucket(e.getKey()).get()));
+                .collect(Collectors.toMap(Entry::getKey, e -> doGetActiveBucketWithoutMarkingUsage(e.getKey()).get()));
         return new ProctorResult(
                 proctorResult.getMatrixVersion(),
                 customBuckets,
                 proctorResult.getAllocations(),
-                proctorResult.getTestDefinitions());
+                proctorResult.getTestDefinitions(),
+                proctorResult.getDynamicallyLoadedTests());
     }
 
     /**

@@ -6,6 +6,7 @@ import com.indeed.proctor.common.ProctorResult;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.Payload;
 import com.indeed.proctor.consumer.ProctorGroupStubber.FakeTest;
+import com.indeed.proctor.consumer.logging.TestExposureMarkingObserver;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -25,6 +26,7 @@ import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.INACTIVE_
 import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.MISSING_DEFINITION_TEST;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.NO_BUCKETS_WITH_FALLBACK_TEST;
 import static java.util.Collections.emptyMap;
+import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -125,7 +127,38 @@ public class TestAbstractGroups {
     @Test
     public void testToLoggingString() {
         assertThat((new AbstractGroups(new ProctorResult("0", emptyMap(), emptyMap(), emptyMap())) {}).toLoggingString()).isEmpty();
-        assertThat(sampleGroups.toLoggingString()).isEqualTo("abtst1,bgtst0,groupwithfallbacktst2,no_definition_tst2,#A1:abtst1,#A1:bgtst0,#A1:groupwithfallbacktst2,#A1:no_definition_tst2");
+        assertThat(sampleGroups.toLoggingString())
+                .isEqualTo("abtst1,bgtst0,groupwithfallbacktst2,no_definition_tst2,#A1:abtst1,#A1:bgtst0,#A1:groupwithfallbacktst2,#A1:no_definition_tst2");
+    }
+
+    @Test
+    public void testToLoggingStringWithExposureAndObserver() {
+        final TestExposureMarkingObserver observer = new TestExposureMarkingObserver(proctorResult);
+        final ProctorGroupsWriter writer = ProctorGroupsWriter.Builder.indeedLegacyFormatters().build();
+        sampleGroups.setTestUsageObserver(observer);
+
+        // no test usage observed yet
+        assertThat(writer.toLoggingString(observer.asProctorResult())).isEmpty();
+
+        // toLoggingString and getAsProctorResult should not mark tests as used
+        final String fullLoggingString = "abtst1,bgtst0,groupwithfallbacktst2,no_definition_tst2,#A1:abtst1,#A1:bgtst0,#A1:groupwithfallbacktst2,#A1:no_definition_tst2";
+        assertThat(sampleGroups.getAsProctorResult()).isNotNull();
+        assertThat(sampleGroups.toLoggingString()).isEqualTo(fullLoggingString);
+        assertThat(sampleGroups.toLongString()).isNotBlank();
+        assertThat(sampleGroups.toString()).isEqualTo(fullLoggingString);
+
+        // getActiveBucket is observed
+        assertThat(sampleGroups.getActiveBucket(GROUP1_SELECTED_TEST.getName())).isNotEmpty();
+        assertThat(writer.toLoggingString(observer.asProctorResult())).isEqualTo("abtst1,#A1:abtst1");
+
+        // explicitly marked tests (e.g. from dynamic resolution)
+        sampleGroups.markTestsAsUsed(singleton(CONTROL_SELECTED_TEST.getName()));
+        assertThat(writer.toLoggingString(observer.asProctorResult())).isEqualTo("abtst1,bgtst0,#A1:abtst1,#A1:bgtst0");
+
+        // using JavascriptConfig means all tests might be exposed, each test is observed as used
+        assertThat(sampleGroups.getJavaScriptConfig()).isNotEmpty();
+        assertThat(writer.toLoggingString(observer.asProctorResult()))
+                .isEqualTo(fullLoggingString);
     }
 
     @Test
