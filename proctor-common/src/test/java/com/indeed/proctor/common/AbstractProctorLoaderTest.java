@@ -10,13 +10,10 @@ import org.junit.Test;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.easymock.classextension.EasyMock.createMock;
 import static org.easymock.classextension.EasyMock.expect;
 import static org.easymock.classextension.EasyMock.replay;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class AbstractProctorLoaderTest {
@@ -40,8 +37,8 @@ public class AbstractProctorLoaderTest {
         replay(dataLoaderTimerMock);
 
         final TestProctorLoader loader = createTestProctorLoader(dataLoaderTimerMock);
-        assertNull(loader.getSecondsSinceLastLoadCheck());
-        assertFalse(loader.isLoadedDataSuccessfullyRecently());
+        assertThat(loader.getSecondsSinceLastLoadCheck()).isNull();
+        assertThat(loader.isLoadedDataSuccessfullyRecently()).isFalse();
     }
 
     @Test
@@ -55,8 +52,8 @@ public class AbstractProctorLoaderTest {
         replay(dataLoaderTimerMock);
 
         final TestProctorLoader loader = createTestProctorLoader(dataLoaderTimerMock);
-        assertEquals(42, (int) loader.getSecondsSinceLastLoadCheck());
-        assertTrue(loader.isLoadedDataSuccessfullyRecently());
+        assertThat(loader.getSecondsSinceLastLoadCheck()).isEqualTo(42);
+        assertThat(loader.isLoadedDataSuccessfullyRecently()).isTrue();
     }
 
     @Test
@@ -71,7 +68,8 @@ public class AbstractProctorLoaderTest {
                 return proctorMock;
             }
         };
-        assertTrue(loader.load());
+        assertThat(loader.load()).isTrue();
+        assertThat(loader.get()).isEqualTo(proctorMock);
     }
 
     @Test
@@ -85,7 +83,7 @@ public class AbstractProctorLoaderTest {
                 return null;
             }
         };
-        assertTrue(loader.load());
+        assertThat(loader.load()).isTrue();
     }
 
     @Test
@@ -103,7 +101,7 @@ public class AbstractProctorLoaderTest {
             loader.load();
             fail("Expected RTE");
         } catch (final RuntimeException rte) {
-            assertEquals(exceptionStub, rte.getCause());
+            assertThat(rte.getCause()).isEqualTo(exceptionStub);
         }
     }
 
