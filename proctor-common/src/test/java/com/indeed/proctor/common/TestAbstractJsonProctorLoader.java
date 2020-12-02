@@ -6,7 +6,6 @@ import com.indeed.proctor.common.dynamic.DynamicFilters;
 import com.indeed.proctor.common.dynamic.MetaTagsFilter;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.TestMatrixArtifact;
-import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
 import java.io.File;
@@ -18,13 +17,9 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.offset;
 
-/**
- * @author xiaoyun
- */
 
 public class TestAbstractJsonProctorLoader {
     private static final Set<String> TESTS_IN_EXAMPLE_TEST_MATRIX = ImmutableSet.of(
@@ -46,24 +41,27 @@ public class TestAbstractJsonProctorLoader {
         final File testMatrixFile = new File(path);
         final Reader reader = new FileReader(testMatrixFile);
         final TestMatrixArtifact testMatrixArtifact = proctorLoader.loadJsonTestMatrix(reader);
-        assertEquals("1524", testMatrixArtifact.getAudit().getVersion());
-        assertEquals(1313525000000l, testMatrixArtifact.getAudit().getUpdated());
-        assertEquals("shoichi", testMatrixArtifact.getAudit().getUpdatedBy());
-        assertEquals(4, testMatrixArtifact.getTests().size());
-        assertTrue(testMatrixArtifact.getTests().containsKey("exampletst"));
-        assertTrue(testMatrixArtifact.getTests().containsKey("sometst"));
-        assertTrue(testMatrixArtifact.getTests().containsKey("null_tst"));
-        assertTrue(testMatrixArtifact.getTests().containsKey("meta_tags_tst"));
+        assertThat(testMatrixArtifact.getAudit().getVersion()).isEqualTo("1524");
+        assertThat(testMatrixArtifact.getAudit().getUpdated()).isEqualTo(1313525000000L);
+        assertThat(testMatrixArtifact.getAudit().getUpdatedBy()).isEqualTo("shoichi");
+        assertThat(testMatrixArtifact.getTests()).hasSize(4);
+        assertThat(testMatrixArtifact.getTests()).containsKeys(
+                "exampletst",
+                "sometst",
+                "null_tst",
+                "meta_tags_tst");
 
         final ConsumableTestDefinition testDefinition = testMatrixArtifact.getTests().get("exampletst");
-        assertEquals("control", testDefinition.getBuckets().get(0).getName());
-        assertEquals("test", testDefinition.getBuckets().get(1).getName());
-        assertEquals(2, testDefinition.getAllocations().size());
-        assertEquals("${lang == ENGLISH}", testDefinition.getAllocations().get(0).getRule());
-        assertEquals(0.25d, testDefinition.getAllocations().get(0).getRanges().get(0).getLength(), 1e-6);
-        assertEquals(0.75d, testDefinition.getAllocations().get(0).getRanges().get(1).getLength(), 1e-6);
+        assertThat(testDefinition.getBuckets().get(0).getName()).isEqualTo("control");
+        assertThat(testDefinition.getBuckets().get(1).getName()).isEqualTo("test");
+        assertThat(testDefinition.getAllocations()).hasSize(2);
+        assertThat(testDefinition.getAllocations().get(0).getRule()).isEqualTo("${lang == ENGLISH}");
+        assertThat(testDefinition.getAllocations().get(0).getRanges().get(0).getLength())
+                .isCloseTo(0.25d, offset(1e-6));
+        assertThat(testDefinition.getAllocations().get(0).getRanges().get(1).getLength())
+                .isCloseTo(0.75d, offset( 1e-6));
 
-        assertNull(testMatrixArtifact.getTests().get("null_tst"));
+        assertThat(testMatrixArtifact.getTests().get("null_tst")).isNull();
     }
 
     @Test
@@ -79,7 +77,7 @@ public class TestAbstractJsonProctorLoader {
         final TestMatrixArtifact testMatrixArtifact = proctorLoader.loadJsonTestMatrix(reader);
 
         // only verify test names because other checks are done in testLoadJsonTestMatrix()
-        Assertions.assertThat(testMatrixArtifact.getTests().keySet())
+        assertThat(testMatrixArtifact.getTests().keySet())
                 .containsExactly("exampletst");
     }
 
@@ -96,7 +94,7 @@ public class TestAbstractJsonProctorLoader {
         final TestMatrixArtifact testMatrixArtifact = proctorLoader.loadJsonTestMatrix(reader);
 
         // only verify test names because other checks are done in testLoadJsonTestMatrix()
-        Assertions.assertThat(testMatrixArtifact.getTests().keySet())
+        assertThat(testMatrixArtifact.getTests().keySet())
                 .containsExactlyInAnyOrder("sometst", "meta_tags_tst");
     }
 
