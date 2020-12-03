@@ -32,7 +32,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class TestAbstractGroups {
-
+    private TestExposureMarkingObserver observer;
     private ProctorResult proctorResult;
     private AbstractGroups emptyGroup;
     private AbstractGroups sampleGroups;
@@ -56,7 +56,8 @@ public class TestAbstractGroups {
                         INACTIVE_BUCKET, GROUP_1_BUCKET, FALLBACK_TEST_BUCKET)
                 .withStubTest(ProctorGroupStubber.StubTest.MISSING_DEFINITION_TEST, GROUP_1_BUCKET, (ConsumableTestDefinition) null)
                 .build();
-        sampleGroups = new AbstractGroups(proctorResult) {};
+        observer = new TestExposureMarkingObserver(proctorResult);
+        sampleGroups = new AbstractGroups(proctorResult, observer) {};
     }
 
     @Test
@@ -133,9 +134,8 @@ public class TestAbstractGroups {
 
     @Test
     public void testToLoggingStringWithExposureAndObserver() {
-        final TestExposureMarkingObserver observer = new TestExposureMarkingObserver(proctorResult);
+
         final ProctorGroupsWriter writer = ProctorGroupsWriter.Builder.indeedLegacyFormatters().build();
-        sampleGroups.setTestUsageObserver(observer);
 
         // no test usage observed yet
         assertThat(writer.toLoggingString(observer.asProctorResult())).isEmpty();

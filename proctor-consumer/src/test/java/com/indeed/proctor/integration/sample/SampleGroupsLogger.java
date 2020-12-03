@@ -13,7 +13,7 @@ public class SampleGroupsLogger {
         return logFullStringFromAbstractGroups;
     }
 
-    public SampleGroupsLogger setLogFullStringFromAbstractGroups(String logFullStringFromAbstractGroups) {
+    public SampleGroupsLogger setLogFullStringFromAbstractGroups(final String logFullStringFromAbstractGroups) {
         this.logFullStringFromAbstractGroups = logFullStringFromAbstractGroups;
         return this;
     }
@@ -22,7 +22,7 @@ public class SampleGroupsLogger {
         return exposureString;
     }
 
-    public SampleGroupsLogger setExposureString(String exposureString) {
+    public SampleGroupsLogger setExposureString(final String exposureString) {
         this.exposureString = exposureString;
         return this;
     }
@@ -31,7 +31,7 @@ public class SampleGroupsLogger {
         return logFullStringFromWriter;
     }
 
-    public SampleGroupsLogger setLogFullStringFromWriter(String logFullStringFromWriter) {
+    public SampleGroupsLogger setLogFullStringFromWriter(final String logFullStringFromWriter) {
         this.logFullStringFromWriter = logFullStringFromWriter;
         return this;
     }

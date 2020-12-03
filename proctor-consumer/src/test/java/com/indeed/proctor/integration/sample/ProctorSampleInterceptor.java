@@ -43,11 +43,9 @@ public class ProctorSampleInterceptor extends HandlerInterceptorAdapter {
                 TestType.ANONYMOUS_USER, ctk
         ));
         final ProctorResult proctorResult = proctorGroupsManager.determineBuckets(identifiers);
-        final SampleProctorGroups proctorGroups = new SampleProctorGroups(proctorResult);
-
         // prepare exposure logging
         final TestUsageObserver observer = new TestExposureMarkingObserver(proctorResult);
-        proctorGroups.setTestUsageObserver(observer);
+        final SampleProctorGroups proctorGroups = new SampleProctorGroups(proctorResult, observer);
 
         // log determined buckets for segmentation in later later analysis outside proctor
         groupLogger.setLogFullStringFromAbstractGroups(proctorGroups.toLoggingString());

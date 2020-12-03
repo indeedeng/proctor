@@ -1,6 +1,5 @@
 package com.indeed.proctor.consumer;
 
-import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.indeed.proctor.common.ProctorResult;
 import com.indeed.proctor.common.model.Allocation;
@@ -50,9 +49,24 @@ public abstract class AbstractGroups {
 
     /**
      * Setup fields based on eagerly computed bucket allocations in ProctorResult.
+     *
+     * @param testUsageObserver must be non-null, this method can only be called once on this instance
+     */
+    protected AbstractGroups(final ProctorResult proctorResult, final TestUsageObserver testUsageObserver) {
+        this.proctorResult = proctorResult;
+        this.testUsageObserver = testUsageObserver;
+
+        // dynamically shared tests should be considered used for the purpose of logging
+        if (testUsageObserver != null) {
+            testUsageObserver.markTestsUsed(proctorResult.getDynamicallyLoadedTests());
+        }
+    }
+
+    /**
+     * Setup fields based on eagerly computed bucket allocations in ProctorResult.
      */
     protected AbstractGroups(final ProctorResult proctorResult) {
-        this.proctorResult = proctorResult;
+        this(proctorResult, null);
     }
 
     /**
@@ -142,9 +156,19 @@ public abstract class AbstractGroups {
             if (testUsageObserver != null) {
                 testUsageObserver.markTestUsed(testName);
             }
-
         });
         return bucketOpt;
+    }
+
+    /**
+     * mark tests to additionally be included in getAsUsedTestsProctorResult(), even when no corresponding
+     * method has been called.
+     * for usecases where exposure happens without calls to generated methods calling getValue()
+     */
+    public final void markTestsAsUsed(final Collection<String> testNames) {
+        if (testUsageObserver != null) {
+            testUsageObserver.markTestsUsed(testNames);
+        }
     }
 
     /**
@@ -254,16 +278,7 @@ public abstract class AbstractGroups {
                 .orElse(null);
     }
 
-    /**
-     * mark tests to additionally be included in getAsUsedTestsProctorResult(), even when no corresponding
-     * method has been called.
-     * for usecases where exposure happens without calls to generated methods calling getValue()
-     */
-    public final void markTestsAsUsed(final Collection<String> testNames) {
-        if (testUsageObserver != null) {
-            testUsageObserver.markTestsUsed(testNames);
-        }
-    }
+
 
     /**
      * @return a comma-separated String of {testname}-{active-bucket-name} for ALL tests
@@ -472,21 +487,6 @@ public abstract class AbstractGroups {
                         getValue(test.getName(), test.getFallbackValue()),
                         getPayload(test.getName(), test.getFallbackValue()).fetchAValue()))
                 .collect(Collectors.toList());
-    }
-
-    /**
-     * Inject a class to notify every time a test is used
-     *
-     * @param testUsageObserver must be non-null, this method can only be called once on this instance
-     * @throws IllegalStateException when method contract is violated
-     */
-    public final void setTestUsageObserver(final TestUsageObserver testUsageObserver) {
-        Preconditions.checkState(testUsageObserver != null, "Must not set a null observer");
-        Preconditions.checkState(this.testUsageObserver == null, "Must not replace existing observer");
-        this.testUsageObserver = testUsageObserver;
-
-        // dynamically shared tests should be considered used for the purpose of logging
-        testUsageObserver.markTestsUsed(proctorResult.getDynamicallyLoadedTests());
     }
 
     /**
