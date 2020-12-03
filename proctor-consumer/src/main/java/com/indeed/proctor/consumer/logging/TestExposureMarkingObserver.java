@@ -20,7 +20,7 @@ public class TestExposureMarkingObserver implements TestUsageObserver {
 
     public TestExposureMarkingObserver(final ProctorResult originalResult) {
         this.originalResult = originalResult;
-        testUsageMarker = new TestUsageMarker(originalResult);
+        testUsageMarker = new TestUsageMarker(originalResult.getBuckets().size());
     }
 
     @Override

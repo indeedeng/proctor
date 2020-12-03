@@ -1,7 +1,6 @@
 package com.indeed.proctor.consumer.logging;
 
 import com.google.common.collect.MapMaker;
-import com.indeed.proctor.common.ProctorResult;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -14,10 +13,10 @@ public class TestUsageMarker {
 
     private final Set<String> testMarkers;
 
-    public TestUsageMarker(final ProctorResult proctorResult) {
+    public TestUsageMarker(final int initialCapacity) {
         // using MapMaker to get the equivalent of ConcurrentHashMap with less thread-contention
         testMarkers = Collections.newSetFromMap(new MapMaker()
-                .initialCapacity(proctorResult.getBuckets().size())
+                .initialCapacity(initialCapacity)
                 .makeMap());
     }
 

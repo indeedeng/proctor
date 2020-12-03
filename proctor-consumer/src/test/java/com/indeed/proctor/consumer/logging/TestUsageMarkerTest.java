@@ -15,7 +15,7 @@ public class TestUsageMarkerTest {
 
     @Test
     public void isMarkedEmptyResult() {
-        final TestUsageMarker marker = new TestUsageMarker(ProctorResult.EMPTY);
+        final TestUsageMarker marker = new TestUsageMarker(0);
         assertThat(marker.isMarked("notexist")).isFalse();
 
         // assert no error
@@ -35,7 +35,7 @@ public class TestUsageMarkerTest {
                 .withDynamicallyResolvedStubTest(ProctorGroupStubber.StubTest.GROUP1_SELECTED_TEST, GROUP_1_BUCKET_WITH_PAYLOAD,
                         INACTIVE_BUCKET, CONTROL_BUCKET_WITH_PAYLOAD, GROUP_1_BUCKET_WITH_PAYLOAD)
                 .build();
-        final TestUsageMarker marker = new TestUsageMarker(proctorResult);
+        final TestUsageMarker marker = new TestUsageMarker(proctorResult.getBuckets().size());
         assertThat(marker.isMarked("notexist")).isFalse();
         assertThat(marker.isMarked(ProctorGroupStubber.StubTest.CONTROL_SELECTED_TEST.getName())).isFalse();
         assertThat(marker.isMarked(ProctorGroupStubber.StubTest.GROUP1_SELECTED_TEST.getName())).isFalse();
