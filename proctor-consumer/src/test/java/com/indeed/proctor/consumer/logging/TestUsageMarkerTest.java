@@ -21,10 +21,9 @@ public class TestUsageMarkerTest {
         // assert no error
         marker.markTests(Collections.emptyList());
 
-
-        final String unknownTest = "foo";
-        marker.markTests(Collections.singletonList(unknownTest));
-        assertThat(marker.isMarked(unknownTest)).isFalse();
+        final String anyName = "foo";
+        marker.markTests(Collections.singletonList(anyName));
+        assertThat(marker.isMarked(anyName)).isTrue();
     }
 
     @Test
@@ -43,9 +42,9 @@ public class TestUsageMarkerTest {
         // assert no error
         marker.markTests(Collections.emptyList());
 
-        final String unknownTest = "foo";
-        marker.markTests(Collections.singletonList(unknownTest));
-        assertThat(marker.isMarked(unknownTest)).isFalse();
+        final String anyTestName = "foo";
+        marker.markTests(Collections.singletonList(anyTestName));
+        assertThat(marker.isMarked(anyTestName)).isTrue();
 
         marker.markTests(Collections.singletonList(ProctorGroupStubber.StubTest.CONTROL_SELECTED_TEST.getName()));
         assertThat(marker.isMarked(ProctorGroupStubber.StubTest.CONTROL_SELECTED_TEST.getName())).isTrue();
