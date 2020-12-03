@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -421,7 +422,7 @@ public abstract class AbstractGroups {
      * @return a {@link Map} of config JSON
      */
     public final Map<String, Integer> getJavaScriptConfig() {
-        return getJavaScriptConfig(proctorResult.getBuckets().keySet());
+        return getJavaScriptConfig(n -> true);
     }
 
     /**
@@ -435,11 +436,16 @@ public abstract class AbstractGroups {
      * @return a {@link Map} of config JSON
      */
     public final Map<String, Integer> getJavaScriptConfig(final Collection<String> testNames) {
+        return getJavaScriptConfig(testNames::contains);
+    }
+
+    private Map<String, Integer> getJavaScriptConfig(final Predicate<String> testNameFilter) {
         // For now this is a simple mapping from {testName to bucketValue}
         return proctorResult.getBuckets().keySet().stream()
                 // mirrors appendTestGroups method by skipping *inactive* tests
-                // call to getValuePrivate() to allow overrides of getActiveBucket
-                .filter(testNames::contains)
+                .filter(testNameFilter)
+                // call to getValue() to allow overrides of getActiveBucket
+                // not calling getValueWithoutMarkingUsage because when client calls this method, all tests are potentially used.
                 .map(testName -> new AbstractMap.SimpleEntry<>(testName, getValue(testName, -1)))
                 .filter(e -> e.getValue() >= 0)
                 .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
@@ -462,7 +468,7 @@ public abstract class AbstractGroups {
         //@TODO Move this logic to {@link com.indeed.proctor.consumer.ProctorJavascriptPayloadBuilder} and remove this method
         return Arrays.stream(tests)
                 .map(test -> Arrays.asList(
-                        // call to getValuePrivate() to allow overrides of getActiveBucket
+                        // call to getValue() to allow overrides of getActiveBucket
                         getValue(test.getName(), test.getFallbackValue()),
                         getPayload(test.getName(), test.getFallbackValue()).fetchAValue()))
                 .collect(Collectors.toList());
