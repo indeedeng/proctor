@@ -25,6 +25,10 @@ public class TestUsageMarker {
         testMarkers.addAll(testNames);
     }
 
+    public void markTest(final String testName) {
+        testMarkers.add(testName);
+    }
+
     public boolean isMarked(final String testName) {
         return testMarkers.contains(testName);
     }

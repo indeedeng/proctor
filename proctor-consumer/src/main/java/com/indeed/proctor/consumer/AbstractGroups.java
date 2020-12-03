@@ -15,7 +15,6 @@ import javax.annotation.Nonnull;
 import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -141,7 +140,7 @@ public abstract class AbstractGroups {
         final Optional<TestBucket> bucketOpt = getActiveBucketWithoutMarkingUsage(testName);
         bucketOpt.ifPresent(bucket -> {
             if (testUsageObserver != null) {
-                testUsageObserver.testsUsed(Collections.singleton(testName));
+                testUsageObserver.testUsed(testName);
             }
 
         });
@@ -497,10 +496,14 @@ public abstract class AbstractGroups {
      * For clients not overriding any methods, this should be the same as getRawProctorResult(),
      * but it's safer to use getAsProctorResult().
      *
-     * @return wrapped raw data.
+     * Clients using the result to implement feature toggling should also call markTestsAsUsed
+     *
+     * @return copy of raw data, possibly with different TestBuckets if there was any override.
      */
     public ProctorResult getAsProctorResult() {
         final Map<String, TestBucket> customBuckets = proctorResult.getBuckets().entrySet().stream()
+                // calling getActiveBucketWithoutMarkingUsage instead of getActiveBucket because clients are not
+                // supposed to use this method result to implement feature toggles.
                 .collect(Collectors.toMap(Entry::getKey, e -> getActiveBucketWithoutMarkingUsage(e.getKey()).get()));
         return new ProctorResult(
                 proctorResult.getMatrixVersion(),
@@ -517,6 +520,8 @@ public abstract class AbstractGroups {
      *
      * Since apps might pass around AbstractGroups, but some code might want to access
      * ProctorResult directly, return wrapped data for convenience.
+     *
+     * Clients using the result to implement feature toggling should also call markTestsAsUsed
      *
      * @return wrapped raw data.
      */
