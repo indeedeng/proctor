@@ -123,9 +123,9 @@ public abstract class AbstractGroups {
                 .orElse(defaultValue);
     }
 
-    protected int getValueWithouMarkingUsage(final String testName, final int defaultValue) {
+    protected final int getValueWithoutMarkingUsage(final String testName, final int defaultValue) {
         // using getActiveBucket to allow overrides
-        return doGetActiveBucketWithoutMarkingUsage(testName)
+        return getActiveBucketWithoutMarkingUsage(testName)
                 .map(TestBucket::getValue)
                 .orElse(defaultValue);
     }
@@ -136,7 +136,7 @@ public abstract class AbstractGroups {
     // intentionally final, other developers should only override overrideDeterminedBucketValue()
     protected final Optional<TestBucket> getActiveBucket(final String testName) {
 
-        Optional<TestBucket> bucketOpt = doGetActiveBucketWithoutMarkingUsage(testName);
+        final Optional<TestBucket> bucketOpt = getActiveBucketWithoutMarkingUsage(testName);
         bucketOpt.ifPresent(bucket -> {
             if (testUsageObserver != null) {
                 testUsageObserver.testsUsed(Collections.singleton(testName));
@@ -150,7 +150,7 @@ public abstract class AbstractGroups {
      * @return the bucket that has been determined by the current proctorResult, or override bucket if valid, or empty if testname not valid
      */
     // intentionally final, other developers should only override overrideDeterminedBucketValue()
-    private Optional<TestBucket> doGetActiveBucketWithoutMarkingUsage(final String testName) {
+    private Optional<TestBucket> getActiveBucketWithoutMarkingUsage(final String testName) {
         // intentionally not allowing subclasses to override returning empty for testnames that do not exist in ProctorResult
         // the semantics of this class would become too confusing
         // if clients somehow need that, they should provide a proctorResult instance having additional testNames with buckets
@@ -274,7 +274,7 @@ public abstract class AbstractGroups {
         final Map<String, TestBucket> buckets = proctorResult.getBuckets();
         final StringBuilder sb = new StringBuilder(buckets.size() * 10);
         for (final String testName : buckets.keySet()) {
-            sb.append(testName).append(TESTNAME_BUCKET_CONNECTOR).append(doGetActiveBucketWithoutMarkingUsage(testName)
+            sb.append(testName).append(TESTNAME_BUCKET_CONNECTOR).append(getActiveBucketWithoutMarkingUsage(testName)
                     .map(TestBucket::getName).orElse("unknown"))
                     .append(GROUPS_SEPARATOR);
         }
@@ -379,7 +379,7 @@ public abstract class AbstractGroups {
                     return (consumableTestDefinition == null) || !consumableTestDefinition.getSilent();
                 })
                 // call to getValueWithouMarkingUsage() to allow overrides of getActiveBucket, but avoid marking
-                .filter(testName -> getValueWithouMarkingUsage(testName, -1) >= 0)
+                .filter(testName -> getValueWithoutMarkingUsage(testName, -1) >= 0)
                 .collect(Collectors.toList());
     }
 
@@ -388,7 +388,7 @@ public abstract class AbstractGroups {
      */
     protected final void appendTestGroupsWithoutAllocations(final StringBuilder sb, final char separator, final List<String> testNames) {
         for (final String testName : testNames) {
-            doGetActiveBucketWithoutMarkingUsage(testName).ifPresent(testBucket ->
+            getActiveBucketWithoutMarkingUsage(testName).ifPresent(testBucket ->
                 sb.append(testName).append(testBucket.getValue()).append(separator));
         }
     }
@@ -398,7 +398,7 @@ public abstract class AbstractGroups {
      */
     protected final void appendTestGroupsWithAllocations(final StringBuilder sb, final char separator, final List<String> testNames) {
         for (final String testName : testNames) {
-            doGetActiveBucketWithoutMarkingUsage(testName).ifPresent(testBucket -> {
+            getActiveBucketWithoutMarkingUsage(testName).ifPresent(testBucket -> {
                 // no allocation might exist for this testbucket
                 final Allocation allocation = proctorResult.getAllocations().get(testName);
                 if ((allocation != null) && !Strings.isNullOrEmpty(allocation.getId())) {
@@ -471,7 +471,7 @@ public abstract class AbstractGroups {
     /**
      * Inject a class to notify every time a test is used
      */
-    public void setTestUsageObserver(@CheckForNull final TestUsageObserver testUsageObserver) {
+    public final void setTestUsageObserver(@CheckForNull final TestUsageObserver testUsageObserver) {
         this.testUsageObserver = testUsageObserver;
 
         if (testUsageObserver != null) {
@@ -491,7 +491,7 @@ public abstract class AbstractGroups {
      */
     public ProctorResult getAsProctorResult() {
         final Map<String, TestBucket> customBuckets = proctorResult.getBuckets().entrySet().stream()
-                .collect(Collectors.toMap(Entry::getKey, e -> doGetActiveBucketWithoutMarkingUsage(e.getKey()).get()));
+                .collect(Collectors.toMap(Entry::getKey, e -> getActiveBucketWithoutMarkingUsage(e.getKey()).get()));
         return new ProctorResult(
                 proctorResult.getMatrixVersion(),
                 customBuckets,
