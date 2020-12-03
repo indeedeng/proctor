@@ -1,5 +1,6 @@
 package com.indeed.proctor.consumer;
 
+import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.indeed.proctor.common.ProctorResult;
 import com.indeed.proctor.common.model.Allocation;
@@ -476,14 +477,17 @@ public abstract class AbstractGroups {
 
     /**
      * Inject a class to notify every time a test is used
+     *
+     * @param testUsageObserver must be non-null, this method can only be called once on this instance
+     * @throws IllegalStateException when method contract is violated
      */
-    public final void setTestUsageObserver(@CheckForNull final TestUsageObserver testUsageObserver) {
+    public final void setTestUsageObserver(final TestUsageObserver testUsageObserver) {
+        Preconditions.checkState(testUsageObserver != null, "Must not set a null observer");
+        Preconditions.checkState(this.testUsageObserver == null, "Must not replace existing observer");
         this.testUsageObserver = testUsageObserver;
 
-        if (testUsageObserver != null) {
-            // dynamically shared tests should be considered used for the purpose of logging
-            testUsageObserver.testsUsed(proctorResult.getDynamicallyLoadedTests());
-        }
+        // dynamically shared tests should be considered used for the purpose of logging
+        testUsageObserver.testsUsed(proctorResult.getDynamicallyLoadedTests());
     }
 
     /**
