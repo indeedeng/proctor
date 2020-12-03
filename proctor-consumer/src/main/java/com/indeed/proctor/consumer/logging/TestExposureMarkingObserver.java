@@ -1,17 +1,14 @@
 package com.indeed.proctor.consumer.logging;
 
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.indeed.proctor.common.ProctorResult;
 
-import javax.annotation.concurrent.ThreadSafe;
 import java.util.Collection;
-import java.util.Map;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 /**
  * Observer that marks all used tests and provides the collected tests as ProctorResult
  */
-@ThreadSafe
 public class TestExposureMarkingObserver implements TestUsageObserver {
 
     private final TestUsageMarker testUsageMarker;
@@ -33,23 +30,16 @@ public class TestExposureMarkingObserver implements TestUsageObserver {
         testUsageMarker.markTest(testName);
     }
 
+    /**
+     * @return a copy of the ProctorResult passed to the constructor, containing only the marked tests
+     */
     public ProctorResult asProctorResult() {
         return new ProctorResult(
                 originalResult.getMatrixVersion(),
-                filteredMap(originalResult.getBuckets(), testUsageMarker::isMarked),
-                filteredMap(originalResult.getAllocations(), testUsageMarker::isMarked),
-                filteredMap(originalResult.getTestDefinitions(), testUsageMarker::isMarked),
-                originalResult.getDynamicallyLoadedTests().stream()
-                        .filter(testUsageMarker::isMarked)
-                        .collect(Collectors.toSet()));
-    }
-
-    private static <T> Map<String, T> filteredMap(
-            final Map<String, T> map,
-            final Predicate<String> observedTestnamesFilter) {
-        return map.entrySet()
-                .stream()
-                .filter(e -> observedTestnamesFilter.test(e.getKey()))
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+                // using Guava views to prevent object creation overhead
+                Maps.filterKeys(originalResult.getBuckets(), testUsageMarker::isMarked),
+                Maps.filterKeys(originalResult.getAllocations(), testUsageMarker::isMarked),
+                Maps.filterKeys(originalResult.getTestDefinitions(), testUsageMarker::isMarked),
+                Sets.filter(originalResult.getDynamicallyLoadedTests(), testUsageMarker::isMarked));
     }
 }
