@@ -39,7 +39,7 @@ public class TestExposureMarkingObserverTest {
         assertThat(observer.asProctorResult().getDynamicallyLoadedTests())
                 .isEmpty();
 
-        observer.testsUsed(singleton(ProctorGroupStubber.StubTest.GROUP1_SELECTED_TEST.getName()));
+        observer.markTestsUsed(singleton(ProctorGroupStubber.StubTest.GROUP1_SELECTED_TEST.getName()));
         assertThat(observer.asProctorResult().getBuckets())
                 .containsOnlyKeys(ProctorGroupStubber.StubTest.GROUP1_SELECTED_TEST.getName())
                 .containsValue(GROUP_1_BUCKET_WITH_PAYLOAD);
@@ -53,7 +53,7 @@ public class TestExposureMarkingObserverTest {
                 .isEqualTo(proctorResult.getDynamicallyLoadedTests());
 
         // add valid testname, now result should be equal to original
-        observer.testsUsed(singleton(ProctorGroupStubber.StubTest.CONTROL_SELECTED_TEST.getName()));
+        observer.markTestsUsed(singleton(ProctorGroupStubber.StubTest.CONTROL_SELECTED_TEST.getName()));
         assertThat(observer.asProctorResult().getBuckets())
                 .isEqualTo(proctorResult.getBuckets());
         assertThat(observer.asProctorResult().getAllocations())
@@ -66,7 +66,7 @@ public class TestExposureMarkingObserverTest {
                 .isEqualTo(proctorResult.getDynamicallyLoadedTests());
 
         // add invalid testname (check no exception)
-        observer.testsUsed(singleton("notexist"));
+        observer.markTestsUsed(singleton("notexist"));
         assertThat(observer.asProctorResult().getBuckets())
                 .containsOnlyKeys(
                         ProctorGroupStubber.StubTest.GROUP1_SELECTED_TEST.getName(),

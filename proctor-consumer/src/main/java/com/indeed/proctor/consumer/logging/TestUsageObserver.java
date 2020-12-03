@@ -9,12 +9,12 @@ public interface TestUsageObserver {
      *
      * The intention is to help distinguish between proctor tests that were used during a request and those that were not.
      */
-    void testsUsed(Collection<String> testNames);
+    void markTestsUsed(Collection<String> testNames);
 
     /**
      * to be called by AbstractGroups (or custom code) when a proctor test value is retrieved by a method call.
      *
      * The intention is to help distinguish between proctor tests that were used during a request and those that were not.
      */
-    void testUsed(String testName);
+    void markTestUsed(String testName);
 }

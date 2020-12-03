@@ -24,12 +24,12 @@ public class TestExposureMarkingObserver implements TestUsageObserver {
     }
 
     @Override
-    public void testsUsed(final Collection<String> testNames) {
+    public void markTestsUsed(final Collection<String> testNames) {
         testUsageMarker.markTests(testNames);
     }
 
     @Override
-    public void testUsed(final String testName) {
+    public void markTestUsed(final String testName) {
         testUsageMarker.markTest(testName);
     }
 

@@ -140,7 +140,7 @@ public abstract class AbstractGroups {
         final Optional<TestBucket> bucketOpt = getActiveBucketWithoutMarkingUsage(testName);
         bucketOpt.ifPresent(bucket -> {
             if (testUsageObserver != null) {
-                testUsageObserver.testUsed(testName);
+                testUsageObserver.markTestUsed(testName);
             }
 
         });
@@ -150,7 +150,7 @@ public abstract class AbstractGroups {
     /**
      * @return the bucket that has been determined by the current proctorResult, or override bucket if valid, or empty if testname not valid
      */
-    // intentionally final, other developers should only override overrideDeterminedBucketValue()
+    // intentionally private, clients should only see getActiveBucket()
     private Optional<TestBucket> getActiveBucketWithoutMarkingUsage(final String testName) {
         // intentionally not allowing subclasses to override returning empty for testnames that do not exist in ProctorResult
         // the semantics of this class would become too confusing
@@ -261,7 +261,7 @@ public abstract class AbstractGroups {
      */
     public final void markTestsAsUsed(final Collection<String> testNames) {
         if (testUsageObserver != null) {
-            testUsageObserver.testsUsed(testNames);
+            testUsageObserver.markTestsUsed(testNames);
         }
     }
 
@@ -486,7 +486,7 @@ public abstract class AbstractGroups {
         this.testUsageObserver = testUsageObserver;
 
         // dynamically shared tests should be considered used for the purpose of logging
-        testUsageObserver.testsUsed(proctorResult.getDynamicallyLoadedTests());
+        testUsageObserver.markTestsUsed(proctorResult.getDynamicallyLoadedTests());
     }
 
     /**
