@@ -28,7 +28,18 @@ public class TestExposureMarkingObserverTest {
                         INACTIVE_BUCKET, CONTROL_BUCKET_WITH_PAYLOAD, GROUP_1_BUCKET_WITH_PAYLOAD)
                 .build();
         final TestExposureMarkingObserver observer = new TestExposureMarkingObserver(proctorResult);
-        // already contains dynamically resolved tests
+        // empty
+        assertThat(observer.asProctorResult().getBuckets()).isEmpty();
+        assertThat(observer.asProctorResult().getAllocations())
+                .isEmpty();
+        assertThat(observer.asProctorResult().getMatrixVersion())
+                .isEqualTo(proctorResult.getMatrixVersion());
+        assertThat(observer.asProctorResult().getTestDefinitions())
+                .isEmpty();
+        assertThat(observer.asProctorResult().getDynamicallyLoadedTests())
+                .isEmpty();
+
+        observer.testsUsed(singleton(ProctorGroupStubber.StubTest.GROUP1_SELECTED_TEST.getName()));
         assertThat(observer.asProctorResult().getBuckets())
                 .containsOnlyKeys(ProctorGroupStubber.StubTest.GROUP1_SELECTED_TEST.getName())
                 .containsValue(GROUP_1_BUCKET_WITH_PAYLOAD);

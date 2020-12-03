@@ -29,21 +29,22 @@ public class TestExposureMarkingObserver implements TestUsageObserver {
     }
 
     public ProctorResult asProctorResult() {
-        final Predicate<Map.Entry<String, ?>> observedTestnamesFilter = entry -> testUsageMarker.isMarked(entry.getKey());
         return new ProctorResult(
                 originalResult.getMatrixVersion(),
-                filteredMap(originalResult.getBuckets(), observedTestnamesFilter),
-                filteredMap(originalResult.getAllocations(), observedTestnamesFilter),
-                filteredMap(originalResult.getTestDefinitions(), observedTestnamesFilter),
-                originalResult.getDynamicallyLoadedTests());
+                filteredMap(originalResult.getBuckets(), testUsageMarker::isMarked),
+                filteredMap(originalResult.getAllocations(), testUsageMarker::isMarked),
+                filteredMap(originalResult.getTestDefinitions(), testUsageMarker::isMarked),
+                originalResult.getDynamicallyLoadedTests().stream()
+                        .filter(testUsageMarker::isMarked)
+                        .collect(Collectors.toSet()));
     }
 
     private static <T> Map<String, T> filteredMap(
             final Map<String, T> map,
-            final Predicate<Map.Entry<String, ?>> observedTestnamesFilter) {
+            final Predicate<String> observedTestnamesFilter) {
         return map.entrySet()
                 .stream()
-                .filter(observedTestnamesFilter)
+                .filter(e -> observedTestnamesFilter.test(e.getKey()))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 }

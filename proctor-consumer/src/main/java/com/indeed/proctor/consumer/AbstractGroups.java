@@ -471,9 +471,13 @@ public abstract class AbstractGroups {
     /**
      * Inject a class to notify every time a test is used
      */
-    public AbstractGroups setTestUsageObserver(@CheckForNull TestUsageObserver testUsageObserver) {
+    public void setTestUsageObserver(@CheckForNull final TestUsageObserver testUsageObserver) {
         this.testUsageObserver = testUsageObserver;
-        return this;
+
+        if (testUsageObserver != null) {
+            // dynamically shared tests should be considered used for the purpose of logging
+            testUsageObserver.testsUsed(proctorResult.getDynamicallyLoadedTests());
+        }
     }
 
     /**

@@ -38,8 +38,7 @@ public class TestUsageMarkerTest {
         final TestUsageMarker marker = new TestUsageMarker(proctorResult);
         assertThat(marker.isMarked("notexist")).isFalse();
         assertThat(marker.isMarked(ProctorGroupStubber.StubTest.CONTROL_SELECTED_TEST.getName())).isFalse();
-        // dynamically resolved tests premarked
-        assertThat(marker.isMarked(ProctorGroupStubber.StubTest.GROUP1_SELECTED_TEST.getName())).isTrue();
+        assertThat(marker.isMarked(ProctorGroupStubber.StubTest.GROUP1_SELECTED_TEST.getName())).isFalse();
 
         // assert no error
         marker.markTests(Collections.emptyList());
@@ -50,7 +49,6 @@ public class TestUsageMarkerTest {
 
         marker.markTests(Collections.singletonList(ProctorGroupStubber.StubTest.CONTROL_SELECTED_TEST.getName()));
         assertThat(marker.isMarked(ProctorGroupStubber.StubTest.CONTROL_SELECTED_TEST.getName())).isTrue();
-        // dynamically resolved tests premarked
-        assertThat(marker.isMarked(ProctorGroupStubber.StubTest.GROUP1_SELECTED_TEST.getName())).isTrue();
+        assertThat(marker.isMarked(ProctorGroupStubber.StubTest.GROUP1_SELECTED_TEST.getName())).isFalse();
     }
 }

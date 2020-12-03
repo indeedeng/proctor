@@ -23,7 +23,6 @@ public class TestUsageMarker {
     public TestUsageMarker(final ProctorResult proctorResult) {
         testMarkers = proctorResult.getBuckets().keySet().stream()
                 .collect(Collectors.toMap(k -> k, k -> new AtomicBoolean(false)));
-        markTests(proctorResult.getDynamicallyLoadedTests());
     }
 
     public void markTests(final Collection<String> testNames) {

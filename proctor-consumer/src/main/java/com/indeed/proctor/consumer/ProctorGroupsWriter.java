@@ -5,13 +5,13 @@ import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.consumer.logging.TestGroupFormatter;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.BiPredicate;
 
 
@@ -85,18 +85,17 @@ public class ProctorGroupsWriter {
         for (final TestGroupFormatter formatter: formatters) {
             for (final String testName : filteredTestNames) {
                 // no allocation might exist for this testbucket
-                @Nullable
-                final Allocation allocation = proctorResult.getAllocations().get(testName);
-                // allocation should never be null, guarding against NPE anyway
-                // id can be blank for historical data
-                if (allocation != null && StringUtils.isNotBlank(allocation.getId())) {
-                    final int lengthBefore = stringBuilder.length();
-                    formatter.appendProctorTestGroup(stringBuilder, testName, allocation.getId(), proctorResult.getBuckets().get(testName));
-                    // append separator unless formatter did not append anything
-                    if (lengthBefore < stringBuilder.length()) {
-                        stringBuilder.append(groupsSeparator);
-                    }
+                final String allocationId = Optional.ofNullable(proctorResult.getAllocations().get(testName))
+                        .map(Allocation::getId)
+                        .orElse("");
+
+                final int lengthBefore = stringBuilder.length();
+                formatter.appendProctorTestGroup(stringBuilder, testName, allocationId, proctorResult.getBuckets().get(testName));
+                // append separator unless formatter did not append anything
+                if (lengthBefore < stringBuilder.length()) {
+                    stringBuilder.append(groupsSeparator);
                 }
+
             }
         }
         // remove final separator if necessary
