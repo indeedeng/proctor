@@ -49,6 +49,7 @@ public class Proctor {
      * Factory method to do the setup and transformation of inputs
      *
      * @param matrix a {@link TestMatrixArtifact} loaded by ProctorLoader
+     * @param dynamicTests those tests which were added to the TestMatrixArtifact because of a dynamic filter
      * @param loadResult a {@link ProctorLoadResult} which contains result of validation of test definition
      * @param functionMapper a given el {@link FunctionMapper}
      * @return constructed Proctor object
@@ -56,9 +57,9 @@ public class Proctor {
     @Nonnull
     public static Proctor construct(
             @Nonnull final TestMatrixArtifact matrix,
-            final Set<String> dynamicTests,
-            final ProctorLoadResult loadResult,
-            final FunctionMapper functionMapper
+            @Nonnull final Set<String> dynamicTests,
+            @Nonnull final ProctorLoadResult loadResult,
+            @Nonnull final FunctionMapper functionMapper
     ) {
         final ExpressionFactory expressionFactory = RuleEvaluator.EXPRESSION_FACTORY;
 
@@ -82,11 +83,12 @@ public class Proctor {
         return new Proctor(matrix, dynamicTests, loadResult, testChoosers);
     }
 
+    @Deprecated // use 4 argument version
     @Nonnull
     public static Proctor construct(
             @Nonnull final TestMatrixArtifact matrix,
             final ProctorLoadResult loadResult,
-            final FunctionMapper functionMapper
+            @Nonnull final FunctionMapper functionMapper
     ) {
       return construct(matrix, emptySet(), loadResult, functionMapper);
     }
@@ -119,9 +121,9 @@ public class Proctor {
 
     @VisibleForTesting
     Proctor(
-            final TestMatrixArtifact matrix,
-            final Set<String> dynamicTests,
-            final ProctorLoadResult loadResult,
+            @Nonnull final TestMatrixArtifact matrix,
+            @Nonnull final Set<String> dynamicTests,
+            @Nonnull final ProctorLoadResult loadResult,
             @Nonnull final Map<String, TestChooser<?>> testChoosers
     ) {
         this.matrix = matrix;
