@@ -265,6 +265,7 @@ public class TestProctor {
 
         final Proctor proctor = new Proctor(
                 matrix,
+                Collections.emptySet(),
                 null,
                 Collections.singletonMap(testName, testChooser)
         );
