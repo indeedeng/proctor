@@ -199,18 +199,28 @@ public class TestAbstractGroups {
         assertThat(sampleGroups.getProctorResult()).isSameAs(proctorResult);
 
         // same data, but not same instance
-        assertThat(sampleGroups.getRawProctorResult()).isNotSameAs(proctorResult);
-        assertThat(sampleGroups.getRawProctorResult().getMatrixVersion()).isEqualTo(proctorResult.getMatrixVersion());
-        assertThat(sampleGroups.getRawProctorResult().getBuckets()).isEqualTo(proctorResult.getBuckets());
-        assertThat(sampleGroups.getRawProctorResult().getAllocations()).isEqualTo(proctorResult.getAllocations());
-        assertThat(sampleGroups.getRawProctorResult().getTestDefinitions()).isEqualTo(proctorResult.getTestDefinitions());
+        final ProctorResult rawProctorResult = sampleGroups.getRawProctorResult();
+        assertThat(rawProctorResult).isNotSameAs(proctorResult);
+        assertThat(rawProctorResult.getMatrixVersion()).isEqualTo(proctorResult.getMatrixVersion());
+        assertThat(rawProctorResult.getBuckets()).isEqualTo(proctorResult.getBuckets());
+        assertThat(rawProctorResult.getAllocations()).isEqualTo(proctorResult.getAllocations());
+        assertThat(rawProctorResult.getTestDefinitions()).isEqualTo(proctorResult.getTestDefinitions());
+
+        // avoid creation of new copies on each call
+        final ProctorResult rawProctorResult2 = sampleGroups.getRawProctorResult();
+        assertThat(rawProctorResult2).isSameAs(rawProctorResult);
 
         // same data, but not same instance
-        assertThat(sampleGroups.getAsProctorResult()).isNotSameAs(proctorResult);
-        assertThat(sampleGroups.getAsProctorResult().getMatrixVersion()).isEqualTo(proctorResult.getMatrixVersion());
-        assertThat(sampleGroups.getAsProctorResult().getBuckets()).isEqualTo(proctorResult.getBuckets());
-        assertThat(sampleGroups.getAsProctorResult().getAllocations()).isEqualTo(proctorResult.getAllocations());
-        assertThat(sampleGroups.getAsProctorResult().getTestDefinitions()).isEqualTo(proctorResult.getTestDefinitions());
+        final ProctorResult convertedProctorResult = sampleGroups.getAsProctorResult();
+        assertThat(convertedProctorResult).isNotSameAs(proctorResult);
+        assertThat(convertedProctorResult.getMatrixVersion()).isEqualTo(proctorResult.getMatrixVersion());
+        assertThat(convertedProctorResult.getBuckets()).isEqualTo(proctorResult.getBuckets());
+        assertThat(convertedProctorResult.getAllocations()).isEqualTo(proctorResult.getAllocations());
+        assertThat(convertedProctorResult.getTestDefinitions()).isEqualTo(proctorResult.getTestDefinitions());
+
+        final ProctorResult convertedProctorResult2 = sampleGroups.getAsProctorResult();
+        assertThat(convertedProctorResult2.getAllocations()).isSameAs(convertedProctorResult.getAllocations());
+        assertThat(convertedProctorResult2.getTestDefinitions()).isSameAs(convertedProctorResult.getTestDefinitions());
     }
 
 }

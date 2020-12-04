@@ -31,6 +31,9 @@ import java.util.stream.Collectors;
 public abstract class AbstractGroups {
     private static final Logger LOGGER = Logger.getLogger(AbstractGroups.class);
     private final ProctorResult proctorResult;
+    // use proctorResult, it's an immutable copy.
+    @Deprecated
+    private final ProctorResult originalMutableProctorResult;
 
     /**
      * A character to separate groups in logging output.
@@ -46,7 +49,8 @@ public abstract class AbstractGroups {
      * Setup fields based on eagerly computed bucket allocations in ProctorResult.
      */
     protected AbstractGroups(final ProctorResult proctorResult) {
-        this.proctorResult = proctorResult;
+        this.originalMutableProctorResult = proctorResult;
+        this.proctorResult = ProctorResult.immutableCopy(proctorResult);
     }
 
     /**
@@ -70,9 +74,10 @@ public abstract class AbstractGroups {
      *
      * Note: This method is the only one to change when developers want to customize group ownership,
      *       such as for implementing hold-out groups. Customizers are encouraged to
-     *       use meta-tags to drive customization, see getProctorResult().
-     *       Use getProctorResult().getTestDefinitions().get(testName).getBuckets() to
+     *       use meta-tags to drive customization, see getRawProctorResult().
+     *       Use getRawProctorResult().getTestDefinitions().get(testName).getBuckets() to
      *       select a different valid bucket value.
+     *       Do NOT use getAsProctorResult(), it will likely cause an infinite loop.
      *
      *       Also note that if calling other methods of this class inside this method, it is easily possible to
      *       create infinite loops (stackoverflow), so be careful and write unit tests
@@ -415,15 +420,18 @@ public abstract class AbstractGroups {
     }
 
     /**
-     * returns the proctor result derived from applying rules and hashing the identifier, and
+     * creates a new copy of the input proctor result, derived from applying rules and hashing the identifier, and
      * also applying any custom logic from overriding overrideDeterminedBucketValue().
      *
-     * For clients not overriding any methods, this should be the same as getRawProctorResult(),
-     * but it's safer to use getAsProctorResult().
+     * Subclass methods like overrideDeterminedBucketValue() should not call this method (risks infinite loops).
      *
-     * @return wrapped raw data.
+     * For clients not overriding any methods, this should be the same as getRawProctorResult(),
+     * but it's safer and less wasteful to use getAsProctorResult().
+     *
+     * @return converted data with customizations applied (if any).
      */
     public ProctorResult getAsProctorResult() {
+        // Using guava Maps.transformEntries because it creates a lightweight view and does not copy all entries
         final Map<String, TestBucket> customBuckets = Maps.transformEntries(
                 proctorResult.getBuckets(),
                 (testName, bucket) -> getActiveBucket(testName).get());
@@ -435,8 +443,9 @@ public abstract class AbstractGroups {
     }
 
     /**
-     * returns a new copy of the raw proctor result derived from applying rules and hashing the identifier.
-     * In most cases getAsProctorResult() should be preferred.
+     * returns an immutable copy of the raw proctor result derived from applying rules and hashing the identifier.
+     * Calling this method many times will not create new instances.
+     * In most cases getAsProctorResult() should be preferred (unless calling from a subclass).
      * This does not take into account customizations from overriding overrideDeterminedBucketValue or other methods.
      *
      * Since apps might pass around AbstractGroups, but some code might want to access
@@ -445,7 +454,7 @@ public abstract class AbstractGroups {
      * @return wrapped raw data.
      */
     public ProctorResult getRawProctorResult() {
-        return ProctorResult.immutableCopy(proctorResult);
+        return proctorResult;
     }
 
     /**
@@ -454,7 +463,7 @@ public abstract class AbstractGroups {
      */
     @Deprecated
     public ProctorResult getProctorResult() {
-        return proctorResult;
+        return originalMutableProctorResult;
     }
 
 }
