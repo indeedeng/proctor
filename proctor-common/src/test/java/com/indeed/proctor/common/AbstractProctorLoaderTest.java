@@ -11,10 +11,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.easymock.classextension.EasyMock.createMock;
-import static org.easymock.classextension.EasyMock.expect;
-import static org.easymock.classextension.EasyMock.replay;
+
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class AbstractProctorLoaderTest {
 
@@ -22,19 +22,15 @@ public class AbstractProctorLoaderTest {
 
     @Before
     public void setUp() {
-        dataLoaderTimerMock = createMock(DataLoadTimer.class);
-
+        dataLoaderTimerMock = mock(DataLoadTimer.class);
     }
 
     @Test
     public void testLoaderTimerFunctionsNoLoad() {
-        expect(dataLoaderTimerMock.getSecondsSinceLastLoadCheck())
-                .andReturn(null)
-                .once();
-        expect(dataLoaderTimerMock.isLoadedDataSuccessfullyRecently())
-                .andReturn(false)
-                .once();
-        replay(dataLoaderTimerMock);
+        when(dataLoaderTimerMock.getSecondsSinceLastLoadCheck())
+                .thenReturn(null);
+        when(dataLoaderTimerMock.isLoadedDataSuccessfullyRecently())
+                .thenReturn(false);
 
         final TestProctorLoader loader = createTestProctorLoader(dataLoaderTimerMock);
         assertThat(loader.getSecondsSinceLastLoadCheck()).isNull();
@@ -43,13 +39,10 @@ public class AbstractProctorLoaderTest {
 
     @Test
     public void testLoaderTimerFunctionsLoadSuccess() {
-        expect(dataLoaderTimerMock.isLoadedDataSuccessfullyRecently())
-                .andReturn(true)
-                .once();
-        expect(dataLoaderTimerMock.getSecondsSinceLastLoadCheck())
-                .andReturn(42)
-                .once();
-        replay(dataLoaderTimerMock);
+        when(dataLoaderTimerMock.isLoadedDataSuccessfullyRecently())
+                .thenReturn(true);
+        when(dataLoaderTimerMock.getSecondsSinceLastLoadCheck())
+                .thenReturn(42);
 
         final TestProctorLoader loader = createTestProctorLoader(dataLoaderTimerMock);
         assertThat(loader.getSecondsSinceLastLoadCheck()).isEqualTo(42);
@@ -58,7 +51,7 @@ public class AbstractProctorLoaderTest {
 
     @Test
     public void testLoaderLoadWithChange() {
-        final Proctor proctorMock = createMock(Proctor.class);
+        final Proctor proctorMock = mock(Proctor.class);
         final Audit audit = getAuditMockForLoad();
         final TestProctorLoader loader = new TestProctorLoader(dataLoaderTimerMock) {
             @Nullable
@@ -106,12 +99,11 @@ public class AbstractProctorLoaderTest {
     }
 
     private static Audit getAuditMockForLoad() {
-        final Audit audit = createMock(Audit.class);
-        expect(audit.getUpdated()).andReturn(1234L).times(2);
-        expect(audit.getUpdatedBy()).andReturn("testuser").times(2);
-        expect(audit.getVersion()).andReturn("v1").times(2);
-        expect(audit.getUpdatedDate()).andReturn("9:30");
-        replay(audit);
+        final Audit audit = mock(Audit.class);
+        when(audit.getUpdated()).thenReturn(1234L);
+        when(audit.getUpdatedBy()).thenReturn("testuser");
+        when(audit.getVersion()).thenReturn("v1");
+        when(audit.getUpdatedDate()).thenReturn("9:30");
         return audit;
     }
 
