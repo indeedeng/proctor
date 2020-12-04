@@ -1,5 +1,6 @@
 package com.indeed.proctor.consumer;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.indeed.proctor.common.ProctorResult;
@@ -155,7 +156,12 @@ public class TestAbstractGroups {
         sampleGroups.markTestsAsUsed(singleton(CONTROL_SELECTED_TEST.getName()));
         assertThat(writer.toLoggingString(observer.asProctorResult())).isEqualTo("abtst1,bgtst0,#A1:abtst1,#A1:bgtst0");
 
-        // using JavascriptConfig means all tests might be exposed, each test is observed as used
+        // using JavascriptConfig means given tests might be exposed, so each test is marked as used
+        assertThat(sampleGroups.getJavaScriptConfig(ImmutableList.of(GROUP_WITH_FALLBACK_TEST.getName()))).isNotEmpty();
+        assertThat(writer.toLoggingString(observer.asProctorResult()))
+                .isEqualTo("abtst1,bgtst0,groupwithfallbacktst2,#A1:abtst1,#A1:bgtst0,#A1:groupwithfallbacktst2");
+
+        // using JavascriptConfig without testnames means all tests might be exposed, so all tests are marked as used
         assertThat(sampleGroups.getJavaScriptConfig()).isNotEmpty();
         assertThat(writer.toLoggingString(observer.asProctorResult()))
                 .isEqualTo(fullLoggingString);
