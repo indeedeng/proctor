@@ -53,7 +53,7 @@ public class ProctorGroupsWriter {
      * -- append the testgroups as formatted by this formatter separated by groupSeparator
      *
      * @param classifiers: Optional, Used to for filtering in log string analysis
-     * @return a String like "classifier1,classifier2,..,group1format1,group2format1,...,group2format1,group2format2..."
+     * @return a String like "classifier1,classifier2,..,group1format1,group2format1,...,group1format2,group2format2..."
      */
     public final String toLoggingString(final ProctorResult proctorResult, final String... classifiers) {
         final List<String> filteredTestNames = new ArrayList<>(proctorResult.getBuckets().size());
@@ -207,9 +207,13 @@ public class ProctorGroupsWriter {
                         if (consumableTestDefinition != null && consumableTestDefinition.getSilent() && !includeSilentTests) {
                             return false;
                         }
-                        // only live buckets. testBucket should never be null, guarding against NPE anyway
+                        // only live buckets.
                         final TestBucket testBucket = proctorResult.getBuckets().get(testName);
-                        if (testBucket != null && testBucket.getValue() < 0 && !includeInactiveGroups) {
+                        if (testBucket == null) {
+                            // testBucket should never be null, guarding against NPE anyway (here and later in formatter)
+                            return false;
+                        }
+                        if (testBucket.getValue() < 0 && !includeInactiveGroups) {
                             return false;
                         }
                         if (additionalFilter != null) {
