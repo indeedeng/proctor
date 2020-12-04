@@ -1,6 +1,8 @@
 package com.indeed.proctor.consumer;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.Maps;
 import com.indeed.proctor.common.ProctorResult;
 import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
@@ -422,12 +424,13 @@ public abstract class AbstractGroups {
      * @return wrapped raw data.
      */
     public ProctorResult getAsProctorResult() {
-        final Map<String, TestBucket> customBuckets = proctorResult.getBuckets().entrySet().stream()
-                .collect(Collectors.toMap(Entry::getKey, e -> getActiveBucket(e.getKey()).get()));
+        final Map<String, TestBucket> customBuckets = Maps.transformEntries(
+                proctorResult.getBuckets(),
+                (testName, bucket) -> getActiveBucket(testName).get());
         return new ProctorResult(
                 proctorResult.getMatrixVersion(),
-                customBuckets,
-                proctorResult.getAllocations(),
+                ImmutableSortedMap.copyOf(customBuckets),
+                ImmutableSortedMap.copyOf(proctorResult.getAllocations()),
                 proctorResult.getTestDefinitions());
     }
 
@@ -442,11 +445,7 @@ public abstract class AbstractGroups {
      * @return wrapped raw data.
      */
     public ProctorResult getRawProctorResult() {
-        return new ProctorResult(
-                proctorResult.getMatrixVersion(),
-                proctorResult.getBuckets(),
-                proctorResult.getAllocations(),
-                proctorResult.getTestDefinitions());
+        return ProctorResult.immutableCopy(proctorResult);
     }
 
     /**

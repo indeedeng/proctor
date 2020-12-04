@@ -12,8 +12,10 @@ import com.indeed.proctor.common.model.TestType;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
+import java.util.TreeMap;
 
 import static java.util.Collections.emptyMap;
+import static java.util.Collections.emptySortedMap;
 
 /**
  * Provides ability to determine buckets using a supplier to fetch a recent test definition.
@@ -65,8 +67,8 @@ public abstract class AbstractGroupsManager implements ProctorContextDescriptor 
         if (proctor == null) {
             final Map<String, TestBucket> buckets = getDefaultBucketValues();
             return new ProctorResult(Audit.EMPTY_VERSION,
-                    buckets,
-                    emptyMap(),
+                    new TreeMap<>(buckets), // legacy behavior uses mutable Map
+                    emptySortedMap(),
                     emptyMap()
             );
         }

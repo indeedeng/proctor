@@ -27,6 +27,8 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 /**
  * The sole entry point for client applications determining the test buckets for a particular client.
@@ -195,8 +197,10 @@ public class Proctor {
             @Nonnull final Map<String, Integer> forceGroups,
             @Nonnull final Collection<String> testNameFilter
     ) {
-        final Map<String, TestBucket> testGroups = Maps.newLinkedHashMap();
-        final Map<String, Allocation> testAllocations = Maps.newLinkedHashMap();
+        // ProctorResult requires SortedMap internally, avoid copy overhead
+        // use mutable map for legacy reasons, inside this codebase should not be modified after this method
+        final SortedMap<String, TestBucket> testGroups = new TreeMap<>();
+        final SortedMap<String, Allocation> testAllocations = new TreeMap<>();
 
         Map<String, TestChooser<?>> filteredChoosers = testChoosers;
         if (!testNameFilter.isEmpty()) {
