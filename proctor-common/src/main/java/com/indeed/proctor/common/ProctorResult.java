@@ -49,24 +49,36 @@ public class ProctorResult {
     @Nonnull
     private final Set<String> dynamicallyLoadedTests;
 
+    /**
+     * @deprecated use non-deprecated constructor
+     */
     @Deprecated
     public ProctorResult(
             final int matrixVersion,
             @Nonnull final Map<String, TestBucket> buckets,
+            // allowing null for historical reasons
             @Nullable final Map<String, ConsumableTestDefinition> testDefinitions
     ) {
         this(Integer.toString(matrixVersion), buckets, emptyMap(), testDefinitions);
     }
 
+    /**
+     * @deprecated use non-deprecated constructor
+     */
     @Deprecated
     public ProctorResult(
             final String matrixVersion,
             @Nonnull final Map<String, TestBucket> buckets,
+            // allowing null for historical reasons
             @Nullable final Map<String, ConsumableTestDefinition> testDefinitions
     ) {
         this(matrixVersion, buckets, emptyMap(), testDefinitions);
     }
 
+    /**
+     * @deprecated use non-deprecated constructor
+     */
+    @Deprecated
     public ProctorResult(
             final String matrixVersion,
             @Nonnull final Map<String, TestBucket> buckets,
@@ -77,6 +89,13 @@ public class ProctorResult {
         this(matrixVersion, buckets, allocations, testDefinitions, emptySet());
     }
 
+    /**
+     * @param matrixVersion any string, used for debugging
+     * @param buckets the resolved bucket for each test
+     * @param allocations the determined allocation for each test
+     * @param testDefinitions the original test definitions
+     * @param dynamicallyLoadedTests a subset of testnames for tests included dynamically
+     */
     public ProctorResult(
             final String matrixVersion,
             @Nonnull final Map<String, TestBucket> buckets,
