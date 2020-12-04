@@ -484,6 +484,7 @@ public abstract class AbstractGroups {
         return Arrays.stream(tests)
                 .map(test -> Arrays.asList(
                         // call to getValue() to allow overrides of getActiveBucket
+                        // not calling getValueWithoutMarkingUsage because when client calls this method, all tests are potentially used.
                         getValue(test.getName(), test.getFallbackValue()),
                         getPayload(test.getName(), test.getFallbackValue()).fetchAValue()))
                 .collect(Collectors.toList());
