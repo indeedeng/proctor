@@ -217,9 +217,19 @@ public class TestAbstractGroups {
         assertThat(convertedProctorResult.getAllocations()).isEqualTo(proctorResult.getAllocations());
         assertThat(convertedProctorResult.getTestDefinitions()).isEqualTo(proctorResult.getTestDefinitions());
 
-        final ProctorResult convertedProctorResult2 = sampleGroups.getAsProctorResult();
-        assertThat(convertedProctorResult2.getAllocations()).isSameAs(convertedProctorResult.getAllocations());
-        assertThat(convertedProctorResult2.getTestDefinitions()).isSameAs(convertedProctorResult.getTestDefinitions());
+        // check legacy behavior still works (changing the input ProctorResult changes behavior of AbstractGroups)
+        // probably this is a bug rather than an undocumented feature, but for now prefer not to break clients
+        proctorResult.getBuckets().clear();
+        proctorResult.getAllocations().clear();
+        proctorResult.getTestDefinitions().clear();
+
+        assertThat(convertedProctorResult.getBuckets()).isEmpty();
+        assertThat(convertedProctorResult.getAllocations()).isEmpty();
+        assertThat(convertedProctorResult.getTestDefinitions()).isEmpty();
+
+        assertThat(rawProctorResult.getBuckets()).isEmpty();
+        assertThat(rawProctorResult.getAllocations()).isEmpty();
+        assertThat(rawProctorResult.getTestDefinitions()).isEmpty();
     }
 
 }

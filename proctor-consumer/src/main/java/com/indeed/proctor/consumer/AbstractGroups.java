@@ -1,7 +1,6 @@
 package com.indeed.proctor.consumer;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Maps;
 import com.indeed.proctor.common.ProctorResult;
 import com.indeed.proctor.common.model.Allocation;
@@ -19,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.SortedMap;
 import java.util.stream.Collectors;
 
 /**
@@ -422,7 +422,7 @@ public abstract class AbstractGroups {
      * creates a new copy of the input proctor result, derived from applying rules and hashing the identifier, and
      * also applying any custom logic from overriding overrideDeterminedBucketValue().
      *
-     * Subclass methods like overrideDeterminedBucketValue() should not call this method (risks infinite loops).
+     * Subclass methods like overrideDeterminedBucketValue() should not call this method (risks infinite recursion).
      *
      * For clients not overriding any methods, this should be the same as getRawProctorResult(),
      * but it's safer and less wasteful to use getAsProctorResult().
@@ -431,13 +431,13 @@ public abstract class AbstractGroups {
      */
     public ProctorResult getAsProctorResult() {
         // Using guava Maps.transformEntries because it creates a lightweight view and does not copy all entries
-        final Map<String, TestBucket> customBuckets = Maps.transformEntries(
-                proctorResult.getBuckets(),
+        final SortedMap<String, TestBucket> customBuckets = Maps.transformEntries(
+                (SortedMap<String, TestBucket>) proctorResult.getBuckets(),
                 (testName, bucket) -> getActiveBucket(testName).get());
         return new ProctorResult(
                 proctorResult.getMatrixVersion(),
-                ImmutableSortedMap.copyOf(customBuckets),
-                ImmutableSortedMap.copyOf(proctorResult.getAllocations()),
+                Collections.unmodifiableSortedMap(customBuckets),
+                Collections.unmodifiableSortedMap((SortedMap<String, Allocation>) proctorResult.getAllocations()),
                 proctorResult.getTestDefinitions());
     }
 

@@ -1,7 +1,5 @@
 package com.indeed.proctor.common;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSortedMap;
 import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.Audit;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
@@ -9,6 +7,7 @@ import com.indeed.proctor.common.model.TestBucket;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.SortedMap;
@@ -99,9 +98,7 @@ public class ProctorResult {
     }
 
     /**
-     * Plain constructor, consider using ImmutableSortedMap.copyOf to transform maps if necessary, or emptySortedMap().
-     * Note that ProctorResult.getBuckets() and ProctorResult.getAllocations() actually return sortedMaps,
-     * and typically ImmutableMap.copyOf(sortedMap) == sortedMap; (no new instance is created).
+     * Plain constructor, not creating TreeMaps as in the deprecated version.
      */
     public ProctorResult(
             @Nonnull final String matrixVersion,
@@ -116,17 +113,14 @@ public class ProctorResult {
     }
 
     /**
-     * creates new Proctor Result, if the input proctorResult uses SortedMaps internally for buckets and allocations,
-     * this method should avoid copying all map entries.
-     * @return a ProctorResult with Immutable collection fields.
+     * @return a new Proctor Result, which does not allow modifying the contained collections.
      */
     public static ProctorResult immutableCopy(final ProctorResult proctorResult) {
         return new ProctorResult(
                 proctorResult.getMatrixVersion(),
-                // ImmutableSortedMap does not copy entries of map if it's already a sortedMap (with same comparator)
-                ImmutableSortedMap.copyOf(proctorResult.getBuckets()),
-                ImmutableSortedMap.copyOf(proctorResult.getAllocations()),
-                ImmutableMap.copyOf(proctorResult.getTestDefinitions())
+                Collections.unmodifiableSortedMap((SortedMap<String, TestBucket>) proctorResult.getBuckets()),
+                Collections.unmodifiableSortedMap((SortedMap<String, Allocation>) proctorResult.getAllocations()),
+                Collections.unmodifiableMap(proctorResult.getTestDefinitions())
         );
     }
 
