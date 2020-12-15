@@ -13,6 +13,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class ProctorResultTest {
 
@@ -25,7 +26,7 @@ public class ProctorResultTest {
         allocations.put("allocation1", new Allocation());
         // intentionally using deprecated Constructor
         final ProctorResult proctorResult = new ProctorResult("", buckets, allocations, null);
-        // historical behavior of deprecated constructor
+        // historical behavior of deprecated constructor. Not returning a SortedMap will break AbstractGroups
         assertThat(proctorResult.getBuckets()).isInstanceOf(SortedMap.class).isEqualTo(buckets);
         assertThat(proctorResult.getAllocations()).isInstanceOf(SortedMap.class).isEqualTo(allocations);
         assertThat(proctorResult.getTestDefinitions()).isNotNull().isEmpty();
@@ -39,6 +40,7 @@ public class ProctorResultTest {
         allocations.put("allocation1", new Allocation());
         final Map<String, ConsumableTestDefinition> definitions = ImmutableMap.of("test1", new ConsumableTestDefinition());
         final ProctorResult proctorResult = new ProctorResult("", buckets, allocations, definitions);
+        // historical behavior of deprecated constructor. Not returning a SortedMap will break AbstractGroups
         assertThat(proctorResult.getBuckets()).isInstanceOf(SortedMap.class).isEqualTo(buckets);
         assertThat(proctorResult.getAllocations()).isInstanceOf(SortedMap.class).isEqualTo(allocations);
         assertThat(proctorResult.getTestDefinitions()).isSameAs(definitions);
@@ -73,12 +75,34 @@ public class ProctorResultTest {
         final ProctorResult proctorResult1 = new ProctorResult("", buckets, allocations, definitions);
         final ProctorResult proctorResult2 = ProctorResult.immutableCopy(proctorResult1);
 
-        /*
-         * Relying on Guava to not create expensive copies needlessly
-         * Using isSame as intentionally instead of isEqualTo, because this test tries to ensure no entries are copied
-         */
-        assertThat(proctorResult2.getBuckets()).isSameAs(buckets);
-        assertThat(proctorResult2.getAllocations()).isSameAs(allocations);
-        assertThat(proctorResult2.getTestDefinitions()).isSameAs(definitions);
+        assertThatThrownBy(() ->
+                proctorResult2.getBuckets().clear())
+                .isInstanceOf(UnsupportedOperationException.class);
+        assertThatThrownBy(() ->
+                proctorResult2.getBuckets().put("forbid", new TestBucket("inactive", -1, "")))
+                .isInstanceOf(UnsupportedOperationException.class);
+        assertThatThrownBy(() ->
+                proctorResult2.getBuckets().entrySet().iterator().next().setValue(new TestBucket("active", -1, "")))
+                .isInstanceOf(UnsupportedOperationException.class);
+
+        assertThatThrownBy(() ->
+                proctorResult2.getAllocations().clear())
+                .isInstanceOf(UnsupportedOperationException.class);
+        assertThatThrownBy(() ->
+                proctorResult2.getAllocations().put("forbid", new Allocation()))
+                .isInstanceOf(UnsupportedOperationException.class);
+        assertThatThrownBy(() ->
+                proctorResult2.getAllocations().entrySet().iterator().next().setValue(new Allocation()))
+                .isInstanceOf(UnsupportedOperationException.class);
+
+        assertThatThrownBy(() ->
+                proctorResult2.getTestDefinitions().clear())
+                .isInstanceOf(UnsupportedOperationException.class);
+        assertThatThrownBy(() ->
+                proctorResult2.getTestDefinitions().put("forbid", new ConsumableTestDefinition()))
+                .isInstanceOf(UnsupportedOperationException.class);
+        assertThatThrownBy(() ->
+                proctorResult2.getTestDefinitions().entrySet().iterator().next().setValue(new ConsumableTestDefinition()))
+                .isInstanceOf(UnsupportedOperationException.class);
     }
 }
