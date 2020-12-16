@@ -51,7 +51,7 @@ public abstract class AbstractGroups {
      */
     protected AbstractGroups(final ProctorResult proctorResult) {
         this.originalMutableProctorResult = proctorResult;
-        this.proctorResult = ProctorResult.immutableCopy(proctorResult);
+        this.proctorResult = ProctorResult.unmodifiableView(proctorResult);
     }
 
     /**

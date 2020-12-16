@@ -114,8 +114,9 @@ public class ProctorResult {
 
     /**
      * @return a new Proctor Result, which does not allow modifying the contained collections.
+     * The result's fields are views of the original fields, to reduce memory allocation effort.
      */
-    public static ProctorResult immutableCopy(final ProctorResult proctorResult) {
+    public static ProctorResult unmodifiableView(final ProctorResult proctorResult) {
         return new ProctorResult(
                 proctorResult.getMatrixVersion(),
                 Collections.unmodifiableSortedMap((SortedMap<String, TestBucket>) proctorResult.getBuckets()),
