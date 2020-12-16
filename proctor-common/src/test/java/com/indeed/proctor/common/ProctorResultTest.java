@@ -65,7 +65,7 @@ public class ProctorResultTest {
     }
 
     @Test
-    public void testImmutableCopy() {
+    public void testUnmodifiableView() {
         final SortedMap<String, TestBucket> buckets = ImmutableSortedMap.of(
                 "bucket1", new TestBucket("inactive", -1, ""));
         final SortedMap<String, Allocation> allocations = ImmutableSortedMap.of(
@@ -73,7 +73,7 @@ public class ProctorResultTest {
         );
         final Map<String, ConsumableTestDefinition> definitions = ImmutableMap.of("test1", new ConsumableTestDefinition());
         final ProctorResult proctorResult1 = new ProctorResult("", buckets, allocations, definitions);
-        final ProctorResult proctorResult2 = ProctorResult.immutableCopy(proctorResult1);
+        final ProctorResult proctorResult2 = ProctorResult.unmodifiableView(proctorResult1);
 
         assertThatThrownBy(() ->
                 proctorResult2.getBuckets().clear())
