@@ -7,18 +7,22 @@ import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.Payload;
 import com.indeed.proctor.common.model.TestBucket;
+import com.indeed.proctor.consumer.logging.TestUsageObserver;
 import org.apache.log4j.Logger;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.AbstractMap;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.SortedMap;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -33,6 +37,10 @@ public abstract class AbstractGroups {
     private static final Logger LOGGER = Logger.getLogger(AbstractGroups.class);
     private final ProctorResult proctorResult;
 
+    // Option using injected Observer
+    @CheckForNull
+    private TestUsageObserver testUsageObserver;
+
     /**
      * A character to separate groups in logging output.
      */
@@ -45,9 +53,22 @@ public abstract class AbstractGroups {
 
     /**
      * Setup fields based on eagerly computed bucket allocations in ProctorResult.
+     *
+     * @param testUsageObserver if non-null, it's methods will be called whenever proctor tests are used
+     */
+    protected AbstractGroups(
+            final ProctorResult proctorResult,
+            @Nullable final TestUsageObserver testUsageObserver
+    ) {
+        this.proctorResult = proctorResult;
+        this.testUsageObserver = testUsageObserver;
+    }
+
+    /**
+     * Setup fields based on eagerly computed bucket allocations in ProctorResult.
      */
     protected AbstractGroups(final ProctorResult proctorResult) {
-        this.proctorResult = proctorResult;
+        this(proctorResult, null);
     }
 
     /**
@@ -120,11 +141,44 @@ public abstract class AbstractGroups {
                 .orElse(defaultValue);
     }
 
+    protected final int getValueWithoutMarkingUsage(final String testName, final int defaultValue) {
+        // using getActiveBucket to allow overrides
+        return getActiveBucketWithoutMarkingUsage(testName)
+                .map(TestBucket::getValue)
+                .orElse(defaultValue);
+    }
+
     /**
      * @return the bucket that has been determined by the current proctorResult, or override bucket if valid, or empty if testname not valid
      */
     // intentionally final, other developers should only override overrideDeterminedBucketValue()
     protected final Optional<TestBucket> getActiveBucket(final String testName) {
+
+        final Optional<TestBucket> bucketOpt = getActiveBucketWithoutMarkingUsage(testName);
+        bucketOpt.ifPresent(bucket -> {
+            if (testUsageObserver != null) {
+                testUsageObserver.markUsedForToggling(testName);
+            }
+        });
+        return bucketOpt;
+    }
+
+    /**
+     * mark tests to additionally be included in getAsUsedTestsProctorResult(), even when no corresponding
+     * method has been called.
+     * for usecases where exposure happens without calls to generated methods calling getValue()
+     */
+    public final void markTestsAsUsed(final Collection<String> testNames) {
+        if (testUsageObserver != null) {
+            testUsageObserver.markUsedForToggling(testNames);
+        }
+    }
+
+    /**
+     * @return the bucket that has been determined by the current proctorResult, or override bucket if valid, or empty if testname not valid
+     */
+    // intentionally private, clients should only see getActiveBucket()
+    private Optional<TestBucket> getActiveBucketWithoutMarkingUsage(final String testName) {
         // intentionally not allowing subclasses to override returning empty for testnames that do not exist in ProctorResult
         // the semantics of this class would become too confusing
         // if clients somehow need that, they should provide a proctorResult instance having additional testNames with buckets
@@ -227,6 +281,8 @@ public abstract class AbstractGroups {
                 .orElse(null);
     }
 
+
+
     /**
      * @return a comma-separated String of {testname}-{active-bucket-name} for ALL tests
      */
@@ -237,7 +293,7 @@ public abstract class AbstractGroups {
         final Map<String, TestBucket> buckets = proctorResult.getBuckets();
         final StringBuilder sb = new StringBuilder(buckets.size() * 10);
         for (final String testName : buckets.keySet()) {
-            sb.append(testName).append(TESTNAME_BUCKET_CONNECTOR).append(getActiveBucket(testName)
+            sb.append(testName).append(TESTNAME_BUCKET_CONNECTOR).append(getActiveBucketWithoutMarkingUsage(testName)
                     .map(TestBucket::getName).orElse("unknown"))
                     .append(GROUPS_SEPARATOR);
         }
@@ -341,8 +397,8 @@ public abstract class AbstractGroups {
                     // fallback to non-silent when test definition is not available
                     return (consumableTestDefinition == null) || !consumableTestDefinition.getSilent();
                 })
-                // call to getValue() to allow overrides of getActiveBucket
-                .filter(testName -> getValue(testName, -1) >= 0)
+                // call to getValueWithouMarkingUsage() to allow overrides of getActiveBucket, but avoid marking
+                .filter(testName -> getValueWithoutMarkingUsage(testName, -1) >= 0)
                 .collect(Collectors.toList());
     }
 
@@ -351,7 +407,7 @@ public abstract class AbstractGroups {
      */
     protected final void appendTestGroupsWithoutAllocations(final StringBuilder sb, final char separator, final List<String> testNames) {
         for (final String testName : testNames) {
-            getActiveBucket(testName).ifPresent(testBucket ->
+            getActiveBucketWithoutMarkingUsage(testName).ifPresent(testBucket ->
                 sb.append(testName).append(testBucket.getValue()).append(separator));
         }
     }
@@ -361,7 +417,7 @@ public abstract class AbstractGroups {
      */
     protected final void appendTestGroupsWithAllocations(final StringBuilder sb, final char separator, final List<String> testNames) {
         for (final String testName : testNames) {
-            getActiveBucket(testName).ifPresent(testBucket -> {
+            getActiveBucketWithoutMarkingUsage(testName).ifPresent(testBucket -> {
                 // no allocation might exist for this testbucket
                 final Allocation allocation = proctorResult.getAllocations().get(testName);
                 if ((allocation != null) && !Strings.isNullOrEmpty(allocation.getId())) {
@@ -384,10 +440,30 @@ public abstract class AbstractGroups {
      * @return a {@link Map} of config JSON
      */
     public final Map<String, Integer> getJavaScriptConfig() {
+        return getJavaScriptConfig(n -> true);
+    }
+
+    /**
+     * Generates a Map[testname, bucketValue] for given testnames, for bucketValues >= 0.
+     *
+     * The purpose is to conveniently support serializing this map to JSON and used with
+     * indeed.proctor.groups.init and
+     * indeed.proctor.groups.inGroup(tstName, bucketValue)
+     * from common/indeedjs library
+     *
+     * @return a {@link Map} of config JSON
+     */
+    public final Map<String, Integer> getJavaScriptConfig(final Collection<String> testNames) {
+        return getJavaScriptConfig(testNames::contains);
+    }
+
+    private Map<String, Integer> getJavaScriptConfig(final Predicate<String> testNameFilter) {
         // For now this is a simple mapping from {testName to bucketValue}
         return proctorResult.getBuckets().keySet().stream()
                 // mirrors appendTestGroups method by skipping *inactive* tests
-                // call to getValuePrivate() to allow overrides of getActiveBucket
+                .filter(testNameFilter)
+                // call to getValue() to allow overrides of getActiveBucket
+                // not calling getValueWithoutMarkingUsage because when client calls this method, all tests are potentially used.
                 .map(testName -> new AbstractMap.SimpleEntry<>(testName, getValue(testName, -1)))
                 .filter(e -> e.getValue() >= 0)
                 .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
@@ -410,7 +486,8 @@ public abstract class AbstractGroups {
         //@TODO Move this logic to {@link com.indeed.proctor.consumer.ProctorJavascriptPayloadBuilder} and remove this method
         return Arrays.stream(tests)
                 .map(test -> Arrays.asList(
-                        // call to getValuePrivate() to allow overrides of getActiveBucket
+                        // call to getValue() to allow overrides of getActiveBucket
+                        // not calling getValueWithoutMarkingUsage because when client calls this method, all tests are potentially used.
                         getValue(test.getName(), test.getFallbackValue()),
                         getPayload(test.getName(), test.getFallbackValue()).fetchAValue()))
                 .collect(Collectors.toList());
@@ -422,6 +499,9 @@ public abstract class AbstractGroups {
      *
      * Subclass methods like overrideDeterminedBucketValue() should not call this method (risks infinite recursion).
      *
+     * Clients using the result to implement feature toggling should also call markTestsAsUsed for such tests, to ensure
+     * those tests get logged with exposure logging.
+     *
      * For clients not overriding any methods, this should be equal to getRawProctorResult().
      *
      * @return converted data with customizations applied (if any).
@@ -430,12 +510,15 @@ public abstract class AbstractGroups {
         // Using guava Maps.transformEntries because it creates a lightweight view and does not copy all entries
         final SortedMap<String, TestBucket> customBuckets = Maps.transformEntries(
                 (SortedMap<String, TestBucket>) proctorResult.getBuckets(),
-                (testName, bucket) -> getActiveBucket(testName).get());
+                // calling getActiveBucketWithoutMarkingUsage instead of getActiveBucket because clients are not
+                // supposed to use this method result to implement feature toggles.
+                (testName, bucket) -> getActiveBucketWithoutMarkingUsage(testName).get());
         return new ProctorResult(
                 proctorResult.getMatrixVersion(),
                 Collections.unmodifiableSortedMap(customBuckets),
                 Collections.unmodifiableSortedMap((SortedMap<String, Allocation>) proctorResult.getAllocations()),
-                Collections.unmodifiableMap(proctorResult.getTestDefinitions()));
+                Collections.unmodifiableMap(proctorResult.getTestDefinitions()),
+                Collections.unmodifiableSet(proctorResult.getDynamicallyLoadedTests()));
     }
 
     /**
@@ -446,6 +529,8 @@ public abstract class AbstractGroups {
      *
      * Since apps might pass around AbstractGroups, but some code might want to access
      * ProctorResult directly, return wrapped data for convenience.
+     *
+     * Clients using the result to implement feature toggling should also call markTestsAsUsed
      *
      * @return wrapped raw data.
      */

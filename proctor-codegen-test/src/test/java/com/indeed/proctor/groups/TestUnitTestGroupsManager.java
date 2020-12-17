@@ -10,6 +10,7 @@ import com.indeed.proctor.common.ProctorUtils;
 import com.indeed.proctor.common.ProvidedContext;
 import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.common.model.TestType;
+import com.indeed.proctor.consumer.logging.TestMarkingObserver;
 import com.indeed.proctor.groups.UnitTestGroups.Payloaded;
 import com.indeed.util.varexport.VarExporter;
 import org.apache.log4j.Level;
@@ -155,6 +156,22 @@ public class TestUnitTestGroupsManager {
             assertFalse(grps.isKlujLoooj());
             assertEquals("kluj1,no_buckets_specified1,oop_poop0", grps.toString());
         }
+    }
+
+    @Test
+    public void testUsageObserver() {
+        final UnitTestGroupsContext testContext = UnitTestGroupsContext.newBuilder()
+                .setLoggedIn(true)
+                .setCountry("FR")
+                .setAccount(new Account(10))
+                .build();
+        final Identifiers identifiers = new Identifiers(TestType.ANONYMOUS_USER, SAMPLE_ID);
+        final ProctorResult result = testContext.getProctorResult(manager, identifiers);
+        final TestMarkingObserver testUsageObserver = new TestMarkingObserver(result);
+        final UnitTestGroups grps = new UnitTestGroups(result, testUsageObserver);
+        grps.getKlujValue(); // test used given SAMPLE_ID hash
+        assertEquals(1, testUsageObserver.asProctorResult().getBuckets().size());
+        assertNotNull(testUsageObserver.asProctorResult().getBuckets().get("kluj"));
     }
 
     @Test
