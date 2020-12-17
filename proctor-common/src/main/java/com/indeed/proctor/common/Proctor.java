@@ -30,6 +30,8 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import static java.util.Collections.emptySet;
+
 /**
  * The sole entry point for client applications determining the test buckets for a particular client.
  * Basically a Factory to create ProctorResult for a given identifier and context, based on a TestMatrix and a specification.
@@ -43,11 +45,13 @@ public class Proctor {
     private static final ObjectWriter OBJECT_WRITER = Serializers
             .lenient()
             .configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false).writerWithDefaultPrettyPrinter();
+    private final Set<String> dynamicTests;
 
     /**
      * Factory method to do the setup and transformation of inputs
      *
      * @param matrix a {@link TestMatrixArtifact} loaded by ProctorLoader
+     * @param dynamicTests those tests which were added to the TestMatrixArtifact because of a dynamic filter
      * @param loadResult a {@link ProctorLoadResult} which contains result of validation of test definition
      * @param functionMapper a given el {@link FunctionMapper}
      * @return constructed Proctor object
@@ -55,8 +59,9 @@ public class Proctor {
     @Nonnull
     public static Proctor construct(
             @Nonnull final TestMatrixArtifact matrix,
-            final ProctorLoadResult loadResult,
-            final FunctionMapper functionMapper
+            @Nonnull final Set<String> dynamicTests,
+            @Nonnull final ProctorLoadResult loadResult,
+            @Nonnull final FunctionMapper functionMapper
     ) {
         final ExpressionFactory expressionFactory = RuleEvaluator.EXPRESSION_FACTORY;
 
@@ -77,7 +82,17 @@ public class Proctor {
             versions.put(testName, testDefinition.getVersion());
         }
 
-        return new Proctor(matrix, loadResult, testChoosers);
+        return new Proctor(matrix, dynamicTests, loadResult, testChoosers);
+    }
+
+    @Deprecated // use 4 argument version
+    @Nonnull
+    public static Proctor construct(
+            @Nonnull final TestMatrixArtifact matrix,
+            final ProctorLoadResult loadResult,
+            @Nonnull final FunctionMapper functionMapper
+    ) {
+      return construct(matrix, emptySet(), loadResult, functionMapper);
     }
 
     @Nonnull
@@ -95,7 +110,7 @@ public class Proctor {
 
         final Map<String, TestChooser<?>> choosers = Collections.emptyMap();
 
-        return new Proctor(testMatrix, loadResult, choosers);
+        return new Proctor(testMatrix, emptySet(), loadResult, choosers);
     }
 
     static final long INT_RANGE = (long) Integer.MAX_VALUE - (long) Integer.MIN_VALUE;
@@ -108,11 +123,13 @@ public class Proctor {
 
     @VisibleForTesting
     Proctor(
-            final TestMatrixArtifact matrix,
-            final ProctorLoadResult loadResult,
+            @Nonnull final TestMatrixArtifact matrix,
+            @Nonnull final Set<String> dynamicTests,
+            @Nonnull final ProctorLoadResult loadResult,
             @Nonnull final Map<String, TestChooser<?>> testChoosers
     ) {
         this.matrix = matrix;
+        this.dynamicTests = dynamicTests;
         this.loadResult = loadResult;
         this.testChoosers = testChoosers;
         for (final Entry<String, TestChooser<?>> entry : testChoosers.entrySet()) {
@@ -250,7 +267,7 @@ public class Proctor {
 
         // TODO Can we make getAudit nonnull?
         final Audit audit = Preconditions.checkNotNull(matrix.getAudit(), "Missing audit");
-        return new ProctorResult(audit.getVersion(), testGroups, testAllocations, testDefinitions);
+        return new ProctorResult(audit.getVersion(), testGroups, testAllocations, testDefinitions, dynamicTests);
     }
 
     TestMatrixArtifact getArtifact() {

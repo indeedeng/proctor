@@ -299,6 +299,9 @@ public abstract class ProctorUtils {
         );
     }
 
+    /**
+     * @param testMatrix will be modified by removing unused tests and adding missing tests
+     */
     public static ProctorLoadResult verifyAndConsolidate(
             @Nonnull final TestMatrixArtifact testMatrix,
             final String matrixSource,

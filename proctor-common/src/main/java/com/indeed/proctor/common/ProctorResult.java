@@ -9,11 +9,14 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
 import static java.util.Collections.emptyMap;
+import static java.util.Collections.emptySet;
 import static java.util.Collections.emptySortedMap;
 
 /**
@@ -45,6 +48,9 @@ public class ProctorResult {
      */
     @Nonnull
     private final Map<String, ConsumableTestDefinition> testDefinitions;
+
+    @Nonnull
+    private final Set<String> dynamicallyLoadedTests;
 
     /**
      * Create a ProctorResult with copies of the provided collections
@@ -85,6 +91,26 @@ public class ProctorResult {
             @Nonnull final Map<String, Allocation> allocations,
             // allowing null for historical reasons
             @Nullable final Map<String, ConsumableTestDefinition> testDefinitions
+    ){
+        this(matrixVersion, buckets, allocations, testDefinitions, emptySet());
+    }
+
+    /**
+     * @param matrixVersion any string, used for debugging
+     * @param buckets the resolved bucket for each test
+     * @param allocations the determined allocation for each test
+     * @param testDefinitions the original test definitions
+     * @param dynamicallyLoadedTests a subset of testnames for tests included dynamically
+     * @deprecated this constructor creates copies of all input collections
+     */
+    @Deprecated
+    public ProctorResult(
+            final String matrixVersion,
+            @Nonnull final Map<String, TestBucket> buckets,
+            @Nonnull final Map<String, Allocation> allocations,
+            // allowing null for historical reasons
+            @Nullable final Map<String, ConsumableTestDefinition> testDefinitions,
+            @Nonnull final Set<String> dynamicallyLoadedTests
     ) {
         // Potentially client applications might need to build ProctorResult instances in each request, and some apis
         // have large proctorResult objects, so if teams use this constructor, this may have a noticeable
@@ -93,23 +119,51 @@ public class ProctorResult {
                 matrixVersion,
                 new TreeMap<>(buckets),
                 new TreeMap<>(allocations),
-                (testDefinitions == null) ? emptyMap() : new HashMap<>(testDefinitions)
+                (testDefinitions == null) ? emptyMap() : new HashMap<>(testDefinitions),
+                new HashSet<>(dynamicallyLoadedTests)
         );
     }
 
     /**
-     * Plain constructor, not creating TreeMaps as in the deprecated version.
+     * Plain constructor, not creating TreeMaps.
+     *
+     * @param matrixVersion any string, used for debugging
+     * @param buckets the resolved bucket for each test
+     * @param allocations the determined allocation for each test
+     * @param testDefinitions the original test definitions
+     * @deprecated use constructor with dynamicallyLoaded testnames for customizable logging
      */
+    @Deprecated
     public ProctorResult(
             @Nonnull final String matrixVersion,
             @Nonnull final SortedMap<String, TestBucket> buckets,
             @Nonnull final SortedMap<String, Allocation> allocations,
             @Nonnull final Map<String, ConsumableTestDefinition> testDefinitions
     ) {
+        this(matrixVersion, buckets, allocations, testDefinitions, emptySet());
+    }
+
+    /**
+     * Plain constructor, not creating TreeMaps as in the deprecated version.
+     *
+     * @param matrixVersion any string, used for debugging
+     * @param buckets the resolved bucket for each test
+     * @param allocations the determined allocation for each test
+     * @param testDefinitions the original test definitions
+     * @param dynamicallyLoadedTests a subset of testnames for tests included dynamically
+     */
+    public ProctorResult(
+            @Nonnull final String matrixVersion,
+            @Nonnull final SortedMap<String, TestBucket> buckets,
+            @Nonnull final SortedMap<String, Allocation> allocations,
+            @Nonnull final Map<String, ConsumableTestDefinition> testDefinitions,
+            @Nonnull final Set<String> dynamicallyLoadedTests
+    ) {
         this.matrixVersion = matrixVersion;
         this.buckets = buckets;
         this.allocations = allocations;
         this.testDefinitions = testDefinitions;
+        this.dynamicallyLoadedTests = dynamicallyLoadedTests;
     }
 
     /**
@@ -122,7 +176,8 @@ public class ProctorResult {
                 // using fields directly because methods do not expose SortedMap type
                 Collections.unmodifiableSortedMap(proctorResult.buckets),
                 Collections.unmodifiableSortedMap(proctorResult.allocations),
-                Collections.unmodifiableMap(proctorResult.testDefinitions)
+                Collections.unmodifiableMap(proctorResult.testDefinitions),
+                Collections.unmodifiableSet(proctorResult.getDynamicallyLoadedTests())
         );
     }
 
@@ -154,5 +209,8 @@ public class ProctorResult {
         return testDefinitions;
     }
 
-
+    @Nonnull
+    public Set<String> getDynamicallyLoadedTests() {
+        return dynamicallyLoadedTests;
+    }
 }

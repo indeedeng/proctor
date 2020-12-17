@@ -10,7 +10,9 @@ import com.indeed.proctor.common.model.TestBucket;
 import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
@@ -40,12 +42,24 @@ public class ProctorGroupStubber {
 
         private final Map<String, ConsumableTestDefinition> definitions = new TreeMap<>();
         private final Map<StubTest, TestBucket> resolvedBuckets = new TreeMap<>();
+        private final Set<String> dynamicallyResolvedTestnames = new HashSet<>();
+
+        public ProctorResultStubBuilder withDynamicallyResolvedStubTest(
+                final StubTest stubTest,
+                @Nullable final TestBucket resolved,
+                final TestBucket... definedBuckets
+        ) {
+            withStubTest(stubTest, resolved, stubDefinitionWithVersion("v1", definedBuckets));
+            dynamicallyResolvedTestnames.add(stubTest.name);
+            return this;
+        }
 
         public ProctorResultStubBuilder withStubTest(
                 final StubTest stubTest,
                 @Nullable final TestBucket resolved,
                 final TestBucket... definedBuckets) {
-            return withStubTest(stubTest, resolved, stubDefinitionWithVersion("v1", definedBuckets));
+            withStubTest(stubTest, resolved, stubDefinitionWithVersion("v1", definedBuckets));
+            return this;
         }
 
         public ProctorResultStubBuilder withStubTest(
@@ -72,7 +86,8 @@ public class ProctorGroupStubber {
                             .collect(Collectors.toMap(
                                     e -> e.getKey().getName(),
                                     e -> new Allocation(null, Collections.singletonList(new Range(e.getValue().getValue(), 1.0)), "#A1"))),
-                    definitions
+                    definitions,
+                    dynamicallyResolvedTestnames
             );
         }
     }
