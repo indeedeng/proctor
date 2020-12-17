@@ -33,7 +33,7 @@ public class ProctorGroupsWriterTest {
     private static final Allocation ALLOCATION_A = new Allocation(null, Collections.emptyList(), "#A");
     private static final Allocation ALLOCATION_EMPTY_ID = new Allocation(null, Collections.emptyList(), "");
 
-    // stable Guava Immutable builder behavior only implemented starting guava 22.0
+    // Using Ordering.natural() because stable Guava Immutable builder behavior only implemented starting guava 22.0
     private static final Map<String, TestBucket> BUCKETS = new ImmutableSortedMap.Builder<String, TestBucket>(Ordering.natural())
             .put(INACTIVE_TEST_NAME, INACTIVE_BUCKET)
             .put(MISSING_DEFINITION_TEST_NAME, CONTROL_BUCKET)
@@ -60,17 +60,19 @@ public class ProctorGroupsWriterTest {
 
     @Test
     public void testWithEmptyResult() {
-        final ProctorGroupsWriter defaultWriter = ProctorGroupsWriter.indeedLegacyStyle();
-        assertThat(defaultWriter.toLoggingString(new ProctorResult("v1", Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap())))
+        final ProctorGroupsWriter simpleWriter = new ProctorGroupsWriter.Builder(TestGroupFormatter.WITH_ALLOC_ID)
+                .build();
+        assertThat(simpleWriter.toLoggingString(new ProctorResult("v1", Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap())))
                 .isEmpty();
     }
 
     @Test
-    public void testLegacyWriter() {
+    public void testDoubleFormattingWriter() {
         // legacy Indeed behavior
         final String expected = "b_missing_definition0,c_empty_alloc_id0,d_foo_tst1,#A:b_missing_definition0,#A:d_foo_tst1";
 
-        final ProctorGroupsWriter defaultWriter = ProctorGroupsWriter.indeedLegacyStyle();
+        final ProctorGroupsWriter defaultWriter = new ProctorGroupsWriter.Builder(TestGroupFormatter.WITHOUT_ALLOC_ID, TestGroupFormatter.WITH_ALLOC_ID)
+                .build();
         assertThat(defaultWriter.toLoggingString(PROCTOR_RESULT))
                 .isEqualTo(expected)
                 .isEqualTo(
@@ -82,11 +84,6 @@ public class ProctorGroupsWriterTest {
                                 "#A:" + GROUP1_TEST_NAME + 1
                         ).with(","));
 
-        // some other ways to create expected string
-        assertThat(ProctorGroupsWriter.Builder.indeedLegacyFormatters()
-                .build()
-                .toLoggingString(PROCTOR_RESULT))
-                .isEqualTo(expected);
     }
 
     @Test
