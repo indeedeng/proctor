@@ -32,9 +32,6 @@ import java.util.stream.Collectors;
 public abstract class AbstractGroups {
     private static final Logger LOGGER = Logger.getLogger(AbstractGroups.class);
     private final ProctorResult proctorResult;
-    // use proctorResult, it's an immutable copy.
-    @Deprecated
-    private final ProctorResult originalMutableProctorResult;
 
     /**
      * A character to separate groups in logging output.
@@ -50,8 +47,7 @@ public abstract class AbstractGroups {
      * Setup fields based on eagerly computed bucket allocations in ProctorResult.
      */
     protected AbstractGroups(final ProctorResult proctorResult) {
-        this.originalMutableProctorResult = proctorResult;
-        this.proctorResult = ProctorResult.unmodifiableView(proctorResult);
+        this.proctorResult = proctorResult;
     }
 
     /**
@@ -455,7 +451,7 @@ public abstract class AbstractGroups {
      * @return wrapped raw data.
      */
     public ProctorResult getRawProctorResult() {
-        return proctorResult;
+        return ProctorResult.unmodifiableView(proctorResult);
     }
 
     /**
@@ -464,7 +460,7 @@ public abstract class AbstractGroups {
      */
     @Deprecated
     public ProctorResult getProctorResult() {
-        return originalMutableProctorResult;
+        return proctorResult;
     }
 
 }
