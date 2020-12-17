@@ -66,43 +66,59 @@ public class ProctorResultTest {
 
     @Test
     public void testUnmodifiableView() {
-        final SortedMap<String, TestBucket> buckets = ImmutableSortedMap.of(
-                "bucket1", new TestBucket("inactive", -1, ""));
-        final SortedMap<String, Allocation> allocations = ImmutableSortedMap.of(
-                "allocation1", new Allocation()
-        );
-        final Map<String, ConsumableTestDefinition> definitions = ImmutableMap.of("test1", new ConsumableTestDefinition());
+        final SortedMap<String, TestBucket> buckets = new TreeMap<>();
+        buckets.put("bucket1", new TestBucket("inactive", -1, ""));
+        final SortedMap<String, Allocation> allocations = new TreeMap<>();
+        allocations.put("allocation1", new Allocation());
+        final Map<String, ConsumableTestDefinition> definitions = new TreeMap<>();
+        definitions.put("test1", new ConsumableTestDefinition());
         final ProctorResult proctorResult1 = new ProctorResult("", buckets, allocations, definitions);
         final ProctorResult proctorResult2 = ProctorResult.unmodifiableView(proctorResult1);
 
+        // check changes to original result are visible in the View.
+        buckets.put("bucket2", new TestBucket("active", 1, ""));
+        assertThat(proctorResult2.getBuckets().get("bucket2").getName()).isEqualTo("active");
+
+        // check same Entry is used for get (entries were not copied)
+        buckets.entrySet().iterator().next().setValue(new TestBucket("control", 0, ""));
+        assertThat(proctorResult2.getBuckets().get("bucket1").getName()).isEqualTo("control");
+
+        assertThatThrownBy(() ->
+                proctorResult2.getBuckets().entrySet().iterator().next().setValue(new TestBucket("active", 1, "")))
+                .isInstanceOf(UnsupportedOperationException.class);
         assertThatThrownBy(() ->
                 proctorResult2.getBuckets().clear())
                 .isInstanceOf(UnsupportedOperationException.class);
         assertThatThrownBy(() ->
                 proctorResult2.getBuckets().put("forbid", new TestBucket("inactive", -1, "")))
                 .isInstanceOf(UnsupportedOperationException.class);
-        assertThatThrownBy(() ->
-                proctorResult2.getBuckets().entrySet().iterator().next().setValue(new TestBucket("active", -1, "")))
-                .isInstanceOf(UnsupportedOperationException.class);
 
+        // check changes to original result are visible in the View.
+        allocations.put("allocation2", new Allocation());
+        assertThat(proctorResult2.getAllocations()).containsKey("allocation2");
+
+        assertThatThrownBy(() ->
+                proctorResult2.getAllocations().entrySet().iterator().next().setValue(new Allocation()))
+                .isInstanceOf(UnsupportedOperationException.class);
         assertThatThrownBy(() ->
                 proctorResult2.getAllocations().clear())
                 .isInstanceOf(UnsupportedOperationException.class);
         assertThatThrownBy(() ->
                 proctorResult2.getAllocations().put("forbid", new Allocation()))
                 .isInstanceOf(UnsupportedOperationException.class);
-        assertThatThrownBy(() ->
-                proctorResult2.getAllocations().entrySet().iterator().next().setValue(new Allocation()))
-                .isInstanceOf(UnsupportedOperationException.class);
 
+        // check changes to original result are visible in the View.
+        definitions.put("definition2", new ConsumableTestDefinition());
+        assertThat(proctorResult2.getTestDefinitions()).containsKey("definition2");
+
+        assertThatThrownBy(() ->
+                proctorResult2.getTestDefinitions().entrySet().iterator().next().setValue(new ConsumableTestDefinition()))
+                .isInstanceOf(UnsupportedOperationException.class);
         assertThatThrownBy(() ->
                 proctorResult2.getTestDefinitions().clear())
                 .isInstanceOf(UnsupportedOperationException.class);
         assertThatThrownBy(() ->
                 proctorResult2.getTestDefinitions().put("forbid", new ConsumableTestDefinition()))
-                .isInstanceOf(UnsupportedOperationException.class);
-        assertThatThrownBy(() ->
-                proctorResult2.getTestDefinitions().entrySet().iterator().next().setValue(new ConsumableTestDefinition()))
                 .isInstanceOf(UnsupportedOperationException.class);
     }
 }
