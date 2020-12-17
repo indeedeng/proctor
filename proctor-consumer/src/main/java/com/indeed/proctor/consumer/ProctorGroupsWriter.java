@@ -105,13 +105,6 @@ public class ProctorGroupsWriter {
         return stringBuilder.toString();
     }
 
-    /**
-     * @return a writer with the same behavior as AbstractGroups.toLoggingString()
-     */
-    public static ProctorGroupsWriter indeedLegacyStyle() {
-        return Builder.indeedLegacyFormatters().build();
-    }
-
     public static class Builder {
         private final TestGroupFormatter[] formatters;
         private char groupSeparator = DEFAULT_GROUPS_SEPARATOR;
@@ -130,14 +123,6 @@ public class ProctorGroupsWriter {
          */
         public Builder(final TestGroupFormatter... formatters) {
             this.formatters = formatters;
-        }
-
-        /**
-         * convenience method to provide the same legacy behavior as AbstractGroups.toString()
-         */
-        public static Builder indeedLegacyFormatters() {
-            // For legacy reasons, log both with and without allocation Id
-            return new Builder(TestGroupFormatter.WITHOUT_ALLOC_ID, TestGroupFormatter.WITH_ALLOC_ID);
         }
 
         /**
