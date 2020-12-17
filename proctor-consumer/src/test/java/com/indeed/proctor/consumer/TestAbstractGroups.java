@@ -25,6 +25,7 @@ import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.MISSING_D
 import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.NO_BUCKETS_WITH_FALLBACK_TEST;
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -205,9 +206,10 @@ public class TestAbstractGroups {
         assertThat(rawProctorResult.getAllocations()).isEqualTo(proctorResult.getAllocations());
         assertThat(rawProctorResult.getTestDefinitions()).isEqualTo(proctorResult.getTestDefinitions());
 
-        // avoid creation of new copies on each call
+        // ensure getRawProctorResult is unmodifiable
         final ProctorResult rawProctorResult2 = sampleGroups.getRawProctorResult();
-        assertThat(rawProctorResult2).isSameAs(rawProctorResult);
+        assertThatThrownBy(() -> rawProctorResult2.getBuckets().clear())
+                .isInstanceOf(UnsupportedOperationException.class);
 
         // same data, but not same instance
         final ProctorResult convertedProctorResult = sampleGroups.getAsProctorResult();
