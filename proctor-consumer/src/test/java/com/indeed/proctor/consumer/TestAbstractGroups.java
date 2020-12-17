@@ -211,6 +211,10 @@ public class TestAbstractGroups {
         final ProctorResult rawProctorResult2 = sampleGroups.getRawProctorResult();
         assertThatThrownBy(() -> rawProctorResult2.getBuckets().clear())
                 .isInstanceOf(UnsupportedOperationException.class);
+        assertThatThrownBy(() -> rawProctorResult2.getAllocations().clear())
+                .isInstanceOf(UnsupportedOperationException.class);
+        assertThatThrownBy(() -> rawProctorResult2.getTestDefinitions().clear())
+                .isInstanceOf(UnsupportedOperationException.class);
 
         // same data, but not same instance
         final ProctorResult convertedProctorResult = sampleGroups.getAsProctorResult();
@@ -219,6 +223,14 @@ public class TestAbstractGroups {
         assertThat(convertedProctorResult.getBuckets()).isEqualTo(proctorResult.getBuckets());
         assertThat(convertedProctorResult.getAllocations()).isEqualTo(proctorResult.getAllocations());
         assertThat(convertedProctorResult.getTestDefinitions()).isEqualTo(proctorResult.getTestDefinitions());
+
+        // ensure getAsProctorResult is unmodifiable
+        assertThatThrownBy(() -> convertedProctorResult.getBuckets().clear())
+                .isInstanceOf(UnsupportedOperationException.class);
+        assertThatThrownBy(() -> convertedProctorResult.getAllocations().clear())
+                .isInstanceOf(UnsupportedOperationException.class);
+        assertThatThrownBy(() -> convertedProctorResult.getTestDefinitions().clear())
+                .isInstanceOf(UnsupportedOperationException.class);
 
         // check legacy behavior still works (changing the input ProctorResult changes behavior of AbstractGroups)
         // probably this is a bug rather than an undocumented feature, but for now prefer not to break clients

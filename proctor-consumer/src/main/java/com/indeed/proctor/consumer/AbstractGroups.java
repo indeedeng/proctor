@@ -422,8 +422,7 @@ public abstract class AbstractGroups {
      *
      * Subclass methods like overrideDeterminedBucketValue() should not call this method (risks infinite recursion).
      *
-     * For clients not overriding any methods, this should be the same as getRawProctorResult(),
-     * but it's safer and less wasteful to use getAsProctorResult().
+     * For clients not overriding any methods, this should be equal to getRawProctorResult().
      *
      * @return converted data with customizations applied (if any).
      */
@@ -436,7 +435,7 @@ public abstract class AbstractGroups {
                 proctorResult.getMatrixVersion(),
                 Collections.unmodifiableSortedMap(customBuckets),
                 Collections.unmodifiableSortedMap((SortedMap<String, Allocation>) proctorResult.getAllocations()),
-                proctorResult.getTestDefinitions());
+                Collections.unmodifiableMap(proctorResult.getTestDefinitions()));
     }
 
     /**
