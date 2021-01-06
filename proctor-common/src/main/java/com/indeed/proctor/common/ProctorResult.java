@@ -172,11 +172,12 @@ public class ProctorResult {
      */
     public static ProctorResult unmodifiableView(final ProctorResult proctorResult) {
         return new ProctorResult(
-                proctorResult.getMatrixVersion(),
-                Collections.unmodifiableSortedMap((SortedMap<String, TestBucket>) proctorResult.getBuckets()),
-                Collections.unmodifiableSortedMap((SortedMap<String, Allocation>) proctorResult.getAllocations()),
-                Collections.unmodifiableMap(proctorResult.getTestDefinitions()),
-                Collections.unmodifiableSet(proctorResult.getDynamicallyLoadedTests())
+                proctorResult.matrixVersion,
+                // using fields directly because methods do not expose SortedMap type
+                Collections.unmodifiableSortedMap(proctorResult.buckets),
+                Collections.unmodifiableSortedMap(proctorResult.allocations),
+                Collections.unmodifiableMap(proctorResult.testDefinitions),
+                Collections.unmodifiableSet(proctorResult.dynamicallyLoadedTests)
         );
     }
 
