@@ -168,7 +168,7 @@ public abstract class AbstractGroups {
      * method has been called.
      * for usecases where exposure happens without calls to generated methods calling getValue()
      */
-    public final void markTestsAsUsed(final Collection<String> testNames) {
+    public final void markTestsUsed(final Collection<String> testNames) {
         if (testUsageObserver != null) {
             testUsageObserver.markUsedForToggling(testNames);
         }

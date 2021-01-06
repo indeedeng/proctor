@@ -159,7 +159,7 @@ public class TestAbstractGroups {
         assertThat(writer.toLoggingString(observer.asProctorResult())).isEqualTo("abtst1,#A1:abtst1");
 
         // explicitly marked tests (e.g. from dynamic resolution)
-        sampleGroups.markTestsAsUsed(singleton(CONTROL_SELECTED_TEST.getName()));
+        sampleGroups.markTestsUsed(singleton(CONTROL_SELECTED_TEST.getName()));
         assertThat(writer.toLoggingString(observer.asProctorResult())).isEqualTo("abtst1,bgtst0,#A1:abtst1,#A1:bgtst0");
 
         // using JavascriptConfig means given tests might be exposed, so each test is marked as used
