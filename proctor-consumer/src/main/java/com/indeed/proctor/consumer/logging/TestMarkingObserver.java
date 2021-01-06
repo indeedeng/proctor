@@ -60,7 +60,7 @@ public class TestMarkingObserver implements TestUsageObserver {
                 // using Guava views to prevent object creation overhead
                 Maps.filterKeys(originalResult.getBuckets(), testMarkers::contains),
                 Maps.filterKeys(originalResult.getAllocations(), testMarkers::contains),
-                Maps.filterKeys(originalResult.getTestDefinitions(), testMarkers::contains),
-                Sets.filter(originalResult.getDynamicallyLoadedTests(), testMarkers::contains));
+                Maps.filterKeys(originalResult.getTestDefinitions(), testMarkers::contains)
+        );
     }
 }

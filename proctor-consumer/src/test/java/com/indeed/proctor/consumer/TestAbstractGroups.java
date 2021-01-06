@@ -28,7 +28,6 @@ import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.INACTIVE_
 import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.MISSING_DEFINITION_TEST;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.NO_BUCKETS_WITH_FALLBACK_TEST;
 import static java.util.Collections.emptyMap;
-import static java.util.Collections.emptySet;
 import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -43,10 +42,11 @@ public class TestAbstractGroups {
 
     @Before
     public void setUp() {
-        emptyGroup = new AbstractGroups(new ProctorResult("0", emptyMap(), emptyMap(), emptyMap(), emptySet())) {};
+        emptyGroup = new AbstractGroups(new ProctorResult("0", emptyMap(), emptyMap(), emptyMap())) {
+        };
 
         proctorResult = new ProctorGroupStubber.ProctorResultStubBuilder()
-                .withDynamicallyResolvedStubTest(ProctorGroupStubber.StubTest.CONTROL_SELECTED_TEST, CONTROL_BUCKET_WITH_PAYLOAD,
+                .withStubTest(ProctorGroupStubber.StubTest.CONTROL_SELECTED_TEST, CONTROL_BUCKET_WITH_PAYLOAD,
                         INACTIVE_BUCKET, CONTROL_BUCKET_WITH_PAYLOAD, GROUP_1_BUCKET_WITH_PAYLOAD)
                 .withStubTest(ProctorGroupStubber.StubTest.GROUP1_SELECTED_TEST, GROUP_1_BUCKET_WITH_PAYLOAD,
                         INACTIVE_BUCKET, CONTROL_BUCKET_WITH_PAYLOAD, GROUP_1_BUCKET_WITH_PAYLOAD)
@@ -61,7 +61,8 @@ public class TestAbstractGroups {
                 .withStubTest(ProctorGroupStubber.StubTest.MISSING_DEFINITION_TEST, GROUP_1_BUCKET, (ConsumableTestDefinition) null)
                 .build();
         observer = new TestMarkingObserver(proctorResult);
-        sampleGroups = new AbstractGroups(proctorResult, observer) {};
+        sampleGroups = new AbstractGroups(proctorResult, observer) {
+        };
     }
 
     @Test
@@ -131,7 +132,8 @@ public class TestAbstractGroups {
 
     @Test
     public void testToLoggingString() {
-        assertThat((new AbstractGroups(new ProctorResult("0", emptyMap(), emptyMap(), emptyMap())) {}).toLoggingString()).isEmpty();
+        assertThat((new AbstractGroups(new ProctorResult("0", emptyMap(), emptyMap(), emptyMap())) {
+        }).toLoggingString()).isEmpty();
         assertThat(sampleGroups.toLoggingString())
                 .isEqualTo("abtst1,bgtst0,groupwithfallbacktst2,no_definition_tst2,#A1:abtst1,#A1:bgtst0,#A1:groupwithfallbacktst2,#A1:no_definition_tst2");
     }
@@ -227,7 +229,7 @@ public class TestAbstractGroups {
 
     @Test
     public void testGetJavaScriptConfigLists() {
-        assertThat(sampleGroups.getJavaScriptConfig(new FakeTest[] {
+        assertThat(sampleGroups.getJavaScriptConfig(new FakeTest[]{
                 new FakeTest("notexist", 42),
                 new FakeTest(CONTROL_SELECTED_TEST.getName(), 43),
                 new FakeTest(GROUP1_SELECTED_TEST.getName(), 44)}))
@@ -253,7 +255,6 @@ public class TestAbstractGroups {
         assertThat(rawProctorResult.getBuckets()).isEqualTo(proctorResult.getBuckets());
         assertThat(rawProctorResult.getAllocations()).isEqualTo(proctorResult.getAllocations());
         assertThat(rawProctorResult.getTestDefinitions()).isEqualTo(proctorResult.getTestDefinitions());
-        assertThat(rawProctorResult.getDynamicallyLoadedTests()).isEqualTo(proctorResult.getDynamicallyLoadedTests());
 
         // ensure getRawProctorResult is unmodifiable
         final ProctorResult rawProctorResult2 = sampleGroups.getRawProctorResult();
@@ -271,7 +272,6 @@ public class TestAbstractGroups {
         assertThat(convertedProctorResult.getBuckets()).isEqualTo(proctorResult.getBuckets());
         assertThat(convertedProctorResult.getAllocations()).isEqualTo(proctorResult.getAllocations());
         assertThat(convertedProctorResult.getTestDefinitions()).isEqualTo(proctorResult.getTestDefinitions());
-        assertThat(convertedProctorResult.getDynamicallyLoadedTests()).isEqualTo(proctorResult.getDynamicallyLoadedTests());
 
         // ensure getAsProctorResult is unmodifiable
         assertThatThrownBy(() -> convertedProctorResult.getBuckets().clear())

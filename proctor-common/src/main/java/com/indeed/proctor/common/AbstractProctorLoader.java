@@ -167,7 +167,7 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
             }
         }
 
-        final Proctor proctor = Proctor.construct(testMatrix, dynamicTests, loadResult, functionMapper);
+        final Proctor proctor = Proctor.construct(testMatrix, loadResult, functionMapper);
         //  kind of lame to modify lastAudit here but current in load(), but the interface is a little constraining
         setLastAudit(newAudit);
         return proctor;

@@ -25,7 +25,7 @@ public class TestMarkingObserverTest {
         final ProctorResult proctorResult = new ProctorGroupStubber.ProctorResultStubBuilder()
                 .withStubTest(ProctorGroupStubber.StubTest.CONTROL_SELECTED_TEST, CONTROL_BUCKET_WITH_PAYLOAD,
                         INACTIVE_BUCKET, CONTROL_BUCKET_WITH_PAYLOAD, GROUP_1_BUCKET_WITH_PAYLOAD)
-                .withDynamicallyResolvedStubTest(ProctorGroupStubber.StubTest.GROUP1_SELECTED_TEST, GROUP_1_BUCKET_WITH_PAYLOAD,
+                .withStubTest(ProctorGroupStubber.StubTest.GROUP1_SELECTED_TEST, GROUP_1_BUCKET_WITH_PAYLOAD,
                         INACTIVE_BUCKET, CONTROL_BUCKET_WITH_PAYLOAD, GROUP_1_BUCKET_WITH_PAYLOAD)
                 .build();
         final TestMarkingObserver observer = new TestMarkingObserver(proctorResult);
@@ -36,8 +36,6 @@ public class TestMarkingObserverTest {
         assertThat(observer.asProctorResult().getMatrixVersion())
                 .isEqualTo(proctorResult.getMatrixVersion());
         assertThat(observer.asProctorResult().getTestDefinitions())
-                .isEmpty();
-        assertThat(observer.asProctorResult().getDynamicallyLoadedTests())
                 .isEmpty();
 
         observer.markUsedForToggling(ProctorGroupStubber.StubTest.GROUP1_SELECTED_TEST.getName());
@@ -50,8 +48,6 @@ public class TestMarkingObserverTest {
                 .isEqualTo(proctorResult.getMatrixVersion());
         assertThat(observer.asProctorResult().getTestDefinitions())
                 .containsOnlyKeys(ProctorGroupStubber.StubTest.GROUP1_SELECTED_TEST.getName());
-        assertThat(observer.asProctorResult().getDynamicallyLoadedTests())
-                .isEqualTo(proctorResult.getDynamicallyLoadedTests());
 
         // add valid testname, now result should be equal to original
         observer.markTestsUsedForLogging(ProctorGroupStubber.StubTest.CONTROL_SELECTED_TEST.getName());
@@ -63,8 +59,6 @@ public class TestMarkingObserverTest {
                 .isEqualTo(proctorResult.getMatrixVersion());
         assertThat(observer.asProctorResult().getTestDefinitions())
                 .isEqualTo(proctorResult.getTestDefinitions());
-        assertThat(observer.asProctorResult().getDynamicallyLoadedTests())
-                .isEqualTo(proctorResult.getDynamicallyLoadedTests());
 
         // add invalid testname (check no exception)
         observer.markUsedForToggling(singleton("notexist"));
@@ -80,7 +74,7 @@ public class TestMarkingObserverTest {
         final ProctorResult proctorResult = new ProctorGroupStubber.ProctorResultStubBuilder()
                 .withStubTest(ProctorGroupStubber.StubTest.CONTROL_SELECTED_TEST, CONTROL_BUCKET_WITH_PAYLOAD,
                         INACTIVE_BUCKET, CONTROL_BUCKET_WITH_PAYLOAD, GROUP_1_BUCKET_WITH_PAYLOAD)
-                .withDynamicallyResolvedStubTest(ProctorGroupStubber.StubTest.GROUP1_SELECTED_TEST, GROUP_1_BUCKET_WITH_PAYLOAD,
+                .withStubTest(ProctorGroupStubber.StubTest.GROUP1_SELECTED_TEST, GROUP_1_BUCKET_WITH_PAYLOAD,
                         INACTIVE_BUCKET, CONTROL_BUCKET_WITH_PAYLOAD, GROUP_1_BUCKET_WITH_PAYLOAD)
                 .build();
         final TestMarkingObserver observer = new TestMarkingObserver(proctorResult);
@@ -91,8 +85,6 @@ public class TestMarkingObserverTest {
         assertThat(observer.asProctorResult().getMatrixVersion())
                 .isEqualTo(proctorResult.getMatrixVersion());
         assertThat(observer.asProctorResult().getTestDefinitions())
-                .isEmpty();
-        assertThat(observer.asProctorResult().getDynamicallyLoadedTests())
                 .isEmpty();
 
         // add valid+invalid testnames, now result should be equal to original
@@ -109,8 +101,6 @@ public class TestMarkingObserverTest {
                 .isEqualTo(proctorResult.getMatrixVersion());
         assertThat(observer.asProctorResult().getTestDefinitions())
                 .isEqualTo(proctorResult.getTestDefinitions());
-        assertThat(observer.asProctorResult().getDynamicallyLoadedTests())
-                .isEqualTo(proctorResult.getDynamicallyLoadedTests());
     }
 
     @Test
@@ -118,7 +108,7 @@ public class TestMarkingObserverTest {
         final ProctorResult proctorResult = new ProctorGroupStubber.ProctorResultStubBuilder()
                 .withStubTest(ProctorGroupStubber.StubTest.CONTROL_SELECTED_TEST, CONTROL_BUCKET_WITH_PAYLOAD,
                         INACTIVE_BUCKET, CONTROL_BUCKET_WITH_PAYLOAD, GROUP_1_BUCKET_WITH_PAYLOAD)
-                .withDynamicallyResolvedStubTest(ProctorGroupStubber.StubTest.GROUP1_SELECTED_TEST, GROUP_1_BUCKET_WITH_PAYLOAD,
+                .withStubTest(ProctorGroupStubber.StubTest.GROUP1_SELECTED_TEST, GROUP_1_BUCKET_WITH_PAYLOAD,
                         INACTIVE_BUCKET, CONTROL_BUCKET_WITH_PAYLOAD, GROUP_1_BUCKET_WITH_PAYLOAD)
                 .build();
         final TestMarkingObserver observer = new TestMarkingObserver(proctorResult);
@@ -129,8 +119,6 @@ public class TestMarkingObserverTest {
         assertThat(observer.asProctorResult().getMatrixVersion())
                 .isEqualTo(proctorResult.getMatrixVersion());
         assertThat(observer.asProctorResult().getTestDefinitions())
-                .isEmpty();
-        assertThat(observer.asProctorResult().getDynamicallyLoadedTests())
                 .isEmpty();
 
         // add valid+invalid testnames, now result should be equal to original
@@ -147,9 +135,5 @@ public class TestMarkingObserverTest {
                 .isEqualTo(proctorResult.getMatrixVersion());
         assertThat(observer.asProctorResult().getTestDefinitions())
                 .isEqualTo(proctorResult.getTestDefinitions());
-        assertThat(observer.asProctorResult().getDynamicallyLoadedTests())
-                .isEqualTo(proctorResult.getDynamicallyLoadedTests());
     }
-
-
 }

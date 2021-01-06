@@ -48,22 +48,19 @@ public class SampleSpringApplicationIntegrationTest {
                 "user1",
                 "sample1_tst0",
                 "sample1_tst0,unused_tst0,#A1:sample1_tst0,#A1:unused_tst0",
-                "#A1:sample1_tst0",
                 "#A1:sample1_tst0"
         );
         runRequestAndCheck(
                 "user3",
                 "sample1_tst-1",
                 "unused_tst0,#A1:unused_tst0",
-                "",
                 ""
         );
         runRequestAndCheck(
                 "user5",
                 "sample1_tst0",
                 "dynamic_include_tst0,sample1_tst0,unused_tst0,#A1:dynamic_include_tst0,#A1:sample1_tst0,#A1:unused_tst0",
-                "#A1:sample1_tst0",
-                "#A1:dynamic_include_tst0,#A1:sample1_tst0"
+                "#A1:sample1_tst0"
         );
     }
 
@@ -71,8 +68,7 @@ public class SampleSpringApplicationIntegrationTest {
             final String identifier,
             final String expectedBody,
             final String expectedFullLogString,
-            final String expectedExposureLogString,
-            final String expectedExposureWithDynamicLogString
+            final String expectedExposureLogString
     ) throws Exception {
 
         final MvcResult result = mockMvc.perform(get("/test").header("ctk", identifier))
@@ -87,11 +83,6 @@ public class SampleSpringApplicationIntegrationTest {
                 .isEqualTo(expectedFullLogString);
         assertThat(groupsLogger.getExposureString())
                 .isEqualTo(expectedExposureLogString);
-
-        mockMvc.perform(get("/testWithDynamic").header("ctk", identifier))
-                .andExpect(MockMvcResultMatchers.status().isOk());
-        assertThat(groupsLogger.getExposureString())
-                .isEqualTo(expectedExposureWithDynamicLogString);
     }
 
 
