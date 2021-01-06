@@ -151,7 +151,6 @@ public class AbstractProctorLoaderTest {
         assertThat(proctor.getLoadResult().getMissingTests()).isEmpty();
         assertThat(proctor.getLoadResult().getDynamicTestErrorMap()).isEmpty();
         assertThat(proctorResult.getTestDefinitions()).containsOnlyKeys(requiredTestname, dynamicAddedTestname);
-        assertThat(proctorResult.getDynamicallyLoadedTests()).containsExactly(dynamicAddedTestname);
     }
 
     private ConsumableTestDefinition createStubDefinition() {

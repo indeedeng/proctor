@@ -26,9 +26,8 @@ public class ProctorResultTest {
                 "bucket1",
                 new TestBucket("inactive", -1, ""));
         final Map<String, Allocation> allocations = ImmutableMap.of("allocation1", new Allocation());
-        final Set<String> dynamicallyLoadedTests = ImmutableSet.of("test1");
         // intentionally using deprecated Constructor
-        final ProctorResult proctorResult = new ProctorResult("", buckets, allocations, null, dynamicallyLoadedTests);
+        final ProctorResult proctorResult = new ProctorResult("", buckets, allocations, null);
         // historical behavior of deprecated constructor. Not returning a SortedMap will break AbstractGroups
         assertThat(proctorResult.getBuckets()).isInstanceOf(SortedMap.class).isEqualTo(buckets);
         assertThat(proctorResult.getAllocations()).isInstanceOf(SortedMap.class).isEqualTo(allocations);
@@ -43,14 +42,12 @@ public class ProctorResultTest {
                 new TestBucket("inactive", -1, ""));
         final Map<String, Allocation> allocations = ImmutableMap.of("allocation1", new Allocation());
         final Map<String, ConsumableTestDefinition> definitions = ImmutableMap.of("test1", new ConsumableTestDefinition());
-        final Set<String> dynamicallyLoadedTests = ImmutableSet.of("test1");
         // intentionally using deprecated Constructor
-        final ProctorResult proctorResult = new ProctorResult("", buckets, allocations, definitions, dynamicallyLoadedTests);
+        final ProctorResult proctorResult = new ProctorResult("", buckets, allocations, definitions);
         // historical behavior of deprecated constructor. Not returning a SortedMap will break AbstractGroups
         assertThat(proctorResult.getBuckets()).isInstanceOf(SortedMap.class).isEqualTo(buckets);
         assertThat(proctorResult.getAllocations()).isInstanceOf(SortedMap.class).isEqualTo(allocations);
         assertThat(proctorResult.getTestDefinitions()).isEqualTo(definitions);
-        assertThat(proctorResult.getDynamicallyLoadedTests()).isEqualTo(dynamicallyLoadedTests);
     }
 
     @Test
@@ -61,8 +58,7 @@ public class ProctorResultTest {
                 "allocation1", new Allocation()
         );
         final Map<String, ConsumableTestDefinition> definitions = ImmutableMap.of("test1", new ConsumableTestDefinition());
-        final Set<String> dynamicallyLoadedTests = ImmutableSet.of("test1");
-        final ProctorResult proctorResult = new ProctorResult("", buckets, allocations, definitions, dynamicallyLoadedTests);
+        final ProctorResult proctorResult = new ProctorResult("", buckets, allocations, definitions);
         /*
          * Using isSame as intentionally instead of isEqualTo, because this test tries to ensure no entries are copied
          */
@@ -79,9 +75,7 @@ public class ProctorResultTest {
         allocations.put("allocation1", new Allocation());
         final Map<String, ConsumableTestDefinition> definitions = new TreeMap<>();
         definitions.put("test1", new ConsumableTestDefinition());
-        final Set<String> dynamicallyLoadedTests = new HashSet<>();
-        dynamicallyLoadedTests.add("test1");
-        final ProctorResult proctorResult1 = new ProctorResult("", buckets, allocations, definitions,dynamicallyLoadedTests);
+        final ProctorResult proctorResult1 = new ProctorResult("", buckets, allocations, definitions);
         final ProctorResult proctorResult2 = ProctorResult.unmodifiableView(proctorResult1);
 
         // check changes to original result are visible in the View.

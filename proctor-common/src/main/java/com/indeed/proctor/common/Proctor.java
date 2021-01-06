@@ -45,13 +45,11 @@ public class Proctor {
     private static final ObjectWriter OBJECT_WRITER = Serializers
             .lenient()
             .configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false).writerWithDefaultPrettyPrinter();
-    private final Set<String> dynamicTests;
 
     /**
      * Factory method to do the setup and transformation of inputs
      *
      * @param matrix a {@link TestMatrixArtifact} loaded by ProctorLoader
-     * @param dynamicTests those tests which were added to the TestMatrixArtifact because of a dynamic filter
      * @param loadResult a {@link ProctorLoadResult} which contains result of validation of test definition
      * @param functionMapper a given el {@link FunctionMapper}
      * @return constructed Proctor object
@@ -59,7 +57,6 @@ public class Proctor {
     @Nonnull
     public static Proctor construct(
             @Nonnull final TestMatrixArtifact matrix,
-            @Nonnull final Set<String> dynamicTests,
             @Nonnull final ProctorLoadResult loadResult,
             @Nonnull final FunctionMapper functionMapper
     ) {
@@ -82,17 +79,7 @@ public class Proctor {
             versions.put(testName, testDefinition.getVersion());
         }
 
-        return new Proctor(matrix, dynamicTests, loadResult, testChoosers);
-    }
-
-    @Deprecated // use 4 argument version
-    @Nonnull
-    public static Proctor construct(
-            @Nonnull final TestMatrixArtifact matrix,
-            final ProctorLoadResult loadResult,
-            @Nonnull final FunctionMapper functionMapper
-    ) {
-      return construct(matrix, emptySet(), loadResult, functionMapper);
+        return new Proctor(matrix, loadResult, testChoosers);
     }
 
     @Nonnull
@@ -110,7 +97,7 @@ public class Proctor {
 
         final Map<String, TestChooser<?>> choosers = Collections.emptyMap();
 
-        return new Proctor(testMatrix, emptySet(), loadResult, choosers);
+        return new Proctor(testMatrix, loadResult, choosers);
     }
 
     static final long INT_RANGE = (long) Integer.MAX_VALUE - (long) Integer.MIN_VALUE;
@@ -124,12 +111,10 @@ public class Proctor {
     @VisibleForTesting
     Proctor(
             @Nonnull final TestMatrixArtifact matrix,
-            @Nonnull final Set<String> dynamicTests,
             @Nonnull final ProctorLoadResult loadResult,
             @Nonnull final Map<String, TestChooser<?>> testChoosers
     ) {
         this.matrix = matrix;
-        this.dynamicTests = dynamicTests;
         this.loadResult = loadResult;
         this.testChoosers = testChoosers;
         for (final Entry<String, TestChooser<?>> entry : testChoosers.entrySet()) {
@@ -267,7 +252,7 @@ public class Proctor {
 
         // TODO Can we make getAudit nonnull?
         final Audit audit = Preconditions.checkNotNull(matrix.getAudit(), "Missing audit");
-        return new ProctorResult(audit.getVersion(), testGroups, testAllocations, testDefinitions, dynamicTests);
+        return new ProctorResult(audit.getVersion(), testGroups, testAllocations, testDefinitions);
     }
 
     TestMatrixArtifact getArtifact() {
