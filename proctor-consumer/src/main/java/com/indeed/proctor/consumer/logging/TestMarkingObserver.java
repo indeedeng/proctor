@@ -3,9 +3,12 @@ package com.indeed.proctor.consumer.logging;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.indeed.proctor.common.ProctorResult;
+import com.indeed.proctor.common.model.Allocation;
+import com.indeed.proctor.common.model.TestBucket;
 
 import java.util.Collection;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -58,8 +61,8 @@ public class TestMarkingObserver implements TestUsageObserver {
         return new ProctorResult(
                 originalResult.getMatrixVersion(),
                 // using Guava views to prevent object creation overhead
-                Maps.filterKeys(originalResult.getBuckets(), testMarkers::contains),
-                Maps.filterKeys(originalResult.getAllocations(), testMarkers::contains),
+                Maps.filterKeys((SortedMap<String, TestBucket>)originalResult.getBuckets(), testMarkers::contains),
+                Maps.filterKeys((SortedMap<String, Allocation>)originalResult.getAllocations(), testMarkers::contains),
                 Maps.filterKeys(originalResult.getTestDefinitions(), testMarkers::contains)
         );
     }
