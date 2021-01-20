@@ -1,6 +1,5 @@
 package com.indeed.proctor.consumer.spring;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
@@ -118,8 +117,7 @@ public class SampleRandomGroupsHttpHandler<ProctorContext> implements HttpReques
 
     // Given the list of target test names, determine the test type that should be used.
     // Throws IllegalArgumentException if there are tests in the list with different test types.
-    @VisibleForTesting
-    TestType getTestType(final Set<String> targetTestNames) {
+    private TestType getTestType(final Set<String> targetTestNames) {
         final Proctor proctor = getProctorNotNull();
 
         TestType testType = null;
@@ -142,8 +140,7 @@ public class SampleRandomGroupsHttpHandler<ProctorContext> implements HttpReques
     // Run random group determination.
     // This will run the specified number of group determinations and will record, for each group in each target
     // test, how many times the group was present in the list of groups.
-    @VisibleForTesting
-    Map<String, Integer> runSampling(
+    private Map<String, Integer> runSampling(
             final ProctorContext proctorContext,
             final Set<String> targetTestNames,
             final TestType testType,
@@ -160,7 +157,7 @@ public class SampleRandomGroupsHttpHandler<ProctorContext> implements HttpReques
                     ? new Identifiers(Collections.<TestType, String>emptyMap(), /* randomEnabled */ true)
                     : Identifiers.of(testType, Long.toString(random.nextLong()));
             final AbstractGroups groups = supplier.getRandomGroups(proctorContext, identifiers);
-            for (final Entry<String, TestBucket> e : groups.getAsProctorResult().getBuckets().entrySet()) {
+            for (final Entry<String, TestBucket> e : groups.getProctorResult().getBuckets().entrySet()) {
                 final String testName = e.getKey();
                 if (targetTestNames.contains(testName)) {
                     final int group = e.getValue().getValue();
@@ -174,8 +171,7 @@ public class SampleRandomGroupsHttpHandler<ProctorContext> implements HttpReques
     }
 
     // Get all test group strings for the given set of test names
-    @VisibleForTesting
-    Set<String> getTargetTestGroups(final Set<String> targetTestNames) {
+    private Set<String> getTargetTestGroups(final Set<String> targetTestNames) {
         final Proctor proctor = getProctorNotNull();
 
         final Set<String> testGroups = Sets.newTreeSet();
