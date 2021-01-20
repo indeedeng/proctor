@@ -1,0 +1,115 @@
+{
+  "audit" : {
+    "version" : 1524,
+    "updated" : 1313525000000,
+    "updatedBy" : "taitori"
+  },
+
+  "tests" : {
+    "account1_tst" : {
+      "version" : 98,
+      "salt" : "account1_tst",
+      "testType" : "ACCOUNT",
+      "rule" : null,
+      "description" : "ACCOUNT test1",
+      "buckets" : [
+        {
+          "name" : "inactive",
+          "value" : -1
+        },
+        {
+          "name" : "control",
+          "value" : 0
+        },
+        {
+          "name" : "test",
+          "value" : 1
+        }
+      ],
+      "allocations" : [
+        {
+          "ranges" : [
+            {"bucketValue": -1, "length": 0.8 },
+            {"bucketValue":  0, "length": 0.1 },
+            {"bucketValue":  1, "length": 0.1 }
+          ]
+        }
+      ]
+    },
+
+    "account2_tst" : {
+      "version" : 11,
+      "salt" : "account2_tst",
+      "testType" : "ACCOUNT",
+      "description" : "ACCOUNT test2",
+      "buckets" : [
+        {
+          "name" : "control",
+          "value" : 0
+        },
+        {
+          "name" : "test1",
+          "value" : 1
+        },
+        {
+          "name" : "test2",
+          "value" : 2
+        },
+        {
+          "name" : "test3",
+          "value" : 3
+        }
+      ],
+      "allocations" : [
+        {
+          "ranges" : [
+            {"bucketValue": 0, "length": 0.25 },
+            {"bucketValue": 1, "length": 0.25 },
+            {"bucketValue": 2, "length": 0.25 },
+            {"bucketValue": 3, "length": 0.25 }
+          ]
+        }
+      ]
+    },
+
+    "email_tst" : {
+      "version" : 17,
+      "salt" : "email_tst",
+      "testType" : "EMAIL",
+      "description" : "EMAIL test",
+      "buckets" : [
+        {
+          "name" : "control",
+          "value" : 0
+        },
+        {
+          "name" : "test1",
+          "value" : 1
+        },
+        {
+          "name" : "test2",
+          "value" : 2
+        },
+        {
+          "name" : "test3",
+          "value" : 3
+        },
+        {
+          "name" : "test4",
+          "value" : 4
+        }
+      ],
+      "allocations" : [
+        {
+          "ranges" : [
+            {"bucketValue": 0, "length": 0.2 },
+            {"bucketValue": 1, "length": 0.2 },
+            {"bucketValue": 2, "length": 0.2 },
+            {"bucketValue": 3, "length": 0.2 },
+            {"bucketValue": 4, "length": 0.2 }
+          ]
+        }
+      ]
+    }
+  }
+}
