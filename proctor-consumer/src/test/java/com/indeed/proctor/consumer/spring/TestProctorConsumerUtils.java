@@ -1,4 +1,4 @@
-package com.indeed.proctor.spring;
+package com.indeed.proctor.consumer.spring;
 
 import com.google.common.collect.ImmutableMap;
 import com.indeed.proctor.common.Proctor;
