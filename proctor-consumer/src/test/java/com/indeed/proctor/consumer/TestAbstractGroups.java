@@ -25,6 +25,7 @@ import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.MISSING_D
 import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.NO_BUCKETS_WITH_FALLBACK_TEST;
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -198,18 +199,51 @@ public class TestAbstractGroups {
         assertThat(sampleGroups.getProctorResult()).isSameAs(proctorResult);
 
         // same data, but not same instance
-        assertThat(sampleGroups.getRawProctorResult()).isNotSameAs(proctorResult);
-        assertThat(sampleGroups.getRawProctorResult().getMatrixVersion()).isEqualTo(proctorResult.getMatrixVersion());
-        assertThat(sampleGroups.getRawProctorResult().getBuckets()).isEqualTo(proctorResult.getBuckets());
-        assertThat(sampleGroups.getRawProctorResult().getAllocations()).isEqualTo(proctorResult.getAllocations());
-        assertThat(sampleGroups.getRawProctorResult().getTestDefinitions()).isEqualTo(proctorResult.getTestDefinitions());
+        final ProctorResult rawProctorResult = sampleGroups.getRawProctorResult();
+        assertThat(rawProctorResult).isNotSameAs(proctorResult);
+        assertThat(rawProctorResult.getMatrixVersion()).isEqualTo(proctorResult.getMatrixVersion());
+        assertThat(rawProctorResult.getBuckets()).isEqualTo(proctorResult.getBuckets());
+        assertThat(rawProctorResult.getAllocations()).isEqualTo(proctorResult.getAllocations());
+        assertThat(rawProctorResult.getTestDefinitions()).isEqualTo(proctorResult.getTestDefinitions());
+
+        // ensure getRawProctorResult is unmodifiable
+        final ProctorResult rawProctorResult2 = sampleGroups.getRawProctorResult();
+        assertThatThrownBy(() -> rawProctorResult2.getBuckets().clear())
+                .isInstanceOf(UnsupportedOperationException.class);
+        assertThatThrownBy(() -> rawProctorResult2.getAllocations().clear())
+                .isInstanceOf(UnsupportedOperationException.class);
+        assertThatThrownBy(() -> rawProctorResult2.getTestDefinitions().clear())
+                .isInstanceOf(UnsupportedOperationException.class);
 
         // same data, but not same instance
-        assertThat(sampleGroups.getAsProctorResult()).isNotSameAs(proctorResult);
-        assertThat(sampleGroups.getAsProctorResult().getMatrixVersion()).isEqualTo(proctorResult.getMatrixVersion());
-        assertThat(sampleGroups.getAsProctorResult().getBuckets()).isEqualTo(proctorResult.getBuckets());
-        assertThat(sampleGroups.getAsProctorResult().getAllocations()).isEqualTo(proctorResult.getAllocations());
-        assertThat(sampleGroups.getAsProctorResult().getTestDefinitions()).isEqualTo(proctorResult.getTestDefinitions());
+        final ProctorResult convertedProctorResult = sampleGroups.getAsProctorResult();
+        assertThat(convertedProctorResult).isNotSameAs(proctorResult);
+        assertThat(convertedProctorResult.getMatrixVersion()).isEqualTo(proctorResult.getMatrixVersion());
+        assertThat(convertedProctorResult.getBuckets()).isEqualTo(proctorResult.getBuckets());
+        assertThat(convertedProctorResult.getAllocations()).isEqualTo(proctorResult.getAllocations());
+        assertThat(convertedProctorResult.getTestDefinitions()).isEqualTo(proctorResult.getTestDefinitions());
+
+        // ensure getAsProctorResult is unmodifiable
+        assertThatThrownBy(() -> convertedProctorResult.getBuckets().clear())
+                .isInstanceOf(UnsupportedOperationException.class);
+        assertThatThrownBy(() -> convertedProctorResult.getAllocations().clear())
+                .isInstanceOf(UnsupportedOperationException.class);
+        assertThatThrownBy(() -> convertedProctorResult.getTestDefinitions().clear())
+                .isInstanceOf(UnsupportedOperationException.class);
+
+        // check legacy behavior still works (changing the input ProctorResult changes behavior of AbstractGroups)
+        // probably this is a bug rather than an undocumented feature, but for now prefer not to break clients
+        proctorResult.getBuckets().clear();
+        proctorResult.getAllocations().clear();
+        proctorResult.getTestDefinitions().clear();
+
+        assertThat(convertedProctorResult.getBuckets()).isEmpty();
+        assertThat(convertedProctorResult.getAllocations()).isEmpty();
+        assertThat(convertedProctorResult.getTestDefinitions()).isEmpty();
+
+        assertThat(rawProctorResult.getBuckets()).isEmpty();
+        assertThat(rawProctorResult.getAllocations()).isEmpty();
+        assertThat(rawProctorResult.getTestDefinitions()).isEmpty();
     }
 
 }

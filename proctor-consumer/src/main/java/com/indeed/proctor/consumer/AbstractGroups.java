@@ -1,6 +1,7 @@
 package com.indeed.proctor.consumer;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Maps;
 import com.indeed.proctor.common.ProctorResult;
 import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
@@ -17,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.SortedMap;
 import java.util.stream.Collectors;
 
 /**
@@ -69,9 +71,10 @@ public abstract class AbstractGroups {
      *
      * Note: This method is the only one to change when developers want to customize group ownership,
      *       such as for implementing hold-out groups. Customizers are encouraged to
-     *       use meta-tags to drive customization, see getProctorResult().
-     *       Use getProctorResult().getTestDefinitions().get(testName).getBuckets() to
+     *       use meta-tags to drive customization, see getRawProctorResult().
+     *       Use getRawProctorResult().getTestDefinitions().get(testName).getBuckets() to
      *       select a different valid bucket value.
+     *       Do NOT use getAsProctorResult(), it will likely cause an infinite loop.
      *
      *       Also note that if calling other methods of this class inside this method, it is easily possible to
      *       create infinite loops (stackoverflow), so be careful and write unit tests
@@ -412,27 +415,31 @@ public abstract class AbstractGroups {
     }
 
     /**
-     * returns the proctor result derived from applying rules and hashing the identifier, and
+     * creates a new copy of the input proctor result, derived from applying rules and hashing the identifier, and
      * also applying any custom logic from overriding overrideDeterminedBucketValue().
      *
-     * For clients not overriding any methods, this should be the same as getRawProctorResult(),
-     * but it's safer to use getAsProctorResult().
+     * Subclass methods like overrideDeterminedBucketValue() should not call this method (risks infinite recursion).
      *
-     * @return wrapped raw data.
+     * For clients not overriding any methods, this should be equal to getRawProctorResult().
+     *
+     * @return converted data with customizations applied (if any).
      */
     public ProctorResult getAsProctorResult() {
-        final Map<String, TestBucket> customBuckets = proctorResult.getBuckets().entrySet().stream()
-                .collect(Collectors.toMap(Entry::getKey, e -> getActiveBucket(e.getKey()).get()));
+        // Using guava Maps.transformEntries because it creates a lightweight view and does not copy all entries
+        final SortedMap<String, TestBucket> customBuckets = Maps.transformEntries(
+                (SortedMap<String, TestBucket>) proctorResult.getBuckets(),
+                (testName, bucket) -> getActiveBucket(testName).get());
         return new ProctorResult(
                 proctorResult.getMatrixVersion(),
-                customBuckets,
-                proctorResult.getAllocations(),
-                proctorResult.getTestDefinitions());
+                Collections.unmodifiableSortedMap(customBuckets),
+                Collections.unmodifiableSortedMap((SortedMap<String, Allocation>) proctorResult.getAllocations()),
+                Collections.unmodifiableMap(proctorResult.getTestDefinitions()));
     }
 
     /**
-     * returns a new copy of the raw proctor result derived from applying rules and hashing the identifier.
-     * In most cases getAsProctorResult() should be preferred.
+     * returns an immutable copy of the raw proctor result derived from applying rules and hashing the identifier.
+     * Calling this method many times will not create new instances.
+     * In most cases getAsProctorResult() should be preferred (unless calling from a subclass).
      * This does not take into account customizations from overriding overrideDeterminedBucketValue or other methods.
      *
      * Since apps might pass around AbstractGroups, but some code might want to access
@@ -441,11 +448,7 @@ public abstract class AbstractGroups {
      * @return wrapped raw data.
      */
     public ProctorResult getRawProctorResult() {
-        return new ProctorResult(
-                proctorResult.getMatrixVersion(),
-                proctorResult.getBuckets(),
-                proctorResult.getAllocations(),
-                proctorResult.getTestDefinitions());
+        return ProctorResult.unmodifiableView(proctorResult);
     }
 
     /**
