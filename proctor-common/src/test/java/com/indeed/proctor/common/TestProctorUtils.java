@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.Audit;
@@ -15,6 +16,8 @@ import com.indeed.proctor.common.model.TestDefinition;
 import com.indeed.proctor.common.model.TestMatrixArtifact;
 import com.indeed.proctor.common.model.TestType;
 import org.junit.Test;
+
+import javax.annotation.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -643,6 +646,44 @@ public class TestProctorUtils {
                                     "Rule ${proctor:notafunction()} has invalid syntax or unknown function."
                     );
         }
+    }
+
+    @Test
+    public void testVerify_MapPayloadHasNullSchema() {
+        final List<TestBucket> buckets = fromCompactBucketFormat(
+                "control:0",
+                new Payload(ImmutableMap.of("val1", 1.0))
+        );
+
+        final Map<String, TestSpecification> requiredTests = ImmutableMap.of(
+                TEST_A,
+                transformTestBuckets(buckets, PayloadType.MAP, /* schema */ null, /* validator */ null)
+        );
+        final Map<String, ConsumableTestDefinition> tests = ImmutableMap.of(
+                TEST_A,
+                constructDefinition(buckets, fromCompactAllocationFormat("0:1"))
+        );
+
+        final ProctorLoadResult result = ProctorUtils.verify(
+                constructArtifact(tests),
+                "[ testcase: schema is null ]",
+                requiredTests,
+                RuleEvaluator.FUNCTION_MAPPER,
+                convertContextToTestableMap(emptyMap()),
+                Collections.emptySet()
+        );
+        assertEquals(
+                ImmutableSet.of(TEST_A),
+                result.getTestsWithErrors()
+        );
+        assertEquals(
+                IncompatibleTestMatrixException.class,
+                result.getTestErrorMap().get(TEST_A).getClass()
+        );
+        assertEquals(
+                "For test testA from [ testcase: schema is null ] expected non empty payload",
+                result.getTestErrorMap().get(TEST_A).getMessage()
+        );
     }
 
     @Test
@@ -1730,14 +1771,20 @@ public class TestProctorUtils {
     private TestSpecification transformTestBuckets(
             final List<TestBucket> testBuckets,
             final PayloadType payloadType,
-            final Map<String, PayloadType> schema,
+            @Nullable final Map<String, PayloadType> schema,
             final String validator
     ) {
         final TestSpecification testSpec = transformTestBuckets(testBuckets);
         final PayloadSpecification payloadSpec = new PayloadSpecification();
         payloadSpec.setType(payloadType.payloadTypeName);
         payloadSpec.setValidator(validator);
-        payloadSpec.setSchema(schema.entrySet().stream().collect(Collectors.toMap(Entry::getKey, e -> e.getValue().payloadTypeName)));
+        if (schema == null) {
+            payloadSpec.setSchema(null);
+        } else {
+            payloadSpec.setSchema(
+                    schema.entrySet().stream().collect(Collectors.toMap(Entry::getKey, e -> e.getValue().payloadTypeName))
+            );
+        }
         testSpec.setPayload(payloadSpec);
         return testSpec;
     }
