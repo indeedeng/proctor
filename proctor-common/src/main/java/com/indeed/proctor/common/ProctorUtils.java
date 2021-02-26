@@ -597,8 +597,7 @@ public abstract class ProctorUtils {
             final PayloadType specifiedPayloadType = PayloadType.payloadTypeForName(specifiedPayloadTypeName);
             final Map<String, String> specificationPayloadTypes = payloadSpec.getSchema();
             if (specifiedPayloadType == PayloadType.MAP) {
-                if (specificationPayloadTypes.isEmpty()
-                        || specificationPayloadTypes == null) {
+                if (specificationPayloadTypes == null || specificationPayloadTypes.isEmpty()) {
                     throw new IncompatibleTestMatrixException("For test " + testName + " from " + matrixSource + " expected non empty payload");
                 }
             }
