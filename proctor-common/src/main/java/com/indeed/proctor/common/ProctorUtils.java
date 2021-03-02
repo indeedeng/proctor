@@ -138,7 +138,10 @@ public abstract class ProctorUtils {
      * @deprecated Use serialization library like jackson
      */
     @Deprecated
-    public static void serializeTestSpecification(final Writer writer, final TestSpecification specification) throws IOException {
+    public static void serializeTestSpecification(
+            final Writer writer,
+            final TestSpecification specification
+    ) throws IOException {
         serializeObject(writer, specification);
     }
 
@@ -157,7 +160,10 @@ public abstract class ProctorUtils {
         final TestMatrixArtifact artifact = new TestMatrixArtifact();
         artifact.setAudit(audit);
 
-        final TestMatrixDefinition testMatrixDefinition = Preconditions.checkNotNull(testMatrix.getTestMatrixDefinition(), "Missing test matrix definition");
+        final TestMatrixDefinition testMatrixDefinition = Preconditions.checkNotNull(
+                testMatrix.getTestMatrixDefinition(),
+                "Missing test matrix definition"
+        );
 
         final Map<String, TestDefinition> testDefinitions = testMatrixDefinition.getTests();
 
@@ -253,10 +259,12 @@ public abstract class ProctorUtils {
      * default implementation returning the fallback value see defaultFor
      *
      * @param testMatrix     the {@link TestMatrixArtifact} to be verified.
-     * @param matrixSource   a {@link String} of the source of proctor artifact. For example a path of proctor artifact file.
+     * @param matrixSource   a {@link String} of the source of proctor artifact. For example, a path of proctor artifact
+     *                       file.
      * @param requiredTests  a {@link Map} of required test. The {@link TestSpecification} would be verified
      * @param functionMapper a given el {@link FunctionMapper}
-     * @return a {@link ProctorLoadResult} to describe the result of verification. It contains errors of verification and a list of missing test.
+     * @return a {@link ProctorLoadResult} to describe the result of verification. It contains errors of verification
+     * and a list of missing test.
      */
     public static ProctorLoadResult verifyAndConsolidate(
             @Nonnull final TestMatrixArtifact testMatrix,
@@ -299,7 +307,14 @@ public abstract class ProctorUtils {
             final ProvidedContext providedContext,
             @Nonnull final Set<String> dynamicTests
     ) {
-        final ProctorLoadResult result = verify(testMatrix, matrixSource, requiredTests, functionMapper, providedContext, dynamicTests);
+        final ProctorLoadResult result = verify(
+                testMatrix,
+                matrixSource,
+                requiredTests,
+                functionMapper,
+                providedContext,
+                dynamicTests
+        );
 
         final Map<String, ConsumableTestDefinition> definedTests = testMatrix.getTests();
         // Remove any invalid tests so that any required ones will be replaced with default values during the
@@ -328,8 +343,10 @@ public abstract class ProctorUtils {
      * and thus no required tests or provided context.
      *
      * @param testMatrix   the {@link TestMatrixArtifact} to be verified.
-     * @param matrixSource a {@link String} of the source of proctor artifact. For example a path of proctor artifact file.
-     * @return a {@link ProctorLoadResult} to describe the result of verification. It contains errors of verification and a list of missing test.
+     * @param matrixSource a {@link String} of the source of proctor artifact. For example, a path of proctor artifact
+     *                     file.
+     * @return a {@link ProctorLoadResult} to describe the result of verification. It contains errors of verification
+     * and a list of missing test.
      */
     public static ProctorLoadResult verifyWithoutSpecification(
             @Nonnull final TestMatrixArtifact testMatrix,
@@ -414,12 +431,15 @@ public abstract class ProctorUtils {
      * each required test is valid.
      *
      * @param testMatrix      the {@link TestMatrixArtifact} to be verified.
-     * @param matrixSource    a {@link String} of the source of proctor artifact. For example a path of proctor artifact file.
+     * @param matrixSource    a {@link String} of the source of proctor artifact. For example, a path of proctor
+     *                        artifact file.
      * @param requiredTests   a {@link Map} of required test. The {@link TestSpecification} would be verified
      * @param functionMapper  a given el {@link FunctionMapper}
-     * @param providedContext a {@link Map} containing variables describing the context in which the request is executing. These will be supplied to verifying all rules.
+     * @param providedContext a {@link Map} containing variables describing the context in which the request is
+     *                        executing. These will be supplied to verifying all rules.
      * @param dynamicTests    a {@link Set} of dynamic tests determined by filters.
-     * @return a {@link ProctorLoadResult} to describe the result of verification. It contains errors of verification and a list of missing test.
+     * @return a {@link ProctorLoadResult} to describe the result of verification. It contains errors of verification
+     * and a list of missing test.
      */
     public static ProctorLoadResult verify(
             @Nonnull final TestMatrixArtifact testMatrix,
@@ -479,9 +499,11 @@ public abstract class ProctorUtils {
      * @param testName          the name of the test
      * @param testDefinition    {@link ConsumableTestDefinition} of the test
      * @param testSpecification {@link TestSpecification} defined in an application for the test
-     * @param matrixSource      a {@link String} of the source of proctor artifact. For example a path of proctor artifact file.
+     * @param matrixSource      a {@link String} of the source of proctor artifact. For example, a path of proctor
+     *                          artifact file.
      * @param functionMapper    a given el {@link FunctionMapper}
-     * @param providedContext   a {@link Map} containing variables describing the context in which the request is executing.
+     * @param providedContext   a {@link Map} containing variables describing the context in which the request is
+     *                          executing.
      *                          These will be supplied to verifying all rules.
      * @throws IncompatibleTestMatrixException if validation is failed.
      */
@@ -521,10 +543,11 @@ public abstract class ProctorUtils {
      *
      * @param testName        the name of the test
      * @param testDefinition  {@link ConsumableTestDefinition} of the test
-     * @param matrixSource    a {@link String} of the source of proctor artifact. For example a path of proctor artifact file.
+     * @param matrixSource    a {@link String} of the source of proctor artifact. For example, a path of proctor
+     *                        artifact file.
      * @param functionMapper  a given el {@link FunctionMapper}
-     * @param providedContext a {@link Map} containing variables describing the context in which the request is executing.
-     *                        These will be supplied to verifying all rules.
+     * @param providedContext a {@link Map} containing variables describing the context in which the request is
+     *                        executing. These will be supplied to verifying all rules.
      * @throws IncompatibleTestMatrixException if validation is failed.
      */
     private static void verifyDynamicTest(
@@ -587,25 +610,34 @@ public abstract class ProctorUtils {
             }
 
             if (!unknownBuckets.isEmpty()) {
-                throw new IncompatibleTestMatrixException("Allocation range in " + testName + " from " + matrixSource + " refers to unknown bucket value(s) " + unknownBuckets + " with length > 0");
+                throw new IncompatibleTestMatrixException(
+                        "Allocation range in " + testName + " from " + matrixSource
+                                + " refers to unknown bucket value(s) " + unknownBuckets + " with length > 0"
+                );
             }
         }
 
         final PayloadSpecification payloadSpec = testSpecification.getPayload();
         if (payloadSpec != null) {
-            final String specifiedPayloadTypeName = Preconditions.checkNotNull(payloadSpec.getType(), "Missing payload spec type");
+            final String specifiedPayloadTypeName = Preconditions.checkNotNull(
+                    payloadSpec.getType(), "Missing payload spec type"
+            );
             final PayloadType specifiedPayloadType = PayloadType.payloadTypeForName(specifiedPayloadTypeName);
             final Map<String, String> specificationPayloadTypes = payloadSpec.getSchema();
             if (specifiedPayloadType == PayloadType.MAP) {
-                if (specificationPayloadTypes.isEmpty()
-                        || specificationPayloadTypes == null) {
-                    throw new IncompatibleTestMatrixException("For test " + testName + " from " + matrixSource + " expected non empty payload");
+                if (specificationPayloadTypes == null || specificationPayloadTypes.isEmpty()) {
+                    throw new IncompatibleTestMatrixException(
+                            "For test " + testName + " from " + matrixSource + " expected non empty payload"
+                    );
                 }
             }
 
             if (specifiedPayloadType == null) {
                 // This is probably redundant vs. TestGroupsGenerator.
-                throw new IncompatibleTestMatrixException("For test " + testName + " from " + matrixSource + " test specification payload type unknown: " + specifiedPayloadTypeName);
+                throw new IncompatibleTestMatrixException(
+                        "For test " + testName + " from " + matrixSource + " test specification payload type unknown: "
+                                + specifiedPayloadTypeName
+                );
             }
             final String payloadValidatorRule = payloadSpec.getValidator();
 
@@ -616,14 +648,34 @@ public abstract class ProctorUtils {
                 final Payload payload = bucket.getPayload();
                 if (payload != null) {
                     if (!Payload.hasType(payload, specifiedPayloadType)) {
-                        throw new IncompatibleTestMatrixException("For test " + testName + " from " + matrixSource + " expected payload of type " + specifiedPayloadType.payloadTypeName + " but matrix has a test bucket payload with wrong type: " + bucket);
+                        throw new IncompatibleTestMatrixException(
+                                "For test " + testName + " from " + matrixSource + " expected payload of type "
+                                        + specifiedPayloadType.payloadTypeName
+                                        + " but matrix has a test bucket payload with wrong type: " + bucket
+                        );
                     }
                     if (specifiedPayloadType == PayloadType.MAP) {
-                        checkMapPayloadTypes(payload, specificationPayloadTypes, matrixSource, testName, specifiedPayloadType, payloadValidatorRule, bucket, functionMapper);
+                        checkMapPayloadTypes(
+                                payload,
+                                specificationPayloadTypes,
+                                matrixSource,
+                                testName,
+                                specifiedPayloadType,
+                                payloadValidatorRule,
+                                bucket,
+                                functionMapper
+                        );
                     } else if (payloadValidatorRule != null) {
-                        final boolean payloadIsValid = evaluatePayloadValidator(ruleEvaluator, payloadValidatorRule, payload);
+                        final boolean payloadIsValid = evaluatePayloadValidator(
+                                ruleEvaluator,
+                                payloadValidatorRule,
+                                payload
+                        );
                         if (!payloadIsValid) {
-                            throw new IncompatibleTestMatrixException("For test " + testName + " from " + matrixSource + " payload validation rule " + payloadValidatorRule + " failed for test bucket: " + bucket);
+                            throw new IncompatibleTestMatrixException(
+                                    "For test " + testName + " from " + matrixSource + " payload validation rule "
+                                            + payloadValidatorRule + " failed for test bucket: " + bucket
+                            );
                         }
                     }
                 }
@@ -631,34 +683,56 @@ public abstract class ProctorUtils {
         }
     }
 
-    private static void checkMapPayloadTypes(final Payload payload,
-                                             final Map<String, String> specificationPayloadTypes,
-                                             final String matrixSource,
-                                             final String testName,
-                                             final PayloadType specifiedPayloadType,
-                                             final String payloadValidatorRule,
-                                             final TestBucket bucket,
-                                             final FunctionMapper functionMapper) throws IncompatibleTestMatrixException {
+    private static void checkMapPayloadTypes(
+            final Payload payload,
+            final Map<String, String> specificationPayloadTypes,
+            final String matrixSource,
+            final String testName,
+            final PayloadType specifiedPayloadType,
+            final String payloadValidatorRule,
+            final TestBucket bucket,
+            final FunctionMapper functionMapper
+    ) throws IncompatibleTestMatrixException {
         final RuleEvaluator ruleEvaluator = makeRuleEvaluator(RuleEvaluator.EXPRESSION_FACTORY, functionMapper);
         if (payload.getMap() == null) {
-            throw new IncompatibleTestMatrixException("For test " + testName + " from " + matrixSource + " expected payload of type " + specifiedPayloadType.payloadTypeName + " but matrix has a test bucket payload with wrong type: " + bucket);
+            throw new IncompatibleTestMatrixException(
+                    "For test " + testName + " from " + matrixSource + " expected payload of type "
+                            + specifiedPayloadType.payloadTypeName
+                            + " but matrix has a test bucket payload with wrong type: " + bucket
+            );
         }
         if (specificationPayloadTypes.size() > payload.getMap().size()) {
-            throw new IncompatibleTestMatrixException("For test " + testName + " from " + matrixSource + " expected payload of equal size to specification " + specifiedPayloadType + "  but matrix has a test bucket payload with wrong type size: " + bucket);
+            throw new IncompatibleTestMatrixException(
+                    "For test " + testName + " from " + matrixSource
+                            + " expected payload of equal size to specification " + specifiedPayloadType
+                            + "  but matrix has a test bucket payload with wrong type size: " + bucket
+            );
         }
         final Map<String, Object> bucketPayloadMap = payload.getMap();
         for (final Entry<String, String> specificationPayloadEntry : specificationPayloadTypes.entrySet()) {
             if (!bucketPayloadMap.containsKey(specificationPayloadEntry.getKey())) {
-                throw new IncompatibleTestMatrixException("For test " + testName + " from " + matrixSource + " expected payload of same order and variable names as specificied in " + specifiedPayloadType + " but matrix has a test bucket payload with wrong type: " + bucket);
+                throw new IncompatibleTestMatrixException(
+                        "For test " + testName + " from " + matrixSource
+                                + " expected payload of same order and variable names as specificied in "
+                                + specifiedPayloadType + " but matrix has a test bucket payload with wrong type: "
+                                + bucket
+                );
             }
             final PayloadType expectedPayloadType;
             try {
                 expectedPayloadType = PayloadType.payloadTypeForName(specificationPayloadEntry.getValue());
             } catch (final IllegalArgumentException e) {
-                throw new IncompatibleTestMatrixException("For test " + testName + " from " + matrixSource + " specification payload type unknown in: " + specifiedPayloadType.payloadTypeName);
+                throw new IncompatibleTestMatrixException(
+                        "For test " + testName + " from " + matrixSource + " specification payload type unknown in: "
+                                + specifiedPayloadType.payloadTypeName
+                );
             }
             if (expectedPayloadType == PayloadType.MAP) {
-                throw new IncompatibleTestMatrixException("For test " + testName + " from " + matrixSource + " specification payload type has unallowed nested map types: " + specifiedPayloadType.payloadTypeName);
+                throw new IncompatibleTestMatrixException(
+                        "For test " + testName + " from " + matrixSource
+                                + " specification payload type has unallowed nested map types: "
+                                + specifiedPayloadType.payloadTypeName
+                );
             }
             final Object actualPayload = bucketPayloadMap.get(specificationPayloadEntry.getKey());
             if (actualPayload instanceof ArrayList) {
@@ -666,41 +740,72 @@ public abstract class ProctorUtils {
                     final Class actualClazz = actualPayloadEntry.getClass();
                     if (PayloadType.STRING_ARRAY == expectedPayloadType) {
                         if (!String.class.isAssignableFrom(actualClazz)) {
-                            throw new IncompatibleTestMatrixException("For test " + testName + " from " + matrixSource + " expected payload of type " + specifiedPayloadType.payloadTypeName + " but matrix has a test bucket payload with wrong nested type: " + bucket);
+                            throw new IncompatibleTestMatrixException(
+                                    "For test " + testName + " from " + matrixSource + " expected payload of type "
+                                            + specifiedPayloadType.payloadTypeName
+                                            + " but matrix has a test bucket payload with wrong nested type: "
+                                            + bucket
+                            );
                         }
                     } else if (PayloadType.LONG_ARRAY == expectedPayloadType
                             || PayloadType.DOUBLE_ARRAY == expectedPayloadType) {
                         if (!Number.class.isAssignableFrom(actualClazz)) {
-                            throw new IncompatibleTestMatrixException("For test " + testName + " from " + matrixSource + " expected payload of type " + specifiedPayloadType.payloadTypeName + " but matrix has a test bucket payload with wrong nested type: " + bucket);
+                            throw new IncompatibleTestMatrixException(
+                                    "For test " + testName + " from " + matrixSource + " expected payload of type "
+                                            + specifiedPayloadType.payloadTypeName
+                                            + " but matrix has a test bucket payload with wrong nested type: "
+                                            + bucket
+                            );
                         }
                     } else {
-                        throw new IncompatibleTestMatrixException("For test " + testName + " from " + matrixSource + " expected payload of type " + specifiedPayloadType.payloadTypeName + " but matrix has a test bucket payload with wrong nested type: " + bucket);
+                        throw new IncompatibleTestMatrixException(
+                                "For test " + testName + " from " + matrixSource + " expected payload of type "
+                                        + specifiedPayloadType.payloadTypeName
+                                        + " but matrix has a test bucket payload with wrong nested type: " + bucket
+                        );
                     }
                 }
             } else if (PayloadType.DOUBLE_ARRAY == expectedPayloadType
                     || PayloadType.STRING_ARRAY == expectedPayloadType
                     || PayloadType.LONG_ARRAY == expectedPayloadType) {
-                throw new IncompatibleTestMatrixException("For test " + testName + " from " + matrixSource + " expected payload of type " + specifiedPayloadType.payloadTypeName + " but matrix has a test bucket payload with wrong nested type: " + bucket);
+                throw new IncompatibleTestMatrixException(
+                        "For test " + testName + " from " + matrixSource + " expected payload of type "
+                                + specifiedPayloadType.payloadTypeName + " but matrix has a test bucket payload with wrong nested type: "
+                                + bucket
+                );
             } else if (PayloadType.DOUBLE_VALUE == expectedPayloadType
                     || PayloadType.LONG_VALUE == expectedPayloadType) {
                 final Class actualClazz = actualPayload.getClass();
                 if (!Number.class.isAssignableFrom(actualClazz)) {
-                    throw new IncompatibleTestMatrixException("For test " + testName + " from " + matrixSource + " expected payload of type " + specifiedPayloadType.payloadTypeName + " but matrix has a test bucket payload with wrong nested type: " + bucket);
+                    throw new IncompatibleTestMatrixException(
+                            "For test " + testName + " from " + matrixSource + " expected payload of type "
+                                    + specifiedPayloadType.payloadTypeName
+                                    + " but matrix has a test bucket payload with wrong nested type: " + bucket
+                    );
                 }
             } else {
                 try {
                     if (!Class.forName("java.lang." + expectedPayloadType.javaClassName).isInstance(actualPayload)) {
-                        throw new IncompatibleTestMatrixException("For test " + testName + " from " + matrixSource + " expected payload of type " + specifiedPayloadType.payloadTypeName + " but matrix has a test bucket payload with wrong nested type: " + bucket);
+                        throw new IncompatibleTestMatrixException(
+                                "For test " + testName + " from " + matrixSource + " expected payload of type "
+                                        + specifiedPayloadType.payloadTypeName
+                                        + " but matrix has a test bucket payload with wrong nested type: " + bucket
+                        );
                     }
                 } catch (final ClassNotFoundException e) {
-                    throw new IncompatibleTestMatrixException("For test " + testName + " from " + matrixSource + " incompatible payload type?");
+                    throw new IncompatibleTestMatrixException(
+                            "For test " + testName + " from " + matrixSource + " incompatible payload type?"
+                    );
                 }
             }
         }
         if (payloadValidatorRule != null) {
             final boolean payloadIsValid = evaluatePayloadMapValidator(ruleEvaluator, payloadValidatorRule, payload);
             if (!payloadIsValid) {
-                throw new IncompatibleTestMatrixException("For test " + testName + " from " + matrixSource + " payload validation rule " + payloadValidatorRule + " failed for test bucket: " + bucket);
+                throw new IncompatibleTestMatrixException(
+                        "For test " + testName + " from " + matrixSource + " payload validation rule "
+                                + payloadValidatorRule + " failed for test bucket: " + bucket
+                );
             }
         }
     }
@@ -715,7 +820,8 @@ public abstract class ProctorUtils {
     ) {
         final Map<String, ConsumableTestDefinition> definedTests = testMatrix.getTests();
 
-        // Sets.difference returns a "view" on the original set, which would require concurrent modification while iterating (copying the set will prevent this)
+        // Sets.difference returns a "view" on the original set, which would require concurrent modification while
+        // iterating (copying the set will prevent this)
         final Set<String> toRemove = ImmutableSet.copyOf(
                 Sets.difference(
                         definedTests.keySet(),
@@ -854,9 +960,13 @@ public abstract class ProctorUtils {
                 Object toAdd = null;
                 if (ruleVerificationContext.containsKey(identifier)) {
                     toAdd = ruleVerificationContext.get(identifier);
-                    LOGGER.debug(String.format("Use instance for identifier {%s} provided by user %s", identifier, toAdd));
+                    LOGGER.debug(String.format(
+                            "Use instance for identifier {%s} provided by user %s", identifier, toAdd)
+                    );
                 } else {
-                    LOGGER.debug(String.format("Identifier {%s} is not provided, instantiate it via default constructor", identifier));
+                    LOGGER.debug(String.format(
+                            "Identifier {%s} is not provided, instantiate it via default constructor", identifier
+                    ));
                     final String iobjName = entry.getValue();
                     final String objName = iobjName;
 
@@ -872,11 +982,19 @@ public abstract class ProctorUtils {
                             }
                         } catch (final IllegalAccessException e) {
                             uninstantiatedIdentifiers.add(identifier);
-                            LOGGER.debug("Couldn't access default constructor of " + iobjName + " in providedContext. Rule verification will skip this identifier - " + identifier);
+                            LOGGER.debug(
+                                    "Couldn't access default constructor of " + iobjName
+                                            + " in providedContext. Rule verification will skip this identifier - "
+                                            + identifier
+                            );
                         } catch (final InstantiationException e) {
                             uninstantiatedIdentifiers.add(identifier);
                             //if a default constructor is not defined, use this flag to not set context and not evaluate rules
-                            LOGGER.debug("Couldn't find default constructor for " + iobjName + " in providedContext. Rule verification will skip this identifier - " + identifier);
+                            LOGGER.debug(
+                                    "Couldn't find default constructor for " + iobjName
+                                            + " in providedContext. Rule verification will skip this identifier - "
+                                            + identifier
+                            );
                         } catch (final ClassNotFoundException e) {
                             uninstantiatedIdentifiers.add(identifier);
                             LOGGER.error("Class not found for " + iobjName + " in providedContext");
@@ -887,8 +1005,10 @@ public abstract class ProctorUtils {
                 newProvidedContext.put(identifier, toAdd);
             }
             /* evaluate the rule even if defaultConstructor method does not exist, */
-            return ProvidedContext.forValueExpressionMap(ProctorUtils.convertToValueExpressionMap(expressionFactory, newProvidedContext),
-                    uninstantiatedIdentifiers);
+            return ProvidedContext.forValueExpressionMap(
+                    ProctorUtils.convertToValueExpressionMap(expressionFactory, newProvidedContext),
+                    uninstantiatedIdentifiers
+            );
 
         }
         return ProvidedContext.nonEvaluableContext();
@@ -949,13 +1069,29 @@ public abstract class ProctorUtils {
         //verify test rule is valid EL
         final String testRule = testDefinition.getRule();
 
-        final Map<String, ValueExpression> testConstants = ProctorUtils.convertToValueExpressionMap(expressionFactory, testDefinition.getConstants());
-        final VariableMapper variableMapper = new MulticontextReadOnlyVariableMapper(testConstants, providedContext.getContext());
-        final RuleEvaluator ruleEvaluator = new RuleEvaluator(expressionFactory, functionMapper, testDefinition.getConstants());
+        final Map<String, ValueExpression> testConstants = ProctorUtils.convertToValueExpressionMap(
+                expressionFactory,
+                testDefinition.getConstants()
+        );
+        final VariableMapper variableMapper = new MulticontextReadOnlyVariableMapper(
+                testConstants,
+                providedContext.getContext()
+        );
+        final RuleEvaluator ruleEvaluator = new RuleEvaluator(
+                expressionFactory,
+                functionMapper,
+                testDefinition.getConstants()
+        );
         final ELContext elContext = ruleEvaluator.createELContext(variableMapper);
 
         try {
-            RuleVerifyUtils.verifyRule(testRule, providedContext.shouldEvaluate(), expressionFactory, elContext, providedContext.getUninstantiatedIdentifiers());
+            RuleVerifyUtils.verifyRule(
+                    testRule,
+                    providedContext.shouldEvaluate(),
+                    expressionFactory,
+                    elContext,
+                    providedContext.getUninstantiatedIdentifiers()
+            );
         } catch (final InvalidRuleException e) {
             throw new IncompatibleTestMatrixException(
                     String.format("Invalid rule %s in %s: %s", testRule, testName, e.getMessage()), e);
@@ -986,11 +1122,15 @@ public abstract class ProctorUtils {
                 bucketTotal += range.getLength();
                 // Internally consistent
                 if (!definedBuckets.contains(range.getBucketValue())) {
-                    throw new IncompatibleTestMatrixException("Allocation range in " + testName + " from " + matrixSource + " refers to unknown bucket value " + range.getBucketValue());
+                    throw new IncompatibleTestMatrixException(
+                            "Allocation range in " + testName + " from " + matrixSource
+                                    + " refers to unknown bucket value " + range.getBucketValue()
+                    );
                 }
             }
             //  I hate floating points.  TODO: extract a required precision constant/parameter?
-            if (bucketTotal < 0.9999 || bucketTotal > 1.0001) { //  compensate for FP imprecision.  TODO: determine what these bounds really should be by testing stuff
+            //  compensate for FP imprecision.  TODO: determine what these bounds really should be by testing stuff
+            if (bucketTotal < 0.9999 || bucketTotal > 1.0001) {
                 throw new IncompatibleTestMatrixException(
                         testName + " range with rule " + allocation.getRule() + " does not add up to 1 : "
                                 + ranges.stream().map(r -> Double.toString(r.getLength())).collect(joining(" + "))
@@ -1001,11 +1141,19 @@ public abstract class ProctorUtils {
             final boolean lastAllocation = i == (allocations.size() - 1);
             final String bareRule = removeElExpressionBraces(rule);
             if (!lastAllocation && StringUtils.isBlank(bareRule)) {
-                throw new IncompatibleTestMatrixException("Allocation[" + i + "] for test " + testName + " from " + matrixSource + " has empty rule: " + allocation.getRule());
+                throw new IncompatibleTestMatrixException(
+                        "Allocation[" + i + "] for test " + testName + " from " + matrixSource + " has empty rule: "
+                                + allocation.getRule()
+                );
             }
 
             try {
-                RuleVerifyUtils.verifyRule(rule, providedContext.shouldEvaluate(), expressionFactory, elContext, providedContext.getUninstantiatedIdentifiers());
+                RuleVerifyUtils.verifyRule(
+                        rule, providedContext.shouldEvaluate(),
+                        expressionFactory,
+                        elContext,
+                        providedContext.getUninstantiatedIdentifiers()
+                );
             } catch (final InvalidRuleException e) {
                 throw new IncompatibleTestMatrixException(
                         String.format("Invalid allocation rule %s in %s: %s", rule, testName, e.getMessage()), e);
@@ -1024,19 +1172,28 @@ public abstract class ProctorUtils {
             final Payload p = bucket.getPayload();
             if (p != null) {
                 if (p.numFieldsDefined() != 1) {
-                    throw new IncompatibleTestMatrixException("Test " + testName + " from " + matrixSource + " has a test bucket payload with multiple types: " + bucket);
+                    throw new IncompatibleTestMatrixException(
+                            "Test " + testName + " from " + matrixSource
+                                    + " has a test bucket payload with multiple types: " + bucket
+                    );
                 }
                 if (nonEmptyPayload == null) {
                     nonEmptyPayload = p;
                 } else if (!nonEmptyPayload.sameType(p)) {
-                    throw new IncompatibleTestMatrixException("Test " + testName + " from " + matrixSource + " has test bucket: " + bucket + " incompatible with type of payload: " + nonEmptyPayload);
+                    throw new IncompatibleTestMatrixException(
+                            "Test " + testName + " from " + matrixSource + " has test bucket: " + bucket
+                                    + " incompatible with type of payload: " + nonEmptyPayload
+                    );
                 }
             } else {
                 bucketsWithoutPayloads.add(bucket);
             }
         }
         if ((nonEmptyPayload != null) && (!bucketsWithoutPayloads.isEmpty())) {
-            throw new IncompatibleTestMatrixException("Test " + testName + " from " + matrixSource + " has some test buckets without payloads: " + bucketsWithoutPayloads);
+            throw new IncompatibleTestMatrixException(
+                    "Test " + testName + " from " + matrixSource + " has some test buckets without payloads: "
+                            + bucketsWithoutPayloads
+            );
         }
     }
 
@@ -1109,14 +1266,21 @@ public abstract class ProctorUtils {
     // Make a new RuleEvaluator that captures the test constants.
     // TODO(pwp): add some test constants?
     @Nonnull
-    private static RuleEvaluator makeRuleEvaluator(final ExpressionFactory expressionFactory, final FunctionMapper functionMapper) {
+    private static RuleEvaluator makeRuleEvaluator(
+            final ExpressionFactory expressionFactory,
+            final FunctionMapper functionMapper
+    ) {
         // Make the expression evaluation context.
         final Map<String, Object> testConstants = Collections.emptyMap();
 
         return new RuleEvaluator(expressionFactory, functionMapper, testConstants);
     }
 
-    private static boolean evaluatePayloadMapValidator(@Nonnull final RuleEvaluator ruleEvaluator, final String rule, @Nonnull final Payload payload) throws IncompatibleTestMatrixException {
+    private static boolean evaluatePayloadMapValidator(
+            @Nonnull final RuleEvaluator ruleEvaluator,
+            final String rule,
+            @Nonnull final Payload payload
+    ) throws IncompatibleTestMatrixException {
         try {
             return ruleEvaluator.evaluateBooleanRule(rule, payload.getMap());
         } catch (final IllegalArgumentException e) {
@@ -1125,7 +1289,11 @@ public abstract class ProctorUtils {
         return true;
     }
 
-    private static boolean evaluatePayloadValidator(@Nonnull final RuleEvaluator ruleEvaluator, final String rule, @Nonnull final Payload payload) throws IncompatibleTestMatrixException {
+    private static boolean evaluatePayloadValidator(
+            @Nonnull final RuleEvaluator ruleEvaluator,
+            final String rule,
+            @Nonnull final Payload payload
+    ) throws IncompatibleTestMatrixException {
         final Map<String, Object> values = Collections.singletonMap("value", payload.fetchAValue());
 
         try {
