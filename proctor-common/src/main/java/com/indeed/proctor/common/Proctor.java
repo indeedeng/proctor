@@ -214,7 +214,6 @@ public class Proctor {
             }
         }
 
-
         for (final Entry<String, TestChooser<?>> entry : filteredChoosers.entrySet()) {
             final String testName = entry.getKey();
             final Integer forceGroupBucket = forceGroups.get(testName);
