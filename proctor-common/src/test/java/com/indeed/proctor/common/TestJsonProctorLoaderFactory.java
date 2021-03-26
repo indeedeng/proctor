@@ -5,9 +5,13 @@ import com.indeed.proctor.common.model.TestType;
 import com.indeed.util.varexport.VarExporter;
 import org.junit.Test;
 
+import javax.annotation.Nonnull;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -22,11 +26,6 @@ public class TestJsonProctorLoaderFactory {
         final AbstractProctorLoader proctorLoader = factory.getLoader();
         proctorLoader.load();
         final Proctor proctor = proctorLoader.get();
-        final ProctorResult result = proctor.determineTestGroups(
-                Identifiers.of(TestType.ANONYMOUS_USER, "user"),
-                ImmutableMap.<String, Object>of("lang", "en"),
-                Collections.<String, Integer>emptyMap()
-        );
 
         assertNotNull("exampletst should be loaded with a TestNamePrefixFilter",
                 proctor.getTestDefinition("exampletst"));
@@ -35,10 +34,56 @@ public class TestJsonProctorLoaderFactory {
         assertNull("sometst should not be loaded with a filter",
                 proctor.getTestDefinition("sometst"));
 
-        assertTrue("an allocation of exampletst should be determined",
-                result.getAllocations().containsKey("exampletst"));
-        assertTrue("a bucket of exampletst should be determined",
-                result.getBuckets().containsKey("exampletst"));
+        // test case: no testNameFilter => all tests should be determined
+        testDynamicFilterFromSpecification(
+                proctor,
+                Collections.emptyList(),
+                Arrays.asList("exampletst", "meta_tags_tst"),
+                Arrays.asList("sometst")
+        );
+
+        // test case: filter exampletst => only exampletst should be determined
+        testDynamicFilterFromSpecification(
+                proctor,
+                Arrays.asList("exampletst"),
+                Arrays.asList("exampletst"),
+                Arrays.asList("meta_tags_tst", "sometst")
+        );
+
+        // test case: filter an unknown test => no tests should be determined
+        testDynamicFilterFromSpecification(
+                proctor,
+                Arrays.asList("sometst"),
+                Collections.emptyList(),
+                Arrays.asList("exampletst", "meta_tags_tst", "sometst")
+        );
+    }
+
+    private void testDynamicFilterFromSpecification(
+            @Nonnull final Proctor proctor,
+            @Nonnull final Collection<String> testNameFilter,
+            @Nonnull final Collection<String> expectedTestNamesInResult,
+            @Nonnull final Collection<String> expectedTestNamesNotInResult
+    ) {
+        final ProctorResult result = proctor.determineTestGroups(
+                Identifiers.of(TestType.ANONYMOUS_USER, "user"),
+                ImmutableMap.<String, Object>of("lang", "en"),
+                Collections.<String, Integer>emptyMap(),
+                testNameFilter
+        );
+
+        for (final String testName: expectedTestNamesInResult) {
+            assertTrue("an allocation of " + testName + " should be determined",
+                    result.getAllocations().containsKey(testName));
+            assertTrue("a bucket of " + testName + " should be determined",
+                    result.getBuckets().containsKey(testName));
+        }
+        for (final String testName: expectedTestNamesNotInResult) {
+            assertFalse(testName + " should not be determined",
+                    result.getAllocations().containsKey(testName));
+            assertFalse(testName + " should not be determined",
+                    result.getBuckets().containsKey(testName));
+        }
     }
 
     @Test

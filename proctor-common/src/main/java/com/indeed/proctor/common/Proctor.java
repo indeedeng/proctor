@@ -202,10 +202,18 @@ public class Proctor {
         final SortedMap<String, TestBucket> testGroups = new TreeMap<>();
         final SortedMap<String, Allocation> testAllocations = new TreeMap<>();
 
-        Map<String, TestChooser<?>> filteredChoosers = testChoosers;
-        if (!testNameFilter.isEmpty()) {
-            filteredChoosers = Maps.filterKeys(filteredChoosers, Predicates.in(testNameFilter));
+        final Map<String, TestChooser<?>> filteredChoosers;
+        if (testNameFilter.isEmpty()) {
+            filteredChoosers = testChoosers;
+        } else {
+            filteredChoosers = Maps.newLinkedHashMap();
+            for (final String testName: testNameFilter) {
+                if (testChoosers.containsKey(testName)) {
+                    filteredChoosers.put(testName, testChoosers.get(testName));
+                }
+            }
         }
+
 
         for (final Entry<String, TestChooser<?>> entry : filteredChoosers.entrySet()) {
             final String testName = entry.getKey();
