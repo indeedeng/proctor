@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -453,7 +454,7 @@ public abstract class AbstractGroups {
      *
      * @return a {@link Map} of config JSON
      */
-    public final Map<String, Integer> getJavaScriptConfig(final Collection<String> testNames) {
+    public final Map<String, Integer> getJavaScriptConfig(final Set<String> testNames) {
         return getJavaScriptConfig(testNames::contains);
     }
 
