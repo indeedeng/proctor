@@ -9,11 +9,14 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
 import static java.util.Collections.emptyMap;
+import static java.util.Collections.emptySet;
 import static java.util.Collections.emptySortedMap;
 
 /**
@@ -76,11 +79,15 @@ public class ProctorResult {
 
     /**
      * Create a ProctorResult with copies of the provided collections
+     * @param matrixVersion any string, used for debugging
+     * @param buckets the resolved bucket for each test
+     * @param allocations the determined allocation for each test
+     * @param testDefinitions the original test definitions
      * @deprecated this constructor creates copies of all input collections
      */
     @Deprecated
     public ProctorResult(
-            @Nonnull final String matrixVersion,
+            final String matrixVersion,
             @Nonnull final Map<String, TestBucket> buckets,
             @Nonnull final Map<String, Allocation> allocations,
             // allowing null for historical reasons
@@ -98,7 +105,12 @@ public class ProctorResult {
     }
 
     /**
-     * Plain constructor, not creating TreeMaps as in the deprecated version.
+     * Plain constructor, not creating TreeMaps.
+     *
+     * @param matrixVersion any string, used for debugging
+     * @param buckets the resolved bucket for each test
+     * @param allocations the determined allocation for each test
+     * @param testDefinitions the original test definitions
      */
     public ProctorResult(
             @Nonnull final String matrixVersion,
@@ -153,6 +165,4 @@ public class ProctorResult {
     public Map<String, ConsumableTestDefinition> getTestDefinitions() {
         return testDefinitions;
     }
-
-
 }

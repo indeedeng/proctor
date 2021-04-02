@@ -128,6 +128,7 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
                 requiredTests.keySet()
         );
         exportDynamicTests(dynamicTests);
+        // modify testMatrix
         final ProctorLoadResult loadResult = ProctorUtils.verifyAndConsolidate(
                 testMatrix,
                 getSource(),

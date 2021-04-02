@@ -30,6 +30,8 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import static java.util.Collections.emptySet;
+
 /**
  * The sole entry point for client applications determining the test buckets for a particular client.
  * Basically a Factory to create ProctorResult for a given identifier and context, based on a TestMatrix and a specification.
@@ -55,8 +57,8 @@ public class Proctor {
     @Nonnull
     public static Proctor construct(
             @Nonnull final TestMatrixArtifact matrix,
-            final ProctorLoadResult loadResult,
-            final FunctionMapper functionMapper
+            @Nonnull final ProctorLoadResult loadResult,
+            @Nonnull final FunctionMapper functionMapper
     ) {
         final ExpressionFactory expressionFactory = RuleEvaluator.EXPRESSION_FACTORY;
 
@@ -108,8 +110,8 @@ public class Proctor {
 
     @VisibleForTesting
     Proctor(
-            final TestMatrixArtifact matrix,
-            final ProctorLoadResult loadResult,
+            @Nonnull final TestMatrixArtifact matrix,
+            @Nonnull final ProctorLoadResult loadResult,
             @Nonnull final Map<String, TestChooser<?>> testChoosers
     ) {
         this.matrix = matrix;

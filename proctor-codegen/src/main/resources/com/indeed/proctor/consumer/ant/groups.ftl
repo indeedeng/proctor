@@ -4,6 +4,7 @@ import com.indeed.proctor.common.*;
 import com.indeed.proctor.common.model.Payload;
 import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.consumer.*;
+import com.indeed.proctor.consumer.logging.TestUsageObserver;
 import javax.annotation.Generated;
 import javax.annotation.Nullable;
 import javax.annotation.Nonnull;
@@ -24,6 +25,13 @@ public class ${mainClassName} extends AbstractGroups {
 
     public ${mainClassName}(final ProctorResult proctorResult) {
         super(proctorResult);
+    }
+
+    /**
+     * @param testUsageObserver if non-null, it's methods will be called whenever proctor tests are used
+     */
+    public ${mainClassName}(final ProctorResult proctorResult, final TestUsageObserver testUsageObserver) {
+        super(proctorResult, testUsageObserver);
     }
 
     public static Bucket<${testEnumName}>[] getBuckets(final ${testEnumName} test) {
