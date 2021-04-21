@@ -33,7 +33,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.indeed.proctor.common.ProctorUtils.convertContextToTestableMap;
-import static com.indeed.proctor.common.ProctorUtils.convertToConsumableTestDefinition;
 import static com.indeed.proctor.common.ProctorUtils.isEmptyWhitespace;
 import static com.indeed.proctor.common.ProctorUtils.removeElExpressionBraces;
 import static com.indeed.proctor.common.ProctorUtils.verifyAndConsolidate;
@@ -98,7 +97,7 @@ public class TestProctorUtils {
                         metaTags
                 );
 
-                final ConsumableTestDefinition ctd = convertToConsumableTestDefinition(testDefinition);
+                final ConsumableTestDefinition ctd = ConsumableTestDefinition.fromTestDefinition(testDefinition);
                 assertEquals(version, ctd.getVersion());
                 assertEquals(testType, ctd.getTestType());
                 assertEquals(salt, ctd.getSalt());
@@ -152,7 +151,7 @@ public class TestProctorUtils {
                     metaTags
             );
 
-            final ConsumableTestDefinition ctd = convertToConsumableTestDefinition(testDefinition);
+            final ConsumableTestDefinition ctd = ConsumableTestDefinition.fromTestDefinition(testDefinition);
             assertEquals(String.format("TestDefinition rule '%s' should convert to a ${lang == 'en'} ConsumableTestDefinition.rule", rule), "${lang == 'en'}", ctd.getRule());
 
             assertEquals(1, ctd.getAllocations().size());
@@ -199,7 +198,7 @@ public class TestProctorUtils {
                     metaTags
             );
 
-            final ConsumableTestDefinition ctd = convertToConsumableTestDefinition(testDefinition);
+            final ConsumableTestDefinition ctd = ConsumableTestDefinition.fromTestDefinition(testDefinition);
             assertEquals(
                     String.format("TestDefinition rule '%s' should convert to ${proctor:contains(__COUNTRIES, country) && lang == 'en'} ConsumableTestDefinition.rule", tdRule),
                     "${proctor:contains(__COUNTRIES, country) && lang == 'en'}", ctd.getRule());

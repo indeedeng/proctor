@@ -1,5 +1,10 @@
 package com.indeed.proctor.common.model;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.indeed.proctor.common.ProctorUtils;
+import org.apache.commons.lang3.StringUtils;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collections;
@@ -34,7 +39,7 @@ public class ConsumableTestDefinition {
     public ConsumableTestDefinition() { /* intentionally empty */ }
 
     /**
-     * @deprecated Use {@link #ConsumableTestDefinition(String, String, TestType, String, List, List, boolean, Map, String, List)}
+     * @deprecated Use {@link #fromTestDefinition(TestDefinition)} and {@link TestDefinition#builder()}
      */
     @Deprecated
     public ConsumableTestDefinition(
@@ -60,7 +65,7 @@ public class ConsumableTestDefinition {
     }
 
     /**
-     * @deprecated Use {@link #ConsumableTestDefinition(String, String, TestType, String, List, List, boolean, Map, String, List)}
+     * @deprecated Use {@link #fromTestDefinition(TestDefinition)} and {@link TestDefinition#builder()}
      */
     @Deprecated
     public ConsumableTestDefinition(
@@ -86,6 +91,10 @@ public class ConsumableTestDefinition {
                 Collections.emptyList());
     }
 
+    /**
+     * @deprecated Use {@link #fromTestDefinition(TestDefinition)} and {@link TestDefinition#builder()}
+     */
+    @Deprecated
     public ConsumableTestDefinition(
             final String version,
             @Nullable final String rule,
@@ -199,5 +208,49 @@ public class ConsumableTestDefinition {
 
     public void setMetaTags(final List<String> metaTags) {
         this.metaTags = metaTags;
+    }
+
+    @Nonnull
+    public static ConsumableTestDefinition fromTestDefinition(@Nonnull final TestDefinition td) {
+        final Map<String, Object> specialConstants = td.getSpecialConstants();
+
+        final List<String> ruleComponents = Lists.newArrayList();
+        //noinspection unchecked
+        final List<String> countries = (List<String>) specialConstants.get("__COUNTRIES");
+        if (countries != null) {
+            ruleComponents.add("proctor:contains(__COUNTRIES, country)");
+        }
+        final String rawRule = ProctorUtils.removeElExpressionBraces(td.getRule());
+        if (!StringUtils.isBlank(rawRule)) {
+            ruleComponents.add(rawRule);
+        }
+
+        final String rule;
+        if (ruleComponents.isEmpty()) {
+            rule = null;
+        } else {
+            rule = "${" + String.join(" && ", ruleComponents) + '}';
+        }
+
+        final List<Allocation> allocations = td.getAllocations();
+        for (final Allocation alloc : allocations) {
+            final String rawAllocRule = ProctorUtils.removeElExpressionBraces(alloc.getRule());
+            if (StringUtils.isBlank(rawAllocRule)) {
+                alloc.setRule(null);
+            } else {
+                // ensure that all rules in the generated test-matrix are wrapped in "${" ... "}"
+                if (!(rawAllocRule.startsWith("${") && rawAllocRule.endsWith("}"))) {
+                    final String newAllocRule = "${" + rawAllocRule + "}";
+                    alloc.setRule(newAllocRule);
+                }
+            }
+        }
+
+        final Map<String, Object> constants = Maps.newLinkedHashMap();
+        constants.putAll(td.getConstants());
+        constants.putAll(specialConstants);
+
+        return new ConsumableTestDefinition(td.getVersion(), rule, td.getTestType(), td.getSalt(), td.getBuckets(),
+                allocations, td.getSilent(), constants, td.getDescription(), td.getMetaTags());
     }
 }

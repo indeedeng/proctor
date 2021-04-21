@@ -56,6 +56,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.joining;
 
 /**
@@ -170,7 +171,7 @@ public abstract class ProctorUtils {
         final Map<String, ConsumableTestDefinition> consumableTestDefinitions = Maps.newLinkedHashMap();
         for (final Entry<String, TestDefinition> entry : testDefinitions.entrySet()) {
             final TestDefinition td = entry.getValue();
-            final ConsumableTestDefinition ctd = convertToConsumableTestDefinition(td);
+            final ConsumableTestDefinition ctd = ConsumableTestDefinition.fromTestDefinition(td);
             consumableTestDefinitions.put(entry.getKey(), ctd);
         }
 
@@ -178,48 +179,13 @@ public abstract class ProctorUtils {
         return artifact;
     }
 
+    /**
+     * @deprecated Use {@link ConsumableTestDefinition#fromTestDefinition}
+     */
     @Nonnull
+    @Deprecated
     public static ConsumableTestDefinition convertToConsumableTestDefinition(@Nonnull final TestDefinition td) {
-        final Map<String, Object> specialConstants = td.getSpecialConstants();
-
-        final List<String> ruleComponents = Lists.newArrayList();
-        //noinspection unchecked
-        final List<String> countries = (List<String>) specialConstants.get("__COUNTRIES");
-        if (countries != null) {
-            ruleComponents.add("proctor:contains(__COUNTRIES, country)");
-        }
-        final String rawRule = removeElExpressionBraces(td.getRule());
-        if (!StringUtils.isBlank(rawRule)) {
-            ruleComponents.add(rawRule);
-        }
-
-        final String rule;
-        if (ruleComponents.isEmpty()) {
-            rule = null;
-        } else {
-            rule = "${" + String.join(" && ", ruleComponents) + '}';
-        }
-
-        final List<Allocation> allocations = td.getAllocations();
-        for (final Allocation alloc : allocations) {
-            final String rawAllocRule = removeElExpressionBraces(alloc.getRule());
-            if (StringUtils.isBlank(rawAllocRule)) {
-                alloc.setRule(null);
-            } else {
-                // ensure that all rules in the generated test-matrix are wrapped in "${" ... "}"
-                if (!(rawAllocRule.startsWith("${") && rawAllocRule.endsWith("}"))) {
-                    final String newAllocRule = "${" + rawAllocRule + "}";
-                    alloc.setRule(newAllocRule);
-                }
-            }
-        }
-
-        final Map<String, Object> constants = Maps.newLinkedHashMap();
-        constants.putAll(td.getConstants());
-        constants.putAll(specialConstants);
-
-        return new ConsumableTestDefinition(td.getVersion(), rule, td.getTestType(), td.getSalt(), td.getBuckets(),
-                allocations, td.getSilent(), constants, td.getDescription(), td.getMetaTags());
+        return ConsumableTestDefinition.fromTestDefinition(td);
     }
 
     public static ProctorSpecification readSpecification(final File inputFile) {
@@ -914,23 +880,21 @@ public abstract class ProctorUtils {
                 null,
                 Collections.singletonList(new Range(fallbackValue, 1.0)));
 
-
-        return new ConsumableTestDefinition(
-                "default",
-                null,
-                TestType.RANDOM,
-                testName,
-                ImmutableList.of(new TestBucket(
-                        missingTestSoleBucketName,
-                        fallbackValue,
-                        missingTestSoleBucketDescription)),
-                // Force a nonnull allocation just in case something somewhere assumes 1.0 total allocation
-                Collections.singletonList(allocation),
-                // non-silent, though typically fallbackValue -1 has same effect
-                false,
-                Collections.emptyMap(),
-                testName,
-                emptyList());
+        return ConsumableTestDefinition.fromTestDefinition(
+                TestDefinition.builder()
+                        .setVersion("default")
+                        .setTestType(TestType.RANDOM)
+                        .setSalt(testName)
+                        .setBuckets(ImmutableList.of(new TestBucket(
+                                missingTestSoleBucketName,
+                                fallbackValue,
+                                missingTestSoleBucketDescription)))
+                        // Force a nonnull allocation just in case something somewhere assumes 1.0 total allocation
+                        .setAllocations(Collections.singletonList(allocation))
+                        .setSilent(false) // non-silent, though typically fallbackValue -1 has same effect
+                        .setDescription(testName)
+                        .build()
+        );
     }
 
     public static ProvidedContext convertContextToTestableMap(final Map<String, String> providedContext) {
@@ -1233,7 +1197,7 @@ public abstract class ProctorUtils {
      * @return the given rule with the most outside braces stripped
      */
     @CheckForNull
-    static String removeElExpressionBraces(@Nullable final String rule) {
+    public static String removeElExpressionBraces(@Nullable final String rule) {
         if (StringUtils.isBlank(rule)) {
             return null;
         }

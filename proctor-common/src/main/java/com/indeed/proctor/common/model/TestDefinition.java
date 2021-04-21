@@ -1,7 +1,6 @@
 package com.indeed.proctor.common.model;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Objects;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -11,7 +10,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Collections.emptyList;
 
 /**
@@ -57,7 +58,7 @@ public class TestDefinition {
     public TestDefinition() { /* intentionally empty */ }
 
     /**
-     * @deprecated Use {@link #TestDefinition(String, String, TestType, String, List, List, boolean, Map, Map, String, List)}
+     * @deprecated Use {@link #builder()}
      */
     @Deprecated
     public TestDefinition(
@@ -85,7 +86,7 @@ public class TestDefinition {
     }
 
     /**
-     * @deprecated Use {@link #TestDefinition(String, String, TestType, String, List, List, boolean, Map, Map, String, List)}
+     * @deprecated Use {@link #builder()}
      */
     @Deprecated
     public TestDefinition(
@@ -113,6 +114,10 @@ public class TestDefinition {
                 emptyList());
     }
 
+    /**
+     * @deprecated Use {@link #builder()}
+     */
+    @Deprecated
     public TestDefinition(
             final String version,
             @Nullable final String rule,
@@ -140,22 +145,28 @@ public class TestDefinition {
     }
 
     public TestDefinition(@Nonnull final TestDefinition other) {
-        //  technically other fields should not be null, but we have no guarantee
-        this(
-                other.version,
-                other.rule,
-                other.testType,
-                other.salt,
-                (other.buckets == null) ? null : new ArrayList<>(other.buckets),
-                (other.allocations == null) ? null : new ArrayList<>(other.allocations),
-                other.silent,
-                (other.constants == null) ? null : new HashMap<>(other.constants),
-                (other.specialConstants == null) ? null : new HashMap<>(other.specialConstants),
-                other.description,
-                (other.metaTags == null) ? emptyList(): new ArrayList<>(other.metaTags)
-        );
+        this(builder().from(other));
     }
 
+    private TestDefinition(@Nonnull final Builder builder) {
+        checkArgument(!builder.buckets.isEmpty(), "buckets must be set");
+        checkArgument(!builder.allocations.isEmpty(), "allocations must be set");
+        this.version = builder.version;
+        this.rule = builder.rule;
+        this.testType = Objects.requireNonNull(builder.testType, "testType must be set");
+        this.salt = Objects.requireNonNull(builder.salt, "salt must be set");
+        this.buckets = builder.buckets;
+        this.allocations = builder.allocations;
+        this.silent = builder.silent;
+        this.constants = builder.constants;
+        this.specialConstants = builder.specialConstants;
+        this.description = builder.description;
+        this.metaTags = builder.metaTags;
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
 
     public String getVersion() {
         return version;
@@ -305,7 +316,7 @@ public class TestDefinition {
                 });
             }
         }
-        return Objects.hashCode(version, constants, specialConstants, salt, rule, bucketWrappers, allocations, silent,
+        return Objects.hash(version, constants, specialConstants, salt, rule, bucketWrappers, allocations, silent,
                 testType, description, metaTags);
     }
 
@@ -325,16 +336,16 @@ public class TestDefinition {
         }
         final TestDefinition that = (TestDefinition) otherDefinition;
         return silent == that.silent &&
-                Objects.equal(version, that.version) &&
-                Objects.equal(constants, that.constants) &&
-                Objects.equal(specialConstants, that.specialConstants) &&
-                Objects.equal(salt, that.salt) &&
-                Objects.equal(rule, that.rule) &&
+                Objects.equals(version, that.version) &&
+                Objects.equals(constants, that.constants) &&
+                Objects.equals(specialConstants, that.specialConstants) &&
+                Objects.equals(salt, that.salt) &&
+                Objects.equals(rule, that.rule) &&
                 bucketListEqual(buckets, that.buckets) && // difference here
-                Objects.equal(allocations, that.allocations) &&
-                Objects.equal(testType, that.testType) &&
-                Objects.equal(description, that.description) &&
-                Objects.equal(metaTags, that.metaTags);
+                Objects.equals(allocations, that.allocations) &&
+                Objects.equals(testType, that.testType) &&
+                Objects.equals(description, that.description) &&
+                Objects.equals(metaTags, that.metaTags);
     }
 
     @VisibleForTesting
@@ -343,7 +354,7 @@ public class TestDefinition {
             return true;
         }
         // TestBucket Equal returns true too often, but false means false. This also handles single-sided null cases and different list size.
-        if (!Objects.equal(bucketsA, bucketsB)) {
+        if (!Objects.equals(bucketsA, bucketsB)) {
             return false;
         }
         final Iterator<TestBucket> itA = bucketsA.iterator();
@@ -356,5 +367,93 @@ public class TestDefinition {
             }
         }
         return true;
+    }
+
+    public static class Builder {
+        private String version;
+        private String rule;
+        private TestType testType;
+        private String salt;
+        private List<TestBucket> buckets = emptyList();
+        private List<Allocation> allocations = emptyList();
+        private boolean silent;
+        private Map<String, Object> constants = Collections.emptyMap();
+        private Map<String, Object> specialConstants = Collections.emptyMap();
+        private String description;
+        private List<String> metaTags = emptyList();
+
+        public Builder from(@Nonnull final TestDefinition other) {
+            this.version = other.version;
+            this.rule = other.rule;
+            this.testType = other.testType;
+            this.salt = other.salt;
+            this.buckets = new ArrayList<>(other.buckets);
+            this.allocations = new ArrayList<>(other.allocations);
+            this.silent = other.silent;
+            this.constants = new HashMap<>(other.constants);
+            this.specialConstants = new HashMap<>(other.specialConstants);
+            this.description = other.description;
+            this.metaTags = new ArrayList<>(other.metaTags);
+            return this;
+        }
+
+        public Builder setVersion(@Nullable final String version) {
+            this.version = version;
+            return this;
+        }
+
+        public Builder setRule(@Nullable final String rule) {
+            this.rule = rule;
+            return this;
+        }
+
+        public Builder setTestType(@Nonnull final TestType testType) {
+            this.testType = Objects.requireNonNull(testType);
+            return this;
+        }
+
+        public Builder setSalt(@Nonnull final String salt) {
+            this.salt = Objects.requireNonNull(salt);
+            return this;
+        }
+
+        public Builder setBuckets(@Nonnull final List<TestBucket> buckets) {
+            this.buckets = Objects.requireNonNull(buckets);
+            return this;
+        }
+
+        public Builder setAllocations(@Nonnull final List<Allocation> allocations) {
+            this.allocations = Objects.requireNonNull(allocations);
+            return this;
+        }
+
+        public Builder setSilent(final boolean silent) {
+            this.silent = silent;
+            return this;
+        }
+
+        public Builder setConstants(@Nonnull final Map<String, Object> constants) {
+            this.constants = Objects.requireNonNull(constants);
+            return this;
+        }
+
+        public Builder setSpecialConstants(@Nonnull final Map<String, Object> specialConstants) {
+            this.specialConstants = Objects.requireNonNull(specialConstants);
+            return this;
+        }
+
+        public Builder setDescription(@Nullable final String description) {
+            this.description = description;
+            return this;
+        }
+
+        public Builder setMetaTags(@Nonnull final List<String> metaTags) {
+            this.metaTags = Objects.requireNonNull(metaTags);
+            return this;
+        }
+
+        public TestDefinition build() {
+            return new TestDefinition(this);
+        }
     }
 }

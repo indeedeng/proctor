@@ -20,7 +20,7 @@ public class TestDefinitionValidator {
     private static boolean isValidTestDefinition(final InputStream stream, final String testName, final String matrixSource) {
         try {
             final TestDefinition testDefinition = OBJECT_MAPPER.readValue(stream, TestDefinition.class);
-            final ConsumableTestDefinition consumableTestDefinition = ProctorUtils.convertToConsumableTestDefinition(testDefinition);
+            final ConsumableTestDefinition consumableTestDefinition = ConsumableTestDefinition.fromTestDefinition(testDefinition);
             ProctorUtils.verifyInternallyConsistentDefinition(testName, matrixSource, consumableTestDefinition);
             return true;
         } catch (final Throwable e) {
