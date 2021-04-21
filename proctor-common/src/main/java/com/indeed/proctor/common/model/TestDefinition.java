@@ -55,6 +55,12 @@ public class TestDefinition {
     @Nullable
     private String description;
 
+    /**
+     * @see #getDependency()
+     */
+    @Nullable
+    private TestDependency dependency;
+
     public TestDefinition() { /* intentionally empty */ }
 
     /**
@@ -162,6 +168,7 @@ public class TestDefinition {
         this.specialConstants = builder.specialConstants;
         this.description = builder.description;
         this.metaTags = builder.metaTags;
+        this.dependency = builder.dependency;
     }
 
     public static Builder builder() {
@@ -285,6 +292,19 @@ public class TestDefinition {
         this.metaTags = metaTags;
     }
 
+    /**
+     * Dependency to active this test.
+     * This test won't be evaluated if the dependency condition isn't satisfied.
+     */
+    @Nullable
+    public TestDependency getDependency() {
+        return dependency;
+    }
+
+    public void setDependency(@Nullable final TestDependency dependency) {
+        this.dependency = dependency;
+    }
+
     @Override
     public String toString() {
         return "TestDefinition{" +
@@ -299,6 +319,7 @@ public class TestDefinition {
                 ", testType=" + testType +
                 ", description='" + description + '\'' +
                 ", metaTags=" + metaTags +
+                ", dependency=" + dependency +
                 '}';
     }
 
@@ -317,7 +338,7 @@ public class TestDefinition {
             }
         }
         return Objects.hash(version, constants, specialConstants, salt, rule, bucketWrappers, allocations, silent,
-                testType, description, metaTags);
+                testType, description, metaTags, dependency);
     }
 
     /**
@@ -345,7 +366,8 @@ public class TestDefinition {
                 Objects.equals(allocations, that.allocations) &&
                 Objects.equals(testType, that.testType) &&
                 Objects.equals(description, that.description) &&
-                Objects.equals(metaTags, that.metaTags);
+                Objects.equals(metaTags, that.metaTags) &&
+                Objects.equals(dependency, that.dependency);
     }
 
     @VisibleForTesting
@@ -381,6 +403,7 @@ public class TestDefinition {
         private Map<String, Object> specialConstants = Collections.emptyMap();
         private String description;
         private List<String> metaTags = emptyList();
+        private TestDependency dependency;
 
         public Builder from(@Nonnull final TestDefinition other) {
             this.version = other.version;
@@ -394,6 +417,7 @@ public class TestDefinition {
             this.specialConstants = new HashMap<>(other.specialConstants);
             this.description = other.description;
             this.metaTags = new ArrayList<>(other.metaTags);
+            this.dependency = other.dependency;
             return this;
         }
 
@@ -449,6 +473,11 @@ public class TestDefinition {
 
         public Builder setMetaTags(@Nonnull final List<String> metaTags) {
             this.metaTags = Objects.requireNonNull(metaTags);
+            return this;
+        }
+
+        public Builder setDependency(@Nullable final TestDependency dependency) {
+            this.dependency = dependency;
             return this;
         }
 

@@ -36,6 +36,12 @@ public class ConsumableTestDefinition {
     @Nonnull
     private List<String> metaTags = Collections.emptyList();
 
+    /**
+     * @see TestDefinition#getDependency()
+     */
+    @Nullable
+    private TestDependency dependency;
+
     public ConsumableTestDefinition() { /* intentionally empty */ }
 
     /**
@@ -117,6 +123,33 @@ public class ConsumableTestDefinition {
         this.testType = testType;
         this.description = description;
         this.metaTags = metaTags;
+    }
+
+    // intentionally private to avoid creating deprecated constructors
+    private ConsumableTestDefinition(
+            final String version,
+            @Nullable final String rule,
+            @Nonnull final TestType testType,
+            @Nullable final String salt,
+            @Nonnull final List<TestBucket> buckets,
+            @Nonnull final List<Allocation> allocations,
+            final boolean silent,
+            @Nonnull final Map<String, Object> constants,
+            @Nullable final String description,
+            @Nonnull final List<String> metaTags,
+            @Nullable final TestDependency dependency
+    ) {
+        this.constants = constants;
+        this.version = version;
+        this.salt = salt;
+        this.rule = rule;
+        this.buckets = buckets;
+        this.allocations = allocations;
+        this.silent = silent;
+        this.testType = testType;
+        this.description = description;
+        this.metaTags = metaTags;
+        this.dependency = dependency;
     }
 
     @Nonnull
@@ -210,6 +243,18 @@ public class ConsumableTestDefinition {
         this.metaTags = metaTags;
     }
 
+    /**
+     * @see TestDefinition#getDependency()
+     */
+    @Nullable
+    public TestDependency getDependency() {
+        return dependency;
+    }
+
+    public void setDependency(@Nullable final TestDependency dependency) {
+        this.dependency = dependency;
+    }
+
     @Nonnull
     public static ConsumableTestDefinition fromTestDefinition(@Nonnull final TestDefinition td) {
         final Map<String, Object> specialConstants = td.getSpecialConstants();
@@ -251,6 +296,6 @@ public class ConsumableTestDefinition {
         constants.putAll(specialConstants);
 
         return new ConsumableTestDefinition(td.getVersion(), rule, td.getTestType(), td.getSalt(), td.getBuckets(),
-                allocations, td.getSilent(), constants, td.getDescription(), td.getMetaTags());
+                allocations, td.getSilent(), constants, td.getDescription(), td.getMetaTags(), td.getDependency());
     }
 }
