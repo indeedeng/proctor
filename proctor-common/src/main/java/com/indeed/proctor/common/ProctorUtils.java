@@ -421,6 +421,9 @@ public abstract class ProctorUtils {
         final ProctorLoadResult.Builder resultBuilder = ProctorLoadResult.newBuilder();
 
         final Map<String, ConsumableTestDefinition> definedTests = testMatrix.getTests();
+
+        final Set<String> incompatibleTestNames = new HashSet<>();
+
         for (final Entry<String, ConsumableTestDefinition> entry : definedTests.entrySet()) {
             final String testName = entry.getKey();
 
@@ -437,6 +440,7 @@ public abstract class ProctorUtils {
                     );
                 } catch (final IncompatibleTestMatrixException e) {
                     resultBuilder.recordError(testName, e);
+                    incompatibleTestNames.add(testName);
                 }
             } else if (dynamicTests.contains(testName)) {
                 // resolved by dynamic filter
@@ -450,9 +454,23 @@ public abstract class ProctorUtils {
                     );
                 } catch (final IncompatibleTestMatrixException e) {
                     resultBuilder.recordIncompatibleDynamicTest(testName, e);
+                    incompatibleTestNames.add(testName);
                 }
             }
         }
+
+        final Map<String, String> errorReasonsOfTestsWithInvalidDependency =
+                TestDependencies.validateDependenciesAndReturnReasons(
+                        Maps.filterKeys(definedTests, key -> !incompatibleTestNames.contains(key)));
+
+        errorReasonsOfTestsWithInvalidDependency.forEach((testName, errorReason) -> {
+            final String message = "Invalid dependency field is detected: " + errorReason;
+            if (requiredTests.containsKey(testName)) {
+                resultBuilder.recordError(testName, new IncompatibleTestMatrixException(message));
+            } else if (dynamicTests.contains(testName)) {
+                resultBuilder.recordIncompatibleDynamicTest(testName, new IncompatibleTestMatrixException(message));
+            }
+        });
 
         final SetView<String> missingTests = Sets.difference(requiredTests.keySet(), definedTests.keySet());
         resultBuilder.recordAllMissing(missingTests);
