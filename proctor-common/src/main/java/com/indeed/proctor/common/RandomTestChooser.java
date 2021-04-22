@@ -101,9 +101,10 @@ class RandomTestChooser implements TestChooser<Void> {
     @Override
     public TestChooser.Result choose(
             @Nullable final Void identifier,
-            @Nonnull final Map<String, Object> values
+            @Nonnull final Map<String, Object> values,
+            @Nonnull final Map<String, TestBucket> testGroups
     ) {
-        final int matchingRuleIndex = testRangeSelector.findMatchingRule(values);
+        final int matchingRuleIndex = testRangeSelector.findMatchingRule(values, testGroups);
         if (matchingRuleIndex < 0) {
             return TestChooser.Result.EMPTY;
         }

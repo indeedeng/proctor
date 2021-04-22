@@ -1,5 +1,6 @@
 package com.indeed.proctor.common;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -8,6 +9,8 @@ import com.indeed.proctor.common.model.Audit;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.Range;
 import com.indeed.proctor.common.model.TestBucket;
+import com.indeed.proctor.common.model.TestDefinition;
+import com.indeed.proctor.common.model.TestDependency;
 import com.indeed.proctor.common.model.TestMatrixArtifact;
 import com.indeed.proctor.common.model.TestType;
 import org.junit.Test;
@@ -37,9 +40,9 @@ public class TestProctorIntegration {
         assertEquals("ghi3",            calcGroups(proctor, "piafdsff", "AR", "pt", 9));
         assertEquals("def2,ghi3",       calcGroups(proctor, "piafdsff", "IO", "pt", 9));
         assertEquals("def2,ghi3",       calcGroups(proctor, "piafdsff", "UY", "pt", 9));
-        assertEquals("abc0",            calcGroups(proctor, "piafdsff", "AR", "en", 4));
-        assertEquals("abc0,def2",       calcGroups(proctor, "piafdsff", "IO", "en", 4));
-        assertEquals("abc0,def2",       calcGroups(proctor, "piafdsff", "UY", "en", 4));
+        assertEquals("abc0,jkl1",       calcGroups(proctor, "piafdsff", "AR", "en", 4));
+        assertEquals("abc0,def2,jkl1",  calcGroups(proctor, "piafdsff", "IO", "en", 4));
+        assertEquals("abc0,def2,jkl1",  calcGroups(proctor, "piafdsff", "UY", "en", 4));
         assertEquals("abc0,ghi3",       calcGroups(proctor, "piafdsff", "AR", "pt", 4));
         assertEquals("abc0,def2,ghi3",  calcGroups(proctor, "piafdsff", "IO", "pt", 4));
         assertEquals("abc0,def2,ghi3",  calcGroups(proctor, "piafdsff", "UY", "pt", 4));
@@ -50,25 +53,25 @@ public class TestProctorIntegration {
         assertEquals("ghi1",            calcGroups(proctor, "8719568712", "AR", "pt", 9));
         assertEquals("def2,ghi1",       calcGroups(proctor, "8719568712", "IO", "pt", 9));
         assertEquals("def2,ghi1",       calcGroups(proctor, "8719568712", "UY", "pt", 9));
-        assertEquals("abc0",            calcGroups(proctor, "8719568712", "AR", "en", 4));
-        assertEquals("abc0,def2",       calcGroups(proctor, "8719568712", "IO", "en", 4));
-        assertEquals("abc0,def2",       calcGroups(proctor, "8719568712", "UY", "en", 4));
+        assertEquals("abc0,jkl2",       calcGroups(proctor, "8719568712", "AR", "en", 4));
+        assertEquals("abc0,def2,jkl2",  calcGroups(proctor, "8719568712", "IO", "en", 4));
+        assertEquals("abc0,def2,jkl2",  calcGroups(proctor, "8719568712", "UY", "en", 4));
         assertEquals("abc0,ghi1",       calcGroups(proctor, "8719568712", "AR", "pt", 4));
         assertEquals("abc0,def2,ghi1",  calcGroups(proctor, "8719568712", "IO", "pt", 4));
         assertEquals("abc0,def2,ghi1",  calcGroups(proctor, "8719568712", "UY", "pt", 4));
 
-        assertEquals("",            calcGroups(proctor, "aksdh8947jh4807", "AR", "en", 9));
-        assertEquals("def0",        calcGroups(proctor, "aksdh8947jh4807", "IO", "en", 9));
-        assertEquals("def0",        calcGroups(proctor, "aksdh8947jh4807", "UY", "en", 9));
-        assertEquals("",            calcGroups(proctor, "aksdh8947jh4807", "AR", "pt", 9));
-        assertEquals("def0",        calcGroups(proctor, "aksdh8947jh4807", "IO", "pt", 9));
-        assertEquals("def0",        calcGroups(proctor, "aksdh8947jh4807", "UY", "pt", 9));
-        assertEquals("abc0",        calcGroups(proctor, "aksdh8947jh4807", "AR", "en", 4));
-        assertEquals("abc0,def0",   calcGroups(proctor, "aksdh8947jh4807", "IO", "en", 4));
-        assertEquals("abc0,def0",   calcGroups(proctor, "aksdh8947jh4807", "UY", "en", 4));
-        assertEquals("abc0",        calcGroups(proctor, "aksdh8947jh4807", "AR", "pt", 4));
-        assertEquals("abc0,def0",   calcGroups(proctor, "aksdh8947jh4807", "IO", "pt", 4));
-        assertEquals("abc0,def0",   calcGroups(proctor, "aksdh8947jh4807", "UY", "pt", 4));
+        assertEquals("",                calcGroups(proctor, "aksdh8947jh4807", "AR", "en", 9));
+        assertEquals("def0",            calcGroups(proctor, "aksdh8947jh4807", "IO", "en", 9));
+        assertEquals("def0",            calcGroups(proctor, "aksdh8947jh4807", "UY", "en", 9));
+        assertEquals("",                calcGroups(proctor, "aksdh8947jh4807", "AR", "pt", 9));
+        assertEquals("def0",            calcGroups(proctor, "aksdh8947jh4807", "IO", "pt", 9));
+        assertEquals("def0",            calcGroups(proctor, "aksdh8947jh4807", "UY", "pt", 9));
+        assertEquals("abc0,jkl2",       calcGroups(proctor, "aksdh8947jh4807", "AR", "en", 4));
+        assertEquals("abc0,def0,jkl2",  calcGroups(proctor, "aksdh8947jh4807", "IO", "en", 4));
+        assertEquals("abc0,def0,jkl2",  calcGroups(proctor, "aksdh8947jh4807", "UY", "en", 4));
+        assertEquals("abc0",            calcGroups(proctor, "aksdh8947jh4807", "AR", "pt", 4));
+        assertEquals("abc0,def0",       calcGroups(proctor, "aksdh8947jh4807", "IO", "pt", 4));
+        assertEquals("abc0,def0",       calcGroups(proctor, "aksdh8947jh4807", "UY", "pt", 4));
     }
 
     private Proctor constructProctor() {
@@ -89,11 +92,6 @@ public class TestProctorIntegration {
 
         final List<Allocation> abcAllocations = Collections.singletonList(new Allocation(null, Arrays.asList(new Range[] { new Range(abcBucket0.getValue(), 1) })));
 
-        /**
-final int id, final int version, final String rule, final TestType testType, final String salt, final List<TestBucket> buckets, final List<RuleRatio> ratios,
-final Map<String, Object> constants, final String description) {
-
-         */
         final ConsumableTestDefinition abcTD = new ConsumableTestDefinition("1", "${num > SOME_NUM && num < ANOTHER_NUM}", TestType.ANONYMOUS_USER, "abcsalt", abcBuckets, abcAllocations, abcTestConstants, "zingle boppity zip zop");
 
         final TestBucket defBucket0 = new TestBucket("control", 0, "control description", null);
@@ -128,10 +126,31 @@ final Map<String, Object> constants, final String description) {
                         new Range(ghiBucket4.getValue(), 0.2),
                 })));
         final ConsumableTestDefinition ghiTD = new ConsumableTestDefinition("3", "${proctor:contains(LANGUAGES, language)}", TestType.ANONYMOUS_USER, "ghisalt", ghiBuckets, ghiAllocations, ghiTestConstants, "jangle bing zimple plop");
+
+        final ConsumableTestDefinition jklTD = ConsumableTestDefinition.fromTestDefinition(
+                TestDefinition.builder()
+                        .setDependency(new TestDependency("abc", 0))
+                        .setRule("language == 'en'")
+                        .setTestType(TestType.ANONYMOUS_USER)
+                        .setSalt("&hash11")
+                        .setBuckets(ImmutableList.of(
+                                new TestBucket("bucket1", 1, ""),
+                                new TestBucket("bucket2", 2, "")
+                        ))
+                        .setAllocations(ImmutableList.of(
+                                new Allocation(null, ImmutableList.of(
+                                        new Range(1, 0.5),
+                                        new Range(2, 0.5)
+                                ))
+                        ))
+                        .build()
+        );
+
         final Map<String, ConsumableTestDefinition> tests = Maps.newLinkedHashMap();
         tests.put("abc", abcTD);
         tests.put("def", defTD);
         tests.put("ghi", ghiTD);
+        tests.put("jkl", jklTD);
 
         matrix.setTests(tests);
 

@@ -1,11 +1,14 @@
 package com.indeed.proctor.common;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.Range;
 import com.indeed.proctor.common.model.TestBucket;
+import com.indeed.proctor.common.model.TestDefinition;
+import com.indeed.proctor.common.model.TestDependency;
 import com.indeed.proctor.common.model.TestType;
 import org.apache.el.ExpressionFactoryImpl;
 import org.easymock.classextension.EasyMock;
@@ -18,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -77,7 +81,7 @@ public class TestStandardTestChooser {
 
         final Map<String, Object> values = Collections.emptyMap();
         for (int i = 0; i < 100; i++) {
-            final TestChooser.Result chosen = rtc.choose(String.valueOf(i), values);
+            final TestChooser.Result chosen = rtc.choose(String.valueOf(i), values, Collections.emptyMap());
             assertNotNull(chosen);
             assertNotNull(chosen.getTestBucket());
             assertNotNull(chosen.getAllocation());
@@ -188,7 +192,7 @@ public class TestStandardTestChooser {
 
         // Ensure no exceptions thrown.
         final TestChooser.Result chooseResult = new StandardTestChooser(selector)
-                .choose("identifier", Collections.<String, Object>emptyMap());
+                .choose("identifier", Collections.<String, Object>emptyMap(), Collections.emptyMap());
 
         assertNotNull(chooseResult);
         assertNull( "Expected no bucket to be found ", chooseResult.getTestBucket());
@@ -221,7 +225,7 @@ public class TestStandardTestChooser {
         );
 
         final TestChooser.Result chooseResult = new StandardTestChooser(selector)
-            .choose("identifier", Collections.<String, Object>emptyMap());
+            .choose("identifier", Collections.<String, Object>emptyMap(), Collections.emptyMap());
 
         assertNotNull(chooseResult);
         assertNull("Expected no bucket to be found", chooseResult.getTestBucket());
@@ -255,12 +259,77 @@ public class TestStandardTestChooser {
         );
 
         final TestChooser.Result chooseResult = new StandardTestChooser(selector)
-            .choose("identifier", Collections.<String, Object>emptyMap());
+            .choose("identifier", Collections.<String, Object>emptyMap(), Collections.emptyMap());
 
         assertEquals("Test bucket with value 1 expected", 1, chooseResult.getTestBucket().getValue());
         assertEquals("Test allocation with id #B1 expected", "#B1", chooseResult.getAllocation().getId());
 
         EasyMock.verify(ruleEvaluator);
+    }
+
+
+    @Test
+    public void testDependency_match() {
+        final String testName = "test";
+
+        final ConsumableTestDefinition testDefinition = ConsumableTestDefinition.fromTestDefinition(
+                TestDefinition.builder()
+                        .setTestType(TestType.ANONYMOUS_USER)
+                        .setSalt(testName)
+                        .setBuckets(INACTIVE_CONTROL_TEST_BUCKETS)
+                        .setAllocations(ImmutableList.of(new Allocation("", RANGES_100_0, "#B1")))
+                        .setDependency(new TestDependency("par_test", 10))
+                        .build()
+        );
+
+        final RuleEvaluator ruleEvaluator = newRuleEvaluator(true);
+        final TestRangeSelector selector = new TestRangeSelector(
+                ruleEvaluator,
+                testName,
+                testDefinition
+        );
+
+        final TestChooser.Result chooseResult = new StandardTestChooser(selector)
+                .choose(
+                        "identifier",
+                        Collections.emptyMap(),
+                        ImmutableMap.of("par_test", new TestBucket("", 10, ""))
+                );
+
+        assertThat(chooseResult.getTestBucket().getValue()).isEqualTo(1);
+        assertThat(chooseResult.getAllocation().getId()).isEqualTo("#B1");
+    }
+
+    @Test
+    public void testDependency_fallback() {
+        final String testName = "test";
+
+        final ConsumableTestDefinition testDefinition = ConsumableTestDefinition.fromTestDefinition(
+                TestDefinition.builder()
+                        .setTestType(TestType.ANONYMOUS_USER)
+                        .setSalt(testName)
+                        .setBuckets(INACTIVE_CONTROL_TEST_BUCKETS)
+                        .setAllocations(ImmutableList.of(new Allocation("", RANGES_100_0, "#B1")))
+                        .setDependency(new TestDependency("par_test", 10))
+                        .build()
+        );
+
+        final RuleEvaluator ruleEvaluator = newRuleEvaluator(true);
+        final TestRangeSelector selector = new TestRangeSelector(
+                ruleEvaluator,
+                testName,
+                testDefinition
+        );
+
+        final TestChooser.Result chooseResult = new StandardTestChooser(selector)
+                .choose(
+                        "identifier",
+                        Collections.emptyMap(),
+                        ImmutableMap.of("par_test", new TestBucket("", 1, ""))
+                );
+
+        assertThat(chooseResult.getTestBucket()).isNull();
+        assertThat(chooseResult.getAllocation()).isNull();
     }
 
     private StandardTestChooser newChooser() {
@@ -289,7 +358,7 @@ public class TestStandardTestChooser {
 
         final Map<String, Object> values = Collections.emptyMap();
         for (int accountId = 1; accountId < num; accountId++) { // deliberately skipping 0
-            final TestChooser.Result chosen = rtc.choose(String.valueOf(accountId), values);
+            final TestChooser.Result chosen = rtc.choose(String.valueOf(accountId), values, Collections.emptyMap());
             assertNotNull(chosen);
             assertNotNull(chosen.getTestBucket());
             assertNotNull(chosen.getAllocation());

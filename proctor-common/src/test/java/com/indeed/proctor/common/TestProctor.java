@@ -3,13 +3,17 @@ package com.indeed.proctor.common;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.Audit;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
+import com.indeed.proctor.common.model.Range;
 import com.indeed.proctor.common.model.TestBucket;
+import com.indeed.proctor.common.model.TestDefinition;
+import com.indeed.proctor.common.model.TestDependency;
 import com.indeed.proctor.common.model.TestMatrixArtifact;
 import com.indeed.proctor.common.model.TestType;
 import org.junit.Test;
@@ -28,6 +32,9 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -266,7 +273,8 @@ public class TestProctor {
         final Proctor proctor = new Proctor(
                 matrix,
                 null,
-                Collections.singletonMap(testName, testChooser)
+                Collections.singletonMap(testName, testChooser),
+                Collections.singletonList(testName)
         );
 
         final Identifiers identifiersWithRandom = new Identifiers(Collections.emptyMap(), true);
@@ -279,7 +287,7 @@ public class TestProctor {
                 testBucket, allocation
         );
 
-        when(testChooser.choose(null, inputContext)).thenReturn(result);
+        when(testChooser.choose(isNull(), eq(inputContext), anyMap())).thenReturn(result);
 
         final ProctorResult proctorResultWithRandom = proctor.determineTestGroups(
                 identifiersWithRandom,
@@ -299,7 +307,69 @@ public class TestProctor {
         assertThat(proctorResultWithoutRandom.getAllocations()).isEqualTo(Collections.emptyMap());
 
         // choose should not be called for identifiers with randomEnabled == false.
-        verify(testChooser, times(1)).choose(null, inputContext);
+        verify(testChooser, times(1)).choose(isNull(), eq(inputContext), anyMap());
+    }
+
+    @Test
+    public void testDetermineTestGroupsFilteringTestsWithDependency() {
+        // if test X depends Y and only X is given to filter,
+        // it should be able to evaluate X.
+
+        final TestBucket testBucket = new TestBucket("active", 1, "");
+        final Allocation allocation = new Allocation(
+                "",
+                ImmutableList.of(new Range(1, 1.0))
+        );
+
+        final ConsumableTestDefinition testDefinitionX = ConsumableTestDefinition.fromTestDefinition(
+                TestDefinition.builder()
+                        .setSalt("&X")
+                        .setTestType(TestType.ANONYMOUS_USER)
+                        .setDependency(new TestDependency("Y", 1))
+                        .setBuckets(ImmutableList.of(testBucket))
+                        .setAllocations(ImmutableList.of(allocation))
+                        .build()
+        );
+        final ConsumableTestDefinition testDefinitionY = ConsumableTestDefinition.fromTestDefinition(
+                TestDefinition.builder()
+                        .setSalt("&Y")
+                        .setTestType(TestType.ANONYMOUS_USER)
+                        .setBuckets(ImmutableList.of(testBucket))
+                        .setAllocations(ImmutableList.of(allocation))
+                        .build()
+        );
+
+        final Map<String, ConsumableTestDefinition> tests = ImmutableMap.of(
+                "X", testDefinitionX,
+                "Y", testDefinitionY
+        );
+        final TestMatrixArtifact matrix = new TestMatrixArtifact();
+        matrix.setTests(tests);
+        matrix.setAudit(new Audit());
+
+        final Proctor proctor = Proctor.construct(
+                matrix,
+                ProctorLoadResult.emptyResult(),
+                RuleEvaluator.defaultFunctionMapperBuilder().build()
+        );
+
+        final ProctorResult proctorResult = proctor.determineTestGroups(
+                Identifiers.of(TestType.ANONYMOUS_USER, "cookie"),
+                Collections.emptyMap(),
+                Collections.emptyMap(),
+                ImmutableList.of("X")
+        );
+
+        assertThat(proctorResult.getBuckets())
+                .containsOnlyKeys("X")
+                .containsEntry("X", testBucket);
+        assertThat(proctorResult.getAllocations())
+                .containsOnlyKeys("X")
+                .containsEntry("X", allocation);
+        assertThat(proctorResult.getTestDefinitions())
+                .containsOnlyKeys("X", "Y")
+                .containsEntry("X", testDefinitionX)
+                .containsEntry("Y", testDefinitionY); // keeping Y for backward compatibility
     }
 
     private static TestMatrixArtifact createTestMatrixWithOneRandomTest(final String testName) {

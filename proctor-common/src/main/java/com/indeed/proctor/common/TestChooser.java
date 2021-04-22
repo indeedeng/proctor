@@ -26,7 +26,7 @@ interface TestChooser<IdentifierType> {
     String getTestName();
 
     @Nonnull
-    TestChooser.Result choose(@Nullable IdentifierType identifier, @Nonnull Map<String, Object> values);
+    TestChooser.Result choose(@Nullable IdentifierType identifier, @Nonnull Map<String, Object> values, @Nonnull Map<String, TestBucket> testGroups);
 
     /**
      * Models a result of an assigned bucket and allocation by {@code TestChooser}.
