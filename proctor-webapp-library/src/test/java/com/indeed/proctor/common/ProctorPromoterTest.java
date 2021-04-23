@@ -1,6 +1,11 @@
 package com.indeed.proctor.common;
 
+import com.google.common.collect.ImmutableList;
+import com.indeed.proctor.common.model.Allocation;
+import com.indeed.proctor.common.model.Range;
+import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.common.model.TestDefinition;
+import com.indeed.proctor.common.model.TestType;
 import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.store.StoreException;
@@ -57,8 +62,7 @@ public class ProctorPromoterTest {
 
     @Before
     public void setup() throws StoreException {
-        final TestDefinition mockTestDefinition = Mockito.mock(TestDefinition.class);
-        Mockito.when(trunk.getTestDefinition(TEST_NAME, TRUNK_REVISION)).thenReturn(mockTestDefinition);
+        Mockito.when(trunk.getTestDefinition(TEST_NAME, TRUNK_REVISION)).thenReturn(stubTestDefinition(TRUNK_REVISION));
         proctorPromoter = Mockito.spy(new ProctorPromoter(trunk, qa, production, executorService));
     }
 
@@ -148,9 +152,7 @@ public class ProctorPromoterTest {
 
     @Test
     public void promoteWhenRevDoesNotExistInDestFails() throws StoreException, ProctorPromoter.TestPromotionException {
-        final TestDefinition mockedPromotedTestDefinition = Mockito.mock(TestDefinition.class);
-        Mockito.when(mockedPromotedTestDefinition.getVersion()).thenReturn(EMPTY_QA_REVISION); // can never happen?
-        Mockito.when(qa.getCurrentTestDefinition(TEST_NAME)).thenReturn(mockedPromotedTestDefinition);
+        Mockito.when(qa.getCurrentTestDefinition(TEST_NAME)).thenReturn(stubTestDefinition(EMPTY_QA_REVISION)); // can never happen?
 
         assertThatThrownBy(() -> proctorPromoter.promote(TEST_NAME, Environment.WORKING, TRUNK_REVISION, Environment.QA, QA_REVISION, USERNAME, PASSWORD, AUTHOR, METADATA))
             .isInstanceOf(ProctorPromoter.TestPromotionException.class)
@@ -162,9 +164,8 @@ public class ProctorPromoterTest {
     @Test
     public void promoteWhenRevIsSpecifiedAsEmptyButExistsInDestFails() throws StoreException, ProctorPromoter.TestPromotionException {
         Mockito.when(qa.getHistory(TEST_NAME, 0, 1)).thenReturn(QA_HISTORY);
-        final TestDefinition mockedPromotedTestDefinition = Mockito.mock(TestDefinition.class);
-        Mockito.when(mockedPromotedTestDefinition.getVersion()).thenReturn(QA_REVISION);
-        Mockito.when(qa.getCurrentTestDefinition(TEST_NAME)).thenReturn(mockedPromotedTestDefinition);
+        Mockito.when(qa.getCurrentTestDefinition(TEST_NAME)).thenReturn(stubTestDefinition(QA_REVISION));
+
         assertThatThrownBy(() -> proctorPromoter.promote(TEST_NAME, Environment.WORKING, TRUNK_REVISION, Environment.QA, EMPTY_QA_REVISION, USERNAME, PASSWORD, AUTHOR, METADATA))
                 .isInstanceOf(ProctorPromoter.TestPromotionException.class)
                 .hasMessage("Non-Positive revision r" + EMPTY_QA_REVISION
@@ -176,10 +177,7 @@ public class ProctorPromoterTest {
     @Test
     public void promoteWhenSrcHistoryIsEmptyFails() throws StoreException, ProctorPromoter.TestPromotionException {
         Mockito.when(qa.getHistory(TEST_NAME, 0, 1)).thenReturn(QA_HISTORY);
-
-        final TestDefinition mockedPromotedTestDefinition = Mockito.mock(TestDefinition.class);
-        Mockito.when(mockedPromotedTestDefinition.getVersion()).thenReturn(QA_REVISION);
-        Mockito.when(qa.getCurrentTestDefinition(TEST_NAME)).thenReturn(mockedPromotedTestDefinition);
+        Mockito.when(qa.getCurrentTestDefinition(TEST_NAME)).thenReturn(stubTestDefinition(QA_REVISION));
 
         assertThatThrownBy(() -> proctorPromoter.promote(TEST_NAME, Environment.WORKING, TRUNK_REVISION, Environment.QA, QA_REVISION, USERNAME, PASSWORD, AUTHOR, METADATA))
                 .isInstanceOf(ProctorPromoter.TestPromotionException.class)
@@ -203,10 +201,7 @@ public class ProctorPromoterTest {
         Mockito.when(trunk.getHistory(TEST_NAME, TRUNK_REVISION, 0, 1)).thenReturn(TRUNK_HISTORY);
         // not sure how this testcase makes sense after refactoring.
         Mockito.when(qa.getHistory(TEST_NAME, 0, 1)).thenReturn(QA_HISTORY, emptyList());
-
-        final TestDefinition mockedPromotedTestDefinition = Mockito.mock(TestDefinition.class);
-        Mockito.when(mockedPromotedTestDefinition.getVersion()).thenReturn(QA_REVISION);
-        Mockito.when(qa.getCurrentTestDefinition(TEST_NAME)).thenReturn(mockedPromotedTestDefinition);
+        Mockito.when(qa.getCurrentTestDefinition(TEST_NAME)).thenReturn(stubTestDefinition(QA_REVISION));
 
         assertThatThrownBy(() -> proctorPromoter.promote(TEST_NAME, Environment.WORKING, TRUNK_REVISION, Environment.QA, QA_REVISION, USERNAME, PASSWORD, AUTHOR, METADATA))
                 .isInstanceOf(ProctorPromoter.TestPromotionException.class)
@@ -218,12 +213,8 @@ public class ProctorPromoterTest {
     public void promoteWhenHistoryDoesNotHaveLatestDestRev() throws StoreException, ProctorPromoter.TestPromotionException {
         final String updatedQaRevision = "fqr";
         Mockito.when(trunk.getHistory(TEST_NAME, TRUNK_REVISION, 0, 1)).thenReturn(TRUNK_HISTORY);
-
         Mockito.when(qa.getHistory(TEST_NAME, 0, 1)).thenReturn(QA_HISTORY);
-
-        final TestDefinition mockedPromotedTestDefinition = Mockito.mock(TestDefinition.class);
-        Mockito.when(mockedPromotedTestDefinition.getVersion()).thenReturn(QA_REVISION);
-        Mockito.when(qa.getCurrentTestDefinition(TEST_NAME)).thenReturn(mockedPromotedTestDefinition);
+        Mockito.when(qa.getCurrentTestDefinition(TEST_NAME)).thenReturn(stubTestDefinition(QA_REVISION));
 
         assertThatThrownBy(() -> proctorPromoter.promote(TEST_NAME, Environment.WORKING, TRUNK_REVISION, Environment.QA, updatedQaRevision, USERNAME, PASSWORD, AUTHOR, METADATA))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -235,9 +226,7 @@ public class ProctorPromoterTest {
         Mockito.when(trunk.getHistory(TEST_NAME, TRUNK_REVISION, 0, 1)).thenReturn(TRUNK_HISTORY);
 
         Mockito.when(qa.getHistory(TEST_NAME, 0, 1)).thenReturn(QA_HISTORY);
-        final TestDefinition mockedPromotedTestDefinition = Mockito.mock(TestDefinition.class);
-        Mockito.when(mockedPromotedTestDefinition.getVersion()).thenReturn(QA_REVISION);
-        Mockito.when(qa.getCurrentTestDefinition(TEST_NAME)).thenReturn(mockedPromotedTestDefinition, null); // not sure how this makes sense
+        Mockito.when(qa.getCurrentTestDefinition(TEST_NAME)).thenReturn(stubTestDefinition(QA_REVISION), null); // not sure how this makes sense
 
 
         assertThatThrownBy(() -> proctorPromoter.promote(TEST_NAME, Environment.WORKING, TRUNK_REVISION, Environment.QA, QA_REVISION, USERNAME, PASSWORD, AUTHOR, METADATA))
@@ -249,11 +238,7 @@ public class ProctorPromoterTest {
     public void promoteWhenRevExistsUpdatesTestDefinition() throws StoreException, ProctorPromoter.TestPromotionException {
         Mockito.when(trunk.getHistory(TEST_NAME, TRUNK_REVISION, 0, 1)).thenReturn(TRUNK_HISTORY);
         Mockito.when(qa.getHistory(TEST_NAME, 0, 1)).thenReturn(QA_HISTORY);
-        Mockito.when(qa.getCurrentTestDefinition(TEST_NAME)).thenReturn(Mockito.mock(TestDefinition.class));
-
-        final TestDefinition mockedPromotedTestDefinition = Mockito.mock(TestDefinition.class);
-        Mockito.when(mockedPromotedTestDefinition.getVersion()).thenReturn(QA_REVISION);
-        Mockito.when(qa.getCurrentTestDefinition(TEST_NAME)).thenReturn(mockedPromotedTestDefinition);
+        Mockito.when(qa.getCurrentTestDefinition(TEST_NAME)).thenReturn(stubTestDefinition(QA_REVISION));
 
         proctorPromoter.promote(TEST_NAME, Environment.WORKING, TRUNK_REVISION, Environment.QA, QA_REVISION, USERNAME, PASSWORD, AUTHOR, METADATA);
         Mockito.verify(qa).updateTestDefinition(
@@ -283,5 +268,15 @@ public class ProctorPromoterTest {
         Assertions.assertThat(environmentVersion.getQaVersion()).isEqualTo(QA_REVISION);
         Assertions.assertThat(environmentVersion.getProduction()).isEqualTo(PRODUCTION_HISTORY.get(0));
         Assertions.assertThat(environmentVersion.getProductionVersion()).isEqualTo(PROD_REVISION);
+    }
+
+    private static TestDefinition stubTestDefinition(final String version) {
+        return TestDefinition.builder()
+                .setSalt("&a")
+                .setVersion(version)
+                .setTestType(TestType.ANONYMOUS_USER)
+                .setBuckets(ImmutableList.of(new TestBucket("active", 1, "")))
+                .setAllocations(ImmutableList.of(new Allocation("", ImmutableList.of(new Range(1, 1.0)))))
+                .build();
     }
 }
