@@ -30,14 +30,13 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import static java.util.Collections.emptySet;
-
 /**
  * The sole entry point for client applications determining the test buckets for a particular client.
  * Basically a Factory to create ProctorResult for a given identifier and context, based on a TestMatrix and a specification.
  * Supposedly immutable result of loading a test matrix, so each reload creates a new instance of this class.
  *
  * See {@link #determineTestGroups(Identifiers, Map, Map)}
+ *
  * @author ketan
  */
 public class Proctor {
@@ -49,8 +48,8 @@ public class Proctor {
     /**
      * Factory method to do the setup and transformation of inputs
      *
-     * @param matrix a {@link TestMatrixArtifact} loaded by ProctorLoader
-     * @param loadResult a {@link ProctorLoadResult} which contains result of validation of test definition
+     * @param matrix         a {@link TestMatrixArtifact} loaded by ProctorLoader
+     * @param loadResult     a {@link ProctorLoadResult} which contains result of validation of test definition
      * @param functionMapper a given el {@link FunctionMapper}
      * @return constructed Proctor object
      */
@@ -150,7 +149,8 @@ public class Proctor {
             final TestType testType,
             final String identifier,
             @Nonnull final Map<String, Object> context,
-            @Nonnull final Map<String, Integer> forceGroups) {
+            @Nonnull final Map<String, Integer> forceGroups
+    ) {
         final Identifiers identifiers = new Identifiers(testType, identifier);
 
         return determineTestGroups(identifiers, context, forceGroups);
@@ -172,7 +172,8 @@ public class Proctor {
     public ProctorResult determineTestGroups(
             @Nonnull final Identifiers identifiers,
             @Nonnull final Map<String, Object> inputContext,
-            @Nonnull final Map<String, Integer> forceGroups) {
+            @Nonnull final Map<String, Integer> forceGroups
+    ) {
         return determineTestGroups(identifiers, inputContext, forceGroups, Collections.emptyList());
     }
 
@@ -209,7 +210,7 @@ public class Proctor {
             filteredChoosers = testChoosers;
         } else {
             filteredChoosers = Maps.newLinkedHashMap();
-            for (final String testName: testNameFilter) {
+            for (final String testName : testNameFilter) {
                 if (testChoosers.containsKey(testName)) {
                     filteredChoosers.put(testName, testChoosers.get(testName));
                 }
@@ -229,7 +230,7 @@ public class Proctor {
                     continue;
                 }
             } else {
-                if (! identifiers.isRandomEnabled()) {
+                if (!identifiers.isRandomEnabled()) {
                     // test wants random chooser, but client disabled random, nothing to do
                     continue;
                 }
@@ -292,8 +293,7 @@ public class Proctor {
         });
     }
 
-    public void appendTestsNameFiltered(final Writer sb, final Collection<String> testNameFilter)
-    {
+    public void appendTestsNameFiltered(final Writer sb, final Collection<String> testNameFilter) {
         final Function<TestChooser<?>, String> getTestName = new Function<TestChooser<?>, String>() {
             @Override
             public String apply(final TestChooser<?> input) {
@@ -326,7 +326,10 @@ public class Proctor {
     /**
      * appends json representation of testmatrix with only given testnames. Does not close the writer.
      */
-    public void appendTestMatrixFiltered(final Writer writer, final Collection<String> testNameFilter) throws IOException {
+    public void appendTestMatrixFiltered(
+            final Writer writer,
+            final Collection<String> testNameFilter
+    ) throws IOException {
         // Create new matrix object copied from the old one,
         // but keep only the tests with names in testNameFilter.
         final TestMatrixArtifact filtered = new TestMatrixArtifact();
