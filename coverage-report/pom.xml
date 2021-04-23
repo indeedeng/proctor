@@ -50,6 +50,11 @@
         </dependency>
         <dependency>
             <groupId>com.indeed</groupId>
+            <artifactId>proctor-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.indeed</groupId>
             <artifactId>proctor-consumer</artifactId>
             <version>${project.version}</version>
         </dependency>
