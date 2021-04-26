@@ -10,11 +10,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertThat;
 
 public class TestTestDefinition {
 
@@ -135,7 +135,7 @@ public class TestTestDefinition {
             final TestDefinition initialTest = new TestDefinition();
             final TestDefinition modifiedTest = modifier.apply(new TestDefinition());
             final TestDefinition anotherModifiedTest = modifier.apply(new TestDefinition());
-            assertThat(initialTest, not(equalTo(anotherModifiedTest)));
+            assertThat(initialTest).isNotEqualTo(anotherModifiedTest);
             assertEquals(modifiedTest, anotherModifiedTest);
             assertEquals(modifiedTest.hashCode(), anotherModifiedTest.hashCode());
         }
@@ -240,7 +240,7 @@ public class TestTestDefinition {
                 }
         )) {
             final TestDefinition anotherTest = modifier.apply(sample());
-            assertThat(sampleTest, not(equalTo(anotherTest)));
+            assertThat(sampleTest).isNotEqualTo(anotherTest);
         }
     }
 
@@ -256,6 +256,56 @@ public class TestTestDefinition {
                         .build()
         );
         assertNotEquals(sampleTest.hashCode(), otherTest.hashCode());
+    }
+
+    @Test
+    public void testBuilder() {
+        final String version = "-1";
+        final String rule = "lang == 'en'";
+        final TestType testType = TestType.ANONYMOUS_USER;
+        final String salt = "&sample_test";
+        final List<TestBucket> buckets = sampleDoublePayloadBuckets();
+        final List<Allocation> allocations = sampleAllocations();
+        final boolean silent = true;
+        final Map<String, Object> constants = sampleConstants();
+        final Map<String, Object> specialContants = sampleSpecialConstants();
+        final String description = "sample test";
+        final List<String> metatags = ImmutableList.of("sample_test_tag");
+        final TestDependency dependency = new TestDependency("sample_par_test", 1);
+
+        final TestDefinition definition1 = TestDefinition.builder()
+                .setVersion(version)
+                .setRule(rule)
+                .setTestType(testType)
+                .setSalt(salt)
+                .setBuckets(buckets)
+                .setAllocations(allocations)
+                .setSilent(silent)
+                .setConstants(constants)
+                .setSpecialConstants(specialContants)
+                .setDescription(description)
+                .setMetaTags(metatags)
+                .setDependency(dependency)
+                .build();
+
+        final TestDefinition definition2 = TestDefinition.builder()
+                .from(definition1)
+                .build();
+
+        for (final TestDefinition definition : Arrays.asList(definition1, definition2)) {
+            assertThat(definition.getVersion()).isEqualTo(version);
+            assertThat(definition.getRule()).isEqualTo(rule);
+            assertThat(definition.getTestType()).isEqualTo(testType);
+            assertThat(definition.getSalt()).isEqualTo(salt);
+            assertThat(definition.getBuckets()).isEqualTo(buckets);
+            assertThat(definition.getAllocations()).isEqualTo(allocations);
+            assertThat(definition.getSilent()).isEqualTo(silent);
+            assertThat(definition.getConstants()).isEqualTo(constants);
+            assertThat(definition.getSpecialConstants()).isEqualTo(specialContants);
+            assertThat(definition.getDescription()).isEqualTo(description);
+            assertThat(definition.getMetaTags()).isEqualTo(metatags);
+            assertThat(definition.getDependency()).isEqualTo(dependency);
+        }
     }
 
 }

@@ -81,7 +81,7 @@ public class TestTestRangeSelector {
         return TestDefinition.builder()
                 .setTestType(TestType.ANONYMOUS_USER)
                 .setSalt("")
-                .setBuckets(singletonList(new TestBucket("active", 1, "")))
+                .addBuckets(new TestBucket("active", 1, ""))
                 .setAllocations(
                         rules.stream()
                                 .map(rule -> new Allocation(rule, singletonList(new Range(1, 1.0))))

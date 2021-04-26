@@ -277,7 +277,7 @@ public class TestStandardTestChooser {
                         .setTestType(TestType.ANONYMOUS_USER)
                         .setSalt(testName)
                         .setBuckets(INACTIVE_CONTROL_TEST_BUCKETS)
-                        .setAllocations(ImmutableList.of(new Allocation("", RANGES_100_0, "#B1")))
+                        .addAllocations(new Allocation("", RANGES_100_0, "#B1"))
                         .setDependency(new TestDependency("par_test", 10))
                         .build()
         );
@@ -309,7 +309,7 @@ public class TestStandardTestChooser {
                         .setTestType(TestType.ANONYMOUS_USER)
                         .setSalt(testName)
                         .setBuckets(INACTIVE_CONTROL_TEST_BUCKETS)
-                        .setAllocations(ImmutableList.of(new Allocation("", RANGES_100_0, "#B1")))
+                        .addAllocations(new Allocation("", RANGES_100_0, "#B1"))
                         .setDependency(new TestDependency("par_test", 10))
                         .build()
         );

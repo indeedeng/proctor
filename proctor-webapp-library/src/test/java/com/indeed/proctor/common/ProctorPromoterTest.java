@@ -275,8 +275,8 @@ public class ProctorPromoterTest {
                 .setSalt("&a")
                 .setVersion(version)
                 .setTestType(TestType.ANONYMOUS_USER)
-                .setBuckets(ImmutableList.of(new TestBucket("active", 1, "")))
-                .setAllocations(ImmutableList.of(new Allocation("", ImmutableList.of(new Range(1, 1.0)))))
+                .addBuckets(new TestBucket("active", 1, ""))
+                .addAllocations(new Allocation("", ImmutableList.of(new Range(1, 1.0))))
                 .build();
     }
 }

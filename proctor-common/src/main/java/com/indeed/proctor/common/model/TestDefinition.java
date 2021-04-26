@@ -1,12 +1,13 @@
 package com.indeed.proctor.common.model;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -155,20 +156,20 @@ public class TestDefinition {
     }
 
     private TestDefinition(@Nonnull final Builder builder) {
-        checkArgument(!builder.buckets.isEmpty(), "buckets must be set");
-        checkArgument(!builder.allocations.isEmpty(), "allocations must be set");
-        this.version = builder.version;
-        this.rule = builder.rule;
-        this.testType = Objects.requireNonNull(builder.testType, "testType must be set");
-        this.salt = Objects.requireNonNull(builder.salt, "salt must be set");
-        this.buckets = builder.buckets;
-        this.allocations = builder.allocations;
-        this.silent = builder.silent;
-        this.constants = builder.constants;
-        this.specialConstants = builder.specialConstants;
-        this.description = builder.description;
-        this.metaTags = builder.metaTags;
-        this.dependency = builder.dependency;
+        version = builder.version;
+        rule = builder.rule;
+        testType = Objects.requireNonNull(builder.testType, "testType must be set");
+        salt = Objects.requireNonNull(builder.salt, "salt must be set");
+        buckets = builder.buckets.build();
+        allocations = builder.allocations.build();
+        silent = builder.silent;
+        constants = builder.constants.build();
+        specialConstants = builder.specialConstants.build();
+        description = builder.description;
+        metaTags = builder.metaTags.build();
+        dependency = builder.dependency;
+        checkArgument(!buckets.isEmpty(), "buckets must be set");
+        checkArgument(!allocations.isEmpty(), "allocations must be set");
     }
 
     public static Builder builder() {
@@ -396,28 +397,28 @@ public class TestDefinition {
         private String rule;
         private TestType testType;
         private String salt;
-        private List<TestBucket> buckets = emptyList();
-        private List<Allocation> allocations = emptyList();
+        private ImmutableList.Builder<TestBucket> buckets = ImmutableList.builder();
+        private ImmutableList.Builder<Allocation> allocations = ImmutableList.builder();
         private boolean silent;
-        private Map<String, Object> constants = Collections.emptyMap();
-        private Map<String, Object> specialConstants = Collections.emptyMap();
+        private ImmutableMap.Builder<String, Object> constants = ImmutableMap.builder();
+        private ImmutableMap.Builder<String, Object> specialConstants = ImmutableMap.builder();
         private String description;
-        private List<String> metaTags = emptyList();
+        private ImmutableList.Builder<String> metaTags = ImmutableList.builder();
         private TestDependency dependency;
 
         public Builder from(@Nonnull final TestDefinition other) {
-            this.version = other.version;
-            this.rule = other.rule;
-            this.testType = other.testType;
-            this.salt = other.salt;
-            this.buckets = new ArrayList<>(other.buckets);
-            this.allocations = new ArrayList<>(other.allocations);
-            this.silent = other.silent;
-            this.constants = new HashMap<>(other.constants);
-            this.specialConstants = new HashMap<>(other.specialConstants);
-            this.description = other.description;
-            this.metaTags = new ArrayList<>(other.metaTags);
-            this.dependency = other.dependency;
+            setVersion(other.version);
+            setRule(other.rule);
+            setTestType(other.testType);
+            setSalt(other.salt);
+            setBuckets(other.buckets);
+            setAllocations(other.allocations);
+            setSilent(other.silent);
+            setConstants(other.constants);
+            setSpecialConstants(other.specialConstants);
+            setDescription(other.description);
+            setMetaTags(other.metaTags);
+            setDependency(other.dependency);
             return this;
         }
 
@@ -441,13 +442,33 @@ public class TestDefinition {
             return this;
         }
 
-        public Builder setBuckets(@Nonnull final List<TestBucket> buckets) {
-            this.buckets = Objects.requireNonNull(buckets);
+        public Builder setBuckets(@Nonnull final Iterable<TestBucket> buckets) {
+            this.buckets = ImmutableList.builder();
+            return addAllBuckets(buckets);
+        }
+
+        public Builder addBuckets(@Nonnull final TestBucket... buckets) {
+            this.buckets.add(buckets);
             return this;
         }
 
-        public Builder setAllocations(@Nonnull final List<Allocation> allocations) {
-            this.allocations = Objects.requireNonNull(allocations);
+        public Builder addAllBuckets(@Nonnull final Iterable<TestBucket> buckets) {
+            this.buckets.addAll(buckets);
+            return this;
+        }
+
+        public Builder setAllocations(@Nonnull final Iterable<Allocation> allocations) {
+            this.allocations = ImmutableList.builder();
+            return addAllAllocations(allocations);
+        }
+
+        public Builder addAllocations(@Nonnull final Allocation... allocations) {
+            this.allocations.add(allocations);
+            return this;
+        }
+
+        public Builder addAllAllocations(@Nonnull final Iterable<Allocation> allocations) {
+            this.allocations.addAll(allocations);
             return this;
         }
 
@@ -457,12 +478,22 @@ public class TestDefinition {
         }
 
         public Builder setConstants(@Nonnull final Map<String, Object> constants) {
-            this.constants = Objects.requireNonNull(constants);
+            this.constants = ImmutableMap.builder();
+            return putAllConstants(constants);
+        }
+
+        public Builder putAllConstants(@Nonnull final Map<String, Object> constants) {
+            this.constants.putAll(constants);
             return this;
         }
 
         public Builder setSpecialConstants(@Nonnull final Map<String, Object> specialConstants) {
-            this.specialConstants = Objects.requireNonNull(specialConstants);
+            this.specialConstants = ImmutableMap.builder();
+            return putAllSpecialConstants(specialConstants);
+        }
+
+        public Builder putAllSpecialConstants(@Nonnull final Map<String, Object> specialConstants) {
+            this.specialConstants.putAll(specialConstants);
             return this;
         }
 
@@ -471,8 +502,13 @@ public class TestDefinition {
             return this;
         }
 
-        public Builder setMetaTags(@Nonnull final List<String> metaTags) {
-            this.metaTags = Objects.requireNonNull(metaTags);
+        public Builder setMetaTags(@Nonnull final Iterable<String> metaTags) {
+            this.metaTags = ImmutableList.builder();
+            return addAllMetaTags(metaTags);
+        }
+
+        public Builder addAllMetaTags(@Nonnull final Iterable<String> metaTags) {
+            this.metaTags.addAll(metaTags);
             return this;
         }
 

@@ -139,7 +139,7 @@ public class TestTestDependencies {
         );
         final ConsumableTestDefinition parentDefinition = ConsumableTestDefinition.fromTestDefinition(
                 stubTestDefinition(PARENT_TEST_NAME)
-                        .setBuckets(ImmutableList.of(new TestBucket("inactive", -1, ""), new TestBucket("active", BUCKET_VALUE, "")))
+                        .addBuckets(new TestBucket("inactive", -1, ""), new TestBucket("active", BUCKET_VALUE, ""))
                         .build()
         );
         assertThat(TestDependencies.validateDependencyAndReturnReason(
@@ -347,11 +347,11 @@ public class TestTestDependencies {
         return TestDefinition.builder()
                 .setTestType(TestType.ANONYMOUS_USER)
                 .setSalt("&" + testName)
-                .setBuckets(ImmutableList.of(new TestBucket("active", BUCKET_VALUE, "")))
-                .setAllocations(ImmutableList.of(new Allocation("",
+                .addBuckets(new TestBucket("active", BUCKET_VALUE, ""))
+                .addAllocations(new Allocation("",
                         ImmutableList.of(new Range(BUCKET_VALUE, 1.0)),
                         "#A1"
-                )));
+                ));
     }
 
     private static Map<String, ConsumableTestDefinition> constructTests(

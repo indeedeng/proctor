@@ -133,16 +133,16 @@ public class TestProctorIntegration {
                         .setRule("language == 'en'")
                         .setTestType(TestType.ANONYMOUS_USER)
                         .setSalt("&hash11")
-                        .setBuckets(ImmutableList.of(
+                        .addBuckets(
                                 new TestBucket("bucket1", 1, ""),
                                 new TestBucket("bucket2", 2, "")
-                        ))
-                        .setAllocations(ImmutableList.of(
+                        )
+                        .addAllocations(
                                 new Allocation(null, ImmutableList.of(
                                         new Range(1, 0.5),
                                         new Range(2, 0.5)
                                 ))
-                        ))
+                        )
                         .build()
         );
 

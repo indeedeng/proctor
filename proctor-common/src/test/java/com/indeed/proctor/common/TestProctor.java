@@ -326,16 +326,16 @@ public class TestProctor {
                         .setSalt("&X")
                         .setTestType(TestType.ANONYMOUS_USER)
                         .setDependency(new TestDependency("Y", 1))
-                        .setBuckets(ImmutableList.of(testBucket))
-                        .setAllocations(ImmutableList.of(allocation))
+                        .addBuckets(testBucket)
+                        .addAllocations(allocation)
                         .build()
         );
         final ConsumableTestDefinition testDefinitionY = ConsumableTestDefinition.fromTestDefinition(
                 TestDefinition.builder()
                         .setSalt("&Y")
                         .setTestType(TestType.ANONYMOUS_USER)
-                        .setBuckets(ImmutableList.of(testBucket))
-                        .setAllocations(ImmutableList.of(allocation))
+                        .addBuckets(testBucket)
+                        .addAllocations(allocation)
                         .build()
         );
 
