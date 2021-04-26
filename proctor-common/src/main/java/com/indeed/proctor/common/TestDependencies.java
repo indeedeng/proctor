@@ -190,7 +190,10 @@ public class TestDependencies {
             final Map<String, ConsumableTestDefinition> testDefinitions,
             final Set<String> testNames
     ) {
-        Preconditions.checkArgument(testDefinitions.keySet().containsAll(testNames));
+        testNames.stream().filter(testName -> !testDefinitions.containsKey(testName)).findAny()
+                .ifPresent((testName) -> {
+                    throw new IllegalArgumentException("BUG: unknown test name " + testName + " is given");
+                });
 
         final Queue<String> testNameQueue = new ArrayDeque<>(testNames);
         final Set<String> transitiveDependencies = new HashSet<>(testNames);
@@ -228,7 +231,10 @@ public class TestDependencies {
             final Map<String, ConsumableTestDefinition> testDefinitions,
             final Set<String> sourceTestNames
     ) {
-        Preconditions.checkArgument(testDefinitions.keySet().containsAll(sourceTestNames));
+        sourceTestNames.stream().filter(testName -> !testDefinitions.containsKey(testName)).findAny()
+                .ifPresent((testName) -> {
+                    throw new IllegalArgumentException("BUG: unknown test name " + testName + " is given");
+                });
 
         final Multimap<String, String> parentToChildrenMap = HashMultimap.create();
         testDefinitions.forEach((testName, definition) -> {

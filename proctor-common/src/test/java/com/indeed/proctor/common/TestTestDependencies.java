@@ -12,6 +12,7 @@ import com.indeed.proctor.common.model.TestDependency;
 import com.indeed.proctor.common.model.TestType;
 import org.junit.Test;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -276,6 +277,15 @@ public class TestTestDependencies {
     }
 
     @Test
+    public void testComputeTransitiveDependencies_unknownTest() {
+        final List<String> testNames = ImmutableList.of("A");
+        final Map<String, ConsumableTestDefinition> tests = constructTests(testNames, Collections.emptyMap());
+        assertThatThrownBy(() -> TestDependencies.computeTransitiveDependencies(tests, ImmutableSet.of("A", "__unknown")))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("BUG: unknown test name __unknown is given");
+    }
+
+    @Test
     public void testComputeMaximumDependencyChains() {
         // C -> B -> A
         //      ^
@@ -305,6 +315,17 @@ public class TestTestDependencies {
         assertThat(TestDependencies.computeMaximumDependencyChains(tests, "G")).isEqualTo(1);
 
         assertThat(TestDependencies.computeMaximumDependencyChains(tests, "H")).isEqualTo(0);
+    }
+
+    @Test
+    public void testComputeMaximumDependencyChains_unknownTestName() {
+        final List<String> testNames = ImmutableList.of("A");
+        final Map<String, ConsumableTestDefinition> tests = constructTests(testNames, Collections.emptyMap());
+
+        assertThat(TestDependencies.computeMaximumDependencyChains(tests, "A")).isEqualTo(0);
+        assertThatThrownBy(() -> TestDependencies.computeMaximumDependencyChains(tests, "__unknown"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("BUG: unknown test name __unknown is given");
     }
 
     @Test
