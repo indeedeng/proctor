@@ -164,19 +164,19 @@ public class TestDependencies {
      */
     public static int computeMaximumDependencyChains(
             final Map<String, ConsumableTestDefinition> testDefinitions,
-            final String targetTestName
+            final String testName
     ) {
         final Map<String, Integer> depthMap = new HashMap<>();
-        for (final String name : traverseDependencyTreesBFS(testDefinitions, ImmutableSet.of(targetTestName))) {
+        for (final String name : traverseDependencyTreesBFS(testDefinitions, ImmutableSet.of(testName))) {
             final ConsumableTestDefinition definition = testDefinitions.get(name);
-            if (targetTestName.equals(name) || (definition.getDependency() == null)) {
+            if (testName.equals(name) || (definition.getDependency() == null)) {
                 depthMap.put(name, 0);
             } else {
                 depthMap.put(name, depthMap.get(definition.getDependency().getTestName()) + 1);
             }
         }
         final int childDepth = depthMap.values().stream().max(Comparator.naturalOrder()).orElse(0);
-        final int parentNums = computeTransitiveDependencies(testDefinitions, ImmutableSet.of(targetTestName)).size() - 1;
+        final int parentNums = computeTransitiveDependencies(testDefinitions, ImmutableSet.of(testName)).size() - 1;
         return parentNums + childDepth;
     }
 
@@ -230,10 +230,10 @@ public class TestDependencies {
     ) {
         Preconditions.checkArgument(testDefinitions.keySet().containsAll(sourceTestNames));
 
-        final Multimap<String, String> childrenMap = HashMultimap.create();
+        final Multimap<String, String> parentToChildrenMap = HashMultimap.create();
         testDefinitions.forEach((testName, definition) -> {
             if (definition.getDependency() != null) {
-                childrenMap.put(definition.getDependency().getTestName(), testName);
+                parentToChildrenMap.put(definition.getDependency().getTestName(), testName);
             }
         });
 
@@ -242,7 +242,7 @@ public class TestDependencies {
         while (!testNameQueue.isEmpty()) {
             final String testName = testNameQueue.poll();
             builder.add(testName);
-            testNameQueue.addAll(childrenMap.get(testName));
+            testNameQueue.addAll(parentToChildrenMap.get(testName));
         }
 
         return builder.build();
