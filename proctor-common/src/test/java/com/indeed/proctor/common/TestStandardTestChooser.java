@@ -278,7 +278,7 @@ public class TestStandardTestChooser {
                         .setSalt(testName)
                         .setBuckets(INACTIVE_CONTROL_TEST_BUCKETS)
                         .addAllocations(new Allocation("", RANGES_100_0, "#B1"))
-                        .setDependency(new TestDependency("par_test", 10))
+                        .setDependsOn(new TestDependency("par_test", 10))
                         .build()
         );
 
@@ -310,7 +310,7 @@ public class TestStandardTestChooser {
                         .setSalt(testName)
                         .setBuckets(INACTIVE_CONTROL_TEST_BUCKETS)
                         .addAllocations(new Allocation("", RANGES_100_0, "#B1"))
-                        .setDependency(new TestDependency("par_test", 10))
+                        .setDependsOn(new TestDependency("par_test", 10))
                         .build()
         );
 

@@ -1654,9 +1654,9 @@ public class TestProctorUtils {
         definitionA.setSalt("&a");
         definitionB.setSalt("&b");
         definitionC.setSalt("&c");
-        definitionA.setDependency(new TestDependency(TEST_B, 1));
-        definitionB.setDependency(new TestDependency(TEST_A, 1));
-        definitionC.setDependency(new TestDependency(TEST_B, 1));
+        definitionA.setDependsOn(new TestDependency(TEST_B, 1));
+        definitionB.setDependsOn(new TestDependency(TEST_A, 1));
+        definitionC.setDependsOn(new TestDependency(TEST_B, 1));
         final Map<String, ConsumableTestDefinition> tests = ImmutableMap.of(
                 TEST_A, definitionA,
                 TEST_B, definitionB,
@@ -1695,8 +1695,8 @@ public class TestProctorUtils {
         );
         definitionA.setSalt("&a");
         definitionB.setSalt("&b");
-        definitionA.setDependency(new TestDependency("___unknown_test", 1));
-        definitionB.setDependency(new TestDependency(TEST_A, 1));
+        definitionA.setDependsOn(new TestDependency("___unknown_test", 1));
+        definitionB.setDependsOn(new TestDependency(TEST_A, 1));
         final Map<String, ConsumableTestDefinition> tests = ImmutableMap.of(
                 TEST_A, definitionA,
                 TEST_B, definitionB
@@ -1736,7 +1736,7 @@ public class TestProctorUtils {
         );
         definitionA.setSalt("&a");
         definitionB.setSalt("&b");
-        definitionB.setDependency(new TestDependency(TEST_A, 100));
+        definitionB.setDependsOn(new TestDependency(TEST_A, 100));
         final Map<String, ConsumableTestDefinition> tests = ImmutableMap.of(
                 TEST_A, definitionA,
                 TEST_B, definitionB
@@ -1773,7 +1773,7 @@ public class TestProctorUtils {
         definitionB.setTestType(TestType.AUTHENTICATED_USER);
         definitionA.setSalt("&a");
         definitionB.setSalt("&b");
-        definitionB.setDependency(new TestDependency(TEST_A, 100));
+        definitionB.setDependsOn(new TestDependency(TEST_A, 100));
         final Map<String, ConsumableTestDefinition> tests = ImmutableMap.of(
                 TEST_A, definitionA,
                 TEST_B, definitionB
@@ -1808,7 +1808,7 @@ public class TestProctorUtils {
         );
         definitionA.setSalt("&a");
         definitionB.setSalt("&a");
-        definitionB.setDependency(new TestDependency(TEST_A, 100));
+        definitionB.setDependsOn(new TestDependency(TEST_A, 100));
         final Map<String, ConsumableTestDefinition> tests = ImmutableMap.of(
                 TEST_A, definitionA,
                 TEST_B, definitionB
@@ -1843,7 +1843,7 @@ public class TestProctorUtils {
         );
         definitionA.setSalt("&a");
         definitionB.setSalt("&b");
-        definitionB.setDependency(new TestDependency(TEST_A, 100));
+        definitionB.setDependsOn(new TestDependency(TEST_A, 100));
         final Map<String, ConsumableTestDefinition> tests = ImmutableMap.of(
                 TEST_A, definitionA,
                 TEST_B, definitionB

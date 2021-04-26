@@ -129,7 +129,7 @@ public class TestProctorIntegration {
 
         final ConsumableTestDefinition jklTD = ConsumableTestDefinition.fromTestDefinition(
                 TestDefinition.builder()
-                        .setDependency(new TestDependency("abc", 0))
+                        .setDependsOn(new TestDependency("abc", 0))
                         .setRule("language == 'en'")
                         .setTestType(TestType.ANONYMOUS_USER)
                         .setSalt("&hash11")

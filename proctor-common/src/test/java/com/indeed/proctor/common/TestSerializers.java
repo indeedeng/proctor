@@ -44,7 +44,7 @@ public class TestSerializers {
     public void testTestDefinitionWithDependency() throws IOException {
         try(InputStream input = getClass().getResourceAsStream(EXAMPLE_TEST_DEFINITION_WITH_DEPENDENCY)) {
             final TestDefinition definition = Serializers.lenient().readValue(input, TestDefinition.class);
-            assertThat(definition.getDependency())
+            assertThat(definition.getDependsOn())
                     .isEqualTo(new TestDependency("another_tst", 1));
         }
     }

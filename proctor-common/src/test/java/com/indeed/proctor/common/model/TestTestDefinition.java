@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.function.Function;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -271,7 +270,7 @@ public class TestTestDefinition {
         final Map<String, Object> specialContants = sampleSpecialConstants();
         final String description = "sample test";
         final List<String> metatags = ImmutableList.of("sample_test_tag");
-        final TestDependency dependency = new TestDependency("sample_par_test", 1);
+        final TestDependency dependsOn = new TestDependency("sample_par_test", 1);
 
         final TestDefinition definition1 = TestDefinition.builder()
                 .setVersion(version)
@@ -285,7 +284,7 @@ public class TestTestDefinition {
                 .setSpecialConstants(specialContants)
                 .setDescription(description)
                 .setMetaTags(metatags)
-                .setDependency(dependency)
+                .setDependsOn(dependsOn)
                 .build();
 
         final TestDefinition definition2 = TestDefinition.builder()
@@ -304,7 +303,7 @@ public class TestTestDefinition {
             assertThat(definition.getSpecialConstants()).isEqualTo(specialContants);
             assertThat(definition.getDescription()).isEqualTo(description);
             assertThat(definition.getMetaTags()).isEqualTo(metatags);
-            assertThat(definition.getDependency()).isEqualTo(dependency);
+            assertThat(definition.getDependsOn()).isEqualTo(dependsOn);
         }
     }
 

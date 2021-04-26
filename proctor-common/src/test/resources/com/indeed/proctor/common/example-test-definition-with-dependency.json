@@ -37,7 +37,7 @@
   "specialConstants" : {
   },
   "rule" : "loggedIn",
-  "dependency": {
+  "dependsOn": {
     "testName": "another_tst",
     "bucketValue": 1
   }

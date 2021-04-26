@@ -57,10 +57,10 @@ public class TestDefinition {
     private String description;
 
     /**
-     * @see #getDependency()
+     * @see #getDependsOn()
      */
     @Nullable
-    private TestDependency dependency;
+    private TestDependency dependsOn;
 
     public TestDefinition() { /* intentionally empty */ }
 
@@ -167,7 +167,7 @@ public class TestDefinition {
         specialConstants = builder.specialConstants.build();
         description = builder.description;
         metaTags = builder.metaTags.build();
-        dependency = builder.dependency;
+        dependsOn = builder.dependsOn;
         checkArgument(!buckets.isEmpty(), "buckets must be set");
         checkArgument(!allocations.isEmpty(), "allocations must be set");
     }
@@ -294,16 +294,16 @@ public class TestDefinition {
     }
 
     /**
-     * Dependency to active this test.
+     * Dependency to activate this test.
      * This test won't be evaluated if the dependency condition isn't satisfied.
      */
     @Nullable
-    public TestDependency getDependency() {
-        return dependency;
+    public TestDependency getDependsOn() {
+        return dependsOn;
     }
 
-    public void setDependency(@Nullable final TestDependency dependency) {
-        this.dependency = dependency;
+    public void setDependsOn(@Nullable final TestDependency dependsOn) {
+        this.dependsOn = dependsOn;
     }
 
     @Override
@@ -320,7 +320,7 @@ public class TestDefinition {
                 ", testType=" + testType +
                 ", description='" + description + '\'' +
                 ", metaTags=" + metaTags +
-                ", dependency=" + dependency +
+                ", dependsOn=" + dependsOn +
                 '}';
     }
 
@@ -339,7 +339,7 @@ public class TestDefinition {
             }
         }
         return Objects.hash(version, constants, specialConstants, salt, rule, bucketWrappers, allocations, silent,
-                testType, description, metaTags, dependency);
+                testType, description, metaTags, dependsOn);
     }
 
     /**
@@ -368,7 +368,7 @@ public class TestDefinition {
                 Objects.equals(testType, that.testType) &&
                 Objects.equals(description, that.description) &&
                 Objects.equals(metaTags, that.metaTags) &&
-                Objects.equals(dependency, that.dependency);
+                Objects.equals(dependsOn, that.dependsOn);
     }
 
     @VisibleForTesting
@@ -404,7 +404,7 @@ public class TestDefinition {
         private ImmutableMap.Builder<String, Object> specialConstants = ImmutableMap.builder();
         private String description;
         private ImmutableList.Builder<String> metaTags = ImmutableList.builder();
-        private TestDependency dependency;
+        private TestDependency dependsOn;
 
         public Builder from(@Nonnull final TestDefinition other) {
             setVersion(other.version);
@@ -418,7 +418,7 @@ public class TestDefinition {
             setSpecialConstants(other.specialConstants);
             setDescription(other.description);
             setMetaTags(other.metaTags);
-            setDependency(other.dependency);
+            setDependsOn(other.dependsOn);
             return this;
         }
 
@@ -512,8 +512,8 @@ public class TestDefinition {
             return this;
         }
 
-        public Builder setDependency(@Nullable final TestDependency dependency) {
-            this.dependency = dependency;
+        public Builder setDependsOn(@Nullable final TestDependency dependsOn) {
+            this.dependsOn = dependsOn;
             return this;
         }
 

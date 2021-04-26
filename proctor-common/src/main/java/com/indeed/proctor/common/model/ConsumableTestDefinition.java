@@ -37,10 +37,10 @@ public class ConsumableTestDefinition {
     private List<String> metaTags = Collections.emptyList();
 
     /**
-     * @see TestDefinition#getDependency()
+     * @see TestDefinition#getDependsOn()
      */
     @Nullable
-    private TestDependency dependency;
+    private TestDependency dependsOn;
 
     public ConsumableTestDefinition() { /* intentionally empty */ }
 
@@ -137,7 +137,7 @@ public class ConsumableTestDefinition {
             @Nonnull final Map<String, Object> constants,
             @Nullable final String description,
             @Nonnull final List<String> metaTags,
-            @Nullable final TestDependency dependency
+            @Nullable final TestDependency dependsOn
     ) {
         this.constants = constants;
         this.version = version;
@@ -149,7 +149,7 @@ public class ConsumableTestDefinition {
         this.testType = testType;
         this.description = description;
         this.metaTags = metaTags;
-        this.dependency = dependency;
+        this.dependsOn = dependsOn;
     }
 
     @Nonnull
@@ -244,15 +244,15 @@ public class ConsumableTestDefinition {
     }
 
     /**
-     * @see TestDefinition#getDependency()
+     * @see TestDefinition#getDependsOn()
      */
     @Nullable
-    public TestDependency getDependency() {
-        return dependency;
+    public TestDependency getDependsOn() {
+        return dependsOn;
     }
 
-    public void setDependency(@Nullable final TestDependency dependency) {
-        this.dependency = dependency;
+    public void setDependsOn(@Nullable final TestDependency dependsOn) {
+        this.dependsOn = dependsOn;
     }
 
     @Nonnull
@@ -296,6 +296,6 @@ public class ConsumableTestDefinition {
         constants.putAll(specialConstants);
 
         return new ConsumableTestDefinition(td.getVersion(), rule, td.getTestType(), td.getSalt(), td.getBuckets(),
-                allocations, td.getSilent(), constants, td.getDescription(), td.getMetaTags(), td.getDependency());
+                allocations, td.getSilent(), constants, td.getDescription(), td.getMetaTags(), td.getDependsOn());
     }
 }

@@ -77,10 +77,10 @@ public class TestRangeSelector {
     }
 
     public int findMatchingRule(@Nonnull final Map<String, Object> values, @Nonnull final Map<String, TestBucket> testGroups) {
-        final TestDependency dependency = testDefinition.getDependency();
-        if (dependency != null) {
-            final TestBucket testBucket = testGroups.get(dependency.getTestName());
-            if ((testBucket == null) || (testBucket.getValue() != dependency.getBucketValue())) {
+        final TestDependency dependsOn = testDefinition.getDependsOn();
+        if (dependsOn != null) {
+            final TestBucket testBucket = testGroups.get(dependsOn.getTestName());
+            if ((testBucket == null) || (testBucket.getValue() != dependsOn.getBucketValue())) {
                 return -1;
             }
         }

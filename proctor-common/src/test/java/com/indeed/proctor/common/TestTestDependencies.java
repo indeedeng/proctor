@@ -29,7 +29,7 @@ public class TestTestDependencies {
     public void testValidateDependencyAndReturnErrorReason_valid() {
         final ConsumableTestDefinition definition = ConsumableTestDefinition.fromTestDefinition(
                 stubTestDefinition(TEST_NAME)
-                        .setDependency(new TestDependency(PARENT_TEST_NAME, BUCKET_VALUE))
+                        .setDependsOn(new TestDependency(PARENT_TEST_NAME, BUCKET_VALUE))
                         .build()
         );
         final ConsumableTestDefinition parentDefinition = ConsumableTestDefinition.fromTestDefinition(
@@ -59,7 +59,7 @@ public class TestTestDependencies {
     public void testValidateDependencyAndReturnErrorReason_unknownTest() {
         final ConsumableTestDefinition definition = ConsumableTestDefinition.fromTestDefinition(
                 stubTestDefinition(TEST_NAME)
-                        .setDependency(new TestDependency("___dummy", BUCKET_VALUE))
+                        .setDependsOn(new TestDependency("___dummy", BUCKET_VALUE))
                         .build()
         );
         final ConsumableTestDefinition parentDefinition = ConsumableTestDefinition.fromTestDefinition(
@@ -77,7 +77,7 @@ public class TestTestDependencies {
         final int unknownBucketValue = 101;
         final ConsumableTestDefinition definition = ConsumableTestDefinition.fromTestDefinition(
                 stubTestDefinition(TEST_NAME)
-                        .setDependency(new TestDependency(PARENT_TEST_NAME, unknownBucketValue))
+                        .setDependsOn(new TestDependency(PARENT_TEST_NAME, unknownBucketValue))
                         .build()
         );
         final ConsumableTestDefinition parentDefinition = ConsumableTestDefinition.fromTestDefinition(
@@ -95,7 +95,7 @@ public class TestTestDependencies {
         final ConsumableTestDefinition definition = ConsumableTestDefinition.fromTestDefinition(
                 stubTestDefinition(TEST_NAME)
                         .setTestType(TestType.ANONYMOUS_USER)
-                        .setDependency(new TestDependency(PARENT_TEST_NAME, BUCKET_VALUE))
+                        .setDependsOn(new TestDependency(PARENT_TEST_NAME, BUCKET_VALUE))
                         .build()
         );
         final ConsumableTestDefinition parentDefinition = ConsumableTestDefinition.fromTestDefinition(
@@ -116,7 +116,7 @@ public class TestTestDependencies {
         final ConsumableTestDefinition definition = ConsumableTestDefinition.fromTestDefinition(
                 stubTestDefinition(TEST_NAME)
                         .setSalt(sharedSalt)
-                        .setDependency(new TestDependency(PARENT_TEST_NAME, BUCKET_VALUE))
+                        .setDependsOn(new TestDependency(PARENT_TEST_NAME, BUCKET_VALUE))
                         .build()
         );
         final ConsumableTestDefinition parentDefinition = ConsumableTestDefinition.fromTestDefinition(
@@ -135,7 +135,7 @@ public class TestTestDependencies {
     public void testValidateDependencyAndReturnErrorReason_negativeBucket() {
         final ConsumableTestDefinition definition = ConsumableTestDefinition.fromTestDefinition(
                 stubTestDefinition(TEST_NAME)
-                        .setDependency(new TestDependency(PARENT_TEST_NAME, -1))
+                        .setDependsOn(new TestDependency(PARENT_TEST_NAME, -1))
                         .build()
         );
         final ConsumableTestDefinition parentDefinition = ConsumableTestDefinition.fromTestDefinition(
@@ -258,7 +258,7 @@ public class TestTestDependencies {
 
         assertThatThrownBy(() -> TestDependencies.computeTransitiveDependencies(tests, ImmutableSet.of("B")))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("Detected dependency to an unknown test __dummy");
+                .hasMessage("Detected dependency on an unknown test __dummy");
     }
 
     @Test
@@ -332,22 +332,22 @@ public class TestTestDependencies {
     public void testValidateDependenciesAndReturnReasons() {
         final ConsumableTestDefinition definitionA = ConsumableTestDefinition.fromTestDefinition(
                 stubTestDefinition("A")
-                        .setDependency(new TestDependency("__dummy", BUCKET_VALUE))
+                        .setDependsOn(new TestDependency("__dummy", BUCKET_VALUE))
                         .build()
         );
         final ConsumableTestDefinition definitionB = ConsumableTestDefinition.fromTestDefinition(
                 stubTestDefinition("B")
-                        .setDependency(new TestDependency("A", BUCKET_VALUE))
+                        .setDependsOn(new TestDependency("A", BUCKET_VALUE))
                         .build()
         );
         final ConsumableTestDefinition definitionC = ConsumableTestDefinition.fromTestDefinition(
                 stubTestDefinition("C")
-                        .setDependency(new TestDependency("C", BUCKET_VALUE))
+                        .setDependsOn(new TestDependency("C", BUCKET_VALUE))
                         .build()
         );
         final ConsumableTestDefinition definitionD = ConsumableTestDefinition.fromTestDefinition(
                 stubTestDefinition("D")
-                        .setDependency(new TestDependency("B", BUCKET_VALUE))
+                        .setDependsOn(new TestDependency("B", BUCKET_VALUE))
                         .build()
         );
         final Map<String, ConsumableTestDefinition> tests = ImmutableMap.of(
@@ -384,7 +384,7 @@ public class TestTestDependencies {
             final TestDefinition.Builder builder = stubTestDefinition(testName);
             final String parentTest = parentMap.get(testName);
             if (parentTest != null) {
-                builder.setDependency(new TestDependency(parentTest, BUCKET_VALUE));
+                builder.setDependsOn(new TestDependency(parentTest, BUCKET_VALUE));
             }
             tests.put(testName, ConsumableTestDefinition.fromTestDefinition(builder.build()));
         }

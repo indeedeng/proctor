@@ -55,7 +55,7 @@ public class TestTestRangeSelector {
     public void testFindMatchingRule_testDependency() {
         final TestRangeSelector selector = createTestRangeSelector(
                 stubTestDefinition(Arrays.asList("country == 'US'", ""))
-                        .setDependency(new TestDependency("another_tst", 1))
+                        .setDependsOn(new TestDependency("another_tst", 1))
                         .build()
         );
         assertThat(selector.findMatchingRule(

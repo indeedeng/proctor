@@ -325,7 +325,7 @@ public class TestProctor {
                 TestDefinition.builder()
                         .setSalt("&X")
                         .setTestType(TestType.ANONYMOUS_USER)
-                        .setDependency(new TestDependency("Y", 1))
+                        .setDependsOn(new TestDependency("Y", 1))
                         .addBuckets(testBucket)
                         .addAllocations(allocation)
                         .build()

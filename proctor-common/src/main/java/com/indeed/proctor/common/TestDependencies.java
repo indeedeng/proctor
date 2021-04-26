@@ -33,7 +33,7 @@ public class TestDependencies {
      * It's invalid when a test directly or indirectly depends on
      * <ul>
      *     <li>an unknown test, or</li>
-     *     <li>a test with circular dependency (depending itself), or</li>
+     *     <li>a test with circular dependency (depending on itself), or</li>
      *     <li>a test with a different test type, or</li>
      *     <li>a test with the same salt, or</li>
      *     <li>a bucket undefined in the test</li>
@@ -48,9 +48,9 @@ public class TestDependencies {
         final Map<String, String> errorReasonMap = new HashMap<>();
         for (final String testName : traverseDependencyTreesBFS(testDefinitions,
                 testsWithoutDependencyOrUnknownDependency(testDefinitions))) {
-            final TestDependency dependency = testDefinitions.get(testName).getDependency();
-            final boolean isParentInvalid = (dependency != null)
-                    && errorReasonMap.containsKey(dependency.getTestName());
+            final TestDependency dependsOn = testDefinitions.get(testName).getDependsOn();
+            final boolean isParentInvalid = (dependsOn != null)
+                    && errorReasonMap.containsKey(dependsOn.getTestName());
             final Optional<String> errorReason = validateDependencyAndReturnReason(
                     testName,
                     testDefinitions.get(testName),
@@ -85,16 +85,16 @@ public class TestDependencies {
             final ConsumableTestDefinition definition,
             final Map<String, ConsumableTestDefinition> testDefinitions
     ) {
-        final TestDependency dependency = definition.getDependency();
-        if (dependency == null) {
+        final TestDependency dependsOn = definition.getDependsOn();
+        if (dependsOn == null) {
             return Optional.empty();
         }
 
-        final String parentName = dependency.getTestName();
+        final String parentName = dependsOn.getTestName();
         final ConsumableTestDefinition parentDefinition = testDefinitions.get(parentName);
         if (parentDefinition == null) {
             return Optional.of("A test " + testName + " depends on an unknown or incompatible test "
-                    + dependency.getTestName());
+                    + dependsOn.getTestName());
         }
 
         /*
@@ -121,19 +121,19 @@ public class TestDependencies {
         /*
           Depending on negative bucket value is prohibited to avoid potential issues with fallback or logging behavior
          */
-        if (dependency.getBucketValue() < 0) {
+        if (dependsOn.getBucketValue() < 0) {
             return Optional.of(
                     "A test " + testName + " depends on negative bucket value "
-                            + dependency.getBucketValue() + " of "
-                            + dependency.getTestName()
+                            + dependsOn.getBucketValue() + " of "
+                            + dependsOn.getTestName()
             );
         }
 
         final boolean isBucketDefined = parentDefinition.getBuckets().stream()
-                .anyMatch(x -> x.getValue() == dependency.getBucketValue());
+                .anyMatch(x -> x.getValue() == dependsOn.getBucketValue());
         if (!isBucketDefined) {
             return Optional.of("A test " + testName + " depends on "
-                    + "an undefined bucket " + dependency.getBucketValue());
+                    + "an undefined bucket " + dependsOn.getBucketValue());
         }
 
         return Optional.empty();
@@ -169,10 +169,10 @@ public class TestDependencies {
         final Map<String, Integer> depthMap = new HashMap<>();
         for (final String name : traverseDependencyTreesBFS(testDefinitions, ImmutableSet.of(testName))) {
             final ConsumableTestDefinition definition = testDefinitions.get(name);
-            if (testName.equals(name) || (definition.getDependency() == null)) {
+            if (testName.equals(name) || (definition.getDependsOn() == null)) {
                 depthMap.put(name, 0);
             } else {
-                depthMap.put(name, depthMap.get(definition.getDependency().getTestName()) + 1);
+                depthMap.put(name, depthMap.get(definition.getDependsOn().getTestName()) + 1);
             }
         }
         final int childDepth = depthMap.values().stream().max(Comparator.naturalOrder()).orElse(0);
@@ -184,7 +184,7 @@ public class TestDependencies {
      * Returns all test names required to evaluate all the given tests.
      * It runs in linear time to the size of response instead of all tests.
      *
-     * @throws IllegalArgumentException when it detects dependency to an unknown name
+     * @throws IllegalArgumentException when it detects dependency on an unknown name
      */
     public static Set<String> computeTransitiveDependencies(
             final Map<String, ConsumableTestDefinition> testDefinitions,
@@ -202,15 +202,15 @@ public class TestDependencies {
             final String testName = testNameQueue.poll();
             final ConsumableTestDefinition testDefinition = testDefinitions.get(testName);
             if (testDefinition == null) {
-                throw new IllegalArgumentException("Detected dependency to an unknown test " + testName);
+                throw new IllegalArgumentException("Detected dependency on an unknown test " + testName);
             }
 
-            final TestDependency dependency = testDefinition.getDependency();
-            if (dependency == null) {
+            final TestDependency dependsOn = testDefinition.getDependsOn();
+            if (dependsOn == null) {
                 continue;
             }
 
-            final String parentTestName = dependency.getTestName();
+            final String parentTestName = dependsOn.getTestName();
             if (transitiveDependencies.contains(parentTestName)) {
                 continue;
             }
@@ -238,8 +238,8 @@ public class TestDependencies {
 
         final Multimap<String, String> parentToChildrenMap = HashMultimap.create();
         testDefinitions.forEach((testName, definition) -> {
-            if (definition.getDependency() != null) {
-                parentToChildrenMap.put(definition.getDependency().getTestName(), testName);
+            if (definition.getDependsOn() != null) {
+                parentToChildrenMap.put(definition.getDependsOn().getTestName(), testName);
             }
         });
 
@@ -258,7 +258,7 @@ public class TestDependencies {
             final Map<String, ConsumableTestDefinition> testDefinitions
     ) {
         return testDefinitions.entrySet().stream()
-                .filter(entry -> entry.getValue().getDependency() == null)
+                .filter(entry -> entry.getValue().getDependsOn() == null)
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toSet());
     }
@@ -267,8 +267,8 @@ public class TestDependencies {
             final Map<String, ConsumableTestDefinition> testDefinitions
     ) {
         return testDefinitions.entrySet().stream()
-                .filter(entry -> (entry.getValue().getDependency() == null) ||
-                        !testDefinitions.containsKey(entry.getValue().getDependency().getTestName()))
+                .filter(entry -> (entry.getValue().getDependsOn() == null) ||
+                        !testDefinitions.containsKey(entry.getValue().getDependsOn().getTestName()))
                 .map(Map.Entry::getKey)
                 .collect(Collectors.toSet());
     }
