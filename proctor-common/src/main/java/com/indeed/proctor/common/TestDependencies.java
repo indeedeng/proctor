@@ -1,6 +1,5 @@
 package com.indeed.proctor.common;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -244,9 +243,13 @@ public class TestDependencies {
         });
 
         final Queue<String> testNameQueue = new ArrayDeque<>(sourceTestNames);
+        final Set<String> testNameSet = new HashSet<>();
         final ImmutableList.Builder<String> builder = ImmutableList.builder();
         while (!testNameQueue.isEmpty()) {
             final String testName = testNameQueue.poll();
+            if (!testNameSet.add(testName)) {
+                throw new IllegalArgumentException("BUG: circular dependency detect around " + testName);
+            }
             builder.add(testName);
             testNameQueue.addAll(parentToChildrenMap.get(testName));
         }
