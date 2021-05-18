@@ -1,17 +1,19 @@
 package com.indeed.proctor.common.model;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Collections.emptyList;
 
 /**
@@ -54,10 +56,16 @@ public class TestDefinition {
     @Nullable
     private String description;
 
+    /**
+     * @see #getDependsOn()
+     */
+    @Nullable
+    private TestDependency dependsOn;
+
     public TestDefinition() { /* intentionally empty */ }
 
     /**
-     * @deprecated Use {@link #TestDefinition(String, String, TestType, String, List, List, boolean, Map, Map, String, List)}
+     * @deprecated Use {@link #builder()}
      */
     @Deprecated
     public TestDefinition(
@@ -85,7 +93,7 @@ public class TestDefinition {
     }
 
     /**
-     * @deprecated Use {@link #TestDefinition(String, String, TestType, String, List, List, boolean, Map, Map, String, List)}
+     * @deprecated Use {@link #builder()}
      */
     @Deprecated
     public TestDefinition(
@@ -113,6 +121,10 @@ public class TestDefinition {
                 emptyList());
     }
 
+    /**
+     * @deprecated Use {@link #builder()}
+     */
+    @Deprecated
     public TestDefinition(
             final String version,
             @Nullable final String rule,
@@ -140,22 +152,29 @@ public class TestDefinition {
     }
 
     public TestDefinition(@Nonnull final TestDefinition other) {
-        //  technically other fields should not be null, but we have no guarantee
-        this(
-                other.version,
-                other.rule,
-                other.testType,
-                other.salt,
-                (other.buckets == null) ? null : new ArrayList<>(other.buckets),
-                (other.allocations == null) ? null : new ArrayList<>(other.allocations),
-                other.silent,
-                (other.constants == null) ? null : new HashMap<>(other.constants),
-                (other.specialConstants == null) ? null : new HashMap<>(other.specialConstants),
-                other.description,
-                (other.metaTags == null) ? emptyList(): new ArrayList<>(other.metaTags)
-        );
+        this(builder().from(other));
     }
 
+    private TestDefinition(@Nonnull final Builder builder) {
+        version = builder.version;
+        rule = builder.rule;
+        testType = Objects.requireNonNull(builder.testType, "testType must be set");
+        salt = Objects.requireNonNull(builder.salt, "salt must be set");
+        buckets = builder.buckets.build();
+        allocations = builder.allocations.build();
+        silent = builder.silent;
+        constants = builder.constants.build();
+        specialConstants = builder.specialConstants.build();
+        description = builder.description;
+        metaTags = builder.metaTags.build();
+        dependsOn = builder.dependsOn;
+        checkArgument(!buckets.isEmpty(), "buckets must be set");
+        checkArgument(!allocations.isEmpty(), "allocations must be set");
+    }
+
+    public static Builder builder() {
+        return new Builder();
+    }
 
     public String getVersion() {
         return version;
@@ -274,6 +293,19 @@ public class TestDefinition {
         this.metaTags = metaTags;
     }
 
+    /**
+     * Dependency to activate this test.
+     * This test won't be evaluated if the dependency condition isn't satisfied.
+     */
+    @Nullable
+    public TestDependency getDependsOn() {
+        return dependsOn;
+    }
+
+    public void setDependsOn(@Nullable final TestDependency dependsOn) {
+        this.dependsOn = dependsOn;
+    }
+
     @Override
     public String toString() {
         return "TestDefinition{" +
@@ -288,6 +320,7 @@ public class TestDefinition {
                 ", testType=" + testType +
                 ", description='" + description + '\'' +
                 ", metaTags=" + metaTags +
+                ", dependsOn=" + dependsOn +
                 '}';
     }
 
@@ -305,8 +338,8 @@ public class TestDefinition {
                 });
             }
         }
-        return Objects.hashCode(version, constants, specialConstants, salt, rule, bucketWrappers, allocations, silent,
-                testType, description, metaTags);
+        return Objects.hash(version, constants, specialConstants, salt, rule, bucketWrappers, allocations, silent,
+                testType, description, metaTags, dependsOn);
     }
 
     /**
@@ -325,16 +358,17 @@ public class TestDefinition {
         }
         final TestDefinition that = (TestDefinition) otherDefinition;
         return silent == that.silent &&
-                Objects.equal(version, that.version) &&
-                Objects.equal(constants, that.constants) &&
-                Objects.equal(specialConstants, that.specialConstants) &&
-                Objects.equal(salt, that.salt) &&
-                Objects.equal(rule, that.rule) &&
+                Objects.equals(version, that.version) &&
+                Objects.equals(constants, that.constants) &&
+                Objects.equals(specialConstants, that.specialConstants) &&
+                Objects.equals(salt, that.salt) &&
+                Objects.equals(rule, that.rule) &&
                 bucketListEqual(buckets, that.buckets) && // difference here
-                Objects.equal(allocations, that.allocations) &&
-                Objects.equal(testType, that.testType) &&
-                Objects.equal(description, that.description) &&
-                Objects.equal(metaTags, that.metaTags);
+                Objects.equals(allocations, that.allocations) &&
+                Objects.equals(testType, that.testType) &&
+                Objects.equals(description, that.description) &&
+                Objects.equals(metaTags, that.metaTags) &&
+                Objects.equals(dependsOn, that.dependsOn);
     }
 
     @VisibleForTesting
@@ -343,7 +377,7 @@ public class TestDefinition {
             return true;
         }
         // TestBucket Equal returns true too often, but false means false. This also handles single-sided null cases and different list size.
-        if (!Objects.equal(bucketsA, bucketsB)) {
+        if (!Objects.equals(bucketsA, bucketsB)) {
             return false;
         }
         final Iterator<TestBucket> itA = bucketsA.iterator();
@@ -356,5 +390,135 @@ public class TestDefinition {
             }
         }
         return true;
+    }
+
+    public static class Builder {
+        private String version;
+        private String rule;
+        private TestType testType;
+        private String salt;
+        private ImmutableList.Builder<TestBucket> buckets = ImmutableList.builder();
+        private ImmutableList.Builder<Allocation> allocations = ImmutableList.builder();
+        private boolean silent;
+        private ImmutableMap.Builder<String, Object> constants = ImmutableMap.builder();
+        private ImmutableMap.Builder<String, Object> specialConstants = ImmutableMap.builder();
+        private String description;
+        private ImmutableList.Builder<String> metaTags = ImmutableList.builder();
+        private TestDependency dependsOn;
+
+        public Builder from(@Nonnull final TestDefinition other) {
+            setVersion(other.version);
+            setRule(other.rule);
+            setTestType(other.testType);
+            setSalt(other.salt);
+            setBuckets(other.buckets);
+            setAllocations(other.allocations);
+            setSilent(other.silent);
+            setConstants(other.constants);
+            setSpecialConstants(other.specialConstants);
+            setDescription(other.description);
+            setMetaTags(other.metaTags);
+            setDependsOn(other.dependsOn);
+            return this;
+        }
+
+        public Builder setVersion(@Nullable final String version) {
+            this.version = version;
+            return this;
+        }
+
+        public Builder setRule(@Nullable final String rule) {
+            this.rule = rule;
+            return this;
+        }
+
+        public Builder setTestType(@Nonnull final TestType testType) {
+            this.testType = Objects.requireNonNull(testType);
+            return this;
+        }
+
+        public Builder setSalt(@Nonnull final String salt) {
+            this.salt = Objects.requireNonNull(salt);
+            return this;
+        }
+
+        public Builder setBuckets(@Nonnull final Iterable<TestBucket> buckets) {
+            this.buckets = ImmutableList.builder();
+            return addAllBuckets(buckets);
+        }
+
+        public Builder addBuckets(@Nonnull final TestBucket... buckets) {
+            this.buckets.add(buckets);
+            return this;
+        }
+
+        public Builder addAllBuckets(@Nonnull final Iterable<TestBucket> buckets) {
+            this.buckets.addAll(buckets);
+            return this;
+        }
+
+        public Builder setAllocations(@Nonnull final Iterable<Allocation> allocations) {
+            this.allocations = ImmutableList.builder();
+            return addAllAllocations(allocations);
+        }
+
+        public Builder addAllocations(@Nonnull final Allocation... allocations) {
+            this.allocations.add(allocations);
+            return this;
+        }
+
+        public Builder addAllAllocations(@Nonnull final Iterable<Allocation> allocations) {
+            this.allocations.addAll(allocations);
+            return this;
+        }
+
+        public Builder setSilent(final boolean silent) {
+            this.silent = silent;
+            return this;
+        }
+
+        public Builder setConstants(@Nonnull final Map<String, Object> constants) {
+            this.constants = ImmutableMap.builder();
+            return putAllConstants(constants);
+        }
+
+        public Builder putAllConstants(@Nonnull final Map<String, Object> constants) {
+            this.constants.putAll(constants);
+            return this;
+        }
+
+        public Builder setSpecialConstants(@Nonnull final Map<String, Object> specialConstants) {
+            this.specialConstants = ImmutableMap.builder();
+            return putAllSpecialConstants(specialConstants);
+        }
+
+        public Builder putAllSpecialConstants(@Nonnull final Map<String, Object> specialConstants) {
+            this.specialConstants.putAll(specialConstants);
+            return this;
+        }
+
+        public Builder setDescription(@Nullable final String description) {
+            this.description = description;
+            return this;
+        }
+
+        public Builder setMetaTags(@Nonnull final Iterable<String> metaTags) {
+            this.metaTags = ImmutableList.builder();
+            return addAllMetaTags(metaTags);
+        }
+
+        public Builder addAllMetaTags(@Nonnull final Iterable<String> metaTags) {
+            this.metaTags.addAll(metaTags);
+            return this;
+        }
+
+        public Builder setDependsOn(@Nullable final TestDependency dependsOn) {
+            this.dependsOn = dependsOn;
+            return this;
+        }
+
+        public TestDefinition build() {
+            return new TestDefinition(this);
+        }
     }
 }

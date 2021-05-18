@@ -1,5 +1,10 @@
 package com.indeed.proctor.common.model;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.indeed.proctor.common.ProctorUtils;
+import org.apache.commons.lang3.StringUtils;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collections;
@@ -31,10 +36,16 @@ public class ConsumableTestDefinition {
     @Nonnull
     private List<String> metaTags = Collections.emptyList();
 
+    /**
+     * @see TestDefinition#getDependsOn()
+     */
+    @Nullable
+    private TestDependency dependsOn;
+
     public ConsumableTestDefinition() { /* intentionally empty */ }
 
     /**
-     * @deprecated Use {@link #ConsumableTestDefinition(String, String, TestType, String, List, List, boolean, Map, String, List)}
+     * @deprecated Use {@link #fromTestDefinition(TestDefinition)} and {@link TestDefinition#builder()}
      */
     @Deprecated
     public ConsumableTestDefinition(
@@ -60,7 +71,7 @@ public class ConsumableTestDefinition {
     }
 
     /**
-     * @deprecated Use {@link #ConsumableTestDefinition(String, String, TestType, String, List, List, boolean, Map, String, List)}
+     * @deprecated Use {@link #fromTestDefinition(TestDefinition)} and {@link TestDefinition#builder()}
      */
     @Deprecated
     public ConsumableTestDefinition(
@@ -86,6 +97,10 @@ public class ConsumableTestDefinition {
                 Collections.emptyList());
     }
 
+    /**
+     * @deprecated Use {@link #fromTestDefinition(TestDefinition)} and {@link TestDefinition#builder()}
+     */
+    @Deprecated
     public ConsumableTestDefinition(
             final String version,
             @Nullable final String rule,
@@ -108,6 +123,33 @@ public class ConsumableTestDefinition {
         this.testType = testType;
         this.description = description;
         this.metaTags = metaTags;
+    }
+
+    // intentionally private to avoid creating deprecated constructors
+    private ConsumableTestDefinition(
+            final String version,
+            @Nullable final String rule,
+            @Nonnull final TestType testType,
+            @Nullable final String salt,
+            @Nonnull final List<TestBucket> buckets,
+            @Nonnull final List<Allocation> allocations,
+            final boolean silent,
+            @Nonnull final Map<String, Object> constants,
+            @Nullable final String description,
+            @Nonnull final List<String> metaTags,
+            @Nullable final TestDependency dependsOn
+    ) {
+        this.constants = constants;
+        this.version = version;
+        this.salt = salt;
+        this.rule = rule;
+        this.buckets = buckets;
+        this.allocations = allocations;
+        this.silent = silent;
+        this.testType = testType;
+        this.description = description;
+        this.metaTags = metaTags;
+        this.dependsOn = dependsOn;
     }
 
     @Nonnull
@@ -199,5 +241,61 @@ public class ConsumableTestDefinition {
 
     public void setMetaTags(final List<String> metaTags) {
         this.metaTags = metaTags;
+    }
+
+    /**
+     * @see TestDefinition#getDependsOn()
+     */
+    @Nullable
+    public TestDependency getDependsOn() {
+        return dependsOn;
+    }
+
+    public void setDependsOn(@Nullable final TestDependency dependsOn) {
+        this.dependsOn = dependsOn;
+    }
+
+    @Nonnull
+    public static ConsumableTestDefinition fromTestDefinition(@Nonnull final TestDefinition td) {
+        final Map<String, Object> specialConstants = td.getSpecialConstants();
+
+        final List<String> ruleComponents = Lists.newArrayList();
+        //noinspection unchecked
+        final List<String> countries = (List<String>) specialConstants.get("__COUNTRIES");
+        if (countries != null) {
+            ruleComponents.add("proctor:contains(__COUNTRIES, country)");
+        }
+        final String rawRule = ProctorUtils.removeElExpressionBraces(td.getRule());
+        if (!StringUtils.isBlank(rawRule)) {
+            ruleComponents.add(rawRule);
+        }
+
+        final String rule;
+        if (ruleComponents.isEmpty()) {
+            rule = null;
+        } else {
+            rule = "${" + String.join(" && ", ruleComponents) + '}';
+        }
+
+        final List<Allocation> allocations = td.getAllocations();
+        for (final Allocation alloc : allocations) {
+            final String rawAllocRule = ProctorUtils.removeElExpressionBraces(alloc.getRule());
+            if (StringUtils.isBlank(rawAllocRule)) {
+                alloc.setRule(null);
+            } else {
+                // ensure that all rules in the generated test-matrix are wrapped in "${" ... "}"
+                if (!(rawAllocRule.startsWith("${") && rawAllocRule.endsWith("}"))) {
+                    final String newAllocRule = "${" + rawAllocRule + "}";
+                    alloc.setRule(newAllocRule);
+                }
+            }
+        }
+
+        final Map<String, Object> constants = Maps.newLinkedHashMap();
+        constants.putAll(td.getConstants());
+        constants.putAll(specialConstants);
+
+        return new ConsumableTestDefinition(td.getVersion(), rule, td.getTestType(), td.getSalt(), td.getBuckets(),
+                allocations, td.getSilent(), constants, td.getDescription(), td.getMetaTags(), td.getDependsOn());
     }
 }

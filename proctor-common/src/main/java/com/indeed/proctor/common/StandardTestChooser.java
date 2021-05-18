@@ -9,6 +9,7 @@ import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.Range;
 import com.indeed.proctor.common.model.TestBucket;
+import com.indeed.proctor.common.model.TestDependency;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -117,8 +118,12 @@ class StandardTestChooser implements TestChooser<String> {
 
     @Nonnull
     @Override
-    public TestChooser.Result choose(@Nullable final String identifier, @Nonnull final Map<String, Object> values) {
-        final int matchingRuleIndex = testRangeSelector.findMatchingRule(values);
+    public TestChooser.Result choose(
+            @Nullable final String identifier,
+            @Nonnull final Map<String, Object> values,
+            @Nonnull final Map<String, TestBucket> testGroups
+    ) {
+        final int matchingRuleIndex = testRangeSelector.findMatchingRule(values, testGroups);
         if (matchingRuleIndex < 0) {
             return Result.EMPTY;
         }

@@ -1,9 +1,14 @@
 package com.indeed.proctor.webapp.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.indeed.proctor.common.model.Allocation;
+import com.indeed.proctor.common.model.Range;
+import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.common.model.TestDefinition;
 import com.indeed.proctor.common.model.TestMatrixVersion;
+import com.indeed.proctor.common.model.TestType;
 import com.indeed.proctor.store.ChangeMetadata;
 import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.store.StoreException;
@@ -49,6 +54,12 @@ public class TestTestMatrixApiController {
     static {
         STUB_TEST_DEFINITION.setSalt("&stub_test");
         STUB_TEST_DEFINITION.setRule("country == \"US\"");
+        STUB_TEST_DEFINITION.setTestType(TestType.ANONYMOUS_USER);
+        STUB_TEST_DEFINITION.setBuckets(ImmutableList.of(new TestBucket("", 1, "")));
+        STUB_TEST_DEFINITION.setAllocations(ImmutableList.of(new Allocation(
+                "",
+                ImmutableList.of(new Range(1, 1.0))
+        )));
     }
 
     @Before

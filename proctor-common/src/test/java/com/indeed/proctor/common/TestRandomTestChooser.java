@@ -28,7 +28,7 @@ public class TestRandomTestChooser {
 
         final Map<String, Object> values = Collections.emptyMap();
         for (int i = 0; i < 100; i++) {
-            final TestChooser.Result chosen = rtc.choose(null, values);
+            final TestChooser.Result chosen = rtc.choose(null, values, Collections.emptyMap());
             assertNotNull(chosen);
             assertNotNull(chosen.getTestBucket());
             assertNotNull(chosen.getAllocation());
@@ -47,7 +47,7 @@ public class TestRandomTestChooser {
         final int[] found = { 0, 0 };
         final Map<String, Object> values = Collections.emptyMap();
         for (int i = 0; i < 1000; i++) {
-            final TestChooser.Result chosen = rtc.choose(null, values);
+            final TestChooser.Result chosen = rtc.choose(null, values, Collections.emptyMap());
             assertNotNull(chosen);
             assertNotNull(chosen.getTestBucket());
             assertNotNull(chosen.getAllocation());
@@ -71,7 +71,7 @@ public class TestRandomTestChooser {
         final int[] found = { 0, 0, 0 };
         final Map<String, Object> values = Collections.emptyMap();
         for (int i = 0; i < 1000; i++) {
-            final TestChooser.Result chosen = rtc.choose(null, values);
+            final TestChooser.Result chosen = rtc.choose(null, values, Collections.emptyMap());
             assertNotNull(chosen);
             assertNotNull(chosen.getTestBucket());
             assertNotNull(chosen.getAllocation());

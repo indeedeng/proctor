@@ -5,6 +5,7 @@ import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.Range;
 import com.indeed.proctor.common.model.TestBucket;
+import com.indeed.proctor.common.model.TestDependency;
 import org.apache.log4j.Logger;
 
 import javax.annotation.CheckForNull;
@@ -75,7 +76,15 @@ public class TestRangeSelector {
         return rangeToBucket[index];
     }
 
-    public int findMatchingRule(@Nonnull final Map<String, Object> values) {
+    public int findMatchingRule(@Nonnull final Map<String, Object> values, @Nonnull final Map<String, TestBucket> testGroups) {
+        final TestDependency dependsOn = testDefinition.getDependsOn();
+        if (dependsOn != null) {
+            final TestBucket testBucket = testGroups.get(dependsOn.getTestName());
+            if ((testBucket == null) || (testBucket.getValue() != dependsOn.getBucketValue())) {
+                return -1;
+            }
+        }
+
         try {
             @Nullable final String rule = testDefinition.getRule();
             if (rule != null) {

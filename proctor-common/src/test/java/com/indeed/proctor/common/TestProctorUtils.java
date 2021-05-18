@@ -13,6 +13,7 @@ import com.indeed.proctor.common.model.Payload;
 import com.indeed.proctor.common.model.Range;
 import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.common.model.TestDefinition;
+import com.indeed.proctor.common.model.TestDependency;
 import com.indeed.proctor.common.model.TestMatrixArtifact;
 import com.indeed.proctor.common.model.TestType;
 import org.junit.Test;
@@ -33,7 +34,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.indeed.proctor.common.ProctorUtils.convertContextToTestableMap;
-import static com.indeed.proctor.common.ProctorUtils.convertToConsumableTestDefinition;
 import static com.indeed.proctor.common.ProctorUtils.isEmptyWhitespace;
 import static com.indeed.proctor.common.ProctorUtils.removeElExpressionBraces;
 import static com.indeed.proctor.common.ProctorUtils.verifyAndConsolidate;
@@ -42,6 +42,7 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.singletonList;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -56,6 +57,7 @@ public class TestProctorUtils {
 
     private static final String TEST_A = "testA";
     private static final String TEST_B = "testB";
+    private static final String TEST_C = "testC";
     private static final String PATH_UNKNOWN_TEST_TYPE = "unknown-test-type.json";
     private static final ProvidedContext EMPTY_CONTEXT = ProvidedContext.forValueExpressionMap(emptyMap(), emptySet());
 
@@ -98,7 +100,7 @@ public class TestProctorUtils {
                         metaTags
                 );
 
-                final ConsumableTestDefinition ctd = convertToConsumableTestDefinition(testDefinition);
+                final ConsumableTestDefinition ctd = ConsumableTestDefinition.fromTestDefinition(testDefinition);
                 assertEquals(version, ctd.getVersion());
                 assertEquals(testType, ctd.getTestType());
                 assertEquals(salt, ctd.getSalt());
@@ -152,7 +154,7 @@ public class TestProctorUtils {
                     metaTags
             );
 
-            final ConsumableTestDefinition ctd = convertToConsumableTestDefinition(testDefinition);
+            final ConsumableTestDefinition ctd = ConsumableTestDefinition.fromTestDefinition(testDefinition);
             assertEquals(String.format("TestDefinition rule '%s' should convert to a ${lang == 'en'} ConsumableTestDefinition.rule", rule), "${lang == 'en'}", ctd.getRule());
 
             assertEquals(1, ctd.getAllocations().size());
@@ -199,7 +201,7 @@ public class TestProctorUtils {
                     metaTags
             );
 
-            final ConsumableTestDefinition ctd = convertToConsumableTestDefinition(testDefinition);
+            final ConsumableTestDefinition ctd = ConsumableTestDefinition.fromTestDefinition(testDefinition);
             assertEquals(
                     String.format("TestDefinition rule '%s' should convert to ${proctor:contains(__COUNTRIES, country) && lang == 'en'} ConsumableTestDefinition.rule", tdRule),
                     "${proctor:contains(__COUNTRIES, country) && lang == 'en'}", ctd.getRule());
@@ -1633,6 +1635,241 @@ public class TestProctorUtils {
                     bucket.getPayload().getLongValue()
             );
         }
+    }
+
+    @Test
+    public void testVerifyAndConsolidateShouldDetectCircularDependency() {
+        final ConsumableTestDefinition definitionA = constructDefinition(
+                fromCompactBucketFormat("inactive:-1,control:0,test:1"),
+                fromCompactAllocationFormat("1:1.0")
+        );
+        final ConsumableTestDefinition definitionB = constructDefinition(
+                fromCompactBucketFormat("inactive:-1,control:0,test:1"),
+                fromCompactAllocationFormat("1:1.0")
+        );
+        final ConsumableTestDefinition definitionC = constructDefinition(
+                fromCompactBucketFormat("inactive:-1,control:0,test:1"),
+                fromCompactAllocationFormat("1:1.0")
+        );
+        definitionA.setSalt("&a");
+        definitionB.setSalt("&b");
+        definitionC.setSalt("&c");
+        definitionA.setDependsOn(new TestDependency(TEST_B, 1));
+        definitionB.setDependsOn(new TestDependency(TEST_A, 1));
+        definitionC.setDependsOn(new TestDependency(TEST_B, 1));
+        final Map<String, ConsumableTestDefinition> tests = ImmutableMap.of(
+                TEST_A, definitionA,
+                TEST_B, definitionB,
+                TEST_C, definitionC
+        );
+        final TestMatrixArtifact matrix = constructArtifact(tests);
+
+        final ProctorLoadResult proctorLoadResult = verifyAndConsolidate(
+                matrix,
+                "",
+                ImmutableMap.of(TEST_A, new TestSpecification()),
+                RuleEvaluator.FUNCTION_MAPPER,
+                ProvidedContext.nonEvaluableContext(),
+                ImmutableSet.of(TEST_B, TEST_C)
+        );
+
+        assertThat(proctorLoadResult.getTestsWithErrors()).containsExactly(TEST_A);
+        assertThat(proctorLoadResult.getDynamicTestWithErrors()).containsExactly(TEST_B, TEST_C);
+
+        assertThat(proctorLoadResult.getTestErrorMap())
+                .hasEntrySatisfying(TEST_A, x -> assertThat(x).hasMessageContaining("circular dependency"));
+        assertThat(proctorLoadResult.getDynamicTestErrorMap())
+                .hasEntrySatisfying(TEST_B, x -> assertThat(x).hasMessageContaining("circular dependency"))
+                .hasEntrySatisfying(TEST_C, x -> assertThat(x).hasMessageContaining("circular dependency"));
+    }
+
+    @Test
+    public void testVerifyAndConsolidateShouldDetectUnknownTestNameDependency() {
+        final ConsumableTestDefinition definitionA = constructDefinition(
+                fromCompactBucketFormat("inactive:-1,control:0,test:1"),
+                fromCompactAllocationFormat("1:1.0")
+        );
+        final ConsumableTestDefinition definitionB = constructDefinition(
+                fromCompactBucketFormat("inactive:-1,control:0,test:1"),
+                fromCompactAllocationFormat("1:1.0")
+        );
+        definitionA.setSalt("&a");
+        definitionB.setSalt("&b");
+        definitionA.setDependsOn(new TestDependency("___unknown_test", 1));
+        definitionB.setDependsOn(new TestDependency(TEST_A, 1));
+        final Map<String, ConsumableTestDefinition> tests = ImmutableMap.of(
+                TEST_A, definitionA,
+                TEST_B, definitionB
+        );
+        final TestMatrixArtifact matrix = constructArtifact(tests);
+
+        final ProctorLoadResult proctorLoadResult = verifyAndConsolidate(
+                matrix,
+                "",
+                ImmutableMap.of(TEST_A, new TestSpecification()),
+                RuleEvaluator.FUNCTION_MAPPER,
+                ProvidedContext.nonEvaluableContext(),
+                ImmutableSet.of(TEST_B)
+        );
+
+        assertThat(proctorLoadResult.getTestsWithErrors()).containsExactly(TEST_A);
+        assertThat(proctorLoadResult.getDynamicTestWithErrors()).containsExactly(TEST_B);
+
+        assertThat(proctorLoadResult.getTestErrorMap())
+                .hasEntrySatisfying(TEST_A, x -> assertThat(x)
+                        .hasMessageContaining("depends on an unknown or incompatible test")
+                        .hasMessageContaining("___unknown_test")
+                );
+        assertThat(proctorLoadResult.getDynamicTestErrorMap())
+                .hasEntrySatisfying(TEST_B, x -> assertThat(x).hasMessageContaining("depends on an invalid test"));
+    }
+
+    @Test
+    public void testVerifyAndConsolidateShouldDetectUnknownTestBucketDependency() {
+        final ConsumableTestDefinition definitionA = constructDefinition(
+                fromCompactBucketFormat("inactive:-1,control:0,test:1"),
+                fromCompactAllocationFormat("1:1.0")
+        );
+        final ConsumableTestDefinition definitionB = constructDefinition(
+                fromCompactBucketFormat("inactive:-1,control:0,test:1"),
+                fromCompactAllocationFormat("1:1.0")
+        );
+        definitionA.setSalt("&a");
+        definitionB.setSalt("&b");
+        definitionB.setDependsOn(new TestDependency(TEST_A, 100));
+        final Map<String, ConsumableTestDefinition> tests = ImmutableMap.of(
+                TEST_A, definitionA,
+                TEST_B, definitionB
+        );
+        final TestMatrixArtifact matrix = constructArtifact(tests);
+
+        final ProctorLoadResult proctorLoadResult = verifyAndConsolidate(
+                matrix,
+                "",
+                ImmutableMap.of(TEST_A, new TestSpecification()),
+                RuleEvaluator.FUNCTION_MAPPER,
+                ProvidedContext.nonEvaluableContext(),
+                ImmutableSet.of(TEST_B)
+        );
+
+        assertThat(proctorLoadResult.getTestsWithErrors()).isEmpty();
+        assertThat(proctorLoadResult.getDynamicTestWithErrors()).containsExactly(TEST_B);
+
+        assertThat(proctorLoadResult.getDynamicTestErrorMap())
+                .hasEntrySatisfying(TEST_B, x -> assertThat(x).hasMessageContaining("depends on an undefined bucket"));
+    }
+
+    @Test
+    public void testVerifyAndConsolidateShouldDetectDependencyWithDifferentTestType() {
+        final ConsumableTestDefinition definitionA = constructDefinition(
+                fromCompactBucketFormat("inactive:-1,control:0,test:1"),
+                fromCompactAllocationFormat("1:1.0")
+        );
+        final ConsumableTestDefinition definitionB = constructDefinition(
+                fromCompactBucketFormat("inactive:-1,control:0,test:1"),
+                fromCompactAllocationFormat("1:1.0")
+        );
+        definitionA.setTestType(TestType.ANONYMOUS_USER);
+        definitionB.setTestType(TestType.AUTHENTICATED_USER);
+        definitionA.setSalt("&a");
+        definitionB.setSalt("&b");
+        definitionB.setDependsOn(new TestDependency(TEST_A, 100));
+        final Map<String, ConsumableTestDefinition> tests = ImmutableMap.of(
+                TEST_A, definitionA,
+                TEST_B, definitionB
+        );
+        final TestMatrixArtifact matrix = constructArtifact(tests);
+
+        final ProctorLoadResult proctorLoadResult = verifyAndConsolidate(
+                matrix,
+                "",
+                ImmutableMap.of(TEST_A, new TestSpecification()),
+                RuleEvaluator.FUNCTION_MAPPER,
+                ProvidedContext.nonEvaluableContext(),
+                ImmutableSet.of(TEST_B)
+        );
+
+        assertThat(proctorLoadResult.getTestsWithErrors()).isEmpty();
+        assertThat(proctorLoadResult.getDynamicTestWithErrors()).containsExactly(TEST_B);
+
+        assertThat(proctorLoadResult.getDynamicTestErrorMap())
+                .hasEntrySatisfying(TEST_B, x -> assertThat(x).hasMessageContaining("different test type"));
+    }
+
+    @Test
+    public void testVerifyAndConsolidateShouldDetectDependencyWithSameSalt() {
+        final ConsumableTestDefinition definitionA = constructDefinition(
+                fromCompactBucketFormat("inactive:-1,control:0,test:1"),
+                fromCompactAllocationFormat("1:1.0")
+        );
+        final ConsumableTestDefinition definitionB = constructDefinition(
+                fromCompactBucketFormat("inactive:-1,control:0,test:1"),
+                fromCompactAllocationFormat("1:1.0")
+        );
+        definitionA.setSalt("&a");
+        definitionB.setSalt("&a");
+        definitionB.setDependsOn(new TestDependency(TEST_A, 100));
+        final Map<String, ConsumableTestDefinition> tests = ImmutableMap.of(
+                TEST_A, definitionA,
+                TEST_B, definitionB
+        );
+        final TestMatrixArtifact matrix = constructArtifact(tests);
+
+        final ProctorLoadResult proctorLoadResult = verifyAndConsolidate(
+                matrix,
+                "",
+                ImmutableMap.of(TEST_A, new TestSpecification()),
+                RuleEvaluator.FUNCTION_MAPPER,
+                ProvidedContext.nonEvaluableContext(),
+                ImmutableSet.of(TEST_B)
+        );
+
+        assertThat(proctorLoadResult.getTestsWithErrors()).isEmpty();
+        assertThat(proctorLoadResult.getDynamicTestWithErrors()).containsExactly(TEST_B);
+
+        assertThat(proctorLoadResult.getDynamicTestErrorMap())
+                .hasEntrySatisfying(TEST_B, x -> assertThat(x).hasMessageContaining("same salt"));
+    }
+
+    @Test
+    public void testVerifyAndConsolidateShouldDetectDependencyOnImcompatibleTest() {
+        final ConsumableTestDefinition definitionA = constructDefinition(
+                fromCompactBucketFormat("inactive:-1,control:0,test:1"),
+                fromCompactAllocationFormat("1:1.0")
+        );
+        final ConsumableTestDefinition definitionB = constructDefinition(
+                fromCompactBucketFormat("inactive:-1,control:0,test:1"),
+                fromCompactAllocationFormat("1:1.0")
+        );
+        definitionA.setSalt("&a");
+        definitionB.setSalt("&b");
+        definitionB.setDependsOn(new TestDependency(TEST_A, 100));
+        final Map<String, ConsumableTestDefinition> tests = ImmutableMap.of(
+                TEST_A, definitionA,
+                TEST_B, definitionB
+        );
+        final TestMatrixArtifact matrix = constructArtifact(tests);
+
+        final ProctorLoadResult proctorLoadResult = verifyAndConsolidate(
+                matrix,
+                "",
+                // knows only control bucket so incompatible with definition
+                ImmutableMap.of(TEST_A, transformTestBuckets(fromCompactBucketFormat("control:0"))),
+                RuleEvaluator.FUNCTION_MAPPER,
+                ProvidedContext.nonEvaluableContext(),
+                ImmutableSet.of(TEST_B)
+        );
+
+        assertThat(proctorLoadResult.getTestsWithErrors()).containsExactly(TEST_A);
+        assertThat(proctorLoadResult.getDynamicTestWithErrors()).containsExactly(TEST_B);
+
+        assertThat(proctorLoadResult.getTestErrorMap())
+                .hasEntrySatisfying(TEST_A, x -> assertThat(x).hasMessageContaining("unknown bucket"));
+        assertThat(proctorLoadResult.getDynamicTestErrorMap())
+                .hasEntrySatisfying(TEST_B, x -> assertThat(x)
+                        .hasMessageContaining("depends on an unknown or incompatible test")
+                        .hasMessageContaining(TEST_A)
+                );
     }
 
     private static void setPayload(final List<TestBucket> buckets, final int index, final Payload newPayload) {

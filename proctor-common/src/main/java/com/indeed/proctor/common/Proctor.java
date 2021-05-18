@@ -24,11 +24,15 @@ import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * The sole entry point for client applications determining the test buckets for a particular client.
@@ -78,7 +82,9 @@ public class Proctor {
             versions.put(testName, testDefinition.getVersion());
         }
 
-        return new Proctor(matrix, loadResult, testChoosers);
+        final List<String> testEvaluationOrder = TestDependencies.determineEvaluationOrder(matrix.getTests());
+
+        return new Proctor(matrix, loadResult, testChoosers, testEvaluationOrder);
     }
 
     @Nonnull
@@ -96,7 +102,9 @@ public class Proctor {
 
         final Map<String, TestChooser<?>> choosers = Collections.emptyMap();
 
-        return new Proctor(testMatrix, loadResult, choosers);
+        final List<String> testEvaluationOrder = Collections.emptyList();
+
+        return new Proctor(testMatrix, loadResult, choosers, testEvaluationOrder);
     }
 
     static final long INT_RANGE = (long) Integer.MAX_VALUE - (long) Integer.MIN_VALUE;
@@ -107,11 +115,15 @@ public class Proctor {
 
     private final Map<String, ConsumableTestDefinition> testDefinitions = Maps.newLinkedHashMap();
 
+    private final List<String> testEvaluationOrder;
+    private final Map<String, Integer> evaluationOrderMap;
+
     @VisibleForTesting
     Proctor(
             @Nonnull final TestMatrixArtifact matrix,
             @Nonnull final ProctorLoadResult loadResult,
-            @Nonnull final Map<String, TestChooser<?>> testChoosers
+            @Nonnull final Map<String, TestChooser<?>> testChoosers,
+            @Nonnull final List<String> testEvaluationOrder
     ) {
         this.matrix = matrix;
         this.loadResult = loadResult;
@@ -119,6 +131,10 @@ public class Proctor {
         for (final Entry<String, TestChooser<?>> entry : testChoosers.entrySet()) {
             this.testDefinitions.put(entry.getKey(), entry.getValue().getTestDefinition());
         }
+        this.testEvaluationOrder = testEvaluationOrder;
+        this.evaluationOrderMap = IntStream.range(0, testEvaluationOrder.size())
+                .boxed()
+                .collect(Collectors.toMap(testEvaluationOrder::get, index -> index));
 
         VarExporter.forNamespace(Proctor.class.getSimpleName()).includeInGlobal().export(this, "");
         VarExporter.forNamespace(DetailedExport.class.getSimpleName()).export(new DetailedExport(), "");  //  intentionally not in global
@@ -200,27 +216,34 @@ public class Proctor {
             @Nonnull final Map<String, Integer> forceGroups,
             @Nonnull final Collection<String> testNameFilter
     ) {
+        final boolean determineAllTests = testNameFilter.isEmpty();
+        final Set<String> testNameFilterSet = testNameFilter.stream()
+                .filter(testChoosers::containsKey)
+                .collect(Collectors.toSet());
+
         // ProctorResult requires SortedMap internally, avoid copy overhead
         // use mutable map for legacy reasons, inside this codebase should not be modified after this method
         final SortedMap<String, TestBucket> testGroups = new TreeMap<>();
         final SortedMap<String, Allocation> testAllocations = new TreeMap<>();
 
-        final Map<String, TestChooser<?>> filteredChoosers;
-        if (testNameFilter.isEmpty()) {
-            filteredChoosers = testChoosers;
+        final List<String> filteredEvaluationOrder;
+        if (determineAllTests) {
+            filteredEvaluationOrder = testEvaluationOrder;
         } else {
-            filteredChoosers = Maps.newLinkedHashMap();
-            for (final String testName : testNameFilter) {
-                if (testChoosers.containsKey(testName)) {
-                    filteredChoosers.put(testName, testChoosers.get(testName));
-                }
-            }
+            // Following code runs in a function of the number of transitive dependencies
+            // instead of the number of all loaded tests.
+            final Set<String> transitiveDependencies = TestDependencies.computeTransitiveDependencies(
+                    testDefinitions,
+                    testNameFilterSet
+            );
+            filteredEvaluationOrder = transitiveDependencies.stream()
+                    .sorted(Comparator.comparing(evaluationOrderMap::get))
+                    .collect(Collectors.toList());
         }
 
-        for (final Entry<String, TestChooser<?>> entry : filteredChoosers.entrySet()) {
-            final String testName = entry.getKey();
+        for (final String testName : filteredEvaluationOrder) {
             final Integer forceGroupBucket = forceGroups.get(testName);
-            final TestChooser<?> testChooser = entry.getValue();
+            final TestChooser<?> testChooser = testChoosers.get(testName);
             final String identifier;
             if (testChooser instanceof StandardTestChooser) {
                 final TestType testType = testChooser.getTestDefinition().getTestType();
@@ -246,15 +269,24 @@ public class Proctor {
             }
             final TestChooser.Result chooseResult;
             if (identifier == null) {
-                chooseResult = ((RandomTestChooser) testChooser).choose(null, inputContext);
+                chooseResult = ((RandomTestChooser) testChooser).choose(null, inputContext, testGroups);
             } else {
-                chooseResult = ((StandardTestChooser) testChooser).choose(identifier, inputContext);
+                chooseResult = ((StandardTestChooser) testChooser).choose(identifier, inputContext, testGroups);
             }
             if (chooseResult.getTestBucket() != null) {
                 testGroups.put(testName, chooseResult.getTestBucket());
             }
             if (chooseResult.getAllocation() != null) {
                 testAllocations.put(testName, chooseResult.getAllocation());
+            }
+        }
+
+        if (!determineAllTests) {
+            for (final String testName : filteredEvaluationOrder) {
+                if (!testNameFilterSet.contains(testName)) {
+                    testGroups.remove(testName);
+                    testAllocations.remove(testName);
+                }
             }
         }
 

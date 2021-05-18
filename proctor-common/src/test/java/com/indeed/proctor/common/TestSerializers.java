@@ -10,6 +10,7 @@ import com.indeed.proctor.common.model.Audit;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.common.model.TestDefinition;
+import com.indeed.proctor.common.model.TestDependency;
 import com.indeed.proctor.common.model.TestType;
 import org.junit.Assert;
 import org.junit.Test;
@@ -18,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -29,12 +31,22 @@ import static org.junit.Assert.fail;
  */
 public class TestSerializers {
     private static final String EXAMPLE_TEST_DEFINITION = "example-test-definition.json";
+    private static final String EXAMPLE_TEST_DEFINITION_WITH_DEPENDENCY = "example-test-definition-with-dependency.json";
     private static final String SUBRULE_TEST_DEFINITION = "subrule-example-test-definition.json";
     private static final String UNRECOGNIZED_FIELDS_TEST_DEFINITION = "unrecognized-fields-test-definition.json";
 
     @Test
     public void testTestDefiniton() throws IOException {
         doAssertTestDefintion(EXAMPLE_TEST_DEFINITION, Serializers.lenient());
+    }
+
+    @Test
+    public void testTestDefinitionWithDependency() throws IOException {
+        try(InputStream input = getClass().getResourceAsStream(EXAMPLE_TEST_DEFINITION_WITH_DEPENDENCY)) {
+            final TestDefinition definition = Serializers.lenient().readValue(input, TestDefinition.class);
+            assertThat(definition.getDependsOn())
+                    .isEqualTo(new TestDependency("another_tst", 1));
+        }
     }
 
     @Test
