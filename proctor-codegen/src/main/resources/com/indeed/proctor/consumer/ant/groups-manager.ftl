@@ -35,6 +35,10 @@ public class ${mainClassName} extends AbstractGroupsManager {
         super(proctorSource);
     }
 
+    public ${mainClassName}(final Supplier<Proctor> proctorSource, final GroupResolutionTimeReporter resolutionTimeReporter) {
+        super(proctorSource, resolutionTimeReporter);
+    }
+
     /**
      * This should be used for non-webapp applications that are working
      * with test groups as those applications will not have a request and response,

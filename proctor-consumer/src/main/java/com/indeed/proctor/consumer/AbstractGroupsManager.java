@@ -2,6 +2,7 @@ package com.indeed.proctor.consumer;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Supplier;
+import com.indeed.proctor.common.GroupResolutionTimeReporter;
 import com.indeed.proctor.common.Identifiers;
 import com.indeed.proctor.common.Proctor;
 import com.indeed.proctor.common.ProctorResult;
@@ -11,6 +12,7 @@ import com.indeed.proctor.common.model.TestType;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.time.Clock;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -23,8 +25,16 @@ import static java.util.Collections.emptySortedMap;
  */
 public abstract class AbstractGroupsManager implements ProctorContextDescriptor {
     private final Supplier<Proctor> proctorSource;
+    private final GroupResolutionTimeReporter resolutionTimeReporter;
+
     protected AbstractGroupsManager(final Supplier<Proctor> proctorSource) {
         this.proctorSource = proctorSource;
+        this.resolutionTimeReporter = resolutionTimeMillis -> {}; // do not report
+    }
+
+    protected AbstractGroupsManager(final Supplier<Proctor> proctorSource, final GroupResolutionTimeReporter resolutionTimeReporter) {
+        this.proctorSource = proctorSource;
+        this.resolutionTimeReporter = resolutionTimeReporter;
     }
 
     /**
@@ -63,6 +73,9 @@ public abstract class AbstractGroupsManager implements ProctorContextDescriptor 
      */
     @VisibleForTesting
     protected ProctorResult determineBucketsInternal(final Identifiers identifiers, final Map<String, Object> context, final Map<String, Integer> forcedGroups) {
+        final StopWatch stopWatch = new StopWatch(Clock.systemDefaultZone());
+        stopWatch.start();
+
         final Proctor proctor = proctorSource.get();
         if (proctor == null) {
             final Map<String, TestBucket> buckets = getDefaultBucketValues();
@@ -72,7 +85,10 @@ public abstract class AbstractGroupsManager implements ProctorContextDescriptor 
                     emptyMap()
             );
         }
-        return proctor.determineTestGroups(identifiers, context, forcedGroups);
+        final ProctorResult proctorResult = proctor.determineTestGroups(identifiers, context, forcedGroups);
+
+        resolutionTimeReporter.report(stopWatch.stop());
+        return proctorResult;
     }
 
     protected abstract Map<String, TestBucket> getDefaultBucketValues();
@@ -91,5 +107,38 @@ public abstract class AbstractGroupsManager implements ProctorContextDescriptor 
             forcedGroups = emptyMap();
         }
         return determineBucketsInternal(identifiers, context, forcedGroups);
+    }
+
+    @VisibleForTesting
+    static class StopWatch {
+        private final Clock clock;
+        private Long startMillis;
+
+        StopWatch(final Clock clock) {
+            this.clock = clock;
+            startMillis = null;
+        }
+
+        void start() {
+            startMillis = now();
+        }
+
+        /**
+         * @return elapsed time from start() to stop() in milliseconds
+         */
+        long stop() {
+            if (startMillis == null) {
+                throw new RuntimeException("Timer stop called before start");
+            }
+
+            final long duration = now() - startMillis;
+            startMillis = null;
+
+            return duration;
+        }
+
+        long now() {
+            return clock.millis();
+        }
     }
 }
