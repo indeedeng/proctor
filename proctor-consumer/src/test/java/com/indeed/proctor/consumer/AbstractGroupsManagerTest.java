@@ -1,5 +1,6 @@
 package com.indeed.proctor.consumer;
 
+import com.indeed.proctor.common.GroupsManagerCallbacks;
 import com.indeed.proctor.common.Identifiers;
 import com.indeed.proctor.common.Proctor;
 import com.indeed.proctor.common.ProctorResult;
@@ -11,14 +12,10 @@ import org.junit.Test;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.time.Clock;
 import java.util.Map;
-import java.util.Timer;
 
 import static com.indeed.proctor.consumer.ProctorConsumerUtils.FORCE_GROUPS_PARAMETER;
 import static java.util.Collections.emptyMap;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.clearInvocations;
@@ -82,14 +79,24 @@ public class AbstractGroupsManagerTest {
     }
 
     @Test
-    public void testLogGroupResolutionTime() {
+    public void testCallbacksCalled() {
         final Proctor proctorMock = mock(Proctor.class);
         final ProctorResult proctorResultMock = mock(ProctorResult.class);
         final Logger loggerMock = mock(Logger.class);
         final Identifiers identifiers = Identifiers.of(TestType.ANONYMOUS_USER, "fooUser");
         final AbstractGroupsManager manager = new AbstractGroupsManager(
                 () -> proctorMock,
-                (time) -> loggerMock.info("logging resolution time: " + time)
+                () -> new GroupsManagerCallbacks() {
+                    @Override
+                    public void beforeDetermineBucket() {
+                        loggerMock.info("called before");
+                    }
+
+                    @Override
+                    public void afterDetermineBucket() {
+                        loggerMock.info("called after");
+                    }
+                }
         ) {
             @Override
             public Map<String, String> getProvidedContext() {
@@ -108,33 +115,7 @@ public class AbstractGroupsManagerTest {
         manager.determineBucketsInternal(identifiers, emptyMap(), emptyMap());
 
         verify(proctorMock).determineTestGroups(identifiers, emptyMap(), emptyMap());
-        verify(loggerMock).info(anyString());
-    }
-
-    @Test
-    public void testStopWatch() {
-        final Clock clockMock = mock(Clock.class);
-        final AbstractGroupsManager.StopWatch stopWatch = new AbstractGroupsManager.StopWatch(clockMock);
-
-        final long startMillis = 100;
-        final long stopMillis = 125;
-        when(clockMock.millis())
-                .thenReturn(startMillis)
-                .thenReturn(stopMillis);
-
-        stopWatch.start();
-        final long result = stopWatch.stop();
-
-        assertThat(result).isEqualTo(stopMillis - startMillis);
-    }
-
-    @Test
-    public void testStopWatchThrowsWhenStoppedBeforeStarting() {
-        final Clock clockMock = mock(Clock.class);
-        final AbstractGroupsManager.StopWatch stopWatch = new AbstractGroupsManager.StopWatch(clockMock);
-
-        assertThatThrownBy(stopWatch::stop)
-                .isInstanceOf(RuntimeException.class)
-                .hasMessage("Timer stop called before start");
+        verify(loggerMock).info("called before");
+        verify(loggerMock).info("called after");
     }
 }

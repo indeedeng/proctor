@@ -35,8 +35,8 @@ public class ${mainClassName} extends AbstractGroupsManager {
         super(proctorSource);
     }
 
-    public ${mainClassName}(final Supplier<Proctor> proctorSource, final GroupResolutionTimeReporter resolutionTimeReporter) {
-        super(proctorSource, resolutionTimeReporter);
+    public ${mainClassName}(final Supplier<Proctor> proctorSource, final Supplier<GroupsManagerCallbacks> callbacksSupplier) {
+        super(proctorSource, callbacksSupplier);
     }
 
     /**
