@@ -73,7 +73,7 @@ public abstract class AbstractGroupsManager implements ProctorContextDescriptor 
     @VisibleForTesting
     protected ProctorResult determineBucketsInternal(final Identifiers identifiers, final Map<String, Object> context, final Map<String, Integer> forcedGroups) {
         final GroupsManagerInterceptor interceptor = interceptorSupplier.get();
-        interceptor.beforeDetermineBucket();
+        interceptor.beforeDetermineBucket(identifiers, context, forcedGroups);
 
         final Proctor proctor = proctorSource.get();
         if (proctor == null) {
@@ -86,7 +86,7 @@ public abstract class AbstractGroupsManager implements ProctorContextDescriptor 
         }
         final ProctorResult proctorResult = proctor.determineTestGroups(identifiers, context, forcedGroups);
 
-        interceptor.afterDetermineBucket();
+        interceptor.afterDetermineBucket(proctorResult);
         return proctorResult;
     }
 

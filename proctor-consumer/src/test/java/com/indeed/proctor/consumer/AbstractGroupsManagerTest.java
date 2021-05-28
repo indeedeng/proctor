@@ -88,12 +88,16 @@ public class AbstractGroupsManagerTest {
                 () -> proctorMock,
                 () -> new GroupsManagerInterceptor() {
                     @Override
-                    public void beforeDetermineBucket() {
+                    public void beforeDetermineBucket(
+                            final Identifiers identifiers,
+                            final Map<String, Object> context,
+                            final Map<String, Integer> forcedGroups
+                    ) {
                         loggerMock.info("called before");
                     }
 
                     @Override
-                    public void afterDetermineBucket() {
+                    public void afterDetermineBucket(final ProctorResult proctorResult) {
                         loggerMock.info("called after");
                     }
                 }
