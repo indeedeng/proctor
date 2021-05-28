@@ -1,6 +1,5 @@
 package com.indeed.proctor.consumer;
 
-import com.indeed.proctor.common.GroupsManagerInterceptor;
 import com.indeed.proctor.common.Identifiers;
 import com.indeed.proctor.common.Proctor;
 import com.indeed.proctor.common.ProctorResult;
@@ -88,7 +87,7 @@ public class AbstractGroupsManagerTest {
                 () -> proctorMock,
                 () -> new GroupsManagerInterceptor() {
                     @Override
-                    public void beforeDetermineBucket(
+                    public void beforeDetermineGroups(
                             final Identifiers identifiers,
                             final Map<String, Object> context,
                             final Map<String, Integer> forcedGroups
@@ -97,7 +96,7 @@ public class AbstractGroupsManagerTest {
                     }
 
                     @Override
-                    public void afterDetermineBucket(final ProctorResult proctorResult) {
+                    public void afterDetermineGroups(final ProctorResult proctorResult) {
                         loggerMock.info("called after");
                     }
                 }

@@ -2,7 +2,6 @@ package com.indeed.proctor.consumer;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Supplier;
-import com.indeed.proctor.common.GroupsManagerInterceptor;
 import com.indeed.proctor.common.Identifiers;
 import com.indeed.proctor.common.Proctor;
 import com.indeed.proctor.common.ProctorResult;
@@ -73,7 +72,7 @@ public abstract class AbstractGroupsManager implements ProctorContextDescriptor 
     @VisibleForTesting
     protected ProctorResult determineBucketsInternal(final Identifiers identifiers, final Map<String, Object> context, final Map<String, Integer> forcedGroups) {
         final GroupsManagerInterceptor interceptor = interceptorSupplier.get();
-        interceptor.beforeDetermineBucket(identifiers, context, forcedGroups);
+        interceptor.beforeDetermineGroups(identifiers, context, forcedGroups);
 
         final Proctor proctor = proctorSource.get();
         if (proctor == null) {
@@ -86,7 +85,7 @@ public abstract class AbstractGroupsManager implements ProctorContextDescriptor 
         }
         final ProctorResult proctorResult = proctor.determineTestGroups(identifiers, context, forcedGroups);
 
-        interceptor.afterDetermineBucket(proctorResult);
+        interceptor.afterDetermineGroups(proctorResult);
         return proctorResult;
     }
 
