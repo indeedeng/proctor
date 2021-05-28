@@ -1,11 +1,11 @@
 package com.indeed.proctor.common;
 
-public interface GroupsManagerCallbacks {
+public interface GroupsManagerInterceptor {
     void beforeDetermineBucket();
     void afterDetermineBucket();
 
-    static GroupsManagerCallbacks getDefault() {
-        return new GroupsManagerCallbacks() {
+    static GroupsManagerInterceptor getDefault() {
+        return new GroupsManagerInterceptor() {
             @Override
             public void beforeDetermineBucket() {
             }

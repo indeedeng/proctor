@@ -2,7 +2,7 @@ package com.indeed.proctor.consumer;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Supplier;
-import com.indeed.proctor.common.GroupsManagerCallbacks;
+import com.indeed.proctor.common.GroupsManagerInterceptor;
 import com.indeed.proctor.common.Identifiers;
 import com.indeed.proctor.common.Proctor;
 import com.indeed.proctor.common.ProctorResult;
@@ -24,16 +24,16 @@ import static java.util.Collections.emptySortedMap;
  */
 public abstract class AbstractGroupsManager implements ProctorContextDescriptor {
     private final Supplier<Proctor> proctorSource;
-    private final Supplier<GroupsManagerCallbacks> callbacksSupplier;
+    private final Supplier<GroupsManagerInterceptor> interceptorSupplier;
 
     protected AbstractGroupsManager(final Supplier<Proctor> proctorSource) {
         this.proctorSource = proctorSource;
-        this.callbacksSupplier = GroupsManagerCallbacks::getDefault;
+        this.interceptorSupplier = GroupsManagerInterceptor::getDefault;
     }
 
-    protected AbstractGroupsManager(final Supplier<Proctor> proctorSource, final Supplier<GroupsManagerCallbacks> callbacksSupplier) {
+    protected AbstractGroupsManager(final Supplier<Proctor> proctorSource, final Supplier<GroupsManagerInterceptor> interceptorSupplier) {
         this.proctorSource = proctorSource;
-        this.callbacksSupplier = callbacksSupplier;
+        this.interceptorSupplier = interceptorSupplier;
     }
 
     /**
@@ -72,8 +72,8 @@ public abstract class AbstractGroupsManager implements ProctorContextDescriptor 
      */
     @VisibleForTesting
     protected ProctorResult determineBucketsInternal(final Identifiers identifiers, final Map<String, Object> context, final Map<String, Integer> forcedGroups) {
-        final GroupsManagerCallbacks callbacks = callbacksSupplier.get();
-        callbacks.beforeDetermineBucket();
+        final GroupsManagerInterceptor interceptor = interceptorSupplier.get();
+        interceptor.beforeDetermineBucket();
 
         final Proctor proctor = proctorSource.get();
         if (proctor == null) {
@@ -86,7 +86,7 @@ public abstract class AbstractGroupsManager implements ProctorContextDescriptor 
         }
         final ProctorResult proctorResult = proctor.determineTestGroups(identifiers, context, forcedGroups);
 
-        callbacks.afterDetermineBucket();
+        interceptor.afterDetermineBucket();
         return proctorResult;
     }
 

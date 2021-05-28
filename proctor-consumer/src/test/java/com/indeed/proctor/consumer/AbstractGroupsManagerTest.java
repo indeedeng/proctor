@@ -1,6 +1,6 @@
 package com.indeed.proctor.consumer;
 
-import com.indeed.proctor.common.GroupsManagerCallbacks;
+import com.indeed.proctor.common.GroupsManagerInterceptor;
 import com.indeed.proctor.common.Identifiers;
 import com.indeed.proctor.common.Proctor;
 import com.indeed.proctor.common.ProctorResult;
@@ -86,7 +86,7 @@ public class AbstractGroupsManagerTest {
         final Identifiers identifiers = Identifiers.of(TestType.ANONYMOUS_USER, "fooUser");
         final AbstractGroupsManager manager = new AbstractGroupsManager(
                 () -> proctorMock,
-                () -> new GroupsManagerCallbacks() {
+                () -> new GroupsManagerInterceptor() {
                     @Override
                     public void beforeDetermineBucket() {
                         loggerMock.info("called before");

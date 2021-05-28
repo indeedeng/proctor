@@ -35,8 +35,8 @@ public class ${mainClassName} extends AbstractGroupsManager {
         super(proctorSource);
     }
 
-    public ${mainClassName}(final Supplier<Proctor> proctorSource, final Supplier<GroupsManagerCallbacks> callbacksSupplier) {
-        super(proctorSource, callbacksSupplier);
+    public ${mainClassName}(final Supplier<Proctor> proctorSource, final Supplier<GroupsManagerInterceptor> interceptorSupplier) {
+        super(proctorSource, interceptorSupplier);
     }
 
     /**
