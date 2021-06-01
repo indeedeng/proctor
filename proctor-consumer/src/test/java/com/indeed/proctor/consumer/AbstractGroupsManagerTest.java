@@ -2,8 +2,10 @@ package com.indeed.proctor.consumer;
 
 import com.indeed.proctor.common.Identifiers;
 import com.indeed.proctor.common.Proctor;
+import com.indeed.proctor.common.ProctorResult;
 import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.common.model.TestType;
+import org.apache.log4j.Logger;
 import org.junit.Test;
 
 import javax.servlet.http.Cookie;
@@ -73,5 +75,50 @@ public class AbstractGroupsManagerTest {
             clearInvocations(httpRequestMock, httpResponseMock);
         }
 
+    }
+
+    @Test
+    public void testCallbacksCalled() {
+        final Proctor proctorMock = mock(Proctor.class);
+        final ProctorResult proctorResultMock = mock(ProctorResult.class);
+        final Logger loggerMock = mock(Logger.class);
+        final Identifiers identifiers = Identifiers.of(TestType.ANONYMOUS_USER, "fooUser");
+        final AbstractGroupsManager manager = new AbstractGroupsManager(
+                () -> proctorMock,
+                () -> new GroupsManagerInterceptor() {
+                    @Override
+                    public void beforeDetermineGroups(
+                            final Identifiers identifiers,
+                            final Map<String, Object> context,
+                            final Map<String, Integer> forcedGroups
+                    ) {
+                        loggerMock.info("called before");
+                    }
+
+                    @Override
+                    public void afterDetermineGroups(final ProctorResult proctorResult) {
+                        loggerMock.info("called after");
+                    }
+                }
+        ) {
+            @Override
+            public Map<String, String> getProvidedContext() {
+                return null;
+            }
+
+            @Override
+            protected Map<String, TestBucket> getDefaultBucketValues() {
+                return null;
+            }
+        };
+
+        when(proctorMock.determineTestGroups(identifiers, emptyMap(), emptyMap()))
+                .thenReturn(proctorResultMock);
+
+        manager.determineBucketsInternal(identifiers, emptyMap(), emptyMap());
+
+        verify(proctorMock).determineTestGroups(identifiers, emptyMap(), emptyMap());
+        verify(loggerMock).info("called before");
+        verify(loggerMock).info("called after");
     }
 }

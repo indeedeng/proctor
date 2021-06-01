@@ -23,8 +23,16 @@ import static java.util.Collections.emptySortedMap;
  */
 public abstract class AbstractGroupsManager implements ProctorContextDescriptor {
     private final Supplier<Proctor> proctorSource;
+    private final Supplier<GroupsManagerInterceptor> interceptorSupplier;
+
     protected AbstractGroupsManager(final Supplier<Proctor> proctorSource) {
         this.proctorSource = proctorSource;
+        this.interceptorSupplier = GroupsManagerInterceptor::getDefault;
+    }
+
+    protected AbstractGroupsManager(final Supplier<Proctor> proctorSource, final Supplier<GroupsManagerInterceptor> interceptorSupplier) {
+        this.proctorSource = proctorSource;
+        this.interceptorSupplier = interceptorSupplier;
     }
 
     /**
@@ -63,6 +71,9 @@ public abstract class AbstractGroupsManager implements ProctorContextDescriptor 
      */
     @VisibleForTesting
     protected ProctorResult determineBucketsInternal(final Identifiers identifiers, final Map<String, Object> context, final Map<String, Integer> forcedGroups) {
+        final GroupsManagerInterceptor interceptor = interceptorSupplier.get();
+        interceptor.beforeDetermineGroups(identifiers, context, forcedGroups);
+
         final Proctor proctor = proctorSource.get();
         if (proctor == null) {
             final Map<String, TestBucket> buckets = getDefaultBucketValues();
@@ -72,7 +83,10 @@ public abstract class AbstractGroupsManager implements ProctorContextDescriptor 
                     emptyMap()
             );
         }
-        return proctor.determineTestGroups(identifiers, context, forcedGroups);
+        final ProctorResult proctorResult = proctor.determineTestGroups(identifiers, context, forcedGroups);
+
+        interceptor.afterDetermineGroups(proctorResult);
+        return proctorResult;
     }
 
     protected abstract Map<String, TestBucket> getDefaultBucketValues();
