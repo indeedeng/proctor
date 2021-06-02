@@ -13,11 +13,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Collections.emptyList;
 
 /**
  * Models a single test
+ *
  * @author ketan
  */
 public class TestDefinition {
@@ -168,8 +168,6 @@ public class TestDefinition {
         description = builder.description;
         metaTags = builder.metaTags.build();
         dependsOn = builder.dependsOn;
-        checkArgument(!buckets.isEmpty(), "buckets must be set");
-        checkArgument(!allocations.isEmpty(), "allocations must be set");
     }
 
     public static Builder builder() {
@@ -329,7 +327,7 @@ public class TestDefinition {
         // because TestBuckets.hashCode() only considers name for unknown reasons, need to use testBuckets.fullHashCode()
         final List<Object> bucketWrappers = new ArrayList<>();
         if (buckets != null) {
-            for (final TestBucket bucket: buckets) {
+            for (final TestBucket bucket : buckets) {
                 bucketWrappers.add(new Object() {
                     @Override
                     public int hashCode() {
