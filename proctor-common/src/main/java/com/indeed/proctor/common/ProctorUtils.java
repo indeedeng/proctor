@@ -55,8 +55,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static java.util.Collections.emptyList;
-import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.joining;
 
 /**
@@ -122,7 +120,10 @@ public abstract class ProctorUtils {
      */
     @Deprecated
     @SuppressWarnings("UnusedDeclaration") // TODO Remove?
-    public static void serializeTestDefinition(final Writer writer, final TestDefinition definition) throws IOException {
+    public static void serializeTestDefinition(
+            final Writer writer,
+            final TestDefinition definition
+    ) throws IOException {
         serializeObject(writer, definition);
     }
 
@@ -420,15 +421,19 @@ public abstract class ProctorUtils {
     ) {
         final ProctorLoadResult.Builder resultBuilder = ProctorLoadResult.newBuilder();
 
+        final Set<String> testsToLoad = Sets.union(requiredTests.keySet(), dynamicTests);
         final Map<String, ConsumableTestDefinition> definedTests = testMatrix.getTests();
 
-        final Set<String> incompatibleTestNames = new HashSet<>();
+        final Set<String> missingTests = new HashSet<>();
+        final Set<String> incompatibleTests = new HashSet<>();
 
-        for (final Entry<String, ConsumableTestDefinition> entry : definedTests.entrySet()) {
-            final String testName = entry.getKey();
-
-            if (requiredTests.containsKey(testName)) {
-                // required in specification
+        for (final String testName : testsToLoad) {
+            if (!definedTests.containsKey(testName)) {
+                // required by specification but missing in test matrix
+                resultBuilder.recordMissing(testName);
+                missingTests.add(testName);
+            } else if (requiredTests.containsKey(testName)) {
+                // required by specification
                 try {
                     verifyRequiredTest(
                             testName,
@@ -440,7 +445,7 @@ public abstract class ProctorUtils {
                     );
                 } catch (final IncompatibleTestMatrixException e) {
                     resultBuilder.recordError(testName, e);
-                    incompatibleTestNames.add(testName);
+                    incompatibleTests.add(testName);
                 }
             } else if (dynamicTests.contains(testName)) {
                 // resolved by dynamic filter
@@ -454,16 +459,19 @@ public abstract class ProctorUtils {
                     );
                 } catch (final IncompatibleTestMatrixException e) {
                     resultBuilder.recordIncompatibleDynamicTest(testName, e);
-                    incompatibleTestNames.add(testName);
+                    incompatibleTests.add(testName);
                 }
             }
         }
 
-        final Map<String, String> errorReasonsOfTestsWithInvalidDependency =
+        final Map<String, String> errorReasonsOfTestsByDependency =
                 TestDependencies.validateDependenciesAndReturnReasons(
-                        Maps.filterKeys(definedTests, key -> !incompatibleTestNames.contains(key)));
+                        testsToLoad.stream()
+                            .filter(testName -> !missingTests.contains(testName) && !incompatibleTests.contains(testName))
+                            .collect(Collectors.toMap(testName -> testName, definedTests::get))
+                );
 
-        errorReasonsOfTestsWithInvalidDependency.forEach((testName, errorReason) -> {
+        errorReasonsOfTestsByDependency.forEach((testName, errorReason) -> {
             final String message = "Invalid dependency field is detected: " + errorReason;
             if (requiredTests.containsKey(testName)) {
                 resultBuilder.recordError(testName, new IncompatibleTestMatrixException(message));
@@ -472,8 +480,6 @@ public abstract class ProctorUtils {
             }
         });
 
-        final SetView<String> missingTests = Sets.difference(requiredTests.keySet(), definedTests.keySet());
-        resultBuilder.recordAllMissing(missingTests);
         resultBuilder.recordVerifiedRules(providedContext.shouldEvaluate());
 
         return resultBuilder.build();
