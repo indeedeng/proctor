@@ -500,7 +500,7 @@ public abstract class ProctorUtils {
      *                          These will be supplied to verifying all rules.
      * @throws IncompatibleTestMatrixException if validation is failed.
      */
-    private static void verifyRequiredTest(
+    public static void verifyRequiredTest(
             @Nonnull final String testName,
             @Nonnull final ConsumableTestDefinition testDefinition,
             @Nonnull final TestSpecification testSpecification,
@@ -543,7 +543,7 @@ public abstract class ProctorUtils {
      *                        executing. These will be supplied to verifying all rules.
      * @throws IncompatibleTestMatrixException if validation is failed.
      */
-    private static void verifyDynamicTest(
+    public static void verifyDynamicTest(
             @Nonnull final String testName,
             @Nonnull final ConsumableTestDefinition testDefinition,
             @Nonnull final String matrixSource,
