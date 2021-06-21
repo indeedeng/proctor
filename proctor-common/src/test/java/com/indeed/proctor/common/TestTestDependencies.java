@@ -56,6 +56,23 @@ public class TestTestDependencies {
     }
 
     @Test
+    public void testValidateDependencyAndReturnErrorReason_dependsOnItself() {
+        final ConsumableTestDefinition definition = ConsumableTestDefinition.fromTestDefinition(
+                stubTestDefinition(TEST_NAME)
+                        .setDependsOn(new TestDependency(TEST_NAME, BUCKET_VALUE))
+                        .build()
+        );
+        final ConsumableTestDefinition parentDefinition = ConsumableTestDefinition.fromTestDefinition(
+                stubTestDefinition(PARENT_TEST_NAME).build()
+        );
+        assertThat(TestDependencies.validateDependencyAndReturnReason(
+                TEST_NAME,
+                definition,
+                ImmutableMap.of(TEST_NAME, definition, PARENT_TEST_NAME, parentDefinition)
+        )).hasValue("A test example_tst depends on itself");
+    }
+
+    @Test
     public void testValidateDependencyAndReturnErrorReason_unknownTest() {
         final ConsumableTestDefinition definition = ConsumableTestDefinition.fromTestDefinition(
                 stubTestDefinition(TEST_NAME)
