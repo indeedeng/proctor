@@ -90,6 +90,10 @@ public class TestDependencies {
         }
 
         final String parentName = dependsOn.getTestName();
+        if (testName.equals(parentName)) {
+            return Optional.of("A test " + testName + " depends on itself");
+        }
+
         final ConsumableTestDefinition parentDefinition = testDefinitions.get(parentName);
         if (parentDefinition == null) {
             return Optional.of("A test " + testName + " depends on an unknown or incompatible test "
