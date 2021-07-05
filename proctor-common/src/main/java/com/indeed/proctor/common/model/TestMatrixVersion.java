@@ -2,6 +2,8 @@ package com.indeed.proctor.common.model;
 
 import javax.annotation.Nullable;
 import java.util.Date;
+import java.util.Objects;
+import java.util.StringJoiner;
 
 /**
  * This represents what's serialized to the database, while {@link TestMatrixArtifact} represents what is consumed by applications
@@ -86,5 +88,37 @@ public class TestMatrixVersion {
 
     public void setAuthor(@Nullable final String author) {
         this.author = author;
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", TestMatrixVersion.class.getSimpleName() + "[", "]")
+                .add("testMatrixDefinition=" + testMatrixDefinition)
+                .add("published=" + published)
+                .add("version='" + version + "'")
+                .add("description='" + description + "'")
+                .add("author='" + author + "'")
+                .toString();
+    }
+
+    @Override
+    public boolean equals(final Object o) {
+        if (this == o) {
+            return true;
+        }
+        if ((o == null) || (getClass() != o.getClass())) {
+            return false;
+        }
+        final TestMatrixVersion that = (TestMatrixVersion) o;
+        return Objects.equals(testMatrixDefinition, that.testMatrixDefinition)
+                && Objects.equals(published, that.published)
+                && Objects.equals(version, that.version)
+                && Objects.equals(description, that.description)
+                && Objects.equals(author, that.author);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(testMatrixDefinition, published, version, description, author);
     }
 }
