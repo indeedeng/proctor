@@ -178,6 +178,10 @@ public class TestDefinition {
         return version;
     }
 
+    /**
+     * @deprecated Use {@link #builder()}
+     */
+    @Deprecated
     public void setVersion(final String version) {
         this.version = version;
     }
@@ -187,6 +191,10 @@ public class TestDefinition {
         return constants;
     }
 
+    /**
+     * @deprecated Use {@link #builder()}
+     */
+    @Deprecated
     @SuppressWarnings("UnusedDeclaration")
     public void setConstants(@Nonnull final Map<String, Object> constants) {
         this.constants = constants;
@@ -197,6 +205,10 @@ public class TestDefinition {
         return specialConstants;
     }
 
+    /**
+     * @deprecated Use {@link #builder()}
+     */
+    @Deprecated
     @SuppressWarnings("UnusedDeclaration")
     public void setSpecialConstants(@Nonnull final Map<String, Object> specialConstants) {
         this.specialConstants = specialConstants;
@@ -216,6 +228,10 @@ public class TestDefinition {
         setRule(subrule);
     }
 
+    /**
+     * @deprecated Use {@link #builder()}
+     */
+    @Deprecated
     @SuppressWarnings("UnusedDeclaration")
     public void setRule(@Nullable final String rule) {
         this.rule = rule;
@@ -227,6 +243,10 @@ public class TestDefinition {
         return salt;
     }
 
+    /**
+     * @deprecated Use {@link #builder()}
+     */
+    @Deprecated
     @SuppressWarnings("UnusedDeclaration")
     public void setSalt(@Nonnull final String salt) {
         this.salt = salt;
@@ -237,6 +257,10 @@ public class TestDefinition {
         return buckets;
     }
 
+    /**
+     * @deprecated Use {@link #builder()}
+     */
+    @Deprecated
     @SuppressWarnings("UnusedDeclaration")
     public void setBuckets(@Nonnull final List<TestBucket> buckets) {
         this.buckets = buckets;
@@ -247,11 +271,19 @@ public class TestDefinition {
         return allocations;
     }
 
+    /**
+     * @deprecated Use {@link #builder()}
+     */
+    @Deprecated
     @SuppressWarnings("UnusedDeclaration")
     public void setAllocations(@Nonnull final List<Allocation> allocations) {
         this.allocations = allocations;
     }
 
+    /**
+     * @deprecated Use {@link #builder()}
+     */
+    @Deprecated
     public void setSilent(final boolean silent) {
         this.silent = silent;
     }
@@ -265,11 +297,19 @@ public class TestDefinition {
         return testType;
     }
 
+    /**
+     * @deprecated Use {@link #builder()}
+     */
+    @Deprecated
     @SuppressWarnings("UnusedDeclaration")
     public void setTestType(final TestType testType) {
         this.testType = testType;
     }
 
+    /**
+     * @deprecated Use {@link #builder()}
+     */
+    @Deprecated
     public void setDescription(final String description) {
         this.description = description;
     }
@@ -287,6 +327,10 @@ public class TestDefinition {
         return this.metaTags;
     }
 
+    /**
+     * @deprecated Use {@link #builder()}
+     */
+    @Deprecated
     public void setMetaTags(final List<String> metaTags) {
         this.metaTags = metaTags;
     }
@@ -300,6 +344,10 @@ public class TestDefinition {
         return dependsOn;
     }
 
+    /**
+     * @deprecated Use {@link #builder()}
+     */
+    @Deprecated
     public void setDependsOn(@Nullable final TestDependency dependsOn) {
         this.dependsOn = dependsOn;
     }
