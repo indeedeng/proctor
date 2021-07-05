@@ -35,6 +35,15 @@ public class TestMatrixVersion {
         this.author = author;
     }
 
+    public TestMatrixVersion(final TestMatrixVersion testMatrixVersion) {
+        this.testMatrixDefinition = (testMatrixVersion.testMatrixDefinition != null) ?
+                new TestMatrixDefinition(testMatrixVersion.testMatrixDefinition) : null;
+        this.published = testMatrixVersion.published;
+        this.version = testMatrixVersion.version;
+        this.description = testMatrixVersion.description;
+        this.author = testMatrixVersion.author;
+    }
+
     @Nullable
     public TestMatrixDefinition getTestMatrixDefinition() {
         return testMatrixDefinition;

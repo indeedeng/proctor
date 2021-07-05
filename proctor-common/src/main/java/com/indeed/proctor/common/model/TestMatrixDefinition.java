@@ -1,5 +1,7 @@
 package com.indeed.proctor.common.model;
 
+import com.google.common.collect.ImmutableMap;
+
 import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.Map;
@@ -12,6 +14,10 @@ public class TestMatrixDefinition {
 
     public TestMatrixDefinition(@Nonnull final Map<String, TestDefinition> tests) {
         this.tests = tests;
+    }
+
+    public TestMatrixDefinition(@Nonnull final TestMatrixDefinition testMatrixDefinition) {
+        this.tests = ImmutableMap.copyOf(testMatrixDefinition.tests);
     }
 
     @Nonnull
