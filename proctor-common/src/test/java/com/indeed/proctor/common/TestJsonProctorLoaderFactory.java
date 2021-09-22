@@ -3,6 +3,7 @@ package com.indeed.proctor.common;
 import com.google.common.collect.ImmutableMap;
 import com.indeed.proctor.common.model.TestType;
 import com.indeed.util.varexport.VarExporter;
+import org.assertj.core.api.Condition;
 import org.junit.Test;
 
 import javax.annotation.Nonnull;
@@ -95,5 +96,17 @@ public class TestJsonProctorLoaderFactory {
                 VarExporter.forNamespace("JsonProctorLoaderFactory")
                         .<String>getValue("specification-specification-with-filter.json")
         ).contains("example");
+    }
+
+    @Test
+    public void testExportedVariableForSpecificationFromObject() {
+        final JsonProctorLoaderFactory factory = new JsonProctorLoaderFactory();
+        factory.setFilePath(getClass().getResource("example-test-matrix.json").getPath());
+        factory.setSpecification(new ProctorSpecification());
+        assertThat(VarExporter.forNamespace("JsonProctorLoaderFactory").getVariables())
+                .haveExactly(1, new Condition<>(
+                        e -> e.getName().startsWith("specification-anonymous-"),
+                        "variable name has the expected prefix"
+                ));
     }
 }

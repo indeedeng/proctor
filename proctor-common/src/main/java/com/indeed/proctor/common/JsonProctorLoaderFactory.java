@@ -58,7 +58,7 @@ public class JsonProctorLoaderFactory {
         }
 
         exportJsonSpecification(
-                generateExportVariableName(specificationResource),
+                generateExportVariableNameFromResource(specificationResource),
                 this._specification
         );
     }
@@ -81,8 +81,10 @@ public class JsonProctorLoaderFactory {
                 "Null specifications are not supported"
         );
 
-        // Setting variable name with no suffix as no file name is given.
-        exportJsonSpecification(EXPORT_NAME_PREFIX_FOR_SPECIFICATION, specification);
+        exportJsonSpecification(
+                generateExportVariableNameFromObject(specification),
+                specification
+        );
     }
 
     public void setFunctionMapper(@Nonnull final FunctionMapper functionMapper) {
@@ -139,7 +141,11 @@ public class JsonProctorLoaderFactory {
         }
     }
 
-    private String generateExportVariableName(final Resource resource) {
+    private static String generateExportVariableNameFromResource(final Resource resource) {
         return EXPORT_NAME_PREFIX_FOR_SPECIFICATION + "-" + resource.getFilename();
+    }
+
+    private static String generateExportVariableNameFromObject(final ProctorSpecification specification) {
+        return EXPORT_NAME_PREFIX_FOR_SPECIFICATION + "-anonymous-" + Integer.toHexString(specification.hashCode());
     }
 }
