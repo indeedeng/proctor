@@ -111,7 +111,7 @@ public class AbstractProctorLoaderTest {
     }
 
     @Test
-    public void testSetIdentifierValidator() throws IOException {
+    public void testDoLoadWithIdentiferValidator() throws IOException {
         final String testName = "tst";
 
         final Audit audit = new Audit();
@@ -129,7 +129,9 @@ public class AbstractProctorLoaderTest {
         final ProctorSpecification proctorSpecification = new ProctorSpecification(
                 Collections.emptyMap(), tests, new DynamicFilters());
 
-        final TestProctorLoader loader = new TestProctorLoader(dataLoaderTimerMock, proctorSpecification) {
+        final IdentifierValidator identifierValidator = (testType, identifier) -> !"foo".equals(identifier);
+
+        final TestProctorLoader loader = new TestProctorLoader(dataLoaderTimerMock, proctorSpecification, identifierValidator) {
             @Nullable
             @Override
             TestMatrixArtifact loadTestMatrix() {
@@ -137,7 +139,6 @@ public class AbstractProctorLoaderTest {
             }
         };
 
-        loader.setIdentifierValidator((testType, identifier) -> !"foo".equals(identifier));
 
         final Proctor proctor = loader.doLoad();
 
@@ -230,6 +231,12 @@ public class AbstractProctorLoaderTest {
 
         public TestProctorLoader(final DataLoadTimer dataLoaderTimer, final ProctorSpecification specification) {
             super(TestProctorLoader.class, specification, new FunctionMapperImpl());
+            this.dataLoadTimer = dataLoaderTimer;
+        }
+
+        public TestProctorLoader(final DataLoadTimer dataLoaderTimer, final ProctorSpecification specification,
+                                 final IdentifierValidator identifierValidator) {
+            super(TestProctorLoader.class, specification, new FunctionMapperImpl(), identifierValidator);
             this.dataLoadTimer = dataLoaderTimer;
         }
 

@@ -40,24 +40,36 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
     @Nullable
     private String lastLoadErrorMessage = "load never attempted";
 
-    private IdentifierValidator identifierValidator = new IdentifierValidator.Noop();
 
     @Nonnull
     private final FunctionMapper functionMapper;
+    @Nonnull
+    private final IdentifierValidator identifierValidator;
+
     private final ProvidedContext providedContext;
     protected final DynamicFilters dynamicFilters;
 
     private final List<ProctorLoadReporter> reporters = new ArrayList<>();
 
-    /**
-     * @param cls            name will be used as namespace for timer
-     * @param specification  provides tests, context, dynamic filters
-     * @param functionMapper evaluates functions in allocation rules
-     */
     public AbstractProctorLoader(
             @Nonnull final Class<?> cls,
             @Nonnull final ProctorSpecification specification,
             @Nonnull final FunctionMapper functionMapper
+    ) {
+        this(cls, specification, functionMapper, new IdentifierValidator.Noop());
+    }
+
+    /**
+     * @param cls                 name will be used as namespace for timer
+     * @param specification       provides tests, context, dynamic filters
+     * @param functionMapper      evaluates functions in allocation rules
+     * @param identifierValidator validates for preventing unintended activation of tests
+     */
+    public AbstractProctorLoader(
+            @Nonnull final Class<?> cls,
+            @Nonnull final ProctorSpecification specification,
+            @Nonnull final FunctionMapper functionMapper,
+            @Nonnull final IdentifierValidator identifierValidator
     ) {
         super(cls.getSimpleName());
         this.requiredTests = specification.getTests();
@@ -66,6 +78,7 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
             LOGGER.debug("providedContext Objects missing necessary functions for validation, rules will not be tested.");
         }
         this.functionMapper = functionMapper;
+        this.identifierValidator = identifierValidator;
         this.dynamicFilters = specification.getDynamicFilters();
     }
 
@@ -219,14 +232,6 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
     @Deprecated
     public void setDiffReporter(@Nonnull final AbstractProctorDiffReporter diffReporter) {
         addLoadReporter(diffReporter);
-    }
-
-    /**
-     * Set a custom identifier validator for Proctor objects initialized by this loader.
-     * {@link IdentifierValidator.Noop} is the default validator used if this method isn't called.
-     */
-    public void setIdentifierValidator(@Nonnull final IdentifierValidator identifierValidator) {
-        this.identifierValidator = Objects.requireNonNull(identifierValidator, "identifierValidator cannot be null");
     }
 
     public void addLoadReporter(@Nonnull final ProctorLoadReporter diffReporter) {
