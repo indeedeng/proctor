@@ -15,6 +15,7 @@ import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.common.model.TestMatrixArtifact;
 import com.indeed.proctor.common.model.TestType;
 import com.indeed.util.varexport.VarExporter;
+import org.apache.log4j.Logger;
 
 import javax.annotation.Nonnull;
 import javax.el.ExpressionFactory;
@@ -25,6 +26,7 @@ import java.io.Writer;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -45,9 +47,19 @@ import java.util.stream.IntStream;
  */
 public class Proctor {
     public static final Proctor EMPTY = createEmptyProctor();
+
+    private static final Logger LOGGER = Logger.getLogger(Proctor.class);
     private static final ObjectWriter OBJECT_WRITER = Serializers
             .lenient()
             .configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false).writerWithDefaultPrettyPrinter();
+
+    public static Proctor construct(
+            @Nonnull final TestMatrixArtifact matrix,
+            @Nonnull final ProctorLoadResult loadResult,
+            @Nonnull final FunctionMapper functionMapper
+    ) {
+        return construct(matrix, loadResult, functionMapper, new IdentifierValidator.Noop());
+    }
 
     /**
      * Factory method to do the setup and transformation of inputs
@@ -61,7 +73,8 @@ public class Proctor {
     public static Proctor construct(
             @Nonnull final TestMatrixArtifact matrix,
             @Nonnull final ProctorLoadResult loadResult,
-            @Nonnull final FunctionMapper functionMapper
+            @Nonnull final FunctionMapper functionMapper,
+            @Nonnull final IdentifierValidator identifierValidator
     ) {
         final ExpressionFactory expressionFactory = RuleEvaluator.EXPRESSION_FACTORY;
 
@@ -84,7 +97,7 @@ public class Proctor {
 
         final List<String> testEvaluationOrder = TestDependencies.determineEvaluationOrder(matrix.getTests());
 
-        return new Proctor(matrix, loadResult, testChoosers, testEvaluationOrder);
+        return new Proctor(matrix, loadResult, testChoosers, testEvaluationOrder, identifierValidator);
     }
 
     @Nonnull
@@ -104,7 +117,7 @@ public class Proctor {
 
         final List<String> testEvaluationOrder = Collections.emptyList();
 
-        return new Proctor(testMatrix, loadResult, choosers, testEvaluationOrder);
+        return new Proctor(testMatrix, loadResult, choosers, testEvaluationOrder, new IdentifierValidator.Noop());
     }
 
     static final long INT_RANGE = (long) Integer.MAX_VALUE - (long) Integer.MIN_VALUE;
@@ -112,6 +125,8 @@ public class Proctor {
     private final ProctorLoadResult loadResult;
     @Nonnull
     private final Map<String, TestChooser<?>> testChoosers;
+    @Nonnull
+    private final IdentifierValidator identifierValidator;
 
     private final Map<String, ConsumableTestDefinition> testDefinitions = Maps.newLinkedHashMap();
 
@@ -123,7 +138,8 @@ public class Proctor {
             @Nonnull final TestMatrixArtifact matrix,
             @Nonnull final ProctorLoadResult loadResult,
             @Nonnull final Map<String, TestChooser<?>> testChoosers,
-            @Nonnull final List<String> testEvaluationOrder
+            @Nonnull final List<String> testEvaluationOrder,
+            @Nonnull final IdentifierValidator identifierValidator
     ) {
         this.matrix = matrix;
         this.loadResult = loadResult;
@@ -131,6 +147,7 @@ public class Proctor {
         for (final Entry<String, TestChooser<?>> entry : testChoosers.entrySet()) {
             this.testDefinitions.put(entry.getKey(), entry.getValue().getTestDefinition());
         }
+        this.identifierValidator = identifierValidator;
         this.testEvaluationOrder = testEvaluationOrder;
         this.evaluationOrderMap = IntStream.range(0, testEvaluationOrder.size())
                 .boxed()
@@ -241,12 +258,27 @@ public class Proctor {
                     .collect(Collectors.toList());
         }
 
+        final Set<TestType> testTypesWithInvalidIdentifier = new HashSet<>();
+        for (final TestType testType : identifiers.getAvailableTestTypes()) {
+            final String identifier = identifiers.getIdentifier(testType);
+            if ((identifier != null) && !identifierValidator.validate(testType, identifier)) {
+                LOGGER.warn("An invalid identifier '" + identifier + "' for test type '" + testType + "'"
+                        + " was detected. Using fallback buckets for the test type.");
+                testTypesWithInvalidIdentifier.add(testType);
+            }
+        }
+
         for (final String testName : filteredEvaluationOrder) {
             final Integer forceGroupBucket = forceGroups.get(testName);
             final TestChooser<?> testChooser = testChoosers.get(testName);
             final String identifier;
             if (testChooser instanceof StandardTestChooser) {
                 final TestType testType = testChooser.getTestDefinition().getTestType();
+                if (testTypesWithInvalidIdentifier.contains(testType)) {
+                    // skipping here to make it use the fallback bucket.
+                    continue;
+                }
+
                 identifier = identifiers.getIdentifier(testType);
                 if (identifier == null) {
                     // No identifier for the testType of this chooser, nothing to do

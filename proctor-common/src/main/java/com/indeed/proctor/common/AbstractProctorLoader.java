@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 public abstract class AbstractProctorLoader extends DataLoadingTimerTask implements Supplier<Proctor> {
@@ -38,6 +39,9 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
     private Audit lastAudit = null;
     @Nullable
     private String lastLoadErrorMessage = "load never attempted";
+
+    private IdentifierValidator identifierValidator = new IdentifierValidator.Noop();
+
     @Nonnull
     private final FunctionMapper functionMapper;
     private final ProvidedContext providedContext;
@@ -167,7 +171,7 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
             }
         }
 
-        final Proctor proctor = Proctor.construct(testMatrix, loadResult, functionMapper);
+        final Proctor proctor = Proctor.construct(testMatrix, loadResult, functionMapper, identifierValidator);
         //  kind of lame to modify lastAudit here but current in load(), but the interface is a little constraining
         setLastAudit(newAudit);
         return proctor;
@@ -215,6 +219,14 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
     @Deprecated
     public void setDiffReporter(@Nonnull final AbstractProctorDiffReporter diffReporter) {
         addLoadReporter(diffReporter);
+    }
+
+    /**
+     * Set a custom identifier validator for Proctor objects initialized by this loader.
+     * {@link IdentifierValidator.Noop} is the default validator used if this method isn't called.
+     */
+    public void setIdentifierValidator(@Nonnull final IdentifierValidator identifierValidator) {
+        this.identifierValidator = Objects.requireNonNull(identifierValidator, "identifierValidator cannot be null");
     }
 
     public void addLoadReporter(@Nonnull final ProctorLoadReporter diffReporter) {
