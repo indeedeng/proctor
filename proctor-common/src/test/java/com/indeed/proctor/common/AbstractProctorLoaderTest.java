@@ -111,6 +111,55 @@ public class AbstractProctorLoaderTest {
     }
 
     @Test
+    public void testDoLoadWithIdentiferValidator() throws IOException {
+        final String testName = "tst";
+
+        final Audit audit = new Audit();
+        audit.setVersion("0");
+
+        final TestMatrixArtifact matrix = new TestMatrixArtifact();
+        matrix.setAudit(audit);
+        matrix.setTests(ImmutableMap.<String, ConsumableTestDefinition>builder()
+                .put(testName, createStubDefinition())
+                .build());
+
+        final Map<String, TestSpecification> tests = ImmutableMap.<String, TestSpecification>builder()
+                .put(testName, new TestSpecification())
+                .build();
+        final ProctorSpecification proctorSpecification = new ProctorSpecification(
+                Collections.emptyMap(), tests, new DynamicFilters());
+
+        final IdentifierValidator identifierValidator = (testType, identifier) -> !"foo".equals(identifier);
+
+        final TestProctorLoader loader = new TestProctorLoader(dataLoaderTimerMock, proctorSpecification, identifierValidator) {
+            @Nullable
+            @Override
+            TestMatrixArtifact loadTestMatrix() {
+                return matrix;
+            }
+        };
+
+
+        final Proctor proctor = loader.doLoad();
+
+        assertThat(proctor.determineTestGroups(
+                Identifiers.of(TestType.ANONYMOUS_USER, "foo"),
+                Collections.emptyMap(),
+                Collections.emptyMap()
+        ).getBuckets())
+                .as("it should assign no bucket as 'foo' identifier is invalid")
+                .doesNotContainKey(testName);
+
+        assertThat(proctor.determineTestGroups(
+                Identifiers.of(TestType.ANONYMOUS_USER, "bar"),
+                Collections.emptyMap(),
+                Collections.emptyMap()
+        ).getBuckets())
+                .as("it should assign some bucket as 'bar' identifier is valid")
+                .containsKey(testName);
+    }
+
+    @Test
     public void testDoLoad() throws IOException {
         // prepare
         final TestMatrixArtifact matrix = new TestMatrixArtifact();
@@ -182,6 +231,12 @@ public class AbstractProctorLoaderTest {
 
         public TestProctorLoader(final DataLoadTimer dataLoaderTimer, final ProctorSpecification specification) {
             super(TestProctorLoader.class, specification, new FunctionMapperImpl());
+            this.dataLoadTimer = dataLoaderTimer;
+        }
+
+        public TestProctorLoader(final DataLoadTimer dataLoaderTimer, final ProctorSpecification specification,
+                                 final IdentifierValidator identifierValidator) {
+            super(TestProctorLoader.class, specification, new FunctionMapperImpl(), identifierValidator);
             this.dataLoadTimer = dataLoaderTimer;
         }
 

@@ -9,6 +9,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Convenience wrapper for Map<TestType, String>, used to select an identifier suitable to resolve test groups
@@ -71,6 +73,13 @@ public class Identifiers {
      */
     public boolean isRandomEnabled() {
         return randomEnabled;
+    }
+
+    /**
+     * @return a set of all the test types whose identifiers are stored in this object.
+     */
+    public Set<TestType> getAvailableTestTypes() {
+        return identifierMap.keySet();
     }
 
     @CheckForNull

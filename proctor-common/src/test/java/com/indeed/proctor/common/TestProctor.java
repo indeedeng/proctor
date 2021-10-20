@@ -18,6 +18,7 @@ import com.indeed.proctor.common.model.TestMatrixArtifact;
 import com.indeed.proctor.common.model.TestType;
 import org.junit.Test;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -274,7 +275,8 @@ public class TestProctor {
                 matrix,
                 null,
                 Collections.singletonMap(testName, testChooser),
-                Collections.singletonList(testName)
+                Collections.singletonList(testName),
+                new IdentifierValidator.Noop()
         );
 
         final Identifiers identifiersWithRandom = new Identifiers(Collections.emptyMap(), true);
@@ -370,6 +372,69 @@ public class TestProctor {
                 .containsOnlyKeys("X", "Y")
                 .containsEntry("X", testDefinitionX)
                 .containsEntry("Y", testDefinitionY); // keeping Y for backward compatibility
+    }
+
+    @Test
+    public void testDetermineTestGroupsWithInvalidIdentifier() {
+        final TestBucket testBucket = new TestBucket("active", 1, "");
+        final Allocation allocation = new Allocation(
+                "",
+                ImmutableList.of(new Range(1, 1.0))
+        );
+
+        final ConsumableTestDefinition testDefinitionX = ConsumableTestDefinition.fromTestDefinition(
+                TestDefinition.builder()
+                        .setSalt("&X")
+                        .setTestType(TestType.ANONYMOUS_USER)
+                        .addBuckets(testBucket)
+                        .addAllocations(allocation)
+                        .build()
+        );
+        final ConsumableTestDefinition testDefinitionY = ConsumableTestDefinition.fromTestDefinition(
+                TestDefinition.builder()
+                        .setSalt("&Y")
+                        .setTestType(TestType.AUTHENTICATED_USER)
+                        .addBuckets(testBucket)
+                        .addAllocations(allocation)
+                        .build()
+        );
+
+        final Map<String, ConsumableTestDefinition> tests = ImmutableMap.of(
+                "X", testDefinitionX,
+                "Y", testDefinitionY
+        );
+        final TestMatrixArtifact matrix = new TestMatrixArtifact();
+        matrix.setTests(tests);
+        matrix.setAudit(new Audit());
+
+        final Proctor proctor = Proctor.construct(
+                matrix,
+                ProctorLoadResult.emptyResult(),
+                RuleEvaluator.defaultFunctionMapperBuilder().build(),
+                (testType, identifier) ->
+                        !(testType.equals(TestType.AUTHENTICATED_USER) && "logged-out".equals(identifier))
+        );
+
+        final ProctorResult proctorResult = proctor.determineTestGroups(
+                Identifiers.of(
+                        TestType.ANONYMOUS_USER, "cookie",
+                        TestType.AUTHENTICATED_USER, "logged-out"
+                ),
+                Collections.emptyMap(),
+                Collections.emptyMap(),
+                ImmutableList.of("X")
+        );
+
+        assertThat(proctorResult.getBuckets())
+                .containsOnlyKeys("X")
+                .containsEntry("X", testBucket);
+        assertThat(proctorResult.getAllocations())
+                .containsOnlyKeys("X")
+                .containsEntry("X", allocation);
+        assertThat(proctorResult.getTestDefinitions())
+                .containsOnlyKeys("X", "Y")
+                .containsEntry("X", testDefinitionX)
+                .containsEntry("Y", testDefinitionY);
     }
 
     private static TestMatrixArtifact createTestMatrixWithOneRandomTest(final String testName) {

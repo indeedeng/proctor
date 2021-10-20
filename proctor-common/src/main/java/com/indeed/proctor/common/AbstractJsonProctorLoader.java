@@ -27,8 +27,21 @@ public abstract class AbstractJsonProctorLoader extends AbstractProctorLoader {
     private static final String TEST_MATRIX_ARTIFACT_JSON_KEY_TESTS = "tests";
     private static final ObjectMapper OBJECT_MAPPER = Serializers.lenient();
 
-    public AbstractJsonProctorLoader(@Nonnull final Class<?> cls, @Nonnull final ProctorSpecification specification, @Nonnull final FunctionMapper functionMapper) {
+    public AbstractJsonProctorLoader(
+            @Nonnull final Class<?> cls,
+            @Nonnull final ProctorSpecification specification,
+            @Nonnull final FunctionMapper functionMapper
+    ) {
         super(cls, specification, functionMapper);
+    }
+
+    public AbstractJsonProctorLoader(
+            @Nonnull final Class<?> cls,
+            @Nonnull final ProctorSpecification specification,
+            @Nonnull final FunctionMapper functionMapper,
+            @Nonnull final IdentifierValidator identifierValidator
+    ) {
+        super(cls, specification, functionMapper, identifierValidator);
     }
 
     /**
