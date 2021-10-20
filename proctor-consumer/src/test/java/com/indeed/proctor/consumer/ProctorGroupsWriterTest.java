@@ -62,7 +62,7 @@ public class ProctorGroupsWriterTest {
     public void testWithEmptyResult() {
         final ProctorGroupsWriter simpleWriter = new ProctorGroupsWriter.Builder(TestGroupFormatter.WITH_ALLOC_ID)
                 .build();
-        assertThat(simpleWriter.toLoggingString(new ProctorResult("v1", Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap())))
+        assertThat(simpleWriter.writeGroupsAsString(new ProctorResult("v1", Collections.emptyMap(), Collections.emptyMap(), Collections.emptyMap())))
                 .isEmpty();
     }
 
@@ -73,7 +73,7 @@ public class ProctorGroupsWriterTest {
 
         final ProctorGroupsWriter defaultWriter = new ProctorGroupsWriter.Builder(TestGroupFormatter.WITHOUT_ALLOC_ID, TestGroupFormatter.WITH_ALLOC_ID)
                 .build();
-        assertThat(defaultWriter.toLoggingString(PROCTOR_RESULT))
+        assertThat(defaultWriter.writeGroupsAsString(PROCTOR_RESULT))
                 .isEqualTo(expected)
                 .isEqualTo(
                         Strings.join(
@@ -93,17 +93,16 @@ public class ProctorGroupsWriterTest {
                 .setIncludeTestWithoutDefinition(false)
                 .setIncludeInactiveGroups(true)
                 .build();
-        assertThat(writerWithAllocIds.toLoggingString(PROCTOR_RESULT))
+        assertThat(writerWithAllocIds.writeGroupsAsString(PROCTOR_RESULT))
                 .isEqualTo("#A:a_inactive_tst-1,#A:d_foo_tst1,#A:e_silent_tst1");
 
         final ProctorGroupsWriter writerWithoutAllocIds = new ProctorGroupsWriter.Builder(TestGroupFormatter.WITHOUT_ALLOC_ID)
                 .setIncludeSilentTests(true)
                 .setIncludeTestWithoutDefinition(false)
                 .build();
-        assertThat(writerWithoutAllocIds.toLoggingString(PROCTOR_RESULT))
+        assertThat(writerWithoutAllocIds.writeGroupsAsString(PROCTOR_RESULT))
                 .isEqualTo("c_empty_alloc_id0,d_foo_tst1,e_silent_tst1");
     }
-
 
     @Test
     public void testWriterWithCustomFilter() {
@@ -114,15 +113,28 @@ public class ProctorGroupsWriterTest {
                                 testName.equals(GROUP1_TEST_NAME)
                 )
                 .build()
-                .toLoggingString(PROCTOR_RESULT))
+                .writeGroupsAsString(PROCTOR_RESULT))
                 .isEqualTo("#A:d_foo_tst1");
+    }
+
+    @Test
+    public void testWriterCanReturnTheSameLoggingStringAsAbstractGroups() {
+        assertThat(
+                new ProctorGroupsWriter.Builder(
+                        TestGroupFormatter.WITHOUT_ALLOC_ID,
+                        TestGroupFormatter.WITH_ALLOC_ID
+                )
+                        .build()
+                        .writeGroupsAsString(PROCTOR_RESULT)
+        ).isEqualTo(new AbstractGroups(PROCTOR_RESULT) {
+        }.toLoggingString());
     }
 
     @SafeVarargs
     private static ConsumableTestDefinition stubDefinition(final TestBucket buckets, final Consumer<ConsumableTestDefinition>... modifiers) {
         final ConsumableTestDefinition testDefinition = new ConsumableTestDefinition();
         testDefinition.setBuckets(Collections.singletonList(buckets));
-        for (final Consumer<ConsumableTestDefinition> consumer: modifiers) {
+        for (final Consumer<ConsumableTestDefinition> consumer : modifiers) {
             consumer.accept(testDefinition);
         }
         return testDefinition;
