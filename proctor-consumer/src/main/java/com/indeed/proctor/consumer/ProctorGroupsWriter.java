@@ -55,7 +55,7 @@ public class ProctorGroupsWriter {
      * @param classifiers: Optional, Used to for filtering in log string analysis
      * @return a String like "classifier1,classifier2,..,group1format1,group2format1,...,group1format2,group2format2..."
      */
-    public final String toLoggingString(final ProctorResult proctorResult, final String... classifiers) {
+    public final String writeGroupsAsString(final ProctorResult proctorResult, final String... classifiers) {
         final List<String> filteredTestNames = new ArrayList<>(proctorResult.getBuckets().size());
         for (final String testName : proctorResult.getBuckets().keySet()) {
             if (testFilter.test(testName, proctorResult)) {

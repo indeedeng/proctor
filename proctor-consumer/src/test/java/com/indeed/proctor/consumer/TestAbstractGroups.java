@@ -147,9 +147,9 @@ public class TestAbstractGroups {
         ).build();
 
         // no test usage observed yet
-        assertThat(writer.toLoggingString(observer.asProctorResult())).isEmpty();
+        assertThat(writer.writeGroupsAsString(observer.asProctorResult())).isEmpty();
 
-        // toLoggingString and getAsProctorResult should not mark tests as used
+        // getGroupsString and getAsProctorResult should not mark tests as used
         final String fullLoggingString = "abtst1,bgtst0,groupwithfallbacktst2,no_definition_tst2,#A1:abtst1,#A1:bgtst0,#A1:groupwithfallbacktst2,#A1:no_definition_tst2";
         assertThat(sampleGroups.getAsProctorResult()).isNotNull();
         assertThat(sampleGroups.toLoggingString()).isEqualTo(fullLoggingString);
@@ -158,20 +158,20 @@ public class TestAbstractGroups {
 
         // getActiveBucket is observed
         assertThat(sampleGroups.getActiveBucket(GROUP1_SELECTED_TEST.getName())).isNotEmpty();
-        assertThat(writer.toLoggingString(observer.asProctorResult())).isEqualTo("abtst1,#A1:abtst1");
+        assertThat(writer.writeGroupsAsString(observer.asProctorResult())).isEqualTo("abtst1,#A1:abtst1");
 
         // explicitly marked tests (e.g. from dynamic resolution)
         sampleGroups.markTestsUsed(singleton(CONTROL_SELECTED_TEST.getName()));
-        assertThat(writer.toLoggingString(observer.asProctorResult())).isEqualTo("abtst1,bgtst0,#A1:abtst1,#A1:bgtst0");
+        assertThat(writer.writeGroupsAsString(observer.asProctorResult())).isEqualTo("abtst1,bgtst0,#A1:abtst1,#A1:bgtst0");
 
         // using JavascriptConfig means given tests might be exposed, so each test is marked as used
         assertThat(sampleGroups.getJavaScriptConfig(ImmutableSet.of(GROUP_WITH_FALLBACK_TEST.getName()))).isNotEmpty();
-        assertThat(writer.toLoggingString(observer.asProctorResult()))
+        assertThat(writer.writeGroupsAsString(observer.asProctorResult()))
                 .isEqualTo("abtst1,bgtst0,groupwithfallbacktst2,#A1:abtst1,#A1:bgtst0,#A1:groupwithfallbacktst2");
 
         // using JavascriptConfig without testnames means all tests might be exposed, so all tests are marked as used
         assertThat(sampleGroups.getJavaScriptConfig()).isNotEmpty();
-        assertThat(writer.toLoggingString(observer.asProctorResult()))
+        assertThat(writer.writeGroupsAsString(observer.asProctorResult()))
                 .isEqualTo(fullLoggingString);
     }
 

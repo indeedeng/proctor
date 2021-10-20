@@ -53,7 +53,7 @@ public class ProctorSampleInterceptor extends HandlerInterceptorAdapter {
         // log determined buckets for segmentation in later later analysis outside proctor
         groupLogger.setLogFullStringFromAbstractGroups(proctorGroups.toLoggingString());
         // log using new new writer approach, but in same format as abstractGroups
-        groupLogger.setLogFullStringFromWriter(legacyWriter.toLoggingString(proctorGroups.getAsProctorResult()));
+        groupLogger.setLogFullStringFromWriter(legacyWriter.writeGroupsAsString(proctorGroups.getAsProctorResult()));
 
         // provide groups to request handlers as request property
         request.setAttribute(PROCTOR_GROUPS_ATTRIBUTE, proctorGroups);
@@ -70,6 +70,6 @@ public class ProctorSampleInterceptor extends HandlerInterceptorAdapter {
         final TestMarkingObserver observer = (TestMarkingObserver) request.getAttribute(PROCTOR_OBSERVER_ATTRIBUTE);
 
         // exposure logging using groups observed as used during the request
-        groupLogger.setExposureString(simpleWriter.toLoggingString(observer.asProctorResult()));
+        groupLogger.setExposureString(simpleWriter.writeGroupsAsString(observer.asProctorResult()));
     }
 }
