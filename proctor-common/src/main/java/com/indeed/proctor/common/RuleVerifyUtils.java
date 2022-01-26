@@ -5,7 +5,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.el.lang.ExpressionBuilder;
 import org.apache.el.parser.AstIdentifier;
 import org.apache.el.parser.Node;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.el.ELContext;
 import javax.el.ELException;
@@ -19,7 +20,7 @@ import static com.indeed.proctor.common.RuleEvaluator.checkRuleIsBooleanType;
 
 public class RuleVerifyUtils {
 
-    private static final Logger LOGGER = Logger.getLogger(RuleVerifyUtils.class);
+    private static final Logger LOGGER = LogManager.getLogger(RuleVerifyUtils.class);
 
     private RuleVerifyUtils() {
     }

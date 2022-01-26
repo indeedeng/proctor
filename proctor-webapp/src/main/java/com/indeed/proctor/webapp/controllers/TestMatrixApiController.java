@@ -19,7 +19,8 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
@@ -41,7 +42,7 @@ import java.util.stream.Collectors;
 @RequestMapping({"/api/v1", "/proctor/api/v1"})
 public class TestMatrixApiController extends AbstractController {
 
-    private static final Logger LOGGER = Logger.getLogger(TestMatrixApiController.class);
+    private static final Logger LOGGER = LogManager.getLogger(TestMatrixApiController.class);
 
     @Autowired
     public TestMatrixApiController(final WebappConfiguration configuration,

@@ -5,7 +5,8 @@ import com.google.common.collect.Lists;
 import com.indeed.proctor.webapp.extensions.AfterBackgroundJobExecute;
 import com.indeed.proctor.webapp.extensions.BeforeBackgroundJobExecute;
 import com.indeed.proctor.webapp.jobs.AutoPromoter.AutoPromoteFailedException;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -21,7 +22,7 @@ import java.util.concurrent.TimeUnit;
 /**
  */
 public abstract class BackgroundJob<T> implements Callable<T> {
-    private static final Logger LOGGER = Logger.getLogger(BackgroundJob.class);
+    private static final Logger LOGGER = LogManager.getLogger(BackgroundJob.class);
 
     private Future<T> future;
     private JobStatus status = JobStatus.PENDING;

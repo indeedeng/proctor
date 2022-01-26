@@ -6,7 +6,8 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.indeed.util.varexport.ManagedVariable;
 import com.indeed.util.varexport.VarExporter;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -22,7 +23,7 @@ import java.util.Objects;
 
 public class JsonProctorLoaderFactory {
     // Lenient parser used by consumer apps to prevent deployment order dependencies
-    private static final Logger LOGGER = Logger.getLogger(JsonProctorLoaderFactory.class);
+    private static final Logger LOGGER = LogManager.getLogger(JsonProctorLoaderFactory.class);
     private static final ObjectMapper OBJECT_MAPPER = Serializers.lenient();
 
     // Prefix of export variable name for specifications.

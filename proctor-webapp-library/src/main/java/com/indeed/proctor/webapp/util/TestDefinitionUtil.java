@@ -9,7 +9,8 @@ import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.webapp.db.Environment;
 import com.indeed.proctor.webapp.model.RevisionDefinition;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.annotation.CheckForNull;
 import java.util.ArrayList;
@@ -23,7 +24,7 @@ import static com.indeed.proctor.webapp.db.Environment.WORKING;
 import static org.apache.commons.lang3.ObjectUtils.defaultIfNull;
 
 public class TestDefinitionUtil {
-    private static final Logger LOGGER = Logger.getLogger(TestDefinitionUtil.class);
+    private static final Logger LOGGER = LogManager.getLogger(TestDefinitionUtil.class);
 
     public static List<RevisionDefinition> makeRevisionDefinitionList(final ProctorStore store,
                                                                       final String testName,

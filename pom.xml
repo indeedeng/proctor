@@ -66,7 +66,7 @@
         <autoVersionSubmodules>true</autoVersionSubmodules>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <indeed-util.version>1.0.28</indeed-util.version>
+        <indeed-util.version>1.0.49-1cfb888</indeed-util.version>
         <apache-commons-pool2.version>2.2</apache-commons-pool2.version>
         <commons-lang3.version>3.3.2</commons-lang3.version>
         <commons-io.version>2.4</commons-io.version>

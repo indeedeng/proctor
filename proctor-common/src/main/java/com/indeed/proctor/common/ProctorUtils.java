@@ -25,7 +25,8 @@ import com.indeed.proctor.common.model.TestMatrixVersion;
 import com.indeed.proctor.common.model.TestType;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.el.ExpressionFactoryImpl;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -66,7 +67,7 @@ public abstract class ProctorUtils {
             .configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
     private static final ObjectWriter OBJECT_WRITER = OBJECT_MAPPER_NON_AUTOCLOSE.writerWithDefaultPrettyPrinter();
     private static final ObjectMapper OBJECT_MAPPER = Serializers.lenient();
-    private static final Logger LOGGER = Logger.getLogger(ProctorUtils.class);
+    private static final Logger LOGGER = LogManager.getLogger(ProctorUtils.class);
     private static final SpecificationGenerator SPECIFICATION_GENERATOR = new SpecificationGenerator();
 
     public static MessageDigest createMessageDigest() {

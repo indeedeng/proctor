@@ -11,7 +11,8 @@ import com.indeed.proctor.store.RevisionDetails;
 import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.store.TestEdit;
 import com.indeed.proctor.webapp.util.RetryWithExponentialBackoff;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -34,7 +35,7 @@ import java.util.function.Supplier;
  * If it fails to initialize proctorStore, it will retry to initialize up to MAX_ATTEMPT_COUNT with 2^(attemptCount - 1) seconds interval.
  */
 public class AsyncInitializedProctorStore implements ProctorStore {
-    private static final Logger LOGGER = Logger.getLogger(AsyncInitializedProctorStore.class);
+    private static final Logger LOGGER = LogManager.getLogger(AsyncInitializedProctorStore.class);
     private static final int MAX_ATTEMPT_COUNT = 10;
     private static final long MAX_ATTEMPT_INTERVAL_INCREASE = 8;
     private final Future<Optional<ProctorStore>> proctorStoreFuture;

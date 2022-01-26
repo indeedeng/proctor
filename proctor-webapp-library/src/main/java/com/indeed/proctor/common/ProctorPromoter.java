@@ -11,7 +11,8 @@ import com.indeed.proctor.webapp.util.TestDefinitionUtil;
 import com.indeed.proctor.webapp.util.ThreadPoolExecutorVarExports;
 import com.indeed.util.varexport.VarExporter;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.annotation.CheckForNull;
 import java.util.List;
@@ -31,7 +32,7 @@ import static com.indeed.proctor.common.EnvironmentVersion.UNKNOWN_REVISION;
  * @author parker
  */
 public class ProctorPromoter {
-    private static final Logger LOGGER = Logger.getLogger(ProctorPromoter.class);
+    private static final Logger LOGGER = LogManager.getLogger(ProctorPromoter.class);
     private static final String UNKNOWN_VERSION = EnvironmentVersion.UNKNOWN_VERSION;
 
     private final ProctorStore trunk;

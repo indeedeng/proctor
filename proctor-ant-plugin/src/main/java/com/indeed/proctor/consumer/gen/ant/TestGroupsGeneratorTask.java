@@ -5,7 +5,8 @@ import com.indeed.proctor.common.ProctorSpecification;
 import com.indeed.proctor.common.ProctorUtils;
 import com.indeed.proctor.consumer.gen.CodeGenException;
 import com.indeed.proctor.consumer.gen.TestGroupsGenerator;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.types.LogLevel;
@@ -21,7 +22,7 @@ import java.util.List;
  * @author andrewk
  */
 public abstract class TestGroupsGeneratorTask extends Task {
-    protected static final Logger LOGGER = Logger.getLogger(TestGroupsGeneratorTask.class);
+    protected static final Logger LOGGER = LogManager.getLogger(TestGroupsGeneratorTask.class);
 
     /**
      * A period of sleep to display warning messages to users

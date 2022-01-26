@@ -11,7 +11,8 @@ import com.indeed.util.core.DataLoadingTimerTask;
 import com.indeed.util.varexport.Export;
 import com.indeed.util.varexport.ManagedVariable;
 import com.indeed.util.varexport.VarExporter;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -26,7 +27,7 @@ import java.util.Objects;
 import java.util.Set;
 
 public abstract class AbstractProctorLoader extends DataLoadingTimerTask implements Supplier<Proctor> {
-    private static final Logger LOGGER = Logger.getLogger(AbstractProctorLoader.class);
+    private static final Logger LOGGER = LogManager.getLogger(AbstractProctorLoader.class);
     protected static final VarExporter VAR_EXPORTER = VarExporter
             .forNamespace(AbstractProctorLoader.class.getSimpleName())
             .includeInGlobal();

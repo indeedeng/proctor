@@ -6,7 +6,8 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.indeed.proctor.common.Serializers;
 import org.apache.commons.io.filefilter.FileFilterUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -19,7 +20,7 @@ import java.util.List;
  * @author parker
  */
 public class LocalDirectoryCore implements FileBasedPersisterCore {
-    private static final Logger LOGGER = Logger.getLogger(LocalDirectoryCore.class);
+    private static final Logger LOGGER = LogManager.getLogger(LocalDirectoryCore.class);
     private final ObjectMapper objectMapper = Serializers.lenient();
 
     private final File baseDir;

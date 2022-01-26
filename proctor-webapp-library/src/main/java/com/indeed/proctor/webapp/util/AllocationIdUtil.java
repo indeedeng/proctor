@@ -7,7 +7,8 @@ import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.Range;
 import com.indeed.proctor.common.model.TestDefinition;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -24,7 +25,7 @@ import java.util.stream.Collectors;
  * @author xiaoyun
  */
 public class AllocationIdUtil {
-    private static final Logger LOGGER = Logger.getLogger(AllocationIdUtil.class);
+    private static final Logger LOGGER = LogManager.getLogger(AllocationIdUtil.class);
     private static final Pattern ALLOCATION_ID_PATTERN = Pattern.compile("^#([A-Z]+)(\\d+)$");
 
     public static String getAllocationName(final String allocId) {

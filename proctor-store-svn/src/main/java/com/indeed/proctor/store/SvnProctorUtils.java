@@ -2,7 +2,7 @@ package com.indeed.proctor.store;
 
 import com.google.common.base.Preconditions;
 import com.google.common.io.Files;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.tmatesoft.svn.core.SVNCommitInfo;
 import org.tmatesoft.svn.core.SVNDepth;
 import org.tmatesoft.svn.core.SVNException;

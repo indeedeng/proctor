@@ -11,7 +11,8 @@ import com.indeed.proctor.store.TestEdit;
 import com.indeed.proctor.store.utils.HistoryUtil;
 import com.indeed.proctor.webapp.db.Environment;
 import com.indeed.proctor.webapp.extensions.GlobalCacheStore;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -27,7 +28,7 @@ import java.util.Optional;
  * This class handle latest test definition and history shared across multiple instance.
  */
 public class GlobalCachingProctorStore implements ProctorStore {
-    private static final Logger LOGGER = Logger.getLogger(GlobalCachingProctorStore.class);
+    private static final Logger LOGGER = LogManager.getLogger(GlobalCachingProctorStore.class);
 
     private final ProctorStore delegate;
     private final GlobalCacheStore globalCacheStore;

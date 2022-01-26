@@ -3,7 +3,8 @@ package com.indeed.proctor.webapp.views;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.indeed.proctor.common.Serializers;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.web.servlet.View;
 
 import javax.servlet.http.HttpServletRequest;
@@ -17,7 +18,7 @@ import java.util.Map;
 public class JsonView implements View {
 
     private static final String CONTENT_TYPE = "application/json;charset=utf-8";
-    private static final Logger LOGGER = Logger.getLogger(JsonView.class);
+    private static final Logger LOGGER = LogManager.getLogger(JsonView.class);
 
     private static final ObjectWriter JSON_WRITER = Serializers.strict().writerWithDefaultPrettyPrinter();
     private final Object data;

@@ -5,8 +5,8 @@ import com.google.common.base.Throwables;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Sets;
-import org.apache.log4j.Logger;
-import org.eclipse.jgit.api.Git;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
 import org.eclipse.jgit.diff.RawTextComparator;
@@ -17,7 +17,6 @@ import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.util.io.DisabledOutputStream;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -37,7 +36,7 @@ import static com.google.common.collect.Maps.newHashMapWithExpectedSize;
 import static com.indeed.proctor.store.GitProctorUtils.determineAuthorId;
 
 class GitHistoryParser {
-    private static final Logger LOGGER = Logger.getLogger(GitHistoryParser.class);
+    private static final Logger LOGGER = LogManager.getLogger(GitHistoryParser.class);
 
     private static final int EXPECTED_NUMBER_ACTIVE_TESTS = 7000;
 

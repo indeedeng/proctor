@@ -2,7 +2,8 @@ package com.indeed.proctor.webapp.tags;
 
 import com.google.common.base.Strings;
 import com.indeed.proctor.webapp.extensions.HelpURLInformation;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
@@ -24,7 +25,7 @@ public class RenderHelpButtonTagHandler extends TagSupport {
 
     private static final String TEST_TYPE_DEFAULT_URL = "http://opensource.indeedeng.io/proctor/docs/terminology/#test-type";
     private static final String RULE_DEFAULT_URL = "http://opensource.indeedeng.io/proctor/docs/test-rules/";
-    private static final Logger LOGGER = Logger.getLogger(RenderHelpButtonTagHandler.class);
+    private static final Logger LOGGER = LogManager.getLogger(RenderHelpButtonTagHandler.class);
     private HelpType helpType;
 
     public void setHelpType(HelpType helpType) { this.helpType = helpType; }

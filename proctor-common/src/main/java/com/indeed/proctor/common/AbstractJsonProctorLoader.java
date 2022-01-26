@@ -8,7 +8,8 @@ import com.google.common.base.Preconditions;
 import com.indeed.proctor.common.model.Audit;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.TestMatrixArtifact;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -22,7 +23,7 @@ import java.util.Map;
  * parses a Json source as TestMatrixArtifact
  */
 public abstract class AbstractJsonProctorLoader extends AbstractProctorLoader {
-    private static final Logger LOGGER = Logger.getLogger(AbstractJsonProctorLoader.class);
+    private static final Logger LOGGER = LogManager.getLogger(AbstractJsonProctorLoader.class);
     private static final String TEST_MATRIX_ARTIFACT_JSON_KEY_AUDIT = "audit";
     private static final String TEST_MATRIX_ARTIFACT_JSON_KEY_TESTS = "tests";
     private static final ObjectMapper OBJECT_MAPPER = Serializers.lenient();

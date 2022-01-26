@@ -4,7 +4,8 @@ import com.google.common.collect.ImmutableMap;
 import com.indeed.proctor.common.Identifiers;
 import com.indeed.proctor.common.ProctorResult;
 import com.indeed.proctor.common.model.TestType;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -18,7 +19,7 @@ import static org.junit.Assert.assertEquals;
 @SuppressWarnings({"ConstantConditions", "deprecation"})
 public class TestEmptyContextTestGroupsManager {
     @SuppressWarnings("UnusedDeclaration")
-    private static final Logger LOGGER = Logger.getLogger(TestEmptyContextTestGroupsManager.class);
+    private static final Logger LOGGER = LogManager.getLogger(TestEmptyContextTestGroupsManager.class);
     private static final String SPECIFICATION_RESOURCE = "EmptyContextTestGroups.json";
     private static final String SPECIFICATION_MATRIX = "emptycontexttest.proctor-matrix.json";
 

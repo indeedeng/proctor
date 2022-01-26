@@ -1,6 +1,7 @@
 package com.indeed.proctor.webapp.tags;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.jsp.PageContext;
@@ -9,7 +10,7 @@ import java.io.IOException;
 import java.util.Map;
 
 public class FilenameMapperTagHandler extends TagSupport {
-    private static final Logger LOGGER = Logger.getLogger(FilenameMapperTagHandler.class);
+    private static final Logger LOGGER = LogManager.getLogger(FilenameMapperTagHandler.class);
 
     public static final String FILENAME_MAPPER = "FILENAME_MAPPER";
 

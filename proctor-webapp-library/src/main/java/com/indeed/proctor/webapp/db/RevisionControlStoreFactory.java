@@ -4,7 +4,8 @@ import com.google.common.base.Preconditions;
 import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.store.async.AsyncInitializedProctorStoreFactory;
 import com.indeed.proctor.webapp.extensions.GlobalCacheStore;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,7 +15,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class RevisionControlStoreFactory implements FactoryBean<StoreFactory> {
-    private final Logger LOGGER = Logger.getLogger(RevisionControlStoreFactory.class);
+    private final Logger LOGGER = LogManager.getLogger(RevisionControlStoreFactory.class);
 
     @Value("${revision.control}")
     private String revisionControlType;

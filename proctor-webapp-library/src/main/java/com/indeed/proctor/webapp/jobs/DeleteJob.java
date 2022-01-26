@@ -16,7 +16,8 @@ import com.indeed.proctor.webapp.extensions.PreDefinitionDeleteChange;
 import com.indeed.proctor.webapp.util.IdentifierValidationUtil;
 import com.indeed.proctor.webapp.util.EncodingUtil;
 import com.indeed.proctor.webapp.util.TestDefinitionUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -27,7 +28,7 @@ import java.util.Map;
 
 @Component
 public class DeleteJob extends AbstractJob {
-    private static final Logger LOGGER = Logger.getLogger(DeleteJob.class);
+    private static final Logger LOGGER = LogManager.getLogger(DeleteJob.class);
     private List<PreDefinitionDeleteChange> preDefinitionDeleteChanges = Collections.emptyList();
     private List<PostDefinitionDeleteChange> postDefinitionDeleteChanges = Collections.emptyList();
 

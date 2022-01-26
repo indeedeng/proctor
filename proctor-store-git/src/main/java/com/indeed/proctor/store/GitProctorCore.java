@@ -9,8 +9,9 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.indeed.proctor.common.Serializers;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.jgit.api.CloneCommand;
 import org.eclipse.jgit.api.CreateBranchCommand;
 import org.eclipse.jgit.api.Git;
@@ -58,7 +59,7 @@ import java.util.stream.Stream;
 import static com.indeed.proctor.store.GitProctorUtils.determineAuthorId;
 
 public class GitProctorCore implements FileBasedPersisterCore {
-    private static final Logger LOGGER = Logger.getLogger(GitProctorCore.class);
+    private static final Logger LOGGER = LogManager.getLogger(GitProctorCore.class);
     private static final TextProgressMonitor PROGRESS_MONITOR = new TextProgressMonitor(new LoggerPrintWriter(LOGGER, Level.DEBUG));
     private static final long GC_INTERVAL_IN_HOURS = 24;
     private static final AtomicInteger INITIAL_DELAY_SCHEDULE = new AtomicInteger();

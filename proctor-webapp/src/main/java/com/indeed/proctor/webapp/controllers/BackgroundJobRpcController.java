@@ -10,7 +10,8 @@ import com.indeed.proctor.webapp.model.api.BackgroundJobResponseModel;
 import com.indeed.proctor.webapp.views.JsonView;
 import com.indeed.proctor.webapp.views.ProctorView;
 import io.swagger.annotations.ApiOperation;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -36,7 +37,7 @@ import java.util.UUID;
 @Controller
 @RequestMapping({"/rpc/jobs", "/proctor/rpc/jobs"})
 public class BackgroundJobRpcController {
-    private static final Logger LOGGER = Logger.getLogger(BackgroundJobRpcController.class);
+    private static final Logger LOGGER = LogManager.getLogger(BackgroundJobRpcController.class);
 
     private final WebappConfiguration configuration;
     private final BackgroundJobManager manager;

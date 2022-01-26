@@ -11,7 +11,8 @@ import com.indeed.proctor.store.SvnProctor;
 import com.indeed.proctor.store.SvnWorkspaceProviderImpl;
 import com.indeed.util.varexport.VarExporter;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,7 +24,7 @@ import java.util.concurrent.TimeUnit;
  * Proctor webapp with svn is not actively supported
  */
 public class SvnProctorStoreFactory implements TrunkQaProdStoresFactory {
-    private static final Logger LOGGER = Logger.getLogger(SvnProctorStoreFactory.class);
+    private static final Logger LOGGER = LogManager.getLogger(SvnProctorStoreFactory.class);
 
     final ScheduledExecutorService executor;
 

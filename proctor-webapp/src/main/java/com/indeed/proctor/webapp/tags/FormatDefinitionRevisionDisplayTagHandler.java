@@ -3,7 +3,8 @@ package com.indeed.proctor.webapp.tags;
 import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.webapp.extensions.DefinitionRevisionDisplayFormatter;
 import org.apache.commons.lang3.StringEscapeUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
@@ -16,7 +17,7 @@ import java.util.Map;
 /**
  */
 public class FormatDefinitionRevisionDisplayTagHandler extends TagSupport {
-    private static final Logger LOGGER = Logger.getLogger(FormatDefinitionRevisionDisplayTagHandler.class);
+    private static final Logger LOGGER = LogManager.getLogger(FormatDefinitionRevisionDisplayTagHandler.class);
 
     private Revision revision;
 

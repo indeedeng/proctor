@@ -1,6 +1,7 @@
 package com.indeed.proctor.store;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 
@@ -9,7 +10,7 @@ import java.io.File;
  */
 public class GitProctorCoreTryout {
 
-    private static final Logger LOGGER = Logger.getLogger(GitProctorCoreTryout.class);
+    private static final Logger LOGGER = LogManager.getLogger(GitProctorCoreTryout.class);
 
     private static final String GIT_USERNAME = "username";
     private static final String GIT_PASSWORD = "password";

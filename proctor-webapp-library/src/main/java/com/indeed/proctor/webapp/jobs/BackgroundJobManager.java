@@ -8,7 +8,8 @@ import com.indeed.proctor.webapp.extensions.JobInfoStore;
 import com.indeed.proctor.webapp.util.ThreadPoolExecutorVarExports;
 import com.indeed.proctor.webapp.util.threads.LogOnUncaughtExceptionHandler;
 import com.indeed.util.varexport.VarExporter;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -33,7 +34,7 @@ import static org.apache.commons.collections4.MapUtils.synchronizedMap;
 
 @EnableScheduling
 public class BackgroundJobManager {
-    private static final Logger LOGGER = Logger.getLogger(BackgroundJobManager.class);
+    private static final Logger LOGGER = LogManager.getLogger(BackgroundJobManager.class);
 
     private final ExecutorService service;
 

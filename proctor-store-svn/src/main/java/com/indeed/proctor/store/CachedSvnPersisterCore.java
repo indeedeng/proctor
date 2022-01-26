@@ -5,7 +5,8 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.indeed.proctor.store.cache.CachingProctorStore;
 import com.indeed.util.varexport.Export;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.tmatesoft.svn.core.SVNURL;
 
 import java.io.IOException;
@@ -18,7 +19,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Deprecated
 public class CachedSvnPersisterCore implements SvnPersisterCore {
-    private static final Logger LOGGER = Logger.getLogger(CachedSvnPersisterCore.class);
+    private static final Logger LOGGER = LogManager.getLogger(CachedSvnPersisterCore.class);
 
     private final Cache<FileContentsKey, Object> testDefinitionCache = CacheBuilder.newBuilder()
         .maximumSize(2048)

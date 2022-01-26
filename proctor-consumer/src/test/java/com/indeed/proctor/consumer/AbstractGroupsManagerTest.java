@@ -5,7 +5,7 @@ import com.indeed.proctor.common.Proctor;
 import com.indeed.proctor.common.ProctorResult;
 import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.common.model.TestType;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
 import org.junit.Test;
 
 import javax.servlet.http.Cookie;
