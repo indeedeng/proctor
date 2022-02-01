@@ -4,7 +4,8 @@ import com.google.common.collect.ImmutableMap;
 import com.indeed.proctor.common.Identifiers;
 import com.indeed.proctor.common.ProctorResult;
 import com.indeed.proctor.common.model.TestType;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -12,7 +13,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class TestSplitSpecificationTestWithFiltersGroupsManager {
-    private static final Logger LOGGER = Logger.getLogger(TestSplitSpecificationTestWithFiltersGroupsManager.class);
+    private static final Logger LOGGER = LogManager.getLogger(TestSplitSpecificationTestWithFiltersGroupsManager.class);
     private static final String SPECIFICATION_RESOURCE = "SplitSpecificationTestWithFiltersGroups.json";
     private static final String SPECIFICATION_MATRIX = "splitspecificationtest.proctor-matrix.json";
 

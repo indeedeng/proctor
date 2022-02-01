@@ -9,7 +9,8 @@ import java.io.Writer;
 import com.indeed.proctor.store.FileBasedProctorStore;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.OptionBuilder;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.indeed.proctor.common.IncompatibleTestMatrixException;
 import com.indeed.proctor.store.GitProctor;
@@ -18,7 +19,7 @@ import com.indeed.proctor.store.StoreException;
 
 public class GitLocalProctorBuilder extends ProctorBuilder {
 
-    private static final Logger LOGGER = Logger.getLogger(GitLocalProctorBuilder.class);
+    private static final Logger LOGGER = LogManager.getLogger(GitLocalProctorBuilder.class);
 
     public GitLocalProctorBuilder(final ProctorReader proctorReader,
                                   final String testDefinitionsDirectory,

@@ -3,7 +3,8 @@ package com.indeed.proctor.webapp.tags;
 import com.indeed.proctor.store.Revision;
 import com.indeed.proctor.webapp.extensions.renderer.DefinitionHistoryPageRenderer;
 import com.indeed.proctor.webapp.extensions.renderer.DefinitionHistoryPageRenderer.DefinitionHistoryPagePosition;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
@@ -16,7 +17,7 @@ import java.util.Map;
 /**
  */
 public class RenderDefinitionHistoryPageInjectionTemplatesHandler extends TagSupport {
-    private static final Logger LOGGER = Logger.getLogger(RenderDefinitionHistoryPageInjectionTemplatesHandler.class);
+    private static final Logger LOGGER = LogManager.getLogger(RenderDefinitionHistoryPageInjectionTemplatesHandler.class);
 
     private DefinitionHistoryPagePosition position;
     private String testName;

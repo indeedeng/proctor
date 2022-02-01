@@ -1,6 +1,7 @@
 package com.indeed.proctor.webapp.util;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.Optional;
 import java.util.function.BiConsumer;
@@ -11,7 +12,7 @@ import java.util.function.Supplier;
  */
 public class RetryWithExponentialBackoff {
 
-    private static final Logger LOGGER = Logger.getLogger(RetryWithExponentialBackoff.class);
+    private static final Logger LOGGER = LogManager.getLogger(RetryWithExponentialBackoff.class);
 
     /**
      * This tries supplier.get() up to maxAttemptCount times.

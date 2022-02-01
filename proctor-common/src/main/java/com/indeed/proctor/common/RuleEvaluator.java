@@ -5,7 +5,8 @@ import com.indeed.proctor.common.el.MulticontextReadOnlyVariableMapper;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.el.ExpressionFactoryImpl;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -30,7 +31,7 @@ import java.util.Map;
  *
  */
 public class RuleEvaluator {
-    private static final Logger LOGGER = Logger.getLogger(RuleEvaluator.class);
+    private static final Logger LOGGER = LogManager.getLogger(RuleEvaluator.class);
 
     static final FunctionMapper FUNCTION_MAPPER = defaultFunctionMapperBuilder().build();
 

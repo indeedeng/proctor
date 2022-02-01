@@ -1,14 +1,14 @@
 package com.indeed.proctor.store;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
 
 /**
- * java.io.PrintWriter adapter for org.apache.log4j.Logger.
+ * java.io.PrintWriter adapter for org.apache.logging.log4j.Logger.
  */
 class LoggerPrintWriter extends PrintWriter {
     public LoggerPrintWriter(final Logger logger, final Level level) {
@@ -27,7 +27,7 @@ class LoggerPrintWriter extends PrintWriter {
 
         @Override
         public void write(char[] cbuf, int off, int len) throws IOException {
-            if (logger.isEnabledFor(level)) {
+            if (logger.isEnabled(level)) {
                 // Remove leading carriage returns inserted by jgit
                 if (cbuf[off] == '\r') {
                     off++;

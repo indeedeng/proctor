@@ -6,7 +6,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.Closeable;
 import java.io.File;
@@ -20,7 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author parker
  */
 public class SvnWorkspaceProviderImpl extends TimerTask implements SvnWorkspaceProvider, Closeable {
-    private static final Logger LOGGER = Logger.getLogger(SvnWorkspaceProviderImpl.class);
+    private static final Logger LOGGER = LogManager.getLogger(SvnWorkspaceProviderImpl.class);
 
     private static final String DEFAULT_PREFIX = "svn";
 

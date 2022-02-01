@@ -6,13 +6,14 @@ import com.indeed.proctor.store.LocalDirectoryStore;
 import com.indeed.proctor.store.StoreException;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.OptionBuilder;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.*;
 
 public class LocalProctorBuilder extends ProctorBuilder {
 
-    private static final Logger LOGGER = Logger.getLogger(LocalProctorBuilder.class);
+    private static final Logger LOGGER = LogManager.getLogger(LocalProctorBuilder.class);
 
     public LocalProctorBuilder(final File inputDir,
                                final String testDefinitionsDirectory,

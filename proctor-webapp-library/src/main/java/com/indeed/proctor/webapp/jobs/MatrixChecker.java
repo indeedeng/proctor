@@ -19,7 +19,8 @@ import com.indeed.proctor.webapp.db.Environment;
 import com.indeed.proctor.webapp.model.AppVersion;
 import com.indeed.proctor.webapp.model.ProctorSpecifications;
 import com.indeed.proctor.webapp.model.RemoteSpecificationResult;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -33,7 +34,7 @@ import java.util.Set;
 
 @Component
 public class MatrixChecker {
-    private static final Logger LOGGER = Logger.getLogger(MatrixChecker.class);
+    private static final Logger LOGGER = LogManager.getLogger(MatrixChecker.class);
     private static final LibraryFunctionMapper FUNCTION_MAPPER = RuleEvaluator.defaultFunctionMapperBuilder().build();
 
     private final ProctorSpecificationSource specificationSource;

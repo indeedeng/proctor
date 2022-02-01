@@ -15,7 +15,8 @@ import com.indeed.proctor.store.RevisionDetails;
 import com.indeed.proctor.store.StoreException;
 import com.indeed.proctor.store.TestEdit;
 import com.indeed.proctor.store.utils.HistoryUtil;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -39,7 +40,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * @author yiqing
  */
 public class CachingProctorStore implements ProctorStore {
-    private static final Logger LOGGER = Logger.getLogger(CachingProctorStore.class);
+    private static final Logger LOGGER = LogManager.getLogger(CachingProctorStore.class);
     private static final long REFRESH_RATE_IN_SECOND = 15;
     private static final long READ_TIMEOUT_IN_SECOND = 30;
     private static final long WRITE_TIMEOUT_IN_SECOND = 180;

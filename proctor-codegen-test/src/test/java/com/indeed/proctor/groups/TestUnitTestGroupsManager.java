@@ -13,8 +13,9 @@ import com.indeed.proctor.common.model.TestType;
 import com.indeed.proctor.consumer.logging.TestMarkingObserver;
 import com.indeed.proctor.groups.UnitTestGroups.Payloaded;
 import com.indeed.util.varexport.VarExporter;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -36,7 +37,7 @@ import static org.junit.Assert.assertTrue;
  * @author parker
  */
 public class TestUnitTestGroupsManager {
-    private static final Logger LOGGER = Logger.getLogger(TestUnitTestGroupsManager.class);
+    private static final Logger LOGGER = LogManager.getLogger(TestUnitTestGroupsManager.class);
     private static final String SPECIFICATION_RESOURCE = "UnitTestGroups.json";
     private static final String SPECIFICATION_MATRIX = "unittest.proctor-matrix.json";
     public static final String SAMPLE_ID = "16s2o7s01001d9vj";
@@ -45,7 +46,7 @@ public class TestUnitTestGroupsManager {
 
     @BeforeClass
     public static void quietLogs() {
-        Logger.getLogger(VarExporter.class).setLevel(Level.FATAL);
+        LogManager.getLogger(VarExporter.class).atLevel(Level.FATAL);
     }
 
     @Before()

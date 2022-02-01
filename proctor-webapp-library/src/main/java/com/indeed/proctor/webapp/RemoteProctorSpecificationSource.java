@@ -32,7 +32,8 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.annotation.Nullable;
@@ -59,7 +60,7 @@ import java.util.stream.Collectors;
  * Regularly reloads specifications from applications where proctor client is deployed.
  */
 public class RemoteProctorSpecificationSource extends DataLoadingTimerTask implements ProctorSpecificationSource {
-    private static final Logger LOGGER = Logger.getLogger(RemoteProctorSpecificationSource.class);
+    private static final Logger LOGGER = LogManager.getLogger(RemoteProctorSpecificationSource.class);
 
     private static final ObjectMapper OBJECT_MAPPER = Serializers.strict();
 

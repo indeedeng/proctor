@@ -1,7 +1,8 @@
 package com.indeed.proctor.store;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.eclipse.jgit.api.PullResult;
 import org.eclipse.jgit.lib.TextProgressMonitor;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
@@ -15,7 +16,7 @@ import java.util.concurrent.Callable;
  */
 @Deprecated
 public class GitDirectoryRefresher extends TimerTask {
-    private static final Logger LOGGER = Logger.getLogger(GitDirectoryRefresher.class);
+    private static final Logger LOGGER = LogManager.getLogger(GitDirectoryRefresher.class);
     private static final TextProgressMonitor PROGRESS_MONITOR = new TextProgressMonitor(new LoggerPrintWriter(LOGGER, Level.DEBUG));
     private final GitProctorCore gitProctorCore;
     private final GitWorkspaceProvider workspaceProvider;

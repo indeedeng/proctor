@@ -12,7 +12,8 @@ import com.indeed.proctor.store.cache.GlobalCachingProctorStore;
 import com.indeed.proctor.webapp.extensions.GlobalCacheStore;
 import com.indeed.util.varexport.VarExporter;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nullable;
 import java.io.File;
@@ -20,7 +21,7 @@ import java.io.IOException;
 import java.util.concurrent.ScheduledExecutorService;
 
 public class GitProctorStoreFactory implements TrunkQaProdStoresFactory {
-    private static final Logger LOGGER = Logger.getLogger(GitProctorStoreFactory.class);
+    private static final Logger LOGGER = LogManager.getLogger(GitProctorStoreFactory.class);
 
     private String gitUrl;
     private String gitUsername;

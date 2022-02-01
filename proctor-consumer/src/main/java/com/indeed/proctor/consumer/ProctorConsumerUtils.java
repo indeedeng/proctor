@@ -7,7 +7,8 @@ import com.indeed.proctor.common.Proctor;
 import com.indeed.proctor.common.ProctorResult;
 import com.indeed.proctor.common.model.TestType;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -21,7 +22,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 
 public class ProctorConsumerUtils {
-    private static final Logger LOGGER = Logger.getLogger(ProctorConsumerUtils.class);
+    private static final Logger LOGGER = LogManager.getLogger(ProctorConsumerUtils.class);
     /**
      * plain old "forceGroups" is already in use by JASX for SERP groups
      * @param allowForcedGroups if true, parses force group parameters from request / cookie, sets new cookie

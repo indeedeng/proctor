@@ -4,7 +4,8 @@ import com.indeed.proctor.common.model.TestDefinition;
 import com.indeed.proctor.common.model.TestMatrixVersion;
 import com.indeed.proctor.webapp.extensions.renderer.MatrixListPageRenderer;
 import com.indeed.proctor.webapp.extensions.renderer.MatrixListPageRenderer.MatrixListPagePosition;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
@@ -17,7 +18,7 @@ import java.util.Map;
 /**
  */
 public class RenderMatrixListPageInjectionTemplatesHandler extends TagSupport {
-    private static final Logger LOGGER = Logger.getLogger(RenderMatrixListPageInjectionTemplatesHandler.class);
+    private static final Logger LOGGER = LogManager.getLogger(RenderMatrixListPageInjectionTemplatesHandler.class);
 
     private MatrixListPagePosition position;
     private String testName;

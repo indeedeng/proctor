@@ -9,7 +9,8 @@ import com.indeed.proctor.common.Serializers;
 import com.indeed.util.varexport.Export;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.pool2.ObjectPool;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.tmatesoft.svn.core.SVNAuthenticationException;
 import org.tmatesoft.svn.core.SVNDepth;
 import org.tmatesoft.svn.core.SVNDirEntry;
@@ -38,7 +39,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author parker
  */
 public class SvnPersisterCoreImpl implements SvnPersisterCore, Closeable {
-    private static final Logger LOGGER = Logger.getLogger(SvnPersisterCoreImpl.class);
+    private static final Logger LOGGER = LogManager.getLogger(SvnPersisterCoreImpl.class);
 
     final ObjectMapper objectMapper = Serializers.lenient();
 

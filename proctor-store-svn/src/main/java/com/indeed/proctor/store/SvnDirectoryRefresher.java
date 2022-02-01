@@ -1,6 +1,7 @@
 package com.indeed.proctor.store;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.tmatesoft.svn.core.SVNURL;
 import org.tmatesoft.svn.core.io.SVNRepository;
 import org.tmatesoft.svn.core.wc.SVNClientManager;
@@ -14,7 +15,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author parker
  */
 public class SvnDirectoryRefresher extends TimerTask {
-    final Logger LOGGER = Logger.getLogger(SvnDirectoryRefresher.class);
+    final Logger LOGGER = LogManager.getLogger(SvnDirectoryRefresher.class);
     final AtomicBoolean shutdown;
     final File directory;
     final SVNURL svnUrl;

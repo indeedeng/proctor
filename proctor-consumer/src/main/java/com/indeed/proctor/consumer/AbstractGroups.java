@@ -8,7 +8,8 @@ import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.Payload;
 import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.consumer.logging.TestUsageObserver;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -35,7 +36,7 @@ import java.util.stream.Collectors;
  * to change determined buckets, or toLoggingString() to change logging.
  */
 public abstract class AbstractGroups {
-    private static final Logger LOGGER = Logger.getLogger(AbstractGroups.class);
+    private static final Logger LOGGER = LogManager.getLogger(AbstractGroups.class);
     private final ProctorResult proctorResult;
 
     // Option using injected Observer

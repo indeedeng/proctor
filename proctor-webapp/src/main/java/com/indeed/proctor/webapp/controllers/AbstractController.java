@@ -13,7 +13,8 @@ import com.indeed.proctor.webapp.model.WebappConfiguration;
 import com.indeed.proctor.webapp.util.TestDefinitionUtil;
 import com.indeed.proctor.webapp.views.ProctorView;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.ui.Model;
 
 import javax.annotation.Nonnull;
@@ -28,7 +29,7 @@ import java.util.Map;
  * @author parker
  */
 public abstract class AbstractController {
-    private static final Logger LOGGER = Logger.getLogger(AbstractController.class);
+    private static final Logger LOGGER = LogManager.getLogger(AbstractController.class);
 
     private final WebappConfiguration configuration;
     private final Map<Environment, ProctorStore> stores;

@@ -33,7 +33,8 @@ import com.indeed.proctor.webapp.util.TestDefinitionUtil;
 import com.indeed.proctor.webapp.views.JsonView;
 import com.indeed.proctor.webapp.views.ProctorView;
 import io.swagger.annotations.ApiOperation;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -83,7 +84,7 @@ import static java.util.Collections.emptyMap;
 @Controller
 @RequestMapping({"/definition", "/proctor/definition"})
 public class ProctorTestDefinitionController extends AbstractController {
-    private static final Logger LOGGER = Logger.getLogger(ProctorTestDefinitionController.class);
+    private static final Logger LOGGER = LogManager.getLogger(ProctorTestDefinitionController.class);
 
     private final ProctorPromoter promoter;
     private final ProctorSpecificationSource specificationSource;

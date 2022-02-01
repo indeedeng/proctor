@@ -2,7 +2,8 @@ package com.indeed.proctor.webapp.tags;
 
 import com.indeed.proctor.webapp.extensions.renderer.DefinitionDeletePageRenderer;
 import com.indeed.proctor.webapp.extensions.renderer.DefinitionDeletePageRenderer.DefinitionDeletePagePosition;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.BeanFactoryUtils;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
@@ -15,7 +16,7 @@ import java.util.Map;
 /**
  */
 public class RenderDefinitionDeletePageInjectionTemplatesHandler extends TagSupport {
-    private static final Logger LOGGER = Logger.getLogger(RenderDefinitionDeletePageInjectionTemplatesHandler.class);
+    private static final Logger LOGGER = LogManager.getLogger(RenderDefinitionDeletePageInjectionTemplatesHandler.class);
 
     private DefinitionDeletePagePosition position;
     private String testName;

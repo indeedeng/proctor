@@ -4,7 +4,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.io.Files;
 import com.indeed.proctor.common.model.TestMatrixDefinition;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.tmatesoft.svn.core.SVNException;
 import org.tmatesoft.svn.core.SVNLogEntry;
 import org.tmatesoft.svn.core.SVNNodeKind;
@@ -23,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 public class SvnProctor extends FileBasedProctorStore {
-    private static final Logger LOGGER = Logger.getLogger(SvnProctor.class);
+    private static final Logger LOGGER = LogManager.getLogger(SvnProctor.class);
 
     /* Storage Schema:
         ${svnPath}/

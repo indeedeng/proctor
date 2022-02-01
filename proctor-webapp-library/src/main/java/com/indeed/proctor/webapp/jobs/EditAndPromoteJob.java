@@ -41,7 +41,8 @@ import com.indeed.proctor.webapp.util.AllocationIdUtil;
 import com.indeed.proctor.webapp.util.EncodingUtil;
 import com.indeed.proctor.webapp.util.TestDefinitionUtil;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
@@ -67,7 +68,7 @@ import static com.indeed.proctor.webapp.util.NumberUtil.equalsWithinTolerance;
 //Todo: Separate EditAndPromoteJob to EditJob and PromoteJob
 @Component
 public class EditAndPromoteJob extends AbstractJob {
-    private static final Logger LOGGER = Logger.getLogger(EditAndPromoteJob.class);
+    private static final Logger LOGGER = LogManager.getLogger(EditAndPromoteJob.class);
 
     private static final ObjectMapper OBJECT_MAPPER = Serializers.strict();
 

@@ -2,7 +2,8 @@ package com.indeed.proctor.store;
 
 import com.google.common.collect.Lists;
 import com.google.common.io.Files;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.LogCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -26,7 +27,7 @@ import java.util.Map;
 import static com.indeed.proctor.store.GitProctorUtils.determineAuthorId;
 
 public class GitProctor extends FileBasedProctorStore {
-    private static final Logger LOGGER = Logger.getLogger(GitProctor.class);
+    private static final Logger LOGGER = LogManager.getLogger(GitProctor.class);
 
     /* Storage Schema:
         ${gitPath}/

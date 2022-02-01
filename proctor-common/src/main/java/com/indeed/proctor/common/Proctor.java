@@ -15,7 +15,8 @@ import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.common.model.TestMatrixArtifact;
 import com.indeed.proctor.common.model.TestType;
 import com.indeed.util.varexport.VarExporter;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nonnull;
 import javax.el.ExpressionFactory;
@@ -48,7 +49,7 @@ import java.util.stream.IntStream;
 public class Proctor {
     public static final Proctor EMPTY = createEmptyProctor();
 
-    private static final Logger LOGGER = Logger.getLogger(Proctor.class);
+    private static final Logger LOGGER = LogManager.getLogger(Proctor.class);
     private static final ObjectWriter OBJECT_WRITER = Serializers
             .lenient()
             .configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false).writerWithDefaultPrettyPrinter();

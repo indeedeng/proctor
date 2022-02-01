@@ -3,7 +3,8 @@ package com.indeed.proctor.store;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,7 +14,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class GitWorkspaceProviderImpl implements GitWorkspaceProvider {
-    private static final Logger LOGGER = Logger.getLogger(GitWorkspaceProviderImpl.class);
+    private static final Logger LOGGER = LogManager.getLogger(GitWorkspaceProviderImpl.class);
     private static final int DEFAULT_LOCK_TIMEOUT_SECONDS = 90;
     /**
      * The root directory into which all workspaces are created

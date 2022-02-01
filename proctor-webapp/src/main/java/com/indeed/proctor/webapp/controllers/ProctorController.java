@@ -32,7 +32,8 @@ import com.indeed.proctor.webapp.views.JsonView;
 import com.indeed.proctor.webapp.views.ProctorView;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.collections4.IterableUtils;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
@@ -60,7 +61,7 @@ import static java.util.stream.Collectors.joining;
 @Controller
 @RequestMapping({"/", "/proctor"})
 public class ProctorController extends AbstractController {
-    private static final Logger LOGGER = Logger.getLogger(ProctorController.class);
+    private static final Logger LOGGER = LogManager.getLogger(ProctorController.class);
 
     private static final long FALLBACK_UPDATED_TIME = 0L;
 

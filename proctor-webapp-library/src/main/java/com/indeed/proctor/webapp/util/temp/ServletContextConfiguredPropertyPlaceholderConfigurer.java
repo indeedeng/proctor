@@ -11,7 +11,8 @@ import java.util.Properties;
 
 import javax.servlet.ServletContext;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
@@ -42,7 +43,7 @@ import com.google.common.base.Supplier;
  *
  */
 public class ServletContextConfiguredPropertyPlaceholderConfigurer extends PropertyPlaceholderConfigurer implements ServletContextAware, ApplicationContextAware, Supplier<Properties> {
-    private static final Logger LOGGER = Logger.getLogger(ServletContextConfiguredPropertyPlaceholderConfigurer.class);
+    private static final Logger LOGGER = LogManager.getLogger(ServletContextConfiguredPropertyPlaceholderConfigurer.class);
     private ServletContext servletContext = null;
     private ApplicationContext applicationContext = null;
     private String initParameterName = "propertyPlaceholderResourceLocation";

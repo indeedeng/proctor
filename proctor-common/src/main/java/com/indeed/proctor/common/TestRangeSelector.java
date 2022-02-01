@@ -6,7 +6,8 @@ import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.Range;
 import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.common.model.TestDependency;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
@@ -27,7 +28,7 @@ import java.util.Map.Entry;
  *
  */
 public class TestRangeSelector {
-    private static final Logger LOGGER = Logger.getLogger(TestRangeSelector.class);
+    private static final Logger LOGGER = LogManager.getLogger(TestRangeSelector.class);
 
     @Nonnull
     private final String testName;
