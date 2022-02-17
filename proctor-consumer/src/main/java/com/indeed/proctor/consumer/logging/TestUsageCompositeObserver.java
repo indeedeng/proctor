@@ -2,10 +2,13 @@ package com.indeed.proctor.consumer.logging;
 
 import java.util.Collection;
 
+/**
+ * A helper observer that composites multiple observers into one
+ */
 public class TestUsageCompositeObserver implements TestUsageObserver {
     private final TestUsageObserver[] observers;
 
-    public TestUsageCompositeObserver(final TestUsageObserver ... observers) {
+    public TestUsageCompositeObserver(final TestUsageObserver... observers) {
         this.observers = observers;
     }
 
