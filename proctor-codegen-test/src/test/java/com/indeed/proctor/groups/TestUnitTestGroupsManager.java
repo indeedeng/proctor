@@ -514,6 +514,27 @@ public class TestUnitTestGroupsManager {
         assertNull(UnitTestGroups.EMPTY.getPayloadonly_maptypePayload());
     }
 
+    @Test
+    public void testPayloadReturningFallbackPayload() {
+        final UnitTestGroupsContext testContext = UnitTestGroupsContext.newBuilder()
+                .setLoggedIn(true)
+                .setCountry("US")
+                .setAccount(new Account(0))
+                .build();
+        final Identifiers identifiers = new Identifiers(ImmutableMap.<TestType, String>builder()
+                .put(TestType.ANONYMOUS_USER, "dummy_token")
+                .build());
+        final ProctorResult result = testContext.getProctorResult(manager, identifiers);
+        assertThat(result.getTestDefinitions()).containsKey("payloadonly_doubletype");
+        assertThat(result.getBuckets()).doesNotContainKey("payloadonly_doubletype");
+
+        final UnitTestGroups grps = new UnitTestGroups(result);
+        assertThat(grps.getPayloadonly_doubletypeValue()).isEqualTo(-1);
+        assertThat(grps.getPayloadonly_doubletypePayload())
+                .isNotNull()
+                .isEqualTo(-1.0);
+    }
+
     private String findIdentifier(final TestType testType,
                                   final UnitTestGroupsContext context,
                                   final UnitTestGroups.Test test,
