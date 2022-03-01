@@ -235,7 +235,7 @@ public abstract class AbstractGroups {
      * If matrix does not have such a testbucket, looks up different bucket in the testdefinition and return it's payload
      */
     @Nonnull
-    final Payload getPayload(final String testName, final int fallbackBucketValue) {
+    protected final Payload getPayload(final String testName, final int fallbackBucketValue) {
         final Optional<TestBucket> activeBucketOpt = getActiveBucket(testName);
         final Optional<TestBucket> resultBucketOpt;
         if (activeBucketOpt.isPresent()) {
