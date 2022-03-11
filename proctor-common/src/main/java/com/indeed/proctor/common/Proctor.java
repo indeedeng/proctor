@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -212,26 +213,47 @@ public class Proctor {
     }
 
     /**
+     * @deprecated Use {@link #determineTestGroups(Identifiers, Map, ForceGroupsOptions, Collection)}
+     */
+    @Nonnull
+    @Deprecated
+    public ProctorResult determineTestGroups(
+            @Nonnull final Identifiers identifiers,
+            @Nonnull final Map<String, Object> inputContext,
+            @Nonnull final Map<String, Integer> forceGroups,
+            @Nonnull final Collection<String> testNameFilter
+    ) {
+        return determineTestGroups(
+                identifiers,
+                inputContext,
+                ForceGroupsOptions.builder()
+                        .putAllForceGroups(forceGroups)
+                        .build(),
+                testNameFilter
+        );
+    }
+
+    /**
      * See determineTestGroups() above. Adds a test name filter for returning a subset of tests.
      * This is useful for the Proctor REST API. It lacks a specification and needs a way to evaluate
      * only the tests mentioned in the HTTP parameters by each particular query. Otherwise, there will be
      * logged errors due to missing context variables.
      *
-     * @param identifiers    a {@link Map} of unique-ish {@link String}s describing the request in the context of different {@link TestType}s.For example,
-     *                       {@link TestType#USER} has a CTK associated, {@link TestType#EMAIL} is an email address, {@link TestType#PAGE} might be a url-encoded String
-     *                       containing the normalized relevant page parameters
-     * @param inputContext   a {@link Map} containing variables describing the context in which the request is executing. These will be supplied to any rules that
-     *                       execute to determine test eligibility.
-     * @param forceGroups    a {@link Map} from a String test name to an Integer bucket value. For the specified test allocate the specified bucket (if valid) regardless
-     *                       of the standard logic
-     * @param testNameFilter Only evaluates and returns the tests named in this collection. If empty, no filter is applied.
+     * @param identifiers        a {@link Map} of unique-ish {@link String}s describing the request in the context of different {@link TestType}s.For example,
+     *                           {@link TestType#USER} has a CTK associated, {@link TestType#EMAIL} is an email address, {@link TestType#PAGE} might be a url-encoded String
+     *                           containing the normalized relevant page parameters
+     * @param inputContext       a {@link Map} containing variables describing the context in which the request is executing. These will be supplied to any rules that
+     *                           execute to determine test eligibility.
+     * @param forceGroupsOptions a {@link Map} from a String test name to an Integer bucket value. For the specified test allocate the specified bucket (if valid) regardless
+     *                           of the standard logic
+     * @param testNameFilter     Only evaluates and returns the tests named in this collection. If empty, no filter is applied.
      * @return a {@link ProctorResult} containing the test buckets that apply to this client as well as the versions of the tests that were executed
      */
     @Nonnull
     public ProctorResult determineTestGroups(
             @Nonnull final Identifiers identifiers,
             @Nonnull final Map<String, Object> inputContext,
-            @Nonnull final Map<String, Integer> forceGroups,
+            @Nonnull final ForceGroupsOptions forceGroupsOptions,
             @Nonnull final Collection<String> testNameFilter
     ) {
         final boolean determineAllTests = testNameFilter.isEmpty();
@@ -270,7 +292,7 @@ public class Proctor {
         }
 
         for (final String testName : filteredEvaluationOrder) {
-            final Integer forceGroupBucket = forceGroups.get(testName);
+            final Optional<Integer> forceGroupBucket = forceGroupsOptions.getForcedBucketValue(testName);
             final TestChooser<?> testChooser = testChoosers.get(testName);
             final String identifier;
             if (testChooser instanceof StandardTestChooser) {
@@ -292,13 +314,16 @@ public class Proctor {
                 }
                 identifier = null;
             }
-            if (forceGroupBucket != null) {
-                final TestBucket forcedTestBucket = testChooser.getTestBucket(forceGroupBucket);
+            if (forceGroupBucket.isPresent()) {
+                final TestBucket forcedTestBucket = testChooser.getTestBucket(forceGroupBucket.get());
                 if (forcedTestBucket != null) {
                     testGroups.put(testName, forcedTestBucket);
                     // use forced group
                     continue;
                 }
+            } else if (forceGroupsOptions.getDefaultMode().equals(ForceGroupsDefaultMode.FALLBACK)) {
+                // skip choosing a test bucket
+                continue;
             }
             final TestChooser.Result chooseResult;
             if (identifier == null) {
