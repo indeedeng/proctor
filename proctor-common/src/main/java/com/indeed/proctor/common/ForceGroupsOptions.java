@@ -51,6 +51,13 @@ public class ForceGroupsOptions {
         return Optional.ofNullable(forceGroups.get(testName));
     }
 
+    /**
+     * Returns the default mode that defines what bucket to force when it's not explicitly given.
+     */
+    public ForceGroupsDefaultMode getDefaultMode() {
+        return defaultMode;
+    }
+
     @Override
     public boolean equals(final Object o) {
         if (this == o) {
@@ -74,13 +81,6 @@ public class ForceGroupsOptions {
                 .add("forceGroups=" + forceGroups)
                 .add("defaultMode=" + defaultMode)
                 .toString();
-    }
-
-    /**
-     * Returns the default mode that defines what bucket to force when it's not explicitly given.
-     */
-    public ForceGroupsDefaultMode getDefaultMode() {
-        return defaultMode;
     }
 
     public static class Builder {
