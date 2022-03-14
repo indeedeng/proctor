@@ -16,7 +16,7 @@ public class TestForceGroupsOptionStrings {
 
     @Test
     public void testParseForceGroupsString_SingleOption() {
-        assertThat(ForceGroupsOptionsStrings.parseForceGroupsString("default_fallback"))
+        assertThat(ForceGroupsOptionsStrings.parseForceGroupsString("default_to_fallback"))
                 .isEqualTo(
                         ForceGroupsOptions.builder()
                                 .setDefaultMode(ForceGroupsDefaultMode.FALLBACK)
@@ -26,7 +26,7 @@ public class TestForceGroupsOptionStrings {
 
     @Test
     public void testParseForceGroupsString_OptionAndGroup() {
-        assertThat(ForceGroupsOptionsStrings.parseForceGroupsString("default_fallback,abc1"))
+        assertThat(ForceGroupsOptionsStrings.parseForceGroupsString("default_to_fallback,abc1"))
                 .isEqualTo(
                         ForceGroupsOptions.builder()
                                 .putForceGroup("abc", 1)
@@ -64,7 +64,7 @@ public class TestForceGroupsOptionStrings {
                                 .setDefaultMode(ForceGroupsDefaultMode.FALLBACK)
                                 .build())
         )
-                .isEqualTo("default_fallback");
+                .isEqualTo("default_to_fallback");
     }
 
     @Test
@@ -76,7 +76,7 @@ public class TestForceGroupsOptionStrings {
                                 .putForceGroup("abc", 1)
                                 .build())
         )
-                .isEqualTo("default_fallback,abc1");
+                .isEqualTo("default_to_fallback,abc1");
     }
 
     @Test

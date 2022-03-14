@@ -22,12 +22,12 @@ public class TestForceGroupsDefaultMode {
     }
 
     @Test
-    public void testGetToken_TokenShouldStartWithDefault_() {
+    public void testGetToken_TokenShouldStartWithDefault_to_() {
         // weak enforcement for consistency. this can be removed.
         for (final ForceGroupsDefaultMode mode : ForceGroupsDefaultMode.values()) {
             if (!mode.equals(ForceGroupsDefaultMode.getInitial())) {
                 assertThat(mode.getToken())
-                        .hasValueSatisfying(token -> assertThat(token).startsWith("default_"));
+                        .hasValueSatisfying(token -> assertThat(token).startsWith("default_to_"));
             }
         }
     }
@@ -35,18 +35,18 @@ public class TestForceGroupsDefaultMode {
     @Test
     public void testGetToken_Fallback() {
         assertThat(ForceGroupsDefaultMode.FALLBACK.getToken())
-                .hasValue("default_fallback");
+                .hasValue("default_to_fallback");
     }
 
     @Test
     public void testFromToken_Fallback() {
-        assertThat(ForceGroupsDefaultMode.fromToken("default_fallback"))
+        assertThat(ForceGroupsDefaultMode.fromToken("default_to_fallback"))
                 .hasValue(ForceGroupsDefaultMode.FALLBACK);
     }
 
     @Test
     public void testFromToken_FallbackIgnoreCase() {
-        assertThat(ForceGroupsDefaultMode.fromToken("dEfaUlt_faLlbAck"))
+        assertThat(ForceGroupsDefaultMode.fromToken("dEfaUlt_to_faLlbAck"))
                 .hasValue(ForceGroupsDefaultMode.FALLBACK);
     }
 

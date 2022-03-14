@@ -14,10 +14,10 @@ import java.util.List;
  *
  * The format of the force groups strings is
  * <ul>
- *     <li>It's a concatenation of string elements separated by commas. (e.g., my_btn_tst1,default_fallback)</li>
+ *     <li>It's a concatenation of string elements separated by commas. (e.g., my_btn_tst1,default_to_fallback)</li>
  *     <li>Each element represents a forced test group, or an option.</li>
  *     <li>A forced group is specified by a test name followed by a bucket value (e.g., my_btn_tst1)</li>
- *     <li>A option is specified by predefined tokens that doesn't contain integers (e.g., default_fallback) </li>
+ *     <li>A option is specified by predefined tokens that doesn't contain integers (e.g., default_to_fallback) </li>
  *     <li>If two elements conflict (e.g., specifying different buckets for the same test),
  *     the latter takes precedence</li>
  * </ul>

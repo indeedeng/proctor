@@ -12,9 +12,9 @@ public enum ForceGroupsDefaultMode {
      */
     NONE(null),
     /**
-     * It forces to assign no bucket. In most situations, it leads to using the fallback buckets.
+     * It forces to assign no bucket. In most situations when you use AbstractGroups, it leads to using the fallback buckets.
      */
-    FALLBACK("default_fallback"),
+    FALLBACK("default_to_fallback"),
     ;
 
     @Nullable
