@@ -15,7 +15,6 @@ import java.util.Map;
 
 import static com.indeed.proctor.consumer.ProctorConsumerUtils.FORCE_GROUPS_PARAMETER;
 import static com.indeed.proctor.consumer.ProctorConsumerUtils.createForcedGroupsCookie;
-import static com.indeed.proctor.consumer.ProctorConsumerUtils.parseForceGroupsList;
 import static com.indeed.proctor.consumer.ProctorConsumerUtils.setForcedGroupsCookie;
 import static java.util.Collections.emptyMap;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -193,56 +192,6 @@ public class TestProctorConsumerUtils {
         }
     }
 
-    @Test
-    public void testParseForceGroupsList() {
-        //Test null string
-        assertThat(parseForceGroupsList(null))
-                .isEmpty();
-        //Test empty string
-        assertThat(parseForceGroupsList("")).isEmpty();
-        //Test invalid string
-        assertThat(parseForceGroupsList("fasdfasdf;zxcvwasdf")).isEmpty();
-        //Test invalid numbers
-        assertThat(parseForceGroupsList("fasdfasdf")).isEmpty();
-        assertThat(parseForceGroupsList("test" + Integer.MAX_VALUE + "0")).isEmpty();
-        assertThat(parseForceGroupsList("test-")).isEmpty();
-        assertThat(parseForceGroupsList("test0-")).isEmpty();
-        //Test single group
-        assertThat(parseForceGroupsList("somerandomtst1"))
-                .hasSize(1)
-                .containsEntry("somerandomtst", 1);
-        // not sure if this case needs to be supported...
-        assertThat(parseForceGroupsList("somerandomtst*  1"))
-                .hasSize(1)
-                .containsEntry("somerandomtst*", 1);
-        assertThat(parseForceGroupsList("somerandomtst" + Integer.MAX_VALUE))
-                .hasSize(1)
-                .containsEntry("somerandomtst", Integer.MAX_VALUE);
-        assertThat(parseForceGroupsList("somerandomtst" + Integer.MIN_VALUE))
-                .hasSize(1)
-                .containsEntry("somerandomtst", Integer.MIN_VALUE);
-        //Test multiple groups, multiple commas
-        assertThat(parseForceGroupsList(",,somerandomtst1, \n,, someothertst0, notanothertst2,,"))
-                .isEqualTo(ImmutableMap.builder()
-                        .put("somerandomtst", 1)
-                        .put("someothertst", 0)
-                        .put("notanothertst", 2)
-                        .build());
-        //Test multiple, duplicate groups, last one wins
-        assertThat(parseForceGroupsList("testA1, testA2, testB2"))
-                .isEqualTo(ImmutableMap.builder()
-                        .put("testA", 2)
-                        .put("testB", 2)
-                        .build());
-
-        //Test multiple groups with some invalid stuff
-        assertThat(parseForceGroupsList("somerandomtst1, someothertst0, notanothertst2,asdf;alksdfjzvc"))
-                .isEqualTo(ImmutableMap.builder()
-                        .put("somerandomtst", 1)
-                        .put("someothertst", 0)
-                        .put("notanothertst", 2)
-                        .build());
-    }
 
     @Test
     public void testSetForcedGroupsCookie() {

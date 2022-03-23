@@ -437,6 +437,71 @@ public class TestProctor {
                 .containsEntry("Y", testDefinitionY);
     }
 
+    @Test
+    public void testDetermineTestGroups_ForceGroupsWithDefaultFallback() {
+        final TestBucket controlBucket = new TestBucket("control", 0, "");
+        final TestBucket activeBucket = new TestBucket("active", 1, "");
+        final Allocation allocation = new Allocation(
+                "",
+                ImmutableList.of(new Range(1, 1.0))
+        );
+
+        final ConsumableTestDefinition testDefinitionX = ConsumableTestDefinition.fromTestDefinition(
+                TestDefinition.builder()
+                        .setSalt("&X")
+                        .setTestType(TestType.ANONYMOUS_USER)
+                        .addBuckets(controlBucket)
+                        .addBuckets(activeBucket)
+                        .addAllocations(allocation)
+                        .build()
+        );
+        final ConsumableTestDefinition testDefinitionY = ConsumableTestDefinition.fromTestDefinition(
+                TestDefinition.builder()
+                        .setSalt("&Y")
+                        .setTestType(TestType.ANONYMOUS_USER)
+                        .addBuckets(controlBucket)
+                        .addBuckets(activeBucket)
+                        .addAllocations(allocation)
+                        .build()
+        );
+
+        final Map<String, ConsumableTestDefinition> tests = ImmutableMap.of(
+                "X", testDefinitionX,
+                "Y", testDefinitionY
+        );
+        final TestMatrixArtifact matrix = new TestMatrixArtifact();
+        matrix.setTests(tests);
+        matrix.setAudit(new Audit());
+
+        final Proctor proctor = Proctor.construct(
+                matrix,
+                ProctorLoadResult.emptyResult(),
+                RuleEvaluator.defaultFunctionMapperBuilder().build()
+        );
+
+        final ProctorResult proctorResult = proctor.determineTestGroups(
+                Identifiers.of(
+                        TestType.ANONYMOUS_USER, "cookie"
+                ),
+                Collections.emptyMap(),
+                ForceGroupsOptions.builder()
+                        .putForceGroup("X", 0)
+                        .setDefaultMode(ForceGroupsDefaultMode.FALLBACK)
+                        .build(),
+                ImmutableList.of("X")
+        );
+
+        assertThat(proctorResult.getBuckets())
+                .containsOnlyKeys("X")
+                .containsEntry("X", controlBucket);
+        assertThat(proctorResult.getAllocations())
+                .isEmpty(); // allocations aren't given when forcedGroup is used.
+        assertThat(proctorResult.getTestDefinitions())
+                .containsOnlyKeys("X", "Y")
+                .containsEntry("X", testDefinitionX)
+                .containsEntry("Y", testDefinitionY);
+    }
+
     private static TestMatrixArtifact createTestMatrixWithOneRandomTest(final String testName) {
         final TestMatrixArtifact matrix = new TestMatrixArtifact();
         final ConsumableTestDefinition testDefinition = new ConsumableTestDefinition();
