@@ -45,6 +45,7 @@ public class ${mainClassName} extends AbstractGroupsManager {
      * such as boxcar services.
      * @deprecated Use the one that takes a Map<TestType, String> instead
      */
+    @Deprecated
     public ProctorResult determineBuckets(final TestType testType, final String identifier<#if contextArguments?has_content>,<#else>) {</#if>
 <#list contextArguments?keys as contextArgumentName>
                                     final ${contextArguments[contextArgumentName]?replace('$', '.')} ${contextArgumentName}<#if contextArgumentName_has_next>,<#else>) {</#if>
@@ -86,6 +87,26 @@ public class ${mainClassName} extends AbstractGroupsManager {
      * such as boxcar services.
      */
     public ProctorResult determineBuckets(final Identifiers identifiers,
+                                            final ForceGroupsOptions forceGroupsOptions<#if contextArguments?has_content>,<#else>) {</#if>
+<#list contextArguments?keys as contextArgumentName>
+                                    final ${contextArguments[contextArgumentName]?replace('$', '.')} ${contextArgumentName}<#if contextArgumentName_has_next>,<#else>) {</#if>
+</#list>
+        <#if contextArguments?has_content>
+        final Map<String, Object> context = new HashMap<String, Object>();
+            <#list contextArguments?keys as contextArgumentName>
+        context.put("${contextArgumentName}", ${contextArgumentName});
+            </#list>
+        <#else>
+        final Map<String, Object> context = Collections.emptyMap();
+        </#if>
+        return super.determineBucketsInternal(identifiers, context, forceGroupsOptions);
+    }
+
+    /**
+     * @deprecated Use ForceGroupsOptions for forcedGroups
+     */
+    @Deprecated
+    public ProctorResult determineBuckets(final Identifiers identifiers,
                                             final Map<String, Integer> forcedGroups<#if contextArguments?has_content>,<#else>) {</#if>
 <#list contextArguments?keys as contextArgumentName>
                                     final ${contextArguments[contextArgumentName]?replace('$', '.')} ${contextArgumentName}<#if contextArgumentName_has_next>,<#else>) {</#if>
@@ -101,9 +122,10 @@ public class ${mainClassName} extends AbstractGroupsManager {
         return super.determineBucketsInternal(identifiers, context, forcedGroups);
     }
 
-    /*
+    /**
      * @deprecated Use the one that takes a Map<TestType, String> instead
      */
+    @Deprecated
     public ProctorResult determineBuckets(final HttpServletRequest request, final HttpServletResponse response,
                                             final TestType testType, final String identifier, final boolean allowForcedGroups<#if contextArguments?has_content>,<#else>) {</#if>
 <#list contextArguments?keys as contextArgumentName>

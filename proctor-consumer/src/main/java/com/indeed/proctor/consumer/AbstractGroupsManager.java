@@ -2,6 +2,7 @@ package com.indeed.proctor.consumer;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Supplier;
+import com.indeed.proctor.common.ForceGroupsOptions;
 import com.indeed.proctor.common.Identifiers;
 import com.indeed.proctor.common.Proctor;
 import com.indeed.proctor.common.ProctorResult;
@@ -14,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
 import java.util.TreeMap;
 
+import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySortedMap;
 
@@ -30,7 +32,10 @@ public abstract class AbstractGroupsManager implements ProctorContextDescriptor 
         this.interceptorSupplier = GroupsManagerInterceptor::getDefault;
     }
 
-    protected AbstractGroupsManager(final Supplier<Proctor> proctorSource, final Supplier<GroupsManagerInterceptor> interceptorSupplier) {
+    protected AbstractGroupsManager(
+            final Supplier<Proctor> proctorSource,
+            final Supplier<GroupsManagerInterceptor> interceptorSupplier
+    ) {
         this.proctorSource = proctorSource;
         this.interceptorSupplier = interceptorSupplier;
     }
@@ -45,7 +50,11 @@ public abstract class AbstractGroupsManager implements ProctorContextDescriptor 
      * @deprecated use {@link AbstractGroupsManager#determineBucketsInternal(Identifiers, Map)}
      */
     @VisibleForTesting
-    protected ProctorResult determineBucketsInternal(final TestType testType, final String identifier, final Map<String, Object> context) {
+    protected ProctorResult determineBucketsInternal(
+            final TestType testType,
+            final String identifier,
+            final Map<String, Object> context
+    ) {
         final Map<String, Integer> forcedGroups = emptyMap();
         final Identifiers identifiers = new Identifiers(testType, identifier);
         return determineBucketsInternal(identifiers, context, forcedGroups);
@@ -60,19 +69,23 @@ public abstract class AbstractGroupsManager implements ProctorContextDescriptor 
      * I don't see any value in using this in an application; you probably should use
      * {@link #determineBucketsInternal(HttpServletRequest, HttpServletResponse, Identifiers, Map, boolean)}
      *
-     * @param identifiers  a {@link Map} of unique-ish {@link String}s describing the request in the context of different {@link TestType}s.For example,
-     *                     {@link TestType#USER} has a CTK associated, {@link TestType#EMAIL} is an email address, {@link TestType#PAGE} might be a url-encoded String
-     *                     containing the normalized relevant page parameters
-     * @param context      a {@link Map} containing variables describing the context in which the request is executing. These will be supplied to any rules that
-     *                     execute to determine test eligibility.
-     * @param forcedGroups a {@link Map} from a String test name to an Integer bucket value. For the specified test allocate the specified bucket (if valid) regardless
-     *                     of the standard logic
+     * @param identifiers        a {@link Map} of unique-ish {@link String}s describing the request in the context of different {@link TestType}s.
+     *                           For example, {@link TestType#USER} has a CTK associated, {@link TestType#EMAIL} is an email address,
+     *                           {@link TestType#PAGE} might be a url-encoded String containing the normalized relevant page parameters
+     * @param context            a {@link Map} containing variables describing the context in which the request is executing.
+     *                           These will be supplied to any rules that execute to determine test eligibility.
+     * @param forceGroupsOptions a options to specify forced groups which includes a {@link Map} from a String test name to an Integer bucket value.
+     *                           For the specified test allocate the specified bucket (if valid) regardless of the standard logic
      * @return a {@link ProctorResult} to describe buckets allocations of all tests.
      */
     @VisibleForTesting
-    protected ProctorResult determineBucketsInternal(final Identifiers identifiers, final Map<String, Object> context, final Map<String, Integer> forcedGroups) {
+    protected ProctorResult determineBucketsInternal(
+            final Identifiers identifiers,
+            final Map<String, Object> context,
+            final ForceGroupsOptions forceGroupsOptions
+    ) {
         final GroupsManagerInterceptor interceptor = interceptorSupplier.get();
-        interceptor.beforeDetermineGroups(identifiers, context, forcedGroups);
+        interceptor.beforeDetermineGroups(identifiers, context, forceGroupsOptions.getForceGroups());
 
         final Proctor proctor = proctorSource.get();
         if (proctor == null) {
@@ -83,26 +96,56 @@ public abstract class AbstractGroupsManager implements ProctorContextDescriptor 
                     emptyMap()
             );
         }
-        final ProctorResult proctorResult = proctor.determineTestGroups(identifiers, context, forcedGroups);
+        final ProctorResult proctorResult = proctor.determineTestGroups(
+                identifiers,
+                context,
+                forceGroupsOptions,
+                emptyList()
+        );
 
         interceptor.afterDetermineGroups(proctorResult);
         return proctorResult;
     }
+
+    /**
+     * @deprecated Use {@link #determineBucketsInternal(HttpServletRequest, HttpServletResponse, Identifiers, Map, boolean)}
+     */
+    @Deprecated
+    @VisibleForTesting
+    protected ProctorResult determineBucketsInternal(
+            final Identifiers identifiers,
+            final Map<String, Object> context,
+            final Map<String, Integer> forcedGroups
+    ) {
+        return determineBucketsInternal(
+                identifiers,
+                context,
+                ForceGroupsOptions.builder()
+                        .putAllForceGroups(forcedGroups)
+                        .build()
+        );
+    }
+
 
     protected abstract Map<String, TestBucket> getDefaultBucketValues();
 
     /**
      * servlet-based-application friendly version of determineBucketsInternal, also enabling forcing groups via request headers and cookies
      */
-    protected ProctorResult determineBucketsInternal(final HttpServletRequest request, final HttpServletResponse response, final Identifiers identifiers,
-            final Map<String, Object> context, final boolean allowForcedGroups) {
-        final Map<String, Integer> forcedGroups;
+    protected ProctorResult determineBucketsInternal(
+            final HttpServletRequest request,
+            final HttpServletResponse response,
+            final Identifiers identifiers,
+            final Map<String, Object> context,
+            final boolean allowForcedGroups
+    ) {
+        final ForceGroupsOptions forcedGroups;
         if (allowForcedGroups) {
-            forcedGroups = ProctorConsumerUtils.parseForcedGroups(request);
+            forcedGroups = ProctorConsumerUtils.parseForcedGroupsOptions(request);
             ProctorConsumerUtils.createForcedGroupsCookieUnlessEmpty(request.getContextPath(), forcedGroups)
                     .ifPresent(response::addCookie);
         } else {
-            forcedGroups = emptyMap();
+            forcedGroups = ForceGroupsOptions.empty();
         }
         return determineBucketsInternal(identifiers, context, forcedGroups);
     }

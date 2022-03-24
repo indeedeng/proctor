@@ -8,6 +8,7 @@ package ${packageName};
 import com.google.common.base.Objects;
 import com.google.common.base.Defaults;
 
+import com.indeed.proctor.common.ForceGroupsOptions;
 import com.indeed.proctor.common.Identifiers;
 import com.indeed.proctor.common.ProctorResult;
 
@@ -109,6 +110,19 @@ public class ${mainClassName} {
     * with test groups as those applications will not have a request and response,
     * such as boxcar services.
     */
+    public ProctorResult getProctorResult(@Nonnull final ${groupsManagerClassName} groupsManager,
+                                          @Nonnull final Identifiers identifiers,
+                                          @Nonnull final ForceGroupsOptions forceGroupsOptions) {
+        return groupsManager.determineBuckets(identifiers, forceGroupsOptions<#if contextArguments?has_content>, <#else>);</#if>
+<#list contextArguments?keys as contextArgumentName>
+                                              ${contextArgumentName}<#if contextArgumentName_has_next>,<#else>);</#if>
+</#list>
+    }
+
+    /**
+    * @deprecated Use ForceGroupsOptions for forcedGroups
+    */
+    @Deprecated
     public ProctorResult getProctorResult(@Nonnull final ${groupsManagerClassName} groupsManager,
                                           @Nonnull final Identifiers identifiers,
                                           @Nonnull final Map<String, Integer> forcedGroups) {
