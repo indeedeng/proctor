@@ -12,6 +12,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -78,6 +79,11 @@ public class ProctorConsumerUtils {
         return ForceGroupsOptionsStrings.parseForceGroupsString(forceGroupsList);
     }
 
+    @Nonnull
+    public static Map<String, Integer> parseForceGroupsList(@Nullable final String payload) {
+        return ForceGroupsOptionsStrings.parseForceGroupsString(payload)
+                .getForceGroups();
+    }
 
     /**
      * @return proctor force groups if set in request, returns first found of: parameter, header, cookie
