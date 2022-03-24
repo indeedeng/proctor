@@ -2,7 +2,6 @@ package com.indeed.proctor.pipet.core.var;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import com.indeed.proctor.common.ForceGroupsOptionsStrings;
 import com.indeed.proctor.common.Identifiers;
 import com.indeed.proctor.common.model.TestType;
 import com.indeed.proctor.consumer.ProctorConsumerUtils;
@@ -75,7 +74,6 @@ public class Converter {
         // Same format as Proctor's force groups parameter.
         // The client can store this force parameter in a cookie and not worry about parsing it at all.
         // NOTE: this is technically a @VisibleForTesting method!!
-        return ForceGroupsOptionsStrings.parseForceGroupsString(forceGroups)
-                .getForceGroups();
+        return ProctorConsumerUtils.parseForceGroupsList(forceGroups);
     }
 }
