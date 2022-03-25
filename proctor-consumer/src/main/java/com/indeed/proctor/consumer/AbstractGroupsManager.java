@@ -108,7 +108,10 @@ public abstract class AbstractGroupsManager implements ProctorContextDescriptor 
     }
 
     /**
-     * @deprecated Use {@link #determineBucketsInternal(HttpServletRequest, HttpServletResponse, Identifiers, Map, boolean)}
+     * @deprecated {@link #determineBucketsInternal(Identifiers, Map, ForceGroupsOptions)} is the replacement.
+     * If it's used in servlet-based-application where HttpServletRequest and HttpServletResponse are available
+     * consider use {@link #determineBucketsInternal(HttpServletRequest, HttpServletResponse, Identifiers, Map, boolean)}
+     * for better functionality.
      */
     @Deprecated
     @VisibleForTesting
