@@ -176,10 +176,11 @@ public class Proctor {
      * @param forceGroups a {@link Map} from a String test name to an Integer bucket value. For the specified test allocate the specified bucket (if valid) regardless
      *                    of the standard logic
      * @return a {@link ProctorResult} containing the test buckets that apply to this client as well as the versions of the tests that were executed
-     * @deprecated use {@link Proctor#determineTestGroups(Identifiers, Map, Map)} instead
+     * @deprecated use {@link Proctor#determineTestGroups(Identifiers, Map, ForceGroupsOptions, Collection)} instead
      */
     @SuppressWarnings("UnusedDeclaration") // TODO Remove deprecated
     @Nonnull
+    @Deprecated
     public ProctorResult determineTestGroups(
             final TestType testType,
             final String identifier,
@@ -202,8 +203,10 @@ public class Proctor {
      * @param forceGroups  a {@link Map} from a String test name to an Integer bucket value. For the specified test allocate the specified bucket (if valid) regardless
      *                     of the standard logic
      * @return a {@link ProctorResult} containing the test buckets that apply to this client as well as the versions of the tests that were executed
+     * @deprecated use {@link Proctor#determineTestGroups(Identifiers, Map, ForceGroupsOptions, Collection)} instead
      */
     @Nonnull
+    @Deprecated
     public ProctorResult determineTestGroups(
             @Nonnull final Identifiers identifiers,
             @Nonnull final Map<String, Object> inputContext,

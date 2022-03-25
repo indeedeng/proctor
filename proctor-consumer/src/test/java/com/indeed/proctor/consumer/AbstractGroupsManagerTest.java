@@ -1,5 +1,6 @@
 package com.indeed.proctor.consumer;
 
+import com.indeed.proctor.common.ForceGroupsOptions;
 import com.indeed.proctor.common.Identifiers;
 import com.indeed.proctor.common.Proctor;
 import com.indeed.proctor.common.ProctorResult;
@@ -14,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
 
 import static com.indeed.proctor.consumer.ProctorConsumerUtils.FORCE_GROUPS_PARAMETER;
+import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.isA;
@@ -115,9 +117,9 @@ public class AbstractGroupsManagerTest {
         when(proctorMock.determineTestGroups(identifiers, emptyMap(), emptyMap()))
                 .thenReturn(proctorResultMock);
 
-        manager.determineBucketsInternal(identifiers, emptyMap(), emptyMap());
+        manager.determineBucketsInternal(identifiers, emptyMap(), ForceGroupsOptions.empty());
 
-        verify(proctorMock).determineTestGroups(identifiers, emptyMap(), emptyMap());
+        verify(proctorMock).determineTestGroups(identifiers, emptyMap(), ForceGroupsOptions.empty(), emptyList());
         verify(loggerMock).info("called before");
         verify(loggerMock).info("called after");
     }

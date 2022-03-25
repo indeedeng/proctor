@@ -1,11 +1,15 @@
 package com.indeed.proctor.groups;
 
 import com.google.common.collect.ImmutableMap;
+import com.indeed.proctor.common.ForceGroupsDefaultMode;
+import com.indeed.proctor.common.ForceGroupsOptions;
 import com.indeed.proctor.common.Identifiers;
 import com.indeed.proctor.common.ProctorResult;
 import com.indeed.proctor.common.model.TestType;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 
 import static com.indeed.proctor.groups.UtilMethods.calcBuckets;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -150,5 +154,98 @@ public class TestSplitSpecificationTestGroupsManager {
         assertEquals("3rd \n\t\"test", grps.getOneDescription());
     }
 
+    @Test
+    public void testGetProctorResult_forcedGroups_shouldForceCorrectGroups() {
+        final SplitSpecificationTestGroupsContext context = SplitSpecificationTestGroupsContext.newBuilder()
+                .build();
+        final Identifiers identifiers = new Identifiers(TestType.USER, "16s2o7s01001d9vj"); // resolves two3 and three-1
+        final ProctorResult result = context.getProctorResult(
+                manager,
+                identifiers,
+                ImmutableMap.of(
+                        "two", 1,
+                        "three", 0
+                )
+        );
+        assertThat(result.getBuckets())
+                .containsOnlyKeys("two", "three")
+                .hasEntrySatisfying("two", x -> assertThat(x.getValue()).isEqualTo(1))
+                .hasEntrySatisfying("three", x -> assertThat(x.getValue()).isEqualTo(0));
+    }
 
+    @Test
+    public void testGetProctorResult_forcedGroupsOptions_shouldForceCorrectGroups() {
+        final SplitSpecificationTestGroupsContext context = SplitSpecificationTestGroupsContext.newBuilder()
+                .build();
+        final Identifiers identifiers = new Identifiers(TestType.USER, "16s2o7s01001d9vj"); // resolves two3 and three-1
+        final ProctorResult result = context.getProctorResult(
+                manager,
+                identifiers,
+                ForceGroupsOptions.builder()
+                        .putForceGroup("two", 1)
+                        .putForceGroup("three", 0)
+                        .build()
+        );
+        assertThat(result.getBuckets())
+                .containsOnlyKeys("two", "three")
+                .hasEntrySatisfying("two", x -> assertThat(x.getValue()).isEqualTo(1))
+                .hasEntrySatisfying("three", x -> assertThat(x.getValue()).isEqualTo(0));
+    }
+
+    @Test
+    public void testGetProctorResult_forcedGroupsOptions_shouldForceFallback() {
+        final SplitSpecificationTestGroupsContext context = SplitSpecificationTestGroupsContext.newBuilder()
+                .build();
+        final Identifiers identifiers = new Identifiers(TestType.USER, "foo"); // resolves two1 and three1
+        final ProctorResult result = context.getProctorResult(
+                manager,
+                identifiers,
+                ForceGroupsOptions.builder()
+                        .setDefaultMode(ForceGroupsDefaultMode.FALLBACK)
+                        .putForceGroup("three", 0)
+                        .build()
+        );
+        assertThat(result.getBuckets())
+                .containsOnlyKeys("three")
+                .hasEntrySatisfying("three", x -> assertThat(x.getValue()).isEqualTo(0));
+    }
+
+    @Test
+    public void testGetProctorResult_prforceGroupsUrlParam_shouldForceFallback() {
+        final SplitSpecificationTestGroupsContext context = SplitSpecificationTestGroupsContext.newBuilder()
+                .build();
+        final Identifiers identifiers = new Identifiers(TestType.USER, "foo"); // resolves two1 and three1
+        final MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setParameter("prforceGroups", "default_to_fallback,three0");
+        final ProctorResult result = context.getProctorResult(
+                manager,
+                request,
+                new MockHttpServletResponse(),
+                identifiers,
+                true
+        );
+        assertThat(result.getBuckets())
+                .containsOnlyKeys("three")
+                .hasEntrySatisfying("three", x -> assertThat(x.getValue()).isEqualTo(0));
+    }
+
+    @Test
+    public void testGetProctorResult_prforceGroupsUrlParam_shouldNotForceWhenNotAllowed() {
+        final SplitSpecificationTestGroupsContext context = SplitSpecificationTestGroupsContext.newBuilder()
+                .build();
+        final Identifiers identifiers = new Identifiers(TestType.USER, "foo"); // resolves two1 and three1
+        final MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setParameter("prforceGroups", "default_to_fallback,three0");
+        final ProctorResult result = context.getProctorResult(
+                manager,
+                request,
+                new MockHttpServletResponse(),
+                identifiers,
+                false
+        );
+        assertThat(result.getBuckets())
+                .containsOnlyKeys("two", "three")
+                .hasEntrySatisfying("two", x -> assertThat(x.getValue()).isEqualTo(1))
+                .hasEntrySatisfying("three", x -> assertThat(x.getValue()).isEqualTo(1));
+    }
 }
