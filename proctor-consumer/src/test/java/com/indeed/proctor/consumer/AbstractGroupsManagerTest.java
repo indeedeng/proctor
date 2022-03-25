@@ -92,7 +92,7 @@ public class AbstractGroupsManagerTest {
                     public void beforeDetermineGroups(
                             final Identifiers identifiers,
                             final Map<String, Object> context,
-                            final ForceGroupsOptions forceGroupsOptions
+                            final Map<String, Integer> forcedGroups
                     ) {
                         loggerMock.info("called before");
                     }

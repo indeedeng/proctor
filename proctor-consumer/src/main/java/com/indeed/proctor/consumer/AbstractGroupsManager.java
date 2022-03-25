@@ -85,7 +85,7 @@ public abstract class AbstractGroupsManager implements ProctorContextDescriptor 
             final ForceGroupsOptions forceGroupsOptions
     ) {
         final GroupsManagerInterceptor interceptor = interceptorSupplier.get();
-        interceptor.beforeDetermineGroups(identifiers, context, forceGroupsOptions);
+        interceptor.beforeDetermineGroups(identifiers, context, forceGroupsOptions.getForceGroups());
 
         final Proctor proctor = proctorSource.get();
         if (proctor == null) {
