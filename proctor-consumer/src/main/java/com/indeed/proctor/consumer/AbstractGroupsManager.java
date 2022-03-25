@@ -139,14 +139,14 @@ public abstract class AbstractGroupsManager implements ProctorContextDescriptor 
             final Map<String, Object> context,
             final boolean allowForcedGroups
     ) {
-        final ForceGroupsOptions forcedGroups;
+        final ForceGroupsOptions forceGroupsOptions;
         if (allowForcedGroups) {
-            forcedGroups = ProctorConsumerUtils.parseForcedGroupsOptions(request);
-            ProctorConsumerUtils.createForcedGroupsCookieUnlessEmpty(request.getContextPath(), forcedGroups)
+            forceGroupsOptions = ProctorConsumerUtils.parseForcedGroupsOptions(request);
+            ProctorConsumerUtils.createForcedGroupsCookieUnlessEmpty(request.getContextPath(), forceGroupsOptions)
                     .ifPresent(response::addCookie);
         } else {
-            forcedGroups = ForceGroupsOptions.empty();
+            forceGroupsOptions = ForceGroupsOptions.empty();
         }
-        return determineBucketsInternal(identifiers, context, forcedGroups);
+        return determineBucketsInternal(identifiers, context, forceGroupsOptions);
     }
 }

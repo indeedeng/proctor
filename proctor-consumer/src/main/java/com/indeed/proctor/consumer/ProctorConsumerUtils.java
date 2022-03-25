@@ -56,15 +56,15 @@ public class ProctorConsumerUtils {
             final Map<String, Object> context,
             final boolean allowForcedGroups
     ) {
-        final ForceGroupsOptions forcedGroups;
+        final ForceGroupsOptions forceGroupsOptions;
         if (allowForcedGroups) {
-            forcedGroups = parseForcedGroupsOptions(request);
-            createForcedGroupsCookieUnlessEmpty(request.getContextPath(), forcedGroups)
+            forceGroupsOptions = parseForcedGroupsOptions(request);
+            createForcedGroupsCookieUnlessEmpty(request.getContextPath(), forceGroupsOptions)
                     .ifPresent(response::addCookie);
         } else {
-            forcedGroups = ForceGroupsOptions.empty();
+            forceGroupsOptions = ForceGroupsOptions.empty();
         }
-        return proctor.determineTestGroups(identifiers, context, forcedGroups, Collections.emptyList());
+        return proctor.determineTestGroups(identifiers, context, forceGroupsOptions, Collections.emptyList());
     }
 
     /**
