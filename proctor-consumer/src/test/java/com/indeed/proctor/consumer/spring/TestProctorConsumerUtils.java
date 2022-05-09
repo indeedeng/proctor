@@ -1,6 +1,7 @@
 package com.indeed.proctor.consumer.spring;
 
 import com.google.common.collect.ImmutableMap;
+import com.indeed.proctor.common.ForceGroupsOptions;
 import com.indeed.proctor.common.Proctor;
 import com.indeed.proctor.common.model.TestType;
 import com.indeed.proctor.consumer.ProctorConsumerUtils;
@@ -276,4 +277,52 @@ public class TestProctorConsumerUtils {
         assertThat(cookie.getVersion()).isEqualTo(0);
     }
 
+    @Test
+    public void testCreateForcedGroupsSorts() {
+        final Cookie a = new Cookie(ProctorConsumerUtils.FORCE_GROUPS_COOKIE_NAME, "first_test1,second_test0");
+        a.setPath("www.indeed.com");
+
+        final Cookie b = new Cookie(ProctorConsumerUtils.FORCE_GROUPS_COOKIE_NAME, "second_test-1,first_test2");
+        b.setPath(".indeed.com");
+
+        final Cookie c = new Cookie(ProctorConsumerUtils.FORCE_GROUPS_COOKIE_NAME, "second_test0,third_test2");
+        c.setPath(".indeed.com");
+        c.setHttpOnly(true);
+
+        final String expectedForceGroupsString = "second_test-1,first_test2,second_test0,third_test2,first_test1,second_test0";
+        final ForceGroupsOptions expectedForceGroupsOptions = new ForceGroupsOptions.Builder()
+                .putForceGroup("second_test", 0)
+                .putForceGroup("first_test", 1)
+                .putForceGroup("third_test", 2)
+                .build();
+
+        {
+            final MockHttpServletRequest mockRequest = new MockHttpServletRequest();
+            mockRequest.setCookies(a, b, c);
+
+            final String forceGroupsString = ProctorConsumerUtils.getForceGroupsStringFromRequest(mockRequest);
+            final ForceGroupsOptions forceGroupsOptions = ProctorConsumerUtils.parseForcedGroupsOptions(mockRequest);
+            assertThat(forceGroupsString).isEqualTo(expectedForceGroupsString);
+            assertThat(forceGroupsOptions).isEqualTo(expectedForceGroupsOptions);
+        }
+        {
+            final MockHttpServletRequest mockRequest = new MockHttpServletRequest();
+            mockRequest.setCookies(b, c, a);
+
+            final String forceGroupsString = ProctorConsumerUtils.getForceGroupsStringFromRequest(mockRequest);
+            final ForceGroupsOptions forceGroupsOptions = ProctorConsumerUtils.parseForcedGroupsOptions(mockRequest);
+            assertThat(forceGroupsString).isEqualTo(expectedForceGroupsString);
+            assertThat(forceGroupsOptions).isEqualTo(expectedForceGroupsOptions);
+        }
+
+        {
+            final MockHttpServletRequest mockRequest = new MockHttpServletRequest();
+            mockRequest.setCookies(c, b, a);
+
+            final String forceGroupsString = ProctorConsumerUtils.getForceGroupsStringFromRequest(mockRequest);
+            final ForceGroupsOptions forceGroupsOptions = ProctorConsumerUtils.parseForcedGroupsOptions(mockRequest);
+            assertThat(forceGroupsString).isEqualTo(expectedForceGroupsString);
+            assertThat(forceGroupsOptions).isEqualTo(expectedForceGroupsOptions);
+        }
+    }
 }

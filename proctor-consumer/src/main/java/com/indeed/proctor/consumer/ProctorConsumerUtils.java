@@ -1,6 +1,6 @@
 package com.indeed.proctor.consumer;
 
-import com.google.common.base.Strings;
+import com.google.common.annotations.VisibleForTesting;
 import com.indeed.proctor.common.ForceGroupsOptions;
 import com.indeed.proctor.common.ForceGroupsOptionsStrings;
 import com.indeed.proctor.common.Identifiers;
@@ -8,17 +8,19 @@ import com.indeed.proctor.common.Proctor;
 import com.indeed.proctor.common.ProctorResult;
 import com.indeed.proctor.common.model.TestType;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class ProctorConsumerUtils {
     /**
@@ -106,15 +108,25 @@ public class ProctorConsumerUtils {
             return "";
         }
 
-        for (int i = 0; i < cookies.length; i++) {
-            if (FORCE_GROUPS_COOKIE_NAME.equals(cookies[i].getName())) {
-                final String cookieValue = cookies[i].getValue();
-                return Strings.nullToEmpty(cookieValue);
-            }
-        }
-
-        return "";
+        return Arrays.stream(cookies).sequential()
+                .filter(Objects::nonNull)
+                .filter(x -> FORCE_GROUPS_COOKIE_NAME.equals(x.getName()))
+                .sorted(COOKIE_COMPARATOR)
+                .map(Cookie::getValue)
+                .filter(Objects::nonNull)
+                .collect(Collectors.joining(","));
     }
+
+    /**
+     * It's not enough to just combine all the force groups from all the available cookies. If different force group
+     * cookies exist with different allocations for the same test, we could have different results. We need to process
+     * the cookies in a stable order so that we always produce the same result.
+     */
+    @VisibleForTesting
+    private static final Comparator<Cookie> COOKIE_COMPARATOR = Comparator
+            .comparing(Cookie::getPath)
+            .thenComparing(Cookie::isHttpOnly)
+            .thenComparing(Cookie::getValue);
 
     /**
      * Create a cookie that will be parsed by {@link #parseForcedGroupsOptions(HttpServletRequest)}.
