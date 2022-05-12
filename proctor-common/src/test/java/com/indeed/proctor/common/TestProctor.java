@@ -18,7 +18,6 @@ import com.indeed.proctor.common.model.TestMatrixArtifact;
 import com.indeed.proctor.common.model.TestType;
 import org.junit.Test;
 
-import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -289,7 +288,7 @@ public class TestProctor {
                 testBucket, allocation
         );
 
-        when(testChooser.choose(isNull(), eq(inputContext), anyMap())).thenReturn(result);
+        when(testChooser.choose(isNull(), eq(inputContext), anyMap(), eq(ForceGroupsOptions.empty()))).thenReturn(result);
 
         final ProctorResult proctorResultWithRandom = proctor.determineTestGroups(
                 identifiersWithRandom,
@@ -309,7 +308,12 @@ public class TestProctor {
         assertThat(proctorResultWithoutRandom.getAllocations()).isEqualTo(Collections.emptyMap());
 
         // choose should not be called for identifiers with randomEnabled == false.
-        verify(testChooser, times(1)).choose(isNull(), eq(inputContext), anyMap());
+        verify(testChooser, times(1)).choose(
+                isNull(),
+                eq(inputContext),
+                anyMap(),
+                eq(ForceGroupsOptions.empty())
+        );
     }
 
     @Test
