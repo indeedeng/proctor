@@ -278,27 +278,26 @@ public class TestProctorConsumerUtils {
     }
 
     @Test
-    public void testCreateForcedGroupsSorts() {
-        final Cookie a = new Cookie(ProctorConsumerUtils.FORCE_GROUPS_COOKIE_NAME, "first_test1,second_test0");
-        a.setPath("www.indeed.com");
+    public void testCreateForcedGroupsUnion() {
+        final String forcedGroupsA = "first_test1,second_test0";
+        final Cookie a = new Cookie(ProctorConsumerUtils.FORCE_GROUPS_COOKIE_NAME, forcedGroupsA);
 
-        final Cookie b = new Cookie(ProctorConsumerUtils.FORCE_GROUPS_COOKIE_NAME, "second_test-1,first_test2");
-        b.setPath(".indeed.com");
+        final String forcedGroupsB = "second_test-1,first_test2";
+        final Cookie b = new Cookie(ProctorConsumerUtils.FORCE_GROUPS_COOKIE_NAME, forcedGroupsB);
 
-        final Cookie c = new Cookie(ProctorConsumerUtils.FORCE_GROUPS_COOKIE_NAME, "second_test0,third_test2");
-        c.setPath(".indeed.com");
-        c.setHttpOnly(true);
-
-        final String expectedForceGroupsString = "second_test-1,first_test2,second_test0,third_test2,first_test1,second_test0";
-        final ForceGroupsOptions expectedForceGroupsOptions = new ForceGroupsOptions.Builder()
-                .putForceGroup("second_test", 0)
-                .putForceGroup("first_test", 1)
-                .putForceGroup("third_test", 2)
-                .build();
+        final String forcedGroupsC = "second_test0,third_test2";
+        final Cookie c = new Cookie(ProctorConsumerUtils.FORCE_GROUPS_COOKIE_NAME, forcedGroupsC);
 
         {
             final MockHttpServletRequest mockRequest = new MockHttpServletRequest();
             mockRequest.setCookies(a, b, c);
+
+            final String expectedForceGroupsString = forcedGroupsA + "," + forcedGroupsB + "," + forcedGroupsC;
+            final ForceGroupsOptions expectedForceGroupsOptions = new ForceGroupsOptions.Builder()
+                    .putForceGroup("first_test", 2)
+                    .putForceGroup("second_test", 0)
+                    .putForceGroup("third_test", 2)
+                    .build();
 
             final String forceGroupsString = ProctorConsumerUtils.getForceGroupsStringFromRequest(mockRequest);
             final ForceGroupsOptions forceGroupsOptions = ProctorConsumerUtils.parseForcedGroupsOptions(mockRequest);
@@ -309,6 +308,13 @@ public class TestProctorConsumerUtils {
             final MockHttpServletRequest mockRequest = new MockHttpServletRequest();
             mockRequest.setCookies(b, c, a);
 
+            final String expectedForceGroupsString = forcedGroupsB + "," + forcedGroupsC + "," + forcedGroupsA;
+            final ForceGroupsOptions expectedForceGroupsOptions = new ForceGroupsOptions.Builder()
+                    .putForceGroup("first_test", 1)
+                    .putForceGroup("second_test", 0)
+                    .putForceGroup("third_test", 2)
+                    .build();
+
             final String forceGroupsString = ProctorConsumerUtils.getForceGroupsStringFromRequest(mockRequest);
             final ForceGroupsOptions forceGroupsOptions = ProctorConsumerUtils.parseForcedGroupsOptions(mockRequest);
             assertThat(forceGroupsString).isEqualTo(expectedForceGroupsString);
@@ -317,7 +323,14 @@ public class TestProctorConsumerUtils {
 
         {
             final MockHttpServletRequest mockRequest = new MockHttpServletRequest();
-            mockRequest.setCookies(c, b, a);
+            mockRequest.setCookies(c, a, b);
+
+            final String expectedForceGroupsString = forcedGroupsC + "," + forcedGroupsA + "," + forcedGroupsB;
+            final ForceGroupsOptions expectedForceGroupsOptions = new ForceGroupsOptions.Builder()
+                    .putForceGroup("first_test", 2)
+                    .putForceGroup("second_test", -1)
+                    .putForceGroup("third_test", 2)
+                    .build();
 
             final String forceGroupsString = ProctorConsumerUtils.getForceGroupsStringFromRequest(mockRequest);
             final ForceGroupsOptions forceGroupsOptions = ProctorConsumerUtils.parseForcedGroupsOptions(mockRequest);

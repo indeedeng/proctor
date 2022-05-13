@@ -88,6 +88,23 @@ public class ProctorConsumerUtils {
     }
 
     /**
+     * Parse the force groups from the request. Returns the first found from the URL parameter, header or cookies.
+     *
+     * Cookies require a special note here. It is possible to have more than one force groups cookie assign to the
+     * same request. If this happens, it is likely an accident from multiple different scenarios overlapping. Our goal
+     * is to try and do whatever gets the user as close as possible to their end result. This means attempting to give
+     * them as many of the right group allocations as possible. We can easily take the union of allocations for
+     * different tests, but we need to make a decision about which group to force when multiple cookies specify an
+     * group assignment for the same test.
+     * Unfortunately, the only thing the browser tells us is the name and value of the cookie. We don't know the age,
+     * domain or path of the cookie, all of which would let us make a better decision. The relevant specification is
+     * <a href="https://datatracker.ietf.org/doc/html/rfc6265#section-5.4">RFC 6265, Section 5.4</a>. According to that,
+     * User Agents SHOULD sort the list first by path, longest-to-shortest, and then by age, oldest-to-newest.
+     * What we probably want is longest-to-shortest path and then newest-to-oldest age cookie. However, the paths
+     * are likely to all be "/"; it's the <i>domain</i> that is likely to differ among the cookies. And we don't have
+     * access to that. So when we are processing cookies, we union all the cookies with the right name in the order
+     * provided by the browser. This means the group assignments in the last cookie will be at the end of the force
+     * groups string, which will cause them to win.
      * @return proctor force groups if set in request, returns first found of: parameter, header, cookie
      */
     @Nonnull
@@ -108,10 +125,9 @@ public class ProctorConsumerUtils {
             return "";
         }
 
-        return Arrays.stream(cookies).sequential()
+        return Arrays.stream(cookies)
                 .filter(Objects::nonNull)
                 .filter(x -> FORCE_GROUPS_COOKIE_NAME.equals(x.getName()))
-                .sorted(COOKIE_COMPARATOR)
                 .map(Cookie::getValue)
                 .filter(Objects::nonNull)
                 .collect(Collectors.joining(","));
