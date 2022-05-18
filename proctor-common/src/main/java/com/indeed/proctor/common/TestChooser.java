@@ -2,13 +2,16 @@ package com.indeed.proctor.common;
 
 import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
+import com.indeed.proctor.common.model.Range;
 import com.indeed.proctor.common.model.TestBucket;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.PrintWriter;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 interface TestChooser<IdentifierType> {
 
@@ -26,6 +29,9 @@ interface TestChooser<IdentifierType> {
     @Nonnull
     String getTestName();
 
+    /**
+     * Do not directly call this outside this interface. We should call {@link #choose(Object, Map, Map, ForceGroupsOptions)}, instead.
+     */
     @Nonnull
     TestChooser.Result choose(@Nullable IdentifierType identifier, @Nonnull Map<String, Object> values, @Nonnull Map<String, TestBucket> testGroups);
 
@@ -50,7 +56,23 @@ interface TestChooser<IdentifierType> {
             return Result.EMPTY;
         }
 
-        return choose(identifier, values, testGroups);
+        final TestChooser.Result result = choose(identifier, values, testGroups);
+
+        if (forceGroupsOptions.getDefaultMode().equals(ForceGroupsDefaultMode.MIN_ACTIVE)) {
+            // replace the bucket with the minimum active bucket in the resolved allocation.
+            return Optional.ofNullable(result.getAllocation())
+                    .map(Allocation::getRanges)
+                    .map(Collection::stream)
+                    .orElse(Stream.empty())
+                    .filter(allocationRange -> allocationRange.getLength() > 0) // filter out 0% allocation ranges
+                    .map(Range::getBucketValue)
+                    .min(Integer::compareTo) // find the minimum bucket value
+                    .flatMap(minActiveBucketValue -> Optional.ofNullable(getTestBucket(minActiveBucketValue)))
+                    .map(minActiveBucket -> new Result(minActiveBucket, result.getAllocation()))
+                    .orElse(result); // fallback to the original result if failed to find the minimum active bucket
+        }
+
+        return result;
     }
 
     /**
