@@ -118,7 +118,7 @@ class StandardTestChooser implements TestChooser<String> {
 
     @Nonnull
     @Override
-    public TestChooser.Result choose(
+    public TestChooser.Result chooseInternal(
             @Nullable final String identifier,
             @Nonnull final Map<String, Object> values,
             @Nonnull final Map<String, TestBucket> testGroups

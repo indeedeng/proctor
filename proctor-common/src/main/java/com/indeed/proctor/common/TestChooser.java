@@ -30,10 +30,15 @@ interface TestChooser<IdentifierType> {
     String getTestName();
 
     /**
-     * Do not directly call this outside this interface. We should call {@link #choose(Object, Map, Map, ForceGroupsOptions)}, instead.
+     * Do not directly call this outside this interface.
+     * We should call {@link #choose(Object, Map, Map, ForceGroupsOptions)}, instead.
      */
     @Nonnull
-    TestChooser.Result choose(@Nullable IdentifierType identifier, @Nonnull Map<String, Object> values, @Nonnull Map<String, TestBucket> testGroups);
+    TestChooser.Result chooseInternal(
+            @Nullable IdentifierType identifier,
+            @Nonnull Map<String, Object> values,
+            @Nonnull Map<String, TestBucket> testGroups
+    );
 
     @Nonnull
     default TestChooser.Result choose(
@@ -51,12 +56,14 @@ interface TestChooser<IdentifierType> {
                 // use a forced bucket, skip choosing an allocation
                 return new Result(forcedTestBucket, null);
             }
-        } else if (forceGroupsOptions.getDefaultMode().equals(ForceGroupsDefaultMode.FALLBACK)) {
+        }
+
+        if (forceGroupsOptions.getDefaultMode().equals(ForceGroupsDefaultMode.FALLBACK)) {
             // skip choosing a test bucket and an allocation
             return Result.EMPTY;
         }
 
-        final TestChooser.Result result = choose(identifier, values, testGroups);
+        final TestChooser.Result result = chooseInternal(identifier, values, testGroups);
 
         if (forceGroupsOptions.getDefaultMode().equals(ForceGroupsDefaultMode.MIN_ACTIVE)) {
             // replace the bucket with the minimum active bucket in the resolved allocation.
@@ -68,8 +75,8 @@ interface TestChooser<IdentifierType> {
                     .map(Range::getBucketValue)
                     .min(Integer::compareTo) // find the minimum bucket value
                     .flatMap(minActiveBucketValue -> Optional.ofNullable(getTestBucket(minActiveBucketValue)))
-                    .map(minActiveBucket -> new Result(minActiveBucket, result.getAllocation()))
-                    .orElse(result); // fallback to the original result if failed to find the minimum active bucket
+                    .map(minActiveBucket -> new Result(minActiveBucket, null))
+                    .orElse(Result.EMPTY); // skip choosing a test bucket if failed to find the minimum active bucket
         }
 
         return result;

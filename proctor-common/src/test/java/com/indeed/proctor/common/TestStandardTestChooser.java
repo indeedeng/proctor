@@ -81,7 +81,7 @@ public class TestStandardTestChooser {
 
         final Map<String, Object> values = Collections.emptyMap();
         for (int i = 0; i < 100; i++) {
-            final TestChooser.Result chosen = rtc.choose(String.valueOf(i), values, Collections.emptyMap());
+            final TestChooser.Result chosen = rtc.chooseInternal(String.valueOf(i), values, Collections.emptyMap());
             assertNotNull(chosen);
             assertNotNull(chosen.getTestBucket());
             assertNotNull(chosen.getAllocation());
@@ -192,7 +192,7 @@ public class TestStandardTestChooser {
 
         // Ensure no exceptions thrown.
         final TestChooser.Result chooseResult = new StandardTestChooser(selector)
-                .choose("identifier", Collections.<String, Object>emptyMap(), Collections.emptyMap());
+                .chooseInternal("identifier", Collections.<String, Object>emptyMap(), Collections.emptyMap());
 
         assertNotNull(chooseResult);
         assertNull( "Expected no bucket to be found ", chooseResult.getTestBucket());
@@ -225,7 +225,7 @@ public class TestStandardTestChooser {
         );
 
         final TestChooser.Result chooseResult = new StandardTestChooser(selector)
-            .choose("identifier", Collections.<String, Object>emptyMap(), Collections.emptyMap());
+            .chooseInternal("identifier", Collections.<String, Object>emptyMap(), Collections.emptyMap());
 
         assertNotNull(chooseResult);
         assertNull("Expected no bucket to be found", chooseResult.getTestBucket());
@@ -259,7 +259,7 @@ public class TestStandardTestChooser {
         );
 
         final TestChooser.Result chooseResult = new StandardTestChooser(selector)
-            .choose("identifier", Collections.<String, Object>emptyMap(), Collections.emptyMap());
+            .chooseInternal("identifier", Collections.<String, Object>emptyMap(), Collections.emptyMap());
 
         assertEquals("Test bucket with value 1 expected", 1, chooseResult.getTestBucket().getValue());
         assertEquals("Test allocation with id #B1 expected", "#B1", chooseResult.getAllocation().getId());
@@ -290,7 +290,7 @@ public class TestStandardTestChooser {
         );
 
         final TestChooser.Result chooseResult = new StandardTestChooser(selector)
-                .choose(
+                .chooseInternal(
                         "identifier",
                         Collections.emptyMap(),
                         ImmutableMap.of("par_test", new TestBucket("", 10, ""))
@@ -322,7 +322,7 @@ public class TestStandardTestChooser {
         );
 
         final TestChooser.Result chooseResult = new StandardTestChooser(selector)
-                .choose(
+                .chooseInternal(
                         "identifier",
                         Collections.emptyMap(),
                         ImmutableMap.of("par_test", new TestBucket("", 1, ""))
@@ -358,7 +358,7 @@ public class TestStandardTestChooser {
 
         final Map<String, Object> values = Collections.emptyMap();
         for (int accountId = 1; accountId < num; accountId++) { // deliberately skipping 0
-            final TestChooser.Result chosen = rtc.choose(String.valueOf(accountId), values, Collections.emptyMap());
+            final TestChooser.Result chosen = rtc.chooseInternal(String.valueOf(accountId), values, Collections.emptyMap());
             assertNotNull(chosen);
             assertNotNull(chosen.getTestBucket());
             assertNotNull(chosen.getAllocation());
