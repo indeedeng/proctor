@@ -19,6 +19,13 @@ public class TestForceGroupsOptionStrings {
                                 .setDefaultMode(ForceGroupsDefaultMode.FALLBACK)
                                 .build()
                 );
+
+        assertThat(ForceGroupsOptionsStrings.parseForceGroupsString("default_to_min_live"))
+                .isEqualTo(
+                        ForceGroupsOptions.builder()
+                                .setDefaultMode(ForceGroupsDefaultMode.MIN_LIVE)
+                                .build()
+                );
     }
 
     @Test
@@ -28,6 +35,24 @@ public class TestForceGroupsOptionStrings {
                         ForceGroupsOptions.builder()
                                 .putForceGroup("abc", 1)
                                 .setDefaultMode(ForceGroupsDefaultMode.FALLBACK)
+                                .build()
+                );
+
+        assertThat(ForceGroupsOptionsStrings.parseForceGroupsString("abc1,default_to_min_live"))
+                .isEqualTo(
+                        ForceGroupsOptions.builder()
+                                .putForceGroup("abc", 1)
+                                .setDefaultMode(ForceGroupsDefaultMode.MIN_LIVE)
+                                .build()
+                );
+    }
+
+    @Test
+    public void testParseForceGroupsString_MultipleOptions_ShouldTakeLast() {
+        assertThat(ForceGroupsOptionsStrings.parseForceGroupsString("default_to_fallback,default_to_min_live"))
+                .isEqualTo(
+                        ForceGroupsOptions.builder()
+                                .setDefaultMode(ForceGroupsDefaultMode.MIN_LIVE)
                                 .build()
                 );
     }
@@ -62,6 +87,14 @@ public class TestForceGroupsOptionStrings {
                                 .build())
         )
                 .isEqualTo("default_to_fallback");
+
+        assertThat(
+                ForceGroupsOptionsStrings.generateForceGroupsString(
+                        ForceGroupsOptions.builder()
+                                .setDefaultMode(ForceGroupsDefaultMode.MIN_LIVE)
+                                .build())
+        )
+                .isEqualTo("default_to_min_live");
     }
 
     @Test
@@ -74,5 +107,14 @@ public class TestForceGroupsOptionStrings {
                                 .build())
         )
                 .isEqualTo("default_to_fallback,abc1");
+
+        assertThat(
+                ForceGroupsOptionsStrings.generateForceGroupsString(
+                        ForceGroupsOptions.builder()
+                                .setDefaultMode(ForceGroupsDefaultMode.MIN_LIVE)
+                                .putForceGroup("abc", 1)
+                                .build())
+        )
+                .isEqualTo("default_to_min_live,abc1");
     }
 }

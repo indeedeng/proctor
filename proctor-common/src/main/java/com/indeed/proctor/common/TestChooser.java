@@ -65,7 +65,7 @@ interface TestChooser<IdentifierType> {
 
         final TestChooser.Result result = chooseInternal(identifier, values, testGroups);
 
-        if (forceGroupsOptions.getDefaultMode().equals(ForceGroupsDefaultMode.MIN_ACTIVE)) {
+        if (forceGroupsOptions.getDefaultMode().equals(ForceGroupsDefaultMode.MIN_LIVE)) {
             // replace the bucket with the minimum active bucket in the resolved allocation.
             return Optional.ofNullable(result.getAllocation())
                     .map(Allocation::getRanges)

@@ -173,7 +173,7 @@ public class TestTestChooser {
     public void testChoose_withDefaultToMinActive() {
         assertThat(compareTestChooserResults(
                 choose(ForceGroupsOptions.builder()
-                        .setDefaultMode(ForceGroupsDefaultMode.MIN_ACTIVE)
+                        .setDefaultMode(ForceGroupsDefaultMode.MIN_LIVE)
                         .build()),
                 new TestChooser.Result(
                         TEST_CHOOSER.getTestBucket(0),
@@ -214,7 +214,7 @@ public class TestTestChooser {
     public void testChoose_withForceGroupAndDefaultToMinActive() {
         assertThat(compareTestChooserResults(
                 choose(ForceGroupsOptions.builder()
-                        .setDefaultMode(ForceGroupsDefaultMode.MIN_ACTIVE)
+                        .setDefaultMode(ForceGroupsDefaultMode.MIN_LIVE)
                         .putForceGroup(TEST_CHOOSER.getTestName(), -1)
                         .build()),
                 new TestChooser.Result(
@@ -228,7 +228,7 @@ public class TestTestChooser {
     public void testChoose_withForceGroupToUnknownAndDefaultToMinActive() {
         assertThat(compareTestChooserResults(
                 choose(ForceGroupsOptions.builder()
-                        .setDefaultMode(ForceGroupsDefaultMode.MIN_ACTIVE)
+                        .setDefaultMode(ForceGroupsDefaultMode.MIN_LIVE)
                         .putForceGroup(TEST_CHOOSER.getTestName(), -2)
                         .build()),
                 new TestChooser.Result(

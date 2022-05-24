@@ -565,7 +565,7 @@ public class TestProctor {
                 ),
                 Collections.emptyMap(),
                 ForceGroupsOptions.builder()
-                        .setDefaultMode(ForceGroupsDefaultMode.MIN_ACTIVE)
+                        .setDefaultMode(ForceGroupsDefaultMode.MIN_LIVE)
                         .build(),
                 Collections.emptyList()
         );

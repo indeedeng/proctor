@@ -16,9 +16,9 @@ public enum ForceGroupsDefaultMode {
      */
     FALLBACK("default_to_fallback"),
     /**
-     * It forces to assign the minimum >0% bucket within the resolved allocation.
+     * It forces to assign the minimum live (>0%) bucket within the resolved allocation.
      */
-    MIN_ACTIVE("default_to_min_active"),
+    MIN_LIVE("default_to_min_live"),
     ;
 
     @Nullable
