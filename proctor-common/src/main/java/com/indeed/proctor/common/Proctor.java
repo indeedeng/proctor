@@ -31,7 +31,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -42,7 +41,7 @@ import java.util.stream.IntStream;
  * The sole entry point for client applications determining the test buckets for a particular client.
  * Basically a Factory to create ProctorResult for a given identifier and context, based on a TestMatrix and a specification.
  * Supposedly immutable result of loading a test matrix, so each reload creates a new instance of this class.
- *
+ * <p>
  * See {@link #determineTestGroups(Identifiers, Map, Map)}
  *
  * @author ketan
@@ -295,7 +294,6 @@ public class Proctor {
         }
 
         for (final String testName : filteredEvaluationOrder) {
-            final Optional<Integer> forceGroupBucket = forceGroupsOptions.getForcedBucketValue(testName);
             final TestChooser<?> testChooser = testChoosers.get(testName);
             final String identifier;
             if (testChooser instanceof StandardTestChooser) {
@@ -317,22 +315,12 @@ public class Proctor {
                 }
                 identifier = null;
             }
-            if (forceGroupBucket.isPresent()) {
-                final TestBucket forcedTestBucket = testChooser.getTestBucket(forceGroupBucket.get());
-                if (forcedTestBucket != null) {
-                    testGroups.put(testName, forcedTestBucket);
-                    // use forced group
-                    continue;
-                }
-            } else if (forceGroupsOptions.getDefaultMode().equals(ForceGroupsDefaultMode.FALLBACK)) {
-                // skip choosing a test bucket
-                continue;
-            }
+
             final TestChooser.Result chooseResult;
             if (identifier == null) {
-                chooseResult = ((RandomTestChooser) testChooser).choose(null, inputContext, testGroups);
+                chooseResult = ((RandomTestChooser) testChooser).choose(null, inputContext, testGroups, forceGroupsOptions);
             } else {
-                chooseResult = ((StandardTestChooser) testChooser).choose(identifier, inputContext, testGroups);
+                chooseResult = ((StandardTestChooser) testChooser).choose(identifier, inputContext, testGroups, forceGroupsOptions);
             }
             if (chooseResult.getTestBucket() != null) {
                 testGroups.put(testName, chooseResult.getTestBucket());

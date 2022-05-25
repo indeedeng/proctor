@@ -18,7 +18,6 @@ import com.indeed.proctor.common.model.TestMatrixArtifact;
 import com.indeed.proctor.common.model.TestType;
 import org.junit.Test;
 
-import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -289,7 +288,7 @@ public class TestProctor {
                 testBucket, allocation
         );
 
-        when(testChooser.choose(isNull(), eq(inputContext), anyMap())).thenReturn(result);
+        when(testChooser.choose(isNull(), eq(inputContext), anyMap(), eq(ForceGroupsOptions.empty()))).thenReturn(result);
 
         final ProctorResult proctorResultWithRandom = proctor.determineTestGroups(
                 identifiersWithRandom,
@@ -309,7 +308,12 @@ public class TestProctor {
         assertThat(proctorResultWithoutRandom.getAllocations()).isEqualTo(Collections.emptyMap());
 
         // choose should not be called for identifiers with randomEnabled == false.
-        verify(testChooser, times(1)).choose(isNull(), eq(inputContext), anyMap());
+        verify(testChooser, times(1)).choose(
+                isNull(),
+                eq(inputContext),
+                anyMap(),
+                eq(ForceGroupsOptions.empty())
+        );
     }
 
     @Test
@@ -438,7 +442,7 @@ public class TestProctor {
     }
 
     @Test
-    public void testDetermineTestGroups_ForceGroupsWithDefaultFallback() {
+    public void testDetermineTestGroups_ForceGroupsWithDefaultToFallback() {
         final TestBucket controlBucket = new TestBucket("control", 0, "");
         final TestBucket activeBucket = new TestBucket("active", 1, "");
         final Allocation allocation = new Allocation(
@@ -488,12 +492,87 @@ public class TestProctor {
                         .putForceGroup("X", 0)
                         .setDefaultMode(ForceGroupsDefaultMode.FALLBACK)
                         .build(),
-                ImmutableList.of("X")
+                Collections.emptyList()
         );
 
         assertThat(proctorResult.getBuckets())
                 .containsOnlyKeys("X")
                 .containsEntry("X", controlBucket);
+        assertThat(proctorResult.getAllocations())
+                .isEmpty(); // allocations aren't given when forcedGroup is used.
+        assertThat(proctorResult.getTestDefinitions())
+                .containsOnlyKeys("X", "Y")
+                .containsEntry("X", testDefinitionX)
+                .containsEntry("Y", testDefinitionY);
+    }
+
+    @Test
+    public void testDetermineTestGroups_ForceGroupsWithDefaultToMinActive() {
+        final TestBucket inactiveBucket = new TestBucket("inactive", -1, "");
+        final TestBucket controlBucket = new TestBucket("control", 0, "");
+        final TestBucket activeBucket = new TestBucket("active", 1, "");
+        final Allocation allocationX = new Allocation(
+                "",
+                ImmutableList.of(
+                        new Range(0, 0.5),
+                        new Range(-1, 0),
+                        new Range(1, 0.5)
+                )
+        );
+        final Allocation allocationY = new Allocation(
+                "",
+                ImmutableList.of(
+                        new Range(0, 0.3),
+                        new Range(-1, 0.4),
+                        new Range(1, 0.3)
+                )
+        );
+
+        final ConsumableTestDefinition testDefinitionX = ConsumableTestDefinition.fromTestDefinition(
+                TestDefinition.builder()
+                        .setSalt("&X")
+                        .setTestType(TestType.ANONYMOUS_USER)
+                        .addBuckets(inactiveBucket, controlBucket, activeBucket)
+                        .addAllocations(allocationX)
+                        .build()
+        );
+        final ConsumableTestDefinition testDefinitionY = ConsumableTestDefinition.fromTestDefinition(
+                TestDefinition.builder()
+                        .setSalt("&Y")
+                        .setTestType(TestType.ANONYMOUS_USER)
+                        .addBuckets(inactiveBucket, controlBucket, activeBucket)
+                        .addAllocations(allocationY)
+                        .build()
+        );
+
+        final Map<String, ConsumableTestDefinition> tests = ImmutableMap.of(
+                "X", testDefinitionX,
+                "Y", testDefinitionY
+        );
+        final TestMatrixArtifact matrix = new TestMatrixArtifact();
+        matrix.setTests(tests);
+        matrix.setAudit(new Audit());
+
+        final Proctor proctor = Proctor.construct(
+                matrix,
+                ProctorLoadResult.emptyResult(),
+                RuleEvaluator.defaultFunctionMapperBuilder().build()
+        );
+
+        final ProctorResult proctorResult = proctor.determineTestGroups(
+                Identifiers.of(
+                        TestType.ANONYMOUS_USER, "cookie"
+                ),
+                Collections.emptyMap(),
+                ForceGroupsOptions.builder()
+                        .setDefaultMode(ForceGroupsDefaultMode.MIN_LIVE)
+                        .build(),
+                Collections.emptyList()
+        );
+
+        assertThat(proctorResult.getBuckets())
+                .containsEntry("X", controlBucket)
+                .containsEntry("Y", inactiveBucket);
         assertThat(proctorResult.getAllocations())
                 .isEmpty(); // allocations aren't given when forcedGroup is used.
         assertThat(proctorResult.getTestDefinitions())

@@ -27,7 +27,6 @@ public class TestSplitSpecificationTestGroupsManager {
 
     private SplitSpecificationTestGroupsManager manager;
 
-
     @Before()
     public void setUp() throws Exception {
         manager = new SplitSpecificationTestGroupsManager(() -> UtilMethods.getProctor(SPECIFICATION_MATRIX, SPECIFICATION_RESOURCE));
@@ -97,7 +96,7 @@ public class TestSplitSpecificationTestGroupsManager {
             assertTrue(grps.isTwoTest3());
             assertFalse(grps.isTwoTest1());
             assertFalse(grps.isTwoTest2());
-            assertEquals("two3",grps.toString());
+            assertEquals("two3", grps.toString());
         }
     }
 
@@ -115,7 +114,7 @@ public class TestSplitSpecificationTestGroupsManager {
         assertThat(calcBuckets(result)).isEqualTo(ImmutableMap.builder()
                 .put("three", "inactive-1")
                 .put("two", "test22")
-            .build());
+                .build());
         // Check and make sure SpecificationCreationGroups respects these groups and works as expected.
         final SplitSpecificationTestGroups grps = new SplitSpecificationTestGroups(result);
         assertNotNull(grps.getThree());
@@ -135,7 +134,7 @@ public class TestSplitSpecificationTestGroupsManager {
     }
 
     @Test
-    public void testTestDescriptions(){
+    public void testTestDescriptions() {
         final SplitSpecificationTestGroupsContext testContext = SplitSpecificationTestGroupsContext.newBuilder()
                 .setLoggedIn(true)
                 .setCountry("FR")
@@ -211,6 +210,25 @@ public class TestSplitSpecificationTestGroupsManager {
     }
 
     @Test
+    public void testGetProctorResult_forcedGroupsOptions_shouldForceMinLive() {
+        final SplitSpecificationTestGroupsContext context = SplitSpecificationTestGroupsContext.newBuilder()
+                .build();
+        final Identifiers identifiers = new Identifiers(TestType.USER, "foo"); // resolves two1 and three1
+        final ProctorResult result = context.getProctorResult(
+                manager,
+                identifiers,
+                ForceGroupsOptions.builder()
+                        .setDefaultMode(ForceGroupsDefaultMode.MIN_LIVE)
+                        .putForceGroup("three", 0)
+                        .build()
+        );
+        assertThat(result.getBuckets())
+                .containsOnlyKeys("two", "three")
+                .hasEntrySatisfying("two", x -> assertThat(x.getValue()).isEqualTo(0))
+                .hasEntrySatisfying("three", x -> assertThat(x.getValue()).isEqualTo(0));
+    }
+
+    @Test
     public void testGetProctorResult_prforceGroupsUrlParam_shouldForceFallback() {
         final SplitSpecificationTestGroupsContext context = SplitSpecificationTestGroupsContext.newBuilder()
                 .build();
@@ -226,6 +244,26 @@ public class TestSplitSpecificationTestGroupsManager {
         );
         assertThat(result.getBuckets())
                 .containsOnlyKeys("three")
+                .hasEntrySatisfying("three", x -> assertThat(x.getValue()).isEqualTo(0));
+    }
+
+    @Test
+    public void testGetProctorResult_prforceGroupsUrlParam_shouldForceMinLive() {
+        final SplitSpecificationTestGroupsContext context = SplitSpecificationTestGroupsContext.newBuilder()
+                .build();
+        final Identifiers identifiers = new Identifiers(TestType.USER, "foo"); // resolves two1 and three1
+        final MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setParameter("prforceGroups", "default_to_min_live,three0");
+        final ProctorResult result = context.getProctorResult(
+                manager,
+                request,
+                new MockHttpServletResponse(),
+                identifiers,
+                true
+        );
+        assertThat(result.getBuckets())
+                .containsOnlyKeys("two", "three")
+                .hasEntrySatisfying("two", x -> assertThat(x.getValue()).isEqualTo(0)) // min live
                 .hasEntrySatisfying("three", x -> assertThat(x.getValue()).isEqualTo(0));
     }
 

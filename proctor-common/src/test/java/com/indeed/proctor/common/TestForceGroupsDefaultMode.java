@@ -51,6 +51,24 @@ public class TestForceGroupsDefaultMode {
     }
 
     @Test
+    public void testGetToken_MinLive() {
+        assertThat(ForceGroupsDefaultMode.MIN_LIVE.getToken())
+                .hasValue("default_to_min_live");
+    }
+
+    @Test
+    public void testFromToken_MinLive() {
+        assertThat(ForceGroupsDefaultMode.fromToken("default_to_min_live"))
+                .hasValue(ForceGroupsDefaultMode.MIN_LIVE);
+    }
+
+    @Test
+    public void testFromToken_MinLiveIgnoreCase() {
+        assertThat(ForceGroupsDefaultMode.fromToken("dEfaUlt_to_MiN_lIvE"))
+                .hasValue(ForceGroupsDefaultMode.MIN_LIVE);
+    }
+
+    @Test
     public void testFromToken_EmptyString() {
         assertThat(ForceGroupsDefaultMode.fromToken(""))
                 .isEmpty();

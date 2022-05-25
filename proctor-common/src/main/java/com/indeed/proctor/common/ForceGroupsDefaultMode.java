@@ -15,6 +15,10 @@ public enum ForceGroupsDefaultMode {
      * It forces to assign no bucket. In most situations when you use AbstractGroups, it leads to using the fallback buckets.
      */
     FALLBACK("default_to_fallback"),
+    /**
+     * It forces to assign the minimum live (>0%) bucket within the resolved allocation.
+     */
+    MIN_LIVE("default_to_min_live"),
     ;
 
     @Nullable

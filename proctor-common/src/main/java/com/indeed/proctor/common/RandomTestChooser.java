@@ -99,7 +99,7 @@ class RandomTestChooser implements TestChooser<Void> {
 
     @Nonnull
     @Override
-    public TestChooser.Result choose(
+    public TestChooser.Result chooseInternal(
             @Nullable final Void identifier,
             @Nonnull final Map<String, Object> values,
             @Nonnull final Map<String, TestBucket> testGroups
