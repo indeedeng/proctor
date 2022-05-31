@@ -33,13 +33,6 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <!-- for jasper-el -->
-            <groupId>${project.groupId}</groupId>
-            <artifactId>proctor-tomcat-deps</artifactId>
-            <version>${project.version}</version>
-            <type>pom</type>
-        </dependency>
-        <dependency>
             <!-- because consumer contains servlets -->
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
