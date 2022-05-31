@@ -1,6 +1,7 @@
 package com.indeed.proctor.webapp.views;
 
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.util.StdDateFormat;
 import com.indeed.proctor.common.Serializers;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.logging.log4j.LogManager;
@@ -20,7 +21,9 @@ public class JsonView implements View {
     private static final String CONTENT_TYPE = "application/json;charset=utf-8";
     private static final Logger LOGGER = LogManager.getLogger(JsonView.class);
 
-    private static final ObjectWriter JSON_WRITER = Serializers.strict().writerWithDefaultPrettyPrinter();
+    private static final ObjectWriter JSON_WRITER = Serializers.strict()
+            .setDateFormat(new StdDateFormat().withColonInTimeZone(false))
+            .writerWithDefaultPrettyPrinter();
     private final Object data;
 
     public JsonView(final Object data) {
