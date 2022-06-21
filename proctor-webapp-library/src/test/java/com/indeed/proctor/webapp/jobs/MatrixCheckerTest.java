@@ -73,9 +73,8 @@ public class MatrixCheckerTest {
                         stubDefinition(unknownBucketValue)
                 ).getErrors()
         ).containsExactly(
-                "app@v1 cannot load test 'sample_tst':"
-                        + " Allocation range in sample_tst from app@v1 refers to"
-                        + " unknown bucket value(s) [1] with length > 0"
+                "app@v1 cannot load test 'sample_tst': Application test specification does not contain bucket value: 1." +
+                        " Please update the application test specification first"
         );
 
         assertThat(
