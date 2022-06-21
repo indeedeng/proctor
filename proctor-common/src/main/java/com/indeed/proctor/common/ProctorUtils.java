@@ -621,7 +621,11 @@ public abstract class ProctorUtils {
             if (specifiedPayloadType == PayloadType.MAP) {
                 if (specificationPayloadTypes == null || specificationPayloadTypes.isEmpty()) {
                     throw new IncompatibleTestMatrixException(
-                            "For test " + testName + " from " + matrixSource + " expected non empty payload"
+                            String.format("The bucket definition of test %s has no payload, but the application is " +
+                                    "expecting one. Add a payload to your test definition, or if there should not be one, " +
+                                    "remove it from the application's Proctor specification. You can copy the Proctor " +
+                                    "specification from the specification tab for the test on Proctor Webapp and add it " +
+                                    "to the application's json file that contains the test specification.",  testName)
                     );
                 }
             }
@@ -1086,7 +1090,7 @@ public abstract class ProctorUtils {
             );
         } catch (final InvalidRuleException e) {
             throw new IncompatibleTestMatrixException(
-                    String.format("Invalid rule in %s: %s", testName, e.getMessage()), e);
+                    String.format("Invalid rule %s in %s: %s", testRule, testName, e.getMessage()), e);
         }
 
         if (allocations.isEmpty()) {
@@ -1148,7 +1152,7 @@ public abstract class ProctorUtils {
                 );
             } catch (final InvalidRuleException e) {
                 throw new IncompatibleTestMatrixException(
-                        String.format("Invalid rule in %s: %s", testName, e.getMessage()), e);
+                        String.format("Invalid allocation rule %s in %s: %s", rule, testName, e.getMessage()), e);
             }
 
         }

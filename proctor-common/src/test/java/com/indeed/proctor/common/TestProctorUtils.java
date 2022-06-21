@@ -343,7 +343,7 @@ public class TestProctorUtils {
         )
                 .isInstanceOf(IncompatibleTestMatrixException.class)
                 .hasMessage(
-                        "Invalid rule in testELevalInval: Rule ${b4t#+=} has invalid syntax or unknown function."
+                        "Invalid allocation rule ${b4t#+=} in testELevalInval: Rule ${b4t#+=} has invalid syntax or unknown function."
                 );
 
         //testing valid functions pass with proctor included functions (will throw exception if can't find) and backwards compatibility
@@ -366,7 +366,7 @@ public class TestProctorUtils {
             )
                     .isInstanceOf(IncompatibleTestMatrixException.class)
                     .hasMessage(
-                            "Invalid rule in testELevalInValTestRule: Rule ${b4t#+=} has invalid syntax or unknown function."
+                            "Invalid rule ${b4t#+=} in testELevalInValTestRule: Rule ${b4t#+=} has invalid syntax or unknown function."
                     );
         }
 
@@ -380,7 +380,7 @@ public class TestProctorUtils {
             )
                     .isInstanceOf(IncompatibleTestMatrixException.class)
                     .hasMessage(
-                            "Invalid rule in testELevalInValTestRule: Rule ${proctor:now()=indeed:now()} has invalid syntax or unknown function."
+                            "Invalid rule ${proctor:now()=indeed:now()} in testELevalInValTestRule: Rule ${proctor:now()=indeed:now()} has invalid syntax or unknown function."
                     );
         }
 
@@ -483,7 +483,7 @@ public class TestProctorUtils {
                     .as("expected IncompatibleTestMatrixException due to nonexistent enum constant")
                     .isInstanceOf(IncompatibleTestMatrixException.class)
                     .hasMessage(
-                            "Invalid rule in testProvidedContextConversion: " +
+                            "Invalid allocation rule ${time eq 'SP'} in testProvidedContextConversion: " +
                                     "Failed to evaluate a rule ${time eq 'SP'}: " +
                                     "Cannot convert SP of type class java.lang.String to class com.indeed.proctor.common.TestEnumType"
                     );
@@ -561,10 +561,8 @@ public class TestProctorUtils {
             )
                     .isInstanceOf(IncompatibleTestMatrixException.class)
                     .hasMessage(
-                            "Invalid rule in testELevalwithcontext: " +
-                                    "The variable time is defined in rule ${proctor:now()>time}, however it is not defined in the application's " +
-                                    "test specification. Add the variable to your application's providedContext.json or remove it from the rule, " +
-                                    "or if the application should not load your test report the issue to the Proctor team."
+                            "Invalid allocation rule ${proctor:now()>time} in testELevalwithcontext: " +
+                                    "Rule ${proctor:now()>time} contains undefined identifier 'time'"
                     );
         }
         {//test that an error is thrown with missing providedContext
@@ -581,10 +579,8 @@ public class TestProctorUtils {
                     .as("expected IncompatibleTestMatrixException due to missing provided Context")
                     .isInstanceOf(IncompatibleTestMatrixException.class)
                     .hasMessage(
-                            "Invalid rule in testProvidedContextMissing: " +
-                                    "The variable time is defined in rule ${time eq ''}, however it is not defined in the " +
-                                    "application's test specification. Add the variable to your application's providedContext.json or " +
-                                    "remove it from the rule, or if the application should not load your test report the issue to the Proctor team."
+                            "Invalid allocation rule ${time eq ''} in testProvidedContextMissing: " +
+                                    "Rule ${time eq ''} contains undefined identifier 'time'"
                     );
         }
         {//testing recognition of providedContext in testRule
@@ -615,7 +611,7 @@ public class TestProctorUtils {
                     .as("expected IncompatibleTestMatrixException due to missing attribute")
                     .isInstanceOf(IncompatibleTestMatrixException.class)
                     .hasMessage(
-                            "Invalid rule in testProvidedContextConversion: " +
+                            "Invalid allocation rule ${ua.iPad} in testProvidedContextConversion: " +
                                     "Failed to evaluate a rule ${ua.iPad}: " +
                                     "Property 'iPad' not found on type com.indeed.proctor.common.TestRulesClass"
                     );
@@ -648,7 +644,7 @@ public class TestProctorUtils {
                     .as("expected IncompatibleTestMatrixException due to missing function")
                     .isInstanceOf(IncompatibleTestMatrixException.class)
                     .hasMessage(
-                            "Invalid rule in testProvidedContextConversion: " +
+                            "Invalid allocation rule ${proctor:notafunction()} in testProvidedContextConversion: " +
                                     "Rule ${proctor:notafunction()} has invalid syntax or unknown function."
                     );
         }
@@ -687,7 +683,10 @@ public class TestProctorUtils {
                 result.getTestErrorMap().get(TEST_A).getClass()
         );
         assertEquals(
-                "For test testA from [ testcase: schema is null ] expected non empty payload",
+                "The bucket definition of test testA has no payload, but the application is expecting one. Add a payload " +
+                        "to your test definition, or if there should not be one, remove it from the application's Proctor " +
+                        "specification. You can copy the Proctor specification from the specification tab for the test " +
+                        "on Proctor Webapp and add it to the application's json file that contains the test specification.",
                 result.getTestErrorMap().get(TEST_A).getMessage()
         );
     }
