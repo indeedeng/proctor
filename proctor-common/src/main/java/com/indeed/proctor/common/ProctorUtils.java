@@ -1086,7 +1086,7 @@ public abstract class ProctorUtils {
             );
         } catch (final InvalidRuleException e) {
             throw new IncompatibleTestMatrixException(
-                    String.format("Invalid rule %s in %s: %s", testRule, testName, e.getMessage()), e);
+                    String.format("Invalid rule in %s: %s", testName, e.getMessage()), e);
         }
 
         if (allocations.isEmpty()) {
@@ -1148,7 +1148,7 @@ public abstract class ProctorUtils {
                 );
             } catch (final InvalidRuleException e) {
                 throw new IncompatibleTestMatrixException(
-                        String.format("Invalid allocation rule %s in %s: %s", rule, testName, e.getMessage()), e);
+                        String.format("Invalid rule in %s: %s", testName, e.getMessage()), e);
             }
 
         }
