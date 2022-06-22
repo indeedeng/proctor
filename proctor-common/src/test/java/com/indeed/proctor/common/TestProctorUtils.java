@@ -366,7 +366,7 @@ public class TestProctorUtils {
             )
                     .isInstanceOf(IncompatibleTestMatrixException.class)
                     .hasMessage(
-                            "Invalid rule ${b4t#+=} in testELevalInValTestRule: Rule ${b4t#+=} has invalid syntax or unknown function."
+                            "Invalid rule in testELevalInValTestRule: Rule ${b4t#+=} has invalid syntax or unknown function."
                     );
         }
 
@@ -380,7 +380,7 @@ public class TestProctorUtils {
             )
                     .isInstanceOf(IncompatibleTestMatrixException.class)
                     .hasMessage(
-                            "Invalid rule ${proctor:now()=indeed:now()} in testELevalInValTestRule: Rule ${proctor:now()=indeed:now()} has invalid syntax or unknown function."
+                            "Invalid rule in testELevalInValTestRule: Rule ${proctor:now()=indeed:now()} has invalid syntax or unknown function."
                     );
         }
 
