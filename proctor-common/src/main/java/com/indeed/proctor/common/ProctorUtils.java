@@ -1152,7 +1152,7 @@ public abstract class ProctorUtils {
                 );
             } catch (final InvalidRuleException e) {
                 throw new IncompatibleTestMatrixException(
-                        String.format("Invalid allocation rule %s in %s: %s", rule, testName, e.getMessage()), e);
+                        String.format("Invalid allocation rule in %s: %s", testName, e.getMessage()), e);
             }
 
         }
