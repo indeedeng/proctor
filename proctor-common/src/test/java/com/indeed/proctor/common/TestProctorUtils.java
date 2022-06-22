@@ -687,7 +687,10 @@ public class TestProctorUtils {
                 result.getTestErrorMap().get(TEST_A).getClass()
         );
         assertEquals(
-                "For test testA from [ testcase: schema is null ] expected non empty payload",
+                "The bucket definition of test testA has no payload, but the application is expecting one. Add a payload " +
+                        "to your test definition, or if there should not be one, remove it from the application's Proctor " +
+                        "specification. You can copy the Proctor specification from the specification tab for the test " +
+                        "on Proctor Webapp and add it to the application's json file that contains the test specification.",
                 result.getTestErrorMap().get(TEST_A).getMessage()
         );
     }
