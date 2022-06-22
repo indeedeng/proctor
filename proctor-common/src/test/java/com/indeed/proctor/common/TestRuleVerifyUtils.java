@@ -89,7 +89,7 @@ public class TestRuleVerifyUtils {
                 new String[]{
                 }
         );
-        assertThat(e).hasMessageContaining("not defined in the application's test specification");
+        assertThat(e).hasMessageContaining("contains undefined identifier");
     }
 
     @Test
@@ -203,7 +203,7 @@ public class TestRuleVerifyUtils {
                 new String[]{
                 }
         );
-        assertThat(e).hasMessageContaining("not defined in the application's test specification");
+        assertThat(e).hasMessageContaining("contains undefined identifier");
         e = expectInvalidRule(
                 testRule,
                 new Object[][]{
@@ -212,7 +212,7 @@ public class TestRuleVerifyUtils {
                 new String[]{
                 }
         );
-        assertThat(e).hasMessageContaining("not defined in the application's test specification");
+        assertThat(e).hasMessageContaining("contains undefined identifier");
         e = expectInvalidRule(
                 testRule,
                 new Object[][]{
@@ -221,7 +221,7 @@ public class TestRuleVerifyUtils {
                         "browser",
                 }
         );
-        assertThat(e).hasMessageContaining("not defined in the application's test specification");
+        assertThat(e).hasMessageContaining("contains undefined identifier");
         e = expectInvalidRule(
                 testRule,
                 new Object[][]{
@@ -230,7 +230,7 @@ public class TestRuleVerifyUtils {
                         "country",
                 }
         );
-        assertThat(e).hasMessageContaining("not defined in the application's test specification");
+        assertThat(e).hasMessageContaining("contains undefined identifier");
     }
 
     @Test
