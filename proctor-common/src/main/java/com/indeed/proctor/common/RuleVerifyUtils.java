@@ -64,7 +64,10 @@ public class RuleVerifyUtils {
                 // Check identifiers in the AST and verify variable names
                 final Node undefinedIdentifier = checkUndefinedIdentifier(root, elContext, absentIdentifiers);
                 if (undefinedIdentifier != null) {
-                    throw new InvalidRuleException(String.format("Rule %s contains undefined identifier '%s'", testRule, undefinedIdentifier.getImage()));
+                    throw new InvalidRuleException(String.format("The variable %s is defined in rule %s, however it " +
+                            "is not defined in the application's test specification. Add the variable to your application's " +
+                            "providedContext.json or remove it from the rule, or if the application should not load your " +
+                            "test report the issue to the Proctor team.", undefinedIdentifier.getImage(), testRule));
                 }
 
                 // Evaluate rule with given context
