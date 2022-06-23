@@ -73,8 +73,8 @@ public class MatrixCheckerTest {
                         stubDefinition(unknownBucketValue)
                 ).getErrors()
         ).containsExactly(
-                "app@v1 cannot load test 'sample_tst': Application test specification does not contain bucket value: 1." +
-                        " Please update the application test specification first"
+                "app@v1 cannot load test 'sample_tst': Proctor specification in your application does not contain bucket value: 1." +
+                        " Please update the proctor specification first"
         );
 
         assertThat(

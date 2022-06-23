@@ -1864,7 +1864,7 @@ public class TestProctorUtils {
         assertThat(proctorLoadResult.getDynamicTestWithErrors()).containsExactly(TEST_B);
 
         assertThat(proctorLoadResult.getTestErrorMap())
-                .hasEntrySatisfying(TEST_A, x -> assertThat(x).hasMessageContaining("Application test specification does not contain bucket"));
+                .hasEntrySatisfying(TEST_A, x -> assertThat(x).hasMessageContaining("Proctor specification in your application does not contain bucket"));
         assertThat(proctorLoadResult.getDynamicTestErrorMap())
                 .hasEntrySatisfying(TEST_B, x -> assertThat(x)
                         .hasMessageContaining("depends on an unknown or incompatible test")

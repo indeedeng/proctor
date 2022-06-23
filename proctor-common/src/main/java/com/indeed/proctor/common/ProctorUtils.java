@@ -607,7 +607,7 @@ public abstract class ProctorUtils {
             if (!unknownBuckets.isEmpty()) {
                 final String bucketString = (unknownBuckets.size() > 1 ? "bucket values: " : "bucket value: ") + Strings.join(unknownBuckets, ',');
                 throw new IncompatibleTestMatrixException(
-                        "Application test specification does not contain "+ bucketString +". Please update the application test specification first"
+                        "Proctor specification in your application does not contain "+ bucketString +". Please update the proctor specification first"
                 );
             }
         }
