@@ -114,7 +114,7 @@ public class TestRuleVerifyUtils {
                 new String[]{
                 }
         );
-        assertThat(e).hasMessageContaining("has invalid syntax");
+        assertThat(e).hasMessageContaining("syntax error, check that your rule is in the correct format and returns a boolean");
     }
 
     @Test
@@ -127,7 +127,7 @@ public class TestRuleVerifyUtils {
                 new String[]{
                 }
         );
-        assertThat(e).hasMessageContaining("has invalid syntax");
+        assertThat(e).hasMessageContaining("syntax error, check that your rule is in the correct format and returns a boolean");
     }
 
     @Test
@@ -139,7 +139,7 @@ public class TestRuleVerifyUtils {
                 new String[]{
                 }
         );
-        assertThat(e).hasMessageContaining("has invalid syntax");
+        assertThat(e).hasMessageContaining("syntax error, check that your rule is in the correct format and returns a boolean");
     }
 
     @Test
@@ -151,7 +151,7 @@ public class TestRuleVerifyUtils {
                 new String[]{
                 }
         );
-        assertThat(e).hasMessageContaining("has invalid syntax");
+        assertThat(e).hasMessageContaining("syntax error, check that your rule is in the correct format and returns a boolean");
     }
 
     @Test
@@ -163,7 +163,7 @@ public class TestRuleVerifyUtils {
                 new String[]{
                 }
         );
-        assertThat(e).hasMessageContaining("not a boolean condition");
+        assertThat(e).hasMessageContaining("check that your rule is in the correct format and returns a boolean");
     }
 
     @Test
@@ -176,7 +176,7 @@ public class TestRuleVerifyUtils {
                 new String[]{
                 }
         );
-        assertThat(e).hasMessageContaining("has invalid syntax");
+        assertThat(e).hasMessageContaining("syntax error, check that your rule is in the correct format and returns a boolean");
     }
 
     @Test
@@ -276,7 +276,7 @@ public class TestRuleVerifyUtils {
                 new String[]{
                 }
         );
-        assertThat(e).hasMessageContaining("has invalid syntax");
+        assertThat(e).hasMessageContaining("syntax error, check that your rule is in the correct format and returns a boolean");
     }
 
     @Test
@@ -290,7 +290,7 @@ public class TestRuleVerifyUtils {
                 new String[]{
                 }
         );
-        assertThat(e).hasMessageContaining("has invalid syntax");
+        assertThat(e).hasMessageContaining("syntax error, check that your rule is in the correct format and returns a boolean");
     }
 
     @Test
@@ -321,7 +321,7 @@ public class TestRuleVerifyUtils {
                 new String[]{
                 }
         );
-        assertThat(e).hasMessageContaining("has invalid syntax");
+        assertThat(e).hasMessageContaining("syntax error, check that your rule is in the correct format and returns a boolean");
         e = expectInvalidRule(
                 testRuleUsingAssign,
                 new Object[][]{
@@ -333,6 +333,6 @@ public class TestRuleVerifyUtils {
                         "country",
                 }
         );
-        assertThat(e).hasMessageContaining("has invalid syntax");
+        assertThat(e).hasMessageContaining("syntax error, check that your rule is in the correct format and returns a boolean");
     }
 }
