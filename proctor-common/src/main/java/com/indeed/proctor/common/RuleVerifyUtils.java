@@ -42,7 +42,9 @@ public class RuleVerifyUtils {
             try {
                 valueExpression = expressionFactory.createValueExpression(elContext, testRule, Boolean.class);
             } catch (final ELException e) {
-                throw new InvalidRuleException(e, String.format("Rule %s has invalid syntax or unknown function.", testRule));
+                throw new InvalidRuleException(e, String.format("Unable to evaluate rule %s due to a syntax error. " +
+                        "Check that your rule is in the correct format and returns a boolean. For more information " +
+                        "read: https://opensource.indeedeng.io/proctor/docs/test-rules/.", testRule));
             }
 
             if (shouldEvaluate) {
@@ -58,7 +60,9 @@ public class RuleVerifyUtils {
                 try {
                     root = ExpressionBuilder.createNode(testRule);
                 } catch (final ELException e) {
-                    throw new InvalidRuleException(e, String.format("Rule %s has invalid syntax.", testRule));
+                    throw new InvalidRuleException(e, String.format("Unable to evaluate rule %s due to a syntax error. " +
+                            "Check that your rule is in the correct format and returns a boolean. For more information " +
+                            "read: https://opensource.indeedeng.io/proctor/docs/test-rules/.", testRule));
                 }
 
                 // Check identifiers in the AST and verify variable names
@@ -75,7 +79,9 @@ public class RuleVerifyUtils {
                     try {
                         checkRuleIsBooleanType(testRule, elContext, valueExpression);
                     } catch (final IllegalArgumentException e) {
-                        throw new InvalidRuleException(e, "Rule is not a boolean condition '" + testRule + "' (e.g. unbalanced braces)");
+                        throw new InvalidRuleException(e, String.format("Unable to evaluate rule %s due to a syntax error. " +
+                                "Check that your rule is in the correct format and returns a boolean. For more information " +
+                                "read: https://opensource.indeedeng.io/proctor/docs/test-rules/.", testRule));
                     }
 
                     valueExpression.getValue(elContext);
