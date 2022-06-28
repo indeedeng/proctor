@@ -343,9 +343,9 @@ public class TestProctorUtils {
         )
                 .isInstanceOf(IncompatibleTestMatrixException.class)
                 .hasMessage(
-                        "Invalid allocation rule in testELevalInval: Unable to evaluate rule ${b4t#+=} due to syntax error, " +
-                                "check that your rule is in the correct format and returns a boolean. For more information " +
-                                "read: https://opensource.indeedeng.io/proctor/docs/test-rules/"
+                        "Invalid allocation rule in testELevalInval: Unable to evaluate rule ${b4t#+=} due to a syntax error. " +
+                                "Check that your rule is in the correct format and returns a boolean. For more information " +
+                                "read: https://opensource.indeedeng.io/proctor/docs/test-rules/."
                 );
 
         //testing valid functions pass with proctor included functions (will throw exception if can't find) and backwards compatibility
@@ -368,9 +368,9 @@ public class TestProctorUtils {
             )
                     .isInstanceOf(IncompatibleTestMatrixException.class)
                     .hasMessage(
-                            "Invalid rule in testELevalInValTestRule: Unable to evaluate rule ${b4t#+=} due to syntax error, " +
-                                    "check that your rule is in the correct format and returns a boolean. For more information " +
-                                    "read: https://opensource.indeedeng.io/proctor/docs/test-rules/"
+                            "Invalid rule in testELevalInValTestRule: Unable to evaluate rule ${b4t#+=} due to a syntax error. " +
+                                    "Check that your rule is in the correct format and returns a boolean. For more information " +
+                                    "read: https://opensource.indeedeng.io/proctor/docs/test-rules/."
                     );
         }
 
@@ -384,9 +384,9 @@ public class TestProctorUtils {
             )
                     .isInstanceOf(IncompatibleTestMatrixException.class)
                     .hasMessage(
-                            "Invalid rule in testELevalInValTestRule: Unable to evaluate rule ${proctor:now()=indeed:now()} due to syntax error, " +
-                                    "check that your rule is in the correct format and returns a boolean. For more information " +
-                                    "read: https://opensource.indeedeng.io/proctor/docs/test-rules/"
+                            "Invalid rule in testELevalInValTestRule: Unable to evaluate rule ${proctor:now()=indeed:now()} due to a syntax error. " +
+                                    "Check that your rule is in the correct format and returns a boolean. For more information " +
+                                    "read: https://opensource.indeedeng.io/proctor/docs/test-rules/."
                     );
         }
 
@@ -654,9 +654,9 @@ public class TestProctorUtils {
                     .as("expected IncompatibleTestMatrixException due to missing function")
                     .isInstanceOf(IncompatibleTestMatrixException.class)
                     .hasMessage(
-                            "Invalid allocation rule in testProvidedContextConversion: Unable to evaluate rule ${proctor:notafunction()} due to syntax error, " +
-                                    "check that your rule is in the correct format and returns a boolean. For more information " +
-                                    "read: https://opensource.indeedeng.io/proctor/docs/test-rules/"
+                            "Invalid allocation rule in testProvidedContextConversion: Unable to evaluate rule ${proctor:notafunction()} due to a syntax error. " +
+                                    "Check that your rule is in the correct format and returns a boolean. For more information " +
+                                    "read: https://opensource.indeedeng.io/proctor/docs/test-rules/."
                     );
         }
     }
