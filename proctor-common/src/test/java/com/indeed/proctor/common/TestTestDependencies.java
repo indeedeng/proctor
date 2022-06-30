@@ -23,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 public class TestTestDependencies {
     private static final String TEST_NAME = "example_tst";
     private static final String PARENT_TEST_NAME = "parent_tst";
+    private static final String DEPENDENT_TEST_NAME = "dependent_tst";
     private static final int BUCKET_VALUE = 1;
 
     @Test
@@ -165,6 +166,61 @@ public class TestTestDependencies {
                 definition,
                 ImmutableMap.of(TEST_NAME, definition, PARENT_TEST_NAME, parentDefinition)
         )).hasValue("A test example_tst depends on negative bucket value -1 of parent_tst");
+    }
+
+    @Test
+    public void testValidateDependencyAndReturnErrorReason_validWithDifferentTestType() {
+        final ConsumableTestDefinition definition = ConsumableTestDefinition.fromTestDefinition(
+                stubTestDefinition(TEST_NAME)
+                        .setDependsOn(new TestDependency(PARENT_TEST_NAME, BUCKET_VALUE))
+                        .build()
+        );
+
+        final TestType dependentTestType = TestType.register("ad_budget_segment");
+
+        dependentTestType.addDependency(TestType.ANONYMOUS_USER);
+        dependentTestType.addDependency(TestType.AUTHENTICATED_USER);
+        dependentTestType.addDependency(TestType.EMAIL_ADDRESS);
+
+        final ConsumableTestDefinition dependentDefinition = ConsumableTestDefinition.fromTestDefinition(
+                stubTestDefinition(DEPENDENT_TEST_NAME)
+                        .setTestType(dependentTestType)
+                        .setDependsOn(new TestDependency(TEST_NAME, BUCKET_VALUE))
+                        .build()
+        );
+
+        assertThat(TestDependencies.validateDependencyAndReturnReason(
+                DEPENDENT_TEST_NAME,
+                dependentDefinition,
+                ImmutableMap.of(DEPENDENT_TEST_NAME, dependentDefinition, TEST_NAME, definition)
+        )).isEmpty();
+    }
+
+    @Test
+    public void testValidateDependencyAndReturnErrorReason_invalidWithDifferentTestType() {
+        final ConsumableTestDefinition definition = ConsumableTestDefinition.fromTestDefinition(
+                stubTestDefinition(TEST_NAME)
+                        .setDependsOn(new TestDependency(PARENT_TEST_NAME, BUCKET_VALUE))
+                        .build()
+        );
+
+        final TestType dependentTestType = TestType.register("ad_budget_segment");
+
+        dependentTestType.addDependency(TestType.AUTHENTICATED_USER);
+        dependentTestType.addDependency(TestType.EMAIL_ADDRESS);
+
+        final ConsumableTestDefinition dependentDefinition = ConsumableTestDefinition.fromTestDefinition(
+                stubTestDefinition(DEPENDENT_TEST_NAME)
+                        .setTestType(dependentTestType)
+                        .setDependsOn(new TestDependency(TEST_NAME, BUCKET_VALUE))
+                        .build()
+        );
+
+        assertThat(TestDependencies.validateDependencyAndReturnReason(
+                DEPENDENT_TEST_NAME,
+                dependentDefinition,
+                ImmutableMap.of(DEPENDENT_TEST_NAME, dependentDefinition, TEST_NAME, definition)
+        )).hasValue("A test dependent_tst depends on example_tst with different test type: expected ACCOUNT, ad_budget_segment, EMAIL but USER");
     }
 
     @Test

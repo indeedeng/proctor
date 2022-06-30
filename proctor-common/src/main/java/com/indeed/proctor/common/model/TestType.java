@@ -11,6 +11,8 @@ import com.google.common.collect.Maps;
 import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 
 /**
@@ -21,10 +23,13 @@ public final class TestType implements JsonSerializable {
     private static final ConcurrentMap<String, TestType> TYPES = Maps.newConcurrentMap();
     @Nonnull
     private final String name;
-
+    @Nonnull
+    private final Set<String> allowedDependencies;
     // Use the factory
     private TestType(@Nonnull final String id) {
         this.name = id;
+        this.allowedDependencies = new HashSet<>();
+        allowedDependencies.add(id);
     }
 
     @Nonnull
@@ -32,6 +37,18 @@ public final class TestType implements JsonSerializable {
         final TestType testType = new TestType(name);
         final TestType previous = TYPES.putIfAbsent(testType.name(), testType);
         return previous != null ? previous : testType;
+    }
+
+    public void addDependency(@Nonnull final TestType dependency) {
+        this.allowedDependencies.add(dependency.name);
+    }
+
+    public boolean isValidDependency(@Nonnull final TestType dependency) {
+        return allowedDependencies.contains(dependency.name);
+    }
+
+    public String dependenciesToString() {
+        return String.join(", ", allowedDependencies);
     }
 
     // Emulate enum

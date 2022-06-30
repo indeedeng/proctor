@@ -7,6 +7,7 @@ import org.junit.Test;
 import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class TestTypeTest {
@@ -33,5 +34,27 @@ public class TestTypeTest {
         String json = "\"FOOBAR\"";
         final TestType testType = MAPPER.readValue(json, TestType.class);
         assertEquals("FOOBAR", testType.name());
+    }
+
+    @Test
+    public void testIsValidDependency() {
+        final TestType testType = TestType.register("testisvalid");
+
+        testType.addDependency(TestType.EMAIL_ADDRESS);
+        testType.addDependency(TestType.ANONYMOUS_USER);
+
+        assertTrue(testType.isValidDependency(TestType.EMAIL_ADDRESS));
+        assertTrue(testType.isValidDependency(TestType.ANONYMOUS_USER));
+        assertFalse(testType.isValidDependency(TestType.RANDOM));
+    }
+
+    @Test
+    public void testDependenciesToString() {
+        final TestType testType = TestType.register("testisvalid");
+
+        testType.addDependency(TestType.EMAIL_ADDRESS);
+        testType.addDependency(TestType.ANONYMOUS_USER);
+
+        assertEquals(testType.dependenciesToString(),"testisvalid, EMAIL, USER");
     }
 }
