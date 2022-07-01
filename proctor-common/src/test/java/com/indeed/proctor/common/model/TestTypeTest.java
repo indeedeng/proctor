@@ -57,6 +57,6 @@ public class TestTypeTest {
         testType.addDependency(TestType.EMAIL_ADDRESS);
         testType.addDependency(TestType.ANONYMOUS_USER);
 
-        assertEquals(testType.dependenciesToString(),"testisvalid, EMAIL, USER");
+        assertEquals(testType.dependenciesToString(), "testisvalid, EMAIL, USER");
     }
 }
