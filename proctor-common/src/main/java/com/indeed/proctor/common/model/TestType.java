@@ -28,7 +28,7 @@ public final class TestType implements JsonSerializable {
     // Use the factory
     private TestType(@Nonnull final String id) {
         this.name = id;
-        this.allowedDependencies = new HashSet<>();
+        allowedDependencies = new HashSet<>();
         allowedDependencies.add(id);
     }
 
@@ -40,7 +40,7 @@ public final class TestType implements JsonSerializable {
     }
 
     public void addDependency(@Nonnull final TestType dependency) {
-        this.allowedDependencies.add(dependency.name);
+        allowedDependencies.add(dependency.name);
     }
 
     public boolean isValidDependency(@Nonnull final TestType dependency) {
