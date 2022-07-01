@@ -43,6 +43,8 @@ public class TestTypeTest {
         testType.addDependency(TestType.EMAIL_ADDRESS);
         testType.addDependency(TestType.ANONYMOUS_USER);
 
+        assertTrue(TestType.ANONYMOUS_USER.isValidDependency(TestType.ANONYMOUS_USER));
+
         assertTrue(testType.isValidDependency(TestType.EMAIL_ADDRESS));
         assertTrue(testType.isValidDependency(TestType.ANONYMOUS_USER));
         assertFalse(testType.isValidDependency(TestType.RANDOM));
