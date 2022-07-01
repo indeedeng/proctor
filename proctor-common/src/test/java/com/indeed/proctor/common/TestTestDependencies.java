@@ -172,7 +172,6 @@ public class TestTestDependencies {
     public void testValidateDependencyAndReturnErrorReason_validWithDifferentTestType() {
         final ConsumableTestDefinition definition = ConsumableTestDefinition.fromTestDefinition(
                 stubTestDefinition(TEST_NAME)
-                        .setDependsOn(new TestDependency(PARENT_TEST_NAME, BUCKET_VALUE))
                         .build()
         );
 
@@ -200,7 +199,6 @@ public class TestTestDependencies {
     public void testValidateDependencyAndReturnErrorReason_invalidWithDifferentTestType() {
         final ConsumableTestDefinition definition = ConsumableTestDefinition.fromTestDefinition(
                 stubTestDefinition(TEST_NAME)
-                        .setDependsOn(new TestDependency(PARENT_TEST_NAME, BUCKET_VALUE))
                         .build()
         );
 
