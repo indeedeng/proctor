@@ -16,7 +16,7 @@ public class TestSpecification {
     private Map<String, Integer> buckets = Collections.emptyMap();
     @Nullable
     private PayloadSpecification payload;
-
+    @Nullable
     private String description;
 
     public int getFallbackValue() {
