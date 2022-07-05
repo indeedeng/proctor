@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
 
 /**
  * Value class that captures most of the enum flavor while allowing
@@ -24,11 +25,10 @@ public final class TestType implements JsonSerializable {
     @Nonnull
     private final String name;
     @Nonnull
-    private final Set<String> allowedDependencies;
+    private final Set<String> allowedDependencies = new HashSet<>();
     // Use the factory
     private TestType(@Nonnull final String id) {
         this.name = id;
-        allowedDependencies = new HashSet<>();
         allowedDependencies.add(id);
     }
 
@@ -39,16 +39,16 @@ public final class TestType implements JsonSerializable {
         return previous != null ? previous : testType;
     }
 
-    public void addDependency(@Nonnull final TestType dependency) {
+    public void addAllowedDependency(@Nonnull final TestType dependency) {
         allowedDependencies.add(dependency.name);
     }
 
-    public boolean isValidDependency(@Nonnull final TestType dependency) {
+    public boolean isAllowedDependency(@Nonnull final TestType dependency) {
         return allowedDependencies.contains(dependency.name);
     }
 
-    public String dependenciesToString() {
-        return String.join(", ", allowedDependencies);
+    public String allowedDependenciesToString() {
+        return allowedDependencies.stream().sorted().collect(Collectors.joining(", "));
     }
 
     // Emulate enum

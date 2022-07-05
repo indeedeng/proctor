@@ -40,23 +40,24 @@ public class TestTypeTest {
     public void testIsValidDependency() {
         final TestType testType = TestType.register("testisvalid");
 
-        testType.addDependency(TestType.EMAIL_ADDRESS);
-        testType.addDependency(TestType.ANONYMOUS_USER);
+        testType.addAllowedDependency(TestType.EMAIL_ADDRESS);
+        testType.addAllowedDependency(TestType.ANONYMOUS_USER);
 
-        assertTrue(TestType.ANONYMOUS_USER.isValidDependency(TestType.ANONYMOUS_USER));
+        assertTrue(TestType.ANONYMOUS_USER.isAllowedDependency(TestType.ANONYMOUS_USER));
 
-        assertTrue(testType.isValidDependency(TestType.EMAIL_ADDRESS));
-        assertTrue(testType.isValidDependency(TestType.ANONYMOUS_USER));
-        assertFalse(testType.isValidDependency(TestType.RANDOM));
+        assertTrue(testType.isAllowedDependency(testType));
+        assertTrue(testType.isAllowedDependency(TestType.EMAIL_ADDRESS));
+        assertTrue(testType.isAllowedDependency(TestType.ANONYMOUS_USER));
+        assertFalse(testType.isAllowedDependency(TestType.RANDOM));
     }
 
     @Test
     public void testDependenciesToString() {
         final TestType testType = TestType.register("testisvalid");
 
-        testType.addDependency(TestType.EMAIL_ADDRESS);
-        testType.addDependency(TestType.ANONYMOUS_USER);
+        testType.addAllowedDependency(TestType.EMAIL_ADDRESS);
+        testType.addAllowedDependency(TestType.ANONYMOUS_USER);
 
-        assertEquals(testType.dependenciesToString(), "testisvalid, EMAIL, USER");
+        assertEquals(testType.allowedDependenciesToString(), "EMAIL, USER, testisvalid");
     }
 }

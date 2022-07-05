@@ -172,14 +172,15 @@ public class TestTestDependencies {
     public void testValidateDependencyAndReturnErrorReason_validWithDifferentTestType() {
         final ConsumableTestDefinition definition = ConsumableTestDefinition.fromTestDefinition(
                 stubTestDefinition(TEST_NAME)
+                        .setTestType(TestType.ANONYMOUS_USER)
                         .build()
         );
 
         final TestType dependentTestType = TestType.register("ad_budget_segment");
 
-        dependentTestType.addDependency(TestType.ANONYMOUS_USER);
-        dependentTestType.addDependency(TestType.AUTHENTICATED_USER);
-        dependentTestType.addDependency(TestType.EMAIL_ADDRESS);
+        dependentTestType.addAllowedDependency(TestType.ANONYMOUS_USER);
+        dependentTestType.addAllowedDependency(TestType.AUTHENTICATED_USER);
+        dependentTestType.addAllowedDependency(TestType.EMAIL_ADDRESS);
 
         final ConsumableTestDefinition dependentDefinition = ConsumableTestDefinition.fromTestDefinition(
                 stubTestDefinition(DEPENDENT_TEST_NAME)
@@ -199,13 +200,14 @@ public class TestTestDependencies {
     public void testValidateDependencyAndReturnErrorReason_invalidWithDifferentTestType() {
         final ConsumableTestDefinition definition = ConsumableTestDefinition.fromTestDefinition(
                 stubTestDefinition(TEST_NAME)
+                        .setTestType(TestType.ANONYMOUS_USER)
                         .build()
         );
 
         final TestType dependentTestType = TestType.register("ad_budget_segment");
 
-        dependentTestType.addDependency(TestType.AUTHENTICATED_USER);
-        dependentTestType.addDependency(TestType.EMAIL_ADDRESS);
+        dependentTestType.addAllowedDependency(TestType.AUTHENTICATED_USER);
+        dependentTestType.addAllowedDependency(TestType.EMAIL_ADDRESS);
 
         final ConsumableTestDefinition dependentDefinition = ConsumableTestDefinition.fromTestDefinition(
                 stubTestDefinition(DEPENDENT_TEST_NAME)
@@ -218,7 +220,7 @@ public class TestTestDependencies {
                 DEPENDENT_TEST_NAME,
                 dependentDefinition,
                 ImmutableMap.of(DEPENDENT_TEST_NAME, dependentDefinition, TEST_NAME, definition)
-        )).hasValue("A test dependent_tst depends on example_tst with different test type: expected ACCOUNT, ad_budget_segment, EMAIL but USER");
+        )).hasValue("A test dependent_tst depends on example_tst with different test type: expected ACCOUNT, EMAIL, ad_budget_segment but USER");
     }
 
     @Test

@@ -103,10 +103,10 @@ public class TestDependencies {
         /*
           Using different test type could cause bias. However, Some specific cases allow using different test types.
          */
-        if (!definition.getTestType().isValidDependency(parentDefinition.getTestType())) {
+        if (!definition.getTestType().isAllowedDependency(parentDefinition.getTestType())) {
             return Optional.of("A test " + testName + " depends on "
                     + parentName + " with different test type: expected "
-                    + definition.getTestType().dependenciesToString() + " but " + parentDefinition.getTestType());
+                    + definition.getTestType().allowedDependenciesToString() + " but " + parentDefinition.getTestType());
         }
 
         /*
