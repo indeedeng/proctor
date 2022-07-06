@@ -11,7 +11,10 @@ import com.google.common.collect.Maps;
 import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
 
 /**
  * Value class that captures most of the enum flavor while allowing
@@ -21,10 +24,12 @@ public final class TestType implements JsonSerializable {
     private static final ConcurrentMap<String, TestType> TYPES = Maps.newConcurrentMap();
     @Nonnull
     private final String name;
-
+    @Nonnull
+    private final Set<String> allowedDependencies = new HashSet<>();
     // Use the factory
     private TestType(@Nonnull final String id) {
         this.name = id;
+        allowedDependencies.add(id);
     }
 
     @Nonnull
@@ -32,6 +37,18 @@ public final class TestType implements JsonSerializable {
         final TestType testType = new TestType(name);
         final TestType previous = TYPES.putIfAbsent(testType.name(), testType);
         return previous != null ? previous : testType;
+    }
+
+    public void addAllowedDependency(@Nonnull final TestType dependency) {
+        allowedDependencies.add(dependency.name);
+    }
+
+    public boolean isAllowedDependency(@Nonnull final TestType dependency) {
+        return allowedDependencies.contains(dependency.name);
+    }
+
+    public String allowedDependenciesToString() {
+        return allowedDependencies.stream().sorted().collect(Collectors.joining(", "));
     }
 
     // Emulate enum
