@@ -2,8 +2,10 @@ package com.indeed.proctor.common;
 
 import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
+import com.indeed.proctor.common.model.Payload;
 import com.indeed.proctor.common.model.Range;
 import com.indeed.proctor.common.model.TestBucket;
+import org.apache.logging.log4j.core.config.plugins.util.ResolverUtil;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -53,6 +55,14 @@ interface TestChooser<IdentifierType> {
         if (forceGroupBucket.isPresent()) {
             final TestBucket forcedTestBucket = getTestBucket(forceGroupBucket.get());
             if (forcedTestBucket != null) {
+                final Optional<Payload> forceGroupPayload = forceGroupsOptions.getForcedPayloadValue(testName);
+                final Payload payload = forcedTestBucket.getPayload();
+                if ( payload != null && forceGroupPayload.isPresent()) {
+                    final Optional<PayloadType> payloadType = forcedTestBucket.getPayload().fetchPayloadType();
+
+
+
+                }
                 // use a forced bucket, skip choosing an allocation
                 return new Result(forcedTestBucket, null);
             }

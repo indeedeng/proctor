@@ -32,6 +32,8 @@ public class ProctorConsumerUtils {
     public static final String FORCE_GROUPS_COOKIE_NAME = "prforceGroups";
     public static final String FORCE_GROUPS_HEADER = "X-PRFORCEGROUPS";
 
+    public static final String FORCE_PAYLOAD_PARAMETER = "prforcePayload";
+
     public static ProctorResult determineBuckets(
             final HttpServletRequest request,
             final HttpServletResponse response,
