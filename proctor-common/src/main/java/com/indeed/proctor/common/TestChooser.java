@@ -56,12 +56,43 @@ interface TestChooser<IdentifierType> {
             final TestBucket forcedTestBucket = getTestBucket(forceGroupBucket.get());
             if (forcedTestBucket != null) {
                 final Optional<Payload> forceGroupPayload = forceGroupsOptions.getForcedPayloadValue(testName);
-                final Payload payload = forcedTestBucket.getPayload();
-                if ( payload != null && forceGroupPayload.isPresent()) {
-                    final Optional<PayloadType> payloadType = forcedTestBucket.getPayload().fetchPayloadType();
-
-
-
+                if (forcedTestBucket.getPayload() != null && forceGroupPayload.isPresent()) {
+                    final Payload payload = new Payload();
+                    final Optional<PayloadType> forcePayloadType = forceGroupPayload.get().fetchPayloadType();
+                    if (forcePayloadType.isPresent() && Payload.hasType(forcedTestBucket.getPayload(), forcePayloadType.get())) {
+                        switch (forcePayloadType.get()) {
+                            case DOUBLE_VALUE: {
+                                payload.setDoubleValue(forceGroupPayload.get().getDoubleValue());
+                                break;
+                            }
+                            case DOUBLE_ARRAY: {
+                                payload.setDoubleArray(forceGroupPayload.get().getDoubleArray());
+                                break;
+                            }
+                            case LONG_VALUE: {
+                                payload.setLongValue(forceGroupPayload.get().getLongValue());
+                                break;
+                            }
+                            case LONG_ARRAY: {
+                                payload.setLongArray(forceGroupPayload.get().getLongArray());
+                                break;
+                            }
+                            case STRING_VALUE: {
+                                payload.setStringValue(forceGroupPayload.get().getStringValue());
+                                break;
+                            }
+                            case STRING_ARRAY: {
+                                payload.setStringArray(forceGroupPayload.get().getStringArray());
+                                break;
+                            }
+                            case MAP: {
+                                payload.setMap(forceGroupPayload.get().getMap());
+                                break;
+                            }
+                        }
+                        final TestBucket forcedTestBucketWithForcedPayload = TestBucket.builder().from(forcedTestBucket).payload(payload).build();
+                        return new Result(forcedTestBucketWithForcedPayload, null);
+                    }
                 }
                 // use a forced bucket, skip choosing an allocation
                 return new Result(forcedTestBucket, null);
