@@ -72,9 +72,9 @@ public class ForceGroupsOptionsStrings {
             final String testName = piece.substring(0, bucketValueStart).trim();
             final String bucketValueStr = piece.substring(bucketValueStart).trim();
             try {
-                final int bucketValue = Integer.parseInt(bucketValueStr);
+                final Integer bucketValue = Integer.valueOf(bucketValueStr);
                 builder.putForceGroup(testName, bucketValue);
-                if(bucketAndPayloadValuesStr.length == FORCE_PARAMETER_MAX_SIZE) {
+                if (bucketAndPayloadValuesStr.length == FORCE_PARAMETER_MAX_SIZE) {
                     builder.putForcePayload(testName, parseForcePayloadString(bucketAndPayloadValuesStr[FORCE_PARAMETER_PAYLOAD_IDX]));
                 }
             } catch (final NumberFormatException e) {

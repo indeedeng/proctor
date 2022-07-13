@@ -137,42 +137,47 @@ interface TestChooser<IdentifierType> {
 
 
     /*
-     * Validated Force Payload Map by checking that each forced key exists in the current payload and is of the same instance type.
+     * Validated Force Payload Map by checking that each forced key exists in the current payload and is of the same instance type. If forcePayload is invalid return currentPayload to not overwrite
      */
     @Nullable
-    default Map<String, Object> validateForcePayloadMap(final Map<String, Object> currentPayloadMap, final Map<String, Object> forcePayloadMap) {
-        final Map<String, Object> validatedMap = new HashMap<>(currentPayloadMap);
-        for ( final String keyString : forcePayloadMap.keySet())
-        {
-            if (currentPayloadMap.containsKey(keyString)) {
-                try {
-                    if (currentPayloadMap.get(keyString) instanceof Double) {
-                        validatedMap.put(keyString, Double.parseDouble((String) forcePayloadMap.get(keyString)));
-                    } else if (currentPayloadMap.get(keyString) instanceof Double[]) {
-                        validatedMap.put(keyString, Arrays.stream(((String) forcePayloadMap.get(keyString)).split(" "))
-                                .map(Double::valueOf)
-                                .toArray(Double[]::new));
-                    } else if (currentPayloadMap.get(keyString) instanceof Long) {
-                        validatedMap.put(keyString, Long.parseLong((String) forcePayloadMap.get(keyString)));
-                    } else if (currentPayloadMap.get(keyString) instanceof Long[]) {
-                        validatedMap.put(keyString, Arrays.stream(((String) forcePayloadMap.get(keyString)).split(" "))
-                                .map(Long::valueOf)
-                                .toArray(Long[]::new));
-                    } else if (currentPayloadMap.get(keyString) instanceof String) {
-                        validatedMap.put(keyString, ((String) forcePayloadMap.get(keyString)).replace("\"", ""));
-                    } else if (currentPayloadMap.get(keyString) instanceof String[]) {
-                        validatedMap.put(keyString, ((String) forcePayloadMap.get(keyString)).replace("\"", "").split(" "));
+    default Map<String, Object> validateForcePayloadMap(@Nullable final Map<String, Object> currentPayloadMap, @Nullable final Map<String, Object> forcePayloadMap) {
+        if (currentPayloadMap != null) {
+            if (forcePayloadMap != null) {
+                final Map<String, Object> validatedMap = new HashMap<>(currentPayloadMap);
+                for (final String keyString : forcePayloadMap.keySet()) {
+                    if (currentPayloadMap.containsKey(keyString)) {
+                        try {
+                            if (currentPayloadMap.get(keyString) instanceof Double) {
+                                validatedMap.put(keyString, Double.parseDouble((String) forcePayloadMap.get(keyString)));
+                            } else if (currentPayloadMap.get(keyString) instanceof Double[]) {
+                                validatedMap.put(keyString, Arrays.stream(((String) forcePayloadMap.get(keyString)).split(" "))
+                                        .map(Double::valueOf)
+                                        .toArray(Double[]::new));
+                            } else if (currentPayloadMap.get(keyString) instanceof Long) {
+                                validatedMap.put(keyString, Long.parseLong((String) forcePayloadMap.get(keyString)));
+                            } else if (currentPayloadMap.get(keyString) instanceof Long[]) {
+                                validatedMap.put(keyString, Arrays.stream(((String) forcePayloadMap.get(keyString)).split(" "))
+                                        .map(Long::valueOf)
+                                        .toArray(Long[]::new));
+                            } else if (currentPayloadMap.get(keyString) instanceof String) {
+                                validatedMap.put(keyString, ((String) forcePayloadMap.get(keyString)).replace("\"", ""));
+                            } else if (currentPayloadMap.get(keyString) instanceof String[]) {
+                                validatedMap.put(keyString, ((String) forcePayloadMap.get(keyString)).replace("\"", "").split(" "));
+                            } else {
+                                return currentPayloadMap;
+                            }
+                        } catch (final IllegalArgumentException | ArrayStoreException | ClassCastException e) {
+                            return currentPayloadMap;
+                        }
                     } else {
                         return currentPayloadMap;
                     }
-                } catch (final IllegalArgumentException | ArrayStoreException | ClassCastException e) {
-                    return currentPayloadMap;
                 }
-            } else {
-                return currentPayloadMap;
+                return validatedMap;
             }
+            return currentPayloadMap;
         }
-        return validatedMap;
+        return null;
     }
 
     /**
