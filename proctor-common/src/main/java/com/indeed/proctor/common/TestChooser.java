@@ -59,67 +59,11 @@ interface TestChooser<IdentifierType> {
                 final Optional<Payload> forcePayloadValues = forceGroupsOptions.getForcedPayloadValue(testName);
                 final Payload currentPayload = forcedTestBucket.getPayload();
                 if (currentPayload != null && currentPayload != Payload.EMPTY_PAYLOAD && forcePayloadValues.isPresent()) {
-                    final Payload payload = new Payload();
-                    final Optional<PayloadType> forcePayloadType = forcePayloadValues.get().fetchPayloadType();
-                    if (forcePayloadType.isPresent() && Payload.hasType(currentPayload, forcePayloadType.get())) {
-                        switch (forcePayloadType.get()) {
-                            case DOUBLE_VALUE: {
-                                payload.setDoubleValue(forcePayloadValues.get().getDoubleValue());
-                                break;
-                            }
-                            case DOUBLE_ARRAY: {
-                                payload.setDoubleArray(forcePayloadValues.get().getDoubleArray());
-                                break;
-                            }
-                            case LONG_VALUE: {
-                                payload.setLongValue(forcePayloadValues.get().getLongValue());
-                                break;
-                            }
-                            case LONG_ARRAY: {
-                                payload.setLongArray(forcePayloadValues.get().getLongArray());
-                                break;
-                            }
-                            case STRING_VALUE: {
-                                payload.setStringValue(forcePayloadValues.get().getStringValue());
-                                break;
-                            }
-                            case STRING_ARRAY: {
-                                payload.setStringArray(forcePayloadValues.get().getStringArray());
-                                break;
-                            }
-                            case MAP: {
-                                final Map<String, Object> currentPayloadMap = new HashMap<>(currentPayload.getMap());
-                                final Map<String, Object> forcePayloadMap = forcePayloadValues.get().getMap();
-                                for ( final String keyString : forcePayloadMap.keySet())
-                                {
-                                    if (currentPayloadMap.containsKey(keyString))
-                                    {
-                                        if (currentPayloadMap.get(keyString) instanceof Double) {
-                                            currentPayloadMap.put(keyString, Double.parseDouble((String) forcePayloadMap.get(keyString)));
-                                        } else if (currentPayloadMap.get(keyString) instanceof Double[]) {
-                                            currentPayloadMap.put(keyString, Arrays.stream(((String) forcePayloadMap.get(keyString)).split(" "))
-                                                    .map(Double::valueOf)
-                                                    .toArray(Double[]::new) );
-                                        } else if (currentPayloadMap.get(keyString) instanceof Long) {
-                                            currentPayloadMap.put(keyString, Long.parseLong((String) forcePayloadMap.get(keyString)));
-                                        } else if (currentPayloadMap.get(keyString) instanceof Long[]) {
-                                            currentPayloadMap.put(keyString, Arrays.stream(((String) forcePayloadMap.get(keyString)).split(" "))
-                                                    .map(Long::valueOf)
-                                                    .toArray(Long[]::new) );
-                                        } else if (currentPayloadMap.get(keyString) instanceof String) {
-                                            currentPayloadMap.put(keyString, ((String) forcePayloadMap.get(keyString)).replace("\"",""));
-                                        } else if (currentPayloadMap.get(keyString) instanceof String[]) {
-                                            currentPayloadMap.put(keyString, ((String) forcePayloadMap.get(keyString)).replace("\"","").split(" "));
-                                        }
-                                    }
-                                }
-                                payload.setMap(forcePayloadValues.get().getMap());
-                                break;
-                            }
-                        }
-                        final TestBucket forcedTestBucketWithForcedPayload = TestBucket.builder().from(forcedTestBucket).payload(payload).build();
-                        return new Result(forcedTestBucketWithForcedPayload, null);
-                    }
+                    final TestBucket forcedTestBucketWithForcedPayload = TestBucket.builder()
+                            .from(forcedTestBucket)
+                            .payload(validateForcePayload(currentPayload, forcePayloadValues.get()))
+                            .build();
+                    return new Result(forcedTestBucketWithForcedPayload, null);
                 }
                 // use a forced bucket, skip choosing an allocation
                 return new Result(forcedTestBucket, null);
@@ -148,6 +92,87 @@ interface TestChooser<IdentifierType> {
         }
 
         return result;
+    }
+
+    default Payload validateForcePayload(final Payload currentPayload, final Payload forcePayload) {
+        final Payload validatedPayload = new Payload();
+        final Optional<PayloadType> forcePayloadType = forcePayload.fetchPayloadType();
+        if (forcePayloadType.isPresent() && Payload.hasType(currentPayload, forcePayloadType.get())) {
+            switch (forcePayloadType.get()) {
+                case DOUBLE_VALUE: {
+                    validatedPayload.setDoubleValue(forcePayload.getDoubleValue());
+                    break;
+                }
+                case DOUBLE_ARRAY: {
+                    validatedPayload.setDoubleArray(forcePayload.getDoubleArray());
+                    break;
+                }
+                case LONG_VALUE: {
+                    validatedPayload.setLongValue(forcePayload.getLongValue());
+                    break;
+                }
+                case LONG_ARRAY: {
+                    validatedPayload.setLongArray(forcePayload.getLongArray());
+                    break;
+                }
+                case STRING_VALUE: {
+                    validatedPayload.setStringValue(forcePayload.getStringValue());
+                    break;
+                }
+                case STRING_ARRAY: {
+                    validatedPayload.setStringArray(forcePayload.getStringArray());
+                    break;
+                }
+                case MAP: {
+                    final Map<String, Object> validatedPayloadMap = validateForcePayloadMap(new HashMap<>(currentPayload.getMap()), forcePayload.getMap());
+                    validatedPayload.setMap(validatedPayloadMap);
+                    break;
+                }
+            }
+            return validatedPayload;
+        }
+        return currentPayload;
+    }
+
+
+
+    /*
+     * Validated Force Payload Map by checking that each forced key exists in the current payload and is of the same instance type.
+     */
+    @Nullable
+    default Map<String, Object> validateForcePayloadMap(final Map<String, Object> currentPayloadMap, final Map<String, Object> forcePayloadMap) {
+        final Map<String, Object> validatedMap = new HashMap<>(currentPayloadMap);
+        for ( final String keyString : forcePayloadMap.keySet())
+        {
+            if (currentPayloadMap.containsKey(keyString)) {
+                try {
+                    if (currentPayloadMap.get(keyString) instanceof Double) {
+                        validatedMap.put(keyString, Double.parseDouble((String) forcePayloadMap.get(keyString)));
+                    } else if (currentPayloadMap.get(keyString) instanceof Double[]) {
+                        validatedMap.put(keyString, Arrays.stream(((String) forcePayloadMap.get(keyString)).split(" "))
+                                .map(Double::valueOf)
+                                .toArray(Double[]::new));
+                    } else if (currentPayloadMap.get(keyString) instanceof Long) {
+                        validatedMap.put(keyString, Long.parseLong((String) forcePayloadMap.get(keyString)));
+                    } else if (currentPayloadMap.get(keyString) instanceof Long[]) {
+                        validatedMap.put(keyString, Arrays.stream(((String) forcePayloadMap.get(keyString)).split(" "))
+                                .map(Long::valueOf)
+                                .toArray(Long[]::new));
+                    } else if (currentPayloadMap.get(keyString) instanceof String) {
+                        validatedMap.put(keyString, ((String) forcePayloadMap.get(keyString)).replace("\"", ""));
+                    } else if (currentPayloadMap.get(keyString) instanceof String[]) {
+                        validatedMap.put(keyString, ((String) forcePayloadMap.get(keyString)).replace("\"", "").split(" "));
+                    } else {
+                        return currentPayloadMap;
+                    }
+                } catch (final IllegalArgumentException | ArrayStoreException | ClassCastException e) {
+                    return currentPayloadMap;
+                }
+            } else {
+                return currentPayloadMap;
+            }
+        }
+        return validatedMap;
     }
 
     /**

@@ -11,11 +11,14 @@ import org.junit.Test;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.PrintWriter;
+import java.lang.reflect.Array;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -342,6 +345,50 @@ public class TestTestChooser {
         )).isTrue();
     }
 
+    @Test
+    public void testvalidateForcePayload() {
+        final Map<String, Object> map = new HashMap<>();
+
+        map.put("test_key1", 3L);
+        map.put("test_key2", 2.0);
+        map.put("test_key3", "three");
+        map.put("test_key4", new Double[]{1.0, 2.0});
+        map.put("test_key5", new Long[]{1L, 2L});
+        map.put("test_key6", new String[]{"three", "five"});
+
+        // NOTE: input map is in String form as it still needs to be parsed and validated
+        final Map<String, Object> inputMap = new HashMap<>();
+
+        inputMap.put("test_key1", "1");
+        inputMap.put("test_key2", "1");
+        inputMap.put("test_key3", "one");
+        inputMap.put("test_key4", "1.0 1.0");
+        inputMap.put("test_key5", "1 1");
+        inputMap.put("test_key6", "\"one\" \"one\"");
+
+        final Map<String, Object> validatedMapExpected = new HashMap<>();
+
+        validatedMapExpected.put("test_key1", 1L);
+        validatedMapExpected.put("test_key2", 1.0);
+        validatedMapExpected.put("test_key3", "one");
+        validatedMapExpected.put("test_key4", new Double[]{1.0, 1.0});
+        validatedMapExpected.put("test_key5", new Long[]{1L, 1L});
+        validatedMapExpected.put("test_key6", new String[]{"one", "one"});
+
+        final Map<String, Object> invalidMap = new HashMap<>();
+
+        invalidMap.put("test_key1", "1L");
+        invalidMap.put("test_key2", "1L");
+        invalidMap.put("test_key3", "one");
+        invalidMap.put("test_key4", "invalid map value to actual payload");
+        invalidMap.put("test_key5", "1L 1L");
+        invalidMap.put("test_key6", "\"one\" \"one\"");
+
+        assertThat(comparePayloadMap(TEST_CHOOSER.validateForcePayloadMap(map, inputMap), map)).isFalse();
+        assertThat(comparePayloadMap(TEST_CHOOSER.validateForcePayloadMap(map, inputMap), validatedMapExpected)).isTrue();
+        assertThat(comparePayloadMap(TEST_CHOOSER.validateForcePayloadMap(map, invalidMap), map)).isTrue();
+    }
+
     private static boolean compareTestChooserResults(final TestChooser.Result a, final TestChooser.Result b) {
         if (a.getTestBucket() != null && b.getTestBucket() != null ) {
             return a.getTestBucket().equals(b.getTestBucket()) && a.getAllocation() == b.getAllocation();
@@ -356,5 +403,34 @@ public class TestTestChooser {
                 Collections.emptyMap(),
                 forceGroupsOptions
         );
+    }
+
+    private static boolean comparePayloadMap(final Map<String, Object> a, final Map<String, Object> b) {
+        if (a != null && b != null && a.size() == b.size()) {
+            boolean isEqual = true;
+            for (final String keyString : a.keySet()) {
+                final Object aValue = a.get(keyString);
+                final Object bValue = b.get(keyString);
+                if (aValue.getClass() == bValue.getClass()) {
+                    if (aValue instanceof Double || aValue instanceof Long || aValue instanceof String) {
+                        isEqual &= Objects.equals(aValue, bValue);
+                    } else if (aValue instanceof Double[]){
+                        final Double[] aArr = (Double[]) aValue;
+                        final Double[] bArr = (Double[]) bValue;
+                        isEqual &= Arrays.equals(aArr, bArr);
+                    } else if (aValue instanceof Long[]){
+                        final Long[] aArr = (Long[]) aValue;
+                        final Long[] bArr = (Long[]) bValue;
+                        isEqual &= Arrays.equals(aArr, bArr);
+                    } else if (aValue instanceof String[]){
+                        final String[] aArr = (String[]) aValue;
+                        final String[] bArr = (String[]) bValue;
+                        isEqual &= Arrays.equals(aArr, bArr);
+                    }
+                }
+            }
+            return isEqual;
+        }
+        return Objects.equals(a, b);
     }
 }
