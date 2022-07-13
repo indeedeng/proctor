@@ -97,6 +97,7 @@ interface TestChooser<IdentifierType> {
     default Payload validateForcePayload(final Payload currentPayload, final Payload forcePayload) {
         final Payload validatedPayload = new Payload();
         final Optional<PayloadType> forcePayloadType = forcePayload.fetchPayloadType();
+        // check if force payload exists and has the same payload type as the current payload
         if (forcePayloadType.isPresent() && Payload.hasType(currentPayload, forcePayloadType.get())) {
             switch (forcePayloadType.get()) {
                 case DOUBLE_VALUE: {
@@ -124,6 +125,7 @@ interface TestChooser<IdentifierType> {
                     break;
                 }
                 case MAP: {
+                    // need to validate the map contains the same value class types, can not simply set
                     final Map<String, Object> validatedPayloadMap = validateForcePayloadMap(new HashMap<>(currentPayload.getMap()), forcePayload.getMap());
                     validatedPayload.setMap(validatedPayloadMap);
                     break;
@@ -147,6 +149,7 @@ interface TestChooser<IdentifierType> {
                 for (final String keyString : forcePayloadMap.keySet()) {
                     if (currentPayloadMap.containsKey(keyString)) {
                         try {
+                            // check current class of value and try to parse force value to it. force values are strings before validation
                             if (currentPayloadMap.get(keyString) instanceof Double) {
                                 validatedMap.put(keyString, Double.parseDouble((String) forcePayloadMap.get(keyString)));
                             } else if (currentPayloadMap.get(keyString) instanceof Double[]) {

@@ -45,6 +45,7 @@ public class ForceGroupsOptionsStrings {
         final String[] pieces = forceGroupsString.split(",");
         // detect integer number from end of string
         for (final String rawPiece : pieces) {
+            // split string to separate force group and payload
             final String[] bucketAndPayloadValuesStr = rawPiece.split(";", FORCE_PARAMETER_MAX_SIZE);
             final String piece = bucketAndPayloadValuesStr[FORCE_PARAMETER_BUCKET_IDX].trim();
             if (piece.isEmpty()) {
@@ -75,7 +76,10 @@ public class ForceGroupsOptionsStrings {
                 final Integer bucketValue = Integer.valueOf(bucketValueStr);
                 builder.putForceGroup(testName, bucketValue);
                 if (bucketAndPayloadValuesStr.length == FORCE_PARAMETER_MAX_SIZE) {
-                    builder.putForcePayload(testName, parseForcePayloadString(bucketAndPayloadValuesStr[FORCE_PARAMETER_PAYLOAD_IDX]));
+                    final Payload payloadValue = parseForcePayloadString(bucketAndPayloadValuesStr[FORCE_PARAMETER_PAYLOAD_IDX]);
+                    if (payloadValue != null){
+                        builder.putForcePayload(testName, payloadValue);
+                    }
                 }
             } catch (final NumberFormatException e) {
                 LOGGER.error("Unable to parse bucket value " + bucketAndPayloadValuesStr[FORCE_PARAMETER_BUCKET_IDX] + " as integer", e);
@@ -84,6 +88,7 @@ public class ForceGroupsOptionsStrings {
         return builder.build();
     }
 
+    @Nullable
     public static Payload parseForcePayloadString(final String payloadString )
     {
         final Payload payload = new Payload();
@@ -131,6 +136,7 @@ public class ForceGroupsOptionsStrings {
                     }
                     case MAP:
                     {
+                        // map inserts all values as strings later validated against actual test
                         final Map<String, Object> map = new HashMap<>();
                         final String[] mapPayloadPieces = payloadValue.replace("\"","").split(" ");
 
@@ -144,8 +150,8 @@ public class ForceGroupsOptionsStrings {
                     }
                 }
             }
-            catch (final IllegalArgumentException | ArrayStoreException e) {
-                return Payload.EMPTY_PAYLOAD;
+            catch (final IllegalArgumentException | ArrayStoreException | ClassCastException e) {
+                return null;
             }
         }
 
