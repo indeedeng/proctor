@@ -144,7 +144,7 @@ public class ForceGroupsOptionsStrings {
                     }
                 }
             }
-            catch(final IllegalArgumentException e) {
+            catch (final IllegalArgumentException | ArrayStoreException e) {
                 return Payload.EMPTY_PAYLOAD;
             }
         }

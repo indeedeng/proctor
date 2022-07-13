@@ -5,12 +5,13 @@ import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.Payload;
 import com.indeed.proctor.common.model.Range;
 import com.indeed.proctor.common.model.TestBucket;
-import org.apache.logging.log4j.core.config.plugins.util.ResolverUtil;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.PrintWriter;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -55,38 +56,64 @@ interface TestChooser<IdentifierType> {
         if (forceGroupBucket.isPresent()) {
             final TestBucket forcedTestBucket = getTestBucket(forceGroupBucket.get());
             if (forcedTestBucket != null) {
-                final Optional<Payload> forceGroupPayload = forceGroupsOptions.getForcedPayloadValue(testName);
-                if (forcedTestBucket.getPayload() != null && forceGroupPayload.isPresent()) {
+                final Optional<Payload> forcePayloadValues = forceGroupsOptions.getForcedPayloadValue(testName);
+                final Payload currentPayload = forcedTestBucket.getPayload();
+                if (currentPayload != null && currentPayload != Payload.EMPTY_PAYLOAD && forcePayloadValues.isPresent()) {
                     final Payload payload = new Payload();
-                    final Optional<PayloadType> forcePayloadType = forceGroupPayload.get().fetchPayloadType();
-                    if (forcePayloadType.isPresent() && Payload.hasType(forcedTestBucket.getPayload(), forcePayloadType.get())) {
+                    final Optional<PayloadType> forcePayloadType = forcePayloadValues.get().fetchPayloadType();
+                    if (forcePayloadType.isPresent() && Payload.hasType(currentPayload, forcePayloadType.get())) {
                         switch (forcePayloadType.get()) {
                             case DOUBLE_VALUE: {
-                                payload.setDoubleValue(forceGroupPayload.get().getDoubleValue());
+                                payload.setDoubleValue(forcePayloadValues.get().getDoubleValue());
                                 break;
                             }
                             case DOUBLE_ARRAY: {
-                                payload.setDoubleArray(forceGroupPayload.get().getDoubleArray());
+                                payload.setDoubleArray(forcePayloadValues.get().getDoubleArray());
                                 break;
                             }
                             case LONG_VALUE: {
-                                payload.setLongValue(forceGroupPayload.get().getLongValue());
+                                payload.setLongValue(forcePayloadValues.get().getLongValue());
                                 break;
                             }
                             case LONG_ARRAY: {
-                                payload.setLongArray(forceGroupPayload.get().getLongArray());
+                                payload.setLongArray(forcePayloadValues.get().getLongArray());
                                 break;
                             }
                             case STRING_VALUE: {
-                                payload.setStringValue(forceGroupPayload.get().getStringValue());
+                                payload.setStringValue(forcePayloadValues.get().getStringValue());
                                 break;
                             }
                             case STRING_ARRAY: {
-                                payload.setStringArray(forceGroupPayload.get().getStringArray());
+                                payload.setStringArray(forcePayloadValues.get().getStringArray());
                                 break;
                             }
                             case MAP: {
-                                payload.setMap(forceGroupPayload.get().getMap());
+                                final Map<String, Object> currentPayloadMap = new HashMap<>(currentPayload.getMap());
+                                final Map<String, Object> forcePayloadMap = forcePayloadValues.get().getMap();
+                                for ( final String keyString : forcePayloadMap.keySet())
+                                {
+                                    if (currentPayloadMap.containsKey(keyString))
+                                    {
+                                        if (currentPayloadMap.get(keyString) instanceof Double) {
+                                            currentPayloadMap.put(keyString, Double.parseDouble((String) forcePayloadMap.get(keyString)));
+                                        } else if (currentPayloadMap.get(keyString) instanceof Double[]) {
+                                            currentPayloadMap.put(keyString, Arrays.stream(((String) forcePayloadMap.get(keyString)).split(" "))
+                                                    .map(Double::valueOf)
+                                                    .toArray(Double[]::new) );
+                                        } else if (currentPayloadMap.get(keyString) instanceof Long) {
+                                            currentPayloadMap.put(keyString, Long.parseLong((String) forcePayloadMap.get(keyString)));
+                                        } else if (currentPayloadMap.get(keyString) instanceof Long[]) {
+                                            currentPayloadMap.put(keyString, Arrays.stream(((String) forcePayloadMap.get(keyString)).split(" "))
+                                                    .map(Long::valueOf)
+                                                    .toArray(Long[]::new) );
+                                        } else if (currentPayloadMap.get(keyString) instanceof String) {
+                                            currentPayloadMap.put(keyString, ((String) forcePayloadMap.get(keyString)).replace("\"",""));
+                                        } else if (currentPayloadMap.get(keyString) instanceof String[]) {
+                                            currentPayloadMap.put(keyString, ((String) forcePayloadMap.get(keyString)).replace("\"","").split(" "));
+                                        }
+                                    }
+                                }
+                                payload.setMap(forcePayloadValues.get().getMap());
                                 break;
                             }
                         }

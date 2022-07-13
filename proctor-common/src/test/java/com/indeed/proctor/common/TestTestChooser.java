@@ -13,6 +13,7 @@ import javax.annotation.Nullable;
 import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -21,10 +22,21 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class TestTestChooser {
+    static Map<String, Object> payloadMap = new HashMap<>();
+
+    static {
+        payloadMap.put("test_key1", 1.0);
+        payloadMap.put("test_key2", 2L);
+        payloadMap.put("test_key3", "three");
+        payloadMap.put("test_key4", new Double[]{1.0, 2.0});
+        payloadMap.put("test_key5", new Long[]{1L, 2L});
+        payloadMap.put("test_key6", new String[]{"three", "five"});
+    }
     private static final List<TestBucket> TEST_BUCKETS = ImmutableList.of(
             new TestBucket("inactive", -1, "inactive", null),
             new TestBucket("control", 0, "control", null),
-            new TestBucket("active", 1, "active", new Payload("active_payload"))
+            new TestBucket("active", 1, "active", new Payload("active_payload")),
+            new TestBucket("payload_tst", 2, "test payload", new Payload(new HashMap<>()))
     );
     private static final List<Allocation> ALLOCATIONS = ImmutableList.of(new Allocation(
             "${}",
@@ -141,6 +153,72 @@ public class TestTestChooser {
 
         final ForceGroupsOptions options = ForceGroupsOptions.builder()
                 .putForceGroup(TEST_CHOOSER.getTestName(), 1)
+                .putForcePayload(TEST_CHOOSER.getTestName(), testPayload)
+                .build();
+
+        final TestChooser.Result result = choose(options);
+
+        assertThat(compareTestChooserResults(
+                result,
+                new TestChooser.Result(
+                        testBucket,
+                        null
+                )
+        )).isTrue();
+    }
+
+    @Test
+    public void testChoose_withForceGroupAndForcePayloadMap() {
+        final Map<String, Object> map = new HashMap<>();
+
+        map.put("test_key1", 6.0);
+        map.put("test_key2", 6L);
+        map.put("test_key3", "six");
+        map.put("test_key4", new Double[]{6.0, 6.0});
+        map.put("test_key5", new Long[]{6L, 6L});
+        map.put("test_key6", new String[]{"six", "six"});
+
+        final Payload testPayload = new Payload(map);
+
+        final TestBucket testBucket = TestBucket.builder()
+                .from(TEST_CHOOSER.getTestBucket(2))
+                .build();
+
+        final ForceGroupsOptions options = ForceGroupsOptions.builder()
+                .putForceGroup(TEST_CHOOSER.getTestName(), 2)
+                .putForcePayload(TEST_CHOOSER.getTestName(), testPayload)
+                .build();
+
+        final TestChooser.Result result = choose(options);
+
+        assertThat(compareTestChooserResults(
+                result,
+                new TestChooser.Result(
+                        testBucket,
+                        null
+                )
+        )).isTrue();
+    }
+
+    @Test
+    public void testChoose_withForceGroupAndForcePayloadInvalidMap() {
+        final Map<String, Object> payloadMap = new HashMap<>();
+
+        payloadMap.put("test_key1", 3L);
+        payloadMap.put("test_key2", 2L);
+        payloadMap.put("test_key3", "three");
+        payloadMap.put("test_key4", new Double[]{1.0, 2.0});
+        payloadMap.put("test_key5", new Long[]{1L, 2L});
+        payloadMap.put("test_key6", new String[]{"three", "five"});
+
+        final Payload testPayload = new Payload("test_force_payload");
+
+        final TestBucket testBucket = TestBucket.builder()
+                .from(TEST_CHOOSER.getTestBucket(2))
+                .build();
+
+        final ForceGroupsOptions options = ForceGroupsOptions.builder()
+                .putForceGroup(TEST_CHOOSER.getTestName(), 2)
                 .putForcePayload(TEST_CHOOSER.getTestName(), testPayload)
                 .build();
 
