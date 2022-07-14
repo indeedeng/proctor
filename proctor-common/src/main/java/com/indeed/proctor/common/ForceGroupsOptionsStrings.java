@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * Owns utility functions to convert from/to a string value (force groups string)
@@ -48,45 +49,54 @@ public class ForceGroupsOptionsStrings {
         for (final String rawPiece : pieces) {
             // split string to separate force group and payload
             final String[] bucketAndPayloadValuesStr = rawPiece.split(";", FORCE_PARAMETER_MAX_SIZE);
-            final String piece = bucketAndPayloadValuesStr[FORCE_PARAMETER_BUCKET_IDX].trim();
-            if (piece.isEmpty()) {
+            final String groupString = bucketAndPayloadValuesStr[FORCE_PARAMETER_BUCKET_IDX].trim();
+            if (groupString.isEmpty()) {
                 continue;
             }
 
-            ForceGroupsDefaultMode.fromToken(piece)
+            ForceGroupsDefaultMode.fromToken(groupString)
                     .ifPresent(builder::setDefaultMode);
 
-            int bucketValueStart = piece.length() - 1;
-            for (; bucketValueStart >= 0; bucketValueStart--) {
-                if (!Character.isDigit(piece.charAt(bucketValueStart))) {
-                    break;
-                }
-            }
-            //  if no name or no value was found, it's not a valid proctor test bucket name
-            if ((bucketValueStart == piece.length() - 1) || (bucketValueStart < 1)) {
-                continue;
-            }
-            //  minus sign can only be at the beginning of a run
-            if (piece.charAt(bucketValueStart) != '-') {
-                bucketValueStart++;
-            }
-            //  bucketValueStart should now be the index of the minus sign or the first digit in a run of digits going to the end of the word
-            final String testName = piece.substring(0, bucketValueStart).trim();
-            final String bucketValueStr = piece.substring(bucketValueStart).trim();
-            try {
-                final Integer bucketValue = Integer.valueOf(bucketValueStr);
-                builder.putForceGroup(testName, bucketValue);
-                if (bucketAndPayloadValuesStr.length == FORCE_PARAMETER_MAX_SIZE) {
-                    final Payload payloadValue = parseForcePayloadString(bucketAndPayloadValuesStr[FORCE_PARAMETER_PAYLOAD_IDX]);
-                    if (payloadValue != null){
-                        builder.putForcePayload(testName, payloadValue);
+            final Optional<Integer> bucketValueStart = getBucketValueStart(groupString);
+
+            if (bucketValueStart.isPresent()) {
+                //  bucketValueStart should now be the index of the minus sign or the first digit in a run of digits going to the end of the word
+                final String testName = groupString.substring(0, bucketValueStart.get()).trim();
+                final String bucketValueStr = groupString.substring(bucketValueStart.get()).trim();
+                try {
+                    final Integer bucketValue = Integer.valueOf(bucketValueStr);
+                    builder.putForceGroup(testName, bucketValue);
+                    if (bucketAndPayloadValuesStr.length == FORCE_PARAMETER_MAX_SIZE) {
+                        final Payload payloadValue = parseForcePayloadString(bucketAndPayloadValuesStr[FORCE_PARAMETER_PAYLOAD_IDX]);
+                        if (payloadValue != null) {
+                            builder.putForcePayload(testName, payloadValue);
+                        }
                     }
+                } catch (final NumberFormatException e) {
+                    LOGGER.error("Unable to parse bucket value " + bucketValueStr + " as integer", e);
                 }
-            } catch (final NumberFormatException e) {
-                LOGGER.error("Unable to parse bucket value " + bucketValueStr + " as integer", e);
             }
         }
         return builder.build();
+    }
+
+    private static Optional<Integer> getBucketValueStart(final String groupString) {
+        int bucketValueStart = groupString.length() - 1;
+        for (; bucketValueStart >= 0; bucketValueStart--) {
+            if (!Character.isDigit(groupString.charAt(bucketValueStart))) {
+                break;
+            }
+        }
+        //  if no name or no value was found, it's not a valid proctor test bucket name
+        if ((bucketValueStart == groupString.length() - 1) || (bucketValueStart < 1)) {
+            return Optional.empty();
+        }
+        //  minus sign can only be at the beginning of a run
+        if (groupString.charAt(bucketValueStart) != '-') {
+            bucketValueStart++;
+        }
+
+        return Optional.of(bucketValueStart);
     }
 
     /**
