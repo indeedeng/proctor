@@ -21,6 +21,7 @@ import java.util.Map;
  *     <li>It's a concatenation of string elements separated by commas. (e.g., my_btn_tst1,default_to_fallback)</li>
  *     <li>Each element represents a forced test group, or an option.</li>
  *     <li>A forced group is specified by a test name followed by a bucket value (e.g., my_btn_tst1)</li>
+ *     <li>A forced payload is specified by a force group followed by a semicolon and a payload definition (e.g., my_btn_tst1;doubleValue:0.2) </li>
  *     <li>A option is specified by predefined tokens that doesn't contain integers (e.g., default_to_fallback) </li>
  *     <li>If two elements conflict (e.g., specifying different buckets for the same test),
  *     the latter takes precedence</li>
@@ -82,12 +83,21 @@ public class ForceGroupsOptionsStrings {
                     }
                 }
             } catch (final NumberFormatException e) {
-                LOGGER.error("Unable to parse bucket value " + bucketAndPayloadValuesStr[FORCE_PARAMETER_BUCKET_IDX] + " as integer", e);
+                LOGGER.error("Unable to parse bucket value " + bucketValueStr + " as integer", e);
             }
         }
         return builder.build();
     }
 
+    /**
+     * The format of the payloadString is the following:
+     * <ul>
+     *     <li>payloadType:payloadValue</li>
+     *     <li>Where payloadType is one of the 7 payload types supported by Proctor (stringValue, stringArray, doubleValue, longValue, longArray, map)</li>
+     *     <li>If payloadValue is an array is expected in the following format: [value value value]</li>
+     *     <li>If payloadValue is a map expecting following format: [key:value key:value key:value]</li>
+     * </ul>
+     */
     @Nullable
     public static Payload parseForcePayloadString(final String payloadString )
     {

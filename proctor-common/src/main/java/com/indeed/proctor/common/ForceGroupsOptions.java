@@ -59,7 +59,7 @@ public class ForceGroupsOptions {
     }
 
     /**
-     * Returns bucket value of a test to force assignment. Empty if no force is given.
+     * Returns payload value of a test to force assignment. Empty if no force is given.
      */
     public Optional<Payload> getForcedPayloadValue(final String testName) {
         return Optional.ofNullable(forcePayloads.get(testName));
