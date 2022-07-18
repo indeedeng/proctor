@@ -384,9 +384,8 @@ public class TestTestChooser {
         invalidMap.put("test_key5", "1L 1L");
         invalidMap.put("test_key6", "\"one\" \"one\"");
 
-        assertThat(comparePayloadMap(TEST_CHOOSER.validateForcePayloadMap(map, inputMap), map)).isFalse();
-        assertThat(comparePayloadMap(TEST_CHOOSER.validateForcePayloadMap(map, inputMap), validatedMapExpected)).isTrue();
-        assertThat(comparePayloadMap(TEST_CHOOSER.validateForcePayloadMap(map, invalidMap), map)).isTrue();
+        assertThat(new Payload(TEST_CHOOSER.validateForcePayloadMap(map, inputMap))).isEqualTo(new Payload(validatedMapExpected));
+        assertThat(new Payload(TEST_CHOOSER.validateForcePayloadMap(map, invalidMap))).isEqualTo(new Payload(map));
     }
 
     @Test
@@ -403,12 +402,10 @@ public class TestTestChooser {
         // NOTE: input map is in String form as it still needs to be parsed and validated
         final String forcePayloadString = "map:[\"test_key1\":1 \"test_key2\":1 \"test_key3\":\"one\" \"test_key4\":[1 1] \"test_key5\":[1 1] \"test_key6\":[\"one\" \"one\"]]";
 
-        final Map<String, Object> actualMap = choose(ForceGroupsOptions.builder()
-                        .putForceGroup(TEST_CHOOSER.getTestName(), 2)
-                        .putForcePayload(TEST_CHOOSER.getTestName(), ForceGroupsOptionsStrings.parseForcePayloadString(forcePayloadString))
-                        .build()).getTestBucket().getPayload().getMap();
-
-        assertThat(comparePayloadMap(actualMap, validatedMapExpected)).isTrue();
+        assertThat(choose(ForceGroupsOptions.builder()
+                .putForceGroup(TEST_CHOOSER.getTestName(), 2)
+                .putForcePayload(TEST_CHOOSER.getTestName(), ForceGroupsOptionsStrings.parseForcePayloadString(forcePayloadString))
+                .build()).getTestBucket().getPayload()).isEqualTo(new Payload(validatedMapExpected));
     }
 
     private static boolean compareTestChooserResults(final TestChooser.Result a, final TestChooser.Result b) {
@@ -425,34 +422,5 @@ public class TestTestChooser {
                 Collections.emptyMap(),
                 forceGroupsOptions
         );
-    }
-
-    private static boolean comparePayloadMap(final Map<String, Object> a, final Map<String, Object> b) {
-        if (a != null && b != null && a.size() == b.size()) {
-            boolean isEqual = true;
-            for (final String keyString : a.keySet()) {
-                final Object aValue = a.get(keyString);
-                final Object bValue = b.get(keyString);
-                if (aValue.getClass() == bValue.getClass()) {
-                    if (aValue instanceof Double || aValue instanceof Long || aValue instanceof String) {
-                        isEqual &= Objects.equals(aValue, bValue);
-                    } else if (aValue instanceof Double[]){
-                        final Double[] aArr = (Double[]) aValue;
-                        final Double[] bArr = (Double[]) bValue;
-                        isEqual &= Arrays.equals(aArr, bArr);
-                    } else if (aValue instanceof Long[]){
-                        final Long[] aArr = (Long[]) aValue;
-                        final Long[] bArr = (Long[]) bValue;
-                        isEqual &= Arrays.equals(aArr, bArr);
-                    } else if (aValue instanceof String[]){
-                        final String[] aArr = (String[]) aValue;
-                        final String[] bArr = (String[]) bValue;
-                        isEqual &= Arrays.equals(aArr, bArr);
-                    }
-                }
-            }
-            return isEqual;
-        }
-        return Objects.equals(a, b);
     }
 }
