@@ -160,9 +160,7 @@ public class AutoPromoterTest {
             { //testing map payload autopromote equality
                 final Payload payloadBucket1Test2 = new Payload();
                 HashMap<String, Object> one = new HashMap<String, Object>();
-                one.put("A", new ArrayList() {{
-                    add(1);
-                }});
+                one.put("A", new Long[]{1L});
                 one.put("B", 2.1);
                 payloadBucket1Test2.setMap(one);
                 final Payload payloadBucket2Test2 = new Payload();
@@ -171,9 +169,7 @@ public class AutoPromoterTest {
                 final Payload payloadBucket1Test1 = new Payload();
                 HashMap<String, Object> two = new HashMap<String, Object>();
                 two.put("B", 2.1);
-                two.put("A", new ArrayList() {{
-                    add(1);
-                }});
+                two.put("A", new Long[]{1L});
                 payloadBucket1Test1.setMap(two);
                 final Payload payloadBucket2Test1 = new Payload();
                 payloadBucket2Test1.setMap(ImmutableMap.<String, Object>of("A", "asdf"));
@@ -187,16 +183,12 @@ public class AutoPromoterTest {
             }
             { //testing map payload failed autopromote equality
                 final Payload payloadBucket1Test2 = new Payload();
-                payloadBucket1Test2.setMap(ImmutableMap.<String, Object>of("A", new ArrayList() {{
-                    add("ff");
-                }}));
+                payloadBucket1Test2.setMap(ImmutableMap.<String, Object>of("A",new String[] {"ff"}));
                 final Payload payloadBucket2Test2 = new Payload();
                 payloadBucket2Test2.setMap(ImmutableMap.<String, Object>of("A", "asdf"));
                 final Payload[] payloadst2 = {payloadBucket1Test2, payloadBucket2Test2};
                 final Payload payloadBucket1Test1 = new Payload();
-                payloadBucket1Test1.setMap(ImmutableMap.<String, Object>of("A", new ArrayList() {{
-                    add(1);
-                }}));
+                payloadBucket1Test1.setMap(ImmutableMap.<String, Object>of("A",new String[] {"asdf"}));
                 final Payload payloadBucket2Test1 = new Payload();
                 payloadBucket2Test1.setMap(ImmutableMap.<String, Object>of("A", "asdf"));
                 final Payload[] payloadst1 = {payloadBucket1Test1, payloadBucket2Test1};

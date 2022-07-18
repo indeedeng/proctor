@@ -333,6 +333,26 @@ public class Payload {
                 Objects.equals(map, payload.map);
     }
 
+    private static boolean castAndCompareArrayAndArrayList(final Object array, final Collection<Object> arrayList) {
+        final Object[] oArr = arrayList.toArray(new Object[0]);
+        if (oArr.length > 0) {
+            if (array instanceof Double[] && oArr[0] instanceof Double) {
+                final Double[] aArr = (Double[]) array;
+                final Double[] bArr = Arrays.stream(oArr).toArray(Double[]::new);
+                return Arrays.equals(aArr, bArr);
+            } else if (array instanceof Long[] && oArr[0] instanceof Long) {
+                final Long[] aArr = (Long[]) array;
+                final Long[] bArr = Arrays.stream(oArr).toArray(Long[]::new);
+                return Arrays.equals(aArr, bArr);
+            } else if (array instanceof String[] && oArr[0] instanceof String) {
+                final String[] aArr = (String[]) array;
+                final String[] bArr = Arrays.stream(oArr).toArray(String[]::new);
+                return Arrays.equals(aArr, bArr);
+            }
+        }
+        return false;
+    }
+
     @Override
     public int hashCode() {
         int result = Objects.hash(doubleValue, longValue, stringValue, map);

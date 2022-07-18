@@ -392,8 +392,8 @@ public class TestTestChooser {
     public void testvalidateForcePayload_withStringParsing() {
         final Map<String, Object> validatedMapExpected = new HashMap<>();
 
-        validatedMapExpected.put("test_key1", 1L);
-        validatedMapExpected.put("test_key2", 1.0);
+        validatedMapExpected.put("test_key1", 1.0);
+        validatedMapExpected.put("test_key2", 1L);
         validatedMapExpected.put("test_key3", "one");
         validatedMapExpected.put("test_key4", new Double[]{1.0, 1.0});
         validatedMapExpected.put("test_key5", new Long[]{1L, 1L});
