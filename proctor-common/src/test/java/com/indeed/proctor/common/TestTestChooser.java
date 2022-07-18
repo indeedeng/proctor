@@ -39,7 +39,7 @@ public class TestTestChooser {
             new TestBucket("inactive", -1, "inactive", null),
             new TestBucket("control", 0, "control", null),
             new TestBucket("active", 1, "active", new Payload("active_payload")),
-            new TestBucket("payload_tst", 2, "test payload", new Payload(new HashMap<>()))
+            new TestBucket("payload_tst", 2, "test payload", new Payload(payloadMap))
     );
     private static final List<Allocation> ALLOCATIONS = ImmutableList.of(new Allocation(
             "${}",
@@ -387,6 +387,28 @@ public class TestTestChooser {
         assertThat(comparePayloadMap(TEST_CHOOSER.validateForcePayloadMap(map, inputMap), map)).isFalse();
         assertThat(comparePayloadMap(TEST_CHOOSER.validateForcePayloadMap(map, inputMap), validatedMapExpected)).isTrue();
         assertThat(comparePayloadMap(TEST_CHOOSER.validateForcePayloadMap(map, invalidMap), map)).isTrue();
+    }
+
+    @Test
+    public void testvalidateForcePayload_withStringParsing() {
+        final Map<String, Object> validatedMapExpected = new HashMap<>();
+
+        validatedMapExpected.put("test_key1", 1L);
+        validatedMapExpected.put("test_key2", 1.0);
+        validatedMapExpected.put("test_key3", "one");
+        validatedMapExpected.put("test_key4", new Double[]{1.0, 1.0});
+        validatedMapExpected.put("test_key5", new Long[]{1L, 1L});
+        validatedMapExpected.put("test_key6", new String[]{"one", "one"});
+
+        // NOTE: input map is in String form as it still needs to be parsed and validated
+        final String forcePayloadString = "map:[\"test_key1\":1 \"test_key2\":1 \"test_key3\":\"one\" \"test_key4\":[1 1] \"test_key5\":[1 1] \"test_key6\":[\"one\" \"one\"]]";
+
+        final Map<String, Object> actualMap = choose(ForceGroupsOptions.builder()
+                        .putForceGroup(TEST_CHOOSER.getTestName(), 2)
+                        .putForcePayload(TEST_CHOOSER.getTestName(), ForceGroupsOptionsStrings.parseForcePayloadString(forcePayloadString))
+                        .build()).getTestBucket().getPayload().getMap();
+
+        assertThat(comparePayloadMap(actualMap, validatedMapExpected)).isTrue();
     }
 
     private static boolean compareTestChooserResults(final TestChooser.Result a, final TestChooser.Result b) {

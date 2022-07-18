@@ -164,7 +164,10 @@ public class TestForceGroupsOptionStrings {
         testMap.put("testKey1", "1");
         testMap.put("testKey2", "value2");
         testMap.put("testKey3", "3.0");
-        assertThat(ForceGroupsOptionsStrings.parseForcePayloadString("map:[\"testKey1\":1 \"testKey2\":\"value2\" \"testKey3\":3.0]"))
+        testMap.put("testKey4", "v1 v2");
+        testMap.put("testKey5", "1.0 2.0");
+        testMap.put("testKey6", "1 2");
+        assertThat(ForceGroupsOptionsStrings.parseForcePayloadString("map:[\"testKey1\":1 \"testKey2\":\"value2\" \"testKey3\":3.0 \"testKey4\":[\"v1\" \"v2\"] \"testKey5\":[1.0 2.0] \"testKey6\":[1 2]]"))
                 .isEqualTo(
                         new Payload(testMap)
                 );
