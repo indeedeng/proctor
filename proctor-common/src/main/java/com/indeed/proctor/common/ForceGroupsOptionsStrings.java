@@ -113,87 +113,84 @@ public class ForceGroupsOptionsStrings {
     {
         final Payload payload = new Payload();
 
-        final String[] splitPayloads = payloadString.split(";");
-        for (final String splitPayload : splitPayloads) {
-            final String[] payloadPieces = payloadString.split(":",2);
-            try {
-                final PayloadType payloadType = PayloadType.payloadTypeForName(payloadPieces[0]);
-                String payloadValue = payloadPieces[1];
-                switch (payloadType) {
-                    case DOUBLE_VALUE:
-                    {
-                        payload.setDoubleValue(Double.parseDouble(payloadValue));
-                        break;
-                    }
-                    case DOUBLE_ARRAY:
-                    {
-                        payloadValue = payloadValue.replace("[","").replace("]","");
-                        payload.setDoubleArray(Arrays.stream(payloadValue.split(" "))
-                                .map(Double::valueOf)
-                                .toArray(Double[]::new) );
-                        break;
-                    }
-                    case LONG_VALUE:
-                    {
-                        payload.setLongValue(Long.parseLong(payloadValue));
-                        break;
-                    }
-                    case LONG_ARRAY:
-                    {
-                        payloadValue = payloadValue.replace("[","").replace("]","");
-                        payload.setLongArray( Arrays.stream(payloadValue.split(" "))
-                                .map(Long::valueOf)
-                                .toArray(Long[]::new) );
-                        break;
-                    }
-                    case STRING_VALUE:
-                    {
-                        payload.setStringValue(payloadValue.replace("\"",""));
-                        break;
-                    }
-                    case STRING_ARRAY:
-                    {
-                        payloadValue = payloadValue.replace("[","").replace("]","");
-                        payload.setStringArray(payloadValue.replace("\"","").split(" "));
-                        break;
-                    }
-                    case MAP:
-                    {
-                        // Remove outside brackets e.g. ([map : values])
-                        payloadValue = payloadValue.substring(1,payloadValue.length()-1);
+        final String[] payloadPieces = payloadString.split(":",2);
 
-                        // Parse each entry of map and add to payload map, which inserts all values as strings later validated against actual test
-                        final Map<String, Object> map = new HashMap<>();
-                        final List<String> mapPayloadPieces = new ArrayList<>();
-                        boolean indexInArray = false;
-                        int startIndex = 0;
-                        for (int payloadIdx = 0; payloadIdx < payloadValue.length(); payloadIdx++) {
-                            // if value is an array ignore whitespace inside array brackets
-                            if (payloadValue.charAt(payloadIdx) == '[') {
-                                indexInArray = true;
-                            } else if (payloadValue.charAt(payloadIdx) == ']') {
-                                indexInArray = false;
-                            }
-                            if ((payloadValue.charAt(payloadIdx) == ' ' || payloadIdx == payloadValue.length()-1) && !indexInArray) {
-                                final String mapPayloadPiece = payloadValue
-                                        .substring(startIndex,payloadIdx)
-                                        .replace("[","")
-                                        .replace("]","")
-                                        .replace("\"","");
-                                final String[] keyValuePair = mapPayloadPiece.split(":");
-                                map.put(keyValuePair[0], keyValuePair[1]);
-                                startIndex = payloadIdx+1;
-                            }
+        try {
+            final PayloadType payloadType = PayloadType.payloadTypeForName(payloadPieces[0]);
+            String payloadValue = payloadPieces[1];
+            switch (payloadType) {
+                case DOUBLE_VALUE:
+                {
+                    payload.setDoubleValue(Double.parseDouble(payloadValue));
+                    break;
+                }
+                case DOUBLE_ARRAY:
+                {
+                    payloadValue = payloadValue.replace("[","").replace("]","");
+                    payload.setDoubleArray(Arrays.stream(payloadValue.split(" "))
+                            .map(Double::valueOf)
+                            .toArray(Double[]::new) );
+                    break;
+                }
+                case LONG_VALUE:
+                {
+                    payload.setLongValue(Long.parseLong(payloadValue));
+                    break;
+                }
+                case LONG_ARRAY:
+                {
+                    payloadValue = payloadValue.replace("[","").replace("]","");
+                    payload.setLongArray( Arrays.stream(payloadValue.split(" "))
+                            .map(Long::valueOf)
+                            .toArray(Long[]::new) );
+                    break;
+                }
+                case STRING_VALUE:
+                {
+                    payload.setStringValue(payloadValue.replace("\"",""));
+                    break;
+                }
+                case STRING_ARRAY:
+                {
+                    payloadValue = payloadValue.replace("[","").replace("]","");
+                    payload.setStringArray(payloadValue.replace("\"","").split(" "));
+                    break;
+                }
+                case MAP:
+                {
+                    // Remove outside brackets e.g. ([map : values])
+                    payloadValue = payloadValue.substring(1,payloadValue.length()-1);
+
+                    // Parse each entry of map and add to payload map, which inserts all values as strings later validated against actual test
+                    final Map<String, Object> map = new HashMap<>();
+                    final List<String> mapPayloadPieces = new ArrayList<>();
+                    boolean indexInArray = false;
+                    int startIndex = 0;
+                    for (int payloadIdx = 0; payloadIdx < payloadValue.length(); payloadIdx++) {
+                        // if value is an array ignore whitespace inside array brackets
+                        if (payloadValue.charAt(payloadIdx) == '[') {
+                            indexInArray = true;
+                        } else if (payloadValue.charAt(payloadIdx) == ']') {
+                            indexInArray = false;
                         }
-
-                        payload.setMap(map);
-                        break;
+                        if ((payloadValue.charAt(payloadIdx) == ' ' || payloadIdx == payloadValue.length()-1) && !indexInArray) {
+                            final String mapPayloadPiece = payloadValue
+                                    .substring(startIndex,payloadIdx)
+                                    .replace("[","")
+                                    .replace("]","")
+                                    .replace("\"","");
+                            final String[] keyValuePair = mapPayloadPiece.split(":");
+                            map.put(keyValuePair[0], keyValuePair[1]);
+                            startIndex = payloadIdx+1;
+                        }
                     }
+                    payload.setMap(map);
+                    break;
                 }
             }
-            catch (final IllegalArgumentException | ArrayStoreException | ClassCastException e) {
-                return null;
-            }
+        }
+        catch (final IllegalArgumentException | ArrayStoreException | ClassCastException e) {
+            return null;
         }
 
         return payload;

@@ -300,6 +300,7 @@ public class TestPayload {
         map.put("test_key4", new Double[]{1.0, 2.0});
         map.put("test_key5", new Long[]{1L, 2L});
         map.put("test_key6", new String[]{"one", "two"});
+        map.put("test_key7", new Double[0]);
 
         // NOTE: input map is in String form as it still needs to be parsed and validated
         final Map<String, Object> mapWithCollections = new HashMap<>();
@@ -310,6 +311,7 @@ public class TestPayload {
         mapWithCollections.put("test_key4", Arrays.asList(1.0, 2.0));
         mapWithCollections.put("test_key5", Arrays.asList(1L, 2L));
         mapWithCollections.put("test_key6", Arrays.asList("one", "two"));
+        mapWithCollections.put("test_key7", new ArrayList<Double>());
 
         final Payload p1 = new Payload(map);
         final Payload p2 = new Payload(mapWithCollections);

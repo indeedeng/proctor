@@ -333,19 +333,76 @@ public class Payload {
                 Objects.equals(map, payload.map);
     }
 
+    public boolean comparePayloadMap(final Map<String, Object> m) {
+        if (this.map != null && m != null && this.map.size() == m.size()) {
+            boolean isEqual = true;
+            for (final String keyString : this.map.keySet()) {
+                final Object aValue = this.map.get(keyString);
+                final Object bValue = m.get(keyString);
+                if (aValue.getClass() == bValue.getClass()) {
+                    if (aValue instanceof Double[]) {
+                        final Double[] aArr = (Double[]) aValue;
+                        final Double[] bArr = (Double[]) bValue;
+                        isEqual &= Arrays.equals(aArr, bArr);
+                    } else if (aValue instanceof Long[]) {
+                        final Long[] aArr = (Long[]) aValue;
+                        final Long[] bArr = (Long[]) bValue;
+                        isEqual &= Arrays.equals(aArr, bArr);
+                    } else if (aValue instanceof String[]) {
+                        final String[] aArr = (String[]) aValue;
+                        final String[] bArr = (String[]) bValue;
+                        isEqual &= Arrays.equals(aArr, bArr);
+                    } else {
+                        isEqual &= Objects.equals(aValue, bValue);
+                    }
+                } else if (aValue.getClass().isArray() && bValue instanceof Collection) {
+                    try {
+                        isEqual &= castAndCompareArrayAndArrayList(aValue, (Collection<Object>) bValue);
+                    } catch ( final ArrayStoreException e) {
+                        isEqual = false;
+                    }
+                } else if (aValue instanceof Collection && bValue.getClass().isArray()) {
+                    try {
+                        isEqual &= castAndCompareArrayAndArrayList(bValue, (Collection<Object>) aValue);
+                    } catch ( final ArrayStoreException e) {
+                        isEqual = false;
+                    }
+                } else {
+                    isEqual = false;
+                }
+            }
+            return isEqual;
+        }
+        return Objects.equals(this.map, m);
+>>>>>>> f3391f01 (PROC-1108 Remove extra string split())
+    }
+
     private static boolean castAndCompareArrayAndArrayList(final Object array, final Collection<Object> arrayList) {
         final Object[] oArr = arrayList.toArray(new Object[0]);
-        if (oArr.length > 0) {
-            if (array instanceof Double[] && oArr[0] instanceof Double) {
-                final Double[] aArr = (Double[]) array;
+        if (array instanceof Double[]) {
+            final Double[] aArr = (Double[]) array;
+            if (aArr.length == 0 && oArr.length == 0) {
+                return true;
+            }
+            if (oArr.length > 0 && oArr[0] instanceof Double) {
                 final Double[] bArr = Arrays.stream(oArr).toArray(Double[]::new);
                 return Arrays.equals(aArr, bArr);
-            } else if (array instanceof Long[] && oArr[0] instanceof Long) {
-                final Long[] aArr = (Long[]) array;
+            }
+        } else if (array instanceof Long[] ) {
+            final Long[] aArr = (Long[]) array;
+            if (aArr.length == 0 && oArr.length == 0) {
+                return true;
+            }
+            if (oArr.length > 0 && oArr[0] instanceof Long) {
                 final Long[] bArr = Arrays.stream(oArr).toArray(Long[]::new);
                 return Arrays.equals(aArr, bArr);
-            } else if (array instanceof String[] && oArr[0] instanceof String) {
-                final String[] aArr = (String[]) array;
+            }
+        } else if (array instanceof String[]) {
+            final String[] aArr = (String[]) array;
+            if (aArr.length == 0 && oArr.length == 0) {
+                return true;
+            }
+            if (oArr.length > 0 && oArr[0] instanceof String) {
                 final String[] bArr = Arrays.stream(oArr).toArray(String[]::new);
                 return Arrays.equals(aArr, bArr);
             }
