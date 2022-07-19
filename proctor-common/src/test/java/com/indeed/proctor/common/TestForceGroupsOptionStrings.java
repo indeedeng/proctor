@@ -166,8 +166,8 @@ public class TestForceGroupsOptionStrings {
         testMap.put("testKey3", "3.0");
         testMap.put("testKey4", "v1, v2");
         testMap.put("testKey5", "1.0, 2.0");
-        testMap.put("testKey6", "1, 2");
-        final Payload testP = ForceGroupsOptionsStrings.parseForcePayloadString("map:[\"testKey1\":1, \"testKey2\":\"value2\", \"testKey3\":3.0, \"testKey4\":[\"v1\", \"v2\"], \"testKey5\":[1.0, 2.0], \"testKey6\":[1, 2]]");
+        testMap.put("testKey6", "1.0");
+        final Payload testP = ForceGroupsOptionsStrings.parseForcePayloadString("map:[\"testKey1\":1, \"testKey2\":\"value2\", \"testKey3\":3.0, \"testKey4\":[\"v1\", \"v2\"], \"testKey5\":[1.0, 2.0], \"testKey6\":1.0]");
 
         assertThat(testP).isEqualTo(new Payload(testMap));
     }
@@ -212,6 +212,16 @@ public class TestForceGroupsOptionStrings {
                                 .putForcePayload("abc",new Payload("test"))
                                 .putForceGroup("def", 2)
                                 .putForcePayload("def",new Payload("test2"))
+                                .build()
+                );
+
+        assertThat(ForceGroupsOptionsStrings.parseForceGroupsString("abc1;stringValue:\"test\",def2;doubleValue:0.2"))
+                .isEqualTo(
+                        ForceGroupsOptions.builder()
+                                .putForceGroup("abc", 1)
+                                .putForcePayload("abc",new Payload("test"))
+                                .putForceGroup("def", 2)
+                                .putForcePayload("def",new Payload(0.2))
                                 .build()
                 );
     }

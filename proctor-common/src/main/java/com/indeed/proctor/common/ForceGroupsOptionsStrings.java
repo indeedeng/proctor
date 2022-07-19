@@ -186,6 +186,9 @@ public class ForceGroupsOptionsStrings {
                             indexInArray = false;
                         }
                         if ((payloadValue.charAt(payloadIdx) == ',' || payloadIdx == payloadValue.length()-1) && !indexInArray) {
+                            if(payloadIdx == payloadValue.length()-1) {
+                                payloadIdx++;
+                            }
                             final String mapPayloadPiece = payloadValue
                                     .substring(startIndex,payloadIdx)
                                     .replace("[","")
