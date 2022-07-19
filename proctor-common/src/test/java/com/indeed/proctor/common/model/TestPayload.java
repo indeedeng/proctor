@@ -317,6 +317,11 @@ public class TestPayload {
         final Payload p2 = new Payload(mapWithCollections);
 
         assertThat(p1.equals(p2)).isTrue();
+
+        map.put("test_key1", 3.0);
+        final Payload failEqualsPayload = new Payload(map);
+
+        assertThat(p1.equals(failEqualsPayload)).isFalse();
     }
 
     private static Map<PayloadType, Payload> getPayloadTypePayloadSampleMap(final int seed) {

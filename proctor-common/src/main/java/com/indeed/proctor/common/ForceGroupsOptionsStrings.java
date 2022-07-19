@@ -44,36 +44,51 @@ public class ForceGroupsOptionsStrings {
             return builder.build();
         }
         // using single char in split regex avoids Pattern creation since java8
-        final String[] pieces = forceGroupsString.split(",");
+        //final String[] pieces = forceGroupsString.split(",");
+        int startIndex = 0;
+        final List<Character> brackets = new ArrayList<>();
+
         // detect integer number from end of string
-        for (final String rawPiece : pieces) {
-            // split string to separate force group and payload
-            final String[] bucketAndPayloadValuesStr = rawPiece.split(";", FORCE_PARAMETER_MAX_SIZE);
-            final String groupString = bucketAndPayloadValuesStr[FORCE_PARAMETER_BUCKET_IDX].trim();
-            if (groupString.isEmpty()) {
-                continue;
+        for (int forceGroupIndex = 0; forceGroupIndex < forceGroupsString.length(); forceGroupIndex++) {
+            if (forceGroupsString.charAt(forceGroupIndex) == '[' || forceGroupsString.charAt(forceGroupIndex) == '{') {
+                brackets.add(forceGroupsString.charAt(forceGroupIndex));
+            } else if (forceGroupsString.charAt(forceGroupIndex) == ']' || forceGroupsString.charAt(forceGroupIndex) == '}') {
+                brackets.remove(brackets.size()-1);
             }
 
-            ForceGroupsDefaultMode.fromToken(groupString)
-                    .ifPresent(builder::setDefaultMode);
+            // split string to separate force group and payload
+            if ((forceGroupsString.charAt(forceGroupIndex) == ',' || forceGroupIndex == forceGroupsString.length()-1) && brackets.isEmpty()) {
+                if(forceGroupIndex == forceGroupsString.length()-1) {
+                    forceGroupIndex++;
+                }
+                final String[] bucketAndPayloadValuesStr = forceGroupsString.substring(startIndex, forceGroupIndex).split(";", FORCE_PARAMETER_MAX_SIZE);
+                final String groupString = bucketAndPayloadValuesStr[FORCE_PARAMETER_BUCKET_IDX].trim();
+                startIndex = forceGroupIndex+1;
+                if (groupString.isEmpty()) {
+                    continue;
+                }
 
-            final Optional<Integer> bucketValueStart = getBucketValueStart(groupString);
+                ForceGroupsDefaultMode.fromToken(groupString)
+                        .ifPresent(builder::setDefaultMode);
 
-            if (bucketValueStart.isPresent()) {
-                //  bucketValueStart should now be the index of the minus sign or the first digit in a run of digits going to the end of the word
-                final String testName = groupString.substring(0, bucketValueStart.get()).trim();
-                final String bucketValueStr = groupString.substring(bucketValueStart.get()).trim();
-                try {
-                    final Integer bucketValue = Integer.valueOf(bucketValueStr);
-                    builder.putForceGroup(testName, bucketValue);
-                    if (bucketAndPayloadValuesStr.length == FORCE_PARAMETER_MAX_SIZE) {
-                        final Payload payloadValue = parseForcePayloadString(bucketAndPayloadValuesStr[FORCE_PARAMETER_PAYLOAD_IDX]);
-                        if (payloadValue != null) {
-                            builder.putForcePayload(testName, payloadValue);
+                final Optional<Integer> bucketValueStart = getBucketValueStart(groupString);
+
+                if (bucketValueStart.isPresent()) {
+                    //  bucketValueStart should now be the index of the minus sign or the first digit in a run of digits going to the end of the word
+                    final String testName = groupString.substring(0, bucketValueStart.get()).trim();
+                    final String bucketValueStr = groupString.substring(bucketValueStart.get()).trim();
+                    try {
+                        final Integer bucketValue = Integer.valueOf(bucketValueStr);
+                        builder.putForceGroup(testName, bucketValue);
+                        if (bucketAndPayloadValuesStr.length == FORCE_PARAMETER_MAX_SIZE) {
+                            final Payload payloadValue = parseForcePayloadString(bucketAndPayloadValuesStr[FORCE_PARAMETER_PAYLOAD_IDX]);
+                            if (payloadValue != null) {
+                                builder.putForcePayload(testName, payloadValue);
+                            }
                         }
+                    } catch (final NumberFormatException e) {
+                        LOGGER.error("Unable to parse bucket value " + bucketValueStr + " as integer", e);
                     }
-                } catch (final NumberFormatException e) {
-                    LOGGER.error("Unable to parse bucket value " + bucketValueStr + " as integer", e);
                 }
             }
         }
@@ -104,8 +119,8 @@ public class ForceGroupsOptionsStrings {
      * <ul>
      *     <li>payloadType:payloadValue</li>
      *     <li>Where payloadType is one of the 7 payload types supported by Proctor (stringValue, stringArray, doubleValue, longValue, longArray, map)</li>
-     *     <li>If payloadValue is an array is expected in the following format: [value value value]</li>
-     *     <li>If payloadValue is a map expecting following format: [key:value key:value key:value]</li>
+     *     <li>If payloadValue is an array is expected in the following format: [value, value, value]</li>
+     *     <li>If payloadValue is a map expecting following format: [key:value, key:value, key:value]</li>
      * </ul>
      */
     @Nullable
@@ -126,8 +141,7 @@ public class ForceGroupsOptionsStrings {
                 }
                 case DOUBLE_ARRAY:
                 {
-                    payloadValue = payloadValue.replace("[","").replace("]","");
-                    payload.setDoubleArray(Arrays.stream(payloadValue.split(" "))
+                    payload.setDoubleArray(Arrays.stream(getPayloadArray(payloadValue))
                             .map(Double::valueOf)
                             .toArray(Double[]::new) );
                     break;
@@ -139,8 +153,7 @@ public class ForceGroupsOptionsStrings {
                 }
                 case LONG_ARRAY:
                 {
-                    payloadValue = payloadValue.replace("[","").replace("]","");
-                    payload.setLongArray( Arrays.stream(payloadValue.split(" "))
+                    payload.setLongArray(Arrays.stream(getPayloadArray(payloadValue))
                             .map(Long::valueOf)
                             .toArray(Long[]::new) );
                     break;
@@ -152,13 +165,12 @@ public class ForceGroupsOptionsStrings {
                 }
                 case STRING_ARRAY:
                 {
-                    payloadValue = payloadValue.replace("[","").replace("]","");
-                    payload.setStringArray(payloadValue.replace("\"","").split(" "));
+                    payload.setStringArray(getPayloadArray(payloadValue.replace("\"","")));
                     break;
                 }
                 case MAP:
                 {
-                    // Remove outside brackets e.g. ([map : values])
+                    // Remove outside brackets e.g. (map:[keys:values, ...])
                     payloadValue = payloadValue.substring(1,payloadValue.length()-1);
 
                     // Parse each entry of map and add to payload map, which inserts all values as strings later validated against actual test
@@ -173,14 +185,14 @@ public class ForceGroupsOptionsStrings {
                         } else if (payloadValue.charAt(payloadIdx) == ']') {
                             indexInArray = false;
                         }
-                        if ((payloadValue.charAt(payloadIdx) == ' ' || payloadIdx == payloadValue.length()-1) && !indexInArray) {
+                        if ((payloadValue.charAt(payloadIdx) == ',' || payloadIdx == payloadValue.length()-1) && !indexInArray) {
                             final String mapPayloadPiece = payloadValue
                                     .substring(startIndex,payloadIdx)
                                     .replace("[","")
                                     .replace("]","")
                                     .replace("\"","");
                             final String[] keyValuePair = mapPayloadPiece.split(":");
-                            map.put(keyValuePair[0], keyValuePair[1]);
+                            map.put(keyValuePair[0].trim(), keyValuePair[1]);
                             startIndex = payloadIdx+1;
                         }
                     }
@@ -194,6 +206,13 @@ public class ForceGroupsOptionsStrings {
         }
 
         return payload;
+    }
+
+    private static String[] getPayloadArray(final String payloadValue) {
+        return payloadValue
+                .replace("[","")
+                .replace("]","")
+                .split(", ");
     }
 
     public static String generateForceGroupsString(final ForceGroupsOptions options) {
