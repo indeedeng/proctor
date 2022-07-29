@@ -54,6 +54,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -443,7 +444,8 @@ public abstract class ProctorUtils {
                             requiredTests.get(testName),
                             matrixSource,
                             functionMapper,
-                            providedContext
+                            providedContext,
+                            null
                     );
                 } catch (final IncompatibleTestMatrixException e) {
                     resultBuilder.recordError(testName, e);
@@ -508,7 +510,8 @@ public abstract class ProctorUtils {
             @Nonnull final TestSpecification testSpecification,
             @Nonnull final String matrixSource,
             @Nonnull final FunctionMapper functionMapper,
-            final ProvidedContext providedContext
+            final ProvidedContext providedContext,
+            @Nullable final String destination
     ) throws IncompatibleTestMatrixException {
         final Set<Integer> knownBucketValues = new HashSet<>();
         for (final Integer bucketValue : testSpecification.getBuckets().values()) {
@@ -529,7 +532,8 @@ public abstract class ProctorUtils {
                 knownBucketValues,
                 matrixSource,
                 functionMapper,
-                providedContext
+                providedContext,
+                destination
         );
     }
 
@@ -561,7 +565,8 @@ public abstract class ProctorUtils {
                 Collections.emptySet(),
                 matrixSource,
                 functionMapper,
-                providedContext
+                providedContext,
+                null
         );
     }
 
@@ -572,7 +577,8 @@ public abstract class ProctorUtils {
             @Nonnull final Set<Integer> knownBuckets,
             @Nonnull final String matrixSource,
             @Nonnull final FunctionMapper functionMapper,
-            final ProvidedContext providedContext
+            final ProvidedContext providedContext,
+            @Nullable final String destination
     ) throws IncompatibleTestMatrixException {
         final List<Allocation> allocations = testDefinition.getAllocations();
 
@@ -646,7 +652,7 @@ public abstract class ProctorUtils {
             for (final TestBucket bucket : testDefinition.getBuckets()) {
                 final Payload payload = bucket.getPayload();
                 if (payload != null) {
-                    if (!Payload.hasType(payload, specifiedPayloadType)) {
+                    if (!Payload.hasType(payload, specifiedPayloadType) && (destination == null || Objects.equals(destination, "production"))) {
                         throw new IncompatibleTestMatrixException(
                                 "For test " + testName + " from " + matrixSource + " expected payload of type "
                                         + specifiedPayloadType.payloadTypeName
