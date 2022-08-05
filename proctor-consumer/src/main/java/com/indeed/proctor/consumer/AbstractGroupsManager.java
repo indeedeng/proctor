@@ -13,6 +13,7 @@ import com.indeed.proctor.common.model.TestType;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import static java.util.Collections.emptyList;
@@ -140,11 +141,12 @@ public abstract class AbstractGroupsManager implements ProctorContextDescriptor 
             final HttpServletResponse response,
             final Identifiers identifiers,
             final Map<String, Object> context,
-            final boolean allowForcedGroups
+            final boolean allowForcedGroups,
+            final Set<String> forcePayloadTests
     ) {
         final ForceGroupsOptions forceGroupsOptions;
         if (allowForcedGroups) {
-            forceGroupsOptions = ProctorConsumerUtils.parseForcedGroupsOptions(request);
+            forceGroupsOptions = ProctorConsumerUtils.parseForcedGroupsOptions(request, forcePayloadTests);
             ProctorConsumerUtils.createForcedGroupsCookieUnlessEmpty(request.getContextPath(), forceGroupsOptions)
                     .ifPresent(response::addCookie);
         } else {

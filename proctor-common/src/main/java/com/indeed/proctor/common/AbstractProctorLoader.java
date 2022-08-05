@@ -21,10 +21,12 @@ import javax.el.FunctionMapper;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public abstract class AbstractProctorLoader extends DataLoadingTimerTask implements Supplier<Proctor> {
     private static final Logger LOGGER = LogManager.getLogger(AbstractProctorLoader.class);
@@ -51,6 +53,8 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
     protected final DynamicFilters dynamicFilters;
 
     private final List<ProctorLoadReporter> reporters = new ArrayList<>();
+
+    private final Set<String> forcePayloadTests = new HashSet<>();
 
     public AbstractProctorLoader(
             @Nonnull final Class<?> cls,
@@ -81,6 +85,11 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
         this.functionMapper = functionMapper;
         this.identifierValidator = identifierValidator;
         this.dynamicFilters = specification.getDynamicFilters();
+        for(final Map.Entry<String, TestSpecification> entry: specification.getTests().entrySet()) {
+            if(entry.getValue().getPayload() != null && entry.getValue().getPayload().getEnableForce()){
+                forcePayloadTests.add(entry.getKey());
+            }
+        }
     }
 
     /**
@@ -270,5 +279,9 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
                         .setValue(dynamicTests)
                         .build();
         VAR_EXPORTER.export(managedVariable);
+    }
+
+    public Set<String> getForcePayloadTests() {
+        return forcePayloadTests;
     }
 }

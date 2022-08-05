@@ -12,6 +12,7 @@ import org.junit.Test;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.HashSet;
 import java.util.Map;
 
 import static com.indeed.proctor.consumer.ProctorConsumerUtils.FORCE_GROUPS_PARAMETER;
@@ -50,7 +51,7 @@ public class AbstractGroupsManagerTest {
         {
             // no force groups
             manager.determineBucketsInternal(
-                    httpRequestMock, httpResponseMock, identifiers, emptyMap(), true);
+                    httpRequestMock, httpResponseMock, identifiers, emptyMap(), true, new HashSet<String>());
             verify(httpRequestMock, times(1)).getContextPath();
             verify(httpRequestMock, times(1)).getHeader(anyString());
             verify(httpRequestMock, times(1)).getCookies();
@@ -62,14 +63,14 @@ public class AbstractGroupsManagerTest {
             // allow force groups = false
             when(httpRequestMock.getParameter(FORCE_GROUPS_PARAMETER)).thenReturn("foo1");
             manager.determineBucketsInternal(
-                    httpRequestMock, httpResponseMock, identifiers, emptyMap(), false);
+                    httpRequestMock, httpResponseMock, identifiers, emptyMap(), false, new HashSet<String>());
             verifyNoMoreInteractions(httpRequestMock, httpResponseMock);
             clearInvocations(httpRequestMock, httpResponseMock);
         }
         {
             // allow force groups = true
             manager.determineBucketsInternal(
-                    httpRequestMock, httpResponseMock, identifiers, emptyMap(), true);
+                    httpRequestMock, httpResponseMock, identifiers, emptyMap(), true, new HashSet<String>());
             verify(httpRequestMock, times(1)).getContextPath();
             verify(httpRequestMock, times(1)).getParameter(anyString());
             verify(httpResponseMock, times(1)).addCookie(isA(Cookie.class));

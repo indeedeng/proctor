@@ -45,10 +45,10 @@ interface TestChooser<IdentifierType> {
 
     @Nonnull
     default TestChooser.Result choose(
-            @Nullable IdentifierType identifier,
-            @Nonnull Map<String, Object> values,
-            @Nonnull Map<String, TestBucket> testGroups,
-            @Nonnull ForceGroupsOptions forceGroupsOptions
+            @Nullable final IdentifierType identifier,
+            @Nonnull final Map<String, Object> values,
+            @Nonnull final Map<String, TestBucket> testGroups,
+            @Nonnull final ForceGroupsOptions forceGroupsOptions
     ) {
         final String testName = getTestName();
 
@@ -135,8 +135,6 @@ interface TestChooser<IdentifierType> {
         }
         return currentPayload;
     }
-
-
 
     /*
      * Validated Force Payload Map by checking that each forced key exists in the current payload and is of the same instance type. If forcePayload is invalid return currentPayload to not overwrite

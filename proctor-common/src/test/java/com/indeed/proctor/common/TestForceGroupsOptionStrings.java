@@ -4,27 +4,38 @@ import com.indeed.proctor.common.model.Payload;
 import org.junit.Test;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class TestForceGroupsOptionStrings {
+    static Set<String> forcePayloadTests;
+
+    static {
+        forcePayloadTests = new HashSet<>();
+        forcePayloadTests.add("abc");
+        forcePayloadTests.add("def");
+        forcePayloadTests.add("xyz");
+    }
+
     @Test
     public void testParseForceGroupsString_Empty() {
-        assertThat(ForceGroupsOptionsStrings.parseForceGroupsString(""))
+        assertThat(ForceGroupsOptionsStrings.parseForceGroupsString("", forcePayloadTests))
                 .isEqualTo(ForceGroupsOptions.empty());
     }
 
     @Test
     public void testParseForceGroupsString_SingleOption() {
-        assertThat(ForceGroupsOptionsStrings.parseForceGroupsString("default_to_fallback"))
+        assertThat(ForceGroupsOptionsStrings.parseForceGroupsString("default_to_fallback", forcePayloadTests))
                 .isEqualTo(
                         ForceGroupsOptions.builder()
                                 .setDefaultMode(ForceGroupsDefaultMode.FALLBACK)
                                 .build()
                 );
 
-        assertThat(ForceGroupsOptionsStrings.parseForceGroupsString("default_to_min_live"))
+        assertThat(ForceGroupsOptionsStrings.parseForceGroupsString("default_to_min_live", forcePayloadTests))
                 .isEqualTo(
                         ForceGroupsOptions.builder()
                                 .setDefaultMode(ForceGroupsDefaultMode.MIN_LIVE)
@@ -34,7 +45,7 @@ public class TestForceGroupsOptionStrings {
 
     @Test
     public void testParseForceGroupsString_OptionAndGroup() {
-        assertThat(ForceGroupsOptionsStrings.parseForceGroupsString("default_to_fallback,abc1"))
+        assertThat(ForceGroupsOptionsStrings.parseForceGroupsString("default_to_fallback,abc1", forcePayloadTests))
                 .isEqualTo(
                         ForceGroupsOptions.builder()
                                 .putForceGroup("abc", 1)
@@ -42,7 +53,7 @@ public class TestForceGroupsOptionStrings {
                                 .build()
                 );
 
-        assertThat(ForceGroupsOptionsStrings.parseForceGroupsString("abc1,default_to_min_live"))
+        assertThat(ForceGroupsOptionsStrings.parseForceGroupsString("abc1,default_to_min_live", forcePayloadTests))
                 .isEqualTo(
                         ForceGroupsOptions.builder()
                                 .putForceGroup("abc", 1)
@@ -53,7 +64,7 @@ public class TestForceGroupsOptionStrings {
 
     @Test
     public void testParseForceGroupsString_MultipleOptions_ShouldTakeLast() {
-        assertThat(ForceGroupsOptionsStrings.parseForceGroupsString("default_to_fallback,default_to_min_live"))
+        assertThat(ForceGroupsOptionsStrings.parseForceGroupsString("default_to_fallback,default_to_min_live", forcePayloadTests))
                 .isEqualTo(
                         ForceGroupsOptions.builder()
                                 .setDefaultMode(ForceGroupsDefaultMode.MIN_LIVE)
@@ -63,7 +74,7 @@ public class TestForceGroupsOptionStrings {
 
     @Test
     public void testParseForceGroupsString_GroupTwice() {
-        assertThat(ForceGroupsOptionsStrings.parseForceGroupsString("abc1,abc2"))
+        assertThat(ForceGroupsOptionsStrings.parseForceGroupsString("abc1,abc2", forcePayloadTests))
                 .isEqualTo(
                         ForceGroupsOptions.builder()
                                 .putForceGroup("abc", 2)
@@ -148,8 +159,8 @@ public class TestForceGroupsOptionStrings {
                         new Payload(testLongArr)
                 );
 
-        final String testString = "test";
-        assertThat(ForceGroupsOptionsStrings.parseForcePayloadString("stringValue:\"test\""))
+        final String testString = "test,with,comma";
+        assertThat(ForceGroupsOptionsStrings.parseForcePayloadString("stringValue:\"test,with,comma\""))
                 .isEqualTo(
                         new Payload(testString)
                 );
@@ -178,12 +189,12 @@ public class TestForceGroupsOptionStrings {
                 ForceGroupsOptionsStrings.generateForceGroupsString(
                         ForceGroupsOptions.builder()
                                 .putForceGroup("abc", 1)
-                                .putForcePayload("abc", new Payload("test"))
+                                .putForcePayload("abc", new Payload("test,with,comma"))
                                 .build())
         )
-                .isEqualTo("abc1;{ stringValue : \"test\" }");
+                .isEqualTo("abc1;{ stringValue : \"test,with,comma\" }");
 
-        assertThat(ForceGroupsOptionsStrings.parseForceGroupsString("abc1;stringValue:\"test\""))
+        assertThat(ForceGroupsOptionsStrings.parseForceGroupsString("abc1;stringValue:\"test\"", forcePayloadTests))
                 .isEqualTo(
                         ForceGroupsOptions.builder()
                                 .putForceGroup("abc", 1)
@@ -205,7 +216,7 @@ public class TestForceGroupsOptionStrings {
         )
                 .isEqualTo("abc1;{ stringValue : \"test\" },def2;{ stringValue : \"test2\" }");
 
-        assertThat(ForceGroupsOptionsStrings.parseForceGroupsString("abc1;stringValue:\"test\",def2;stringValue:\"test2\""))
+        assertThat(ForceGroupsOptionsStrings.parseForceGroupsString("abc1;stringValue:\"test\",def2;stringValue:\"test2\"", forcePayloadTests))
                 .isEqualTo(
                         ForceGroupsOptions.builder()
                                 .putForceGroup("abc", 1)
@@ -215,13 +226,27 @@ public class TestForceGroupsOptionStrings {
                                 .build()
                 );
 
-        assertThat(ForceGroupsOptionsStrings.parseForceGroupsString("abc1;stringValue:\"test\",def2;doubleValue:0.2"))
+        assertThat(ForceGroupsOptionsStrings.parseForceGroupsString("abc1;stringValue:\"test\",def2;doubleValue:0.2", forcePayloadTests))
                 .isEqualTo(
                         ForceGroupsOptions.builder()
                                 .putForceGroup("abc", 1)
                                 .putForcePayload("abc",new Payload("test"))
                                 .putForceGroup("def", 2)
                                 .putForcePayload("def",new Payload(0.2))
+                                .build()
+                );
+
+        assertThat(ForceGroupsOptionsStrings.parseForceGroupsString("abc1;stringValue:\"test,with,comma\"" +
+                ",def2;doubleValue:0.2,xyz1;stringValue:\"{\"msgid\":\"Employer\\/Recruiter\",\"msgctxt\":\"Source type filter " +
+                "label\",\"msgoverrides\":[\"Veröffentlicht von\"]}\"", forcePayloadTests))
+                .isEqualTo(
+                        ForceGroupsOptions.builder()
+                                .putForceGroup("abc", 1)
+                                .putForcePayload("abc",new Payload("test,with,comma"))
+                                .putForceGroup("def", 2)
+                                .putForcePayload("def",new Payload(0.2))
+                                .putForceGroup("xyz", 1)
+                                .putForcePayload("xyz", new Payload("{\"msgid\":\"Employer\\/Recruiter\",\"msgctxt\":\"Source type filter label\",\"msgoverrides\":[\"Veröffentlicht von\"]}"))
                                 .build()
                 );
     }

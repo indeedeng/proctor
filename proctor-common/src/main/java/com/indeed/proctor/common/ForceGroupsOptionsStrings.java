@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 /**
  * Owns utility functions to convert from/to a string value (force groups string)
@@ -38,14 +39,14 @@ public class ForceGroupsOptionsStrings {
     }
 
     @Nonnull
-    public static ForceGroupsOptions parseForceGroupsString(@Nullable final String forceGroupsString) {
+    public static ForceGroupsOptions parseForceGroupsString(@Nullable final String forceGroupsString, final Set<String> forcePayloadTests) {
         final ForceGroupsOptions.Builder builder = ForceGroupsOptions.builder();
         if (forceGroupsString == null) {
             return builder.build();
         }
         // using single char in split regex avoids Pattern creation since java8
         //final String[] pieces = forceGroupsString.split(",");
-        int startIndex = 0;
+        int startIndex = 0, numQuotes = 0;
         final List<Character> brackets = new ArrayList<>();
 
         // detect integer number from end of string
@@ -54,10 +55,11 @@ public class ForceGroupsOptionsStrings {
                 brackets.add(forceGroupsString.charAt(forceGroupIndex));
             } else if (forceGroupsString.charAt(forceGroupIndex) == ']' || forceGroupsString.charAt(forceGroupIndex) == '}') {
                 brackets.remove(brackets.size()-1);
+            } if (forceGroupsString.charAt(forceGroupIndex) == '"') {
+                numQuotes++;
             }
-
-            // split string to separate force group and payload
-            if ((forceGroupsString.charAt(forceGroupIndex) == ',' || forceGroupIndex == forceGroupsString.length()-1) && brackets.isEmpty()) {
+            if ((forceGroupsString.charAt(forceGroupIndex) == ',' || forceGroupIndex == forceGroupsString.length()-1) && brackets.isEmpty() && (numQuotes % 2 == 0)) {
+                // split string to separate force group and payload
                 if(forceGroupIndex == forceGroupsString.length()-1) {
                     forceGroupIndex++;
                 }
@@ -80,7 +82,7 @@ public class ForceGroupsOptionsStrings {
                     try {
                         final Integer bucketValue = Integer.valueOf(bucketValueStr);
                         builder.putForceGroup(testName, bucketValue);
-                        if (bucketAndPayloadValuesStr.length == FORCE_PARAMETER_MAX_SIZE) {
+                        if (bucketAndPayloadValuesStr.length == FORCE_PARAMETER_MAX_SIZE && forcePayloadTests.contains(testName)) {
                             final Payload payloadValue = parseForcePayloadString(bucketAndPayloadValuesStr[FORCE_PARAMETER_PAYLOAD_IDX]);
                             if (payloadValue != null) {
                                 builder.putForcePayload(testName, payloadValue);
@@ -155,17 +157,19 @@ public class ForceGroupsOptionsStrings {
                 {
                     payload.setLongArray(Arrays.stream(getPayloadArray(payloadValue))
                             .map(Long::valueOf)
-                            .toArray(Long[]::new) );
+                            .toArray(Long[]::new));
                     break;
                 }
                 case STRING_VALUE:
                 {
-                    payload.setStringValue(payloadValue.replace("\"",""));
+                    payload.setStringValue(payloadValue.substring(1,payloadValue.length()-1));
                     break;
                 }
                 case STRING_ARRAY:
                 {
-                    payload.setStringArray(getPayloadArray(payloadValue.replace("\"","")));
+                    payload.setStringArray(Arrays.stream(getPayloadArray(payloadValue))
+                            .map(str -> str.substring(1,str.length()-1))
+                            .toArray(String[]::new));
                     break;
                 }
                 case MAP:

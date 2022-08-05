@@ -80,7 +80,7 @@ public class RestController {
         final Proctor proctor = tryLoadProctor();
 
         final RawParameters raw = extractor.extract(request);
-        final ConvertedParameters param = converter.convert(raw);
+        final ConvertedParameters param = converter.convert(raw, loader.getForcePayloadTests());
 
         final ProctorResult result;
         if (param.getTest() == null && !disableIdentifyAllTests) {

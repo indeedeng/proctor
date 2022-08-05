@@ -8,8 +8,10 @@ import com.indeed.proctor.consumer.ProctorConsumerUtils;
 import com.indeed.proctor.pipet.core.web.BadRequestException;
 import com.indeed.proctor.pipet.core.web.InternalServerException;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Converts RawQueryParameters into their correct, final types.
@@ -25,12 +27,12 @@ public class Converter {
         this.contextList = contextList;
     }
 
-    public ConvertedParameters convert(final RawParameters raw) {
+    public ConvertedParameters convert(final RawParameters raw, Set<String> forcePayloadTests) {
         return new ConvertedParameters(
                 convertContext(raw.getContext()),
                 convertIdentifiers(raw.getIdentifiers()),
                 raw.getTest(), // Already correct type. No processing needed.
-                convertForceGroups(raw.getForceGroups())
+                convertForceGroups(raw.getForceGroups(), forcePayloadTests)
         );
     }
 
@@ -70,10 +72,10 @@ public class Converter {
     /**
      * forceGroups should be a mapping of test name to integer bucket value.
      */
-    private Map<String, Integer> convertForceGroups(final String forceGroups) {
+    private Map<String, Integer> convertForceGroups(final String forceGroups, Set<String> forcePayloadTests) {
         // Same format as Proctor's force groups parameter.
         // The client can store this force parameter in a cookie and not worry about parsing it at all.
         // NOTE: this is technically a @VisibleForTesting method!!
-        return ProctorConsumerUtils.parseForceGroupsList(forceGroups);
+        return ProctorConsumerUtils.parseForceGroupsList(forceGroups, forcePayloadTests);
     }
 }

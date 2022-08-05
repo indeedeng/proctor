@@ -402,10 +402,12 @@ public class TestTestChooser {
         // NOTE: input map is in String form as it still needs to be parsed and validated
         final String forcePayloadString = "map:[\"test_key1\":1, \"test_key2\":1, \"test_key3\":\"one\", \"test_key4\":[1, 1], \"test_key5\":[1, 1], \"test_key6\":[\"one\", \"one\"]]";
 
-        assertThat(choose(ForceGroupsOptions.builder()
-                .putForceGroup(TEST_CHOOSER.getTestName(), 2)
-                .putForcePayload(TEST_CHOOSER.getTestName(), ForceGroupsOptionsStrings.parseForcePayloadString(forcePayloadString))
-                .build()).getTestBucket().getPayload()).isEqualTo(new Payload(validatedMapExpected));
+        assertThat(
+                choose(ForceGroupsOptions.builder()
+                        .putForceGroup(TEST_CHOOSER.getTestName(), 2)
+                        .putForcePayload(TEST_CHOOSER.getTestName(), ForceGroupsOptionsStrings.parseForcePayloadString(forcePayloadString))
+                        .build(), true)
+                .getTestBucket().getPayload()).isEqualTo(new Payload(validatedMapExpected));
     }
 
     private static boolean compareTestChooserResults(final TestChooser.Result a, final TestChooser.Result b) {
@@ -416,6 +418,21 @@ public class TestTestChooser {
     }
 
     private static TestChooser.Result choose(final ForceGroupsOptions forceGroupsOptions) {
+        return TEST_CHOOSER.choose(
+                null,
+                Collections.emptyMap(),
+                Collections.emptyMap(),
+                forceGroupsOptions
+        );
+    }
+
+    private static TestChooser.Result choose(final ForceGroupsOptions forceGroupsOptions, final boolean enableForce) {
+        final TestSpecification testSpecification = new TestSpecification();
+        final PayloadSpecification payloadSpecification = new PayloadSpecification();
+
+        payloadSpecification.setEnableForce(true);
+        testSpecification.setPayload(payloadSpecification);
+
         return TEST_CHOOSER.choose(
                 null,
                 Collections.emptyMap(),

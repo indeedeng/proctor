@@ -190,6 +190,7 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
 
         final List<Object> testDefs = Lists.newArrayListWithCapacity(tests.size());
         final Map<String, Object> testDefsMap = new HashMap<>(tests.size());
+        final Set<String> forcePayloadTests = new HashSet<>();
 
         // Sort buckets and test names, to have consistent iterator
         final SortedSet<String> sortedTestNames = new TreeSet<>(tests.keySet());
@@ -200,6 +201,10 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
             final Map.Entry<String, Integer>[] sortedBuckets = testSpecification.getBuckets()
                     .entrySet()
                     .toArray(new Map.Entry[testSpecification.getBuckets().size()]);
+
+            if(testSpecification.getPayload() != null && testSpecification.getPayload().getEnableForce()){
+                forcePayloadTests.add(testName);
+            }
 
             Arrays.sort(sortedBuckets, new Comparator<Map.Entry<String, Integer>>() {
                 public int compare(final Map.Entry<String, Integer> e0, final Map.Entry<String, Integer> e1) {
@@ -297,6 +302,7 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
         rootMap.put("testEnumName", "Test");
         rootMap.put("testDefs", testDefs);
         rootMap.put("testDefsMap", testDefsMap);
+        rootMap.put("forcePayloadTests", forcePayloadTests);
 
         return rootMap;
     }
