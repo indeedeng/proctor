@@ -167,9 +167,7 @@ public class ForceGroupsOptionsStrings {
                 }
                 case STRING_ARRAY:
                 {
-                    payload.setStringArray(Arrays.stream(getPayloadArray(payloadValue))
-                            .map(str -> str.substring(1,str.length()-1))
-                            .toArray(String[]::new));
+                    payload.setStringArray(getPayloadStringArray(payloadValue));
                     break;
                 }
                 case MAP:
@@ -181,25 +179,24 @@ public class ForceGroupsOptionsStrings {
                     final Map<String, Object> map = new HashMap<>();
                     final List<String> mapPayloadPieces = new ArrayList<>();
                     boolean indexInArray = false;
-                    int startIndex = 0;
+                    int startIndex = 0, numQuotes = 0;
                     for (int payloadIdx = 0; payloadIdx < payloadValue.length(); payloadIdx++) {
-                        // if value is an array ignore whitespace inside array brackets
+                        // if value is an array ignore comma inside array brackets and quotes
                         if (payloadValue.charAt(payloadIdx) == '[') {
                             indexInArray = true;
                         } else if (payloadValue.charAt(payloadIdx) == ']') {
                             indexInArray = false;
+                        } else if (payloadValue.charAt(payloadIdx) == '"') {
+                            numQuotes++;
                         }
-                        if ((payloadValue.charAt(payloadIdx) == ',' || payloadIdx == payloadValue.length()-1) && !indexInArray) {
+                        if ((payloadValue.charAt(payloadIdx) == ',' || payloadIdx == payloadValue.length()-1) && !indexInArray && (numQuotes % 2 == 0)) {
                             if(payloadIdx == payloadValue.length()-1) {
                                 payloadIdx++;
                             }
                             final String mapPayloadPiece = payloadValue
-                                    .substring(startIndex,payloadIdx)
-                                    .replace("[","")
-                                    .replace("]","")
-                                    .replace("\"","");
-                            final String[] keyValuePair = mapPayloadPiece.split(":");
-                            map.put(keyValuePair[0].trim(), keyValuePair[1]);
+                                    .substring(startIndex,payloadIdx);
+                            final String[] keyValuePair = mapPayloadPiece.split(":",2);
+                            map.put(keyValuePair[0].trim().replace("\"",""), keyValuePair[1]);
                             startIndex = payloadIdx+1;
                         }
                     }
@@ -215,11 +212,33 @@ public class ForceGroupsOptionsStrings {
         return payload;
     }
 
-    private static String[] getPayloadArray(final String payloadValue) {
+    public static String[] getPayloadArray(final String payloadValue) {
         return payloadValue
-                .replace("[","")
-                .replace("]","")
-                .split(", ");
+                .substring(1,payloadValue.length()-1)
+                .split(",");
+    }
+
+    public static String[] getPayloadStringArray(final String payloadValue) {
+        int startIndex = 1;
+        int numQuotes = 0;
+        final List<String> payloadList = new ArrayList<>();
+        for (int payloadValueIndex = 1; payloadValueIndex < payloadValue.length()-1; payloadValueIndex++) {
+            if (payloadValue.charAt(payloadValueIndex) == '"') {
+                numQuotes++;
+            }
+            if ((payloadValue.charAt(payloadValueIndex) == ',' || payloadValueIndex == payloadValue.length()-2) && (numQuotes % 2 == 0)) {
+                String toAdd = payloadValue.substring(startIndex,payloadValueIndex);
+                if(toAdd.startsWith("\"")) {
+                    toAdd = toAdd.substring(1);
+                }
+                if(toAdd.endsWith("\"")) {
+                    toAdd = toAdd.substring(0,toAdd.length()-1);
+                }
+                payloadList.add(toAdd);
+                startIndex = payloadValueIndex+1;
+            }
+        }
+        return payloadList.toArray(new String[0]);
     }
 
     public static String generateForceGroupsString(final ForceGroupsOptions options) {

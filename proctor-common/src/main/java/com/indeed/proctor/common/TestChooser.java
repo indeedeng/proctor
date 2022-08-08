@@ -151,19 +151,19 @@ interface TestChooser<IdentifierType> {
                             if (currentPayloadMap.get(keyString) instanceof Double) {
                                 validatedMap.put(keyString, Double.parseDouble((String) forcePayloadMap.get(keyString)));
                             } else if (currentPayloadMap.get(keyString) instanceof Double[]) {
-                                validatedMap.put(keyString, Arrays.stream(((String) forcePayloadMap.get(keyString)).split(", "))
+                                validatedMap.put(keyString, Arrays.stream(ForceGroupsOptionsStrings.getPayloadArray((String) forcePayloadMap.get(keyString)))
                                         .map(Double::valueOf)
                                         .toArray(Double[]::new));
                             } else if (currentPayloadMap.get(keyString) instanceof Long) {
                                 validatedMap.put(keyString, Long.parseLong((String) forcePayloadMap.get(keyString)));
                             } else if (currentPayloadMap.get(keyString) instanceof Long[]) {
-                                validatedMap.put(keyString, Arrays.stream(((String) forcePayloadMap.get(keyString)).split(", "))
+                                validatedMap.put(keyString, Arrays.stream(ForceGroupsOptionsStrings.getPayloadArray((String) forcePayloadMap.get(keyString)))
                                         .map(Long::valueOf)
                                         .toArray(Long[]::new));
                             } else if (currentPayloadMap.get(keyString) instanceof String) {
                                 validatedMap.put(keyString, ((String) forcePayloadMap.get(keyString)).replace("\"", ""));
                             } else if (currentPayloadMap.get(keyString) instanceof String[]) {
-                                validatedMap.put(keyString, ((String) forcePayloadMap.get(keyString)).replace("\"", "").split(", "));
+                                validatedMap.put(keyString, ForceGroupsOptionsStrings.getPayloadStringArray((String) forcePayloadMap.get(keyString)));
                             } else {
                                 return currentPayloadMap;
                             }

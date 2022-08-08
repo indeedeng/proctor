@@ -1,5 +1,6 @@
 package com.indeed.proctor.consumer;
 
+import com.google.common.collect.ImmutableSet;
 import com.indeed.proctor.common.ForceGroupsOptions;
 import com.indeed.proctor.common.Identifiers;
 import com.indeed.proctor.common.Proctor;
