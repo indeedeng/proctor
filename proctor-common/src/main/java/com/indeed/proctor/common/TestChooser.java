@@ -147,23 +147,24 @@ interface TestChooser<IdentifierType> {
                 for (final String keyString : forcePayloadMap.keySet()) {
                     if (currentPayloadMap.containsKey(keyString)) {
                         try {
+                            final String forcePayloadValue = (String) forcePayloadMap.get(keyString);
                             // check current class of value and try to parse force value to it. force values are strings before validation
                             if (currentPayloadMap.get(keyString) instanceof Double) {
-                                validatedMap.put(keyString, Double.parseDouble((String) forcePayloadMap.get(keyString)));
+                                validatedMap.put(keyString, Double.parseDouble(forcePayloadValue));
                             } else if (currentPayloadMap.get(keyString) instanceof Double[]) {
-                                validatedMap.put(keyString, Arrays.stream(ForceGroupsOptionsStrings.getPayloadArray((String) forcePayloadMap.get(keyString)))
+                                validatedMap.put(keyString, Arrays.stream(ForceGroupsOptionsStrings.getPayloadArray(forcePayloadValue))
                                         .map(Double::valueOf)
                                         .toArray(Double[]::new));
                             } else if (currentPayloadMap.get(keyString) instanceof Long) {
-                                validatedMap.put(keyString, Long.parseLong((String) forcePayloadMap.get(keyString)));
+                                validatedMap.put(keyString, Long.parseLong(forcePayloadValue));
                             } else if (currentPayloadMap.get(keyString) instanceof Long[]) {
-                                validatedMap.put(keyString, Arrays.stream(ForceGroupsOptionsStrings.getPayloadArray((String) forcePayloadMap.get(keyString)))
+                                validatedMap.put(keyString, Arrays.stream(ForceGroupsOptionsStrings.getPayloadArray(forcePayloadValue))
                                         .map(Long::valueOf)
                                         .toArray(Long[]::new));
                             } else if (currentPayloadMap.get(keyString) instanceof String) {
-                                validatedMap.put(keyString, ((String) forcePayloadMap.get(keyString)).replace("\"", ""));
+                                validatedMap.put(keyString, forcePayloadValue.substring(2,forcePayloadValue.length()-2));
                             } else if (currentPayloadMap.get(keyString) instanceof String[]) {
-                                validatedMap.put(keyString, ForceGroupsOptionsStrings.getPayloadStringArray((String) forcePayloadMap.get(keyString)));
+                                validatedMap.put(keyString, ForceGroupsOptionsStrings.getPayloadStringArray(forcePayloadValue.substring(1,forcePayloadValue.length()-1)));
                             } else {
                                 return currentPayloadMap;
                             }

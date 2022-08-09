@@ -1,6 +1,7 @@
 package com.indeed.proctor.common;
 
 import com.indeed.proctor.common.model.Payload;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -130,7 +131,7 @@ public class ForceGroupsOptionsStrings {
     {
         final Payload payload = new Payload();
 
-        final String[] payloadPieces = payloadString.split(":",2);
+        final String[] payloadPieces = StringEscapeUtils.escapeJava(payloadString).split(":",2);
 
         try {
             final PayloadType payloadType = PayloadType.payloadTypeForName(payloadPieces[0]);
@@ -162,12 +163,12 @@ public class ForceGroupsOptionsStrings {
                 }
                 case STRING_VALUE:
                 {
-                    payload.setStringValue(payloadValue.substring(1,payloadValue.length()-1));
+                    payload.setStringValue(payloadValue.substring(2,payloadValue.length()-2));
                     break;
                 }
                 case STRING_ARRAY:
                 {
-                    payload.setStringArray(getPayloadStringArray(payloadValue));
+                    payload.setStringArray(getPayloadStringArray(payloadValue.substring(1,payloadValue.length()-1)));
                     break;
                 }
                 case MAP:
@@ -177,7 +178,6 @@ public class ForceGroupsOptionsStrings {
 
                     // Parse each entry of map and add to payload map, which inserts all values as strings later validated against actual test
                     final Map<String, Object> map = new HashMap<>();
-                    final List<String> mapPayloadPieces = new ArrayList<>();
                     boolean indexInArray = false;
                     int startIndex = 0, numQuotes = 0;
                     for (int payloadIdx = 0; payloadIdx < payloadValue.length(); payloadIdx++) {
@@ -196,7 +196,7 @@ public class ForceGroupsOptionsStrings {
                             final String mapPayloadPiece = payloadValue
                                     .substring(startIndex,payloadIdx);
                             final String[] keyValuePair = mapPayloadPiece.split(":",2);
-                            map.put(keyValuePair[0].trim().replace("\"",""), keyValuePair[1]);
+                            map.put(keyValuePair[0].trim().replace("\\\"",""), keyValuePair[1]);
                             startIndex = payloadIdx+1;
                         }
                     }
@@ -219,20 +219,23 @@ public class ForceGroupsOptionsStrings {
     }
 
     public static String[] getPayloadStringArray(final String payloadValue) {
-        int startIndex = 1;
+        int startIndex = 0;
         int numQuotes = 0;
         final List<String> payloadList = new ArrayList<>();
-        for (int payloadValueIndex = 1; payloadValueIndex < payloadValue.length()-1; payloadValueIndex++) {
+        for (int payloadValueIndex = 0; payloadValueIndex < payloadValue.length(); payloadValueIndex++) {
             if (payloadValue.charAt(payloadValueIndex) == '"') {
                 numQuotes++;
             }
-            if ((payloadValue.charAt(payloadValueIndex) == ',' || payloadValueIndex == payloadValue.length()-2) && (numQuotes % 2 == 0)) {
-                String toAdd = payloadValue.substring(startIndex,payloadValueIndex);
-                if(toAdd.startsWith("\"")) {
-                    toAdd = toAdd.substring(1);
+            if ((payloadValue.charAt(payloadValueIndex) == ',' || payloadValueIndex == payloadValue.length()-1) && (numQuotes % 2 == 0)) {
+                if(payloadValueIndex == payloadValue.length()-1) {
+                    payloadValueIndex++;
                 }
-                if(toAdd.endsWith("\"")) {
-                    toAdd = toAdd.substring(0,toAdd.length()-1);
+                String toAdd = payloadValue.substring(startIndex,payloadValueIndex);
+                if(toAdd.startsWith("\\\"")) {
+                    toAdd = toAdd.substring(2);
+                }
+                if(toAdd.endsWith("\\\"")) {
+                    toAdd = toAdd.substring(0,toAdd.length()-2);
                 }
                 payloadList.add(toAdd);
                 startIndex = payloadValueIndex+1;

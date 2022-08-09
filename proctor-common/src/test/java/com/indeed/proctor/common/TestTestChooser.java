@@ -361,10 +361,10 @@ public class TestTestChooser {
 
         inputMap.put("test_key1", "1");
         inputMap.put("test_key2", "1");
-        inputMap.put("test_key3", "one");
+        inputMap.put("test_key3", "\\\"one\\\"");
         inputMap.put("test_key4", "[1.0,1.0]");
         inputMap.put("test_key5", "[1,1]");
-        inputMap.put("test_key6", "[\"one\",\"one\"]");
+        inputMap.put("test_key6", "[\\\"one\\\",\\\"one\\\"]");
 
         final Map<String, Object> validatedMapExpected = new HashMap<>();
 
@@ -382,7 +382,7 @@ public class TestTestChooser {
         invalidMap.put("test_key3", "one");
         invalidMap.put("test_key4", "invalid map value to actual payload");
         invalidMap.put("test_key5", "[1L,1L]");
-        invalidMap.put("test_key6", "[\"one\",\"one\"]");
+        invalidMap.put("test_key6", "[one,one]");
 
         assertThat(new Payload(TEST_CHOOSER.validateForcePayloadMap(map, inputMap))).isEqualTo(new Payload(validatedMapExpected));
         assertThat(new Payload(TEST_CHOOSER.validateForcePayloadMap(map, invalidMap))).isEqualTo(new Payload(map));

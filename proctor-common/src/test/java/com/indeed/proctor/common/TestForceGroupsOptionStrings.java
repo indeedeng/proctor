@@ -1,6 +1,7 @@
 package com.indeed.proctor.common;
 
 import com.indeed.proctor.common.model.Payload;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -173,9 +174,9 @@ public class TestForceGroupsOptionStrings {
 
         final Map<String, Object> testMap = new HashMap<>();
         testMap.put("testKey1", "1");
-        testMap.put("testKey2", "\"value2\"");
+        testMap.put("testKey2", "\\\"value2\\\"");
         testMap.put("testKey3", "3.0");
-        testMap.put("testKey4", "[\"v1\", \"v2\"]");
+        testMap.put("testKey4", "[\\\"v1\\\", \\\"v2\\\"]");
         testMap.put("testKey5", "[1.0, 2.0]");
         testMap.put("testKey6", "1.0");
         final Payload testP = ForceGroupsOptionsStrings.parseForcePayloadString("map:[\"testKey1\":1, \"testKey2\":\"value2\", \"testKey3\":3.0, \"testKey4\":[\"v1\", \"v2\"], \"testKey5\":[1.0, 2.0], \"testKey6\":1.0]");
@@ -240,8 +241,8 @@ public class TestForceGroupsOptionStrings {
 
     @Test
     public void testParseForceGroupsString_JSONinString() {
-        final String crashTextExample = "{\"msgid\":\"Employer\\/Recruiter\",\"msgctxt\":\"Source type filter " +
-                "label\",\"msgoverrides\":[\"Veröffentlicht von\"]}";
+        final String crashTextExample = "{\"key1\":\"w1\\/w2\",\"key2\":\"foo bar\",\"key3\":[\"Veröffentlicht von\"]}";
+        final String crashTestExampleEscaped = StringEscapeUtils.escapeJava(crashTextExample);
 
         assertThat(ForceGroupsOptionsStrings.parseForceGroupsString("abc1;stringValue:\"test,with,comma\",def2;doubleValue:0.2,xyz1;stringValue:\"" + crashTextExample + "\"", forcePayloadTests))
                 .isEqualTo(
@@ -251,7 +252,7 @@ public class TestForceGroupsOptionStrings {
                                 .putForceGroup("def", 2)
                                 .putForcePayload("def",new Payload(0.2))
                                 .putForceGroup("xyz", 1)
-                                .putForcePayload("xyz", new Payload("{\"msgid\":\"Employer\\/Recruiter\",\"msgctxt\":\"Source type filter label\",\"msgoverrides\":[\"Veröffentlicht von\"]}"))
+                                .putForcePayload("xyz", new Payload(crashTestExampleEscaped))
                                 .build()
                 );
 
@@ -259,14 +260,14 @@ public class TestForceGroupsOptionStrings {
                 .isEqualTo(
                         ForceGroupsOptions.builder()
                                 .putForceGroup("abc", 1)
-                                .putForcePayload("abc",new Payload(new String[]{crashTextExample, crashTextExample}))
+                                .putForcePayload("abc",new Payload(new String[]{crashTestExampleEscaped, crashTestExampleEscaped}))
                                 .build()
                 );
 
         final Map<String, Object> testMap = new HashMap<>();
-        testMap.put("msgid", "\"Employer\\/Recruiter\"");
-        testMap.put("msgctxt", "\"Source type filter label\"");
-        testMap.put("msgoverrides", "[\"Veröffentlicht von\"]");
+        testMap.put("key1", "\\\"w1\\\\/w2\\\"");
+        testMap.put("key2", "\\\"foo bar\\\"");
+        testMap.put("key3", "[\\\"Ver\\u00F6ffentlicht von\\\"]");
 
         assertThat(ForceGroupsOptionsStrings.parseForceGroupsString("abc1;map:" + crashTextExample, forcePayloadTests))
                 .isEqualTo(
@@ -277,8 +278,8 @@ public class TestForceGroupsOptionStrings {
                 );
 
         final Map<String, Object> testMap2 = new HashMap<>();
-        testMap2.put("c1", "\"" + crashTextExample + "\"");
-        testMap2.put("c2", "\"" + crashTextExample + "\"");
+        testMap2.put("c1", "\\\"" + crashTestExampleEscaped + "\\\"");
+        testMap2.put("c2", "\\\"" + crashTestExampleEscaped + "\\\"");
 
         assertThat(ForceGroupsOptionsStrings.parseForceGroupsString("abc1;map:[\"c1\":\"" + crashTextExample + "\", \"c2\":\"" + crashTextExample + "\"]", forcePayloadTests))
                 .isEqualTo(
