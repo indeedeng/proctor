@@ -45,12 +45,11 @@ public class ForceGroupsOptionsStrings {
         if (forceGroupsString == null) {
             return builder.build();
         }
-        // using single char in split regex avoids Pattern creation since java8
-        //final String[] pieces = forceGroupsString.split(",");
+
         int startIndex = 0, numQuotes = 0;
         final List<Character> brackets = new ArrayList<>();
 
-        // detect integer number from end of string
+        // iterate through string to find force groups and force payloads
         for (int forceGroupIndex = 0; forceGroupIndex < forceGroupsString.length(); forceGroupIndex++) {
             if (forceGroupsString.charAt(forceGroupIndex) == '[' || forceGroupsString.charAt(forceGroupIndex) == '{') {
                 brackets.add(forceGroupsString.charAt(forceGroupIndex));
@@ -60,13 +59,19 @@ public class ForceGroupsOptionsStrings {
                 numQuotes++;
             }
             if ((forceGroupsString.charAt(forceGroupIndex) == ',' || forceGroupIndex == forceGroupsString.length()-1) && brackets.isEmpty() && (numQuotes % 2 == 0)) {
-                // split string to separate force group and payload
+                // Add 1 to index if end of string because substring endIndex is exclusive
                 if(forceGroupIndex == forceGroupsString.length()-1) {
                     forceGroupIndex++;
                 }
-                final String[] bucketAndPayloadValuesStr = forceGroupsString.substring(startIndex, forceGroupIndex).split(";", FORCE_PARAMETER_MAX_SIZE);
+                // split string to separate force group and payload
+                final String[] bucketAndPayloadValuesStr = forceGroupsString
+                        .substring(startIndex, forceGroupIndex)
+                        .split(";", FORCE_PARAMETER_MAX_SIZE);
+
                 final String groupString = bucketAndPayloadValuesStr[FORCE_PARAMETER_BUCKET_IDX].trim();
+
                 startIndex = forceGroupIndex+1;
+
                 if (groupString.isEmpty()) {
                     continue;
                 }
@@ -122,8 +127,8 @@ public class ForceGroupsOptionsStrings {
      * <ul>
      *     <li>payloadType:payloadValue</li>
      *     <li>Where payloadType is one of the 7 payload types supported by Proctor (stringValue, stringArray, doubleValue, longValue, longArray, map)</li>
-     *     <li>If payloadValue is an array is expected in the following format: [value, value, value]</li>
-     *     <li>If payloadValue is a map expecting following format: [key:value, key:value, key:value]</li>
+     *     <li>If payloadValue is an array is expected in the following format: [value,value,value]</li>
+     *     <li>If payloadValue is a map expecting following format: [key:value,key:value,key:value]</li>
      * </ul>
      */
     @Nullable
@@ -135,7 +140,7 @@ public class ForceGroupsOptionsStrings {
 
         try {
             final PayloadType payloadType = PayloadType.payloadTypeForName(payloadPieces[0]);
-            String payloadValue = payloadPieces[1];
+            final String payloadValue = payloadPieces[1];
             switch (payloadType) {
                 case DOUBLE_VALUE:
                 {
@@ -163,44 +168,20 @@ public class ForceGroupsOptionsStrings {
                 }
                 case STRING_VALUE:
                 {
+                    // Remove string escaped quotes ("\)
                     payload.setStringValue(payloadValue.substring(2,payloadValue.length()-2));
                     break;
                 }
                 case STRING_ARRAY:
                 {
+                    // Remove outside brackets e.g. ([abc, def, ...])
                     payload.setStringArray(getPayloadStringArray(payloadValue.substring(1,payloadValue.length()-1)));
                     break;
                 }
                 case MAP:
                 {
                     // Remove outside brackets e.g. (map:[keys:values, ...])
-                    payloadValue = payloadValue.substring(1,payloadValue.length()-1);
-
-                    // Parse each entry of map and add to payload map, which inserts all values as strings later validated against actual test
-                    final Map<String, Object> map = new HashMap<>();
-                    boolean indexInArray = false;
-                    int startIndex = 0, numQuotes = 0;
-                    for (int payloadIdx = 0; payloadIdx < payloadValue.length(); payloadIdx++) {
-                        // if value is an array ignore comma inside array brackets and quotes
-                        if (payloadValue.charAt(payloadIdx) == '[') {
-                            indexInArray = true;
-                        } else if (payloadValue.charAt(payloadIdx) == ']') {
-                            indexInArray = false;
-                        } else if (payloadValue.charAt(payloadIdx) == '"') {
-                            numQuotes++;
-                        }
-                        if ((payloadValue.charAt(payloadIdx) == ',' || payloadIdx == payloadValue.length()-1) && !indexInArray && (numQuotes % 2 == 0)) {
-                            if(payloadIdx == payloadValue.length()-1) {
-                                payloadIdx++;
-                            }
-                            final String mapPayloadPiece = payloadValue
-                                    .substring(startIndex,payloadIdx);
-                            final String[] keyValuePair = mapPayloadPiece.split(":",2);
-                            map.put(keyValuePair[0].trim().replace("\\\"",""), keyValuePair[1]);
-                            startIndex = payloadIdx+1;
-                        }
-                    }
-                    payload.setMap(map);
+                    payload.setMap(getPayloadMap(payloadValue.substring(1,payloadValue.length()-1)));
                     break;
                 }
             }
@@ -213,6 +194,7 @@ public class ForceGroupsOptionsStrings {
     }
 
     public static String[] getPayloadArray(final String payloadValue) {
+        // Remove outside brackets e.g. ([0, 1, 2]) then split array
         return payloadValue
                 .substring(1,payloadValue.length()-1)
                 .split(",");
@@ -223,6 +205,7 @@ public class ForceGroupsOptionsStrings {
         int numQuotes = 0;
         final List<String> payloadList = new ArrayList<>();
         for (int payloadValueIndex = 0; payloadValueIndex < payloadValue.length(); payloadValueIndex++) {
+            // if char is inside of quotes do not split string
             if (payloadValue.charAt(payloadValueIndex) == '"') {
                 numQuotes++;
             }
@@ -231,6 +214,7 @@ public class ForceGroupsOptionsStrings {
                     payloadValueIndex++;
                 }
                 String toAdd = payloadValue.substring(startIndex,payloadValueIndex);
+                // Remove escaped quotes at beginning/end of string
                 if(toAdd.startsWith("\\\"")) {
                     toAdd = toAdd.substring(2);
                 }
@@ -242,6 +226,36 @@ public class ForceGroupsOptionsStrings {
             }
         }
         return payloadList.toArray(new String[0]);
+    }
+
+    private static Map<String, Object> getPayloadMap(final String payloadValue) {
+        // Parse each entry of map and add to payload map, which inserts all values as strings later validated against actual test
+        final Map<String, Object> map = new HashMap<>();
+        boolean indexInArray = false;
+        int startIndex = 0, numQuotes = 0;
+        for (int payloadIdx = 0; payloadIdx < payloadValue.length(); payloadIdx++) {
+            // if value is an array/string ignore comma inside array square brackets/quotes
+            if (payloadValue.charAt(payloadIdx) == '[') {
+                indexInArray = true;
+            } else if (payloadValue.charAt(payloadIdx) == ']') {
+                indexInArray = false;
+            } else if (payloadValue.charAt(payloadIdx) == '"') {
+                numQuotes++;
+            }
+            if ((payloadValue.charAt(payloadIdx) == ',' || payloadIdx == payloadValue.length()-1) && !indexInArray && (numQuotes % 2 == 0)) {
+                if(payloadIdx == payloadValue.length()-1) {
+                    payloadIdx++;
+                }
+                // limit split to 2 for the key, value pair
+                final String[] keyValuePair = payloadValue
+                        .substring(startIndex,payloadIdx)
+                        .split(":",2);
+                map.put(keyValuePair[0].trim().replace("\\\"",""), keyValuePair[1]);
+                startIndex = payloadIdx+1;
+            }
+        }
+
+        return map;
     }
 
     public static String generateForceGroupsString(final ForceGroupsOptions options) {
