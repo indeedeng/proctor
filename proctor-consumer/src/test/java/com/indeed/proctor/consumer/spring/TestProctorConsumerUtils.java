@@ -1,8 +1,10 @@
 package com.indeed.proctor.consumer.spring;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.indeed.proctor.common.ForceGroupsOptions;
 import com.indeed.proctor.common.Proctor;
+import com.indeed.proctor.common.model.Payload;
 import com.indeed.proctor.common.model.TestType;
 import com.indeed.proctor.consumer.ProctorConsumerUtils;
 import org.junit.Test;
@@ -114,6 +116,23 @@ public class TestProctorConsumerUtils {
             mockRequest.addParameter(FORCE_GROUPS_PARAMETER, "");
             final Map<String, Integer> forcedGroups = ProctorConsumerUtils.parseForcedGroups(mockRequest, new HashSet<>());
             assertThat(forcedGroups).isEmpty();
+        }
+
+        //force payload with valid tet
+        {
+            final MockHttpServletRequest mockRequest = new MockHttpServletRequest();
+            mockRequest.addHeader(ProctorConsumerUtils.FORCE_GROUPS_HEADER, "testing5;stringValue:\"forcePayload\"");
+            final ForceGroupsOptions forceGroupsOptions = ProctorConsumerUtils.parseForcedGroupsOptions(mockRequest, ImmutableSet.of("testing"));
+            assertThat(forceGroupsOptions.getForcePayloads()).hasSize(1);
+            assertThat(forceGroupsOptions.getForcePayloads()).containsEntry("testing", new Payload("forcePayload"));
+        }
+
+        //force payload with invalid test
+        {
+            final MockHttpServletRequest mockRequest = new MockHttpServletRequest();
+            mockRequest.addHeader(ProctorConsumerUtils.FORCE_GROUPS_HEADER, "wrongTestName5;stringValue:\"forcePayload\"");
+            final ForceGroupsOptions forceGroupsOptions = ProctorConsumerUtils.parseForcedGroupsOptions(mockRequest, ImmutableSet.of("testing"));
+            assertThat(forceGroupsOptions.getForcePayloads()).hasSize(0);
         }
     }
 
