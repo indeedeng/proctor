@@ -8,7 +8,6 @@ import com.indeed.proctor.consumer.ProctorConsumerUtils;
 import com.indeed.proctor.pipet.core.web.BadRequestException;
 import com.indeed.proctor.pipet.core.web.InternalServerException;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
