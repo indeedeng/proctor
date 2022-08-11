@@ -1,6 +1,7 @@
 package com.indeed.proctor.common.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.indeed.proctor.common.PayloadType;
 import org.apache.commons.lang3.StringUtils;
@@ -40,6 +41,8 @@ public class Payload {
     private String[] stringArray;
     @Nullable
     private Map<String, Object> map;
+    @Nullable
+    private JsonNode json;
     // Used for returning something when we can't return a null.
     public static final Payload EMPTY_PAYLOAD = new Payload();
     // Error message for invalid user input
@@ -59,6 +62,10 @@ public class Payload {
 
     public Payload(final Map<String, Object> value) {
         this.map = new HashMap<>(value);
+    }
+
+    public Payload(final JsonNode value) {
+        this.json = value.deepCopy();
     }
 
     public Payload(final String[] values) {
@@ -90,6 +97,9 @@ public class Payload {
         }
         if (other.map != null) {
             this.map = new HashMap<>(other.map);
+        }
+        if (other.json != null) {
+           this.json = other.json.deepCopy();
         }
     }
 
@@ -149,6 +159,16 @@ public class Payload {
     }
 
     @Nullable
+    public JsonNode getJson() {
+        return json;
+    }
+
+    public void setJson(@Nullable final JsonNode json) {
+        precheckStateAllNull();
+        this.json = json;
+    }
+
+    @Nullable
     public Map<String, Object> getMap() {
         return map;
     }
@@ -205,6 +225,11 @@ public class Payload {
                 s.append('"');
             }
             s.append(']');
+        }
+        if (json != null) {
+            s.append(" json : {");
+            s.append(json);
+            s.append("}");
         }
         s.append(" }");
         return s.toString();
@@ -302,6 +327,7 @@ public class Payload {
                 Arrays.equals(longArray, payload.longArray) &&
                 Objects.equals(stringValue, payload.stringValue) &&
                 Arrays.equals(stringArray, payload.stringArray) &&
+                Objects.equals(json, payload.json) &&
                 Objects.equals(map, payload.map);
     }
 
@@ -323,5 +349,6 @@ public class Payload {
             .put(PayloadType.STRING_VALUE, Payload::getStringValue)
             .put(PayloadType.STRING_ARRAY, Payload::getStringArray)
             .put(PayloadType.MAP, Payload::getMap)
+            .put(PayloadType.JSON, Payload::getJson)
             .build();
 }

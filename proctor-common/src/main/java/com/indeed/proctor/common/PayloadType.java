@@ -1,5 +1,6 @@
 package com.indeed.proctor.common;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.indeed.proctor.common.model.Payload;
 
 import javax.annotation.Nonnull;
@@ -65,6 +66,14 @@ public enum PayloadType {
             "Object.<string, Object>",
             "{}",
             "getMap",
+            false),
+
+    JSON(
+            "json",
+            "JsonNode",
+            "Object",
+            "{}",
+            "getJson",
             false);
 
     @Nonnull
@@ -173,6 +182,8 @@ public enum PayloadType {
             return PayloadType.DOUBLE_ARRAY;
         } else if (payloadValue instanceof Map) {
             return PayloadType.MAP;
+        } else if (payloadValue instanceof JsonNode) {
+            return PayloadType.JSON;
         }
         return payloadTypeForPrimitiveValue(payloadValue);
     }
