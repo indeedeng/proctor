@@ -79,14 +79,14 @@ public class TestProctorConsumerUtils {
         //empty request
         {
             final MockHttpServletRequest mockRequest = new MockHttpServletRequest();
-            final Map<String, Integer> forcedGroups = ProctorConsumerUtils.parseForcedGroups(mockRequest, EMPTY_SET);
+            final Map<String, Integer> forcedGroups = ProctorConsumerUtils.parseForcedGroups(mockRequest);
             assertThat(forcedGroups).isEmpty();
         }
         //Test that parameter works
         {
             final MockHttpServletRequest mockRequest = new MockHttpServletRequest();
             mockRequest.addParameter(FORCE_GROUPS_PARAMETER, "testing2");
-            final Map<String, Integer> forcedGroups = ProctorConsumerUtils.parseForcedGroups(mockRequest, EMPTY_SET);
+            final Map<String, Integer> forcedGroups = ProctorConsumerUtils.parseForcedGroups(mockRequest);
             assertThat(forcedGroups)
                     .hasSize(1)
                     .containsEntry("testing", 2);
@@ -96,7 +96,7 @@ public class TestProctorConsumerUtils {
             final MockHttpServletRequest mockRequest = new MockHttpServletRequest();
             final Cookie cookie = new Cookie(ProctorConsumerUtils.FORCE_GROUPS_COOKIE_NAME, "testing3");
             mockRequest.setCookies(cookie);
-            final Map<String, Integer> forcedGroups = ProctorConsumerUtils.parseForcedGroups(mockRequest, EMPTY_SET);
+            final Map<String, Integer> forcedGroups = ProctorConsumerUtils.parseForcedGroups(mockRequest);
             assertThat(forcedGroups)
                     .hasSize(1)
                     .containsEntry("testing", 3);
@@ -105,7 +105,7 @@ public class TestProctorConsumerUtils {
         {
             final MockHttpServletRequest mockRequest = new MockHttpServletRequest();
             mockRequest.addHeader(ProctorConsumerUtils.FORCE_GROUPS_HEADER, "testing4");
-            final Map<String, Integer> forcedGroups = ProctorConsumerUtils.parseForcedGroups(mockRequest, EMPTY_SET);
+            final Map<String, Integer> forcedGroups = ProctorConsumerUtils.parseForcedGroups(mockRequest);
             assertThat(forcedGroups)
                     .hasSize(1)
                     .containsEntry("testing", 4);
@@ -114,7 +114,7 @@ public class TestProctorConsumerUtils {
         {
             final MockHttpServletRequest mockRequest = new MockHttpServletRequest();
             mockRequest.addParameter(FORCE_GROUPS_PARAMETER, "");
-            final Map<String, Integer> forcedGroups = ProctorConsumerUtils.parseForcedGroups(mockRequest, EMPTY_SET);
+            final Map<String, Integer> forcedGroups = ProctorConsumerUtils.parseForcedGroups(mockRequest);
             assertThat(forcedGroups).isEmpty();
         }
 
@@ -217,47 +217,47 @@ public class TestProctorConsumerUtils {
     @Test
     public void testParseForceGroupsList() {
         //Test null string
-        assertThat(parseForceGroupsList(null, EMPTY_SET))
+        assertThat(parseForceGroupsList(null))
                 .isEmpty();
         //Test empty string
-        assertThat(parseForceGroupsList("", EMPTY_SET)).isEmpty();
+        assertThat(parseForceGroupsList("")).isEmpty();
         //Test invalid string
-        assertThat(parseForceGroupsList("fasdfasdf;zxcvwasdf", EMPTY_SET)).isEmpty();
+        assertThat(parseForceGroupsList("fasdfasdf;zxcvwasdf")).isEmpty();
         //Test invalid numbers
-        assertThat(parseForceGroupsList("fasdfasdf", EMPTY_SET)).isEmpty();
-        assertThat(parseForceGroupsList("test" + Integer.MAX_VALUE + "0", EMPTY_SET)).isEmpty();
-        assertThat(parseForceGroupsList("test-", EMPTY_SET)).isEmpty();
-        assertThat(parseForceGroupsList("test0-", EMPTY_SET)).isEmpty();
+        assertThat(parseForceGroupsList("fasdfasdf")).isEmpty();
+        assertThat(parseForceGroupsList("test" + Integer.MAX_VALUE + "0")).isEmpty();
+        assertThat(parseForceGroupsList("test-")).isEmpty();
+        assertThat(parseForceGroupsList("test0-")).isEmpty();
         //Test single group
-        assertThat(parseForceGroupsList("somerandomtst1", EMPTY_SET))
+        assertThat(parseForceGroupsList("somerandomtst1"))
                 .hasSize(1)
                 .containsEntry("somerandomtst", 1);
         // not sure if this case needs to be supported...
-        assertThat(parseForceGroupsList("somerandomtst*  1", EMPTY_SET))
+        assertThat(parseForceGroupsList("somerandomtst*  1"))
                 .hasSize(1)
                 .containsEntry("somerandomtst*", 1);
-        assertThat(parseForceGroupsList("somerandomtst" + Integer.MAX_VALUE, EMPTY_SET))
+        assertThat(parseForceGroupsList("somerandomtst" + Integer.MAX_VALUE))
                 .hasSize(1)
                 .containsEntry("somerandomtst", Integer.MAX_VALUE);
-        assertThat(parseForceGroupsList("somerandomtst" + Integer.MIN_VALUE, EMPTY_SET))
+        assertThat(parseForceGroupsList("somerandomtst" + Integer.MIN_VALUE))
                 .hasSize(1)
                 .containsEntry("somerandomtst", Integer.MIN_VALUE);
         //Test multiple groups, multiple commas
-        assertThat(parseForceGroupsList(",,somerandomtst1, \n,, someothertst0, notanothertst2,,", EMPTY_SET))
+        assertThat(parseForceGroupsList(",,somerandomtst1, \n,, someothertst0, notanothertst2,,"))
                 .isEqualTo(ImmutableMap.builder()
                         .put("somerandomtst", 1)
                         .put("someothertst", 0)
                         .put("notanothertst", 2)
                         .build());
         //Test multiple, duplicate groups, last one wins
-        assertThat(parseForceGroupsList("testA1, testA2, testB2", EMPTY_SET))
+        assertThat(parseForceGroupsList("testA1, testA2, testB2"))
                 .isEqualTo(ImmutableMap.builder()
                         .put("testA", 2)
                         .put("testB", 2)
                         .build());
 
         //Test multiple groups with some invalid stuff
-        assertThat(parseForceGroupsList("somerandomtst1, someothertst0, notanothertst2,asdf;alksdfjzvc", EMPTY_SET))
+        assertThat(parseForceGroupsList("somerandomtst1, someothertst0, notanothertst2,asdf;alksdfjzvc"))
                 .isEqualTo(ImmutableMap.builder()
                         .put("somerandomtst", 1)
                         .put("someothertst", 0)
@@ -320,7 +320,7 @@ public class TestProctorConsumerUtils {
                     .build();
 
             final String forceGroupsString = ProctorConsumerUtils.getForceGroupsStringFromRequest(mockRequest);
-            final ForceGroupsOptions forceGroupsOptions = ProctorConsumerUtils.parseForcedGroupsOptions(mockRequest, EMPTY_SET);
+            final ForceGroupsOptions forceGroupsOptions = ProctorConsumerUtils.parseForcedGroupsOptions(mockRequest);
             assertThat(forceGroupsString).isEqualTo(expectedForceGroupsString);
             assertThat(forceGroupsOptions).isEqualTo(expectedForceGroupsOptions);
         }
@@ -336,7 +336,7 @@ public class TestProctorConsumerUtils {
                     .build();
 
             final String forceGroupsString = ProctorConsumerUtils.getForceGroupsStringFromRequest(mockRequest);
-            final ForceGroupsOptions forceGroupsOptions = ProctorConsumerUtils.parseForcedGroupsOptions(mockRequest, EMPTY_SET);
+            final ForceGroupsOptions forceGroupsOptions = ProctorConsumerUtils.parseForcedGroupsOptions(mockRequest);
             assertThat(forceGroupsString).isEqualTo(expectedForceGroupsString);
             assertThat(forceGroupsOptions).isEqualTo(expectedForceGroupsOptions);
         }
@@ -353,7 +353,23 @@ public class TestProctorConsumerUtils {
                     .build();
 
             final String forceGroupsString = ProctorConsumerUtils.getForceGroupsStringFromRequest(mockRequest);
-            final ForceGroupsOptions forceGroupsOptions = ProctorConsumerUtils.parseForcedGroupsOptions(mockRequest, EMPTY_SET);
+            final ForceGroupsOptions forceGroupsOptions = ProctorConsumerUtils.parseForcedGroupsOptions(mockRequest);
+            assertThat(forceGroupsString).isEqualTo(expectedForceGroupsString);
+            assertThat(forceGroupsOptions).isEqualTo(expectedForceGroupsOptions);
+        }
+
+        {
+            final MockHttpServletRequest mockRequest = new MockHttpServletRequest();
+            mockRequest.setCookies(new Cookie(ProctorConsumerUtils.FORCE_GROUPS_COOKIE_NAME, "first_test2;longValue:1"));
+
+            final String expectedForceGroupsString = "first_test2;longValue:1";
+            final ForceGroupsOptions expectedForceGroupsOptions = new ForceGroupsOptions.Builder()
+                    .putForceGroup("first_test", 2)
+                    .putForcePayload("first_test", new Payload(1L))
+                    .build();
+
+            final String forceGroupsString = ProctorConsumerUtils.getForceGroupsStringFromRequest(mockRequest);
+            final ForceGroupsOptions forceGroupsOptions = ProctorConsumerUtils.parseForcedGroupsOptions(mockRequest, ImmutableSet.of("first_test"));
             assertThat(forceGroupsString).isEqualTo(expectedForceGroupsString);
             assertThat(forceGroupsOptions).isEqualTo(expectedForceGroupsOptions);
         }

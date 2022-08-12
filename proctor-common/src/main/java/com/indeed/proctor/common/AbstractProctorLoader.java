@@ -54,8 +54,6 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
 
     private final List<ProctorLoadReporter> reporters = new ArrayList<>();
 
-    private final Set<String> forcePayloadTests = new HashSet<>();
-
     public AbstractProctorLoader(
             @Nonnull final Class<?> cls,
             @Nonnull final ProctorSpecification specification,
@@ -85,11 +83,6 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
         this.functionMapper = functionMapper;
         this.identifierValidator = identifierValidator;
         this.dynamicFilters = specification.getDynamicFilters();
-        for(final Map.Entry<String, TestSpecification> entry: specification.getTests().entrySet()) {
-            if(entry.getValue().getPayload() != null && entry.getValue().getPayload().getEnableForce()){
-                forcePayloadTests.add(entry.getKey());
-            }
-        }
     }
 
     /**
@@ -279,9 +272,5 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
                         .setValue(dynamicTests)
                         .build();
         VAR_EXPORTER.export(managedVariable);
-    }
-
-    public Set<String> getForcePayloadTests() {
-        return forcePayloadTests;
     }
 }

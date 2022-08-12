@@ -17,7 +17,6 @@ import java.util.Map;
 /** @author parker */
 public class TestConverter {
     private static final String DEFAULT_COUNTRY = "US";
-    private static final HashSet<String> EMPTY_SET = new HashSet<>();
     @Test
     public void testConvertContextVariables() {
         final Converter converter = getBasicConverter();
@@ -34,7 +33,7 @@ public class TestConverter {
             ""
         );
 
-        final ConvertedParameters convertedParameters = converter.convert(rawParameters, EMPTY_SET);
+        final ConvertedParameters convertedParameters = converter.convert(rawParameters);
         assertEquals(Boolean.TRUE, convertedParameters.getContext().get("loggedin"));
         assertEquals('B', convertedParameters.getContext().get("char"));
         assertEquals(0, convertedParameters.getTest().size());
@@ -57,7 +56,7 @@ public class TestConverter {
             ""
         );
 
-        final ConvertedParameters convertedParameters = converter.convert(rawParameters, EMPTY_SET);
+        final ConvertedParameters convertedParameters = converter.convert(rawParameters);
     }
 
     @Test(expected = InternalServerException.class)
@@ -75,7 +74,7 @@ public class TestConverter {
             ""
         );
 
-        final ConvertedParameters convertedParameters = converter.convert(rawParameters, EMPTY_SET);
+        final ConvertedParameters convertedParameters = converter.convert(rawParameters);
     }
 
     @Test
@@ -94,7 +93,7 @@ public class TestConverter {
             ""
         );
 
-        final ConvertedParameters convertedParameters = converter.convert(rawParameters, EMPTY_SET);
+        final ConvertedParameters convertedParameters = converter.convert(rawParameters);
         final Identifiers ids = convertedParameters.getIdentifiers();
         assertEquals("user-123", ids.getIdentifier(TestType.ANONYMOUS_USER));
         assertEquals("foo@example.com", ids.getIdentifier(TestType.EMAIL_ADDRESS));
@@ -112,7 +111,7 @@ public class TestConverter {
             "mytest1,othertest2"
         );
 
-        final ConvertedParameters convertedParameters = converter.convert(rawParameters, EMPTY_SET);
+        final ConvertedParameters convertedParameters = converter.convert(rawParameters);
 
         final Map<String, Integer> forceGroups = convertedParameters.getForceGroups();
         assertEquals(2, forceGroups.size());
