@@ -1892,14 +1892,14 @@ public class TestProctorUtils {
     @Test
     public void testReadSpecification() {
         final String specString = "{\"tests\": " +
-                "{\"account1_tst\": {\"buckets\": {\"inactive\": -1, \"control\": 0, \"test\": 1},\"fallbackValue\": -1, \"payload\": {\"type\": \"stringValue\", \"enableForce\": true}}}," +
+                "{\"account1_tst\": {\"buckets\": {\"inactive\": -1, \"control\": 0, \"test\": 1},\"fallbackValue\": -1, \"payload\": {\"type\": \"stringValue\", \"allowForce\": true}}}," +
                 "\"providedContext\": {}}";
 
         final InputStream stream = new ByteArrayInputStream(specString.getBytes(StandardCharsets.UTF_8));
 
         final ProctorSpecification proctorSpecification = readSpecification(stream);
 
-        assertThat(proctorSpecification.getTests().get("account1_tst").getPayload().getEnableForce()).isTrue();
+        assertThat(proctorSpecification.getTests().get("account1_tst").getPayload().getAllowForce()).isTrue();
     }
 
     private static void setPayload(final List<TestBucket> buckets, final int index, final Payload newPayload) {

@@ -19,7 +19,7 @@ public class PayloadSpecification {
     private String validator;
     @Nullable
     private Map<String, String> schema;
-    private boolean enableForce;
+    private boolean allowForce;
 
     @CheckForNull
     public String getType() {
@@ -47,9 +47,9 @@ public class PayloadSpecification {
         this.validator = validator;
     }
 
-    public boolean getEnableForce() { return enableForce; }
+    public boolean getAllowForce() { return allowForce; }
 
-    public void setEnableForce(final boolean enableForce) {
-        this.enableForce = enableForce;
+    public void setAllowForce(final boolean allowForce) {
+        this.allowForce = allowForce;
     }
 }

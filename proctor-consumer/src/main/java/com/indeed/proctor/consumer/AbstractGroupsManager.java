@@ -12,6 +12,7 @@ import com.indeed.proctor.common.model.TestType;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -144,15 +145,13 @@ public abstract class AbstractGroupsManager implements ProctorContextDescriptor 
             final Map<String, Object> context,
             final boolean allowForcedGroups
     ) {
-        final ForceGroupsOptions forceGroupsOptions;
-        if (allowForcedGroups) {
-            forceGroupsOptions = ProctorConsumerUtils.parseForcedGroupsOptions(request, new HashSet<>());
-            ProctorConsumerUtils.createForcedGroupsCookieUnlessEmpty(request.getContextPath(), forceGroupsOptions)
-                    .ifPresent(response::addCookie);
-        } else {
-            forceGroupsOptions = ForceGroupsOptions.empty();
-        }
-        return determineBucketsInternal(identifiers, context, forceGroupsOptions);
+        return determineBucketsInternal(
+                request,
+                response,
+                identifiers,
+                context,
+                allowForcedGroups,
+                Collections.emptySet());
     }
 
     /**

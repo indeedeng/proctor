@@ -202,7 +202,7 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
                     .entrySet()
                     .toArray(new Map.Entry[testSpecification.getBuckets().size()]);
 
-            if(testSpecification.getPayload() != null && testSpecification.getPayload().getEnableForce()){
+            if(testSpecification.getPayload() != null && testSpecification.getPayload().getAllowForce()){
                 forcePayloadTests.add(testName);
             }
 

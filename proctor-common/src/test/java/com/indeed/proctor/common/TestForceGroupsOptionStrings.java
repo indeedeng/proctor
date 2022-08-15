@@ -1,5 +1,6 @@
 package com.indeed.proctor.common;
 
+import com.google.common.collect.ImmutableSet;
 import com.indeed.proctor.common.model.Payload;
 import org.junit.Test;
 
@@ -11,15 +12,7 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class TestForceGroupsOptionStrings {
-    static Set<String> forcePayloadTests;
-
-    static {
-        forcePayloadTests = new HashSet<>();
-        forcePayloadTests.add("abc");
-        forcePayloadTests.add("def");
-        forcePayloadTests.add("xyz");
-    }
-
+    static Set<String> forcePayloadTests = ImmutableSet.of("abc", "def", "xyz");
     @Test
     public void testParseForceGroupsString_Empty() {
         assertThat(ForceGroupsOptionsStrings.parseForceGroupsString("", forcePayloadTests))
