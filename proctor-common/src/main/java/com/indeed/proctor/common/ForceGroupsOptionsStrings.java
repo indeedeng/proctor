@@ -1,7 +1,6 @@
 package com.indeed.proctor.common;
 
 import com.indeed.proctor.common.model.Payload;
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -135,9 +134,7 @@ public class ForceGroupsOptionsStrings {
     public static Payload parseForcePayloadString(final String payloadString )
     {
         final Payload payload = new Payload();
-
-        final String[] payloadPieces = StringEscapeUtils.escapeJava(payloadString).split(":",2);
-
+        final String[] payloadPieces = payloadString.split(":",2);
         try {
             final PayloadType payloadType = PayloadType.payloadTypeForName(payloadPieces[0]);
             final String payloadValue = payloadPieces[1];
@@ -168,8 +165,8 @@ public class ForceGroupsOptionsStrings {
                 }
                 case STRING_VALUE:
                 {
-                    // Remove string escaped quotes ("\)
-                    payload.setStringValue(payloadValue.substring(2,payloadValue.length()-2));
+                    // Remove quotes
+                    payload.setStringValue(payloadValue.substring(1,payloadValue.length()-1));
                     break;
                 }
                 case STRING_ARRAY:
@@ -214,12 +211,12 @@ public class ForceGroupsOptionsStrings {
                     payloadValueIndex++;
                 }
                 String toAdd = payloadValue.substring(startIndex,payloadValueIndex);
-                // Remove escaped quotes at beginning/end of string
-                if(toAdd.startsWith("\\\"")) {
-                    toAdd = toAdd.substring(2);
+                // Remove quotes at beginning/end of string
+                if(toAdd.startsWith("\"")) {
+                    toAdd = toAdd.substring(1);
                 }
-                if(toAdd.endsWith("\\\"")) {
-                    toAdd = toAdd.substring(0,toAdd.length()-2);
+                if(toAdd.endsWith("\"")) {
+                    toAdd = toAdd.substring(0,toAdd.length()-1);
                 }
                 payloadList.add(toAdd);
                 startIndex = payloadValueIndex+1;
@@ -250,7 +247,7 @@ public class ForceGroupsOptionsStrings {
                 final String[] keyValuePair = payloadValue
                         .substring(startIndex,payloadIdx)
                         .split(":",2);
-                map.put(keyValuePair[0].trim().replace("\\\"",""), keyValuePair[1]);
+                map.put(keyValuePair[0].trim().replace("\"",""), keyValuePair[1]);
                 startIndex = payloadIdx+1;
             }
         }
@@ -269,7 +266,8 @@ public class ForceGroupsOptionsStrings {
 
         options.getForceGroups()
                 .forEach((testName, bucketValue) ->
-                        tokens.add( forcePayloads.containsKey(testName) ? testName + bucketValue + ";" + forcePayloads.get(testName) : testName + bucketValue));
+                        tokens.add( forcePayloads.containsKey(testName) ? testName + bucketValue + ";" +
+                                forcePayloads.get(testName).toCookieString() : testName + bucketValue));
         return String.join(",", tokens);
     }
 }

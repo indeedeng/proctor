@@ -117,25 +117,26 @@ public class TestProctorConsumerUtils {
             final Map<String, Integer> forcedGroups = ProctorConsumerUtils.parseForcedGroups(mockRequest);
             assertThat(forcedGroups).isEmpty();
         }
-
-        //force payload with valid tet
-        {
-            final MockHttpServletRequest mockRequest = new MockHttpServletRequest();
-            mockRequest.addHeader(ProctorConsumerUtils.FORCE_GROUPS_HEADER, "testing5;stringValue:\"forcePayload\"");
-            final ForceGroupsOptions forceGroupsOptions = ProctorConsumerUtils.parseForcedGroupsOptions(mockRequest, ImmutableSet.of("testing"));
-            assertThat(forceGroupsOptions.getForcePayloads()).hasSize(1);
-            assertThat(forceGroupsOptions.getForcePayloads()).containsEntry("testing", new Payload("forcePayload"));
-        }
-
-        //force payload with invalid test
-        {
-            final MockHttpServletRequest mockRequest = new MockHttpServletRequest();
-            mockRequest.addHeader(ProctorConsumerUtils.FORCE_GROUPS_HEADER, "wrongTestName5;stringValue:\"forcePayload\"");
-            final ForceGroupsOptions forceGroupsOptions = ProctorConsumerUtils.parseForcedGroupsOptions(mockRequest, ImmutableSet.of("testing"));
-            assertThat(forceGroupsOptions.getForcePayloads()).hasSize(0);
-        }
     }
 
+    @Test
+    public void testParseForcedGroups_WithValidPayload()
+    {
+        final MockHttpServletRequest mockRequest = new MockHttpServletRequest();
+        mockRequest.addHeader(ProctorConsumerUtils.FORCE_GROUPS_HEADER, "testing5;stringValue:\"forcePayload\"");
+        final ForceGroupsOptions forceGroupsOptions = ProctorConsumerUtils.parseForcedGroupsOptions(mockRequest, ImmutableSet.of("testing"));
+        assertThat(forceGroupsOptions.getForcePayloads()).hasSize(1);
+        assertThat(forceGroupsOptions.getForcePayloads()).containsEntry("testing", new Payload("forcePayload"));
+    }
+
+    @Test
+    public void testParseForcedGroups_WithInvalidPayload()
+    {
+        final MockHttpServletRequest mockRequest = new MockHttpServletRequest();
+        mockRequest.addHeader(ProctorConsumerUtils.FORCE_GROUPS_HEADER, "wrongTestName5;stringValue:\"forcePayload\"");
+        final ForceGroupsOptions forceGroupsOptions = ProctorConsumerUtils.parseForcedGroupsOptions(mockRequest, ImmutableSet.of("testing"));
+        assertThat(forceGroupsOptions.getForcePayloads()).hasSize(0);
+    }
 
     @Test
     public void testGetForceGroupsStringFromRequest() {

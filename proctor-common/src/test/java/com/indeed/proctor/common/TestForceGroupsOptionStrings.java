@@ -1,7 +1,6 @@
 package com.indeed.proctor.common;
 
 import com.indeed.proctor.common.model.Payload;
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -174,9 +173,9 @@ public class TestForceGroupsOptionStrings {
 
         final Map<String, Object> testMap = new HashMap<>();
         testMap.put("testKey1", "1");
-        testMap.put("testKey2", "\\\"value2\\\"");
+        testMap.put("testKey2", "\"value2\"");
         testMap.put("testKey3", "3.0");
-        testMap.put("testKey4", "[\\\"v1\\\", \\\"v2\\\"]");
+        testMap.put("testKey4", "[\"v1\", \"v2\"]");
         testMap.put("testKey5", "[1.0, 2.0]");
         testMap.put("testKey6", "1.0");
         final Payload testP = ForceGroupsOptionsStrings.parseForcePayloadString("map:[\"testKey1\":1, \"testKey2\":\"value2\", \"testKey3\":3.0, \"testKey4\":[\"v1\", \"v2\"], \"testKey5\":[1.0, 2.0], \"testKey6\":1.0]");
@@ -186,20 +185,28 @@ public class TestForceGroupsOptionStrings {
 
     @Test
     public void testParseForceGroupsString_GroupAndPayload() {
-        assertThat(
-                ForceGroupsOptionsStrings.generateForceGroupsString(
-                        ForceGroupsOptions.builder()
-                                .putForceGroup("abc", 1)
-                                .putForcePayload("abc", new Payload("test,with,comma"))
-                                .build())
-        )
-                .isEqualTo("abc1;{ stringValue : \"test,with,comma\" }");
+        final String generatedForceGroup = ForceGroupsOptionsStrings.generateForceGroupsString(
+                ForceGroupsOptions.builder()
+                        .putForceGroup("abc", 1)
+                        .putForcePayload("abc", new Payload("test,with,comma"))
+                        .build());
 
-        assertThat(ForceGroupsOptionsStrings.parseForceGroupsString("abc1;stringValue:\"test\"", forcePayloadTests))
+        assertThat(generatedForceGroup)
+                .isEqualTo("abc1;stringValue:\"test,with,comma\"");
+
+        assertThat(ForceGroupsOptionsStrings.parseForceGroupsString("abc1;stringValue:\"test,with,comma\"", forcePayloadTests))
                 .isEqualTo(
                         ForceGroupsOptions.builder()
                                 .putForceGroup("abc", 1)
-                                .putForcePayload("abc",new Payload("test"))
+                                .putForcePayload("abc",new Payload("test,with,comma"))
+                                .build()
+                );
+
+        assertThat(ForceGroupsOptionsStrings.parseForceGroupsString(generatedForceGroup, forcePayloadTests))
+                .isEqualTo(
+                        ForceGroupsOptions.builder()
+                                .putForceGroup("abc", 1)
+                                .putForcePayload("abc",new Payload("test,with,comma"))
                                 .build()
                 );
     }
@@ -215,7 +222,7 @@ public class TestForceGroupsOptionStrings {
                                 .putForcePayload("def", new Payload("test2"))
                                 .build())
         )
-                .isEqualTo("abc1;{ stringValue : \"test\" },def2;{ stringValue : \"test2\" }");
+                .isEqualTo("abc1;stringValue:\"test\",def2;stringValue:\"test2\"");
 
         assertThat(ForceGroupsOptionsStrings.parseForceGroupsString("abc1;stringValue:\"test\",def2;stringValue:\"test2\"", forcePayloadTests))
                 .isEqualTo(
@@ -236,57 +243,79 @@ public class TestForceGroupsOptionStrings {
                                 .putForcePayload("def", new Payload(0.2))
                                 .build()
                 );
-
     }
 
     @Test
     public void testParseForceGroupsString_JSONinString() {
-        final String crashTextExample = "{\"key1\":\"w1\\/w2\",\"key2\":\"foo bar\",\"key3\":[\"Veröffentlicht von\"]}";
-        final String crashTestExampleEscaped = StringEscapeUtils.escapeJava(crashTextExample);
+        final String crashTextExample = "[\"key1\":\"w1\\/w2\",\"key2\":\"foo bar\",\"key3\":[\"Veröffentlicht von\"]]";
 
-        assertThat(ForceGroupsOptionsStrings.parseForceGroupsString("abc1;stringValue:\"test,with,comma\",def2;doubleValue:0.2,xyz1;stringValue:\"" + crashTextExample + "\"", forcePayloadTests))
-                .isEqualTo(
-                        ForceGroupsOptions.builder()
-                                .putForceGroup("abc", 1)
-                                .putForcePayload("abc",new Payload("test,with,comma"))
-                                .putForceGroup("def", 2)
-                                .putForcePayload("def",new Payload(0.2))
-                                .putForceGroup("xyz", 1)
-                                .putForcePayload("xyz", new Payload(crashTestExampleEscaped))
-                                .build()
-                );
+        final String test1 = "abc1;stringValue:\"test,with,comma\",def2;doubleValue:0.2,xyz1;stringValue:\"" + crashTextExample + "\"";
 
-        assertThat(ForceGroupsOptionsStrings.parseForceGroupsString("abc1;stringArray:[\"" + crashTextExample + "\",\"" + crashTextExample + "\"]", forcePayloadTests))
-                .isEqualTo(
-                        ForceGroupsOptions.builder()
-                                .putForceGroup("abc", 1)
-                                .putForcePayload("abc",new Payload(new String[]{crashTestExampleEscaped, crashTestExampleEscaped}))
-                                .build()
-                );
+        final ForceGroupsOptions testOptions1 = ForceGroupsOptions.builder()
+                .putForceGroup("abc", 1)
+                .putForcePayload("abc",new Payload("test,with,comma"))
+                .putForceGroup("def", 2)
+                .putForcePayload("def",new Payload(0.2))
+                .putForceGroup("xyz", 1)
+                .putForcePayload("xyz", new Payload(crashTextExample))
+                .build();
 
-        final Map<String, Object> testMap = new HashMap<>();
-        testMap.put("key1", "\\\"w1\\\\/w2\\\"");
-        testMap.put("key2", "\\\"foo bar\\\"");
-        testMap.put("key3", "[\\\"Ver\\u00F6ffentlicht von\\\"]");
+        assertThat(ForceGroupsOptionsStrings.parseForceGroupsString(test1, forcePayloadTests))
+                .isEqualTo(testOptions1);
 
-        assertThat(ForceGroupsOptionsStrings.parseForceGroupsString("abc1;map:" + crashTextExample, forcePayloadTests))
-                .isEqualTo(
-                        ForceGroupsOptions.builder()
-                                .putForceGroup("abc", 1)
-                                .putForcePayload("abc",new Payload(testMap))
-                                .build()
-                );
+        assertThat(ForceGroupsOptionsStrings.generateForceGroupsString(testOptions1))
+                .isEqualTo(test1);
 
-        final Map<String, Object> testMap2 = new HashMap<>();
-        testMap2.put("c1", "\\\"" + crashTestExampleEscaped + "\\\"");
-        testMap2.put("c2", "\\\"" + crashTestExampleEscaped + "\\\"");
+        final String test2 = "abc1;stringArray:[\"" + crashTextExample + "\",\"" + crashTextExample + "\"]";
 
-        assertThat(ForceGroupsOptionsStrings.parseForceGroupsString("abc1;map:[\"c1\":\"" + crashTextExample + "\", \"c2\":\"" + crashTextExample + "\"]", forcePayloadTests))
-                .isEqualTo(
-                        ForceGroupsOptions.builder()
-                                .putForceGroup("abc", 1)
-                                .putForcePayload("abc",new Payload(testMap2))
-                                .build()
-                );
+        final ForceGroupsOptions testOptions2 = ForceGroupsOptions.builder()
+                .putForceGroup("abc", 1)
+                .putForcePayload("abc",new Payload(new String[]{crashTextExample, crashTextExample}))
+                .build();
+
+        assertThat(ForceGroupsOptionsStrings.parseForceGroupsString(test2, forcePayloadTests))
+                .isEqualTo(testOptions2);
+
+        assertThat(
+                ForceGroupsOptionsStrings.generateForceGroupsString(testOptions2))
+                .isEqualTo(test2);
+
+        final Map<String, Object> testMap3 = new HashMap<>();
+        testMap3.put("key1", "\"w1\\/w2\"");
+        testMap3.put("key2", "\"foo bar\"");
+        testMap3.put("key3", "[\"Veröffentlicht von\"]");
+
+        final String test3 = "abc1;map:" + crashTextExample;
+
+        final ForceGroupsOptions testOptions3 = ForceGroupsOptions.builder()
+                .putForceGroup("abc", 1)
+                .putForcePayload("abc",new Payload(testMap3))
+                .build();
+
+        assertThat(ForceGroupsOptionsStrings.parseForceGroupsString(test3, forcePayloadTests))
+                .isEqualTo(testOptions3);
+
+        assertThat(
+                ForceGroupsOptionsStrings.generateForceGroupsString(testOptions3))
+                .isEqualTo(test3);
+
+        final Map<String, Object> testMap4 = new HashMap<>();
+        testMap4.put("c1", "\"" + crashTextExample + "\"");
+        testMap4.put("c2", "\"" + crashTextExample + "\"");
+
+        final String test4 = "abc1;map:[\"c1\":\"" + crashTextExample + "\",\"c2\":\"" + crashTextExample + "\"]";
+
+        final ForceGroupsOptions testOptions4 = ForceGroupsOptions.builder()
+                .putForceGroup("abc", 1)
+                .putForcePayload("abc",new Payload(testMap4))
+                .build();
+
+
+        assertThat(ForceGroupsOptionsStrings.parseForceGroupsString(test4, forcePayloadTests))
+                .isEqualTo(testOptions4);
+
+        assertThat(
+                ForceGroupsOptionsStrings.generateForceGroupsString(testOptions4))
+                .isEqualTo(test4);
     }
 }

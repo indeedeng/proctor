@@ -1,6 +1,7 @@
 package com.indeed.proctor.consumer;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
 import com.indeed.proctor.common.ForceGroupsOptions;
 import com.indeed.proctor.common.ForceGroupsOptionsStrings;
 import com.indeed.proctor.common.Identifiers;
@@ -100,7 +101,7 @@ public class ProctorConsumerUtils {
 
     @Nonnull
     public static Map<String, Integer> parseForceGroupsList(@Nullable final String payload) {
-        return ForceGroupsOptionsStrings.parseForceGroupsString(payload, new HashSet<>())
+        return ForceGroupsOptionsStrings.parseForceGroupsString(payload, Collections.emptySet())
                 .getForceGroups();
     }
 

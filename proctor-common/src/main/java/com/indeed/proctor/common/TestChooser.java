@@ -162,7 +162,7 @@ interface TestChooser<IdentifierType> {
                                         .map(Long::valueOf)
                                         .toArray(Long[]::new));
                             } else if (currentPayloadMap.get(keyString) instanceof String) {
-                                validatedMap.put(keyString, forcePayloadValue.substring(2,forcePayloadValue.length()-2));
+                                validatedMap.put(keyString, forcePayloadValue.substring(1,forcePayloadValue.length()-1));
                             } else if (currentPayloadMap.get(keyString) instanceof String[]) {
                                 validatedMap.put(keyString, ForceGroupsOptionsStrings.getPayloadStringArray(forcePayloadValue.substring(1,forcePayloadValue.length()-1)));
                             } else {
