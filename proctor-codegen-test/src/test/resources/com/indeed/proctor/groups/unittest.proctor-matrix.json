@@ -556,6 +556,45 @@
                     ]
                 }
             ]
+        },
+
+        "json_payload_test" : {
+            "version" : 1,
+            "salt" : "json_payload",
+            "testType" : "USER",
+            "description" : "This test is checking json capabilities",
+            "rule": "${false}",
+            "buckets" : [
+                {
+                    "name" : "inactive",
+                    "value" : -1,
+                    "payload" : {
+                        "json" : {"foo":{"bar":"baz","abc":123}}
+                    }
+                },
+                {
+                    "name" : "control",
+                    "value" : 0,
+                    "payload" : {
+                        "json" : {"foo":{"bar":"baz","abc":456}}
+                    }
+                },
+                {
+                    "name" : "test",
+                    "value" : 1,
+                    "payload" : {
+                        "json" : {"foo":{"bar":"baz","abc":789}}
+                    }
+                }
+            ],
+            "allocations" : [
+                {
+                    "ranges" : [
+                        {"bucketValue":  0, "length": 0.5 },
+                        {"bucketValue":  1, "length": 0.5 }
+                    ]
+                }
+            ]
         }
     }
 }
