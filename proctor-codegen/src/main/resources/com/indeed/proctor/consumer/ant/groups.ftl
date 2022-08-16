@@ -26,6 +26,8 @@ public class ${mainClassName} extends AbstractGroups {
 
     public static final ${mainClassName} EMPTY = new ${mainClassName}(ProctorResult.EMPTY);
 
+    public static final ObjectMapper mapper = new ObjectMapper();
+
     public ${mainClassName}(final ProctorResult proctorResult) {
         super(proctorResult);
     }
@@ -191,21 +193,16 @@ public class ${mainClassName} extends AbstractGroups {
     <#if (testDef.isJson)??>
     public @Nullable <T> T get${testDef.javaClassName}Payload(final Class<T> payloadType) {
         final Payload payload = getPayload(${testEnumName}.${testDef.enumName}.getName(), ${testEnumName}.${testDef.enumName}.getFallbackValue());
-        ObjectMapper mapper = new ObjectMapper();
 
         if (payload == null) {
             return null;
         }
 
-        T payloadCastedToType = null;
-
         try {
-            payloadCastedToType = mapper.treeToValue(payload.${testDef.payloadAccessorName}(), payloadType);
+            return mapper.treeToValue(payload.${testDef.payloadAccessorName}(), payloadType);
         } catch (JsonProcessingException e) {
             return null;
         }
-
-        return payloadCastedToType;
     }
     </#if>
     </#if>
