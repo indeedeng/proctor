@@ -9,9 +9,7 @@ import com.indeed.proctor.common.model.TestBucket;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.PrintWriter;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -97,57 +95,9 @@ interface TestChooser<IdentifierType> {
     default Payload validateForcePayload(final Payload currentPayload, final Payload forcePayload) {
         // check if force payload exists and has the same payload type as the current payload
         if (forcePayload.sameType(currentPayload)) {
-            if (Payload.hasType(forcePayload, PayloadType.MAP)) {
-                return validateForcePayloadMap(currentPayload, forcePayload);
-            } else {
+            // Payload type map currently not supported
+            if (!Payload.hasType(forcePayload, PayloadType.MAP)) {
                 return forcePayload;
-            }
-        }
-        return currentPayload;
-    }
-
-    /*
-     * Validated Force Payload Map by checking that each forced key exists in the current payload and is of the same instance type. If forcePayload is invalid return currentPayload to not overwrite
-     */
-    @Nullable
-    default Payload validateForcePayloadMap(@Nullable final Payload currentPayload, @Nullable final Payload forcePayload) {
-        final Map<String, Object> currentPayloadMap = currentPayload.getMap();
-        final Map<String, Object> forcePayloadMap = forcePayload.getMap();
-        if (currentPayloadMap != null) {
-            if (forcePayloadMap != null) {
-                final Map<String, Object> validatedMap = new HashMap<>(currentPayloadMap);
-                for (final String keyString : forcePayloadMap.keySet()) {
-                    if (currentPayloadMap.containsKey(keyString)) {
-                        try {
-                            final String forcePayloadValue = (String) forcePayloadMap.get(keyString);
-                            // check current class of value and try to parse force value to it. force values are strings before validation
-                            if (currentPayloadMap.get(keyString) instanceof Double) {
-                                validatedMap.put(keyString, Double.parseDouble(forcePayloadValue));
-                            } else if (currentPayloadMap.get(keyString) instanceof Double[]) {
-                                validatedMap.put(keyString, Arrays.stream(ForceGroupsOptionsStrings.getPayloadArray(forcePayloadValue))
-                                        .map(Double::valueOf)
-                                        .toArray(Double[]::new));
-                            } else if (currentPayloadMap.get(keyString) instanceof Long) {
-                                validatedMap.put(keyString, Long.parseLong(forcePayloadValue));
-                            } else if (currentPayloadMap.get(keyString) instanceof Long[]) {
-                                validatedMap.put(keyString, Arrays.stream(ForceGroupsOptionsStrings.getPayloadArray(forcePayloadValue))
-                                        .map(Long::valueOf)
-                                        .toArray(Long[]::new));
-                            } else if (currentPayloadMap.get(keyString) instanceof String) {
-                                validatedMap.put(keyString, forcePayloadValue.substring(1,forcePayloadValue.length()-1));
-                            } else if (currentPayloadMap.get(keyString) instanceof String[]) {
-                                validatedMap.put(keyString, ForceGroupsOptionsStrings.getPayloadStringArray(forcePayloadValue.substring(1,forcePayloadValue.length()-1)));
-                            } else {
-                                return currentPayload;
-                            }
-                        } catch (final IllegalArgumentException | ArrayStoreException | ClassCastException e) {
-                            return currentPayload;
-                        }
-                    } else {
-                        return currentPayload;
-                    }
-                }
-                return new Payload(validatedMap);
             }
         }
         return currentPayload;

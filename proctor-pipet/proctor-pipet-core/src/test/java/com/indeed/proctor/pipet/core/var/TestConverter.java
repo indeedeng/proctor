@@ -16,7 +16,7 @@ import java.util.Map;
 /** @author parker */
 public class TestConverter {
     private static final String DEFAULT_COUNTRY = "US";
-    
+
     @Test
     public void testConvertContextVariables() {
         final Converter converter = getBasicConverter();

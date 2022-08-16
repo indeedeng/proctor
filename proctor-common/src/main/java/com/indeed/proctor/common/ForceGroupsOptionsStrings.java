@@ -9,7 +9,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -179,8 +178,8 @@ public class ForceGroupsOptionsStrings {
                 case MAP:
                 {
                     // Remove outside brackets e.g. (map:[keys:values, ...])
-                    payload.setMap(getPayloadMap(payloadValue.substring(1,payloadValue.length()-1)));
-                    break;
+                    // Map not currently supported
+                    return null;
                 }
             }
         }
@@ -226,36 +225,6 @@ public class ForceGroupsOptionsStrings {
         return payloadList.toArray(new String[0]);
     }
 
-    private static Map<String, Object> getPayloadMap(final String payloadValue) {
-        // Parse each entry of map and add to payload map, which inserts all values as strings later validated against actual test
-        final Map<String, Object> map = new HashMap<>();
-        boolean indexInArray = false;
-        int startIndex = 0, numQuotes = 0;
-        for (int payloadIdx = 0; payloadIdx < payloadValue.length(); payloadIdx++) {
-            // if value is an array/string ignore comma inside array square brackets/quotes
-            if (payloadValue.charAt(payloadIdx) == '[') {
-                indexInArray = true;
-            } else if (payloadValue.charAt(payloadIdx) == ']') {
-                indexInArray = false;
-            } else if (payloadValue.charAt(payloadIdx) == '"') {
-                numQuotes++;
-            }
-            if ((payloadValue.charAt(payloadIdx) == ',' || payloadIdx == payloadValue.length()-1) && !indexInArray && (numQuotes % 2 == 0)) {
-                if(payloadIdx == payloadValue.length()-1) {
-                    payloadIdx++;
-                }
-                // limit split to 2 for the key, value pair
-                final String[] keyValuePair = payloadValue
-                        .substring(startIndex,payloadIdx)
-                        .split(":",2);
-                map.put(keyValuePair[0].trim().replace("\"",""), keyValuePair[1]);
-                startIndex = payloadIdx+1;
-            }
-        }
-
-        return map;
-    }
-
     public static String generateForceGroupsString(final ForceGroupsOptions options) {
         final List<String> tokens = new ArrayList<>();
 
@@ -275,14 +244,6 @@ public class ForceGroupsOptionsStrings {
     @Nonnull
     private static String createForcePayloadString(final Payload payload) {
         final StringBuilder s = new StringBuilder(50);
-        if (payload.getMap() != null) {
-            s.append("map:[");
-            for (final Map.Entry<String, Object> entry : payload.getMap().entrySet()) {
-                s.append('"').append(entry.getKey()).append("\"").append(':').append(entry.getValue()).append(',');
-            }
-            s.deleteCharAt(s.length()-1);
-            s.append(']');
-        }
         if (payload.getDoubleValue() != null) {
             s.append("doubleValue:").append(payload.getDoubleValue());
         }
