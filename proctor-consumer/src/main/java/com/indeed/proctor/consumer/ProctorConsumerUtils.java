@@ -1,7 +1,6 @@
 package com.indeed.proctor.consumer;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableSet;
 import com.indeed.proctor.common.ForceGroupsOptions;
 import com.indeed.proctor.common.ForceGroupsOptionsStrings;
 import com.indeed.proctor.common.Identifiers;
