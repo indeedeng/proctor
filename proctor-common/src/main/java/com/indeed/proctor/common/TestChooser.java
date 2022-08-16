@@ -95,43 +95,13 @@ interface TestChooser<IdentifierType> {
     }
 
     default Payload validateForcePayload(final Payload currentPayload, final Payload forcePayload) {
-        final Payload validatedPayload = new Payload();
-        final Optional<PayloadType> forcePayloadType = forcePayload.fetchPayloadType();
         // check if force payload exists and has the same payload type as the current payload
-        if (forcePayloadType.isPresent() && Payload.hasType(currentPayload, forcePayloadType.get())) {
-            switch (forcePayloadType.get()) {
-                case DOUBLE_VALUE: {
-                    validatedPayload.setDoubleValue(forcePayload.getDoubleValue());
-                    break;
-                }
-                case DOUBLE_ARRAY: {
-                    validatedPayload.setDoubleArray(forcePayload.getDoubleArray());
-                    break;
-                }
-                case LONG_VALUE: {
-                    validatedPayload.setLongValue(forcePayload.getLongValue());
-                    break;
-                }
-                case LONG_ARRAY: {
-                    validatedPayload.setLongArray(forcePayload.getLongArray());
-                    break;
-                }
-                case STRING_VALUE: {
-                    validatedPayload.setStringValue(forcePayload.getStringValue());
-                    break;
-                }
-                case STRING_ARRAY: {
-                    validatedPayload.setStringArray(forcePayload.getStringArray());
-                    break;
-                }
-                case MAP: {
-                    // need to validate the map contains the same value class types, can not simply set
-                    final Map<String, Object> validatedPayloadMap = validateForcePayloadMap(new HashMap<>(currentPayload.getMap()), forcePayload.getMap());
-                    validatedPayload.setMap(validatedPayloadMap);
-                    break;
-                }
+        if (forcePayload.sameType(currentPayload)) {
+            if (Payload.hasType(forcePayload, PayloadType.MAP)) {
+                return validateForcePayloadMap(currentPayload, forcePayload);
+            } else {
+                return forcePayload;
             }
-            return validatedPayload;
         }
         return currentPayload;
     }
@@ -140,7 +110,9 @@ interface TestChooser<IdentifierType> {
      * Validated Force Payload Map by checking that each forced key exists in the current payload and is of the same instance type. If forcePayload is invalid return currentPayload to not overwrite
      */
     @Nullable
-    default Map<String, Object> validateForcePayloadMap(@Nullable final Map<String, Object> currentPayloadMap, @Nullable final Map<String, Object> forcePayloadMap) {
+    default Payload validateForcePayloadMap(@Nullable final Payload currentPayload, @Nullable final Payload forcePayload) {
+        final Map<String, Object> currentPayloadMap = currentPayload.getMap();
+        final Map<String, Object> forcePayloadMap = forcePayload.getMap();
         if (currentPayloadMap != null) {
             if (forcePayloadMap != null) {
                 final Map<String, Object> validatedMap = new HashMap<>(currentPayloadMap);
@@ -166,20 +138,19 @@ interface TestChooser<IdentifierType> {
                             } else if (currentPayloadMap.get(keyString) instanceof String[]) {
                                 validatedMap.put(keyString, ForceGroupsOptionsStrings.getPayloadStringArray(forcePayloadValue.substring(1,forcePayloadValue.length()-1)));
                             } else {
-                                return currentPayloadMap;
+                                return currentPayload;
                             }
                         } catch (final IllegalArgumentException | ArrayStoreException | ClassCastException e) {
-                            return currentPayloadMap;
+                            return currentPayload;
                         }
                     } else {
-                        return currentPayloadMap;
+                        return currentPayload;
                     }
                 }
-                return validatedMap;
+                return new Payload(validatedMap);
             }
-            return currentPayloadMap;
         }
-        return null;
+        return currentPayload;
     }
 
     /**

@@ -237,48 +237,6 @@ public class Payload {
         return s.toString();
     }
 
-    @Nonnull
-    public String toCookieString() {
-        final StringBuilder s = new StringBuilder(50);
-        if (map != null) {
-            s.append("map:[");
-            for (final Map.Entry<String, Object> entry : map.entrySet()) {
-                s.append('"').append(entry.getKey()).append("\"").append(':').append(entry.getValue()).append(',');
-            }
-            s.deleteCharAt(s.length()-1);
-            s.append(']');
-        }
-        if (doubleValue != null) {
-            s.append("doubleValue:").append(doubleValue);
-        }
-        if (doubleArray != null) {
-            s.append("doubleArray:[");
-            s.append(StringUtils.join(doubleArray, ","));
-            s.append(']');
-        }
-        if (longValue != null) {
-            s.append("longValue:").append(longValue);
-        }
-        if (longArray != null) {
-            s.append("longArray:[");
-            s.append(StringUtils.join(longArray, ","));
-            s.append(']');
-        }
-        if (stringValue != null) {
-            s.append("stringValue:\"").append(stringValue).append('"');
-        }
-        if (stringArray != null) {
-            s.append("stringArray:[");
-            if (stringArray.length > 0) {
-                s.append('"');
-                s.append(String.join("\",\"", stringArray));
-                s.append('"');
-            }
-            s.append(']');
-        }
-        return s.toString();
-    }
-
     /**
      * infers payloadtype based on the value that is set.
      * @return payloadType unless emptyPayload

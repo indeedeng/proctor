@@ -1,6 +1,7 @@
 package com.indeed.proctor.common;
 
 import com.indeed.proctor.common.model.Payload;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -267,7 +268,49 @@ public class ForceGroupsOptionsStrings {
         options.getForceGroups()
                 .forEach((testName, bucketValue) ->
                         tokens.add( forcePayloads.containsKey(testName) ? testName + bucketValue + ";" +
-                                forcePayloads.get(testName).toCookieString() : testName + bucketValue));
+                                createForcePayloadString(forcePayloads.get(testName)) : testName + bucketValue));
         return String.join(",", tokens);
+    }
+
+    @Nonnull
+    private static String createForcePayloadString(final Payload payload) {
+        final StringBuilder s = new StringBuilder(50);
+        if (payload.getMap() != null) {
+            s.append("map:[");
+            for (final Map.Entry<String, Object> entry : payload.getMap().entrySet()) {
+                s.append('"').append(entry.getKey()).append("\"").append(':').append(entry.getValue()).append(',');
+            }
+            s.deleteCharAt(s.length()-1);
+            s.append(']');
+        }
+        if (payload.getDoubleValue() != null) {
+            s.append("doubleValue:").append(payload.getDoubleValue());
+        }
+        if (payload.getDoubleArray() != null) {
+            s.append("doubleArray:[");
+            s.append(StringUtils.join(payload.getDoubleArray(), ","));
+            s.append(']');
+        }
+        if (payload.getLongValue() != null) {
+            s.append("longValue:").append(payload.getLongValue());
+        }
+        if (payload.getLongArray() != null) {
+            s.append("longArray:[");
+            s.append(StringUtils.join(payload.getLongArray(), ","));
+            s.append(']');
+        }
+        if (payload.getStringValue() != null) {
+            s.append("stringValue:\"").append(payload.getStringValue()).append('"');
+        }
+        if (payload.getStringArray() != null) {
+            s.append("stringArray:[");
+            if (payload.getStringArray().length > 0) {
+                s.append('"');
+                s.append(String.join("\",\"", payload.getStringArray()));
+                s.append('"');
+            }
+            s.append(']');
+        }
+        return s.toString();
     }
 }

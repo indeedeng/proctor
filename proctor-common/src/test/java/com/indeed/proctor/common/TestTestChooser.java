@@ -384,8 +384,8 @@ public class TestTestChooser {
         invalidMap.put("test_key5", "[1L,1L]");
         invalidMap.put("test_key6", "[one,one]");
 
-        assertThat(new Payload(TEST_CHOOSER.validateForcePayloadMap(map, inputMap))).isEqualTo(new Payload(validatedMapExpected));
-        assertThat(new Payload(TEST_CHOOSER.validateForcePayloadMap(map, invalidMap))).isEqualTo(new Payload(map));
+        assertThat(new Payload(TEST_CHOOSER.validateForcePayloadMap(new Payload(map), new Payload(inputMap)))).isEqualTo(new Payload(validatedMapExpected));
+        assertThat(new Payload(TEST_CHOOSER.validateForcePayloadMap(new Payload(map), new Payload(invalidMap)))).isEqualTo(new Payload(map));
     }
 
     @Test
