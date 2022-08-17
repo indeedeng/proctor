@@ -124,7 +124,59 @@ public class TestForceGroupsOptionStrings {
     }
 
     @Test
-    public void testParseForceGroupsString_parseForcePayloadString() {
+    public void testGenerateForceGroupsString_withForcePayload() {
+        assertThat(ForceGroupsOptionsStrings.generateForceGroupsString(
+                ForceGroupsOptions.builder()
+                        .putForceGroup("abc", 1)
+                        .putForcePayload("abc", new Payload(0.2))
+                        .build())
+        ).isEqualTo("abc1;doubleValue:0.2");
+
+        assertThat(ForceGroupsOptionsStrings.generateForceGroupsString(
+                ForceGroupsOptions.builder()
+                        .putForceGroup("abc", 1)
+                        .putForcePayload("abc", new Payload(new Double[]{0.2, 0.4, 0.6}))
+                        .build())
+        ).isEqualTo("abc1;doubleArray:[0.2,0.4,0.6]");
+
+        assertThat(ForceGroupsOptionsStrings.generateForceGroupsString(
+                ForceGroupsOptions.builder()
+                        .putForceGroup("abc", 1)
+                        .putForcePayload("abc", new Payload(2L))
+                        .build())
+        ).isEqualTo("abc1;longValue:2");
+
+        assertThat(ForceGroupsOptionsStrings.generateForceGroupsString(
+                ForceGroupsOptions.builder()
+                        .putForceGroup("abc", 1)
+                        .putForcePayload("abc", new Payload(new Long[]{2L, 4L, 6L}))
+                        .build())
+        ).isEqualTo("abc1;longArray:[2,4,6]");
+
+        assertThat(ForceGroupsOptionsStrings.generateForceGroupsString(
+                ForceGroupsOptions.builder()
+                        .putForceGroup("abc", 1)
+                        .putForcePayload("abc", new Payload("test,with,comma"))
+                        .build())
+        ).isEqualTo("abc1;stringValue:\"test,with,comma\"");
+
+        assertThat(ForceGroupsOptionsStrings.generateForceGroupsString(
+                ForceGroupsOptions.builder()
+                        .putForceGroup("abc", 1)
+                        .putForcePayload("abc", new Payload("foo\"bar"))
+                        .build())
+        ).isEqualTo("abc1;stringValue:\"foo\\\"bar\"");
+
+        assertThat(ForceGroupsOptionsStrings.generateForceGroupsString(
+                ForceGroupsOptions.builder()
+                        .putForceGroup("abc", 1)
+                        .putForcePayload("abc", new Payload(new String[]{"test1", "test2", "test3"}))
+                        .build())
+        ).isEqualTo("abc1;stringArray:[\"test1\",\"test2\",\"test3\"]");
+    }
+
+    @Test
+    public void testParseForcePayloadString() {
         final Double testDouble = 0.2;
         assertThat(ForceGroupsOptionsStrings.parseForcePayloadString("doubleValue:0.2"))
                 .isEqualTo(
@@ -153,6 +205,12 @@ public class TestForceGroupsOptionStrings {
         assertThat(ForceGroupsOptionsStrings.parseForcePayloadString("stringValue:\"test,with,comma\""))
                 .isEqualTo(
                         new Payload(testString)
+                );
+
+        final String testString2 = "foo\"bar";
+        assertThat(ForceGroupsOptionsStrings.parseForcePayloadString("stringValue:\"foo\\\"bar\""))
+                .isEqualTo(
+                        new Payload(testString2)
                 );
 
         final String[] testStringArr = {"test1", "test2", "test3"};
@@ -226,9 +284,10 @@ public class TestForceGroupsOptionStrings {
 
     @Test
     public void testParseForceGroupsString_JSONinString() {
-        final String crashTextExample = "[\"key1\":\"w1\\/w2\",\"key2\":\"foo bar\",\"key3\":[\"Veröffentlicht von\"]]";
+        final String crashTextInputExample = "[\\\"key1\\\":\\\"w1/w2\\\",\\\"key2\\\":\\\"foo bar\\\",\\\"key3\\\":[\\\"Veröffentlicht von\\\"]]";
+        final String crashTextExample = "[\"key1\":\"w1/w2\",\"key2\":\"foo bar\",\"key3\":[\"Veröffentlicht von\"]]";
 
-        final String test1 = "abc1;stringValue:\"test,with,comma\",def2;doubleValue:0.2,xyz1;stringValue:\"" + crashTextExample + "\"";
+        final String test1 = "abc1;stringValue:\"test,with,comma\",def2;doubleValue:0.2,xyz1;stringValue:\"" + crashTextInputExample + "\"";
 
         final ForceGroupsOptions testOptions1 = ForceGroupsOptions.builder()
                 .putForceGroup("abc", 1)
@@ -245,7 +304,7 @@ public class TestForceGroupsOptionStrings {
         assertThat(ForceGroupsOptionsStrings.generateForceGroupsString(testOptions1))
                 .isEqualTo(test1);
 
-        final String test2 = "abc1;stringArray:[\"" + crashTextExample + "\",\"" + crashTextExample + "\"]";
+        final String test2 = "abc1;stringArray:[\"" + crashTextInputExample + "\",\"" + crashTextInputExample + "\"]";
 
         final ForceGroupsOptions testOptions2 = ForceGroupsOptions.builder()
                 .putForceGroup("abc", 1)

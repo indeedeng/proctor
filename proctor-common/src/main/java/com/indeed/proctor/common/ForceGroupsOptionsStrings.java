@@ -1,5 +1,7 @@
 package com.indeed.proctor.common;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.indeed.proctor.common.model.Payload;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -7,8 +9,8 @@ import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -135,94 +137,53 @@ public class ForceGroupsOptionsStrings {
     {
         final Payload payload = new Payload();
         final String[] payloadPieces = payloadString.split(":",2);
+        final ObjectMapper objectMapper = new ObjectMapper();
         try {
             final PayloadType payloadType = PayloadType.payloadTypeForName(payloadPieces[0]);
             final String payloadValue = payloadPieces[1];
             switch (payloadType) {
                 case DOUBLE_VALUE:
                 {
-                    payload.setDoubleValue(Double.parseDouble(payloadValue));
+                    payload.setDoubleValue(objectMapper.readValue(payloadValue, Double.class));
                     break;
                 }
                 case DOUBLE_ARRAY:
                 {
-                    payload.setDoubleArray(Arrays.stream(getPayloadArray(payloadValue))
-                            .map(Double::valueOf)
-                            .toArray(Double[]::new) );
+                    payload.setDoubleArray(objectMapper.readValue(payloadValue, Double[].class));
                     break;
                 }
                 case LONG_VALUE:
                 {
-                    payload.setLongValue(Long.parseLong(payloadValue));
+                    payload.setLongValue(objectMapper.readValue(payloadValue, Long.class));
                     break;
                 }
                 case LONG_ARRAY:
                 {
-                    payload.setLongArray(Arrays.stream(getPayloadArray(payloadValue))
-                            .map(Long::valueOf)
-                            .toArray(Long[]::new));
+                    payload.setLongArray(objectMapper.readValue(payloadValue, Long[].class));
                     break;
                 }
                 case STRING_VALUE:
                 {
-                    // Remove quotes
-                    payload.setStringValue(payloadValue.substring(1,payloadValue.length()-1));
+                    payload.setStringValue(objectMapper.readValue(payloadValue, String.class));
                     break;
                 }
                 case STRING_ARRAY:
                 {
-                    // Remove outside brackets e.g. ([abc, def, ...])
-                    payload.setStringArray(getPayloadStringArray(payloadValue.substring(1,payloadValue.length()-1)));
+                    payload.setStringArray(objectMapper.readValue(payloadValue, String[].class));
                     break;
                 }
                 case MAP:
                 {
-                    // Remove outside brackets e.g. (map:[keys:values, ...])
                     // Map not currently supported
                     return null;
                 }
             }
         }
-        catch (final IllegalArgumentException | ArrayStoreException | ClassCastException e) {
+        catch (final IllegalArgumentException | ArrayStoreException | ClassCastException | IOException e) {
             return null;
         }
 
         return payload;
-    }
-
-    public static String[] getPayloadArray(final String payloadValue) {
-        // Remove outside brackets e.g. ([0, 1, 2]) then split array
-        return payloadValue
-                .substring(1,payloadValue.length()-1)
-                .split(",");
-    }
-
-    public static String[] getPayloadStringArray(final String payloadValue) {
-        int startIndex = 0;
-        int numQuotes = 0;
-        final List<String> payloadList = new ArrayList<>();
-        for (int payloadValueIndex = 0; payloadValueIndex < payloadValue.length(); payloadValueIndex++) {
-            // if char is inside of quotes do not split string
-            if (payloadValue.charAt(payloadValueIndex) == '"') {
-                numQuotes++;
-            }
-            if ((payloadValue.charAt(payloadValueIndex) == ',' || payloadValueIndex == payloadValue.length()-1) && (numQuotes % 2 == 0)) {
-                if(payloadValueIndex == payloadValue.length()-1) {
-                    payloadValueIndex++;
-                }
-                String toAdd = payloadValue.substring(startIndex,payloadValueIndex);
-                // Remove quotes at beginning/end of string
-                if(toAdd.startsWith("\"")) {
-                    toAdd = toAdd.substring(1);
-                }
-                if(toAdd.endsWith("\"")) {
-                    toAdd = toAdd.substring(0,toAdd.length()-1);
-                }
-                payloadList.add(toAdd);
-                startIndex = payloadValueIndex+1;
-            }
-        }
-        return payloadList.toArray(new String[0]);
     }
 
     public static String generateForceGroupsString(final ForceGroupsOptions options) {
@@ -244,6 +205,7 @@ public class ForceGroupsOptionsStrings {
     @Nonnull
     private static String createForcePayloadString(final Payload payload) {
         final StringBuilder s = new StringBuilder(50);
+        final ObjectMapper objectMapper = new ObjectMapper();
         if (payload.getDoubleValue() != null) {
             s.append("doubleValue:").append(payload.getDoubleValue());
         }
@@ -261,16 +223,21 @@ public class ForceGroupsOptionsStrings {
             s.append(']');
         }
         if (payload.getStringValue() != null) {
-            s.append("stringValue:\"").append(payload.getStringValue()).append('"');
+            try {
+                final String string = objectMapper.writeValueAsString(payload.getStringValue());
+                s.append("stringValue:").append(string);
+            } catch (final JsonProcessingException e) {
+                LOGGER.debug("Failed to parse String array: " + e.getMessage(), e);
+            }
         }
         if (payload.getStringArray() != null) {
-            s.append("stringArray:[");
-            if (payload.getStringArray().length > 0) {
-                s.append('"');
-                s.append(String.join("\",\"", payload.getStringArray()));
-                s.append('"');
+            try {
+                final String stringArray = objectMapper.writeValueAsString(payload.getStringArray());
+                s.append("stringArray:");
+                s.append(stringArray);
+            } catch (final JsonProcessingException e) {
+                LOGGER.debug("Failed to parse String array: " + e.getMessage(), e);
             }
-            s.append(']');
         }
         return s.toString();
     }
