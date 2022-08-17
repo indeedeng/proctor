@@ -227,9 +227,8 @@ public class Payload {
             s.append(']');
         }
         if (json != null) {
-            s.append(" json : {");
+            s.append(" json : ");
             s.append(json);
-            s.append("}");
         }
         s.append(" }");
         return s.toString();

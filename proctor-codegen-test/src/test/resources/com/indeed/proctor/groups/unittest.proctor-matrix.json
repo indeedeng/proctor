@@ -569,21 +569,36 @@
                     "name" : "inactive",
                     "value" : -1,
                     "payload" : {
-                        "json" : {"foo":{"bar":"baz","abc":123}}
+                        "json" : {
+                            "foo" : {
+                                "bar" : "baz",
+                                "abc" : 123
+                            }
+                        }
                     }
                 },
                 {
                     "name" : "control",
                     "value" : 0,
                     "payload" : {
-                        "json" : {"foo":{"bar":"baz","abc":456}}
+                        "json" : {
+                            "foo" : {
+                                "bar" : "baz",
+                                "abc" : 456
+                            }
+                        }
                     }
                 },
                 {
                     "name" : "test",
                     "value" : 1,
                     "payload" : {
-                        "json" : {"foo":{"bar":"baz","abc":789}}
+                        "json" : {
+                            "foo" : {
+                                "bar" : "baz",
+                                "abc" : 789
+                            }
+                        }
                     }
                 }
             ],

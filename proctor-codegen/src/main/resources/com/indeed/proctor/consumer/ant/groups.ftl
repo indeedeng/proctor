@@ -26,7 +26,7 @@ public class ${mainClassName} extends AbstractGroups {
 
     public static final ${mainClassName} EMPTY = new ${mainClassName}(ProctorResult.EMPTY);
 
-    public static final ObjectMapper mapper = new ObjectMapper();
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     public ${mainClassName}(final ProctorResult proctorResult) {
         super(proctorResult);
@@ -199,7 +199,7 @@ public class ${mainClassName} extends AbstractGroups {
         }
 
         try {
-            return mapper.treeToValue(payload.${testDef.payloadAccessorName}(), payloadType);
+            return MAPPER.treeToValue(payload.${testDef.payloadAccessorName}(), payloadType);
         } catch (JsonProcessingException e) {
             return null;
         }
