@@ -290,40 +290,6 @@ public class TestPayload {
                                     "} }" );
     }
 
-    @Test
-    public void testComparePayloadMap() {
-        final Map<String, Object> map = new HashMap<>();
-
-        map.put("test_key1", 3L);
-        map.put("test_key2", 3.0);
-        map.put("test_key3", "three");
-        map.put("test_key4", new Double[]{1.0, 2.0});
-        map.put("test_key5", new Long[]{1L, 2L});
-        map.put("test_key6", new String[]{"one", "two"});
-        map.put("test_key7", new Double[0]);
-
-        // NOTE: input map is in String form as it still needs to be parsed and validated
-        final Map<String, Object> mapWithCollections = new HashMap<>();
-
-        mapWithCollections.put("test_key1", 3L);
-        mapWithCollections.put("test_key2", 3.0);
-        mapWithCollections.put("test_key3", "three");
-        mapWithCollections.put("test_key4", Arrays.asList(1.0, 2.0));
-        mapWithCollections.put("test_key5", Arrays.asList(1L, 2L));
-        mapWithCollections.put("test_key6", Arrays.asList("one", "two"));
-        mapWithCollections.put("test_key7", new ArrayList<Double>());
-
-        final Payload p1 = new Payload(map);
-        final Payload p2 = new Payload(mapWithCollections);
-
-        assertThat(p1.equals(p2)).isTrue();
-
-        map.put("test_key1", 3.0);
-        final Payload failEqualsPayload = new Payload(map);
-
-        assertThat(p1.equals(failEqualsPayload)).isFalse();
-    }
-
     private static Map<PayloadType, Payload> getPayloadTypePayloadSampleMap(final int seed) {
         final ObjectMapper objectMapper = new ObjectMapper();
         final String jsonString =

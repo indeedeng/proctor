@@ -2,6 +2,7 @@ package com.indeed.proctor.common.model;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.junit.Test;
 
@@ -61,7 +62,7 @@ public class TestTestBucket {
                 .payload(new Payload(ImmutableMap.of(
                         "k", 10,
                         "v", 100.0,
-                        "s", new Double[]{10.0, 20.0, 30.0}
+                        "s", ImmutableList.of(10.0, 20.0, 30.0)
                 )))
                 .build();
 

@@ -206,39 +206,34 @@ public class ForceGroupsOptionsStrings {
     private static String createForcePayloadString(final Payload payload) {
         final StringBuilder s = new StringBuilder(50);
         final ObjectMapper objectMapper = new ObjectMapper();
-        if (payload.getDoubleValue() != null) {
-            s.append("doubleValue:").append(payload.getDoubleValue());
-        }
-        if (payload.getDoubleArray() != null) {
-            s.append("doubleArray:[");
-            s.append(StringUtils.join(payload.getDoubleArray(), ","));
-            s.append(']');
-        }
-        if (payload.getLongValue() != null) {
-            s.append("longValue:").append(payload.getLongValue());
-        }
-        if (payload.getLongArray() != null) {
-            s.append("longArray:[");
-            s.append(StringUtils.join(payload.getLongArray(), ","));
-            s.append(']');
-        }
-        if (payload.getStringValue() != null) {
-            try {
-                final String string = objectMapper.writeValueAsString(payload.getStringValue());
-                s.append("stringValue:").append(string);
-            } catch (final JsonProcessingException e) {
-                LOGGER.debug("Failed to parse String array: " + e.getMessage(), e);
+        try {
+            if (payload.getDoubleValue() != null) {
+                final String doubleValue = objectMapper.writeValueAsString(payload.getDoubleValue());
+                s.append("doubleValue:").append(doubleValue);
             }
-        }
-        if (payload.getStringArray() != null) {
-            try {
+            if (payload.getDoubleArray() != null) {
+                final String doubleArray = objectMapper.writeValueAsString(payload.getDoubleArray());
+                s.append("doubleArray:").append(doubleArray);
+            }
+            if (payload.getLongValue() != null) {
+                final String longValue = objectMapper.writeValueAsString(payload.getLongValue());
+                s.append("longValue:").append(longValue);
+            }
+            if (payload.getLongArray() != null) {
+                final String longArray = objectMapper.writeValueAsString(payload.getLongArray());
+                s.append("longArray:").append(longArray);
+            }
+            if (payload.getStringValue() != null) {
+                final String stringValue = objectMapper.writeValueAsString(payload.getStringValue());
+                s.append("stringValue:").append(stringValue);
+            }
+            if (payload.getStringArray() != null) {
                 final String stringArray = objectMapper.writeValueAsString(payload.getStringArray());
-                s.append("stringArray:");
-                s.append(stringArray);
-            } catch (final JsonProcessingException e) {
-                LOGGER.debug("Failed to parse String array: " + e.getMessage(), e);
+                s.append("stringArray:").append(stringArray);
             }
+            return s.toString();
+        } catch (final JsonProcessingException e) {
+            return "";
         }
-        return s.toString();
     }
 }
