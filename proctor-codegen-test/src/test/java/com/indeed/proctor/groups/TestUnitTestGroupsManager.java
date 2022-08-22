@@ -1,5 +1,6 @@
 package com.indeed.proctor.groups;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
@@ -410,6 +411,31 @@ public class TestUnitTestGroupsManager {
         assertArrayEquals(unitTestGroupsPayloadControl.getAnarray(), new Long[]{1L, 2L, 3L});
         assertArrayEquals(unitTestGroupsPayloadControl.getAstringarr(), new String[]{"one","two","three"});
         assertArrayEquals(unitTestGroupsPayloadControl.getAdarray(), new Double[]{1.1,2.1,3.1});
+    }
+
+    @Test
+    public void testMapJsonReturns(){
+        final UnitTestGroupsContext testContext = UnitTestGroupsContext.newBuilder()
+                .setLoggedIn(true)
+                .setCountry("FR")
+                .setAccount(new Account(10))
+                .build();
+        final Identifiers identifiers = new Identifiers(TestType.USER, SAMPLE_ID);
+        final ProctorResult result = testContext.getProctorResult(manager, identifiers);
+
+        final UnitTestGroups grps = new UnitTestGroups(result);
+        assertEquals( "{\"foo\":{\"bar\":\"baz\",\"abc\":123}}", grps.getJson_payload_testPayload().toString());
+        assertEquals("{\"foo\":{\"bar\":\"baz\",\"abc\":456}}", grps.getJson_payload_testPayloadForBucket(UnitTestGroups.Json_payload_test.CONTROL).toString());
+        assertEquals("{\"foo\":{\"bar\":\"baz\",\"abc\":789}}", grps.getJson_payload_testPayloadForBucket(UnitTestGroups.Json_payload_test.TEST).toString());
+
+        assertEquals("{\"foo\":{\"bar\":\"baz\",\"abc\":123}}", grps.getJson_payload_testPayload(JsonNode.class).toString());
+        assertNull(grps.getJson_payload_testPayload(Double.class));
+        assertNull(grps.getJson_payload_testPayload(Long.class));
+        assertNull(grps.getJson_payload_testPayload(String.class));
+        assertNull(grps.getJson_payload_testPayload(Double[].class));
+        assertNull(grps.getJson_payload_testPayload(Long[].class));
+        assertNull(grps.getJson_payload_testPayload(String[].class));
+        assertEquals(ImmutableMap.of("foo", ImmutableMap.of("bar", "baz", "abc", 123)), grps.getJson_payload_testPayload(Map.class));
     }
 
     @Test

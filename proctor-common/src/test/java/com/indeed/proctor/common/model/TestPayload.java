@@ -1,9 +1,12 @@
 package com.indeed.proctor.common.model;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.indeed.proctor.common.PayloadType;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
@@ -120,6 +123,13 @@ public class TestPayload {
             assertNull(payload.getMap());
         }
 
+        if (type == PayloadType.JSON) {
+            assertNotNull(payload.getJson());
+            assertSame(payload.fetchAValue(), payload.getJson());
+        } else {
+            assertNull(payload.getJson());
+        }
+
         if (type != null) {
             switch (type) {
                 case DOUBLE_VALUE:
@@ -163,6 +173,17 @@ public class TestPayload {
                     assertEquals(0, Double.compare(1.0D, (Double) (ma.get("a"))));
                     assertArrayEquals(new Double[]{57.0D, -8.0D, 79.97D}, (Double[]) ma.get("b"));
                     assertEquals("somevals0", ma.get("c"));
+                    break;
+                case JSON:
+                    final JsonNode json = payload.getJson();
+                    assertNotNull(json);
+                    assertEquals(
+                        "{" +
+                                    "\"foo\":{" +
+                                            "\"bar\":\"baz\"," +
+                                            "\"abc\":456" +
+                                        "}" +
+                                    "}", json.toString());
                     break;
                 default:
                     fail();  // default case should never be reached.
@@ -257,9 +278,25 @@ public class TestPayload {
                 .contains("foo")
                 .contains("bar")
                 .contains("baz");
+
+        assertThat(payloads.get(PayloadType.JSON).toString()).isEqualTo(
+                "{ json : {" +
+                                    "\"foo\":{" +
+                                            "\"bar\":\"baz\"," +
+                                            "\"abc\":456" +
+                                        "}" +
+                                    "} }" );
     }
 
     private static Map<PayloadType, Payload> getPayloadTypePayloadSampleMap(final int seed) {
+        final ObjectMapper objectMapper = new ObjectMapper();
+        final String jsonString =
+                "{" +
+                    "\"foo\" : { " +
+                        "\"bar\" : \"baz\"," +
+                        "\"abc\" : 456" +
+                    "} " +
+                "}";
         final ImmutableMap<PayloadType, Consumer<Payload>> map = ImmutableMap.<PayloadType, Consumer<Payload>>builder()
                 .put(PayloadType.DOUBLE_VALUE, p -> p.setDoubleValue(47.0D + seed))
                 .put(PayloadType.DOUBLE_ARRAY, p -> p.setDoubleArray(new Double[]{98.0D, -137D + seed}))
@@ -268,6 +305,13 @@ public class TestPayload {
                 .put(PayloadType.STRING_VALUE, p -> p.setStringValue("foobar" + seed))
                 .put(PayloadType.STRING_ARRAY, p -> p.setStringArray(new String[]{"foo", "bar", "baz" + seed}))
                 .put(PayloadType.MAP, p -> p.setMap(ImmutableMap.of("a", 1.0D, "b", new Double[]{57.0D, -8.0D, 79.97D}, "c", "somevals" + seed)))
+                .put(PayloadType.JSON, p -> {
+                    try {
+                        p.setJson(objectMapper.readTree(jsonString));
+                    } catch (final IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
                 .build();
         return map.entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, e -> {

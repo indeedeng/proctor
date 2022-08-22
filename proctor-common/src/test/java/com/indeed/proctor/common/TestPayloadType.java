@@ -1,10 +1,12 @@
 package com.indeed.proctor.common;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.indeed.proctor.common.model.Payload;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -25,13 +27,13 @@ public class TestPayloadType {
     @Test
     public void testPayloadTypeNames() {
         final List<String> names = PayloadType.allTypeNames();
-        assertEquals(7, names.size());
+        assertEquals(8, names.size());
 
         for (final String s : new String[]{
                 "doubleValue", "doubleArray",
                 "longValue", "longArray",
                 "stringValue", "stringArray",
-                "map"
+                "map", "json"
         }) {
             final PayloadType p = PayloadType.payloadTypeForName(s);
             assertEquals(s, p.payloadTypeName);
@@ -72,13 +74,16 @@ public class TestPayloadType {
     }
 
     @Test
-    public void testPayloadTypeForValueRetrieval_NonArrayTypes() {
+    public void testPayloadTypeForValueRetrieval_NonArrayTypes() throws IOException {
         assertEquals(PayloadType.MAP, payloadTypeForValue(ImmutableMap.of("string", "string")));
         assertEquals(PayloadType.LONG_VALUE, payloadTypeForValue(100));
         assertEquals(PayloadType.LONG_VALUE, payloadTypeForValue(100L));
         assertEquals(PayloadType.DOUBLE_VALUE, payloadTypeForValue(1.1D));
         assertEquals(PayloadType.DOUBLE_VALUE, payloadTypeForValue(2.1F));
         assertEquals(PayloadType.STRING_VALUE, payloadTypeForValue("yes"));
+
+        final ObjectMapper objectMapper = new ObjectMapper();
+        assertEquals(PayloadType.JSON, payloadTypeForValue(objectMapper.readTree(" { \"key\" :  \"value\" } ")));
     }
 
     @Test

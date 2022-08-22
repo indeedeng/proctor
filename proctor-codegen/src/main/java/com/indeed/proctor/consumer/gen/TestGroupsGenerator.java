@@ -275,6 +275,9 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
                         }
                     }
                 }
+                if( specifiedPayloadType == PayloadType.JSON) {
+                    testDef.put("isJson", "true");
+                }
                 addPayloadToTestDef(testDef, specifiedPayloadType);
             }
 
