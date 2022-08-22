@@ -3,7 +3,6 @@ package com.indeed.proctor.common;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.indeed.proctor.common.model.Payload;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -15,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Owns utility functions to convert from/to a string value (force groups string)
@@ -47,57 +48,47 @@ public class ForceGroupsOptionsStrings {
             return builder.build();
         }
 
-        int startIndex = 0, numQuotes = 0;
-        final List<Character> brackets = new ArrayList<>();
+        // \w+\d+;\w+:(?s)(\".*?\"(?<!\\\")|\[.+?\](?!\"|\])|\d+\.?\d*) - matches force payload
+        //      \w+\d+;\w+: - matches force group followed by ; and payload type (ie. example_tst1;stringValue)
+        //                    followed by one of the following:
+        //          (\".*?\"(?<!\\\") - matches a string ignoring escaped quotes
+        //          (\[.+?\](?!\"|\]) - matches an array with cases where string array may contain brackets within the string
+        //          (\d+\.?\d*)       - matches a integer or double
+        // \w+\d+ - matches force group without payload (ie. example_tst1)
+        // [a-z_]+ - matches default value (ie. default_to_min_live)
+        final Pattern pattern = Pattern.compile("\\w+\\d+;\\w+:(\\\".*?\\\"(?<!\\\\\\\")|\\[.+?\\](?!\\\"|\\])|\\d+\\.?\\d*)|\\w+\\d+|[a-z_]+");
+        final Matcher matcher = pattern.matcher(forceGroupsString);
 
-        // iterate through string to find force groups and force payloads
-        for (int forceGroupIndex = 0; forceGroupIndex < forceGroupsString.length(); forceGroupIndex++) {
-            if (forceGroupsString.charAt(forceGroupIndex) == '[' || forceGroupsString.charAt(forceGroupIndex) == '{') {
-                brackets.add(forceGroupsString.charAt(forceGroupIndex));
-            } else if (forceGroupsString.charAt(forceGroupIndex) == ']' || forceGroupsString.charAt(forceGroupIndex) == '}') {
-                brackets.remove(brackets.size()-1);
-            } if (forceGroupsString.charAt(forceGroupIndex) == '"') {
-                numQuotes++;
+        while (matcher.find()) {
+            final String match = matcher.group();
+            // split string to separate force group and payload
+            final String[] bucketAndPayloadValuesStr = match.split(";", FORCE_PARAMETER_MAX_SIZE);
+            final String groupString = bucketAndPayloadValuesStr[FORCE_PARAMETER_BUCKET_IDX].trim();
+
+            if (groupString.isEmpty()) {
+                continue;
             }
-            if ((forceGroupsString.charAt(forceGroupIndex) == ',' || forceGroupIndex == forceGroupsString.length()-1) && brackets.isEmpty() && (numQuotes % 2 == 0)) {
-                // Add 1 to index if end of string because substring endIndex is exclusive
-                if(forceGroupIndex == forceGroupsString.length()-1) {
-                    forceGroupIndex++;
-                }
-                // split string to separate force group and payload
-                final String[] bucketAndPayloadValuesStr = forceGroupsString
-                        .substring(startIndex, forceGroupIndex)
-                        .split(";", FORCE_PARAMETER_MAX_SIZE);
 
-                final String groupString = bucketAndPayloadValuesStr[FORCE_PARAMETER_BUCKET_IDX].trim();
+            ForceGroupsDefaultMode.fromToken(groupString)
+                    .ifPresent(builder::setDefaultMode);
 
-                startIndex = forceGroupIndex+1;
+            final Optional<Integer> bucketValueStart = getBucketValueStart(groupString);
 
-                if (groupString.isEmpty()) {
-                    continue;
-                }
-
-                ForceGroupsDefaultMode.fromToken(groupString)
-                        .ifPresent(builder::setDefaultMode);
-
-                final Optional<Integer> bucketValueStart = getBucketValueStart(groupString);
-
-                if (bucketValueStart.isPresent()) {
-                    //  bucketValueStart should now be the index of the minus sign or the first digit in a run of digits going to the end of the word
-                    final String testName = groupString.substring(0, bucketValueStart.get()).trim();
-                    final String bucketValueStr = groupString.substring(bucketValueStart.get()).trim();
-                    try {
-                        final Integer bucketValue = Integer.valueOf(bucketValueStr);
-                        builder.putForceGroup(testName, bucketValue);
-                        if (bucketAndPayloadValuesStr.length == FORCE_PARAMETER_MAX_SIZE && forcePayloadTests.contains(testName)) {
-                            final Payload payloadValue = parseForcePayloadString(bucketAndPayloadValuesStr[FORCE_PARAMETER_PAYLOAD_IDX]);
-                            if (payloadValue != null) {
-                                builder.putForcePayload(testName, payloadValue);
-                            }
+            if (bucketValueStart.isPresent()) {
+                //  bucketValueStart should now be the index of the minus sign or the first digit in a run of digits going to the end of the word
+                final String testName = groupString.substring(0, bucketValueStart.get()).trim();
+                final String bucketValueStr = groupString.substring(bucketValueStart.get()).trim();
+                try {
+                    final Integer bucketValue = Integer.valueOf(bucketValueStr);
+                    builder.putForceGroup(testName, bucketValue);
+                    if (bucketAndPayloadValuesStr.length == FORCE_PARAMETER_MAX_SIZE && forcePayloadTests.contains(testName)) {
+                        final Payload payloadValue = parseForcePayloadString(bucketAndPayloadValuesStr[FORCE_PARAMETER_PAYLOAD_IDX]);
+                        if (payloadValue != null) {
+                            builder.putForcePayload(testName, payloadValue);
                         }
-                    } catch (final NumberFormatException e) {
-                        LOGGER.error("Unable to parse bucket value " + bucketValueStr + " as integer", e);
                     }
+                } catch (final NumberFormatException e) {
+                    LOGGER.error("Unable to parse bucket value " + bucketValueStr + " as integer", e);
                 }
             }
         }
@@ -173,6 +164,7 @@ public class ForceGroupsOptionsStrings {
                     break;
                 }
                 case MAP:
+                case JSON:
                 {
                     // Map not currently supported
                     return null;

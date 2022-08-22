@@ -280,6 +280,16 @@ public class TestForceGroupsOptionStrings {
                                 .putForcePayload("def", new Payload(0.2))
                                 .build()
                 );
+
+        assertThat(ForceGroupsOptionsStrings.parseForceGroupsString("abc1;stringValue:\"te\\\"st\",def2;stringArray:[\"[1]\", \"[2]\", \"]\"]", forcePayloadTests))
+                .isEqualTo(
+                        ForceGroupsOptions.builder()
+                                .putForceGroup("abc", 1)
+                                .putForcePayload("abc", new Payload("te\"st"))
+                                .putForceGroup("def", 2)
+                                .putForcePayload("def", new Payload( new String[]{"[1]", "[2]", "]"}))
+                                .build()
+                );
     }
 
     @Test
