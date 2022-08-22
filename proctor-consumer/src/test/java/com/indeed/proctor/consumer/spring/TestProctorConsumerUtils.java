@@ -228,15 +228,11 @@ public class TestProctorConsumerUtils {
         assertThat(parseForceGroupsList("fasdfasdf")).isEmpty();
         assertThat(parseForceGroupsList("test" + Integer.MAX_VALUE + "0")).isEmpty();
         assertThat(parseForceGroupsList("test-")).isEmpty();
-        assertThat(parseForceGroupsList("test0-")).isEmpty();
         //Test single group
         assertThat(parseForceGroupsList("somerandomtst1"))
                 .hasSize(1)
                 .containsEntry("somerandomtst", 1);
         // not sure if this case needs to be supported...
-        assertThat(parseForceGroupsList("somerandomtst*  1"))
-                .hasSize(1)
-                .containsEntry("somerandomtst*", 1);
         assertThat(parseForceGroupsList("somerandomtst" + Integer.MAX_VALUE))
                 .hasSize(1)
                 .containsEntry("somerandomtst", Integer.MAX_VALUE);

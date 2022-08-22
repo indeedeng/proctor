@@ -56,7 +56,7 @@ public class ForceGroupsOptionsStrings {
         //          (\d+\.?\d*)       - matches a integer or double
         // \w+\d+ - matches force group without payload (ie. example_tst1)
         // [a-z_]+ - matches default value (ie. default_to_min_live)
-        final Pattern pattern = Pattern.compile("\\w+\\d+;\\w+:(\\\".*?\\\"(?<!\\\\\\\")|\\[.+?\\](?!\\\"|\\])|\\d+\\.?\\d*)|\\w+\\d+|[a-z_]+");
+        final Pattern pattern = Pattern.compile("\\w+-?\\d+;\\w+:(\\\".*?\\\"(?<!\\\\\\\")|\\[.+?\\](?!\\\"|\\])|-?\\d+\\.?\\d*)|\\w+-?\\d+|[a-z_]+");
         final Matcher matcher = pattern.matcher(forceGroupsString);
 
         while (matcher.find()) {
