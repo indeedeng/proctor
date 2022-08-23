@@ -48,20 +48,25 @@ public class ForceGroupsOptionsStrings {
             return builder.build();
         }
 
-        // \w+\d+;\w+:(?s)(\".*?\"(?<!\\\")|\[.+?\](?!\"|\])|\d+\.?\d*) - matches force payload
-        //      \w+\d+;\w+: - matches force group followed by ; and payload type (ie. example_tst1;stringValue)
+        // \w+-?\d+;\w+:(?s)(\".*?\"(?<!\\\")|\[.+?\](?!\"|\])|-?\d+\.?\d*) - matches force payload
+        //      \w+-?\d+;\w+: - matches force group followed by ; and payload type (ie. example_tst1;stringValue)
         //                    followed by one of the following:
         //          (\".*?\"(?<!\\\") - matches a string ignoring escaped quotes
         //          (\[.+?\](?!\"|\]) - matches an array with cases where string array may contain brackets within the string
-        //          (\d+\.?\d*)       - matches a integer or double
-        // \w+\d+ - matches force group without payload (ie. example_tst1)
+        //          (-?\d+\.?\d*)       - matches a integer or double
+        // \w+-?\d+ - matches force group without payload (ie. example_tst1)
         // [a-z_]+ - matches default value (ie. default_to_min_live)
         final Pattern pattern = Pattern.compile("\\w+-?\\d+;\\w+:(\\\".*?\\\"(?<!\\\\\\\")|\\[.+?\\](?!\\\"|\\])|-?\\d+\\.?\\d*)|\\w+-?\\d+|[a-z_]+");
         final Matcher matcher = pattern.matcher(forceGroupsString);
 
         while (matcher.find()) {
-            final String match = matcher.group();
+            final int endOfMatch = matcher.end();
+            // continue if match has extra characters following it (ie. example_tst1-)
+            if (endOfMatch < forceGroupsString.length() && forceGroupsString.charAt(endOfMatch) != ',') {
+                continue;
+            }
             // split string to separate force group and payload
+            final String match = matcher.group();
             final String[] bucketAndPayloadValuesStr = match.split(";", FORCE_PARAMETER_MAX_SIZE);
             final String groupString = bucketAndPayloadValuesStr[FORCE_PARAMETER_BUCKET_IDX].trim();
 
