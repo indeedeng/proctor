@@ -123,16 +123,16 @@ Arbitrary data can be associated with each test bucket and delivered to your app
 
 Proctor supports 8 types of payloads:
 
-| Type          | Java Type            |
-|---------------|----------------------|
-| `stringValue` | `String`             |
-| `stringArray` | `String[]`           |
-| `doubleValue` | `double`             |
-| `doubleArray` | `double[]`           |
-| `longValue`   | `long`               |
-| `longArray`   | `long[]`             |
-| `map`         | `Map<String,Object>` |
-| `json`        | `JsonNode`           |
+| Type          | Java Type                                 |
+|---------------|-------------------------------------------|
+| `stringValue` | `String`                                  |
+| `stringArray` | `String[]`                                |
+| `doubleValue` | `double`                                  |
+| `doubleArray` | `double[]`                                |
+| `longValue`   | `long`                                    |
+| `longArray`   | `long[]`                                  |
+| `map`         | `Map<String,Object>`                      |
+| `json`        | `com.fasterxml.jackson.databind.JsonNode` |
 
 The values for each bucket's payload are specified in the test-definition (view [complete test definition](https://gist.github.com/parker/3bb0e94b9b238b48429f#file-1-definition-json))
 

@@ -150,11 +150,11 @@ Where ExampleGroupsPayload is another generated class, and to retrieve variable 
 
 #### json payload returns
 
-json payloads provide an additional method to attempt retrieving the payload as the provided class type inputted as the parameter:
+json payloads provide an additional method to attempt retrieving the payload as the provided class type inputted as the parameter, if the method fails to cast the json to the provided class it returns null:
 
-<pre><code>
-   public <T> T getExampleGroupsPayload(final Class<T> payloadType) { }
-</code></pre>
+```java
+public @Nullable <T> T getExampleGroupsPayload(final Class<T> payloadType);
+```
 
 ### JavaScript
 
