@@ -38,6 +38,16 @@ public class ForceGroupsOptionsStrings {
     private static final int FORCE_PARAMETER_PAYLOAD_IDX = 1;
     private static final int FORCE_PARAMETER_MAX_SIZE = 2;
 
+    // \w+-?\d+;\w+:(?s)(\".*?\"(?<!\\\")|\[.+?\](?!\"|\])|-?\d+\.?\d*) - matches force payload
+    //      \w+-?\d+;\w+: - matches force group followed by ; and payload type (ie. example_tst1;stringValue:)
+    //                    followed by one of the following:
+    //          (\".*?\"(?<!\\\") - matches a string ignoring escaped quotes
+    //          (\[.+?\](?!\"|\]) - matches an array with cases where string array may contain brackets within the string
+    //          (-?\d+\.?\d*)     - matches a integer or double and allows negatives
+    // \w+-?\d+ - matches force group without payload (ie. example_tst1 or another_tst-1)
+    // [a-z_]+ - matches default value (ie. default_to_min_live)
+    private static final Pattern PATTERN = Pattern.compile("\\w+-?\\d+;\\w+:(\\\".*?\\\"(?<!\\\\\\\")|\\[.+?\\](?!\\\"|\\])|-?\\d+\\.?\\d*)|\\w+-?\\d+|[a-z_]+");
+
     private ForceGroupsOptionsStrings() {
     }
 
@@ -47,18 +57,7 @@ public class ForceGroupsOptionsStrings {
         if (forceGroupsString == null) {
             return builder.build();
         }
-
-        // \w+-?\d+;\w+:(?s)(\".*?\"(?<!\\\")|\[.+?\](?!\"|\])|-?\d+\.?\d*) - matches force payload
-        //      \w+-?\d+;\w+: - matches force group followed by ; and payload type (ie. example_tst1;stringValue)
-        //                    followed by one of the following:
-        //          (\".*?\"(?<!\\\") - matches a string ignoring escaped quotes
-        //          (\[.+?\](?!\"|\]) - matches an array with cases where string array may contain brackets within the string
-        //          (-?\d+\.?\d*)       - matches a integer or double
-        // \w+-?\d+ - matches force group without payload (ie. example_tst1)
-        // [a-z_]+ - matches default value (ie. default_to_min_live)
-        final Pattern pattern = Pattern.compile("\\w+-?\\d+;\\w+:(\\\".*?\\\"(?<!\\\\\\\")|\\[.+?\\](?!\\\"|\\])|-?\\d+\\.?\\d*)|\\w+-?\\d+|[a-z_]+");
-        final Matcher matcher = pattern.matcher(forceGroupsString);
-
+        final Matcher matcher = PATTERN.matcher(forceGroupsString);
         while (matcher.find()) {
             final int endOfMatch = matcher.end();
             // continue if match has extra characters following it (ie. example_tst1-)
