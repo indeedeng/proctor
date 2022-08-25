@@ -38,16 +38,30 @@ public class ForceGroupsOptionsStrings {
     private static final int FORCE_PARAMETER_PAYLOAD_IDX = 1;
     private static final int FORCE_PARAMETER_MAX_SIZE = 2;
 
-    // 	\w+-?\d+;\w+:(?:\".*?\\\\+?\"|\".*?\"(?<!\\\")|\[.+?\](?<!\")(?=,|$)|-?\d+\.?\d*) - matches force payload
-    //      \w+-?\d+;\w+: - matches force group followed by ; and payload type (ie. example_tst1;stringValue:)
-    //                    followed by one of the following:
-    //          \".*?\\\\+?\"    - matches a string that uses escaped backslashes (ie. "\" or "\a\")
-    //          \".*?\"(?<!\\\") - matches a string ignoring escaped quotes
-    //          \[.+?\](?!\"|\]) - matches an array with cases where string array may contain brackets within the string
-    //          -?\d+\.?\d*      - matches a integer or double and allows negatives
+    // \w+-?\d+(?:;\w+:(?:-?\d+\.?\d*|\"(?:\\.|[^\"\\]+)*\"|\[(?:\s*(?:-?\d+\.?\d*|\"(?:\\.|[^\"\\]+)*\")(?:\s*,\s*(?:-?\d+\.?\d*|\"(?:\\.|[^\"\\]+)*\"))*)?\]))?|[a-z_]+
     // \w+-?\d+ - matches force group without payload (ie. example_tst1 or another_tst-1)
+    //      ;\w+: - matches ; and payload type (ie. ;stringValue:) followed by one of the following:
+    //          -?\d+\.?\d* - matches a integer or double and allows negatives
+    //          \"(?:\\.|[^\"\\]+)*\"- matches a string
+    //          \[(?:\s*(?:-?\d+\.?\d*|\"(?:\\.|[^\"\\]+)*\")(?:\s*,\s*(?:-?\d+\.?\d*|\"(?:\\.|[^\"\\]+)*\"))*)?\] -
+    //                  matches an array of strings or numbers
     // [a-z_]+ - matches default value (ie. default_to_min_live)
-    private static final Pattern PATTERN = Pattern.compile(	 "\\w+-?\\d+;\\w+:(?:\\\".*?\\\\\\\\+?\\\"|\\\".*?\\\"(?<!\\\\\\\")|\\[.+?\\](?<!\\\")(?=,|$)|-?\\d+\\.?\\d*)|\\w+-?\\d+|[a-z_]+");
+    private static final Pattern PATTERN = Pattern.compile("\\w+-?\\d+" +
+            "(?:" +
+                ";\\w+:" +
+                "(?:" +
+                    "-?\\d+\\.?\\d*|\\\"(?:\\\\.|[^\\\"\\\\]+)*\\\"|" +
+                    "\\[" +
+                        "(?:\\s*" +
+                            "(?:-?\\d+\\.?\\d*|\\\"(?:\\\\.|[^\\\"\\\\]+)*\\\")" +
+                            "(?:\\s*,\\s*" +
+                            "(?:-?\\d+\\.?\\d*|\\\"(?:\\\\.|[^\\\"\\\\]+)*\\\")" +
+                            ")*" +
+                        ")?" +
+                    "\\]" +
+                ")" +
+            ")?" +
+            "|[a-z_]+");
 
     private ForceGroupsOptionsStrings() {
     }
