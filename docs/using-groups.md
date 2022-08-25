@@ -148,6 +148,14 @@ Where ExampleGroupsPayload is another generated class, and to retrieve variable 
    // VariableOne and VariableTwo are the names of your variables inside the map payload, capitalized first character 
 </code></pre>
 
+#### json payload returns
+
+json payloads provide an additional method to attempt retrieving the payload as the provided class type inputted as the parameter, if the method fails to cast the json to the provided class it returns null:
+
+```java
+public @Nullable <T> T getExampleGroupsPayload(final Class<T> payloadType);
+```
+
 ### JavaScript
 
 After you use your generated Java code to determine buckets for each of your test groups, you can pass the allocations to your generated JavaScript.

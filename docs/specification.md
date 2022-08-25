@@ -121,17 +121,18 @@ Arbitrary data can be associated with each test bucket and delivered to your app
 
 {% gist parker/3bb0e94b9b238b48429f 1-ExampleGroups-payload.json %}
 
-Proctor supports 7 types of payloads:
+Proctor supports 8 types of payloads:
 
-| Type | Java Type |
-| ---- | ----------- |
-| `stringValue` | `String` |
-| `stringArray` | `String[]`|
-| `doubleValue` | `double` |
-| `doubleArray` | `double[]` |
-| `longValue` | `long` |
-| `longArray` | `long[]` |
-| `map` | `Map<String,Object>` |
+| Type          | Java Type                                 |
+|---------------|-------------------------------------------|
+| `stringValue` | `String`                                  |
+| `stringArray` | `String[]`                                |
+| `doubleValue` | `double`                                  |
+| `doubleArray` | `double[]`                                |
+| `longValue`   | `long`                                    |
+| `longArray`   | `long[]`                                  |
+| `map`         | `Map<String,Object>`                      |
+| `json`        | `com.fasterxml.jackson.databind.JsonNode` |
 
 The values for each bucket's payload are specified in the test-definition (view [complete test definition](https://gist.github.com/parker/3bb0e94b9b238b48429f#file-1-definition-json))
 
@@ -197,6 +198,8 @@ However, in the case of a map payload, use the variable names in the validator i
   "validator": "var1 + vartwo[0] < 10"
 }
 </code></pre>
+
+Currently, json payloads do not support payload validators.
 
 An application should always provide a default payload value in code and be resilient situations in which the test-matrix cannot be loaded.
 
