@@ -30,7 +30,7 @@ public abstract class AbstractJsonProctorLoader extends AbstractProctorLoader {
     private static final Logger LOGGER = LogManager.getLogger(AbstractJsonProctorLoader.class);
     private static final String TEST_MATRIX_ARTIFACT_JSON_KEY_AUDIT = "audit";
     private static final String TEST_MATRIX_ARTIFACT_JSON_KEY_TESTS = "tests";
-    private static final int CONSTANT_MAX_SIZE = 15000000;
+    private static final int CONSTANT_MAX_SIZE = 1500000;
     private static final int PAYLOAD_MAX_SIZE = 180000;
     private static final ObjectMapper OBJECT_MAPPER = Serializers.lenient();
 
@@ -170,6 +170,7 @@ public abstract class AbstractJsonProctorLoader extends AbstractProctorLoader {
 
     private boolean isConstantLengthValid(final Map<String, ConsumableTestDefinition> testMap) throws JsonProcessingException {
         for (String testKey : testMap.keySet()) {
+            if(null == testMap.get(testKey)) continue;
             Map<String, Object> constantMap = testMap.get(testKey).getConstants();
             for (String constantKey : constantMap.keySet()) {
                 String constantVal = OBJECT_MAPPER.writeValueAsString(constantMap.get(constantKey));
@@ -181,10 +182,14 @@ public abstract class AbstractJsonProctorLoader extends AbstractProctorLoader {
 
     private boolean isPayloadLengthValid(final Map<String, ConsumableTestDefinition> testMap) throws JsonProcessingException {
         for (String testKey : testMap.keySet()) {
+            if(null == testMap.get(testKey)) continue;
             List<TestBucket> testBuckets = testMap.get(testKey).getBuckets();
+            int totalSizeOverBuckets = 0;
             for (TestBucket testBucket : testBuckets) {
-                String payload = testBucket.getPayload().getStringValue();
-                if (StringUtils.hasText(payload) && payload.length() > PAYLOAD_MAX_SIZE) return false;
+                if(null == testBucket.getPayload()) continue;
+                String payload = testBucket.getPayload().toString();
+                if (StringUtils.hasText(payload)) totalSizeOverBuckets += payload.length();
+                if(totalSizeOverBuckets > PAYLOAD_MAX_SIZE) return false;
             }
         }
         return true;
