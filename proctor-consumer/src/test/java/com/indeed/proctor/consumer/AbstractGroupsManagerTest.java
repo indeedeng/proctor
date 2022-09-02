@@ -30,6 +30,7 @@ public class AbstractGroupsManagerTest {
 
     @Test
     public void testDetermineBuckets() {
+
         final Proctor proctorMock = mock(Proctor.class);
         final Identifiers identifiers = Identifiers.of(TestType.ANONYMOUS_USER, "fooUser");
         final AbstractGroupsManager manager = new AbstractGroupsManager(() -> proctorMock) {

@@ -20,10 +20,8 @@ import org.junit.Test;
 
 import javax.annotation.Nullable;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -37,7 +35,6 @@ import java.util.stream.Collectors;
 
 import static com.indeed.proctor.common.ProctorUtils.convertContextToTestableMap;
 import static com.indeed.proctor.common.ProctorUtils.isEmptyWhitespace;
-import static com.indeed.proctor.common.ProctorUtils.readSpecification;
 import static com.indeed.proctor.common.ProctorUtils.removeElExpressionBraces;
 import static com.indeed.proctor.common.ProctorUtils.verifyAndConsolidate;
 import static com.indeed.proctor.common.ProctorUtils.verifyInternallyConsistentDefinition;
@@ -1887,19 +1884,6 @@ public class TestProctorUtils {
                         .hasMessageContaining("depends on an unknown or incompatible test")
                         .hasMessageContaining(TEST_A)
                 );
-    }
-
-    @Test
-    public void testReadSpecification() {
-        final String specString = "{\"tests\": " +
-                "{\"account1_tst\": {\"buckets\": {\"inactive\": -1, \"control\": 0, \"test\": 1},\"fallbackValue\": -1, \"payload\": {\"type\": \"stringValue\", \"allowForce\": true}}}," +
-                "\"providedContext\": {}}";
-
-        final InputStream stream = new ByteArrayInputStream(specString.getBytes(StandardCharsets.UTF_8));
-
-        final ProctorSpecification proctorSpecification = readSpecification(stream);
-
-        assertThat(proctorSpecification.getTests().get("account1_tst").getPayload().getAllowForce()).isTrue();
     }
 
     private static void setPayload(final List<TestBucket> buckets, final int index, final Payload newPayload) {
