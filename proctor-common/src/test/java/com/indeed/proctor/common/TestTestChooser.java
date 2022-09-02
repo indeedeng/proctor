@@ -3,6 +3,7 @@ package com.indeed.proctor.common;
 import com.google.common.collect.ImmutableList;
 import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
+import com.indeed.proctor.common.model.Payload;
 import com.indeed.proctor.common.model.Range;
 import com.indeed.proctor.common.model.TestBucket;
 import org.junit.Test;
@@ -23,7 +24,8 @@ public class TestTestChooser {
     private static final List<TestBucket> TEST_BUCKETS = ImmutableList.of(
             new TestBucket("inactive", -1, "inactive", null),
             new TestBucket("control", 0, "control", null),
-            new TestBucket("active", 1, "active", null)
+            new TestBucket("active", 1, "active", new Payload("active_payload")),
+            new TestBucket("payload_tst", 2, "test payload", new Payload(new String[]{"foo", "bar", "baz"}))
     );
     private static final List<Allocation> ALLOCATIONS = ImmutableList.of(new Allocation(
             "${}",
@@ -124,6 +126,31 @@ public class TestTestChooser {
                         .build()),
                 new TestChooser.Result(
                         TEST_CHOOSER.getTestBucket(-1),
+                        null
+                )
+        )).isTrue();
+    }
+
+    @Test
+    public void testChoose_withForceGroupAndForcePayload() {
+        final Payload testPayload = new Payload("test_force_payload");
+
+        final TestBucket testBucket = TestBucket.builder()
+                .from(TEST_CHOOSER.getTestBucket(1))
+                .payload(testPayload)
+                .build();
+
+        final ForceGroupsOptions options = ForceGroupsOptions.builder()
+                .putForceGroup(TEST_CHOOSER.getTestName(), 1)
+                .putForcePayload(TEST_CHOOSER.getTestName(), testPayload)
+                .build();
+
+        final TestChooser.Result result = choose(options);
+
+        assertThat(compareTestChooserResults(
+                result,
+                new TestChooser.Result(
+                        testBucket,
                         null
                 )
         )).isTrue();
@@ -238,7 +265,24 @@ public class TestTestChooser {
         )).isTrue();
     }
 
+    @Test
+    public void testChoose_ForcePayloadwithStringParsing() {
+        // NOTE: input map is in String form as it still needs to be parsed and validated
+        final String[] forcePayloadStringArr = new String[]{"value1,with,comma", "value2,with,comma", "value3,with,comma", "value4,with,comma"};
+        final String forcePayloadString = "stringArray:[\"value1,with,comma\",\"value2,with,comma\",\"value3,with,comma\",\"value4,with,comma\"]";
+        assertThat(
+                choose(ForceGroupsOptions.builder()
+                        .putForceGroup(TEST_CHOOSER.getTestName(), 2)
+                        .putForcePayload(TEST_CHOOSER.getTestName(), ForceGroupsOptionsStrings.parseForcePayloadString(forcePayloadString))
+                        .build()
+                ).getTestBucket().getPayload()
+        ).isEqualTo(new Payload(forcePayloadStringArr));
+    }
+
     private static boolean compareTestChooserResults(final TestChooser.Result a, final TestChooser.Result b) {
+        if (a.getTestBucket() != null && b.getTestBucket() != null ) {
+            return a.getTestBucket().equals(b.getTestBucket()) && a.getAllocation() == b.getAllocation();
+        }
         return a.getTestBucket() == b.getTestBucket() && a.getAllocation() == b.getAllocation();
     }
 

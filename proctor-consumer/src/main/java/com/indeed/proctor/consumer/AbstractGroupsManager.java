@@ -12,7 +12,9 @@ import com.indeed.proctor.common.model.TestType;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import static java.util.Collections.emptyList;
@@ -142,9 +144,29 @@ public abstract class AbstractGroupsManager implements ProctorContextDescriptor 
             final Map<String, Object> context,
             final boolean allowForcedGroups
     ) {
+        return determineBucketsInternal(
+                request,
+                response,
+                identifiers,
+                context,
+                allowForcedGroups,
+                Collections.emptySet());
+    }
+
+    /**
+     * servlet-based-application friendly version of determineBucketsInternal, also enabling forcing groups and payloads via request headers and cookies
+     */
+    protected ProctorResult determineBucketsInternal(
+            final HttpServletRequest request,
+            final HttpServletResponse response,
+            final Identifiers identifiers,
+            final Map<String, Object> context,
+            final boolean allowForcedGroups,
+            final Set<String> forcePayloadTests
+    ) {
         final ForceGroupsOptions forceGroupsOptions;
         if (allowForcedGroups) {
-            forceGroupsOptions = ProctorConsumerUtils.parseForcedGroupsOptions(request);
+            forceGroupsOptions = ProctorConsumerUtils.parseForcedGroupsOptions(request, forcePayloadTests);
             ProctorConsumerUtils.createForcedGroupsCookieUnlessEmpty(request.getContextPath(), forceGroupsOptions)
                     .ifPresent(response::addCookie);
         } else {
