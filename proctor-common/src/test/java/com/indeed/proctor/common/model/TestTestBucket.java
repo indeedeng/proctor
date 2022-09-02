@@ -62,7 +62,7 @@ public class TestTestBucket {
                 .payload(new Payload(ImmutableMap.of(
                         "k", 10,
                         "v", 100.0,
-                        "s", ImmutableList.of(10.0, 20.0, 30.0)
+                        "s", ImmutableList.of(10, 20, 30)
                 )))
                 .build();
 

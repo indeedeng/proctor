@@ -17,11 +17,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 public class ProctorConsumerUtils {
@@ -41,11 +39,10 @@ public class ProctorConsumerUtils {
             final String identifier,
             final TestType testType,
             final Map<String, Object> context,
-            final boolean allowForcedGroups,
-            final Set<String> forcePayloadTests
+            final boolean allowForcedGroups
     ) {
         final Identifiers identifiers = new Identifiers(testType, identifier);
-        return determineBuckets(request, response, proctor, identifiers, context, allowForcedGroups, forcePayloadTests);
+        return determineBuckets(request, response, proctor, identifiers, context, allowForcedGroups);
     }
 
     /**
@@ -59,12 +56,11 @@ public class ProctorConsumerUtils {
             final Proctor proctor,
             final Identifiers identifiers,
             final Map<String, Object> context,
-            final boolean allowForcedGroups,
-            final Set<String> forcePayloadTests
+            final boolean allowForcedGroups
     ) {
         final ForceGroupsOptions forceGroupsOptions;
         if (allowForcedGroups) {
-            forceGroupsOptions = parseForcedGroupsOptions(request, forcePayloadTests);
+            forceGroupsOptions = parseForcedGroupsOptions(request);
             createForcedGroupsCookieUnlessEmpty(request.getContextPath(), forceGroupsOptions)
                     .ifPresent(response::addCookie);
         } else {
@@ -82,25 +78,12 @@ public class ProctorConsumerUtils {
     @Nonnull
     public static ForceGroupsOptions parseForcedGroupsOptions(@Nonnull final HttpServletRequest request) {
         final String forceGroupsList = getForceGroupsStringFromRequest(request);
-        return ForceGroupsOptionsStrings.parseForceGroupsString(forceGroupsList, new HashSet<>());
-    }
-
-    /**
-     * Consumer is required to do any privilege checks before getting here
-     *
-     * @param request a {@link HttpServletRequest} which may contain forced groups parameters from URL, Header or Cookie.
-     * @param forcePayloadTests set of Test names that allow using force payloads
-     * @return a map of test names to bucket values specified by the request.  Returns an empty {@link Map} if nothing was specified
-     */
-    @Nonnull
-    public static ForceGroupsOptions parseForcedGroupsOptions(@Nonnull final HttpServletRequest request, final Set<String> forcePayloadTests) {
-        final String forceGroupsList = getForceGroupsStringFromRequest(request);
-        return ForceGroupsOptionsStrings.parseForceGroupsString(forceGroupsList, forcePayloadTests);
+        return ForceGroupsOptionsStrings.parseForceGroupsString(forceGroupsList);
     }
 
     @Nonnull
     public static Map<String, Integer> parseForceGroupsList(@Nullable final String payload) {
-        return ForceGroupsOptionsStrings.parseForceGroupsString(payload, Collections.emptySet())
+        return ForceGroupsOptionsStrings.parseForceGroupsString(payload)
                 .getForceGroups();
     }
 
@@ -206,7 +189,7 @@ public class ProctorConsumerUtils {
     @Deprecated
     @Nonnull
     public static Map<String, Integer> parseForcedGroups(@Nonnull final HttpServletRequest request) {
-        return parseForcedGroupsOptions(request, new HashSet<>()).getForceGroups();
+        return parseForcedGroupsOptions(request).getForceGroups();
     }
 
     /**

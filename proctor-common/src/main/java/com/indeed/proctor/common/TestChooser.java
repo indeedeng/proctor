@@ -2,7 +2,6 @@ package com.indeed.proctor.common;
 
 import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
-import com.indeed.proctor.common.model.Payload;
 import com.indeed.proctor.common.model.Range;
 import com.indeed.proctor.common.model.TestBucket;
 
@@ -43,10 +42,10 @@ interface TestChooser<IdentifierType> {
 
     @Nonnull
     default TestChooser.Result choose(
-            @Nullable final IdentifierType identifier,
-            @Nonnull final Map<String, Object> values,
-            @Nonnull final Map<String, TestBucket> testGroups,
-            @Nonnull final ForceGroupsOptions forceGroupsOptions
+            @Nullable IdentifierType identifier,
+            @Nonnull Map<String, Object> values,
+            @Nonnull Map<String, TestBucket> testGroups,
+            @Nonnull ForceGroupsOptions forceGroupsOptions
     ) {
         final String testName = getTestName();
 
@@ -54,15 +53,6 @@ interface TestChooser<IdentifierType> {
         if (forceGroupBucket.isPresent()) {
             final TestBucket forcedTestBucket = getTestBucket(forceGroupBucket.get());
             if (forcedTestBucket != null) {
-                final Optional<Payload> forcePayloadValues = forceGroupsOptions.getForcedPayloadValue(testName);
-                final Payload currentPayload = forcedTestBucket.getPayload();
-                if (currentPayload != null && currentPayload != Payload.EMPTY_PAYLOAD && forcePayloadValues.isPresent()) {
-                    final TestBucket forcedTestBucketWithForcedPayload = TestBucket.builder()
-                            .from(forcedTestBucket)
-                            .payload(validateForcePayload(currentPayload, forcePayloadValues.get()))
-                            .build();
-                    return new Result(forcedTestBucketWithForcedPayload, null);
-                }
                 // use a forced bucket, skip choosing an allocation
                 return new Result(forcedTestBucket, null);
             }
@@ -90,17 +80,6 @@ interface TestChooser<IdentifierType> {
         }
 
         return result;
-    }
-
-    default Payload validateForcePayload(final Payload currentPayload, final Payload forcePayload) {
-        // check if force payload exists and has the same payload type as the current payload
-        if (forcePayload.sameType(currentPayload)) {
-            // Payload type map currently not supported
-            if (!Payload.hasType(forcePayload, PayloadType.MAP)) {
-                return forcePayload;
-            }
-        }
-        return currentPayload;
     }
 
     /**

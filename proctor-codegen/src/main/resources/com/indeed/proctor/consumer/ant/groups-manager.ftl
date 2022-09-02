@@ -9,8 +9,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.HashSet;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -25,18 +23,12 @@ import com.google.common.base.Supplier;
 @Generated("com.indeed.proctor.consumer.gen.TestGroupsGenerator")
 public class ${mainClassName} extends AbstractGroupsManager {
     private static final Map<String, String> PROVIDED_CONTEXT;
-    private static final Set<String> FORCE_PAYLOAD_ALLOWED_TESTS;
     static {
         final Map<String, String> providedContext = new LinkedHashMap<String, String>();
         <#list contextArguments?keys as contextArgumentName>
         providedContext.put("${contextArgumentName}", "${contextArguments[contextArgumentName]}");
         </#list>
         PROVIDED_CONTEXT = Collections.unmodifiableMap(providedContext);
-        final Set<String> forcePayloadTests = new HashSet<String>();
-        <#list forcePayloadTests as forcePayloadTestName>
-        forcePayloadTests.add("${forcePayloadTestName}");
-        </#list>
-        FORCE_PAYLOAD_ALLOWED_TESTS = Collections.unmodifiableSet(forcePayloadTests);
     }
 
     public ${mainClassName}(final Supplier<Proctor> proctorSource) {
@@ -160,7 +152,7 @@ public class ${mainClassName} extends AbstractGroupsManager {
         <#else>
         final Map<String, Object> context = Collections.emptyMap();
         </#if>
-        return super.determineBucketsInternal(request, response, identifiers, context, allowForcedGroups, FORCE_PAYLOAD_ALLOWED_TESTS);
+        return super.determineBucketsInternal(request, response, identifiers, context, allowForcedGroups);
     }
 
     private static final Map<String, TestBucket> DEFAULT_BUCKET_VALUES = constructDefaultBucketValuesMap();
