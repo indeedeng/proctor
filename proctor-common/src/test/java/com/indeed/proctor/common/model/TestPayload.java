@@ -35,6 +35,7 @@ public class TestPayload {
     @Test
     public void verifyPayloadSetters() {
         final Map<PayloadType, Payload> payloads = getPayloadTypePayloadSampleMap(0);
+        final ObjectMapper objectMapper = new ObjectMapper();
 
         assertThatThrownBy(() ->
                 payloads.get(PayloadType.DOUBLE_VALUE).setStringArray(new String[]{"foo", "bar", "baz"}))
@@ -56,6 +57,9 @@ public class TestPayload {
                 .isInstanceOf(IllegalStateException.class);
         assertThatThrownBy(() ->
                 payloads.get(PayloadType.MAP).setMap(Collections.<String, Object>emptyMap()))
+                .isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() ->
+                payloads.get(PayloadType.JSON).setJson(objectMapper.readTree("{}")))
                 .isInstanceOf(IllegalStateException.class);
     }
 
