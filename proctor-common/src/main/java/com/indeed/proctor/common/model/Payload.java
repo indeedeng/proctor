@@ -178,10 +178,8 @@ public class Payload {
     }
     // Sanity check precondition for above setters
     private void precheckStateAllNull() throws IllegalStateException {
-        if ((doubleValue != null) || (doubleArray != null)
-            || (longValue != null) || (longArray != null)
-            || (stringValue != null) || (stringArray != null)
-            || (map != null)) {
+        if (Stream.of(PayloadType.values())
+                .anyMatch(pt -> resolvers.get(pt).apply(this) != null) ) {
             throw new IllegalStateException(PAYLOAD_OVERWRITE_EXCEPTION + this);
         }
     }
