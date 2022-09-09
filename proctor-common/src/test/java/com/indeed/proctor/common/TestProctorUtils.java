@@ -532,6 +532,27 @@ public class TestProctorUtils {
             );
             /* Should ignore checking failure because time was not instantiated */
         }
+        {
+            final ConsumableTestDefinition testDef = constructDefinition(
+                    fromCompactBucketFormat(
+                            "inactive:-1,control:0,test:1",
+                            Payload.EMPTY_PAYLOAD,
+                            Payload.EMPTY_PAYLOAD,
+                            Payload.EMPTY_PAYLOAD
+                    ),
+                    fromCompactAllocationFormat("${time.yes eq 'SP'}|-1:0.5,0:0.5,1:0.0", "-1:0.25,0:0.5,1:0.25")
+            );
+            final Map<String, String> providedContextNoClass = new HashMap<>();
+            providedContextNoClass.put("time", "com.indeed.proctor.common.NotFoundClass");
+            final ProvidedContext providedContext = convertContextToTestableMap(providedContextNoClass);
+            assertTrue(providedContext.shouldEvaluate());
+            verifyInternallyConsistentDefinition(
+                    "testProvidedContextConversion",
+                    "test Provided Context Conversion Class",
+                    testDef,
+                    providedContext
+            );
+        }
     }
 
     @Test

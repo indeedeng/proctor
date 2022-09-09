@@ -1168,7 +1168,7 @@ public abstract class ProctorUtils {
         for (final TestBucket bucket : buckets) {
             final Payload p = bucket.getPayload();
             if (p != null) {
-                if (p.numFieldsDefined() != 1) {
+                if (p.numFieldsDefined() > 1) {
                     throw new IncompatibleTestMatrixException(
                             "Test " + testName + " from " + matrixSource
                                     + " has a test bucket payload with multiple types: " + bucket

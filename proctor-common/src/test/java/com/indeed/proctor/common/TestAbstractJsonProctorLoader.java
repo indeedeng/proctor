@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import com.indeed.proctor.common.dynamic.DynamicFilters;
 import com.indeed.proctor.common.dynamic.MetaTagsFilter;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
+import com.indeed.proctor.common.model.Payload;
 import com.indeed.proctor.common.model.TestMatrixArtifact;
 import org.junit.Test;
 
@@ -62,6 +63,36 @@ public class TestAbstractJsonProctorLoader {
                 .isCloseTo(0.75d, offset( 1e-6));
 
         assertThat(testMatrixArtifact.getTests().get("null_tst")).isNull();
+    }
+
+    @Test
+    public void testLoadJsonTestMatrixWithUnrecognizedPayloadType() throws IOException {
+        proctorLoader = new ExampleJsonProctorLoader(
+                ImmutableSet.of("exampletst"),
+                Collections.emptySet()
+        );
+
+        final String path = getClass().getResource("unrecognized-payload-test-matrix.json").getPath();
+        final File testMatrixFile = new File(path);
+        final Reader reader = new FileReader(testMatrixFile);
+        final TestMatrixArtifact testMatrixArtifact = proctorLoader.loadJsonTestMatrix(reader);
+        assertThat(testMatrixArtifact.getAudit().getVersion()).isEqualTo("1524");
+        assertThat(testMatrixArtifact.getAudit().getUpdated()).isEqualTo(1313525000000L);
+        assertThat(testMatrixArtifact.getAudit().getUpdatedBy()).isEqualTo("shoichi");
+        assertThat(testMatrixArtifact.getTests()).hasSize(1);
+        assertThat(testMatrixArtifact.getTests()).containsKeys(
+                "exampletst");
+
+        final ConsumableTestDefinition testDefinition = testMatrixArtifact.getTests().get("exampletst");
+        assertThat(testDefinition.getBuckets().get(0).getName()).isEqualTo("control");
+        assertThat(testDefinition.getBuckets().get(1).getName()).isEqualTo("test");
+        assertThat(testDefinition.getAllocations()).hasSize(2);
+        assertThat(testDefinition.getAllocations().get(0).getRule()).isEqualTo("${lang == ENGLISH}");
+        assertThat(testDefinition.getAllocations().get(0).getRanges().get(0).getLength())
+                .isCloseTo(0.25d, offset(1e-6));
+        assertThat(testDefinition.getAllocations().get(0).getRanges().get(1).getLength())
+                .isCloseTo(0.75d, offset( 1e-6));
+        assertThat(testDefinition.getBuckets().get(0).getPayload()).isEqualTo(Payload.EMPTY_PAYLOAD);
     }
 
     @Test
