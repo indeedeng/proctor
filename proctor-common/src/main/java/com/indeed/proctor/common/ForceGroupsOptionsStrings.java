@@ -65,6 +65,11 @@ public class ForceGroupsOptionsStrings {
 
     private ForceGroupsOptionsStrings() {
     }
+    
+    @Nonnull
+    public static ForceGroupsOptions parseForceGroupsString(@Nullable final String forceGroupsString) {
+        return parseForceGroupsString(forceGroupsString, Collections.emptySet());
+    }
 
     @Nonnull
     public static ForceGroupsOptions parseForceGroupsString(@Nullable final String forceGroupsString, final Set<String> forcePayloadTests) {
