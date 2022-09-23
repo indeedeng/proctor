@@ -1,8 +1,10 @@
 package com.indeed.proctor.consumer.spring;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.indeed.proctor.common.ForceGroupsOptions;
 import com.indeed.proctor.common.Proctor;
+import com.indeed.proctor.common.model.Payload;
 import com.indeed.proctor.common.model.TestType;
 import com.indeed.proctor.consumer.ProctorConsumerUtils;
 import org.junit.Test;
@@ -12,6 +14,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 
 import static com.indeed.proctor.consumer.ProctorConsumerUtils.FORCE_GROUPS_PARAMETER;
@@ -33,7 +36,7 @@ import static org.mockito.Mockito.when;
  * @author gaurav
  */
 public class TestProctorConsumerUtils {
-
+    private static final HashSet<String> EMPTY_SET = new HashSet<>();
     @Test
     public void testDetermineBuckets() {
         final HttpServletRequest httpRequestMock = mock(HttpServletRequest.class);
@@ -42,7 +45,7 @@ public class TestProctorConsumerUtils {
         {
             // no force groups
             ProctorConsumerUtils.determineBuckets(
-                    httpRequestMock, httpResponseMock, proctorMock, "foo", TestType.ANONYMOUS_USER, emptyMap(), true);
+                    httpRequestMock, httpResponseMock, proctorMock, "foo", TestType.ANONYMOUS_USER, emptyMap(), true, EMPTY_SET);
             verify(httpRequestMock, times(1)).getContextPath();
             verify(httpRequestMock, times(1)).getHeader(anyString());
             verify(httpRequestMock, times(1)).getCookies();
@@ -54,14 +57,14 @@ public class TestProctorConsumerUtils {
             // allow force groups = false
             when(httpRequestMock.getParameter(FORCE_GROUPS_PARAMETER)).thenReturn("foo1");
             ProctorConsumerUtils.determineBuckets(
-                    httpRequestMock, httpResponseMock, proctorMock, "foo", TestType.ANONYMOUS_USER, emptyMap(), false);
+                    httpRequestMock, httpResponseMock, proctorMock, "foo", TestType.ANONYMOUS_USER, emptyMap(), false, EMPTY_SET);
             verifyNoMoreInteractions(httpRequestMock, httpResponseMock);
             clearInvocations(httpRequestMock, httpResponseMock);
         }
         {
             // allow force groups = true
             ProctorConsumerUtils.determineBuckets(
-                    httpRequestMock, httpResponseMock, proctorMock, "foo", TestType.ANONYMOUS_USER, emptyMap(), true);
+                    httpRequestMock, httpResponseMock, proctorMock, "foo", TestType.ANONYMOUS_USER, emptyMap(), true, EMPTY_SET);
             verify(httpRequestMock, times(1)).getContextPath();
             verify(httpRequestMock, times(1)).getParameter(anyString());
             verify(httpResponseMock, times(1)).addCookie(isA(Cookie.class));
@@ -116,6 +119,24 @@ public class TestProctorConsumerUtils {
         }
     }
 
+    @Test
+    public void testParseForcedGroups_WithValidPayload()
+    {
+        final MockHttpServletRequest mockRequest = new MockHttpServletRequest();
+        mockRequest.addHeader(ProctorConsumerUtils.FORCE_GROUPS_HEADER, "testing5;stringValue:\"forcePayload\"");
+        final ForceGroupsOptions forceGroupsOptions = ProctorConsumerUtils.parseForcedGroupsOptions(mockRequest, ImmutableSet.of("testing"));
+        assertThat(forceGroupsOptions.getForcePayloads()).hasSize(1);
+        assertThat(forceGroupsOptions.getForcePayloads()).containsEntry("testing", new Payload("forcePayload"));
+    }
+
+    @Test
+    public void testParseForcedGroups_WithInvalidPayload()
+    {
+        final MockHttpServletRequest mockRequest = new MockHttpServletRequest();
+        mockRequest.addHeader(ProctorConsumerUtils.FORCE_GROUPS_HEADER, "wrongTestName5;stringValue:\"forcePayload\"");
+        final ForceGroupsOptions forceGroupsOptions = ProctorConsumerUtils.parseForcedGroupsOptions(mockRequest, ImmutableSet.of("testing"));
+        assertThat(forceGroupsOptions.getForcePayloads()).hasSize(0);
+    }
 
     @Test
     public void testGetForceGroupsStringFromRequest() {
@@ -213,9 +234,6 @@ public class TestProctorConsumerUtils {
                 .hasSize(1)
                 .containsEntry("somerandomtst", 1);
         // not sure if this case needs to be supported...
-        assertThat(parseForceGroupsList("somerandomtst*  1"))
-                .hasSize(1)
-                .containsEntry("somerandomtst*", 1);
         assertThat(parseForceGroupsList("somerandomtst" + Integer.MAX_VALUE))
                 .hasSize(1)
                 .containsEntry("somerandomtst", Integer.MAX_VALUE);
@@ -334,6 +352,22 @@ public class TestProctorConsumerUtils {
 
             final String forceGroupsString = ProctorConsumerUtils.getForceGroupsStringFromRequest(mockRequest);
             final ForceGroupsOptions forceGroupsOptions = ProctorConsumerUtils.parseForcedGroupsOptions(mockRequest);
+            assertThat(forceGroupsString).isEqualTo(expectedForceGroupsString);
+            assertThat(forceGroupsOptions).isEqualTo(expectedForceGroupsOptions);
+        }
+
+        {
+            final MockHttpServletRequest mockRequest = new MockHttpServletRequest();
+            mockRequest.setCookies(new Cookie(ProctorConsumerUtils.FORCE_GROUPS_COOKIE_NAME, "first_test2;longValue:1"));
+
+            final String expectedForceGroupsString = "first_test2;longValue:1";
+            final ForceGroupsOptions expectedForceGroupsOptions = new ForceGroupsOptions.Builder()
+                    .putForceGroup("first_test", 2)
+                    .putForcePayload("first_test", new Payload(1L))
+                    .build();
+
+            final String forceGroupsString = ProctorConsumerUtils.getForceGroupsStringFromRequest(mockRequest);
+            final ForceGroupsOptions forceGroupsOptions = ProctorConsumerUtils.parseForcedGroupsOptions(mockRequest, ImmutableSet.of("first_test"));
             assertThat(forceGroupsString).isEqualTo(expectedForceGroupsString);
             assertThat(forceGroupsOptions).isEqualTo(expectedForceGroupsOptions);
         }
