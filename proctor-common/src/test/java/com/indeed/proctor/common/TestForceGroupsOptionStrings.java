@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableSet;
 import com.indeed.proctor.common.model.Payload;
 import org.junit.Test;
 
-import java.util.HashMap;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
