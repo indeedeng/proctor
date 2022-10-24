@@ -130,8 +130,10 @@ interface TestChooser<IdentifierType> {
                         } else if (currentPayloadMap.get(keyString) instanceof Double[]) {
                             validatedMap.put(keyString, ((ArrayList<Double>)forcePayloadValue).toArray(new Double[0]));
                         } else if (currentPayloadMap.get(keyString) instanceof Long) {
-                            validatedMap.put(keyString, forcePayloadValue);
+                            // ObjectMapper reads in as Object and automatically chooses Integer over Long this recasts to Long
+                            validatedMap.put(keyString, Long.valueOf((Integer)forcePayloadValue));
                         } else if (currentPayloadMap.get(keyString) instanceof Long[]) {
+                            // ObjectMapper reads in as Object and automatically chooses Integer[] over Long[] this recasts to Long[]
                             validatedMap.put(keyString, objectMapper.readValue(objectMapper.writeValueAsString(forcePayloadValue), Long[].class));
                         } else if (currentPayloadMap.get(keyString) instanceof String) {
                             validatedMap.put(keyString, forcePayloadValue);

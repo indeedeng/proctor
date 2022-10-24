@@ -28,7 +28,7 @@ public class TestTestChooser {
             new TestBucket("active", 1, "active", new Payload("active_payload")),
             new TestBucket("payload_tst", 2, "test payload", new Payload(new String[]{"foo", "bar", "baz"})),
             new TestBucket("payload_map_tst", 3, "test map payload", new Payload(
-                    ImmutableMap.of("key1", new String[]{"foo", "bar"}, "key2", 2.0, "key3", new Long[]{1L, 2L}))
+                    ImmutableMap.of("key1", new String[]{"foo", "bar"}, "key2", 2.0, "key3", new Long[]{1L, 2L}, "key4", 4L))
             )
     );
     private static final List<Allocation> ALLOCATIONS = ImmutableList.of(new Allocation(
@@ -286,8 +286,8 @@ public class TestTestChooser {
     @Test
     public void testChoose_ForcePayloadwithMapParsing() {
         // NOTE: input map is in String form as it still needs to be parsed and validated
-        final Payload expectedPayload = new Payload(ImmutableMap.of("key1", new String[]{"abc", "def"}, "key2", 2.3, "key3",  new Long[]{5L, 10L}));
-        final String forcePayloadString = "map:{\"key1\":[\"abc\", \"def\"],\"key2\":2.3,\"key3\":[5,10]}";
+        final Payload expectedPayload = new Payload(ImmutableMap.of("key1", new String[]{"abc", "def"}, "key2", 2.3, "key3",  new Long[]{5L, 10L}, "key4", 5L));
+        final String forcePayloadString = "map:{\"key1\":[\"abc\", \"def\"],\"key2\":2.3,\"key3\":[5,10],\"key4\":5}";
         assertThat(
                 choose(ForceGroupsOptions.builder()
                         .putForceGroup(TEST_CHOOSER.getTestName(), 3)
