@@ -1,9 +1,11 @@
 package com.indeed.proctor.common;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.indeed.proctor.common.model.Payload;
 import org.junit.Test;
 
+import java.util.HashMap;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -173,6 +175,27 @@ public class TestForceGroupsOptionStrings {
                         .putForcePayload("abc", new Payload(new String[]{"test1", "test2", "test3"}))
                         .build())
         ).isEqualTo("abc1;stringArray:[\"test1\",\"test2\",\"test3\"]");
+
+        assertThat(ForceGroupsOptionsStrings.generateForceGroupsString(
+                ForceGroupsOptions.builder()
+                        .putForceGroup("abc", 1)
+                        .putForcePayload("abc", new Payload(ImmutableMap.of("key", "1.0")))
+                        .build())
+        ).isEqualTo("abc1;map:{\"key\":\"1.0\"}");
+
+        assertThat(ForceGroupsOptionsStrings.generateForceGroupsString(
+                ForceGroupsOptions.builder()
+                        .putForceGroup("abc", 1)
+                        .putForcePayload("abc", new Payload(ImmutableMap.of("key", "[1.1, 2.2, 3.3]", "key2", "[\"test\", \"test2\"]")))
+                        .build())
+        ).isEqualTo("abc1;map:{\"key2\":\"[\\\"test\\\", \\\"test2\\\"]\",\"key\":\"[1.1, 2.2, 3.3]\"}");
+
+        assertThat(ForceGroupsOptionsStrings.generateForceGroupsString(
+                ForceGroupsOptions.builder()
+                        .putForceGroup("abc", 1)
+                        .putForcePayload("abc", ForceGroupsOptionsStrings.parseForcePayloadString("map:{\"key2\":\"[\\\"test\\\", \\\"test2\\\"]\",\"key\":\"[1.1, 2.2, 3.3]\"}"))
+                        .build())
+        ).isEqualTo("abc1;map:{\"key2\":\"[\\\"test\\\", \\\"test2\\\"]\",\"key\":\"[1.1, 2.2, 3.3]\"}");
     }
 
     @Test
@@ -301,6 +324,42 @@ public class TestForceGroupsOptionStrings {
                                 .build()
                 );
     }
+
+    @Test
+    public void testParseForceGroupsString_Map() {
+        assertThat(ForceGroupsOptionsStrings.parseForceGroupsString("abc1;map:{\"key\":1.0, \"key2\":2.0}", forcePayloadTests))
+                .isEqualTo(
+                        ForceGroupsOptions.builder()
+                                .putForceGroup("abc", 1)
+                                .putForcePayload("abc", new Payload(ImmutableMap.of("key", 1.0, "key2", 2.0)))
+                                .build()
+                );
+
+        assertThat(ForceGroupsOptionsStrings.parseForceGroupsString("abc1;map:{}", forcePayloadTests))
+                .isEqualTo(
+                        ForceGroupsOptions.builder()
+                                .putForceGroup("abc", 1)
+                                .putForcePayload("abc", new Payload(ImmutableMap.of()))
+                                .build()
+                );
+
+        assertThat(ForceGroupsOptionsStrings.parseForceGroupsString("abc1;map:{\"key\":[1, 2, 3]}", forcePayloadTests))
+                .isEqualTo(
+                        ForceGroupsOptions.builder()
+                                .putForceGroup("abc", 1)
+                                .putForcePayload("abc", new Payload(ImmutableMap.of("key", new Integer[]{1, 2, 3})))
+                                .build()
+                );
+
+        assertThat(ForceGroupsOptionsStrings.parseForceGroupsString("abc1;map:{\"key\":[1.1, 2.2, 3.3], \"key2\":[\"test\", \"test2\"]}", forcePayloadTests))
+                .isEqualTo(
+                        ForceGroupsOptions.builder()
+                                .putForceGroup("abc", 1)
+                                .putForcePayload("abc", new Payload(ImmutableMap.of("key", new Double[]{1.1, 2.2, 3.3}, "key2", new String[]{"test", "test2"})))
+                                .build()
+                );
+    }
+
 
     @Test
     public void testParseForceGroupsString_JSONinString() {

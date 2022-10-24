@@ -1,6 +1,7 @@
 package com.indeed.proctor.common;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.indeed.proctor.common.model.Payload;
 import org.apache.logging.log4j.LogManager;
@@ -47,22 +48,38 @@ public class ForceGroupsOptionsStrings {
     //          \[(?:\s*(?:-?\d+\.?\d*|\"(?:\\.|[^\"\\]+)*\")(?:\s*,\s*(?:-?\d+\.?\d*|\"(?:\\.|[^\"\\]+)*\"))*)?\] -
     //                  matches an array of strings or numbers
     // [a-z_]+ - matches default value (ie. default_to_min_live)
+    private static final String REGEX_STRING_OR_NUM = "-?\\d+\\.?\\d*|\\\"(?:\\\\.|[^\\\"\\\\]+)*\\\"";
+    private static final String REGEX_ARRAY =
+            "\\[" +
+                "(?:\\s*" +
+                    "(?:" + REGEX_STRING_OR_NUM + ")" +
+                    "(?:\\s*,\\s*" +
+                    "(?:" + REGEX_STRING_OR_NUM + ")" +
+                    ")*" +
+                ")?" +
+            "\\]";
+    private static final String REGEX_MAP =
+            "\\{" +
+                "(?:\\s*" +
+                    "(?:\\\"(?:\\\\.|[^\\\"\\\\]+)*\\\"\\s*:\\s*)" +
+                    "(?:" + REGEX_STRING_OR_NUM + "|" + REGEX_ARRAY + ")" +
+                    "(?:\\s*,\\s*" +
+                        "(?:\\\"(?:\\\\.|[^\\\"\\\\]+)*\\\"\\s*:\\s*)" +
+                        "(?:" + REGEX_STRING_OR_NUM + "|" + REGEX_ARRAY + ")" +
+                    ")*" +
+                ")?" +
+            "\\}";
+
     private static final Pattern PATTERN = Pattern.compile("\\w+-?\\d+" +
             "(?:" +
                 ";\\w+:" +
                 "(?:" +
-                    "-?\\d+\\.?\\d*|\\\"(?:\\\\.|[^\\\"\\\\]+)*\\\"|" +
-                    "\\[" +
-                        "(?:\\s*" +
-                            "(?:-?\\d+\\.?\\d*|\\\"(?:\\\\.|[^\\\"\\\\]+)*\\\")" +
-                            "(?:\\s*,\\s*" +
-                            "(?:-?\\d+\\.?\\d*|\\\"(?:\\\\.|[^\\\"\\\\]+)*\\\")" +
-                            ")*" +
-                        ")?" +
-                    "\\]" +
+                    REGEX_STRING_OR_NUM + "|" + REGEX_ARRAY + "|" + REGEX_MAP +
                 ")" +
             ")?" +
             "|[a-z_]+");
+
+    private static final TypeReference<Map<String,Object>> TYPE_REFERENCE = new TypeReference<Map<String,Object>>() {};
 
     private ForceGroupsOptionsStrings() {
     }
@@ -189,9 +206,13 @@ public class ForceGroupsOptionsStrings {
                     break;
                 }
                 case MAP:
+                {
+                    payload.setMap(objectMapper.readValue(payloadValue, TYPE_REFERENCE));
+                    break;
+                }
                 case JSON:
                 {
-                    // Map not currently supported
+                    // Json not currently supported
                     return null;
                 }
             }
@@ -247,6 +268,10 @@ public class ForceGroupsOptionsStrings {
             if (payload.getStringArray() != null) {
                 final String stringArray = objectMapper.writeValueAsString(payload.getStringArray());
                 s.append("stringArray:").append(stringArray);
+            }
+            if (payload.getMap() != null) {
+                final String mapValue = objectMapper.writeValueAsString(payload.getMap());
+                s.append("map:").append(mapValue);
             }
             return s.toString();
         } catch (final JsonProcessingException e) {
