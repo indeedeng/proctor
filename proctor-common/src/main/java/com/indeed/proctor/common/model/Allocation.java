@@ -22,6 +22,9 @@ public class Allocation {
     @Nonnull
     private String id = "";
 
+    @Nonnull
+    private String name = "";
+
     public Allocation() { /* intentionally empty */ }
 
     public Allocation(@Nullable final String rule,
@@ -37,6 +40,16 @@ public class Allocation {
         this.id = Strings.nullToEmpty(id);
     }
 
+    public Allocation(@Nullable final String rule,
+                      @Nonnull final List<Range> ranges,
+                      @Nullable final String id,
+                      @Nullable final String name) {
+        this.rule = rule;
+        this.ranges = ranges;
+        this.id = Strings.nullToEmpty(id);
+        this.name = Strings.nullToEmpty(name);
+    }
+
     public Allocation(@Nonnull final Allocation other) {
         this.rule = other.rule;
         this.ranges = new ArrayList<>();
@@ -44,6 +57,7 @@ public class Allocation {
             this.ranges.add(new Range(range));
         }
         this.id = other.id;
+        this.name = other.name;
     }
 
     @Nullable
@@ -74,6 +88,15 @@ public class Allocation {
         this.id = Strings.nullToEmpty(id);
     }
 
+    @Nonnull
+    public String getName() {
+        return name;
+    }
+
+    public void setName(@Nullable final String name) {
+        this.name = Strings.nullToEmpty(name);
+    }
+
     @Override
     public boolean equals(final Object o) {
         if (this == o) {
@@ -85,12 +108,13 @@ public class Allocation {
         final Allocation that = (Allocation) o;
         return Objects.equal(rule, that.rule) &&
                 Objects.equal(ranges, that.ranges) &&
-                Objects.equal(id, that.id);
+                Objects.equal(id, that.id) &&
+                Objects.equal(name, that.name);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(rule, ranges, id);
+        return Objects.hashCode(rule, ranges, id, name);
     }
 
     @Override
@@ -99,6 +123,7 @@ public class Allocation {
                 "rule='" + rule + '\'' +
                 ", ranges=" + ranges +
                 ", id='" + id + '\'' +
+                ", name='" + name + '\'' +
                 '}';
     }
 }
