@@ -333,6 +333,9 @@ public class Payload {
         if (a != null && b != null && a.size() == b.size()) {
             boolean isEqual = true;
             for (final String keyString : a.keySet()) {
+                if (!isEqual) {
+                    break;
+                }
                 final Object aValue = a.get(keyString);
                 final Object bValue = b.get(keyString);
                 if (aValue instanceof Double || aValue instanceof Long || aValue instanceof String) {
