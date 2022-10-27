@@ -10,6 +10,9 @@ import java.util.Collections;
 import java.util.List;
 
 public class Allocation {
+
+    private static final String EMPTY_STRING = "";
+
     @Nullable
     private String rule;
 
@@ -20,24 +23,22 @@ public class Allocation {
     private List<Range> ranges = Collections.emptyList();
 
     @Nonnull
-    private String id = "";
+    private String id = EMPTY_STRING;
 
     @Nonnull
-    private String name = "";
+    private String name = EMPTY_STRING;
 
     public Allocation() { /* intentionally empty */ }
 
     public Allocation(@Nullable final String rule,
                       @Nonnull final List<Range> ranges) {
-        this(rule, ranges, "");
+        this(rule, ranges, EMPTY_STRING, EMPTY_STRING);
     }
 
     public Allocation(@Nullable final String rule,
                       @Nonnull final List<Range> ranges,
                       @Nullable final String id) {
-        this.rule = rule;
-        this.ranges = ranges;
-        this.id = Strings.nullToEmpty(id);
+        this(rule, ranges, id, EMPTY_STRING);
     }
 
     public Allocation(@Nullable final String rule,
