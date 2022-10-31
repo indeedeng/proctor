@@ -9,8 +9,8 @@ import org.apache.commons.lang3.StringUtils;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -326,7 +326,45 @@ public class Payload {
                 Objects.equals(stringValue, payload.stringValue) &&
                 Arrays.equals(stringArray, payload.stringArray) &&
                 Objects.equals(json, payload.json) &&
-                Objects.equals(map, payload.map);
+                comparePayloadMap(map, payload.map);
+    }
+
+    private static boolean comparePayloadMap(final Map<String, Object> a, final Map<String, Object> b) {
+        if (a != null && b != null && a.size() == b.size()) {
+            boolean isEqual = true;
+            for (final String keyString : a.keySet()) {
+                if (!isEqual) {
+                    break;
+                }
+                final Object aValue = a.get(keyString);
+                final Object bValue = b.get(keyString);
+                if (aValue instanceof Double || aValue instanceof Long || aValue instanceof String) {
+                    isEqual &= Objects.equals(aValue, bValue);
+                } else if (aValue instanceof ArrayList && bValue instanceof ArrayList) {
+                    isEqual &= Objects.equals(aValue, bValue);
+                } else if (aValue instanceof ArrayList) {
+                    isEqual &= Arrays.equals(((ArrayList<?>) aValue).toArray(), (Object[]) bValue);
+                } else if (bValue instanceof ArrayList) {
+                    isEqual &= Arrays.equals(((ArrayList<?>) bValue).toArray(), (Object[]) aValue);
+                } else if (aValue instanceof Double[]){
+                    final Double[] aArr = (Double[]) aValue;
+                    final Double[] bArr = (Double[]) bValue;
+                    isEqual &= Arrays.equals(aArr, bArr);
+                } else if (aValue instanceof Long[]){
+                    final Long[] aArr = (Long[]) aValue;
+                    final Long[] bArr = (Long[]) bValue;
+                    isEqual &= Arrays.equals(aArr, bArr);
+                } else if (aValue instanceof String[]) {
+                    final String[] aArr = (String[]) aValue;
+                    final String[] bArr = (String[]) bValue;
+                    isEqual &= Arrays.equals(aArr, bArr);
+                } else {
+                    isEqual &= Objects.equals(aValue, bValue);
+                }
+            }
+            return isEqual;
+        }
+        return Objects.equals(a, b);
     }
 
     @Override

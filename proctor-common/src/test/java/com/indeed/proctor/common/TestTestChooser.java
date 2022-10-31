@@ -1,6 +1,7 @@
 package com.indeed.proctor.common;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.Payload;
@@ -25,7 +26,10 @@ public class TestTestChooser {
             new TestBucket("inactive", -1, "inactive", null),
             new TestBucket("control", 0, "control", null),
             new TestBucket("active", 1, "active", new Payload("active_payload")),
-            new TestBucket("payload_tst", 2, "test payload", new Payload(new String[]{"foo", "bar", "baz"}))
+            new TestBucket("payload_tst", 2, "test payload", new Payload(new String[]{"foo", "bar", "baz"})),
+            new TestBucket("payload_map_tst", 3, "test map payload", new Payload(
+                    ImmutableMap.of("key1", new String[]{"foo", "bar"}, "key2", 2.0, "key3", new Long[]{1L, 2L}, "key4", 4L))
+            )
     );
     private static final List<Allocation> ALLOCATIONS = ImmutableList.of(new Allocation(
             "${}",
@@ -267,7 +271,7 @@ public class TestTestChooser {
 
     @Test
     public void testChoose_ForcePayloadwithStringParsing() {
-        // NOTE: input map is in String form as it still needs to be parsed and validated
+        // NOTE: input is in String form as it still needs to be parsed and validated
         final String[] forcePayloadStringArr = new String[]{"value1,with,comma", "value2,with,comma", "value3,with,comma", "value4,with,comma"};
         final String forcePayloadString = "stringArray:[\"value1,with,comma\",\"value2,with,comma\",\"value3,with,comma\",\"value4,with,comma\"]";
         assertThat(
@@ -277,6 +281,38 @@ public class TestTestChooser {
                         .build()
                 ).getTestBucket().getPayload()
         ).isEqualTo(new Payload(forcePayloadStringArr));
+    }
+
+    @Test
+    public void testChoose_ForcePayloadwithMapParsing() {
+        // NOTE: input map is in String form as it still needs to be parsed and validated
+        final Payload expectedPayload = new Payload(ImmutableMap.of("key1", new String[]{"abc", "def"}, "key2", 2.3, "key3",  new Long[]{5L, 10L}, "key4", 5L));
+        final String forcePayloadString = "map:{\"key1\":[\"abc\", \"def\"],\"key2\":2.3,\"key3\":[5,10],\"key4\":5}";
+        assertThat(
+                choose(ForceGroupsOptions.builder()
+                        .putForceGroup(TEST_CHOOSER.getTestName(), 3)
+                        .putForcePayload(TEST_CHOOSER.getTestName(), ForceGroupsOptionsStrings.parseForcePayloadString(forcePayloadString))
+                        .build()
+                ).getTestBucket().getPayload()
+        ).isEqualTo(new Payload(expectedPayload));
+
+        final String invalidForcePayloadString = "map:{\"key1\":[\"abc\", \"def\"],\"key2\":\"invalid\",\"key3\":[5,10]}";
+        assertThat(
+                choose(ForceGroupsOptions.builder()
+                        .putForceGroup(TEST_CHOOSER.getTestName(), 3)
+                        .putForcePayload(TEST_CHOOSER.getTestName(), ForceGroupsOptionsStrings.parseForcePayloadString(invalidForcePayloadString))
+                        .build()
+                ).getTestBucket()
+        ).isEqualTo(TEST_BUCKETS.get(TEST_BUCKETS.size()-1));
+
+        final String invalidForcePayloadStringMissingKey = "map:{\"key1\":[\"abc\", \"def\"],\"key3\":[5,10]}";
+        assertThat(
+                choose(ForceGroupsOptions.builder()
+                        .putForceGroup(TEST_CHOOSER.getTestName(), 3)
+                        .putForcePayload(TEST_CHOOSER.getTestName(), ForceGroupsOptionsStrings.parseForcePayloadString(invalidForcePayloadStringMissingKey))
+                        .build()
+                ).getTestBucket()
+        ).isEqualTo(TEST_BUCKETS.get(TEST_BUCKETS.size()-1));
     }
 
     private static boolean compareTestChooserResults(final TestChooser.Result a, final TestChooser.Result b) {

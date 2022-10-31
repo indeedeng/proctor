@@ -1,5 +1,6 @@
 package com.indeed.proctor.common;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.Payload;
@@ -8,8 +9,11 @@ import com.indeed.proctor.common.model.TestBucket;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -95,10 +99,57 @@ interface TestChooser<IdentifierType> {
     default Payload validateForcePayload(final Payload currentPayload, final Payload forcePayload) {
         // check if force payload exists and has the same payload type as the current payload
         if (forcePayload.sameType(currentPayload)) {
-            // Payload type map currently not supported
-            if (!Payload.hasType(forcePayload, PayloadType.MAP)) {
+            // Payload type json currently not supported
+            if (!Payload.hasType(forcePayload, PayloadType.JSON)) {
+                if (Payload.hasType(forcePayload, PayloadType.MAP)) {
+                    return validateForcePayloadMap(currentPayload, forcePayload);
+                }
                 return forcePayload;
             }
+        }
+        return currentPayload;
+    }
+
+    /*
+     * Validated Force Payload Map by checking that each forced key exists in the current payload and is of the same instance type. If forcePayload is invalid return currentPayload to not overwrite
+     */
+    @Nullable
+    default Payload validateForcePayloadMap(@Nullable final Payload currentPayload, @Nullable final Payload forcePayload) {
+        final Map<String, Object> currentPayloadMap = currentPayload.getMap();
+        final Map<String, Object> forcePayloadMap = forcePayload.getMap();
+        final ObjectMapper objectMapper = new ObjectMapper();
+        if (currentPayloadMap != null && forcePayloadMap != null) {
+            final Map<String, Object> validatedMap = new HashMap<>(currentPayloadMap);
+            for (final String keyString : forcePayloadMap.keySet()) {
+                if (currentPayloadMap.containsKey(keyString)) {
+                    try {
+                        final Object forcePayloadValue = forcePayloadMap.get(keyString);
+                        // check current class of value and try to parse force value to it. force values are strings before validation
+                        if (currentPayloadMap.get(keyString) instanceof Double) {
+                            validatedMap.put(keyString, forcePayloadValue);
+                        } else if (currentPayloadMap.get(keyString) instanceof Double[]) {
+                            validatedMap.put(keyString, ((ArrayList<Double>)forcePayloadValue).toArray(new Double[0]));
+                        } else if (currentPayloadMap.get(keyString) instanceof Long) {
+                            // ObjectMapper reads in as Object and automatically chooses Integer over Long this recasts to Long
+                            validatedMap.put(keyString, Long.valueOf((Integer)forcePayloadValue));
+                        } else if (currentPayloadMap.get(keyString) instanceof Long[]) {
+                            // ObjectMapper reads in as Object and automatically chooses Integer[] over Long[] this recasts to Long[]
+                            validatedMap.put(keyString, objectMapper.readValue(objectMapper.writeValueAsString(forcePayloadValue), Long[].class));
+                        } else if (currentPayloadMap.get(keyString) instanceof String) {
+                            validatedMap.put(keyString, forcePayloadValue);
+                        } else if (currentPayloadMap.get(keyString) instanceof String[]) {
+                            validatedMap.put(keyString, ((ArrayList<String>)forcePayloadValue).toArray(new String[0]));
+                        } else {
+                            return currentPayload;
+                        }
+                    } catch (final IllegalArgumentException | ArrayStoreException | ClassCastException | IOException e) {
+                        return currentPayload;
+                    }
+                } else {
+                    return currentPayload;
+                }
+            }
+            return new Payload(validatedMap);
         }
         return currentPayload;
     }

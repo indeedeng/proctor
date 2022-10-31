@@ -1,6 +1,7 @@
 package com.indeed.proctor.common;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.indeed.proctor.common.model.Payload;
 import org.apache.logging.log4j.LogManager;
@@ -39,30 +40,51 @@ public class ForceGroupsOptionsStrings {
     private static final int FORCE_PARAMETER_PAYLOAD_IDX = 1;
     private static final int FORCE_PARAMETER_MAX_SIZE = 2;
 
-    // \w+-?\d+(?:;\w+:(?:-?\d+\.?\d*|\"(?:\\.|[^\"\\]+)*\"|\[(?:\s*(?:-?\d+\.?\d*|\"(?:\\.|[^\"\\]+)*\")(?:\s*,\s*(?:-?\d+\.?\d*|\"(?:\\.|[^\"\\]+)*\"))*)?\]))?|[a-z_]+
+    // -?\d+\.?\d* - matches a integer or double and allows negatives
+    // or
+    // \"(?:\\.|[^\"\\]+)*\"- matches a string
+    private static final String REGEX_STRING_OR_NUM = "-?\\d+\\.?\\d*|\\\"(?:\\\\.|[^\\\"\\\\]+)*\\\"";
+
+    // matches an array of string or numbers
+    private static final String REGEX_ARRAY =
+            "\\[" +
+                "(?:\\s*" +
+                    "(?:" + REGEX_STRING_OR_NUM + ")" +
+                    "(?:\\s*,\\s*" +
+                    "(?:" + REGEX_STRING_OR_NUM + ")" +
+                    ")*" +
+                ")?" +
+            "\\]";
+
+    // matches a map of key type string and value of array, string, or number
+    private static final String REGEX_MAP =
+            "\\{" +
+                "(?:\\s*" +
+                    "(?:\\\"(?:\\\\.|[^\\\"\\\\]+)*\\\"\\s*:\\s*)" +
+                    "(?:" + REGEX_STRING_OR_NUM + "|" + REGEX_ARRAY + ")" +
+                    "(?:\\s*,\\s*" +
+                        "(?:\\\"(?:\\\\.|[^\\\"\\\\]+)*\\\"\\s*:\\s*)" +
+                        "(?:" + REGEX_STRING_OR_NUM + "|" + REGEX_ARRAY + ")" +
+                    ")*" +
+                ")?" +
+            "\\}";
+
     // \w+-?\d+ - matches force group without payload (ie. example_tst1 or another_tst-1)
     //      ;\w+: - matches ; and payload type (ie. ;stringValue:) followed by one of the following:
-    //          -?\d+\.?\d* - matches a integer or double and allows negatives
-    //          \"(?:\\.|[^\"\\]+)*\"- matches a string
-    //          \[(?:\s*(?:-?\d+\.?\d*|\"(?:\\.|[^\"\\]+)*\")(?:\s*,\s*(?:-?\d+\.?\d*|\"(?:\\.|[^\"\\]+)*\"))*)?\] -
-    //                  matches an array of strings or numbers
+    //          string or number
+    //          array
+    //          map
     // [a-z_]+ - matches default value (ie. default_to_min_live)
     private static final Pattern PATTERN = Pattern.compile("\\w+-?\\d+" +
             "(?:" +
                 ";\\w+:" +
                 "(?:" +
-                    "-?\\d+\\.?\\d*|\\\"(?:\\\\.|[^\\\"\\\\]+)*\\\"|" +
-                    "\\[" +
-                        "(?:\\s*" +
-                            "(?:-?\\d+\\.?\\d*|\\\"(?:\\\\.|[^\\\"\\\\]+)*\\\")" +
-                            "(?:\\s*,\\s*" +
-                            "(?:-?\\d+\\.?\\d*|\\\"(?:\\\\.|[^\\\"\\\\]+)*\\\")" +
-                            ")*" +
-                        ")?" +
-                    "\\]" +
+                    REGEX_STRING_OR_NUM + "|" + REGEX_ARRAY + "|" + REGEX_MAP +
                 ")" +
             ")?" +
             "|[a-z_]+");
+
+    private static final TypeReference<Map<String,Object>> TYPE_REFERENCE = new TypeReference<Map<String,Object>>() {};
 
     private ForceGroupsOptionsStrings() {
     }
@@ -189,9 +211,13 @@ public class ForceGroupsOptionsStrings {
                     break;
                 }
                 case MAP:
+                {
+                    payload.setMap(objectMapper.readValue(payloadValue, TYPE_REFERENCE));
+                    break;
+                }
                 case JSON:
                 {
-                    // Map not currently supported
+                    // Json not currently supported
                     return null;
                 }
             }
@@ -247,6 +273,10 @@ public class ForceGroupsOptionsStrings {
             if (payload.getStringArray() != null) {
                 final String stringArray = objectMapper.writeValueAsString(payload.getStringArray());
                 s.append("stringArray:").append(stringArray);
+            }
+            if (payload.getMap() != null) {
+                final String mapValue = objectMapper.writeValueAsString(payload.getMap());
+                s.append("map:").append(mapValue);
             }
             return s.toString();
         } catch (final JsonProcessingException e) {
