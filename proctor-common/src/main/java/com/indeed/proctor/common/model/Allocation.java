@@ -10,6 +10,9 @@ import java.util.Collections;
 import java.util.List;
 
 public class Allocation {
+
+    private static final String EMPTY_STRING = "";
+
     @Nullable
     private String rule;
 
@@ -20,21 +23,32 @@ public class Allocation {
     private List<Range> ranges = Collections.emptyList();
 
     @Nonnull
-    private String id = "";
+    private String id = EMPTY_STRING;
+
+    @Nonnull
+    private String name = EMPTY_STRING;
 
     public Allocation() { /* intentionally empty */ }
 
     public Allocation(@Nullable final String rule,
                       @Nonnull final List<Range> ranges) {
-        this(rule, ranges, "");
+        this(rule, ranges, EMPTY_STRING, EMPTY_STRING);
     }
 
     public Allocation(@Nullable final String rule,
                       @Nonnull final List<Range> ranges,
                       @Nullable final String id) {
+        this(rule, ranges, id, EMPTY_STRING);
+    }
+
+    public Allocation(@Nullable final String rule,
+                      @Nonnull final List<Range> ranges,
+                      @Nullable final String id,
+                      @Nullable final String name) {
         this.rule = rule;
         this.ranges = ranges;
         this.id = Strings.nullToEmpty(id);
+        this.name = Strings.nullToEmpty(name);
     }
 
     public Allocation(@Nonnull final Allocation other) {
@@ -44,6 +58,7 @@ public class Allocation {
             this.ranges.add(new Range(range));
         }
         this.id = other.id;
+        this.name = other.name;
     }
 
     @Nullable
@@ -74,6 +89,15 @@ public class Allocation {
         this.id = Strings.nullToEmpty(id);
     }
 
+    @Nonnull
+    public String getName() {
+        return name;
+    }
+
+    public void setName(@Nullable final String name) {
+        this.name = Strings.nullToEmpty(name);
+    }
+
     @Override
     public boolean equals(final Object o) {
         if (this == o) {
@@ -85,12 +109,13 @@ public class Allocation {
         final Allocation that = (Allocation) o;
         return Objects.equal(rule, that.rule) &&
                 Objects.equal(ranges, that.ranges) &&
-                Objects.equal(id, that.id);
+                Objects.equal(id, that.id) &&
+                Objects.equal(name, that.name);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(rule, ranges, id);
+        return Objects.hashCode(rule, ranges, id, name);
     }
 
     @Override
@@ -99,6 +124,7 @@ public class Allocation {
                 "rule='" + rule + '\'' +
                 ", ranges=" + ranges +
                 ", id='" + id + '\'' +
+                ", name='" + name + '\'' +
                 '}';
     }
 }
