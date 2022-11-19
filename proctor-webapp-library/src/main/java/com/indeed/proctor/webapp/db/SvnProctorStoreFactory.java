@@ -16,6 +16,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -116,7 +117,7 @@ public class SvnProctorStoreFactory implements TrunkQaProdStoresFactory {
      * @return
      */
     private File identifyImplicitTempRoot() throws IOException {
-        final File tempFile = File.createTempFile("implicit", SvnProctorStoreFactory.class.getSimpleName());
+        final File tempFile = Files.createTempFile("implicit", SvnProctorStoreFactory.class.getSimpleName()).toFile();
 
         tempFile.delete();
         return tempFile.getParentFile();
