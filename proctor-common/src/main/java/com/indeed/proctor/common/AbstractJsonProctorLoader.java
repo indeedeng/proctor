@@ -127,7 +127,7 @@ public abstract class AbstractJsonProctorLoader extends AbstractProctorLoader {
         }
     }
 
-    private Map<String, ConsumableTestDefinition> extractReferencedTests(@Nonnull final JsonParser jsonParser) throws IOException {
+    protected Map<String, ConsumableTestDefinition> extractReferencedTests(@Nonnull final JsonParser jsonParser) throws IOException {
         // use HashMap instead of ImmutableMap.Builder because null might be put
         final Map<String, ConsumableTestDefinition> tests = new HashMap<>();
 
