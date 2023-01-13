@@ -145,7 +145,7 @@ public abstract class AbstractJsonProctorLoader extends AbstractProctorLoader {
         return tests;
     }
 
-    private boolean isTestReferenced(final String testName, final ConsumableTestDefinition testDefinition) {
+    protected boolean isTestReferenced(final String testName, final ConsumableTestDefinition testDefinition) {
         // check required tests
         if (Preconditions.checkNotNull(requiredTests).containsKey(testName)) {
             return true;
