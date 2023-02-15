@@ -21,6 +21,7 @@ import javax.el.FunctionMapper;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -39,7 +40,7 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
     private Audit lastAudit = null;
     @Nullable
     private String lastLoadErrorMessage = "load never attempted";
-
+    private Set<String> loggedDynamicTests;
 
     @Nonnull
     private final FunctionMapper functionMapper;
@@ -57,6 +58,7 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
             @Nonnull final FunctionMapper functionMapper
     ) {
         this(cls, specification, functionMapper, new IdentifierValidator.Noop());
+        loggedDynamicTests = new HashSet<>();
     }
 
     /**
@@ -80,6 +82,7 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
         this.functionMapper = functionMapper;
         this.identifierValidator = identifierValidator;
         this.dynamicFilters = specification.getDynamicFilters();
+        loggedDynamicTests = new HashSet<>();
     }
 
     /**
@@ -161,16 +164,7 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
         loadResult.getMissingTests().forEach((testName) ->
                 LOGGER.error(String.format("A required test %s is missing from test matrix", testName))
         );
-        loadResult.getDynamicTestErrorMap().forEach((testName, exception) -> {
-            // Intentionally not adding stack trace to log, to reduce log size,
-            // message contains all the information that is valuable.
-            LOGGER.warn(String.format(
-                    "Unable to load test matrix for a dynamic test %s. Cause: %s Message: %s",
-                    testName,
-                    exception.getCause(),
-                    exception.getMessage()
-            ));
-        });
+        loadResult.getDynamicTestErrorMap().forEach(this::logDynamicTests);
 
         final Audit newAudit = testMatrix.getAudit();
         if (lastAudit != null) {
@@ -188,6 +182,26 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
         //  kind of lame to modify lastAudit here but current in load(), but the interface is a little constraining
         setLastAudit(newAudit);
         return proctor;
+    }
+
+    @VisibleForTesting
+    protected void logDynamicTests(final String testName, final Exception exception) {
+        if(!loggedDynamicTests.contains(testName)) {
+            // Intentionally not adding stack trace to log, to reduce log size,
+            // message contains all the information that is valuable.
+            LOGGER.warn(String.format(
+                    "Unable to load test matrix for a dynamic test %s. Cause: %s Message: %s",
+                    testName,
+                    exception.getCause(),
+                    exception.getMessage()
+            ));
+            loggedDynamicTests.add(testName);
+        }
+    }
+
+    @VisibleForTesting
+    Set<String> getLoggedDynamicTests() {
+        return loggedDynamicTests;
     }
 
     @CheckForNull

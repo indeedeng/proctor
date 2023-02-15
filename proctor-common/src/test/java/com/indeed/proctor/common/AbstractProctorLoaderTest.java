@@ -202,6 +202,17 @@ public class AbstractProctorLoaderTest {
         assertThat(proctorResult.getTestDefinitions()).containsOnlyKeys(requiredTestname, dynamicAddedTestname);
     }
 
+    @Test
+    public void testLogDynamicTests() {
+        final TestProctorLoader loader = new TestProctorLoader(dataLoaderTimerMock);
+        loader.logDynamicTests("test1", new Exception("test1"));
+        loader.logDynamicTests("test2", new Exception("test2"));
+        loader.logDynamicTests("test3", new Exception("test3"));
+        loader.logDynamicTests("test4", new Exception("test4"));
+        loader.logDynamicTests("test4", new Exception("test4"));
+        assertThat(loader.getLoggedDynamicTests().size()).isEqualTo(4);
+    }
+
     private ConsumableTestDefinition createStubDefinition() {
         final ConsumableTestDefinition consumableTestDefinition = new ConsumableTestDefinition();
         consumableTestDefinition.setTestType(TestType.ANONYMOUS_USER);
