@@ -200,7 +200,7 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
     }
 
     @VisibleForTesting
-    Set<String> getLoggedDynamicTests() {
+    public Set<String> getLoggedDynamicTests() {
         return loggedDynamicTests;
     }
 
