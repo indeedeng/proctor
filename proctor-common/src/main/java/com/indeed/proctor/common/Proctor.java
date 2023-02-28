@@ -287,8 +287,13 @@ public class Proctor {
         for (final TestType testType : identifiers.getAvailableTestTypes()) {
             final String identifier = identifiers.getIdentifier(testType);
             if ((identifier != null) && !identifierValidator.validate(testType, identifier)) {
-                LOGGER.warn("An invalid identifier '" + identifier + "' for test type '" + testType + "'"
-                        + " was detected. Using fallback buckets for the test type.");
+                if (identifier.isEmpty()) {
+                    LOGGER.debug("An invalid identifier '" + identifier + "' for test type '" + testType + "'"
+                            + " was detected. Using fallback buckets for the test type.");
+                } else {
+                    LOGGER.warn("An invalid identifier '" + identifier + "' for test type '" + testType + "'"
+                            + " was detected. Using fallback buckets for the test type.");
+                }
                 testTypesWithInvalidIdentifier.add(testType);
             }
         }
