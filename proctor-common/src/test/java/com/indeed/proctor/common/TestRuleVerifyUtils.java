@@ -23,6 +23,21 @@ public class TestRuleVerifyUtils {
 
     private final ExpressionFactory expressionFactory = new ExpressionFactoryImpl();
 
+    public static class TestClass {
+        public boolean matches() {
+            return true;
+        }
+
+        public boolean doesNotMatch() {
+            return false;
+        }
+
+        public boolean isFortyTwo(final String s) {
+            return "42".equals(s);
+        }
+
+    }
+
     private ELContext setUpElContextWithContext(final Map<String, Object> context, final String testRule) {
         final List<TestBucket> buckets = TestProctorUtils.fromCompactBucketFormat("inactive:-1,control:0,test:1");
         final ConsumableTestDefinition testDefVal1 = TestProctorUtils.constructDefinition(buckets,
@@ -78,6 +93,73 @@ public class TestRuleVerifyUtils {
                 }
         );
 
+    }
+
+    @Test
+    public void testValidRulesWithMethodCall() {
+        expectValidRule(
+                "${browser == 'IE9' && obj.matches()}",
+                new Object[][]{
+                        {"browser", "IE"},
+                        {"obj", new TestClass()},
+                },
+                new String[]{
+                }
+        );
+        expectValidRule(
+                "${browser == 'IE9' && not obj.doesNotMatch()}",
+                new Object[][]{
+                        {"browser", "IE"},
+                        {"obj", new TestClass()},
+                },
+                new String[]{
+                }
+        );
+        expectValidRule(
+                "${browser == 'IE9' && obj.isFortyTwo('42')}",
+                new Object[][]{
+                        {"browser", "IE"},
+                        {"obj", new TestClass()},
+                },
+                new String[]{
+                }
+        );
+
+        expectValidRule(
+                "${browser == 'IE9' && not obj.isFortyTwo('49')}",
+                new Object[][]{
+                        {"browser", "IE"},
+                        {"obj", new TestClass()},
+                },
+                new String[]{
+                }
+        );
+
+    }
+
+    @Test
+    public void testInvalidRulesWithMethodCall() {
+        InvalidRuleException invalidRuleException = expectInvalidRule(
+                "${browser == 'IE' && obj.notExists()}",
+                new Object[][]{
+                        {"browser", "IE"},
+                        {"obj", new TestClass()},
+                },
+                new String[]{
+                }
+        );
+        assertThat(invalidRuleException.getMessage()).contains("Method not found");
+
+        invalidRuleException = expectInvalidRule(
+                "${browser == 'IE' && obj.isFortyTwo(['42'])}",
+                new Object[][]{
+                        {"browser", "IE"},
+                        {"obj", new TestClass()},
+                },
+                new String[]{
+                }
+        );
+        assertThat(invalidRuleException.getMessage()).contains("syntax error");
     }
 
     @Test
