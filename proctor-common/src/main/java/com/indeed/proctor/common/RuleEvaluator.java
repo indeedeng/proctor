@@ -131,51 +131,26 @@ public class RuleEvaluator {
         }
 
         final ELContext elContext = createElContext(values);
-        final ValueExpression ve = expressionFactory.createValueExpression(elContext, rule, boolean.class);
-        checkRuleIsBooleanType(rule, elContext, ve);
+        final ValueExpression ve = expressionFactory.createValueExpression(elContext, rule, String.class);
+        final String result = (String) ve.getValue(elContext);
+        checkRuleIsBooleanType(rule, result);
 
-        final Object result = ve.getValue(elContext);
-
-        if (result instanceof Boolean) {
-            return ((Boolean) result);
-        }
-        // this should never happen, evaluateRule throws ELException when it cannot coerce to Boolean
-        throw new IllegalArgumentException("Received non-boolean return value: "
-                + (result == null ? "null" : result.getClass().getCanonicalName())
-                + " from rule " + rule);
+        return Boolean.parseBoolean(result);
     }
 
     /**
      * @throws IllegalArgumentException if type of expression is not boolean
      */
-    static void checkRuleIsBooleanType(final String rule, final ELContext elContext, final ValueExpression ve) {
+    static void checkRuleIsBooleanType(final String rule, String value) {
         // apache-el is an expression language, not a rule language, and it is very lenient
         // sadly that means it will just evaluate to false when users make certain mistakes, e.g. by
         // coercing String value "xyz" to boolean false, instead of throwing an exception.
         // To support users writing rules, be more strict here in requiring the type of the
         // value to be expected before coercion
-        Class<?> type = ve.getType(elContext);
-        if (ClassUtils.isPrimitiveWrapper(type)) {
-            type = ClassUtils.wrapperToPrimitive(type);
+        if (StringUtils.isBlank(value) || "true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value)) {
+            return;
         }
-        // allow null to be coerced for historic reasons
-        if ((type != null) && (type != boolean.class)) {
-            throw new IllegalArgumentException("Received non-boolean return value: " + type + " from rule " + rule);
-        }
-    }
-
-    /**
-     * @param expectedType class to coerce result to, use primitive instead of wrapper, e.g. boolean.class instead of Boolean.class.
-     * @return null or a Boolean value representing the expression evaluation result
-     * @throws RuntimeException: E.g. PropertyNotFound or other ELException when not of expectedType
-     * @deprecated Use evaluateBooleanRule() instead, it checks against more errors
-     */
-    @CheckForNull
-    @Deprecated
-    public Object evaluateRule(final String rule, final Map<String, Object> values, final Class expectedType) {
-        final ELContext elContext = createElContext(values);
-        final ValueExpression ve = expressionFactory.createValueExpression(elContext, rule, expectedType);
-        return ve.getValue(elContext);
+        throw new IllegalArgumentException("Received non-boolean return value: " + value + " from rule " + rule);
     }
 
 }

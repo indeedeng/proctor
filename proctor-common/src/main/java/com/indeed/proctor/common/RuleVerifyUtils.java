@@ -37,10 +37,13 @@ public class RuleVerifyUtils {
             final Set<String> absentIdentifiers
     ) throws InvalidRuleException {
         final String bareRule = removeElExpressionBraces(testRule);
-        if (!StringUtils.isBlank(bareRule)) {
+        if (StringUtils.isNotBlank(bareRule)) {
             final ValueExpression valueExpression;
             try {
-                valueExpression = expressionFactory.createValueExpression(elContext, testRule, Boolean.class);
+                // coerce the return value to String in order to determine the return type without having to invoke
+                // valueExpression.getType(elContext) which does not seem to work with expressions that contain method calls
+                // e.g. #{foo.bar()} will throw an exception when getType is called
+                valueExpression = expressionFactory.createValueExpression(elContext, testRule, String.class);
             } catch (final ELException e) {
                 throw new InvalidRuleException(e, String.format("Unable to evaluate rule %s due to a syntax error. " +
                         "Check that your rule is in the correct format and returns a boolean. For more information " +
@@ -76,15 +79,15 @@ public class RuleVerifyUtils {
 
                 // Evaluate rule with given context
                 try {
+                    final String value = (String) valueExpression.getValue(elContext);
+                    LOGGER.debug("Rule {} evaluated to {}", testRule, value);
                     try {
-                        checkRuleIsBooleanType(testRule, elContext, valueExpression);
+                        checkRuleIsBooleanType(testRule, value);
                     } catch (final IllegalArgumentException e) {
                         throw new InvalidRuleException(e, String.format("Unable to evaluate rule %s due to a syntax error. " +
                                 "Check that your rule is in the correct format and returns a boolean. For more information " +
                                 "read: https://opensource.indeedeng.io/proctor/docs/test-rules/.", testRule));
                     }
-
-                    valueExpression.getValue(elContext);
                 } catch (final ELException e) {
                     if (isIgnorable(root, absentIdentifiers)) {
                         LOGGER.debug(String.format("Rule %s contains uninstantiated identifier(s) in %s, ignoring the failure", testRule, absentIdentifiers));

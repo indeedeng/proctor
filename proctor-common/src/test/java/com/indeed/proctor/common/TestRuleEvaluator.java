@@ -13,7 +13,6 @@ import java.util.Map;
 
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonMap;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -84,11 +83,24 @@ public class TestRuleEvaluator {
                     .hasMessageContaining("Received non-boolean return value");
         }
         {
-            // numeric result becomes String, not boolean
-            assertThatThrownBy(() -> ruleEvaluator.evaluateBooleanRule("${'tr'}${'ue'}", emptyMap()))
-                    .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("Received non-boolean return value");
+            // String 'true' is true
+            assertTrue(ruleEvaluator.evaluateBooleanRule("${'tr'}${'ue'}", emptyMap()));
         }
+    }
+
+    @Test
+    public void testStandaloneMethodCalls() {
+        final Map<String, Object> context = ImmutableMap.of("context", new Temp());
+        for (String rule : ImmutableList.of("${context.isValid()}", "${context.isFortyTwo('42')}")) {
+            assertTrue("rule '" + rule + "' should be true for " + context, ruleEvaluator.evaluateBooleanRule(rule, context));
+        }
+
+        for (String rule : ImmutableList.of("${!context.isValid()}", "${context.isFortyTwo('47')}")) {
+            assertFalse("rule '" + rule + "' should be true for " + context, ruleEvaluator.evaluateBooleanRule(rule, context));
+        }
+
+        assertThatThrownBy(() -> ruleEvaluator.evaluateBooleanRule("${context.isNotFortyTwo('42')}", context))
+                .isInstanceOf(Exception.class); // different versions of EL throw different exceptions
     }
 
     @Test
@@ -450,11 +462,4 @@ public class TestRuleEvaluator {
         }
     }
 
-    @Test
-    public void testNonBooleanRule() {
-        assertThat(ruleEvaluator.evaluateRule("${4}", emptyMap(), Integer.class)).isEqualTo(4);
-        assertThat(ruleEvaluator.evaluateRule("${true}", emptyMap(), Boolean.class)).isEqualTo(true);
-        assertThat(ruleEvaluator.evaluateRule("${4}", emptyMap(), String.class)).isEqualTo("4");
-        assertThat(ruleEvaluator.evaluateRule("${true}", emptyMap(), String.class)).isEqualTo("true");
-    }
 }
