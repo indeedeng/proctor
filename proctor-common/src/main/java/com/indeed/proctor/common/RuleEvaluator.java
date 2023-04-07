@@ -141,7 +141,7 @@ public class RuleEvaluator {
     /**
      * @throws IllegalArgumentException if type of expression is not boolean
      */
-    static void checkRuleIsBooleanType(final String rule, String value) {
+    static void checkRuleIsBooleanType(final String rule, final String value) {
         // apache-el is an expression language, not a rule language, and it is very lenient
         // sadly that means it will just evaluate to false when users make certain mistakes, e.g. by
         // coercing String value "xyz" to boolean false, instead of throwing an exception.
