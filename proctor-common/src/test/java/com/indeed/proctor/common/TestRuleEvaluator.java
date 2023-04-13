@@ -49,10 +49,10 @@ public class TestRuleEvaluator {
 
     @Test
     public void testLiteralRule() {
-        for (final String rule : new String[] { "${true}", "${TRUE}", "${ TRUE }" }) {
+        for (final String rule : new String[] { "${true}", "${TRUE}", "${ TRUE }", "${'TRUE'}", "${'true'}" }) {
             assertTrue("rule '" + rule + "' should be true", ruleEvaluator.evaluateBooleanRule(rule, emptyMap()));
         }
-        for (final String rule : new String[] { "${false}", "${FALSE}", "${ FALSE }" }) {
+        for (final String rule : new String[] { "${false}", "${FALSE}", "${ FALSE }", "${'FALSE'}", "${'false'}" }) {
             assertFalse("rule '" + rule + "' should be false", ruleEvaluator.evaluateBooleanRule(rule, emptyMap()));
         }
     }
@@ -96,7 +96,7 @@ public class TestRuleEvaluator {
         }
 
         for (String rule : ImmutableList.of("${!context.isValid()}", "${context.isFortyTwo('47')}")) {
-            assertFalse("rule '" + rule + "' should be true for " + context, ruleEvaluator.evaluateBooleanRule(rule, context));
+            assertFalse("rule '" + rule + "' should be false for " + context, ruleEvaluator.evaluateBooleanRule(rule, context));
         }
 
         assertThatThrownBy(() -> ruleEvaluator.evaluateBooleanRule("${context.isNotFortyTwo('42')}", context))
