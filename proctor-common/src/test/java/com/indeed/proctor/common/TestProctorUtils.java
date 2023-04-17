@@ -494,7 +494,7 @@ public class TestProctorUtils {
                     .hasMessage(
                             "Invalid allocation rule in testProvidedContextConversion: " +
                                     "Failed to evaluate a rule ${time eq 'SP'}: " +
-                                    "Cannot convert SP of type class java.lang.String to class com.indeed.proctor.common.TestEnumType"
+                                    "Cannot convert [SP] of type [class java.lang.String] to [class com.indeed.proctor.common.TestEnumType]"
                     );
         }
         { //verify class names are verified correctly
@@ -647,7 +647,7 @@ public class TestProctorUtils {
                     .hasMessage(
                             "Invalid allocation rule in testProvidedContextConversion: " +
                                     "Failed to evaluate a rule ${ua.iPad}: " +
-                                    "Property 'iPad' not found on type com.indeed.proctor.common.TestRulesClass"
+                                    "Property [iPad] not found on type [com.indeed.proctor.common.TestRulesClass]"
                     );
         }
         { //testing that valid properties are recognized
@@ -2090,19 +2090,4 @@ public class TestProctorUtils {
         return testSpec;
     }
 
-    private static TestDefinition stubTestDefinition(final String description, final List<TestBucket> buckets) {
-        return new TestDefinition(
-                "empty",
-                "",
-                TestType.ANONYMOUS_USER,
-                "salty",
-                buckets,
-                emptyList(),
-                false,
-                Collections.emptyMap(),
-                Collections.emptyMap(),
-                description,
-                emptyList()
-        );
-    }
 }

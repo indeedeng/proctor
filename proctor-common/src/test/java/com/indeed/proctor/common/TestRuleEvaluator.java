@@ -1,5 +1,6 @@
 package com.indeed.proctor.common;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.indeed.util.core.ReleaseVersion;
@@ -8,8 +9,6 @@ import org.junit.Test;
 
 import javax.el.ELException;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import static java.util.Collections.emptyMap;
@@ -93,6 +92,24 @@ public class TestRuleEvaluator {
     }
 
     @Test
+    public void testMethodCalls() {
+        final Map<String, Object> context = ImmutableMap.of(
+                "context", new Temp(),
+                "country", "US");
+        for (String rule : ImmutableList.of("${country == 'US' && context.isValid()}", "${country == 'US' && context.isFortyTwo('42')}")) {
+            assertTrue("rule '" + rule + "' should be true for " + context, ruleEvaluator.evaluateBooleanRule(rule, context));
+        }
+
+        for (String rule : ImmutableList.of("${!context.isValid()}", "${country == 'US' && context.isFortyTwo('47')}")) {
+            assertFalse("rule '" + rule + "' should be true for " + context, ruleEvaluator.evaluateBooleanRule(rule, context));
+        }
+
+        assertThatThrownBy(() -> ruleEvaluator.evaluateBooleanRule("${country == 'US' && context.isNotFortyTwo('42')}", context))
+                .isInstanceOf(ELException.class)
+                .hasMessageContaining("Method not found");
+    }
+
+    @Test
     public void testElExpressionsShouldBeAvailable() {
         final Map<String, Object> values = singletonMap("lang", "en");
         {
@@ -112,6 +129,14 @@ public class TestRuleEvaluator {
     public static class Temp {
         public String getY() {
             return "barY";
+        }
+
+        public boolean isValid() {
+            return true;
+        }
+
+        public boolean isFortyTwo(String s) {
+            return "42".equals(s);
         }
     }
 
