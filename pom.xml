@@ -401,16 +401,6 @@
                 <artifactId>tomcat-jasper-el</artifactId>
                 <version>${tomcat-api7.version}</version>
             </dependency>
-            <dependency>
-                <groupId>org.apache.tomcat</groupId>
-                <artifactId>tomcat-jsp-api</artifactId>
-                <version>${tomcat-api7.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.tomcat</groupId>
-                <artifactId>tomcat-servlet-api</artifactId>
-                <version>${tomcat-api7.version}</version>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
