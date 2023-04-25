@@ -2,6 +2,7 @@ package com.indeed.proctor.groups;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.indeed.proctor.SampleOuterClass.Account;
@@ -17,15 +18,21 @@ import com.indeed.util.varexport.VarExporter;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.assertj.core.api.Java6Assertions;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
 import static com.indeed.proctor.groups.UtilMethods.calcBuckets;
+import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -579,5 +586,50 @@ public class TestUnitTestGroupsManager {
             }
         }
         throw new RuntimeException("identifier not found for target bucket within " + maxIteration + " iterations");
+    }
+
+    @Test
+    public void testProctorResultWithSingleTestNameFilter(){
+        final UnitTestGroupsContext testContext = UnitTestGroupsContext.newBuilder()
+                .setLoggedIn(true)
+                .setCountry("FR")
+                .setAccount(new Account(10))
+                .build();
+        final Identifiers identifiers = new Identifiers(TestType.USER, SAMPLE_ID);
+        final ProctorResult result = testContext.getProctorResult(manager, new MockHttpServletRequest(), new MockHttpServletResponse(), identifiers, false, ImmutableList.of("kluj"));
+
+        assertThat(calcBuckets(result))
+                .isEqualTo(ImmutableMap.builder()
+                        .put("kluj", "test1")
+                        .build());
+    }
+
+    @Test
+    public void testProctorResultWithTestNameFilter(){
+        final UnitTestGroupsContext testContext = UnitTestGroupsContext.newBuilder()
+                .setLoggedIn(true)
+                .setCountry("FR")
+                .setAccount(new Account(10))
+                .build();
+        final Identifiers identifiers = new Identifiers(TestType.USER, SAMPLE_ID);
+        final Collection<String> testNameFilter = ImmutableList.of("kluj", "map_payload", "no_buckets_specified", "payloaded");
+        final ProctorResult result = testContext.getProctorResult(
+                manager,
+                new MockHttpServletRequest(),
+                new MockHttpServletResponse(),
+                identifiers,
+                false,
+                testNameFilter);
+
+        //Only calc bucket allocation for filtered test names
+        assertThat(result.getBuckets())
+                .containsOnlyKeys("kluj", "map_payload", "no_buckets_specified", "payloaded");
+
+        assertThat(result.getAllocations())
+                .containsOnlyKeys("kluj", "map_payload", "no_buckets_specified", "payloaded");
+
+        final int expectedNumberOfTests = 15;
+
+        assertThat(result.getTestDefinitions().size()).isEqualTo(expectedNumberOfTests);
     }
 }

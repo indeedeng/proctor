@@ -5,6 +5,7 @@ import com.indeed.proctor.common.model.*;
 import com.indeed.proctor.consumer.*;
 
 import javax.annotation.Generated;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -161,6 +162,22 @@ public class ${mainClassName} extends AbstractGroupsManager {
         final Map<String, Object> context = Collections.emptyMap();
         </#if>
         return super.determineBucketsInternal(request, response, identifiers, context, allowForcedGroups, FORCE_PAYLOAD_ALLOWED_TESTS);
+    }
+
+    public ProctorResult determineBuckets(final HttpServletRequest request, final HttpServletResponse response,
+                                            final Identifiers identifiers, final boolean allowForcedGroups, final Collection<String> testNameFilter<#if contextArguments?has_content>,<#else>) {</#if>
+<#list contextArguments?keys as contextArgumentName>
+                                            final ${contextArguments[contextArgumentName]?replace('$', '.')} ${contextArgumentName}<#if contextArgumentName_has_next>,<#else>) {</#if>
+</#list>
+        <#if contextArguments?has_content>
+        final Map<String, Object> context = new HashMap<String, Object>();
+            <#list contextArguments?keys as contextArgumentName>
+        context.put("${contextArgumentName}", ${contextArgumentName});
+            </#list>
+        <#else>
+        final Map<String, Object> context = Collections.emptyMap();
+        </#if>
+        return super.determineBucketsInternal(request, response, identifiers, context, allowForcedGroups, FORCE_PAYLOAD_ALLOWED_TESTS, testNameFilter);
     }
 
     private static final Map<String, TestBucket> DEFAULT_BUCKET_VALUES = constructDefaultBucketValuesMap();

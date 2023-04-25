@@ -5,6 +5,8 @@
 
 package ${packageName};
 
+import java.util.Collection;
+
 import com.google.common.base.Objects;
 import com.google.common.base.Defaults;
 
@@ -138,6 +140,19 @@ public class ${mainClassName} {
                                           @Nonnull final Identifiers identifiers,
                                           final boolean allowForceGroups) {
         return groupsManager.determineBuckets(request, response, identifiers, allowForceGroups<#if contextArguments?has_content>, <#else>);</#if>
+<#list contextArguments?keys as contextArgumentName>
+                                              ${contextArgumentName}<#if contextArgumentName_has_next>,<#else>);</#if>
+</#list>
+
+    }
+
+    public ProctorResult getProctorResult(@Nonnull final ${groupsManagerClassName} groupsManager,
+                                          @Nonnull final HttpServletRequest request,
+                                          @Nonnull final HttpServletResponse response,
+                                          @Nonnull final Identifiers identifiers,
+                                          final boolean allowForceGroups,
+                                          final Collection<String> testNameFilter) {
+        return groupsManager.determineBuckets(request, response, identifiers, allowForceGroups, testNameFilter<#if contextArguments?has_content>, <#else>);</#if>
 <#list contextArguments?keys as contextArgumentName>
                                               ${contextArgumentName}<#if contextArgumentName_has_next>,<#else>);</#if>
 </#list>

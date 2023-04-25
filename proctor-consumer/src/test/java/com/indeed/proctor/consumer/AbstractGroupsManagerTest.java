@@ -1,5 +1,6 @@
 package com.indeed.proctor.consumer;
 
+import com.google.common.collect.ImmutableList;
 import com.indeed.proctor.common.ForceGroupsOptions;
 import com.indeed.proctor.common.Identifiers;
 import com.indeed.proctor.common.Proctor;
@@ -75,7 +76,6 @@ public class AbstractGroupsManagerTest {
             verifyNoMoreInteractions(httpRequestMock, httpResponseMock);
             clearInvocations(httpRequestMock, httpResponseMock);
         }
-
     }
 
     @Test
