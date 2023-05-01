@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import javax.el.ExpressionFactory;
 import javax.el.FunctionMapper;
+import javax.el.ValueExpression;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -26,9 +27,9 @@ public class TestRandomTestChooser {
 
         final RandomTestChooser rtc = initializeRandomTestChooser(ranges, buckets);
 
-        final Map<String, Object> values = Collections.emptyMap();
+        final Map<String, ValueExpression> localContext = Collections.emptyMap();
         for (int i = 0; i < 100; i++) {
-            final TestChooser.Result chosen = rtc.chooseInternal(null, values, Collections.emptyMap());
+            final TestChooser.Result chosen = rtc.chooseInternal(null, localContext, Collections.emptyMap());
             assertNotNull(chosen);
             assertNotNull(chosen.getTestBucket());
             assertNotNull(chosen.getAllocation());
@@ -45,9 +46,9 @@ public class TestRandomTestChooser {
         final RandomTestChooser rtc = initializeRandomTestChooser(ranges, buckets);
 
         final int[] found = { 0, 0 };
-        final Map<String, Object> values = Collections.emptyMap();
+        final Map<String, ValueExpression> localContext = Collections.emptyMap();
         for (int i = 0; i < 1000; i++) {
-            final TestChooser.Result chosen = rtc.chooseInternal(null, values, Collections.emptyMap());
+            final TestChooser.Result chosen = rtc.chooseInternal(null, localContext, Collections.emptyMap());
             assertNotNull(chosen);
             assertNotNull(chosen.getTestBucket());
             assertNotNull(chosen.getAllocation());
@@ -69,9 +70,9 @@ public class TestRandomTestChooser {
         final RandomTestChooser rtc = initializeRandomTestChooser(ranges, buckets);
 
         final int[] found = { 0, 0, 0 };
-        final Map<String, Object> values = Collections.emptyMap();
+        final Map<String, ValueExpression> localContext = Collections.emptyMap();
         for (int i = 0; i < 1000; i++) {
-            final TestChooser.Result chosen = rtc.chooseInternal(null, values, Collections.emptyMap());
+            final TestChooser.Result chosen = rtc.chooseInternal(null, localContext, Collections.emptyMap());
             assertNotNull(chosen);
             assertNotNull(chosen.getTestBucket());
             assertNotNull(chosen.getAllocation());

@@ -17,6 +17,7 @@ import org.junit.Test;
 
 import javax.el.ExpressionFactory;
 import javax.el.FunctionMapper;
+import javax.el.ValueExpression;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -79,9 +80,9 @@ public class TestStandardTestChooser {
         updateAllocations(RANGES_100_0);
         final StandardTestChooser rtc = newChooser();
 
-        final Map<String, Object> values = Collections.emptyMap();
+        final Map<String, ValueExpression> localContext = Collections.emptyMap();
         for (int i = 0; i < 100; i++) {
-            final TestChooser.Result chosen = rtc.chooseInternal(String.valueOf(i), values, Collections.emptyMap());
+            final TestChooser.Result chosen = rtc.chooseInternal(String.valueOf(i), localContext, Collections.emptyMap());
             assertNotNull(chosen);
             assertNotNull(chosen.getTestBucket());
             assertNotNull(chosen.getAllocation());
@@ -174,9 +175,9 @@ public class TestStandardTestChooser {
         testDefinition.setBuckets(Collections.<TestBucket>emptyList());
 
         final RuleEvaluator ruleEvaluator = EasyMock.createMock(RuleEvaluator.class);
-        EasyMock.expect(ruleEvaluator.evaluateBooleanRule(
+        EasyMock.expect(ruleEvaluator.evaluateBooleanRuleWithValueExpr(
                 EasyMock.<String>anyObject(),
-                EasyMock.<Map<String,Object>>anyObject()
+                EasyMock.<Map<String,ValueExpression>>anyObject()
         ))
                 // throw an unexpected type of runtime exception
                 .andThrow(new RuntimeException() {})
@@ -192,7 +193,7 @@ public class TestStandardTestChooser {
 
         // Ensure no exceptions thrown.
         final TestChooser.Result chooseResult = new StandardTestChooser(selector)
-                .chooseInternal("identifier", Collections.<String, Object>emptyMap(), Collections.emptyMap());
+                .chooseInternal("identifier", Collections.<String, ValueExpression>emptyMap(), Collections.emptyMap());
 
         assertNotNull(chooseResult);
         assertNull( "Expected no bucket to be found ", chooseResult.getTestBucket());
@@ -225,7 +226,7 @@ public class TestStandardTestChooser {
         );
 
         final TestChooser.Result chooseResult = new StandardTestChooser(selector)
-            .chooseInternal("identifier", Collections.<String, Object>emptyMap(), Collections.emptyMap());
+            .chooseInternal("identifier", Collections.<String, ValueExpression>emptyMap(), Collections.emptyMap());
 
         assertNotNull(chooseResult);
         assertNull("Expected no bucket to be found", chooseResult.getTestBucket());
@@ -259,7 +260,7 @@ public class TestStandardTestChooser {
         );
 
         final TestChooser.Result chooseResult = new StandardTestChooser(selector)
-            .chooseInternal("identifier", Collections.<String, Object>emptyMap(), Collections.emptyMap());
+            .chooseInternal("identifier", Collections.<String, ValueExpression>emptyMap(), Collections.emptyMap());
 
         assertEquals("Test bucket with value 1 expected", 1, chooseResult.getTestBucket().getValue());
         assertEquals("Test allocation with id #B1 expected", "#B1", chooseResult.getAllocation().getId());
@@ -343,9 +344,9 @@ public class TestStandardTestChooser {
 
     private RuleEvaluator newRuleEvaluator(final boolean result) {
         final RuleEvaluator ruleEvaluator = EasyMock.createMock(RuleEvaluator.class);
-        EasyMock.expect(ruleEvaluator.evaluateBooleanRule(
+        EasyMock.expect(ruleEvaluator.evaluateBooleanRuleWithValueExpr(
             EasyMock.<String>anyObject(),
-            EasyMock.<Map<String,Object>>anyObject()
+            EasyMock.<Map<String,ValueExpression>>anyObject()
         ))
             .andReturn(result)
             .anyTimes();
@@ -356,9 +357,9 @@ public class TestStandardTestChooser {
     private void exerciseChooser(final StandardTestChooser rtc) {
         final int num = 10000000;
 
-        final Map<String, Object> values = Collections.emptyMap();
+        final Map<String, ValueExpression> localContext = Collections.emptyMap();
         for (int accountId = 1; accountId < num; accountId++) { // deliberately skipping 0
-            final TestChooser.Result chosen = rtc.chooseInternal(String.valueOf(accountId), values, Collections.emptyMap());
+            final TestChooser.Result chosen = rtc.chooseInternal(String.valueOf(accountId), localContext, Collections.emptyMap());
             assertNotNull(chosen);
             assertNotNull(chosen.getTestBucket());
             assertNotNull(chosen.getAllocation());

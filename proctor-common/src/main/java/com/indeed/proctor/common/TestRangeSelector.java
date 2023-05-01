@@ -14,6 +14,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.el.ExpressionFactory;
 import javax.el.FunctionMapper;
+import javax.el.ValueExpression;
 import java.io.PrintWriter;
 import java.text.NumberFormat;
 import java.util.Iterator;
@@ -21,6 +22,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.Function;
 
 /**
  * This is perhaps not the greatest abstraction the world has seen; is meant to consolidate common functionality needed for different types of choosers WITHOUT using inheritance
@@ -77,7 +79,19 @@ public class TestRangeSelector {
         return rangeToBucket[index];
     }
 
+    /**
+     * @deprecated Use findMatchingRuleWithValueExpr(Map, Map) instead, which is more efficient.
+     */
+    @Deprecated
     public int findMatchingRule(@Nonnull final Map<String, Object> values, @Nonnull final Map<String, TestBucket> testGroups) {
+        return findMatchingRuleInternal(rule -> ruleEvaluator.evaluateBooleanRule(rule, values), testGroups);
+    }
+
+    public int findMatchingRuleWithValueExpr(@Nonnull final Map<String, ValueExpression> localContext, @Nonnull final Map<String, TestBucket> testGroups) {
+        return findMatchingRuleInternal(rule -> ruleEvaluator.evaluateBooleanRuleWithValueExpr(rule, localContext), testGroups);
+    }
+
+    private int findMatchingRuleInternal(final Function<String, Boolean> evaluator, @Nonnull final Map<String, TestBucket> testGroups) {
         final TestDependency dependsOn = testDefinition.getDependsOn();
         if (dependsOn != null) {
             final TestBucket testBucket = testGroups.get(dependsOn.getTestName());
@@ -86,36 +100,34 @@ public class TestRangeSelector {
             }
         }
 
+        @Nullable String rule = testDefinition.getRule();
         try {
-            @Nullable final String rule = testDefinition.getRule();
             if (rule != null) {
-                if (! evaluateRule(rule, values)) {
+                if (!evaluator.apply(rule)) {
                     return -1;
                 }
             }
 
             for (int i = 0; i < rules.length; i++) {
-                if (evaluateRule(rules[i], values)) {
+                rule = rules[i];
+                if (evaluator.apply(rule)) {
                     return i;
                 }
             }
-
-        } catch (InvalidRuleException e) {
-            LOGGER.error("Failed to evaluate test rules; ", e);
+        } catch (final RuntimeException e) {
+            LOGGER.error(
+                    "Failed to evaluate test rules; ",
+                    new InvalidRuleException(
+                            e,
+                            String.format(
+                                "Error evaluating rule '%s' for test '%s': '%s'. Failing evaluation and continuing.",
+                                rule, testName, e.getMessage()
+                            )
+                    )
+            );
         }
 
         return -1;
-    }
-
-    private boolean evaluateRule(final String rule, @Nonnull final Map<String, Object> values) throws InvalidRuleException {
-        try {
-            return ruleEvaluator.evaluateBooleanRule(rule, values);
-
-        } catch (final RuntimeException e) {
-            throw new InvalidRuleException(e, String.format(
-                    "Error evaluating rule '%s' for test '%s': '%s'. Failing evaluation and continuing.",
-                    rule, testName, e.getMessage()));
-        }
     }
 
     @Nonnull
