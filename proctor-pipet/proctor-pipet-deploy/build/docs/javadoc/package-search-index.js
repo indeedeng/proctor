@@ -1,1 +1,0 @@
-packageSearchIndex = [{"l":"All Packages","url":"allpackages-index.html"},{"l":"com.indeed.proctor.pipet.deploy"},{"l":"com.indeed.proctor.pipet.deploy.useragent"}]

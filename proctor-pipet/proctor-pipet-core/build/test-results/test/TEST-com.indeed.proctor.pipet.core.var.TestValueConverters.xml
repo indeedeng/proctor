@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="com.indeed.proctor.pipet.core.var.TestValueConverters" tests="2" skipped="0" failures="0" errors="0" timestamp="2023-05-01T19:04:43" hostname="IT-USA-VY0740" time="0.0">
-  <properties/>
-  <testcase name="testCharConverter" classname="com.indeed.proctor.pipet.core.var.TestValueConverters" time="0.0"/>
-  <testcase name="testBooleanConverter" classname="com.indeed.proctor.pipet.core.var.TestValueConverters" time="0.0"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>

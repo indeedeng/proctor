@@ -6,6 +6,7 @@ import com.indeed.proctor.consumer.gen.TestGroupsGenerator;
 import com.indeed.proctor.consumer.gen.TestGroupsJavaGenerator;
 import com.indeed.proctor.consumer.gen.TestGroupsJavascriptGenerator;
 import org.apache.commons.io.filefilter.FileFilterUtils;
+import org.gradle.internal.impldep.org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,20 +19,17 @@ import java.io.IOException;
 public abstract class ProctorGradleAutogenTask {
     private static final File outputDirectory = new File("../proctor-codegen-test/src/test/");
     private static final File topDirectory = new File("../proctor-codegen-test/src/main");
-    private static final File specificationOutput = new File("../proctor-codegen-test/src/java/test/temp/groups");
+    private static final File specificationOutput = new File("../proctor-codegen-test/src/test/resources/com.indeed.proctor.groups");
+    private static final File resourceOutput = new File("../proctor-codegen-test/src/test/resources");
     private static final boolean useClosure = false;
     private static final TestGroupsJavaGenerator javaGenerator = new TestGroupsJavaGenerator();
     private static final TestGroupsJavascriptGenerator javascriptGenerator = new TestGroupsJavascriptGenerator();
 
-    boolean isUseClosure() {
-        return useClosure;
-    }
     protected static void processJavaFile(
             final File file,
             final String packageName,
             final String className
     ) throws CodeGenException {
-        System.out.println(packageName);
         javaGenerator.generate(
                 ProctorUtils.readSpecification(file),
                 outputDirectory.getPath(),
@@ -43,13 +41,12 @@ public abstract class ProctorGradleAutogenTask {
     }
     protected static void processJavaScriptFile(
             final File file,
-            final String packageName,
             final String className
     ) throws CodeGenException {
         javascriptGenerator.generate(
                 ProctorUtils.readSpecification(file),
-                outputDirectory.getPath(),
-                packageName,
+                resourceOutput.getPath(),
+                "com.indeed.proctor.groups",
                 className,
                 useClosure
         );
@@ -79,14 +76,12 @@ public abstract class ProctorGradleAutogenTask {
                 if (entry.isDirectory()) {
                     recursiveSpecificationsFinder(entry, (packageNamePrefix == null) ? entry.getName() : packageNamePrefix + "/" + entry.getName());
                 } else if (entry.getName().endsWith(".json") && ProctorUtils.readJsonFromFile(entry).has("tests")) {
-                    System.out.println("Processing " + entry.getName());
                     processJavaFile(
                             entry,
                             packageNamePrefix == null ? "" : packageNamePrefix.replace("/", "."),
                             entry.getName().substring(0, entry.getName().lastIndexOf(".json")));
                     processJavaScriptFile(
                             entry,
-                            packageNamePrefix == null ? "" : packageNamePrefix.replace("/", "."),
                             entry.getName().substring(0, entry.getName().lastIndexOf(".json")));
                 }
 
@@ -100,7 +95,6 @@ public abstract class ProctorGradleAutogenTask {
      * Finds any partial specifications and creates a generated specification
      */
     static void createTotalSpecifications(final File dir, final String packageDirectory) throws RuntimeException {
-
         if (dir.equals(null)) {
             throw new RuntimeException("Could not read from directory " + dir.getPath());
         }
@@ -113,7 +107,6 @@ public abstract class ProctorGradleAutogenTask {
             final File parent = providedContextFiles[0].getParentFile();
             final File outputDir = new File(specificationOutput + File.separator + packageDirectory.substring(0,packageDirectory.lastIndexOf(File.separator)));
             outputDir.mkdirs();
-            System.out.println(parent.getPath());
             try {
                 generateTotalSpecification(parent, outputDir);
             } catch (final CodeGenException e) {
@@ -122,16 +115,16 @@ public abstract class ProctorGradleAutogenTask {
         }
         for (final File entry : dir.listFiles()) {
             if (entry.isDirectory()) {
-                System.out.println(entry.getPath());
                 createTotalSpecifications(entry, (packageDirectory == null) ? entry.getName() : packageDirectory + File.separator + entry.getName());
             }
         }
     }
 
-    public static void main(final String[] args) {
-        System.out.println("starting");
-        final String testCompileSourceRoot = outputDirectory.getPath();
-        System.out.println(testCompileSourceRoot);
+    public static void main(final String[] args) throws IOException {
+        try {
+            FileUtils.deleteDirectory(FileUtils.getFile(specificationOutput + "/temp"));
+        } catch (final Exception e) {}
+
         createTotalSpecifications(topDirectory,null);
         if (topDirectory == null) {
             return;
@@ -144,5 +137,10 @@ public abstract class ProctorGradleAutogenTask {
         } catch (final CodeGenException ex) {
             throw new RuntimeException("Unable to generate code", ex);
         }
+        final File dest = new File(specificationOutput.getPath() + "/temp");
+        FileUtils.moveFileToDirectory(new File("src/test/resources/com.indeed.proctor.groups/java/com.indeed.proctor.codegen.test/groups/SplitSpecificationTestGroups.json"), dest, true);
+        FileUtils.moveFileToDirectory(new File("src/test/resources/com.indeed.proctor.groups/java/com.indeed.proctor.codegen.test/groups/SplitSpecificationTestWithFiltersGroups.json"),  dest, false);
+        FileUtils.deleteDirectory(FileUtils.getFile("src/test/resources/com.indeed.proctor.groups/java"));
+        FileUtils.deleteDirectory(FileUtils.getFile("src/test/resources.com.indeed.proctor.groups.temp"));
     }
 }

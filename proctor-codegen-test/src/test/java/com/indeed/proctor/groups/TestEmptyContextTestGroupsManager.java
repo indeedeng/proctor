@@ -2,6 +2,7 @@ package com.indeed.proctor.groups;
 
 import com.google.common.collect.ImmutableMap;
 import com.indeed.proctor.common.Identifiers;
+import com.indeed.proctor.common.Proctor;
 import com.indeed.proctor.common.ProctorResult;
 import com.indeed.proctor.common.model.TestType;
 import org.apache.logging.log4j.LogManager;
@@ -12,7 +13,10 @@ import org.junit.Test;
 import static com.indeed.proctor.groups.UtilMethods.calcBuckets;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import java.com.indeed.proctor.codegen.test.groups.EmptyContextTestGroupsManager;
+import com.indeed.proctor.codegen.test.groups.EmptyContextTestGroupsManager;
+
+import java.util.function.Supplier;
+
 /**
  * Test to make sure specifications with no context variables generate code properly
  */
@@ -20,14 +24,15 @@ import java.com.indeed.proctor.codegen.test.groups.EmptyContextTestGroupsManager
 public class TestEmptyContextTestGroupsManager {
     @SuppressWarnings("UnusedDeclaration")
     private static final Logger LOGGER = LogManager.getLogger(TestEmptyContextTestGroupsManager.class);
-    private static final String SPECIFICATION_RESOURCE = "EmptyContextTestGroups.json";
+    private static final String SPECIFICATION_RESOURCE = "temp/EmptyContextTestGroups.json";
     private static final String SPECIFICATION_MATRIX = "emptycontexttest.proctor-matrix.json";
 
-    private java.com.indeed.proctor.codegen.test.groups.EmptyContextTestGroupsManager manager;
+    private EmptyContextTestGroupsManager manager;
 
     @Before()
     public void setUp() throws Exception {
-        manager = new EmptyContextTestGroupsManager(() -> UtilMethods.getProctor(SPECIFICATION_MATRIX, SPECIFICATION_RESOURCE));
+        final Proctor proctor = UtilMethods.getProctor(SPECIFICATION_MATRIX, SPECIFICATION_RESOURCE);
+        manager = new EmptyContextTestGroupsManager(() -> proctor);
     }
 
     @Test

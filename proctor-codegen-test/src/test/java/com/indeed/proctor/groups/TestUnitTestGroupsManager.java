@@ -14,11 +14,11 @@ import com.indeed.proctor.common.ProvidedContext;
 import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.common.model.TestType;
 import com.indeed.proctor.consumer.logging.TestMarkingObserver;
-import java.com.indeed.proctor.codegen.test.groups.UnitTestGroups;
-import java.com.indeed.proctor.codegen.test.groups.UnitTestGroups.Payloaded;
-import java.com.indeed.proctor.codegen.test.groups.UnitTestGroupsPayload;
-import java.com.indeed.proctor.codegen.test.groups.UnitTestGroupsManager;
-import java.com.indeed.proctor.codegen.test.groups.UnitTestGroupsContext;
+import com.indeed.proctor.codegen.test.groups.UnitTestGroups;
+import com.indeed.proctor.codegen.test.groups.UnitTestGroups.Payloaded;
+import com.indeed.proctor.codegen.test.groups.UnitTestGroupsPayload;
+import com.indeed.proctor.codegen.test.groups.UnitTestGroupsManager;
+import com.indeed.proctor.codegen.test.groups.UnitTestGroupsContext;
 import com.indeed.util.varexport.VarExporter;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -48,7 +48,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class TestUnitTestGroupsManager {
     private static final Logger LOGGER = LogManager.getLogger(TestUnitTestGroupsManager.class);
-    private static final String SPECIFICATION_RESOURCE = "UnitTestGroups.json";
+    private static final String SPECIFICATION_RESOURCE = "temp/UnitTestGroups.json";
     private static final String SPECIFICATION_MATRIX = "unittest.proctor-matrix.json";
     public static final String SAMPLE_ID = "16s2o7s01001d9vj";
 

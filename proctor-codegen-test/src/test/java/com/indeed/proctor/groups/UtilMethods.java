@@ -17,6 +17,7 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.util.Map;
 
+import static jdk.internal.loader.BootLoader.findResource;
 import static org.junit.Assert.assertTrue;
 
 public class UtilMethods {
