@@ -6,8 +6,6 @@ import com.indeed.proctor.consumer.gen.TestGroupsGenerator;
 import com.indeed.proctor.consumer.gen.TestGroupsJavaGenerator;
 import com.indeed.proctor.consumer.gen.TestGroupsJavascriptGenerator;
 import org.apache.commons.io.filefilter.FileFilterUtils;
-import org.gradle.api.DefaultTask;
-import org.gradle.api.tasks.TaskAction;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,12 +15,11 @@ import java.io.IOException;
  *
  * @author andrewk
  */
-public abstract class ProctorGradleAutogenTask extends DefaultTask {
-    private static final File outputDirectory = new File("./");
-    private static final File topDirectory = new File("../test/proctor");
-    private static final File specificationOutput = new File("../test/resources");
+public abstract class ProctorGradleAutogenTask {
+    private static final File outputDirectory = new File("../proctor-codegen-test/src/test/");
+    private static final File topDirectory = new File("../proctor-codegen-test/src/main");
+    private static final File specificationOutput = new File("../proctor-codegen-test/src/java/test/temp/groups");
     private static final boolean useClosure = false;
-    private final TestGroupsJavaGenerator gen = new TestGroupsJavaGenerator();
     private static final TestGroupsJavaGenerator javaGenerator = new TestGroupsJavaGenerator();
     private static final TestGroupsJavascriptGenerator javascriptGenerator = new TestGroupsJavascriptGenerator();
 
@@ -34,6 +31,7 @@ public abstract class ProctorGradleAutogenTask extends DefaultTask {
             final String packageName,
             final String className
     ) throws CodeGenException {
+        System.out.println(packageName);
         javaGenerator.generate(
                 ProctorUtils.readSpecification(file),
                 outputDirectory.getPath(),
@@ -81,6 +79,7 @@ public abstract class ProctorGradleAutogenTask extends DefaultTask {
                 if (entry.isDirectory()) {
                     recursiveSpecificationsFinder(entry, (packageNamePrefix == null) ? entry.getName() : packageNamePrefix + "/" + entry.getName());
                 } else if (entry.getName().endsWith(".json") && ProctorUtils.readJsonFromFile(entry).has("tests")) {
+                    System.out.println("Processing " + entry.getName());
                     processJavaFile(
                             entry,
                             packageNamePrefix == null ? "" : packageNamePrefix.replace("/", "."),
@@ -114,6 +113,7 @@ public abstract class ProctorGradleAutogenTask extends DefaultTask {
             final File parent = providedContextFiles[0].getParentFile();
             final File outputDir = new File(specificationOutput + File.separator + packageDirectory.substring(0,packageDirectory.lastIndexOf(File.separator)));
             outputDir.mkdirs();
+            System.out.println(parent.getPath());
             try {
                 generateTotalSpecification(parent, outputDir);
             } catch (final CodeGenException e) {
@@ -122,13 +122,16 @@ public abstract class ProctorGradleAutogenTask extends DefaultTask {
         }
         for (final File entry : dir.listFiles()) {
             if (entry.isDirectory()) {
+                System.out.println(entry.getPath());
                 createTotalSpecifications(entry, (packageDirectory == null) ? entry.getName() : packageDirectory + File.separator + entry.getName());
             }
         }
     }
 
     public static void main(final String[] args) {
+        System.out.println("starting");
         final String testCompileSourceRoot = outputDirectory.getPath();
+        System.out.println(testCompileSourceRoot);
         createTotalSpecifications(topDirectory,null);
         if (topDirectory == null) {
             return;

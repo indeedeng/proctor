@@ -12,7 +12,7 @@ import org.junit.Test;
 import static com.indeed.proctor.groups.UtilMethods.calcBuckets;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-
+import java.com.indeed.proctor.codegen.test.groups.EmptyContextTestGroupsManager;
 /**
  * Test to make sure specifications with no context variables generate code properly
  */
@@ -23,7 +23,7 @@ public class TestEmptyContextTestGroupsManager {
     private static final String SPECIFICATION_RESOURCE = "EmptyContextTestGroups.json";
     private static final String SPECIFICATION_MATRIX = "emptycontexttest.proctor-matrix.json";
 
-    private EmptyContextTestGroupsManager manager;
+    private java.com.indeed.proctor.codegen.test.groups.EmptyContextTestGroupsManager manager;
 
     @Before()
     public void setUp() throws Exception {

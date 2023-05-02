@@ -11,7 +11,14 @@ dependencies {
     implementation project(':proctor-builder')
     implementation libs.commonsIo
     implementation libs.jacksonDatabind
+    testImplementation libs.jacksonCore
     testImplementation 'javax.servlet:javax.servlet-api:3.0.1'
+    testImplementation libs.annotationApi
+    testImplementation libs.junit
+    testImplementation libs.assertj
+    testImplementation 'com.indeed:util-core:1.0.49-1cfb888'
+    testImplementation 'com.indeed:util-varexport:1.0.49-1cfb888'
+
 }
 
 ext {
