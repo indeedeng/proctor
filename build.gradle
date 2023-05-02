@@ -95,3 +95,7 @@ publishing {
         }
     }
 }
+
+dependencies {
+    implementation project(path: ':proctor-codegen')
+}
