@@ -1,5 +1,0 @@
-{
-    "loggedIn": "boolean",
-    "country": "String",
-    "accountId": "int"
-}

@@ -122,7 +122,7 @@ public abstract class ProctorGradleAutogenTask {
 
     public static void main(final String[] args) throws IOException {
         try {
-            FileUtils.deleteDirectory(FileUtils.getFile(specificationOutput + "/temp"));
+            FileUtils.deleteDirectory(FileUtils.getFile("src/test/resources/com/indeed/proctor/groups/temp"));
         } catch (final Exception e) {}
 
         createTotalSpecifications(topDirectory,null);
@@ -137,10 +137,9 @@ public abstract class ProctorGradleAutogenTask {
         } catch (final CodeGenException ex) {
             throw new RuntimeException("Unable to generate code", ex);
         }
-        final File dest = new File(specificationOutput.getPath() + "/temp");
+        final File dest = new File("src/test/resources/com/indeed/proctor/groups/temp");
         FileUtils.moveFileToDirectory(new File("src/test/resources/com.indeed.proctor.groups/java/com.indeed.proctor.codegen.test/groups/SplitSpecificationTestGroups.json"), dest, true);
         FileUtils.moveFileToDirectory(new File("src/test/resources/com.indeed.proctor.groups/java/com.indeed.proctor.codegen.test/groups/SplitSpecificationTestWithFiltersGroups.json"),  dest, false);
-        FileUtils.deleteDirectory(FileUtils.getFile("src/test/resources/com.indeed.proctor.groups/java"));
-        FileUtils.deleteDirectory(FileUtils.getFile("src/test/resources.com.indeed.proctor.groups.temp"));
+        FileUtils.deleteDirectory(FileUtils.getFile("src/test/resources/com.indeed.proctor.groups"));
     }
 }

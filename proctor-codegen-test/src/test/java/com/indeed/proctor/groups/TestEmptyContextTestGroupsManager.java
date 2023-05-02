@@ -24,7 +24,7 @@ import java.util.function.Supplier;
 public class TestEmptyContextTestGroupsManager {
     @SuppressWarnings("UnusedDeclaration")
     private static final Logger LOGGER = LogManager.getLogger(TestEmptyContextTestGroupsManager.class);
-    private static final String SPECIFICATION_RESOURCE = "temp/EmptyContextTestGroups.json";
+    private static final String SPECIFICATION_RESOURCE = "EmptyContextTestGroups.json";
     private static final String SPECIFICATION_MATRIX = "emptycontexttest.proctor-matrix.json";
 
     private EmptyContextTestGroupsManager manager;

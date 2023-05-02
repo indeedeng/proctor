@@ -48,7 +48,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class TestUnitTestGroupsManager {
     private static final Logger LOGGER = LogManager.getLogger(TestUnitTestGroupsManager.class);
-    private static final String SPECIFICATION_RESOURCE = "temp/UnitTestGroups.json";
+    private static final String SPECIFICATION_RESOURCE = "UnitTestGroups.json";
     private static final String SPECIFICATION_MATRIX = "unittest.proctor-matrix.json";
     public static final String SAMPLE_ID = "16s2o7s01001d9vj";
 

@@ -28,7 +28,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 public class TestUnitTestGroupsGeneratedJavascript {
 
     private static final ObjectMapper OBJECT_MAPPER =new ObjectMapper();
-    private static final String UNIT_TEST_GROUPS_JS = "/UnitTestGroups.js";
+    private static final String UNIT_TEST_GROUPS_JS = "UnitTestGroups.js";
     private ScriptEngine jsEngine;
     private static final NameObfuscator OBFUSCATOR = new NameObfuscator();
     private static String jsFile;
