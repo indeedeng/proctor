@@ -15,7 +15,9 @@ dependencies {
     implementation 'eu.bitwalker:UserAgentUtils:1.20'
     implementation 'com.indeed:util-core:1.0.49-1cfb888'
     implementation 'com.indeed:util-varexport:1.0.49-1cfb888'
-    providedCompile 'com.github.jsimone:webapp-runner:7.0.34.0'
+    implementation libs.annotationApi
+    implementation libs.servletApi
+    compileOnly libs.jsr305
 }
 
 description = 'proctor-pipet-deploy'
