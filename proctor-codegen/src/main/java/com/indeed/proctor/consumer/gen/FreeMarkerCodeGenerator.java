@@ -104,7 +104,10 @@ public abstract class FreeMarkerCodeGenerator {
             fullPath.getParentFile().mkdirs();
             final PrintWriter out = new PrintWriter(fullPath);
 
-            final Map<String, Object> rootMap = populateRootMap(specification, baseContext, packageName, className);
+
+            final String parsedPackageName =
+                    packageName.startsWith("java.") ? packageName.substring(5) : packageName;
+            final Map<String, Object> rootMap = populateRootMap(specification, baseContext, parsedPackageName, className);
 
             final TemplateModel model = new SimpleHash(rootMap);
 
