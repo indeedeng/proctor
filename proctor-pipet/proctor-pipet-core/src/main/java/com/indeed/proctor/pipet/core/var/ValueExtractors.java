@@ -11,15 +11,17 @@ import java.util.List;
 
 import static java.util.stream.Collectors.joining;
 
-/** Holds classes for all the different extraction sources in the ExtractorSource enum. */
+/**
+ * Holds classes for all the different extraction sources in the ExtractorSource enum.
+ */
 public final class ValueExtractors {
 
     private ValueExtractors() {
         throw new UnsupportedOperationException("ValueExtractors should not be initialized.");
     }
 
-    public static ValueExtractor createValueExtractor(
-            final ExtractorSource source, final String sourceKey) {
+    public static ValueExtractor createValueExtractor(final ExtractorSource source,
+                                                      final String sourceKey) {
         Preconditions.checkNotNull(source, "ExtractorSource must be provided");
         if (source == ExtractorSource.QUERY) {
             return fromQueryParameter(sourceKey);
@@ -27,12 +29,9 @@ public final class ValueExtractors {
             return fromHttpHeader(sourceKey);
         } else {
             // This should be impossible if all enum values are in the above if statements.
-            // If you add a new source, you need to add handling here and as an implementation of
-            // ValueExtractor.
+            // If you add a new source, you need to add handling here and as an implementation of ValueExtractor.
             throw new ConfigurationException(
-                    String.format(
-                            "ExtractorSource '%s' in enum but lacks any extractor in ValueExtractors.",
-                            source));
+                    String.format("ExtractorSource '%s' in enum but lacks any extractor in ValueExtractors.", source));
         }
     }
 
@@ -49,8 +48,7 @@ public final class ValueExtractors {
     }
 
     public static ValueExtractor chain(final ValueExtractor... extractors) {
-        Preconditions.checkArgument(
-                extractors.length > 0, "Chained value extractors must be greater than zero");
+        Preconditions.checkArgument(extractors.length > 0, "Chained value extractors must be greater than zero");
         if (extractors.length == 1) {
             return extractors[0];
         } else {
@@ -62,9 +60,8 @@ public final class ValueExtractors {
         private final ValueExtractor[] extractors;
 
         private ChainedValueExtractor(final ValueExtractor[] extractors) {
-            for (ValueExtractor extractor : extractors) {
-                Preconditions.checkNotNull(
-                        extractor, "each of the chained ValueExtractors should be non-null");
+            for ( ValueExtractor extractor : extractors) {
+                Preconditions.checkNotNull(extractor, "each of the chained ValueExtractors should be non-null");
             }
             this.extractors = extractors;
         }
@@ -90,11 +87,10 @@ public final class ValueExtractors {
     }
 
     private static class QueryValueExtractor implements ValueExtractor {
-        private final String sourceKey;
+        final private String sourceKey;
 
         public QueryValueExtractor(final String sourceKey) {
-            Preconditions.checkNotNull(
-                    Strings.emptyToNull(sourceKey), "Query Parameter must not be empty");
+            Preconditions.checkNotNull(Strings.emptyToNull(sourceKey), "Query Parameter must not be empty");
             // Store the concatenation here so that we don't have to do it every call to extract().
             this.sourceKey = sourceKey;
         }
@@ -110,11 +106,10 @@ public final class ValueExtractors {
     }
 
     private static class HeaderValueExtractor implements ValueExtractor {
-        private final String sourceKey;
+        final private String sourceKey;
 
         public HeaderValueExtractor(final String sourceKey) {
-            Preconditions.checkNotNull(
-                    Strings.emptyToNull(sourceKey), "Header Name must not be empty");
+            Preconditions.checkNotNull(Strings.emptyToNull(sourceKey), "Header Name must not be empty");
             this.sourceKey = sourceKey;
         }
 

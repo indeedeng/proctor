@@ -14,35 +14,25 @@ import java.net.URL;
 
 /**
  * Support class for loading a test matrix artifact from a URL-based JSON file
- *
  * @author jack
  */
 public class UrlProctorLoader extends AbstractJsonProctorLoader {
-    @Nonnull private final URL inputURL;
+    @Nonnull
+    private final URL inputURL;
 
-    public UrlProctorLoader(
-            @Nonnull final ProctorSpecification specification, @Nonnull final String inputUrl)
-            throws MalformedURLException {
+    public UrlProctorLoader(@Nonnull final ProctorSpecification specification, @Nonnull final String inputUrl) throws MalformedURLException {
         this(specification, new URL(inputUrl));
     }
 
-    public UrlProctorLoader(
-            @Nonnull final ProctorSpecification specification,
-            @Nonnull final String inputUrl,
-            final FunctionMapper functionMapper)
-            throws MalformedURLException {
+    public UrlProctorLoader(@Nonnull final ProctorSpecification specification, @Nonnull final String inputUrl, final FunctionMapper functionMapper) throws MalformedURLException {
         this(specification, new URL(inputUrl), functionMapper);
     }
 
-    public UrlProctorLoader(
-            @Nonnull final ProctorSpecification specification, @Nonnull final URL inputUrl) {
+    public UrlProctorLoader(@Nonnull final ProctorSpecification specification, @Nonnull final URL inputUrl) {
         this(specification, inputUrl, RuleEvaluator.FUNCTION_MAPPER);
     }
 
-    public UrlProctorLoader(
-            @Nonnull final ProctorSpecification specification,
-            @Nonnull final URL inputUrl,
-            final FunctionMapper functionMapper) {
+    public UrlProctorLoader(@Nonnull final ProctorSpecification specification, @Nonnull final URL inputUrl, final FunctionMapper functionMapper) {
         super(UrlProctorLoader.class, specification, functionMapper);
         this.inputURL = inputUrl;
     }

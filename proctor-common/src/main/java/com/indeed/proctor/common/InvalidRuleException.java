@@ -1,6 +1,8 @@
 package com.indeed.proctor.common;
 
-/** @author matts */
+/**
+* @author matts
+*/
 public class InvalidRuleException extends Exception {
     public InvalidRuleException(final String message) {
         super(message);

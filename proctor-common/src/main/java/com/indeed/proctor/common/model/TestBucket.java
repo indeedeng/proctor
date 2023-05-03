@@ -18,25 +18,30 @@ import javax.annotation.Nullable;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonDeserialize(builder = TestBucket.Builder.class)
 public class TestBucket {
-    /** Validated by IdentifierValidationUtil */
-    @Nonnull private String name = "";
-
+    /**
+     * Validated by IdentifierValidationUtil
+     */
+    @Nonnull
+    private String name = "";
     private int value;
-    @Nullable private String description;
-    @Nullable private Payload payload;
+    @Nullable
+    private String description;
+    @Nullable
+    private Payload payload;
 
     /**
-     * @deprecated Use {@link TestBucket#TestBucket(String, int, String, Payload)} or {@link
-     *     TestBucket#builder()} to construct an instance.
+     * @deprecated Use {@link TestBucket#TestBucket(String, int, String, Payload)} or
+     * {@link TestBucket#builder()} to construct an instance.
      */
     @Deprecated
-    public TestBucket() {
-        /* intentionally empty */
-    }
+    public TestBucket() { /* intentionally empty */ }
 
     // For backward compatiblity with pre-payload code.
     public TestBucket(
-            @Nonnull final String name, final int value, @Nullable final String description) {
+            @Nonnull final String name,
+            final int value,
+            @Nullable final String description
+    ) {
         this.name = name;
         this.value = value;
         this.description = description;
@@ -47,7 +52,8 @@ public class TestBucket {
             @Nonnull final String name,
             final int value,
             @Nullable final String description,
-            @Nullable final Payload payload) {
+            @Nullable final Payload payload
+    ) {
         this.name = name;
         this.value = value;
         this.description = description;
@@ -69,9 +75,10 @@ public class TestBucket {
     }
 
     /**
-     * @deprecated Use {@link TestBucket#builder()} and {@link Builder#name} instead. Using setter
-     *     of bucket is a possible cause of a major bug that invalidate A/B testing result because
-     *     two {@link ProctorResult} share same object. This will be removed in a future release.
+     * @deprecated Use {@link TestBucket#builder()} and {@link Builder#name} instead.
+     * Using setter of bucket is a possible cause of a major bug
+     * that invalidate A/B testing result because two {@link ProctorResult} share same object.
+     * This will be removed in a future release.
      */
     @Deprecated
     public void setName(@Nonnull final String name) {
@@ -83,9 +90,10 @@ public class TestBucket {
     }
 
     /**
-     * @deprecated Use {@link TestBucket#builder()} and {@link Builder#value} instead. Using setter
-     *     of bucket is a possible cause of a major bug that invalidate A/B testing result because
-     *     two {@link ProctorResult} share same object. This will be removed in a future release.
+     * @deprecated Use {@link TestBucket#builder()} and {@link Builder#value} instead.
+     * Using setter of bucket is a possible cause of a major bug
+     * that invalidate A/B testing result because two {@link ProctorResult} share same object.
+     * This will be removed in a future release.
      */
     @Deprecated
     public void setValue(final int value) {
@@ -98,10 +106,10 @@ public class TestBucket {
     }
 
     /**
-     * @deprecated Use {@link TestBucket#builder()} and {@link Builder#description} instead. Using
-     *     setter of bucket is a possible cause of a major bug that invalidate A/B testing result
-     *     because two {@link ProctorResult} share same object. This will be removed in a future
-     *     release.
+     * @deprecated Use {@link TestBucket#builder()} and {@link Builder#description} instead.
+     * Using setter of bucket is a possible cause of a major bug
+     * that invalidate A/B testing result because two {@link ProctorResult} share same object.
+     * This will be removed in a future release.
      */
     @Deprecated
     public void setDescription(@Nullable final String description) {
@@ -114,10 +122,10 @@ public class TestBucket {
     }
 
     /**
-     * @deprecated Use {@link TestBucket#builder()} and {@link Builder#payload} instead. Using
-     *     setter of bucket is a possible cause of a major bug that invalidate A/B testing result
-     *     because two {@link ProctorResult} share same object. This will be removed in a future
-     *     release.
+     * @deprecated Use {@link TestBucket#builder()} and {@link Builder#payload} instead.
+     * Using setter of bucket is a possible cause of a major bug
+     * that invalidate A/B testing result because two {@link ProctorResult} share same object.
+     * This will be removed in a future release.
      */
     @Deprecated
     public void setPayload(@Nullable final Payload payload) {
@@ -161,10 +169,10 @@ public class TestBucket {
             return false;
         }
         final TestBucket that = (TestBucket) o;
-        return value == that.value
-                && Objects.equal(name, that.name)
-                && Objects.equal(description, that.description)
-                && Objects.equal(payload, that.payload);
+        return value == that.value &&
+                Objects.equal(name, that.name) &&
+                Objects.equal(description, that.description) &&
+                Objects.equal(payload, that.payload);
     }
 
     public int fullHashCode() {
@@ -177,12 +185,16 @@ public class TestBucket {
 
     @JsonPOJOBuilder(withPrefix = "")
     public static class Builder {
-        @Nonnull private String name = "";
+        @Nonnull
+        private String name = "";
         private int value;
-        @Nullable private String description;
-        @Nullable private Payload payload;
+        @Nullable
+        private String description;
+        @Nullable
+        private Payload payload;
 
-        private Builder() {}
+        private Builder() {
+        }
 
         public Builder from(@Nonnull final TestBucket bucket) {
             this.name = bucket.name;
@@ -213,7 +225,12 @@ public class TestBucket {
         }
 
         public TestBucket build() {
-            return new TestBucket(this.name, this.value, this.description, this.payload);
+            return new TestBucket(
+                    this.name,
+                    this.value,
+                    this.description,
+                    this.payload
+            );
         }
     }
 }

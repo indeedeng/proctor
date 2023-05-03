@@ -10,13 +10,15 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
- * Convenience wrapper for Map<TestType, String>, used to select an identifier suitable to resolve
- * test groups for the given experiment.
+ * Convenience wrapper for Map<TestType, String>, used to select an identifier suitable to resolve test groups
+ * for the given experiment.
  */
 public class Identifiers {
-    @Nonnull private final Map<TestType, String> identifierMap;
+    @Nonnull
+    private final Map<TestType, String> identifierMap;
     private final boolean randomEnabled;
 
     public Identifiers(@Nonnull final Map<TestType, String> identifierMap) {
@@ -24,29 +26,24 @@ public class Identifiers {
     }
 
     /**
-     * This constructor can construct instances with randomEnabled == true, which only affects test
-     * with TestType.RANDOM, and enables the random behavior. For A/B testing, randomized behavior
-     * is typically harmful, because the same test units get different treatment every time,
-     * preventing analysis of effects. TestType.RANDOM can be used for non-experimentation purposes,
-     * such as gradual rollouts of migrations with e.g. 20% of traffic to be diverged to a different
-     * server.
+     * This constructor can construct instances with randomEnabled == true, which only affects test with TestType.RANDOM,
+     * and enables the random behavior.
+     * For A/B testing, randomized behavior is typically harmful, because the same test units get different treatment every time,
+     * preventing analysis of effects.
+     * TestType.RANDOM can be used for non-experimentation purposes, such as gradual rollouts of migrations with e.g. 20% of traffic
+     * to be diverged to a different server.
+     * <p>
+     * TestType.RANDOM will only work with apps that use this constructor setting randomEnabled == true.
+     * Please refers to {@link Proctor#determineTestGroups(Identifiers, Map, Map, Collection)} to know how randomEnabled value
+     * is used to enable/disable random behavior for tests with TestType.RANDOM.
      *
-     * <p>TestType.RANDOM will only work with apps that use this constructor setting randomEnabled
-     * == true. Please refers to {@link Proctor#determineTestGroups(Identifiers, Map, Map,
-     * Collection)} to know how randomEnabled value is used to enable/disable random behavior for
-     * tests with TestType.RANDOM.
-     *
-     * @param identifierMap: A map from TestType to identifier to use (e.g. ctk, accountId). Note
-     *     that it must not has an entry for TestType.RANDOM because proctor generates random values
-     *     for this type.
-     * @param randomEnabled: A flag whether random behavior for tests with TestType.RANDOM is
-     *     enabled or not. Default is false.
+     * @param identifierMap: A map from TestType to identifier to use (e.g. ctk, accountId). Note that it must not has
+     *                       an entry for TestType.RANDOM because proctor generates random values for this type.
+     * @param randomEnabled: A flag whether random behavior for tests with TestType.RANDOM is enabled or not. Default is false.
      */
-    public Identifiers(
-            @Nonnull final Map<TestType, String> identifierMap, final boolean randomEnabled) {
+    public Identifiers(@Nonnull final Map<TestType, String> identifierMap, final boolean randomEnabled) {
         if (identifierMap.containsKey(TestType.RANDOM)) {
-            throw new IllegalArgumentException(
-                    "Cannot specify " + TestType.RANDOM + " in identifierMap");
+            throw new IllegalArgumentException("Cannot specify " + TestType.RANDOM + " in identifierMap");
         }
         this.identifierMap = identifierMap;
         this.randomEnabled = randomEnabled;
@@ -60,31 +57,27 @@ public class Identifiers {
         return new Identifiers(type, identifier);
     }
 
-    public static Identifiers of(
-            final TestType typeA,
-            final String identifierA,
-            final TestType typeB,
-            final String identifierB) {
+    public static Identifiers of(final TestType typeA, final String identifierA,
+                                 final TestType typeB, final String identifierB) {
         return new Identifiers(ImmutableMap.of(typeA, identifierA, typeB, identifierB));
     }
 
-    public static Identifiers of(
-            final TestType typeA,
-            final String identifierA,
-            final TestType typeB,
-            final String identifierB,
-            final TestType typeC,
-            final String identifierC) {
-        return new Identifiers(
-                ImmutableMap.of(typeA, identifierA, typeB, identifierB, typeC, identifierC));
+    public static Identifiers of(final TestType typeA, final String identifierA,
+                                 final TestType typeB, final String identifierB,
+                                 final TestType typeC, final String identifierC) {
+        return new Identifiers(ImmutableMap.of(typeA, identifierA, typeB, identifierB, typeC, identifierC));
     }
 
-    /** @return true if random test group assignment was enabled in constructor. */
+    /**
+     * @return true if random test group assignment was enabled in constructor.
+     */
     public boolean isRandomEnabled() {
         return randomEnabled;
     }
 
-    /** @return a set of all the test types whose identifiers are stored in this object. */
+    /**
+     * @return a set of all the test types whose identifiers are stored in this object.
+     */
     public Set<TestType> getAvailableTestTypes() {
         return identifierMap.keySet();
     }
@@ -129,8 +122,8 @@ public class Identifiers {
             return false;
         }
         final Identifiers that = (Identifiers) o;
-        return randomEnabled == that.randomEnabled
-                && Objects.equals(identifierMap, that.identifierMap);
+        return randomEnabled == that.randomEnabled &&
+                Objects.equals(identifierMap, that.identifierMap);
     }
 
     @Override

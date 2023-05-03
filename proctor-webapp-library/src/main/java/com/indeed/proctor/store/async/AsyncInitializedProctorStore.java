@@ -27,13 +27,12 @@ import java.util.concurrent.Future;
 import java.util.function.Supplier;
 
 /**
- * AsyncInitializedProctorStore is an implementation of ProctorStore. This is delegating all
- * overridden methods to proctorStore. This initializes the delegated proctorStore in a background
- * job when the constructor is called. Before finishing the initialization, this throws
- * NotInitializedException if proctorStore is referred.
- *
- * <p>If it fails to initialize proctorStore, it will retry to initialize up to MAX_ATTEMPT_COUNT
- * with 2^(attemptCount - 1) seconds interval.
+ * AsyncInitializedProctorStore is an implementation of ProctorStore.
+ * This is delegating all overridden methods to proctorStore.
+ * This initializes the delegated proctorStore in a background job when the constructor is called.
+ * Before finishing the initialization, this throws NotInitializedException if proctorStore is referred.
+ * <p>
+ * If it fails to initialize proctorStore, it will retry to initialize up to MAX_ATTEMPT_COUNT with 2^(attemptCount - 1) seconds interval.
  */
 public class AsyncInitializedProctorStore implements ProctorStore {
     private static final Logger LOGGER = LogManager.getLogger(AsyncInitializedProctorStore.class);
@@ -46,25 +45,18 @@ public class AsyncInitializedProctorStore implements ProctorStore {
     AsyncInitializedProctorStore(
             final Supplier<ProctorStore> storeSupplier,
             final ExecutorService executor,
-            final RetryWithExponentialBackoff retryWithExponentialBackoff) {
+            final RetryWithExponentialBackoff retryWithExponentialBackoff
+    ) {
         Preconditions.checkNotNull(executor);
-        proctorStoreFuture =
-                executor.submit(
-                        () ->
-                                retryWithExponentialBackoff.retry(
-                                        storeSupplier,
-                                        MAX_ATTEMPT_COUNT,
-                                        MAX_ATTEMPT_INTERVAL_INCREASE,
-                                        (e, attemptCount) ->
-                                                LOGGER.error(
-                                                        String.format(
-                                                                "Failed to initialize ProctorStore %s times",
-                                                                attemptCount),
-                                                        e)));
+        proctorStoreFuture = executor.submit(() -> retryWithExponentialBackoff.retry(
+                storeSupplier,
+                MAX_ATTEMPT_COUNT,
+                MAX_ATTEMPT_INTERVAL_INCREASE,
+                (e, attemptCount) -> LOGGER.error(String.format("Failed to initialize ProctorStore %s times", attemptCount), e)
+        ));
     }
 
-    public AsyncInitializedProctorStore(
-            final Supplier<ProctorStore> storeSupplier, final ExecutorService executor) {
+    public AsyncInitializedProctorStore(final Supplier<ProctorStore> storeSupplier, final ExecutorService executor) {
         this(storeSupplier, executor, new RetryWithExponentialBackoff());
     }
 
@@ -80,17 +72,13 @@ public class AsyncInitializedProctorStore implements ProctorStore {
             try {
                 proctorStoreOptional = proctorStoreFuture.get();
             } catch (final ExecutionException e) {
-                throw new InitializationFailedException(
-                        "Failed to initialize ProctorStore", e.getCause());
+                throw new InitializationFailedException("Failed to initialize ProctorStore", e.getCause());
             } catch (final Exception e) {
                 throw new InitializationFailedException("Failed to initialize ProctorStore", e);
             }
 
-            proctorStore =
-                    proctorStoreOptional.orElseThrow(
-                            () ->
-                                    new InitializationFailedException(
-                                            "Initializing proctorStore process has finished but proctorStore is not initialized."));
+            proctorStore = proctorStoreOptional.orElseThrow(() ->
+                    new InitializationFailedException("Initializing proctorStore process has finished but proctorStore is not initialized."));
         }
         return proctorStore;
     }
@@ -134,8 +122,7 @@ public class AsyncInitializedProctorStore implements ProctorStore {
     }
 
     @Override
-    public TestDefinition getTestDefinition(final String test, final String fetchRevision)
-            throws StoreException {
+    public TestDefinition getTestDefinition(final String test, final String fetchRevision) throws StoreException {
         return getProctorStore().getTestDefinition(test, fetchRevision);
     }
 
@@ -147,23 +134,19 @@ public class AsyncInitializedProctorStore implements ProctorStore {
 
     @Nonnull
     @Override
-    public List<Revision> getMatrixHistory(
-            final Instant sinceInclusive, final Instant untilExclusive) throws StoreException {
+    public List<Revision> getMatrixHistory(final Instant sinceInclusive, final Instant untilExclusive) throws StoreException {
         return getProctorStore().getMatrixHistory(sinceInclusive, untilExclusive);
     }
 
     @Nonnull
     @Override
-    public List<Revision> getHistory(final String test, final int start, final int limit)
-            throws StoreException {
+    public List<Revision> getHistory(final String test, final int start, final int limit) throws StoreException {
         return getProctorStore().getHistory(test, start, limit);
     }
 
     @Nonnull
     @Override
-    public List<Revision> getHistory(
-            final String test, final String revision, final int start, final int limit)
-            throws StoreException {
+    public List<Revision> getHistory(final String test, final String revision, final int start, final int limit) throws StoreException {
         return getProctorStore().getHistory(test, revision, start, limit);
     }
 
@@ -175,16 +158,13 @@ public class AsyncInitializedProctorStore implements ProctorStore {
 
     @Nonnull
     @Override
-    public List<TestEdit> getTestEdits(final String testName, final int start, final int limit)
-            throws StoreException {
+    public List<TestEdit> getTestEdits(final String testName, final int start, final int limit) throws StoreException {
         return getProctorStore().getTestEdits(testName, start, limit);
     }
 
     @Nonnull
     @Override
-    public List<TestEdit> getTestEdits(
-            final String testName, final String revision, final int start, final int limit)
-            throws StoreException {
+    public List<TestEdit> getTestEdits(final String testName, final String revision, final int start, final int limit) throws StoreException {
         return getProctorStore().getTestEdits(testName, revision, start, limit);
     }
 
@@ -215,11 +195,9 @@ public class AsyncInitializedProctorStore implements ProctorStore {
             final String previousVersion,
             final String testName,
             final TestDefinition testDefinition,
-            final Map<String, String> metadata)
-            throws StoreException.TestUpdateException {
-        getProctorStore()
-                .updateTestDefinition(
-                        changeMetadata, previousVersion, testName, testDefinition, metadata);
+            final Map<String, String> metadata
+    ) throws StoreException.TestUpdateException {
+        getProctorStore().updateTestDefinition(changeMetadata, previousVersion, testName, testDefinition, metadata);
     }
 
     @Override
@@ -227,10 +205,9 @@ public class AsyncInitializedProctorStore implements ProctorStore {
             final ChangeMetadata changeMetadata,
             final String previousVersion,
             final String testName,
-            final TestDefinition testDefinition)
-            throws StoreException.TestUpdateException {
-        getProctorStore()
-                .deleteTestDefinition(changeMetadata, previousVersion, testName, testDefinition);
+            final TestDefinition testDefinition
+    ) throws StoreException.TestUpdateException {
+        getProctorStore().deleteTestDefinition(changeMetadata, previousVersion, testName, testDefinition);
     }
 
     @Override
@@ -238,8 +215,8 @@ public class AsyncInitializedProctorStore implements ProctorStore {
             final ChangeMetadata changeMetadata,
             final String testName,
             final TestDefinition testDefinition,
-            final Map<String, String> metadata)
-            throws StoreException.TestUpdateException {
+            final Map<String, String> metadata
+    ) throws StoreException.TestUpdateException {
         getProctorStore().addTestDefinition(changeMetadata, testName, testDefinition, metadata);
     }
 
@@ -264,3 +241,4 @@ public class AsyncInitializedProctorStore implements ProctorStore {
         }
     }
 }
+

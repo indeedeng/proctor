@@ -3,28 +3,34 @@ package com.indeed.proctor.common;
 import javax.annotation.Nullable;
 import java.util.Optional;
 
-/** Options to define the behavior of what bucket to force when it's not explicitly given. */
+/**
+ * Options to define the behavior of what bucket to force when it's not explicitly given.
+ */
 public enum ForceGroupsDefaultMode {
-    /** The initial option. It doesn't force any bucket. */
+    /**
+     * The initial option. It doesn't force any bucket.
+     */
     NONE(null),
     /**
-     * It forces to assign no bucket. In most situations when you use AbstractGroups, it leads to
-     * using the fallback buckets.
+     * It forces to assign no bucket. In most situations when you use AbstractGroups, it leads to using the fallback buckets.
      */
     FALLBACK("default_to_fallback"),
-    /** It forces to assign the minimum live (>0%) bucket within the resolved allocation. */
+    /**
+     * It forces to assign the minimum live (>0%) bucket within the resolved allocation.
+     */
     MIN_LIVE("default_to_min_live"),
     ;
 
-    @Nullable private final String token;
+    @Nullable
+    private final String token;
 
     ForceGroupsDefaultMode(@Nullable final String token) {
         this.token = token;
     }
 
     /**
-     * Returns the token of the mode, used to specify the mode in a force groups string. Empty if
-     * the mode is the initial option (i.e., NONE)
+     * Returns the token of the mode, used to specify the mode in a force groups string.
+     * Empty if the mode is the initial option (i.e., NONE)
      */
     public Optional<String> getToken() {
         return Optional.ofNullable(token);

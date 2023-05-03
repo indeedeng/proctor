@@ -8,9 +8,7 @@ public class Range {
     private int bucketValue;
     private double length;
 
-    public Range() {
-        /* intentionally empty */
-    }
+    public Range() { /* intentionally empty */ }
 
     public Range(final int bucketValue, final double length) {
         if (length < 0 || length > 1) {
@@ -24,6 +22,7 @@ public class Range {
         this.bucketValue = other.bucketValue;
         this.length = other.length;
     }
+
 
     public int getBucketValue() {
         return bucketValue;
@@ -50,7 +49,8 @@ public class Range {
             return false;
         }
         final Range range = (Range) o;
-        return bucketValue == range.bucketValue && Double.compare(range.length, length) == 0;
+        return bucketValue == range.bucketValue &&
+                Double.compare(range.length, length) == 0;
     }
 
     @Override
@@ -60,6 +60,9 @@ public class Range {
 
     @Override
     public String toString() {
-        return "Range{" + "bucketValue=" + bucketValue + ", length=" + length + '}';
+        return "Range{" +
+                "bucketValue=" + bucketValue +
+                ", length=" + length +
+                '}';
     }
 }

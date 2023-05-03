@@ -8,18 +8,19 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 
-/** Stores the raw query parameters for a /groups/identify request. */
+/**
+ * Stores the raw query parameters for a /groups/identify request.
+ */
 public class RawParameters {
     private final Map<String, String> context;
     private final Map<TestType, String> identifiers;
     private final List<String> test;
     private final String forceGroups;
 
-    public RawParameters(
-            final Map<String, String> context,
-            final Map<TestType, String> identifiers,
-            final List<String> test,
-            final String forceGroups) {
+    public RawParameters(final Map<String, String> context,
+                         final Map<TestType, String> identifiers,
+                         final List<String> test,
+                         final String forceGroups) {
         this.context = ImmutableMap.copyOf(context);
         this.identifiers = ImmutableMap.copyOf(identifiers);
         this.test = test != null ? ImmutableList.copyOf(test) : null;
@@ -37,8 +38,8 @@ public class RawParameters {
     /**
      * Returns a list of test names to filter by.
      *
-     * <p>Returns an empty list if the query parameter was present but empty (ex: "?test=") Returns
-     * null if the query parameter was absent.
+     * Returns an empty list if the query parameter was present but empty (ex: "?test=")
+     * Returns null if the query parameter was absent.
      */
     @Nullable
     public List<String> getTest() {

@@ -1,5 +1,4 @@
 package com.indeed.proctor.pipet.core.model;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 public class JsonMeta {

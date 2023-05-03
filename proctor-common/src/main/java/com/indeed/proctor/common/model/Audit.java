@@ -9,7 +9,6 @@ import java.util.TimeZone;
 
 /**
  * Contains basic metadata about a test matrix for auditing purposes
- *
  * @author ketan
  */
 public class Audit {
@@ -18,8 +17,10 @@ public class Audit {
 
     private String version;
     private long updated;
-    @Nullable private String updatedDate;
-    @Nullable private String updatedBy;
+    @Nullable
+    private String updatedDate;
+    @Nullable
+    private String updatedBy;
 
     public String getVersion() {
         return version;
@@ -61,16 +62,11 @@ public class Audit {
     @Nonnull
     @Override
     public String toString() {
-        return "Audit{"
-                + "version="
-                + version
-                + ", updated="
-                + updated
-                + ", updatedDate="
-                + updatedDate
-                + ", updatedBy='"
-                + updatedBy
-                + '\''
-                + '}';
+        return "Audit{" +
+               "version=" + version +
+               ", updated=" + updated +
+               ", updatedDate=" + updatedDate +
+               ", updatedBy='" + updatedBy + '\'' +
+               '}';
     }
 }

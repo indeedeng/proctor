@@ -19,14 +19,14 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-/** */
+/**
+ */
 public abstract class BackgroundJob<T> implements Callable<T> {
     private static final Logger LOGGER = LogManager.getLogger(BackgroundJob.class);
 
     private Future<T> future;
     private JobStatus status = JobStatus.PENDING;
-    // using StringBuffer because append() and toString() may be called in parallel by different
-    // threads
+    // using StringBuffer because append() and toString() may be called in parallel by different threads
     protected final StringBuffer logBuilder = new StringBuffer();
 
     private Long id;
@@ -51,8 +51,7 @@ public abstract class BackgroundJob<T> implements Callable<T> {
     }
 
     public void logWithTiming(final String message, final String timingKey) {
-        final String messageWithTime =
-                String.format("%5sms %s", jobTiming.getEllapsedMillis(), message);
+        final String messageWithTime = String.format("%5sms %s", jobTiming.getEllapsedMillis(), message );
         log(message);
         LOGGER.info(messageWithTime + " for job " + getTitle());
         jobTiming.notifyStart(timingKey);
@@ -196,7 +195,9 @@ public abstract class BackgroundJob<T> implements Callable<T> {
         private final String text;
         private final String target;
 
-        public ResultUrl(final String href, final String text, final String target) {
+        public ResultUrl(final String href,
+                         final String text,
+                         final String target) {
             this.href = href;
             this.text = text;
             this.target = target;
@@ -226,8 +227,7 @@ public abstract class BackgroundJob<T> implements Callable<T> {
         T result = null;
 
         try {
-            for (final BeforeBackgroundJobExecute beforeBackgroundJobExecute :
-                    getBeforeBackgroundJobExecutes()) {
+            for (final BeforeBackgroundJobExecute beforeBackgroundJobExecute : getBeforeBackgroundJobExecutes()) {
                 beforeBackgroundJobExecute.beforeExecute(this);
             }
         } catch (final Exception e) {
@@ -246,8 +246,7 @@ public abstract class BackgroundJob<T> implements Callable<T> {
         }
 
         try {
-            for (final AfterBackgroundJobExecute afterBackgroundJobExecute :
-                    getAfterBackgroundJobExecutes()) {
+            for (final AfterBackgroundJobExecute afterBackgroundJobExecute : getAfterBackgroundJobExecutes()) {
                 afterBackgroundJobExecute.afterExecute(this, result);
             }
         } catch (final Exception e) {
@@ -260,16 +259,8 @@ public abstract class BackgroundJob<T> implements Callable<T> {
 
     @Nonnull
     public JobInfo getJobInfo() {
-        return new JobInfo(
-                getUUID(),
-                getStatus(),
-                getLog(),
-                getTitle(),
-                getUsername(),
-                isRunning(),
-                getUrls(),
-                getEndMessage(),
-                getErrorMessage());
+        return new JobInfo(getUUID(), getStatus(), getLog(), getTitle(), getUsername(), isRunning(), getUrls(),
+                getEndMessage(), getErrorMessage());
     }
 
     public enum JobType {
@@ -330,16 +321,16 @@ public abstract class BackgroundJob<T> implements Callable<T> {
         private final String endMessage;
         private final String errorMessage;
 
-        public JobInfo(
-                final UUID jobId,
-                final JobStatus status,
-                final String log,
-                final String title,
-                final String username,
-                final boolean running,
-                final List<ResultUrl> urls,
-                final String endMessage,
-                final String errorMessage) {
+        public JobInfo(final UUID jobId,
+                       final JobStatus status,
+                       final String log,
+                       final String title,
+                       final String username,
+                       final boolean running,
+                       final List<ResultUrl> urls,
+                       final String endMessage,
+                       final String errorMessage
+        ) {
             this.jobId = jobId;
             this.status = status;
             this.log = log;
@@ -388,7 +379,9 @@ public abstract class BackgroundJob<T> implements Callable<T> {
         }
     }
 
-    /** Helps to keep track of how long each part of the background job took. */
+    /**
+     * Helps to keep track of how long each part of the background job took.
+     */
     private static class JobTiming {
 
         private final long createdTime = System.currentTimeMillis();
@@ -411,7 +404,9 @@ public abstract class BackgroundJob<T> implements Callable<T> {
             ongoingTask = timingKey;
         }
 
-        /** returns recorded timings without last timingKey (to simplify implementation) */
+        /**
+         * returns recorded timings without last timingKey (to simplify implementation)
+         */
         public Map<String, Long> getTimings() {
             return stageTimings;
         }

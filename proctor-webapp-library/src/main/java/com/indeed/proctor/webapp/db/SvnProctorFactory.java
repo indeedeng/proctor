@@ -9,8 +9,7 @@ public class SvnProctorFactory implements FactoryBean<ProctorStore> {
     private String svnPath;
     private String username;
     private String password;
-    private String testDefinitionsDirectory =
-            FileBasedProctorStore.DEFAULT_TEST_DEFINITIONS_DIRECTORY;
+    private String testDefinitionsDirectory = FileBasedProctorStore.DEFAULT_TEST_DEFINITIONS_DIRECTORY;
 
     public void setSvnPath(final String svnPath) {
         this.svnPath = svnPath;

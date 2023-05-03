@@ -5,7 +5,10 @@ import com.indeed.util.varexport.Export;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-/** @author parker Common VarExports for ThreadPoolExecutor */
+/**
+* @author parker
+ * Common VarExports for ThreadPoolExecutor
+*/
 public class ThreadPoolExecutorVarExports {
     private final ThreadPoolExecutor executor;
 

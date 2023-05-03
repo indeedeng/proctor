@@ -13,42 +13,45 @@ import javax.el.VariableMapper;
 import java.util.HashSet;
 import java.util.Set;
 
-/** Util class for analyzing rule expressions */
+/**
+ * Util class for analyzing rule expressions
+ */
 public class RuleAnalyzer {
 
-    /** @return variables contained in the expression */
+    /**
+     * @return variables contained in the expression
+     */
     public static Set<String> getReferencedVariables(final String elString) {
         final NameGatheringVariableMapper variableMapper = new NameGatheringVariableMapper();
         // instances are not thread-safe, so creating new ones on every call.
         final ELResolver elResolver = new CompositeELResolver();
         final FunctionMapper functionMapper = RuleEvaluator.defaultFunctionMapperBuilder().build();
-        ExpressionFactory.newInstance()
-                .createValueExpression(
-                        new ELContext() {
-                            @Override
-                            public ELResolver getELResolver() {
-                                return elResolver;
-                            }
+        ExpressionFactory.newInstance().createValueExpression(
+                new ELContext() {
+                    @Override
+                    public ELResolver getELResolver() {
+                        return elResolver;
+                    }
 
-                            @Override
-                            public FunctionMapper getFunctionMapper() {
-                                return functionMapper;
-                            }
+                    @Override
+                    public FunctionMapper getFunctionMapper() {
+                        return functionMapper;
+                    }
 
-                            @Override
-                            public VariableMapper getVariableMapper() {
-                                return variableMapper;
-                            }
-                        },
-                        elString,
-                        Void.class);
+                    @Override
+                    public VariableMapper getVariableMapper() {
+                        return variableMapper;
+                    }
+                },
+                elString,
+                Void.class
+        );
         return variableMapper.getGatheredVariables();
     }
 
     /**
-     * Catches the Java Expression Language's events for variables to determine what variables are
-     * mentioned in an el statement (which is what proctor rules are). Does not actually resolve
-     * variables.
+     * Catches the Java Expression Language's events for variables to determine what variables are mentioned in
+     * an el statement (which is what proctor rules are). Does not actually resolve variables.
      */
     private static class NameGatheringVariableMapper extends VariableMapper {
         private final Set<String> variablesReferenced = new HashSet<>();
@@ -60,8 +63,7 @@ public class RuleAnalyzer {
         }
 
         @Override
-        public ValueExpression setVariable(
-                final String variable, final ValueExpression expression) {
+        public ValueExpression setVariable(final String variable, final ValueExpression expression) {
             throw new UnsupportedOperationException();
         }
 

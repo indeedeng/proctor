@@ -20,22 +20,18 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Owns utility functions to convert from/to a string value (force groups string) that usually comes
- * from URL query, cookie, or HTTP header.
+ * Owns utility functions to convert from/to a string value (force groups string)
+ * that usually comes from URL query, cookie, or HTTP header.
  *
- * <p>The format of the force groups strings is
- *
+ * The format of the force groups strings is
  * <ul>
- *   <li>It's a concatenation of string elements separated by commas. (e.g.,
- *       my_btn_tst1,default_to_fallback)
- *   <li>Each element represents a forced test group, or an option.
- *   <li>A forced group is specified by a test name followed by a bucket value (e.g., my_btn_tst1)
- *   <li>A forced payload is specified by a force group followed by a semicolon and a payload
- *       definition (e.g., my_btn_tst1;doubleValue:0.2)
- *   <li>A option is specified by predefined tokens that doesn't contain integers (e.g.,
- *       default_to_fallback)
- *   <li>If two elements conflict (e.g., specifying different buckets for the same test), the latter
- *       takes precedence
+ *     <li>It's a concatenation of string elements separated by commas. (e.g., my_btn_tst1,default_to_fallback)</li>
+ *     <li>Each element represents a forced test group, or an option.</li>
+ *     <li>A forced group is specified by a test name followed by a bucket value (e.g., my_btn_tst1)</li>
+ *     <li>A forced payload is specified by a force group followed by a semicolon and a payload definition (e.g., my_btn_tst1;doubleValue:0.2) </li>
+ *     <li>A option is specified by predefined tokens that doesn't contain integers (e.g., default_to_fallback) </li>
+ *     <li>If two elements conflict (e.g., specifying different buckets for the same test),
+ *     the latter takes precedence</li>
  * </ul>
  */
 public class ForceGroupsOptionsStrings {
@@ -47,44 +43,31 @@ public class ForceGroupsOptionsStrings {
     // -?\d+\.?\d* - matches a integer or double and allows negatives
     // or
     // \"(?:\\.|[^\"\\]+)*\"- matches a string
-    private static final String REGEX_STRING_OR_NUM =
-            "-?\\d+\\.?\\d*|\\\"(?:\\\\.|[^\\\"\\\\]+)*\\\"";
+    private static final String REGEX_STRING_OR_NUM = "-?\\d+\\.?\\d*|\\\"(?:\\\\.|[^\\\"\\\\]+)*\\\"";
 
     // matches an array of string or numbers
     private static final String REGEX_ARRAY =
-            "\\["
-                    + "(?:\\s*"
-                    + "(?:"
-                    + REGEX_STRING_OR_NUM
-                    + ")"
-                    + "(?:\\s*,\\s*"
-                    + "(?:"
-                    + REGEX_STRING_OR_NUM
-                    + ")"
-                    + ")*"
-                    + ")?"
-                    + "\\]";
+            "\\[" +
+                "(?:\\s*" +
+                    "(?:" + REGEX_STRING_OR_NUM + ")" +
+                    "(?:\\s*,\\s*" +
+                    "(?:" + REGEX_STRING_OR_NUM + ")" +
+                    ")*" +
+                ")?" +
+            "\\]";
 
     // matches a map of key type string and value of array, string, or number
     private static final String REGEX_MAP =
-            "\\{"
-                    + "(?:\\s*"
-                    + "(?:\\\"(?:\\\\.|[^\\\"\\\\]+)*\\\"\\s*:\\s*)"
-                    + "(?:"
-                    + REGEX_STRING_OR_NUM
-                    + "|"
-                    + REGEX_ARRAY
-                    + ")"
-                    + "(?:\\s*,\\s*"
-                    + "(?:\\\"(?:\\\\.|[^\\\"\\\\]+)*\\\"\\s*:\\s*)"
-                    + "(?:"
-                    + REGEX_STRING_OR_NUM
-                    + "|"
-                    + REGEX_ARRAY
-                    + ")"
-                    + ")*"
-                    + ")?"
-                    + "\\}";
+            "\\{" +
+                "(?:\\s*" +
+                    "(?:\\\"(?:\\\\.|[^\\\"\\\\]+)*\\\"\\s*:\\s*)" +
+                    "(?:" + REGEX_STRING_OR_NUM + "|" + REGEX_ARRAY + ")" +
+                    "(?:\\s*,\\s*" +
+                        "(?:\\\"(?:\\\\.|[^\\\"\\\\]+)*\\\"\\s*:\\s*)" +
+                        "(?:" + REGEX_STRING_OR_NUM + "|" + REGEX_ARRAY + ")" +
+                    ")*" +
+                ")?" +
+            "\\}";
 
     // \w+-?\d+ - matches force group without payload (ie. example_tst1 or another_tst-1)
     //      ;\w+: - matches ; and payload type (ie. ;stringValue:) followed by one of the following:
@@ -92,35 +75,27 @@ public class ForceGroupsOptionsStrings {
     //          array
     //          map
     // [a-z_]+ - matches default value (ie. default_to_min_live)
-    private static final Pattern PATTERN =
-            Pattern.compile(
-                    "\\w+-?\\d+"
-                            + "(?:"
-                            + ";\\w+:"
-                            + "(?:"
-                            + REGEX_STRING_OR_NUM
-                            + "|"
-                            + REGEX_ARRAY
-                            + "|"
-                            + REGEX_MAP
-                            + ")"
-                            + ")?"
-                            + "|[a-z_]+");
+    private static final Pattern PATTERN = Pattern.compile("\\w+-?\\d+" +
+            "(?:" +
+                ";\\w+:" +
+                "(?:" +
+                    REGEX_STRING_OR_NUM + "|" + REGEX_ARRAY + "|" + REGEX_MAP +
+                ")" +
+            ")?" +
+            "|[a-z_]+");
 
-    private static final TypeReference<Map<String, Object>> TYPE_REFERENCE =
-            new TypeReference<Map<String, Object>>() {};
+    private static final TypeReference<Map<String,Object>> TYPE_REFERENCE = new TypeReference<Map<String,Object>>() {};
 
-    private ForceGroupsOptionsStrings() {}
-
+    private ForceGroupsOptionsStrings() {
+    }
+    
     @Nonnull
-    public static ForceGroupsOptions parseForceGroupsString(
-            @Nullable final String forceGroupsString) {
+    public static ForceGroupsOptions parseForceGroupsString(@Nullable final String forceGroupsString) {
         return parseForceGroupsString(forceGroupsString, Collections.emptySet());
     }
 
     @Nonnull
-    public static ForceGroupsOptions parseForceGroupsString(
-            @Nullable final String forceGroupsString, final Set<String> forcePayloadTests) {
+    public static ForceGroupsOptions parseForceGroupsString(@Nullable final String forceGroupsString, final Set<String> forcePayloadTests) {
         final ForceGroupsOptions.Builder builder = ForceGroupsOptions.builder();
         if (forceGroupsString == null) {
             return builder.build();
@@ -129,8 +104,7 @@ public class ForceGroupsOptionsStrings {
         while (matcher.find()) {
             final int endOfMatch = matcher.end();
             // continue if match has extra characters following it (ie. example_tst1-)
-            if (endOfMatch < forceGroupsString.length()
-                    && forceGroupsString.charAt(endOfMatch) != ',') {
+            if (endOfMatch < forceGroupsString.length() && forceGroupsString.charAt(endOfMatch) != ',') {
                 continue;
             }
             // split string to separate force group and payload
@@ -142,30 +116,26 @@ public class ForceGroupsOptionsStrings {
                 continue;
             }
 
-            ForceGroupsDefaultMode.fromToken(groupString).ifPresent(builder::setDefaultMode);
+            ForceGroupsDefaultMode.fromToken(groupString)
+                    .ifPresent(builder::setDefaultMode);
 
             final Optional<Integer> bucketValueStart = getBucketValueStart(groupString);
 
             if (bucketValueStart.isPresent()) {
-                //  bucketValueStart should now be the index of the minus sign or the first digit in
-                // a run of digits going to the end of the word
+                //  bucketValueStart should now be the index of the minus sign or the first digit in a run of digits going to the end of the word
                 final String testName = groupString.substring(0, bucketValueStart.get()).trim();
                 final String bucketValueStr = groupString.substring(bucketValueStart.get()).trim();
                 try {
                     final Integer bucketValue = Integer.valueOf(bucketValueStr);
                     builder.putForceGroup(testName, bucketValue);
-                    if (bucketAndPayloadValuesStr.length == FORCE_PARAMETER_MAX_SIZE
-                            && forcePayloadTests.contains(testName)) {
-                        final Payload payloadValue =
-                                parseForcePayloadString(
-                                        bucketAndPayloadValuesStr[FORCE_PARAMETER_PAYLOAD_IDX]);
+                    if (bucketAndPayloadValuesStr.length == FORCE_PARAMETER_MAX_SIZE && forcePayloadTests.contains(testName)) {
+                        final Payload payloadValue = parseForcePayloadString(bucketAndPayloadValuesStr[FORCE_PARAMETER_PAYLOAD_IDX]);
                         if (payloadValue != null) {
                             builder.putForcePayload(testName, payloadValue);
                         }
                     }
                 } catch (final NumberFormatException e) {
-                    LOGGER.error(
-                            "Unable to parse bucket value " + bucketValueStr + " as integer", e);
+                    LOGGER.error("Unable to parse bucket value " + bucketValueStr + " as integer", e);
                 }
             }
         }
@@ -193,71 +163,66 @@ public class ForceGroupsOptionsStrings {
 
     /**
      * The format of the payloadString is the following:
-     *
      * <ul>
-     *   <li>payloadType:payloadValue
-     *   <li>Where payloadType is one of the 7 payload types supported by Proctor (stringValue,
-     *       stringArray, doubleValue, longValue, longArray, map)
-     *   <li>If payloadValue is an array is expected in the following format: [value,value,value]
-     *   <li>If payloadValue is a map expecting following format: [key:value,key:value,key:value]
+     *     <li>payloadType:payloadValue</li>
+     *     <li>Where payloadType is one of the 7 payload types supported by Proctor (stringValue, stringArray, doubleValue, longValue, longArray, map)</li>
+     *     <li>If payloadValue is an array is expected in the following format: [value,value,value]</li>
+     *     <li>If payloadValue is a map expecting following format: [key:value,key:value,key:value]</li>
      * </ul>
      */
     @Nullable
-    public static Payload parseForcePayloadString(final String payloadString) {
+    public static Payload parseForcePayloadString(final String payloadString )
+    {
         final Payload payload = new Payload();
-        final String[] payloadPieces = payloadString.split(":", 2);
+        final String[] payloadPieces = payloadString.split(":",2);
         final ObjectMapper objectMapper = new ObjectMapper();
         try {
             final PayloadType payloadType = PayloadType.payloadTypeForName(payloadPieces[0]);
             final String payloadValue = payloadPieces[1];
             switch (payloadType) {
                 case DOUBLE_VALUE:
-                    {
-                        payload.setDoubleValue(objectMapper.readValue(payloadValue, Double.class));
-                        break;
-                    }
+                {
+                    payload.setDoubleValue(objectMapper.readValue(payloadValue, Double.class));
+                    break;
+                }
                 case DOUBLE_ARRAY:
-                    {
-                        payload.setDoubleArray(
-                                objectMapper.readValue(payloadValue, Double[].class));
-                        break;
-                    }
+                {
+                    payload.setDoubleArray(objectMapper.readValue(payloadValue, Double[].class));
+                    break;
+                }
                 case LONG_VALUE:
-                    {
-                        payload.setLongValue(objectMapper.readValue(payloadValue, Long.class));
-                        break;
-                    }
+                {
+                    payload.setLongValue(objectMapper.readValue(payloadValue, Long.class));
+                    break;
+                }
                 case LONG_ARRAY:
-                    {
-                        payload.setLongArray(objectMapper.readValue(payloadValue, Long[].class));
-                        break;
-                    }
+                {
+                    payload.setLongArray(objectMapper.readValue(payloadValue, Long[].class));
+                    break;
+                }
                 case STRING_VALUE:
-                    {
-                        payload.setStringValue(objectMapper.readValue(payloadValue, String.class));
-                        break;
-                    }
+                {
+                    payload.setStringValue(objectMapper.readValue(payloadValue, String.class));
+                    break;
+                }
                 case STRING_ARRAY:
-                    {
-                        payload.setStringArray(
-                                objectMapper.readValue(payloadValue, String[].class));
-                        break;
-                    }
+                {
+                    payload.setStringArray(objectMapper.readValue(payloadValue, String[].class));
+                    break;
+                }
                 case MAP:
-                    {
-                        payload.setMap(objectMapper.readValue(payloadValue, TYPE_REFERENCE));
-                        break;
-                    }
+                {
+                    payload.setMap(objectMapper.readValue(payloadValue, TYPE_REFERENCE));
+                    break;
+                }
                 case JSON:
-                    {
-                        // Json not currently supported
-                        return null;
-                    }
+                {
+                    // Json not currently supported
+                    return null;
+                }
             }
-        } catch (final IllegalArgumentException
-                | ArrayStoreException
-                | ClassCastException
-                | IOException e) {
+        }
+        catch (final IllegalArgumentException | ArrayStoreException | ClassCastException | IOException e) {
             return null;
         }
 
@@ -268,21 +233,15 @@ public class ForceGroupsOptionsStrings {
         final List<String> tokens = new ArrayList<>();
 
         // options come earlier for better visibility
-        options.getDefaultMode().getToken().ifPresent(tokens::add);
+        options.getDefaultMode().getToken()
+                .ifPresent(tokens::add);
 
         final Map<String, Payload> forcePayloads = options.getForcePayloads();
 
         options.getForceGroups()
-                .forEach(
-                        (testName, bucketValue) ->
-                                tokens.add(
-                                        forcePayloads.containsKey(testName)
-                                                ? testName
-                                                        + bucketValue
-                                                        + ";"
-                                                        + createForcePayloadString(
-                                                                forcePayloads.get(testName))
-                                                : testName + bucketValue));
+                .forEach((testName, bucketValue) ->
+                        tokens.add( forcePayloads.containsKey(testName) ? testName + bucketValue + ";" +
+                                createForcePayloadString(forcePayloads.get(testName)) : testName + bucketValue));
         return String.join(",", tokens);
     }
 
@@ -292,13 +251,11 @@ public class ForceGroupsOptionsStrings {
         final ObjectMapper objectMapper = new ObjectMapper();
         try {
             if (payload.getDoubleValue() != null) {
-                final String doubleValue =
-                        objectMapper.writeValueAsString(payload.getDoubleValue());
+                final String doubleValue = objectMapper.writeValueAsString(payload.getDoubleValue());
                 s.append("doubleValue:").append(doubleValue);
             }
             if (payload.getDoubleArray() != null) {
-                final String doubleArray =
-                        objectMapper.writeValueAsString(payload.getDoubleArray());
+                final String doubleArray = objectMapper.writeValueAsString(payload.getDoubleArray());
                 s.append("doubleArray:").append(doubleArray);
             }
             if (payload.getLongValue() != null) {
@@ -310,13 +267,11 @@ public class ForceGroupsOptionsStrings {
                 s.append("longArray:").append(longArray);
             }
             if (payload.getStringValue() != null) {
-                final String stringValue =
-                        objectMapper.writeValueAsString(payload.getStringValue());
+                final String stringValue = objectMapper.writeValueAsString(payload.getStringValue());
                 s.append("stringValue:").append(stringValue);
             }
             if (payload.getStringArray() != null) {
-                final String stringArray =
-                        objectMapper.writeValueAsString(payload.getStringArray());
+                final String stringArray = objectMapper.writeValueAsString(payload.getStringArray());
                 s.append("stringArray:").append(stringArray);
             }
             if (payload.getMap() != null) {

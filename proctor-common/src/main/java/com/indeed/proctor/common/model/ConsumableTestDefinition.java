@@ -13,32 +13,39 @@ import java.util.Map;
 
 /**
  * Models a single test
- *
  * @author ketan
  */
 public class ConsumableTestDefinition {
-    @Nonnull private Map<String, Object> constants = Collections.emptyMap();
+    @Nonnull
+    private Map<String, Object> constants = Collections.emptyMap();
     private String version;
-    @Nullable private String salt;
-    @Nullable private String rule;
-    @Nonnull private List<TestBucket> buckets = Collections.emptyList();
-    @Nonnull private List<Allocation> allocations = Collections.emptyList();
+    @Nullable
+    private String salt;
+    @Nullable
+    private String rule;
+    @Nonnull
+    private List<TestBucket> buckets = Collections.emptyList();
+    @Nonnull
+    private List<Allocation> allocations = Collections.emptyList();
     private boolean silent = false;
 
-    @Nonnull private TestType testType;
-    @Nullable private String description;
-    @Nonnull private List<String> metaTags = Collections.emptyList();
-
-    /** @see TestDefinition#getDependsOn() */
-    @Nullable private TestDependency dependsOn;
-
-    public ConsumableTestDefinition() {
-        /* intentionally empty */
-    }
+    @Nonnull
+    private TestType testType;
+    @Nullable
+    private String description;
+    @Nonnull
+    private List<String> metaTags = Collections.emptyList();
 
     /**
-     * @deprecated Use {@link #fromTestDefinition(TestDefinition)} and {@link
-     *     TestDefinition#builder()}
+     * @see TestDefinition#getDependsOn()
+     */
+    @Nullable
+    private TestDependency dependsOn;
+
+    public ConsumableTestDefinition() { /* intentionally empty */ }
+
+    /**
+     * @deprecated Use {@link #fromTestDefinition(TestDefinition)} and {@link TestDefinition#builder()}
      */
     @Deprecated
     public ConsumableTestDefinition(
@@ -49,9 +56,9 @@ public class ConsumableTestDefinition {
             @Nonnull final List<TestBucket> buckets,
             @Nonnull final List<Allocation> allocations,
             @Nonnull final Map<String, Object> constants,
-            @Nullable final String description) {
-        this(
-                version,
+            @Nullable final String description
+    ) {
+        this(version,
                 rule,
                 testType,
                 salt,
@@ -64,8 +71,7 @@ public class ConsumableTestDefinition {
     }
 
     /**
-     * @deprecated Use {@link #fromTestDefinition(TestDefinition)} and {@link
-     *     TestDefinition#builder()}
+     * @deprecated Use {@link #fromTestDefinition(TestDefinition)} and {@link TestDefinition#builder()}
      */
     @Deprecated
     public ConsumableTestDefinition(
@@ -77,9 +83,9 @@ public class ConsumableTestDefinition {
             @Nonnull final List<Allocation> allocations,
             final boolean silent,
             @Nonnull final Map<String, Object> constants,
-            @Nullable final String description) {
-        this(
-                version,
+            @Nullable final String description
+    ) {
+        this(version,
                 rule,
                 testType,
                 salt,
@@ -92,8 +98,7 @@ public class ConsumableTestDefinition {
     }
 
     /**
-     * @deprecated Use {@link #fromTestDefinition(TestDefinition)} and {@link
-     *     TestDefinition#builder()}
+     * @deprecated Use {@link #fromTestDefinition(TestDefinition)} and {@link TestDefinition#builder()}
      */
     @Deprecated
     public ConsumableTestDefinition(
@@ -106,7 +111,8 @@ public class ConsumableTestDefinition {
             final boolean silent,
             @Nonnull final Map<String, Object> constants,
             @Nullable final String description,
-            @Nonnull final List<String> metaTags) {
+            @Nonnull final List<String> metaTags
+    ) {
         this.constants = constants;
         this.version = version;
         this.salt = salt;
@@ -131,7 +137,8 @@ public class ConsumableTestDefinition {
             @Nonnull final Map<String, Object> constants,
             @Nullable final String description,
             @Nonnull final List<String> metaTags,
-            @Nullable final TestDependency dependsOn) {
+            @Nullable final TestDependency dependsOn
+    ) {
         this.constants = constants;
         this.version = version;
         this.salt = salt;
@@ -224,7 +231,9 @@ public class ConsumableTestDefinition {
         this.description = description;
     }
 
-    /** metaTags allow to group and filter tests. */
+    /**
+     * metaTags allow to group and filter tests.
+     */
     @Nonnull
     public List<String> getMetaTags() {
         return this.metaTags;
@@ -234,7 +243,9 @@ public class ConsumableTestDefinition {
         this.metaTags = metaTags;
     }
 
-    /** @see TestDefinition#getDependsOn() */
+    /**
+     * @see TestDefinition#getDependsOn()
+     */
     @Nullable
     public TestDependency getDependsOn() {
         return dependsOn;
@@ -284,17 +295,7 @@ public class ConsumableTestDefinition {
         constants.putAll(td.getConstants());
         constants.putAll(specialConstants);
 
-        return new ConsumableTestDefinition(
-                td.getVersion(),
-                rule,
-                td.getTestType(),
-                td.getSalt(),
-                td.getBuckets(),
-                allocations,
-                td.getSilent(),
-                constants,
-                td.getDescription(),
-                td.getMetaTags(),
-                td.getDependsOn());
+        return new ConsumableTestDefinition(td.getVersion(), rule, td.getTestType(), td.getSalt(), td.getBuckets(),
+                allocations, td.getSilent(), constants, td.getDescription(), td.getMetaTags(), td.getDependsOn());
     }
 }

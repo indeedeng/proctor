@@ -8,21 +8,20 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
-/** Simple validator to check if the input JSON file is valid format as test definition. */
+/**
+ * Simple validator to check if the input JSON file is valid format as test definition.
+ */
 public class TestDefinitionValidator {
     private static final ObjectMapper OBJECT_MAPPER = Serializers.lenient();
 
-    private TestDefinitionValidator() {}
+    private TestDefinitionValidator() {
+    }
 
-    private static boolean isValidTestDefinition(
-            final InputStream stream, final String testName, final String matrixSource) {
+    private static boolean isValidTestDefinition(final InputStream stream, final String testName, final String matrixSource) {
         try {
-            final TestDefinition testDefinition =
-                    OBJECT_MAPPER.readValue(stream, TestDefinition.class);
-            final ConsumableTestDefinition consumableTestDefinition =
-                    ConsumableTestDefinition.fromTestDefinition(testDefinition);
-            ProctorUtils.verifyInternallyConsistentDefinition(
-                    testName, matrixSource, consumableTestDefinition);
+            final TestDefinition testDefinition = OBJECT_MAPPER.readValue(stream, TestDefinition.class);
+            final ConsumableTestDefinition consumableTestDefinition = ConsumableTestDefinition.fromTestDefinition(testDefinition);
+            ProctorUtils.verifyInternallyConsistentDefinition(testName, matrixSource, consumableTestDefinition);
             return true;
         } catch (final Throwable e) {
             System.err.println("Error: " + e.getMessage());
@@ -32,10 +31,7 @@ public class TestDefinitionValidator {
 
     public static void main(final String[] args) {
         if (args.length < 3) {
-            System.err.println(
-                    "Usage: java "
-                            + TestDefinitionValidator.class.getCanonicalName()
-                            + " <test_name> <matrix_source> <test_path>");
+            System.err.println("Usage: java " + TestDefinitionValidator.class.getCanonicalName() + " <test_name> <matrix_source> <test_path>");
             System.exit(0);
         }
 

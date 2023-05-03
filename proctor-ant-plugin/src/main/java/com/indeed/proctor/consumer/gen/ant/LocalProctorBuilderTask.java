@@ -9,12 +9,14 @@ import java.io.FileWriter;
 import java.io.PrintWriter;
 
 /**
- * Executes the LocalProctorBuilder destdir - The output directory to write the matrix json file. If
- * set to '-', output is written to STDOUT destfile - The name of the generated test-matrix JSON
- * file. srcdir - The source directory containing the test-definitions directory
- * ${srcdir}/test-definitions author - Optional author string to be used for the test-matrix
- * audit.author version - Optional version to be used for the test-matrix audit.version
- *
+ * Executes the LocalProctorBuilder
+ * destdir  -   The output directory to write the matrix json file.
+ *              If set to '-', output is written to STDOUT
+ * destfile -   The name of the generated test-matrix JSON file.
+ * srcdir   -   The source directory containing the test-definitions directory
+ *              ${srcdir}/test-definitions
+ * author   -   Optional author string to be used for the test-matrix audit.author
+ * version  -   Optional version to be used for the test-matrix audit.version
  * @author parker
  */
 public class LocalProctorBuilderTask extends Task {
@@ -76,18 +78,18 @@ public class LocalProctorBuilderTask extends Task {
                 throw new BuildException("destdir is required");
             }
             new LocalProctorBuilder(
-                            new File(srcdir),
-                            "-".equals(destdir)
-                                    ? new PrintWriter(System.out)
-                                    : new FileWriter(new File(destdir, destfile)),
-                            author,
-                            version)
-                    .execute();
+                    new File(srcdir),
+                    "-".equals(destdir) ?
+                        new PrintWriter(System.out) :
+                        new FileWriter(new File(destdir, destfile)),
+                    author,
+                    version).execute();
         } catch (final Exception e) {
             if (e instanceof BuildException) {
                 throw (BuildException) e;
             }
             throw new BuildException("Failed to create test matrix: " + e.getMessage(), e);
         }
+
     }
 }

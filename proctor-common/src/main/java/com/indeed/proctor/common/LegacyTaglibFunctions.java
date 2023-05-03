@@ -28,17 +28,18 @@ import java.util.StringTokenizer;
 /**
  * functions to be used within Proctor rules. Rules are null-safe and return non-null on any input
  *
- * <p>was:
+ * was: <p>JSTL Functions</p>
  *
- * <p>JSTL Functions copied from org.apache.taglibs.standard.Functions, keep the above license
- * statement to remain legal
+ *  copied from org.apache.taglibs.standard.Functions, keep the above license statement to remain legal
  */
 public class LegacyTaglibFunctions {
 
-    // *********************************************************************
+    //*********************************************************************
     // String capitalization
 
-    /** Converts all of the characters of the input string to upper case. */
+    /**
+     * Converts all of the characters of the input string to upper case.
+     */
     public static String toUpperCase(@Nullable final String input) {
         if (input == null) {
             return "";
@@ -46,7 +47,9 @@ public class LegacyTaglibFunctions {
         return input.toUpperCase(Locale.ENGLISH);
     }
 
-    /** Converts all of the characters of the input string to lower case. */
+    /**
+     * Converts all of the characters of the input string to lower case.
+     */
     public static String toLowerCase(@Nullable final String input) {
         if (input == null) {
             return "";
@@ -54,12 +57,11 @@ public class LegacyTaglibFunctions {
         return input.toLowerCase(Locale.ENGLISH);
     }
 
-    // *********************************************************************
+    //*********************************************************************
     // Substring processing
 
     /**
      * Returns the index withing a string of the first occurrence of a specified substring.
-     *
      * @return 0 if any argument is null, else index of first occurence, or -1
      */
     public static int indexOf(@Nullable String input, @Nullable String substring) {
@@ -74,7 +76,6 @@ public class LegacyTaglibFunctions {
 
     /**
      * Tests if an input string contains the specified substring.
-     *
      * @return true if any argument is null, else true if substring contained in input
      */
     public static boolean contains(@Nullable final String input, @Nullable final String substring) {
@@ -83,7 +84,6 @@ public class LegacyTaglibFunctions {
 
     /**
      * Tests if an input string contains the specified substring in a case insensitive way.
-     *
      * @return true if any argument is null, else true if substring contained in input
      */
     public static boolean containsIgnoreCase(@Nullable String input, @Nullable String substring) {
@@ -98,7 +98,9 @@ public class LegacyTaglibFunctions {
         return indexOf(inputUC, substringUC) != -1;
     }
 
-    /** @return true if any argument is null, else true if input starts with substring */
+    /**
+     * @return true if any argument is null, else true if input starts with substring
+     */
     public static boolean startsWith(@Nullable String input, @Nullable String substring) {
         if (input == null) {
             input = "";
@@ -109,7 +111,9 @@ public class LegacyTaglibFunctions {
         return input.startsWith(substring);
     }
 
-    /** @return true if any argument is null, else true if input ends with substring */
+    /**
+     * @return true if any argument is null, else true if input ends with substring
+     */
     public static boolean endsWith(@Nullable String input, @Nullable String substring) {
         if (input == null) {
             input = "";
@@ -122,7 +126,6 @@ public class LegacyTaglibFunctions {
 
     /**
      * substring("foobarbaz", 3, 6)).isEqualTo("bar")
-     *
      * @param beginIndex inclusive
      * @param endIndex exclusive, negative index means infinite
      * @return substring after normalizing arguments, empty string if input is null
@@ -169,7 +172,7 @@ public class LegacyTaglibFunctions {
         if (index == -1) {
             return "";
         } else {
-            return input.substring(index + substring.length());
+            return input.substring(index+substring.length());
         }
     }
 
@@ -200,12 +203,11 @@ public class LegacyTaglibFunctions {
         }
     }
 
-    // *********************************************************************
+    //*********************************************************************
     // Character replacement
 
     /**
      * Removes white spaces from both ends of a string.
-     *
      * @return empty string if input is null, trimmed else
      */
     public static String trim(@Nullable final String input) {
@@ -217,11 +219,13 @@ public class LegacyTaglibFunctions {
 
     /**
      * @param substringBefore if empty, input string is returned unchanged
-     * @return a string resulting from replacing in an input string all occurrences of a non-empty
-     *     "before" string into an "after" substring.
+     * @return a string resulting from replacing in an input string all occurrences of a non-empty "before" string into an "after" substring.
      */
     public static String replace(
-            @Nullable String input, @Nullable String substringBefore, final String substringAfter) {
+            @Nullable String input,
+            @Nullable String substringBefore,
+            final String substringAfter)
+    {
         if (input == null) {
             input = "";
         }
@@ -247,11 +251,13 @@ public class LegacyTaglibFunctions {
 
     /**
      * Splits a string into an array of substrings.
-     *
      * @param delimiters "" if null
      * @return [""] when input is null
      */
-    public static String[] split(@Nullable String input, @Nullable String delimiters) {
+    public static String[] split(
+            @Nullable String input,
+            @Nullable String delimiters)
+    {
         final String[] array;
         if (input == null || input.isEmpty()) {
             return new String[] {""};
@@ -272,10 +278,12 @@ public class LegacyTaglibFunctions {
         return array;
     }
 
-    // *********************************************************************
+    //*********************************************************************
     // Collections processing
 
-    /** @return the number of items in a collection, or the number of characters in a string. */
+    /**
+     * @return the number of items in a collection, or the number of characters in a string.
+     */
     public static int length(@Nullable final Object obj) {
         if (obj == null) {
             return 0;
@@ -293,7 +301,7 @@ public class LegacyTaglibFunctions {
 
         int count = 0;
         if (obj instanceof Iterator) {
-            final Iterator iter = (Iterator) obj;
+            final Iterator iter = (Iterator)obj;
             count = 0;
             while (iter.hasNext()) {
                 count++;
@@ -302,7 +310,7 @@ public class LegacyTaglibFunctions {
             return count;
         }
         if (obj instanceof Enumeration) {
-            final Enumeration inputEnum = (Enumeration) obj;
+            final Enumeration inputEnum = (Enumeration)obj;
             count = 0;
             while (inputEnum.hasMoreElements()) {
                 count++;
@@ -316,13 +324,11 @@ public class LegacyTaglibFunctions {
         } catch (final IllegalArgumentException ex) {
             // ignore
         }
-        throw new IllegalStateException(
-                "Don't know how to iterate over supplied \"items\" in &lt;forEach&gt;");
+        throw new IllegalStateException("Don't know how to iterate over supplied \"items\" in &lt;forEach&gt;");
     }
 
     /**
      * Joins all elements of an array into a string.
-     *
      * @return empty string if input is null
      */
     public static String join(@Nullable final String[] array, @Nullable String separator) {

@@ -23,10 +23,9 @@ import static org.mockito.Mockito.when;
 
 public class BackgroundJobManagerTest {
 
-    private final BackgroundJobManager manager =
-            new BackgroundJobManager(
-                    new ThreadPoolExecutor(
-                            1, 1, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>()));
+    private final BackgroundJobManager manager = new BackgroundJobManager(new ThreadPoolExecutor(1, 1,
+            0L, TimeUnit.MILLISECONDS,
+            new LinkedBlockingQueue<>()));
     private final JobInfoStore infoStoreMock = mock(JobInfoStore.class);
 
     @Before
@@ -47,8 +46,7 @@ public class BackgroundJobManagerTest {
         when(infoStoreMock.shouldUpdateJobInfo(isA(BackgroundJob.class))).thenReturn(true);
         manager.scheduledCacheUpdate();
         verify(infoStoreMock, times(1)).shouldUpdateJobInfo(job);
-        verify(infoStoreMock, times(2))
-                .updateJobInfo(any(UUID.class), any(BackgroundJob.JobInfo.class));
+        verify(infoStoreMock, times(2)).updateJobInfo(any(UUID.class), any(BackgroundJob.JobInfo.class));
     }
 
     @Test
@@ -77,7 +75,9 @@ public class BackgroundJobManagerTest {
         assertThat(manager.getJobForId(firstJobId)).isNull();
     }
 
-    /** Checks scheduledCacheUpdate is thread-safe for insertion during iteration */
+    /**
+     * Checks scheduledCacheUpdate is thread-safe for insertion during iteration
+     */
     @Test(timeout = 10000) // timeout just in case it's in dead lock due to bug
     public void testScheduledCacheUpdateWithSubmit() throws InterruptedException {
         manager.submit(mockBackgroundJob());
@@ -89,46 +89,42 @@ public class BackgroundJobManagerTest {
         // for the main thread to wait until cacheUpdate is in loop
         final CountDownLatch isInUpdateLoop = new CountDownLatch(1);
 
-        manager.setJobInfoStore(
-                new JobInfoStore() {
-                    @Override
-                    public boolean shouldUpdateJobInfo(final BackgroundJob<?> job) {
-                        try {
-                            // release wait of the main thread to start submit()
-                            if (isInUpdateLoop.getCount() > 0) {
-                                isInUpdateLoop.countDown();
-                            }
-                            // wait until submit is called.
-                            submitIsCalled.await(10, TimeUnit.SECONDS); // timeout for safety
-                        } catch (final InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
-                        return true;
+        manager.setJobInfoStore(new JobInfoStore() {
+            @Override
+            public boolean shouldUpdateJobInfo(final BackgroundJob<?> job) {
+                try {
+                    // release wait of the main thread to start submit()
+                    if (isInUpdateLoop.getCount() > 0) {
+                        isInUpdateLoop.countDown();
                     }
+                    // wait until submit is called.
+                    submitIsCalled.await(10, TimeUnit.SECONDS); // timeout for safety
+                } catch (final InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                return true;
+            }
 
-                    @Override
-                    public void updateJobInfo(
-                            final UUID uuid, final BackgroundJob.JobInfo jobInfo) {
-                        // Do nothing here.
-                        // synchronization is done in shouldUpdateJobInfo that is not called by
-                        // submit()
-                    }
+            @Override
+            public void updateJobInfo(final UUID uuid, final BackgroundJob.JobInfo jobInfo) {
+                // Do nothing here.
+                // synchronization is done in shouldUpdateJobInfo that is not called by submit()
+            }
 
-                    @Override
-                    public BackgroundJob.JobInfo getJobInfo(final UUID uuid) {
-                        return null;
-                    }
-                });
+            @Override
+            public BackgroundJob.JobInfo getJobInfo(final UUID uuid) {
+                return null;
+            }
+        });
 
         // 1: start scheduledCacheUpdate()
         final Thread cacheUpdateThread = new Thread(manager::scheduledCacheUpdate);
         cacheUpdateThread.start();
 
         // 2: wait until cache update is started.
-        isInUpdateLoop.await(10, TimeUnit.SECONDS); // timeout for safety
+        isInUpdateLoop.await(10, TimeUnit.SECONDS);  // timeout for safety
 
-        // 3: now, scheduledCacheUpdate() is blocked by submitIsCalled.await() in
-        // shouldUpdateJobInfo
+        // 3: now, scheduledCacheUpdate() is blocked by submitIsCalled.await() in shouldUpdateJobInfo
         // submit new background job while scheduledCacheUpdate is waiting
         manager.submit(mockBackgroundJob());
 

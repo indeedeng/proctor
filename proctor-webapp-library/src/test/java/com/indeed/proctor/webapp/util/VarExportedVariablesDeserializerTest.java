@@ -14,8 +14,21 @@ public class VarExportedVariablesDeserializerTest {
     @Test
     public void testEscapeTargetPattern() {
         assertThat(ESCAPE_TARGET_PATTERN.asPredicate())
-                .accepts("\\", "\\\\", "\\r", "\\123Z", "\\\\:", "\\\\=")
-                .rejects("", "abc", "\\:", "\\=", "\\u1010");
+                .accepts(
+                        "\\",
+                        "\\\\",
+                        "\\r",
+                        "\\123Z",
+                        "\\\\:",
+                        "\\\\="
+                )
+                .rejects(
+                        "",
+                        "abc",
+                        "\\:",
+                        "\\=",
+                        "\\u1010"
+                );
     }
 
     @Test
@@ -52,22 +65,37 @@ public class VarExportedVariablesDeserializerTest {
          * The original string "\\u1010\u1010" is visible
          * as "\\u1010\\u1010" for the class.
          */
-        testDeserializeSingleString("\\u1010\u1010", "\u1010\u1010");
+        testDeserializeSingleString(
+                "\\u1010\u1010",
+                "\u1010\u1010"
+        );
     }
 
-    private static void testDeserializeSingleString(final String value, final String expected) {
-        final Variable<String> variable =
-                ManagedVariable.<String>builder().setName("key").setValue(value).build();
+    private static void testDeserializeSingleString(
+            final String value,
+            final String expected
+    ) {
+        final Variable<String> variable = ManagedVariable.<String>builder()
+                .setName("key")
+                .setValue(value)
+                .build();
         final Properties expectedProps = new Properties();
         expectedProps.setProperty("key", expected);
-        assertThat(VarExportedVariablesDeserializer.deserialize(variable.toString()))
+        assertThat(
+                VarExportedVariablesDeserializer.deserialize(
+                        variable.toString()
+                )
+        )
                 .as("Check deserialization of %s", value)
                 .isEqualTo(expectedProps);
     }
 
-    private static void testDeserializeSingleString(final String value) {
+    private static void testDeserializeSingleString(
+            final String value
+    ) {
         testDeserializeSingleString(
-                value, value // the same value is expected expect for edge cases
-                );
+                value,
+                value // the same value is expected expect for edge cases
+        );
     }
 }

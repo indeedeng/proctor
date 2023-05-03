@@ -40,15 +40,13 @@ public class BackgroundJobManager {
 
     static final int JOB_HISTORY_MAX_SIZE = 1000;
     // synchronizing Map because put() and iteration may be called in parallel by different threads
-    private final Map<UUID, BackgroundJob<?>> jobHistoryMap =
-            synchronizedMap(
-                    new LinkedHashMap<UUID, BackgroundJob<?>>(JOB_HISTORY_MAX_SIZE + 1) {
-                        @Override
-                        protected boolean removeEldestEntry(
-                                final Map.Entry<UUID, BackgroundJob<?>> eldest) {
-                            return this.size() > JOB_HISTORY_MAX_SIZE;
-                        }
-                    });
+    private final Map<UUID, BackgroundJob<?>> jobHistoryMap = synchronizedMap(
+            new LinkedHashMap<UUID, BackgroundJob<?>>(JOB_HISTORY_MAX_SIZE + 1) {
+                @Override
+                protected boolean removeEldestEntry(final Map.Entry<UUID, BackgroundJob<?>> eldest) {
+                    return this.size() > JOB_HISTORY_MAX_SIZE;
+                }
+            });
 
     private final AtomicLong lastId = new AtomicLong(0);
 
@@ -66,13 +64,11 @@ public class BackgroundJobManager {
     }
 
     private static ThreadPoolExecutor initThreadPool() {
-        final ThreadFactory threadFactory =
-                new ThreadFactoryBuilder()
-                        .setNameFormat(BackgroundJobManager.class.getSimpleName() + "-Thread-%d")
-                        .setUncaughtExceptionHandler(new LogOnUncaughtExceptionHandler())
-                        .build();
-        return new ThreadPoolExecutor(
-                3, 3, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), threadFactory);
+        final ThreadFactory threadFactory = new ThreadFactoryBuilder()
+                .setNameFormat(BackgroundJobManager.class.getSimpleName() + "-Thread-%d")
+                .setUncaughtExceptionHandler(new LogOnUncaughtExceptionHandler())
+                .build();
+        return new ThreadPoolExecutor(3, 3, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(), threadFactory);
     }
 
     @Autowired(required = false)
@@ -91,16 +87,12 @@ public class BackgroundJobManager {
         if (jobInfoStore != null) {
             jobInfoStore.updateJobInfo(uuid, job.getJobInfo());
         }
-        LOGGER.info(
-                "a background job was submitted : id="
-                        + id
-                        + " uuid="
-                        + uuid
-                        + " title="
-                        + job.getTitle());
+        LOGGER.info("a background job was submitted : id=" + id + " uuid=" + uuid + " title=" + job.getTitle());
     }
 
-    /** @return a list of recent background jobs at most 1000 */
+    /**
+     * @return a list of recent background jobs at most 1000
+     */
     public List<BackgroundJob<?>> getRecentJobs() {
         return getBackgroundJobs();
     }
@@ -135,18 +127,15 @@ public class BackgroundJobManager {
         }
         getJobHistoryEntries().stream()
                 .filter(entry -> jobInfoStore.shouldUpdateJobInfo(entry.getValue()))
-                .forEach(
-                        entry ->
-                                jobInfoStore.updateJobInfo(
-                                        entry.getKey(), entry.getValue().getJobInfo()));
+                .forEach(entry -> jobInfoStore.updateJobInfo(entry.getKey(), entry.getValue().getJobInfo()));
+
     }
 
     private List<BackgroundJob<?>> getBackgroundJobs() {
         final Collection<BackgroundJob<?>> values = jobHistoryMap.values();
         // must synchronize copying, see Collections.synchronizedMap() javadoc
         synchronized (jobHistoryMap) {
-            // returns copy of original so that it is possible to modify the original map while
-            // consuming it.
+            // returns copy of original so that it is possible to modify the original map while consuming it.
             return ImmutableList.copyOf(values);
         }
     }
@@ -155,8 +144,7 @@ public class BackgroundJobManager {
         final Set<Map.Entry<UUID, BackgroundJob<?>>> entrySet = jobHistoryMap.entrySet();
         // must synchronize copying, see Collections.synchronizedMap() javadoc
         synchronized (jobHistoryMap) {
-            // returns copy of original so that it is possible to modify the original map while
-            // consuming it.
+            // returns copy of original so that it is possible to modify the original map while consuming it.
             return ImmutableSet.copyOf(entrySet);
         }
     }

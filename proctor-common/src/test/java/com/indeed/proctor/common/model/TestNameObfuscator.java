@@ -15,11 +15,10 @@ public class TestNameObfuscator {
                 .isEqualTo("93fedde43203e0a76172135221b8636313635d7afff96a490ae9066330505d47");
         assertThat(hasher.obfuscateTestName("asdf"))
                 .isEqualTo("f0e4c2f76c58916ec258f246851bea091d14d4247a2fc3e18694461b1816e13b");
-        assertThat(
-                        hasher.obfuscateTestName(
-                                "ec2bda07342460b4699a7a8c5ff6a0f393fcebd78bbb082f4ea1a4d57db78ac1"))
+        assertThat(hasher.obfuscateTestName("ec2bda07342460b4699a7a8c5ff6a0f393fcebd78bbb082f4ea1a4d57db78ac1"))
                 .isEqualTo("6bd2f60033424528cd54f3e4faecae5670efd01e453becdc0f9a7150977777d9");
         assertThat(hasher.obfuscateTestName("][l!#@$%$&%$#&^}%{$#}%$L:>DF:G<SREG"))
                 .isEqualTo("540390f88e74eb9fecdabec883142b9bf8a12ee5355adee159703c8a7b5f2c8f");
+
     }
 }

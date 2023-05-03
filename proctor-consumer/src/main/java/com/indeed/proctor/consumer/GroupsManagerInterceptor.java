@@ -7,19 +7,14 @@ import java.util.Map;
 
 public interface GroupsManagerInterceptor {
     /**
-     * Interceptor running at the beginning of {@link
-     * AbstractGroupsManager#determineBucketsInternal(Identifiers, Map, Map)} See also: method
-     * parameters of {@link AbstractGroupsManager#determineBucketsInternal(Identifiers, Map, Map)}
+     * Interceptor running at the beginning of {@link AbstractGroupsManager#determineBucketsInternal(Identifiers, Map, Map)}
+     * See also: method parameters of {@link AbstractGroupsManager#determineBucketsInternal(Identifiers, Map, Map)}
      */
-    void beforeDetermineGroups(
-            Identifiers identifiers,
-            Map<String, Object> context,
-            Map<String, Integer> forcedGroups);
+    void beforeDetermineGroups(Identifiers identifiers, Map<String, Object> context, Map<String, Integer> forcedGroups);
 
     /**
-     * Interceptor running at the end of {@link
-     * AbstractGroupsManager#determineBucketsInternal(Identifiers, Map, Map)} See also: return value
-     * of {@link AbstractGroupsManager#determineBucketsInternal(Identifiers, Map, Map)}
+     * Interceptor running at the end of {@link AbstractGroupsManager#determineBucketsInternal(Identifiers, Map, Map)}
+     * See also: return value of {@link AbstractGroupsManager#determineBucketsInternal(Identifiers, Map, Map)}
      */
     void afterDetermineGroups(ProctorResult proctorResult);
 
@@ -29,10 +24,13 @@ public interface GroupsManagerInterceptor {
             public void beforeDetermineGroups(
                     final Identifiers identifiers,
                     final Map<String, Object> context,
-                    final Map<String, Integer> forcedGroups) {}
+                    final Map<String, Integer> forcedGroups
+            ) {
+            }
 
             @Override
-            public void afterDetermineGroups(final ProctorResult proctorResult) {}
+            public void afterDetermineGroups(final ProctorResult proctorResult) {
+            }
         };
     }
 }

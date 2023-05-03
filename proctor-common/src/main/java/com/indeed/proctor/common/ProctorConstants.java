@@ -1,3 +1,4 @@
 package com.indeed.proctor.common;
 
-public abstract class ProctorConstants {}
+public abstract class ProctorConstants {
+}

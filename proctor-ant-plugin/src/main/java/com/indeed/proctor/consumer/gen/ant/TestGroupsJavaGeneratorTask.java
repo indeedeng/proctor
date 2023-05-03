@@ -32,9 +32,14 @@ public class TestGroupsJavaGeneratorTask extends TestGroupsGeneratorTask {
     }
 
     @Override
-    protected void generateSourceFiles(final ProctorSpecification specification)
-            throws CodeGenException {
+    protected void generateSourceFiles(final ProctorSpecification specification) throws CodeGenException {
         gen.generate(
-                specification, target, packageName, groupsClass, groupsManagerClass, contextClass);
+                specification,
+                target,
+                packageName,
+                groupsClass,
+                groupsManagerClass,
+                contextClass
+        );
     }
 }

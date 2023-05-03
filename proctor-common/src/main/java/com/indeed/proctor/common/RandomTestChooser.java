@@ -20,22 +20,24 @@ import java.util.Map;
 import java.util.Random;
 
 /**
- * Embodies the logic for a single purely random test, including applicability rule and
- * distribution. {@link #choose(Void, java.util.Map)} is the only useful entry point.
- *
+ * Embodies the logic for a single purely random test, including applicability rule and distribution.  {@link #choose(Void, java.util.Map)} is the only useful entry point.
  * @author ketan
  */
 @VisibleForTesting
 class RandomTestChooser implements TestChooser<Void> {
-    @Nonnull private final Random random;
-    @Nonnull private final TestRangeSelector testRangeSelector;
-    @Nonnull private final List<Allocation> allocations;
+    @Nonnull
+    private final Random random;
+    @Nonnull
+    private final TestRangeSelector testRangeSelector;
+    @Nonnull
+    private final List<Allocation> allocations;
 
     public RandomTestChooser(
             final ExpressionFactory expressionFactory,
             final FunctionMapper functionMapper,
             final String testName,
-            @Nonnull final ConsumableTestDefinition testDefinition) {
+            @Nonnull final ConsumableTestDefinition testDefinition
+    ) {
         this(System.nanoTime(), expressionFactory, functionMapper, testName, testDefinition);
     }
 
@@ -44,17 +46,16 @@ class RandomTestChooser implements TestChooser<Void> {
             final ExpressionFactory expressionFactory,
             final FunctionMapper functionMapper,
             final String testName,
-            @Nonnull final ConsumableTestDefinition testDefinition) {
-        testRangeSelector =
-                new TestRangeSelector(expressionFactory, functionMapper, testName, testDefinition);
+            @Nonnull final ConsumableTestDefinition testDefinition
+    ) {
+        testRangeSelector = new TestRangeSelector(expressionFactory, functionMapper, testName, testDefinition);
         allocations = testDefinition.getAllocations();
         random = new Random(seed);
     }
 
     @Nonnull
     private Map<String, String> getDescriptorParameters() {
-        return Collections.singletonMap(
-                "type", testRangeSelector.getTestDefinition().getTestType().name());
+        return Collections.singletonMap("type", testRangeSelector.getTestDefinition().getTestType().name());
     }
 
     @Override
@@ -101,10 +102,21 @@ class RandomTestChooser implements TestChooser<Void> {
     @Override
     public TestChooser.Result chooseInternal(
             @Nullable final Void identifier,
+<<<<<<< HEAD
             @Nonnull final Map<String, ValueExpression> localContext,
             @Nonnull final Map<String, TestBucket> testGroups
     ) {
         final int matchingRuleIndex = testRangeSelector.findMatchingRuleWithValueExpr(localContext, testGroups);
+||||||| parent of a496e85b (PROC-960: Remove autostyle code)
+            @Nonnull final Map<String, Object> values,
+            @Nonnull final Map<String, TestBucket> testGroups) {
+        final int matchingRuleIndex = testRangeSelector.findMatchingRule(values, testGroups);
+=======
+            @Nonnull final Map<String, Object> values,
+            @Nonnull final Map<String, TestBucket> testGroups
+    ) {
+        final int matchingRuleIndex = testRangeSelector.findMatchingRule(values, testGroups);
+>>>>>>> a496e85b (PROC-960: Remove autostyle code)
         if (matchingRuleIndex < 0) {
             return TestChooser.Result.EMPTY;
         }
@@ -114,12 +126,10 @@ class RandomTestChooser implements TestChooser<Void> {
     }
 
     /**
-     * @deprecated Temporary implementation; this should be more like {@link StandardTestChooser},
-     *     with the cutoffs etc. set in the constructor.
+     * @deprecated Temporary implementation; this should be more like {@link StandardTestChooser}, with the cutoffs etc. set in the constructor.
      */
     TestChooser.Result allocateRandomGroup(final int matchingRuleIndex) {
-        final TestBucket[] matchingBucketRange =
-                testRangeSelector.getBucketRange(matchingRuleIndex);
+        final TestBucket[] matchingBucketRange = testRangeSelector.getBucketRange(matchingRuleIndex);
         final Allocation allocation = allocations.get(matchingRuleIndex);
         final List<Range> ranges = allocation.getRanges();
 
@@ -130,26 +140,20 @@ class RandomTestChooser implements TestChooser<Void> {
             final double max = current + range.getLength();
             if (nextDouble < max) {
                 final int matchingBucketValue = range.getBucketValue();
-                return new Result(
-                        getBucketForValue(matchingBucketValue, matchingBucketRange), allocation);
+                return new Result(getBucketForValue(matchingBucketValue, matchingBucketRange), allocation);
             }
             current = max;
         }
         //  fallback because I don't trust double math to always do the right thing
-        return new Result(
-                getBucketForValue(
-                        ranges.get(ranges.size() - 1).getBucketValue(), matchingBucketRange),
-                allocation);
+        return new Result(getBucketForValue(ranges.get(ranges.size() - 1).getBucketValue(), matchingBucketRange), allocation);
     }
 
-    static TestBucket getBucketForValue(
-            final int matchingBucketValue, @Nonnull final TestBucket[] matchingBucketRange) {
+    static TestBucket getBucketForValue(final int matchingBucketValue, @Nonnull final TestBucket[] matchingBucketRange) {
         for (final TestBucket bucket : matchingBucketRange) {
             if (matchingBucketValue == bucket.getValue()) {
                 return bucket;
             }
         }
-        throw new IllegalStateException(
-                "Unable to find a bucket with value " + matchingBucketValue);
+        throw new IllegalStateException("Unable to find a bucket with value " + matchingBucketValue);
     }
 }

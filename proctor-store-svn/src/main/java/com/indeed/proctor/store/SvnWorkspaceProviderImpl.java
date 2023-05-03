@@ -17,21 +17,28 @@ import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-/** @author parker */
+/**
+ * @author parker
+ */
 public class SvnWorkspaceProviderImpl extends TimerTask implements SvnWorkspaceProvider, Closeable {
     private static final Logger LOGGER = LogManager.getLogger(SvnWorkspaceProviderImpl.class);
 
     private static final String DEFAULT_PREFIX = "svn";
 
-    /** The prefix used when creating the workspace directories */
+    /**
+     * The prefix used when creating the workspace directories
+     */
     private final String prefix;
 
-    /** The root directory into which all workspaces are created */
+    /**
+     * The root directory into which all workspaces are created
+     */
     private final File rootDirectory;
 
     /**
-     * The age in milliseconds for which we should keep temp directories. Actively cleaning up
-     * directories whose last modified age is older than the cleanup age.
+     * The age in milliseconds for which we should
+     * keep temp directories. Actively cleaning up directories whose last modified age
+     * is older than the cleanup age.
      */
     final long cleanupAgeMillis;
 
@@ -41,22 +48,15 @@ public class SvnWorkspaceProviderImpl extends TimerTask implements SvnWorkspaceP
         this(rootDirectory, DEFAULT_PREFIX, cleanupAgeMillis);
     }
 
-    public SvnWorkspaceProviderImpl(
-            final File rootDirectory, final String prefix, long cleanupAgeMillis) {
+    public SvnWorkspaceProviderImpl(final File rootDirectory,
+                                    final String prefix,
+                                    long cleanupAgeMillis) {
         this.cleanupAgeMillis = cleanupAgeMillis;
-        this.rootDirectory =
-                Preconditions.checkNotNull(rootDirectory, "Root Directory cannot be null");
+        this.rootDirectory = Preconditions.checkNotNull(rootDirectory, "Root Directory cannot be null");
         this.prefix = prefix;
-        Preconditions.checkArgument(
-                cleanupAgeMillis > 0,
-                "cleanup age millis (%s) should be greater than zero",
-                cleanupAgeMillis);
-        Preconditions.checkArgument(
-                rootDirectory.isDirectory(),
-                "File %s should be a directory",
-                rootDirectory.getAbsolutePath());
-        Preconditions.checkArgument(
-                rootDirectory.exists(), "File %s should exists", rootDirectory.getAbsolutePath());
+        Preconditions.checkArgument(cleanupAgeMillis > 0, "cleanup age millis (%s) should be greater than zero", cleanupAgeMillis);
+        Preconditions.checkArgument(rootDirectory.isDirectory(), "File %s should be a directory", rootDirectory.getAbsolutePath());
+        Preconditions.checkArgument(rootDirectory.exists(), "File %s should exists", rootDirectory.getAbsolutePath());
         Preconditions.checkArgument(StringUtils.isNotBlank(prefix), "Prefix should not be empty");
     }
 
@@ -84,22 +84,19 @@ public class SvnWorkspaceProviderImpl extends TimerTask implements SvnWorkspaceP
     public void run() {
         try {
             if (!shutdown.get()) {
-                LOGGER.info(
-                        "Actively cleaning up directories older than "
-                                + TimeUnit.MILLISECONDS.toHours(cleanupAgeMillis)
-                                + " hours");
-                final IOFileFilter olderThanFilter =
-                        FileFilterUtils.asFileFilter(olderThanFileFilter(cleanupAgeMillis));
-                final IOFileFilter tempDirFilter = FileFilterUtils.prefixFileFilter(prefix);
+                LOGGER.info("Actively cleaning up directories older than " + TimeUnit.MILLISECONDS.toHours(cleanupAgeMillis) + " hours");
+                final IOFileFilter olderThanFilter = FileFilterUtils.asFileFilter(olderThanFileFilter(cleanupAgeMillis));
+                final IOFileFilter tempDirFilter =
+                    FileFilterUtils.prefixFileFilter(prefix);
 
                 /*
                  * Delete directories that are:
                  * older than [clean up age millis]
                  * starts with temp-dir-prefix
                  */
-                final IOFileFilter deleteAfterMillisFilter =
-                        FileFilterUtils.makeDirectoryOnly(
-                                FileFilterUtils.andFileFilter(olderThanFilter, tempDirFilter));
+                final IOFileFilter deleteAfterMillisFilter = FileFilterUtils.makeDirectoryOnly(
+                    FileFilterUtils.andFileFilter(olderThanFilter, tempDirFilter)
+                );
                 deleteUserDirectories(rootDirectory, deleteAfterMillisFilter);
             } else {
                 LOGGER.info("Currently shutdown, skipping older-than directory cleanup");
@@ -120,13 +117,8 @@ public class SvnWorkspaceProviderImpl extends TimerTask implements SvnWorkspaceP
             LOGGER.info("[shutdown] started: deleting all working directories in " + rootDirectory);
             final long start = System.currentTimeMillis();
             // Delete any directories in the root directory that start with prefix
-            deleteUserDirectories(
-                    rootDirectory,
-                    FileFilterUtils.makeDirectoryOnly(FileFilterUtils.prefixFileFilter(prefix)));
-            LOGGER.info(
-                    "[shutdown] complete: deleted working directories in "
-                            + (System.currentTimeMillis() - start)
-                            + " ms");
+            deleteUserDirectories(rootDirectory, FileFilterUtils.makeDirectoryOnly(FileFilterUtils.prefixFileFilter(prefix)));
+            LOGGER.info("[shutdown] complete: deleted working directories in " + (System.currentTimeMillis() - start) + " ms");
         }
     }
 
@@ -137,22 +129,20 @@ public class SvnWorkspaceProviderImpl extends TimerTask implements SvnWorkspaceP
     }
 
     /**
-     * Creates a directory with a given suffix and prefix in the parent directory. If the absolute
-     * path exists and is not a directory, throws IOException If deleteIfExists is true and
-     * directory exists, its contents will be deleted prior to returning. Otherwise, a new directory
-     * will be created: throws IOException if fails to create a new directory
-     *
+     * Creates a directory with a given suffix and prefix in the parent directory.
+     * If the absolute path exists and is not a directory, throws IOException
+     * If deleteIfExists is true and directory exists, its contents will be
+     * deleted prior to returning.
+     * Otherwise, a new directory will be created: throws IOException if fails to create a new directory
      * @param suffix
      * @param parent
      * @param deleteIfExists
      * @return
      */
-    private static File createWorkspace(
-            final String prefix,
-            final String suffix,
-            final File parent,
-            final boolean deleteIfExists)
-            throws IOException {
+    private static File createWorkspace(final String prefix,
+                                        final String suffix,
+                                        final File parent,
+                                        final boolean deleteIfExists) throws IOException {
         final File dir = getUserDirectory(prefix, suffix, parent);
         if (dir.exists()) {
             if (!dir.isDirectory()) {
@@ -170,36 +160,28 @@ public class SvnWorkspaceProviderImpl extends TimerTask implements SvnWorkspaceP
     }
 
     /**
-     * Returns a File object whose path is the expected user directory. Does not create or check for
-     * existence.
-     *
+     * Returns a File object whose path is the expected user directory.
+     * Does not create or check for existence.
      * @param prefix
      * @param suffix
      * @param parent
      * @return
      */
-    private static File getUserDirectory(
-            final String prefix, final String suffix, final File parent) {
+    private static File getUserDirectory(final String prefix, final String suffix, final File parent) {
         final String dirname = formatDirName(prefix, suffix);
         return new File(parent, dirname);
     }
 
-    private static final CharMatcher VALID_SUFFIX_CHARS =
-            CharMatcher.inRange('a', 'z')
-                    .or(CharMatcher.inRange('A', 'Z'))
-                    .or(CharMatcher.inRange('0', '9'))
-                    .precomputed();
+    private static final CharMatcher VALID_SUFFIX_CHARS = CharMatcher.inRange('a', 'z').or(CharMatcher.inRange('A', 'Z')).or(CharMatcher.inRange('0', '9')).precomputed();
     /**
      * Returns the expected name of a workspace for a given suffix
-     *
      * @param suffix
      * @return
      */
     private static String formatDirName(final String prefix, final String suffix) {
         // Replace all invalid characters with '-'
         final CharMatcher invalidCharacters = VALID_SUFFIX_CHARS.negate();
-        return String.format(
-                "%s-%s", prefix, invalidCharacters.trimAndCollapseFrom(suffix.toLowerCase(), '-'));
+        return String.format("%s-%s", prefix, invalidCharacters.trimAndCollapseFrom(suffix.toLowerCase(), '-'));
     }
 
     private static boolean deleteUserDirectoryQuietly(final String user, final File directory) {
@@ -217,7 +199,8 @@ public class SvnWorkspaceProviderImpl extends TimerTask implements SvnWorkspaceP
      * @param root
      * @param filter
      */
-    private static void deleteUserDirectories(final File root, final FileFilter filter) {
+    private static void deleteUserDirectories(final File root,
+                                              final FileFilter filter) {
         final File[] dirs = root.listFiles(filter);
         LOGGER.info("Identified (" + dirs.length + ") directories to delete");
         for (final File dir : dirs) {

@@ -12,9 +12,12 @@ import java.util.Map;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class TestSpecification {
     private int fallbackValue = -1;
-    @Nonnull private Map<String, Integer> buckets = Collections.emptyMap();
-    @Nullable private PayloadSpecification payload;
-    @Nullable private String description;
+    @Nonnull
+    private Map<String, Integer> buckets = Collections.emptyMap();
+    @Nullable
+    private PayloadSpecification payload;
+    @Nullable
+    private String description;
 
     public int getFallbackValue() {
         return fallbackValue;
@@ -33,7 +36,8 @@ public class TestSpecification {
         this.buckets = Preconditions.checkNotNull(buckets, "Missing buckets");
     }
 
-    public String getDescription() {
+
+    public String getDescription(){
         return description;
     }
 

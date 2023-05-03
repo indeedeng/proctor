@@ -45,8 +45,7 @@ public class SpecificationGeneratorTest {
         final TestBucket control = new TestBucket("control", 0, "control bucket");
         final TestBucket inactiveBucket = new TestBucket("inactive", -3, "status quo");
         final TestBucket test = new TestBucket("test", 1, "test bucket");
-        final TestDefinition empty =
-                stubTestDefinition(description, Arrays.asList(control, inactiveBucket, test));
+        final TestDefinition empty = stubTestDefinition(description, Arrays.asList(control, inactiveBucket, test));
         final TestSpecification specification = generator.generateSpecification(empty);
         assertEquals(description, specification.getDescription());
         assertEquals(3, specification.getBuckets().size());
@@ -66,16 +65,11 @@ public class SpecificationGeneratorTest {
     @Test
     public void testGenerateSpecificationDoubleArrayPayload() {
         final String description = "this test has a payload buckets";
-        final TestBucket inactiveBucket =
-                new TestBucket("inactive", 0, "status quo", new Payload(new Double[] {1.4d, 4.5d}));
-        final TestBucket control =
-                new TestBucket(
-                        "control", 0, "control bucket", new Payload(new Double[] {0.0, 2.4d}));
-        final TestBucket test =
-                new TestBucket("test", 1, "test bucket", new Payload(new Double[] {22.22, 33.33}));
+        final TestBucket inactiveBucket = new TestBucket("inactive", 0, "status quo", new Payload(new Double[]{1.4d, 4.5d}));
+        final TestBucket control = new TestBucket("control", 0, "control bucket", new Payload(new Double[]{0.0, 2.4d}));
+        final TestBucket test = new TestBucket("test", 1, "test bucket", new Payload(new Double[]{22.22, 33.33}));
 
-        final TestDefinition empty =
-                stubTestDefinition(description, Arrays.asList(inactiveBucket, control, test));
+        final TestDefinition empty = stubTestDefinition(description, Arrays.asList(inactiveBucket, control, test));
         final TestSpecification specification = generator.generateSpecification(empty);
         assertEquals(description, specification.getDescription());
         assertEquals(3, specification.getBuckets().size());
@@ -94,12 +88,11 @@ public class SpecificationGeneratorTest {
     @Test
     public void testGenerateSpecificationPayloadMapSchema() {
         final String description = "this test has a payload buckets";
-        final Payload inactivePayload =
-                new Payload(
-                        ImmutableMap.of(
-                                "da", new Double[] {1.4d, 4.5d},
-                                "lv", 5L,
-                                "sa", new String[] {"foo", "bar"}));
+        final Payload inactivePayload = new Payload(ImmutableMap.of(
+                "da", new Double[]{1.4d, 4.5d},
+                "lv", 5L,
+                "sa", new String[]{"foo", "bar"}
+        ));
         final TestBucket bucket = new TestBucket("inactive", -3, "status quo", inactivePayload);
         final TestDefinition empty = stubTestDefinition(description, singletonList(bucket));
         final TestSpecification specification = generator.generateSpecification(empty);
@@ -124,15 +117,17 @@ public class SpecificationGeneratorTest {
     @Test
     public void testGenerateSpecificationMergeDoubleAndLong() {
         final String description = "this test has a payload buckets";
-        final Payload activePayload =
-                new Payload(ImmutableMap.of("da", new Double[] {1.4d, 4.5d}, "lv", 0.0d));
-        final Payload inactivePayload =
-                new Payload(ImmutableMap.of("da", new Long[] {1L, 2L}, "lv", 0L));
+        final Payload activePayload = new Payload(ImmutableMap.of(
+                "da", new Double[]{1.4d, 4.5d},
+                "lv", 0.0d
+        ));
+        final Payload inactivePayload = new Payload(ImmutableMap.of(
+                "da", new Long[]{1L, 2L},
+                "lv", 0L
+        ));
         final TestBucket active_bucket = new TestBucket("active", 1, "new feature", activePayload);
-        final TestBucket inactive_bucket =
-                new TestBucket("inactive", -3, "status quo", inactivePayload);
-        final TestDefinition empty =
-                stubTestDefinition(description, Arrays.asList(inactive_bucket, active_bucket));
+        final TestBucket inactive_bucket = new TestBucket("inactive", -3, "status quo", inactivePayload);
+        final TestDefinition empty = stubTestDefinition(description, Arrays.asList(inactive_bucket, active_bucket));
         final TestSpecification specification = generator.generateSpecification(empty);
         assertEquals(description, specification.getDescription());
         assertEquals(2, specification.getBuckets().size());
@@ -160,30 +155,24 @@ public class SpecificationGeneratorTest {
         assertThat(generatePayloadSpecification(singletonList(new Payload(12L))).get().getType())
                 .isEqualTo(PayloadType.LONG_VALUE.payloadTypeName);
 
-        PayloadSpecification payloadSpecification =
-                generatePayloadSpecification(singletonList(new Payload(emptyMap()))).get();
+        PayloadSpecification payloadSpecification = generatePayloadSpecification(singletonList(new Payload(emptyMap()))).get();
         assertThat(payloadSpecification.getType()).isEqualTo(PayloadType.MAP.payloadTypeName);
         assertThat(payloadSpecification.getSchema()).isNull();
 
         final Map<String, Object> nullValueMap = new HashMap<>();
         nullValueMap.put("foo", null);
-        assertThatThrownBy(
-                        () ->
-                                generatePayloadSpecification(
-                                        singletonList(new Payload(nullValueMap))))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Cannot infer payload type");
+        assertThatThrownBy(() -> generatePayloadSpecification(singletonList(new Payload(nullValueMap))))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("Cannot infer payload type");
 
-        payloadSpecification =
-                generatePayloadSpecification(
-                                singletonList(
-                                        new Payload(
-                                                ImmutableMap.<String, Object>builder()
-                                                        .put("doubleKey", 42D)
-                                                        .put("longKey", 33L)
-                                                        .put("otherKey", "foo")
-                                                        .build())))
-                        .get();
+
+        payloadSpecification = generatePayloadSpecification(singletonList(
+                new Payload(ImmutableMap.<String, Object>builder()
+                        .put("doubleKey", 42D)
+                        .put("longKey", 33L)
+                        .put("otherKey", "foo")
+                        .build())
+        )).get();
         assertThat(payloadSpecification.getType()).isEqualTo(PayloadType.MAP.payloadTypeName);
         assertThat(payloadSpecification.getSchema())
                 .containsEntry("doubleKey", PayloadType.DOUBLE_VALUE.payloadTypeName)
@@ -192,62 +181,42 @@ public class SpecificationGeneratorTest {
                 .hasSize(3);
 
         // check conflicting types causes exception
-        assertThatThrownBy(
-                        () ->
-                                generatePayloadSpecification(
-                                        Arrays.asList(new Payload("fooString"), new Payload(42L))))
-                .isInstanceOf(IllegalArgumentException.class)
+        assertThatThrownBy(() -> generatePayloadSpecification(Arrays.asList(
+                new Payload("fooString"),
+                new Payload(42L)
+        ))).isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Payloads not compatible");
 
         // check empty list causes exception
-        assertThatThrownBy(
-                        () ->
-                                generatePayloadSpecification(
-                                        singletonList(
-                                                new Payload(
-                                                        ImmutableMap.<String, Object>builder()
-                                                                .put("someKey", emptyList())
-                                                                .build()))))
-                .isInstanceOf(IllegalArgumentException.class)
+        assertThatThrownBy(() -> generatePayloadSpecification(singletonList(
+                new Payload(ImmutableMap.<String, Object>builder()
+                        .put("someKey", emptyList())
+                        .build())
+        ))).isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Cannot infer map schema")
                 .hasMessageContaining("someKey");
 
         // check conflicting map types causes exception
-        assertThatThrownBy(
-                        () ->
-                                generatePayloadSpecification(
-                                        Arrays.asList(
-                                                new Payload(
-                                                        ImmutableMap.<String, Object>builder()
-                                                                .put("longKey", singletonList(42L))
-                                                                .build()),
-                                                new Payload(
-                                                        ImmutableMap.<String, Object>builder()
-                                                                .put(
-                                                                        "longKey",
-                                                                        singletonList(
-                                                                                "42")) // string
-                                                                // instead of
-                                                                // long for
-                                                                // same key
-                                                                .build()))))
-                .isInstanceOf(IllegalArgumentException.class)
+        assertThatThrownBy(() -> generatePayloadSpecification(Arrays.asList(
+                new Payload(ImmutableMap.<String, Object>builder()
+                        .put("longKey", singletonList(42L))
+                        .build()),
+                new Payload(ImmutableMap.<String, Object>builder()
+                        .put("longKey", singletonList("42")) // string instead of long for same key
+                        .build())
+        ))).isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Ambiguous map schema")
                 .hasMessageContaining("longKey");
 
         // check union of keys is used
-        payloadSpecification =
-                generatePayloadSpecification(
-                                Arrays.asList(
-                                        new Payload(
-                                                ImmutableMap.<String, Object>builder()
-                                                        .put("doubleKey", 42D)
-                                                        .build()),
-                                        new Payload(
-                                                ImmutableMap.<String, Object>builder()
-                                                        .put("longKey", 32L)
-                                                        .build())))
-                        .get();
+        payloadSpecification = generatePayloadSpecification(Arrays.asList(
+                new Payload(ImmutableMap.<String, Object>builder()
+                        .put("doubleKey", 42D)
+                        .build()),
+                new Payload(ImmutableMap.<String, Object>builder()
+                        .put("longKey", 32L)
+                        .build())
+        )).get();
         assertThat(payloadSpecification.getType()).isEqualTo(PayloadType.MAP.payloadTypeName);
         assertThat(payloadSpecification.getSchema())
                 .containsEntry("doubleKey", PayloadType.DOUBLE_VALUE.payloadTypeName)
@@ -255,24 +224,16 @@ public class SpecificationGeneratorTest {
                 .hasSize(2);
 
         // check emptylist is ok when other bucket has values
-        payloadSpecification =
-                generatePayloadSpecification(
-                                Arrays.asList(
-                                        new Payload(
-                                                ImmutableMap.<String, Object>builder()
-                                                        .put("doubleArrayKeyOptional", emptyList())
-                                                        .put(
-                                                                "longArrayKeyOptional",
-                                                                singletonList(33L))
-                                                        .build()),
-                                        new Payload(
-                                                ImmutableMap.<String, Object>builder()
-                                                        .put(
-                                                                "doubleArrayKeyOptional",
-                                                                singletonList(41D))
-                                                        .put("longArrayKeyOptional", emptyList())
-                                                        .build())))
-                        .get();
+        payloadSpecification = generatePayloadSpecification(Arrays.asList(
+                new Payload(ImmutableMap.<String, Object>builder()
+                        .put("doubleArrayKeyOptional", emptyList())
+                        .put("longArrayKeyOptional", singletonList(33L))
+                        .build()),
+                new Payload(ImmutableMap.<String, Object>builder()
+                        .put("doubleArrayKeyOptional", singletonList(41D))
+                        .put("longArrayKeyOptional", emptyList())
+                        .build())
+        )).get();
         assertThat(payloadSpecification.getType()).isEqualTo(PayloadType.MAP.payloadTypeName);
         assertThat(payloadSpecification.getSchema())
                 .containsEntry("doubleArrayKeyOptional", PayloadType.DOUBLE_ARRAY.payloadTypeName)
@@ -280,28 +241,19 @@ public class SpecificationGeneratorTest {
                 .hasSize(2);
 
         // check empty list conflicts with non list type
-        assertThatThrownBy(
-                        () ->
-                                generatePayloadSpecification(
-                                        Arrays.asList(
-                                                new Payload(
-                                                        ImmutableMap.<String, Object>builder()
-                                                                .put("longKey", emptyList())
-                                                                .build()),
-                                                new Payload(
-                                                        ImmutableMap.<String, Object>builder()
-                                                                .put(
-                                                                        "longKey",
-                                                                        42D) // double instead of
-                                                                // long for same key
-                                                                .build()))))
-                .isInstanceOf(IllegalArgumentException.class)
+        assertThatThrownBy(() -> generatePayloadSpecification(Arrays.asList(
+                new Payload(ImmutableMap.<String, Object>builder()
+                        .put("longKey", emptyList())
+                        .build()),
+                new Payload(ImmutableMap.<String, Object>builder()
+                        .put("longKey", 42D) // double instead of long for same key
+                        .build())
+        ))).isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Cannot infer map schema type")
                 .hasMessageContaining("longKey");
     }
 
-    private static TestDefinition stubTestDefinition(
-            final String description, final List<TestBucket> buckets) {
+    private static TestDefinition stubTestDefinition(final String description, final List<TestBucket> buckets) {
         return new TestDefinition(
                 "empty",
                 "",
@@ -313,6 +265,7 @@ public class SpecificationGeneratorTest {
                 emptyMap(),
                 emptyMap(),
                 description,
-                emptyList());
+                emptyList()
+        );
     }
 }

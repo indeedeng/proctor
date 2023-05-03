@@ -18,16 +18,16 @@ public class ProctorSpecificationsTest {
     @Test
     public void testGetRequiredTests() {
         final ProctorSpecification specA = new ProctorSpecification();
-        specA.setTests(
-                ImmutableMap.of(
-                        "a_test", stubTestSpecification(),
-                        "b_test", stubTestSpecification()));
+        specA.setTests(ImmutableMap.of(
+                "a_test", stubTestSpecification(),
+                "b_test", stubTestSpecification()
+        ));
 
         final ProctorSpecification specB = new ProctorSpecification();
-        specB.setTests(
-                ImmutableMap.of(
-                        "b_test", stubTestSpecification(),
-                        "c_test", stubTestSpecification()));
+        specB.setTests(ImmutableMap.of(
+                "b_test", stubTestSpecification(),
+                "c_test", stubTestSpecification()
+        ));
 
         final ProctorSpecifications specifications =
                 new ProctorSpecifications(Arrays.asList(specA, specB));
@@ -43,47 +43,52 @@ public class ProctorSpecificationsTest {
     public void testGetDynamicTests() {
         final ProctorSpecification specA = new ProctorSpecification();
         specA.setDynamicFilters(
-                new DynamicFilters(Collections.singleton(exactNameMatching("a_test"))));
+                new DynamicFilters(Collections.singleton(exactNameMatching("a_test")))
+        );
 
         final ProctorSpecification specB = new ProctorSpecification();
         specB.setDynamicFilters(
-                new DynamicFilters(Collections.singleton(exactNameMatching("b_test"))));
+                new DynamicFilters(Collections.singleton(exactNameMatching("b_test")))
+        );
 
         final ProctorSpecifications specifications =
                 new ProctorSpecifications(Arrays.asList(specA, specB));
 
-        final Map<String, ConsumableTestDefinition> requiredTests =
-                ImmutableMap.of(
-                        "a_test", stubTestDefinition(),
-                        "b_test", stubTestDefinition(),
-                        "c_test", stubTestDefinition());
+        final Map<String, ConsumableTestDefinition> requiredTests = ImmutableMap.of(
+                "a_test", stubTestDefinition(),
+                "b_test", stubTestDefinition(),
+                "c_test", stubTestDefinition()
+        );
 
-        assertThat(specifications.getDynamicTests(requiredTests)).containsOnly("a_test", "b_test");
+        assertThat(specifications.getDynamicTests(requiredTests))
+                .containsOnly("a_test", "b_test");
     }
 
     @Test
-    public void testGetResolvedTests() {
+    public void testGetResolvedTests(){
         final ProctorSpecification specA = new ProctorSpecification();
-        specA.setTests(
-                ImmutableMap.of(
-                        "a_test", stubTestSpecification(),
-                        "d_test", stubTestSpecification()));
+        specA.setTests(ImmutableMap.of(
+                "a_test", stubTestSpecification(),
+                "d_test", stubTestSpecification()
+        ));
 
         final ProctorSpecification specB = new ProctorSpecification();
         specB.setDynamicFilters(
-                new DynamicFilters(Collections.singleton(exactNameMatching("b_test"))));
+                new DynamicFilters(Collections.singleton(exactNameMatching("b_test")))
+        );
 
         final ProctorSpecifications specifications =
                 new ProctorSpecifications(Arrays.asList(specA, specB));
 
-        final Map<String, ConsumableTestDefinition> requiredTests =
-                ImmutableMap.of(
-                        "a_test", stubTestDefinition(),
-                        "b_test", stubTestDefinition(),
-                        "c_test", stubTestDefinition());
+        final Map<String, ConsumableTestDefinition> requiredTests = ImmutableMap.of(
+                "a_test", stubTestDefinition(),
+                "b_test", stubTestDefinition(),
+                "c_test", stubTestDefinition()
+        );
 
         assertThat(specifications.getResolvedTests(requiredTests))
                 .containsOnly("a_test", "b_test", "d_test");
+
     }
 
     private static DynamicFilter exactNameMatching(final String value) {
@@ -96,10 +101,10 @@ public class ProctorSpecificationsTest {
 
     private static TestSpecification stubTestSpecification() {
         final TestSpecification testSpecification = new TestSpecification();
-        testSpecification.setBuckets(
-                ImmutableMap.of(
-                        "inactive", -1,
-                        "active", 1));
+        testSpecification.setBuckets(ImmutableMap.of(
+                "inactive", -1,
+                "active", 1
+        ));
         return testSpecification;
     }
 }

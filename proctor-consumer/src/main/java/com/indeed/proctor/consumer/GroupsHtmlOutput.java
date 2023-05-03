@@ -11,7 +11,6 @@ import java.util.Map;
 
 public class GroupsHtmlOutput {
     private final String output;
-
     public GroupsHtmlOutput(final AbstractGroups groups) {
         this(groups, "");
     }
@@ -22,15 +21,14 @@ public class GroupsHtmlOutput {
 
         final StringBuilder sb = new StringBuilder("<ul class=\"bucketList\">");
         final ProctorResult proctorResult = groups.getProctorResult();
-        final Map<String, ConsumableTestDefinition> testDefinitions =
-                proctorResult.getTestDefinitions();
+        final Map<String, ConsumableTestDefinition> testDefinitions = proctorResult.getTestDefinitions();
         final Map<String, TestBucket> buckets = proctorResult.getBuckets();
         for (int i = 0; i < pieces.length; i++) {
             final String group = pieces[i];
 
             int bucketValueStart = group.length() - 1;
             for (; bucketValueStart >= 0; bucketValueStart--) {
-                if (!Character.isDigit(group.charAt(bucketValueStart))) {
+                if (! Character.isDigit(group.charAt(bucketValueStart))) {
                     break;
                 }
             }
@@ -42,8 +40,7 @@ public class GroupsHtmlOutput {
                 if (group.charAt(bucketValueStart) != '-') {
                     bucketValueStart++;
                 }
-                //  bucketValueStart should now be the index of the minus sign or the first digit in
-                // a run of digits going to the end of the word
+                //  bucketValueStart should now be the index of the minus sign or the first digit in a run of digits going to the end of the word
                 final String testName = group.substring(0, bucketValueStart).trim();
 
                 final TestBucket testBucket = buckets.get(testName);
@@ -54,30 +51,28 @@ public class GroupsHtmlOutput {
                     if (testDefinition == null) {
                         title = null;
                     } else {
-                        final StringBuilder titleBuilder =
-                                new StringBuilder(testName)
-                                        .append(": ")
-                                        .append(testDefinition.getDescription());
+                        final StringBuilder titleBuilder = new StringBuilder(testName)
+                                                                    .append(": ")
+                                                                    .append(testDefinition.getDescription());
                         for (final TestBucket anotherTestBucket : testDefinition.getBuckets()) {
-                            titleBuilder
-                                    .append("\n")
-                                    .append(anotherTestBucket.getValue())
-                                    .append(": ")
-                                    .append(anotherTestBucket.getName());
+                            titleBuilder.append("\n")
+                                        .append(anotherTestBucket.getValue())
+                                        .append(": ")
+                                        .append(anotherTestBucket.getName());
                             final String description = anotherTestBucket.getDescription();
                             if (StringUtils.isNotBlank(description)) {
-                                titleBuilder.append(" - ").append(description);
+                                titleBuilder.append(" - ")
+                                            .append(description);
                             }
                         }
                         title = titleBuilder.toString();
                     }
+
                 }
             }
             sb.append("<li class=\"testBucket\"");
             if (title != null) {
-                sb.append(" title=\"")
-                        .append(StringEscapeUtils.escapeHtml4(title).replaceAll("\"", "\\\""))
-                        .append("\"");
+                sb.append(" title=\"").append(StringEscapeUtils.escapeHtml4(title).replaceAll("\"", "\\\"")).append("\"");
             }
             sb.append(">").append(group).append(",</li>");
         }
@@ -89,4 +84,5 @@ public class GroupsHtmlOutput {
     public String toString() {
         return output;
     }
+
 }

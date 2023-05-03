@@ -9,9 +9,9 @@ import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import javax.annotation.Nullable;
 import java.util.Objects;
 
+
 /**
  * A dynamic filter that matches test name using prefix string
- *
  * @deprecated Use {@link MetaTagsFilter}
  */
 @Deprecated
@@ -35,8 +35,7 @@ public class TestNamePrefixFilter implements DynamicFilter {
     }
 
     @Override
-    public boolean matches(
-            @Nullable final String testName, final ConsumableTestDefinition testDefinition) {
+    public boolean matches(@Nullable final String testName, final ConsumableTestDefinition testDefinition) {
         return !Strings.isNullOrEmpty(testName) && testName.startsWith(prefix);
     }
 

@@ -5,6 +5,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import org.junit.Test;
 
+import java.util.Arrays;
+
 import static com.indeed.proctor.common.LegacyTaglibFunctions.contains;
 import static com.indeed.proctor.common.LegacyTaglibFunctions.containsIgnoreCase;
 import static com.indeed.proctor.common.LegacyTaglibFunctions.endsWith;
@@ -76,6 +78,7 @@ public class LegacyTaglibFunctionsTest {
         assertThat(containsIgnoreCase("FOO", "o")).isTrue();
         assertThat(containsIgnoreCase("foo", "F")).isTrue();
         assertThat(containsIgnoreCase("bar", "o")).isFalse();
+
     }
 
     @Test
@@ -205,10 +208,11 @@ public class LegacyTaglibFunctionsTest {
     public void testJoin() {
         assertThat(join(null, null)).isEqualTo("");
         assertThat(join(new String[0], null)).isEqualTo("");
-        assertThat(join(new String[] {""}, null)).isEqualTo("");
-        assertThat(join(new String[] {"foo"}, null)).isEqualTo("foo");
-        assertThat(join(new String[] {"foo", "bar"}, null)).isEqualTo("foobar");
-        assertThat(join(new String[] {"foo", "bar"}, "")).isEqualTo("foobar");
-        assertThat(join(new String[] {"foo", "bar"}, "x")).isEqualTo("fooxbar");
+        assertThat(join(new String[]{""}, null)).isEqualTo("");
+        assertThat(join(new String[]{"foo"}, null)).isEqualTo("foo");
+        assertThat(join(new String[]{"foo", "bar"}, null)).isEqualTo("foobar");
+        assertThat(join(new String[]{"foo", "bar"}, "")).isEqualTo("foobar");
+        assertThat(join(new String[]{"foo", "bar"}, "x")).isEqualTo("fooxbar");
+
     }
 }

@@ -17,13 +17,15 @@ public class GitProctorUtilsTest {
     public void testDetermineAuthorId_proctorWebapp() {
         // commit from proctor webapp puts same value in name and email.
         // we should use name (or email) as user's id.
-        assertThat(determineAuthorIdFromNameAndEmail("foo", "foo")).isEqualTo("foo");
+        assertThat(determineAuthorIdFromNameAndEmail("foo", "foo"))
+                .isEqualTo("foo");
     }
 
     @Test
     public void testDetermineAuthorId_manualCommitsWithoutEmail() {
         // manual commit without valid email should fallback to name
-        assertThat(determineAuthorIdFromNameAndEmail("Foo Bar", "")).isEqualTo("Foo Bar");
+        assertThat(determineAuthorIdFromNameAndEmail("Foo Bar", ""))
+                .isEqualTo("Foo Bar");
         assertThat(determineAuthorIdFromNameAndEmail("Foo Bar", "this-is-not-email"))
                 .isEqualTo("Foo Bar");
     }

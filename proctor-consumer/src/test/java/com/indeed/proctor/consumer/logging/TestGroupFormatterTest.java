@@ -9,37 +9,33 @@ public class TestGroupFormatterTest {
 
     @Test
     public void testWithAllocId() {
-        assertThat(
-                        buildLogString(
-                                TestGroupFormatter.WITH_ALLOC_ID,
-                                "fooTest",
-                                "#A1",
-                                new TestBucket("inactive", -1, "")))
-                .isEqualTo("#A1:fooTest-1");
-        assertThat(
-                        buildLogString(
-                                TestGroupFormatter.WITH_ALLOC_ID,
-                                "fooTest",
-                                "",
-                                new TestBucket("inactive", -1, "")))
+        assertThat(buildLogString(
+                TestGroupFormatter.WITH_ALLOC_ID,
+                "fooTest",
+                "#A1",
+                new TestBucket("inactive", -1, "")))
+        .isEqualTo("#A1:fooTest-1");
+        assertThat(buildLogString(
+                TestGroupFormatter.WITH_ALLOC_ID,
+                "fooTest",
+                "",
+                new TestBucket("inactive", -1, "")))
                 .isEqualTo("");
     }
 
     @Test
     public void testWithoutAllocId() {
-        assertThat(
-                        buildLogString(
-                                TestGroupFormatter.WITHOUT_ALLOC_ID,
-                                "fooTest",
-                                "#A1",
-                                new TestBucket("inactive", -1, "")))
+        assertThat(buildLogString(
+                TestGroupFormatter.WITHOUT_ALLOC_ID,
+                "fooTest",
+                "#A1",
+                new TestBucket("inactive", -1, "")))
                 .isEqualTo("fooTest-1");
-        assertThat(
-                        buildLogString(
-                                TestGroupFormatter.WITHOUT_ALLOC_ID,
-                                "fooTest",
-                                "",
-                                new TestBucket("inactive", -1, "")))
+        assertThat(buildLogString(
+                TestGroupFormatter.WITHOUT_ALLOC_ID,
+                "fooTest",
+                "",
+                new TestBucket("inactive", -1, "")))
                 .isEqualTo("fooTest-1");
     }
 
@@ -47,9 +43,12 @@ public class TestGroupFormatterTest {
             final TestGroupFormatter testGroupFormatter,
             final String testName,
             final String allocId,
-            final TestBucket bucket) {
+            final TestBucket bucket
+    ) {
         final StringBuilder sb = new StringBuilder();
-        testGroupFormatter.appendProctorTestGroup(sb, testName, allocId, bucket);
+        testGroupFormatter
+                .appendProctorTestGroup(sb, testName, allocId, bucket);
         return sb.toString();
     }
+
 }

@@ -4,19 +4,22 @@ import com.indeed.proctor.common.model.TestDefinition;
 
 import java.util.Map;
 
-public abstract class AbstractDefinitionEditChange
-        implements PreDefinitionEditChange, PostDefinitionEditChange {
+public abstract class AbstractDefinitionEditChange implements PreDefinitionEditChange, PostDefinitionEditChange{
     @Override
     public void postEdit(
             final TestDefinition oldTestDefinition,
             final TestDefinition newTestDefinition,
             final Map<String, String[]> extensionFields,
-            final DefinitionChangeLogger logger) {}
+            final DefinitionChangeLogger logger
+    ) {
+    }
 
     @Override
     public void preEdit(
             final TestDefinition existingTestDefinition,
             final TestDefinition testDefinitionToUpdate,
             final Map<String, String[]> extensionFields,
-            final DefinitionChangeLogger logger) {}
+            final DefinitionChangeLogger logger
+    ) {
+    }
 }

@@ -6,7 +6,8 @@ import org.springframework.beans.factory.FactoryBean;
 
 import java.util.concurrent.ThreadFactory;
 
-/** */
+/**
+ */
 public class ThreadFactoryBean implements FactoryBean<ThreadFactory> {
     private String nameFormat;
 

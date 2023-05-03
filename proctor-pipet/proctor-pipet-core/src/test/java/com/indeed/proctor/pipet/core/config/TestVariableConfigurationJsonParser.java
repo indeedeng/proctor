@@ -16,47 +16,35 @@ public class TestVariableConfigurationJsonParser {
 
         doCheckConverterClass(parser, "byte", ValueConverters.byteValueConverter().getClass());
         doCheckConverterClass(parser, "Byte", ValueConverters.byteValueConverter().getClass());
-        doCheckConverterClass(
-                parser, "java.lang.Byte", ValueConverters.byteValueConverter().getClass());
+        doCheckConverterClass(parser, "java.lang.Byte", ValueConverters.byteValueConverter().getClass());
 
         doCheckConverterClass(parser, "short", ValueConverters.shortValueConverter().getClass());
         doCheckConverterClass(parser, "Short", ValueConverters.shortValueConverter().getClass());
-        doCheckConverterClass(
-                parser, "java.lang.Short", ValueConverters.shortValueConverter().getClass());
+        doCheckConverterClass(parser, "java.lang.Short", ValueConverters.shortValueConverter().getClass());
 
         doCheckConverterClass(parser, "int", ValueConverters.integerValueConverter().getClass());
-        doCheckConverterClass(
-                parser, "Integer", ValueConverters.integerValueConverter().getClass());
-        doCheckConverterClass(
-                parser, "java.lang.Integer", ValueConverters.integerValueConverter().getClass());
+        doCheckConverterClass(parser, "Integer", ValueConverters.integerValueConverter().getClass());
+        doCheckConverterClass(parser, "java.lang.Integer", ValueConverters.integerValueConverter().getClass());
 
         doCheckConverterClass(parser, "long", ValueConverters.longValueConverter().getClass());
         doCheckConverterClass(parser, "Long", ValueConverters.longValueConverter().getClass());
-        doCheckConverterClass(
-                parser, "java.lang.Long", ValueConverters.longValueConverter().getClass());
+        doCheckConverterClass(parser, "java.lang.Long", ValueConverters.longValueConverter().getClass());
 
         doCheckConverterClass(parser, "float", ValueConverters.floatValueConverter().getClass());
         doCheckConverterClass(parser, "Float", ValueConverters.floatValueConverter().getClass());
-        doCheckConverterClass(
-                parser, "java.lang.Float", ValueConverters.floatValueConverter().getClass());
+        doCheckConverterClass(parser, "java.lang.Float", ValueConverters.floatValueConverter().getClass());
 
         doCheckConverterClass(parser, "double", ValueConverters.doubleValueConverter().getClass());
         doCheckConverterClass(parser, "Double", ValueConverters.doubleValueConverter().getClass());
-        doCheckConverterClass(
-                parser, "java.lang.Double", ValueConverters.doubleValueConverter().getClass());
+        doCheckConverterClass(parser, "java.lang.Double", ValueConverters.doubleValueConverter().getClass());
 
         doCheckConverterClass(parser, "char", ValueConverters.characterValueConverter().getClass());
-        doCheckConverterClass(
-                parser, "Character", ValueConverters.characterValueConverter().getClass());
-        doCheckConverterClass(
-                parser,
-                "java.lang.Character",
-                ValueConverters.characterValueConverter().getClass());
+        doCheckConverterClass(parser, "Character", ValueConverters.characterValueConverter().getClass());
+        doCheckConverterClass(parser, "java.lang.Character", ValueConverters.characterValueConverter().getClass());
 
         doCheckConverterClass(parser, "string", ValueConverters.stringValueConverter().getClass());
         doCheckConverterClass(parser, "String", ValueConverters.stringValueConverter().getClass());
-        doCheckConverterClass(
-                parser, "java.lang.String", ValueConverters.stringValueConverter().getClass());
+        doCheckConverterClass(parser, "java.lang.String", ValueConverters.stringValueConverter().getClass());
     }
 
     @Test
@@ -99,8 +87,7 @@ public class TestVariableConfigurationJsonParser {
 
     @Test
     public void testBuildEmptyConfiguration() {
-        // TODO (parker) 7/3/14 - should VariableConfigurationJsonParser blow up if no identifiers
-        // or context variables are present.
+        // TODO (parker) 7/3/14 - should VariableConfigurationJsonParser blow up if no identifiers or context variables are present.
         // No identifiers isn't particularly useful
         final VariableConfigurationJsonParser parser = VariableConfigurationJsonParser.newParser();
         final VariableConfiguration configuration = parser.build();
@@ -123,18 +110,21 @@ public class TestVariableConfigurationJsonParser {
     }
 
     private <T extends ValueConverter> void doCheckConverterClass(
-            final VariableConfigurationJsonParser parser, final String type, final Class<T> clazz) {
+        final VariableConfigurationJsonParser parser,
+        final String type,
+        final Class<T> clazz) {
         final ValueConverter converter = parser.lookupConverter(type);
         Assert.assertNotNull("ValueConverter for " + type + " must not be null", converter);
         Assert.assertEquals(clazz, converter.getClass());
     }
 
     private void doCheckConverterClass(
-            final VariableConfigurationJsonParser parser,
-            final String type,
-            final ValueConverter instance) {
+        final VariableConfigurationJsonParser parser,
+        final String type,
+        final ValueConverter instance) {
         final ValueConverter converter = parser.lookupConverter(type);
         Assert.assertNotNull("ValueConverter for " + type + " must not be null", converter);
         Assert.assertEquals(instance, converter);
     }
+
 }

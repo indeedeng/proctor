@@ -6,7 +6,8 @@ import com.indeed.proctor.webapp.model.ProctorClientApplication;
 import java.util.Collections;
 import java.util.List;
 
-/** */
+/**
+ */
 public class DefaultClientSource implements ProctorClientSource {
     @Override
     public List<ProctorClientApplication> loadClients(final Environment environment) {

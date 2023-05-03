@@ -20,29 +20,30 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class JsonParserUtilsTest {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final String EMPTY = "{}";
-    private static final String TWO_VALUES =
-            ""
-                    + "{"
-                    + "   \"object1\": {"
-                    + "       \"a\": 1,"
-                    + "       \"b\": [1, 2, 3]"
-                    + "   },"
-                    + "   \"object2\": {"
-                    + "       \"a\": 3,"
-                    + "       \"b\": []"
-                    + "   }"
-                    + "}";
-    private static final String TWO_VALUES_WITH_ONE_NULL =
-            ""
-                    + "{"
-                    + "   \"object1\": null,"
-                    + "   \"object2\": {"
-                    + "       \"a\": 4,"
-                    + "       \"b\": [1, 2]"
-                    + "   }"
-                    + "}";
-    private static final List<String> TEST_OBJECT_MAP_TEST_CASES =
-            ImmutableList.of(EMPTY, TWO_VALUES, TWO_VALUES_WITH_ONE_NULL);
+    private static final String TWO_VALUES = "" +
+            "{" +
+            "   \"object1\": {" +
+            "       \"a\": 1," +
+            "       \"b\": [1, 2, 3]" +
+            "   }," +
+            "   \"object2\": {" +
+            "       \"a\": 3," +
+            "       \"b\": []" +
+            "   }" +
+            "}";
+    private static final String TWO_VALUES_WITH_ONE_NULL = "" +
+            "{" +
+            "   \"object1\": null," +
+            "   \"object2\": {" +
+            "       \"a\": 4," +
+            "       \"b\": [1, 2]" +
+            "   }" +
+            "}";
+    private static final List<String> TEST_OBJECT_MAP_TEST_CASES = ImmutableList.of(
+            EMPTY,
+            TWO_VALUES,
+            TWO_VALUES_WITH_ONE_NULL
+    );
 
     private static class TestObject {
         private final int a;
@@ -50,7 +51,9 @@ public class JsonParserUtilsTest {
 
         @JsonCreator
         public TestObject(
-                @JsonProperty("a") final int a, @JsonProperty("b") final List<Integer> b) {
+                @JsonProperty("a") final int a,
+                @JsonProperty("b") final List<Integer> b
+        ) {
             this.a = a;
             this.b = b;
         }
@@ -64,7 +67,8 @@ public class JsonParserUtilsTest {
                 return false;
             }
             final TestObject that = (TestObject) o;
-            return a == that.a && b.equals(that.b);
+            return a == that.a &&
+                    b.equals(that.b);
         }
 
         @Override
@@ -80,11 +84,12 @@ public class JsonParserUtilsTest {
         }
     }
 
-    private static void verifyTestObjectMap(final String testObjectMapAsJsonString)
-            throws IOException {
-        final Map<String, TestObject> expected =
-                OBJECT_MAPPER.readValue(
-                        testObjectMapAsJsonString, new TypeReference<Map<String, TestObject>>() {});
+    private static void verifyTestObjectMap(final String testObjectMapAsJsonString) throws IOException {
+        final Map<String, TestObject> expected = OBJECT_MAPPER.readValue(
+                testObjectMapAsJsonString,
+                new TypeReference<Map<String, TestObject>>() {
+                }
+        );
 
         final JsonFactory jsonFactory = new JsonFactory();
         final JsonParser jsonParser = jsonFactory.createParser(testObjectMapAsJsonString);
@@ -98,7 +103,8 @@ public class JsonParserUtilsTest {
                     final TestObject testObject = OBJECT_MAPPER.readValue(parser, TestObject.class);
 
                     actual.put(key, testObject);
-                });
+                }
+        );
 
         assertThat(actual).isEqualTo(expected);
     }

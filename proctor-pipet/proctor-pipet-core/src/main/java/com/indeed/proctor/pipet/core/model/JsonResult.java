@@ -8,7 +8,9 @@ import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-/** ProctorResult intended for JSON serialization for the /groups/identify method. */
+/**
+ * ProctorResult intended for JSON serialization for the /groups/identify method.
+ */
 public class JsonResult {
     // Map of test name to bucket assignment.
     private final Map<String, JsonTestBucket> groups;
@@ -18,27 +20,26 @@ public class JsonResult {
 
     private final Audit audit;
 
-    public JsonResult(
-            final ProctorResult result, final Map<String, Object> context, final Audit audit) {
+    public JsonResult(final ProctorResult result,
+                      final Map<String, Object> context,
+                      final Audit audit) {
         this.context = context;
         this.audit = audit;
 
         groups = generateJsonBuckets(result);
     }
 
+
     @VisibleForTesting
     static Map<String, JsonTestBucket> generateJsonBuckets(final ProctorResult result) {
         final Map<String, ConsumableTestDefinition> definitions = result.getTestDefinitions();
-        // As we process each TestBucket into a JsonBucket, we also need to obtain a version for
-        // that test.
+        // As we process each TestBucket into a JsonBucket, we also need to obtain a version for that test.
         return result.getBuckets().entrySet().stream()
-                .collect(
-                        Collectors.toMap(
-                                Map.Entry::getKey,
-                                e ->
-                                        new JsonTestBucket(
-                                                e.getValue(),
-                                                definitions.get(e.getKey()).getVersion())));
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        e -> new JsonTestBucket(
+                                e.getValue(),
+                                definitions.get(e.getKey()).getVersion())));
     }
 
     public Map<String, JsonTestBucket> getGroups() {

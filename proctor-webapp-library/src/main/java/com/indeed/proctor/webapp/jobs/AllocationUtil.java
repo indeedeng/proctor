@@ -8,7 +8,8 @@ import java.util.Map;
 
 class AllocationUtil {
 
-    private AllocationUtil() {}
+    private AllocationUtil() {
+    }
 
     public static Map<Integer, Double> generateAllocationRangeMap(final List<Range> ranges) {
         final Map<Integer, Double> bucketToTotalAllocationMap = new HashMap<>();

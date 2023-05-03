@@ -8,7 +8,8 @@ import javax.annotation.Nullable;
 import java.util.Objects;
 
 /**
- * A class representing an edit of a test definition is null when the edit was for deleting the test
+ * A class representing an edit of a test
+ * definition is null when the edit was for deleting the test
  */
 public class TestEdit {
     private final Revision revision;
@@ -17,7 +18,8 @@ public class TestEdit {
     @JsonCreator
     public TestEdit(
             @JsonProperty("revision") final Revision revision,
-            @JsonProperty("definition") @Nullable final TestDefinition definition) {
+            @JsonProperty("definition") @Nullable final TestDefinition definition
+    ) {
         this.revision = revision;
         this.definition = definition;
     }
@@ -40,8 +42,8 @@ public class TestEdit {
             return false;
         }
         final TestEdit testEdit = (TestEdit) o;
-        return Objects.equals(revision, testEdit.revision)
-                && Objects.equals(definition, testEdit.definition);
+        return Objects.equals(revision, testEdit.revision) &&
+                Objects.equals(definition, testEdit.definition);
     }
 
     @Override

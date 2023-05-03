@@ -12,6 +12,7 @@ import java.util.Map;
  *
  * @author andrewk
  */
+
 public class TestGroupsJavaGenerator extends TestGroupsGenerator {
 
     public void generate(
@@ -20,15 +21,14 @@ public class TestGroupsJavaGenerator extends TestGroupsGenerator {
             final String packageName,
             final String groupsClass,
             final String groupsManagerClass,
-            final String contextClass)
-            throws CodeGenException {
+            final String contextClass
+    ) throws CodeGenException {
         final String templatePath = "/com/indeed/proctor/consumer/ant/";
         final String groupsTemplateName = "groups.ftl";
         final String groupsManagerTemplateName = "groups-manager.ftl";
         final String payloadTemplateName = "payload.ftl";
         final String contextTemplateName = "context.ftl";
-        final String payloadClass =
-                groupsClass + "Payload"; // must be same as in groups.ftl: "${mainClassName}Payload"
+        final String payloadClass = groupsClass + "Payload"; // must be same as in groups.ftl: "${mainClassName}Payload"
         final String fileExtension = ".java";
         final Map<String, Object> baseContext = Maps.newHashMap();
         baseContext.put("groupsClassName", groupsClass);
@@ -43,7 +43,8 @@ public class TestGroupsJavaGenerator extends TestGroupsGenerator {
                     groupsClass,
                     templatePath,
                     groupsTemplateName,
-                    fileExtension);
+                    fileExtension
+            );
         }
         if (!Strings.isNullOrEmpty(groupsManagerClass)) {
             generate(
@@ -54,7 +55,8 @@ public class TestGroupsJavaGenerator extends TestGroupsGenerator {
                     groupsManagerClass,
                     templatePath,
                     groupsManagerTemplateName,
-                    fileExtension);
+                    fileExtension
+            );
         }
         if (!Strings.isNullOrEmpty(groupsClass)) {
             generate(
@@ -65,7 +67,8 @@ public class TestGroupsJavaGenerator extends TestGroupsGenerator {
                     payloadClass,
                     templatePath,
                     payloadTemplateName,
-                    fileExtension);
+                    fileExtension
+            );
         }
         if (!Strings.isNullOrEmpty(contextClass)) {
             generate(
@@ -76,12 +79,16 @@ public class TestGroupsJavaGenerator extends TestGroupsGenerator {
                     contextClass,
                     templatePath,
                     contextTemplateName,
-                    fileExtension);
+                    fileExtension
+            );
         }
+
     }
 
     protected void addPayloadToTestDef(
-            final Map<String, Object> testDef, final PayloadType specifiedPayloadType) {
+            final Map<String, Object> testDef,
+            final PayloadType specifiedPayloadType
+    ) {
         testDef.put("payloadJavaClass", specifiedPayloadType.javaClassName);
         testDef.put("payloadAccessorName", specifiedPayloadType.javaAccessorName);
     }

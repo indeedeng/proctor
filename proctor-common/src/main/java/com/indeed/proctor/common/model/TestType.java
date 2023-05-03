@@ -17,13 +17,15 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
 /**
- * Value class that captures most of the enum flavor while allowing library users to extend the
- * supported types of test.
+ * Value class that captures most of the enum flavor while allowing
+ * library users to extend the supported types of test.
  */
 public final class TestType implements JsonSerializable {
     private static final ConcurrentMap<String, TestType> TYPES = Maps.newConcurrentMap();
-    @Nonnull private final String name;
-    @Nonnull private final Set<String> allowedDependencies = new HashSet<>();
+    @Nonnull
+    private final String name;
+    @Nonnull
+    private final Set<String> allowedDependencies = new HashSet<>();
     // Use the factory
     private TestType(@Nonnull final String id) {
         this.name = id;
@@ -70,16 +72,16 @@ public final class TestType implements JsonSerializable {
     public void serializeWithType(
             final JsonGenerator jsonGenerator,
             final SerializerProvider serializerProvider,
-            final TypeSerializer typeSerializer)
-            throws IOException {
+            final TypeSerializer typeSerializer
+    ) throws IOException {
         jsonGenerator.writeString(name);
     }
 
     @Override
     public void serialize(
             @Nonnull final JsonGenerator jsonGenerator,
-            @Nonnull final SerializerProvider serializerProvider)
-            throws IOException {
+            @Nonnull final SerializerProvider serializerProvider
+    ) throws IOException {
         jsonGenerator.writeString(name);
     }
 
@@ -109,22 +111,31 @@ public final class TestType implements JsonSerializable {
     }
 
     public static final TestType ANONYMOUS_USER = register("USER");
-    /** @deprecated Use the more descriptive {@link #ANONYMOUS_USER} instead */
+    /**
+     * @deprecated Use the more descriptive {@link #ANONYMOUS_USER} instead
+     */
     public static final TestType USER = ANONYMOUS_USER;
 
     public static final TestType AUTHENTICATED_USER = register("ACCOUNT");
-    /** @deprecated Use the more descriptive {@link #AUTHENTICATED_USER} instead */
+    /**
+     * @deprecated Use the more descriptive {@link #AUTHENTICATED_USER} instead
+     */
     public static final TestType ACCOUNT = AUTHENTICATED_USER;
 
     public static final TestType EMAIL_ADDRESS = register("EMAIL");
-    /** @deprecated Use the more descriptive {@link #EMAIL_ADDRESS} instead */
+    /**
+     * @deprecated Use the more descriptive {@link #EMAIL_ADDRESS} instead
+     */
     public static final TestType EMAIL = EMAIL_ADDRESS;
-
     public static final TestType RANDOM = register("RANDOM");
 
-    /** @deprecated Legacy from migration to github */
+    /**
+     * @deprecated Legacy from migration to github
+     */
     public static final TestType PAGE = register("PAGE");
-    /** @deprecated Legacy from migration to github */
+    /**
+     * @deprecated Legacy from migration to github
+     */
     public static final TestType COMPANY = register("COMPANY");
 
     @JsonCreator

@@ -17,7 +17,8 @@ public class Revision {
             @JsonProperty("revision") final String revision,
             @JsonProperty("author") final String author,
             @JsonProperty("date") final Date date,
-            @JsonProperty("message") final String message) {
+            @JsonProperty("message") final String message
+    ) {
         this.revision = revision;
         this.author = author;
         this.date = date;
@@ -49,10 +50,10 @@ public class Revision {
             return false;
         }
         final Revision revision1 = (Revision) o;
-        return Objects.equal(revision, revision1.revision)
-                && Objects.equal(author, revision1.author)
-                && Objects.equal(date, revision1.date)
-                && Objects.equal(message, revision1.message);
+        return Objects.equal(revision, revision1.revision) &&
+                Objects.equal(author, revision1.author) &&
+                Objects.equal(date, revision1.date) &&
+                Objects.equal(message, revision1.message);
     }
 
     @Override
@@ -62,18 +63,11 @@ public class Revision {
 
     @Override
     public String toString() {
-        return "Revision{"
-                + "revision='"
-                + revision
-                + '\''
-                + ", author='"
-                + author
-                + '\''
-                + ", date="
-                + date
-                + ", message='"
-                + message
-                + '\''
-                + '}';
+        return "Revision{" +
+                "revision='" + revision + '\'' +
+                ", author='" + author + '\'' +
+                ", date=" + date +
+                ", message='" + message + '\'' +
+                '}';
     }
 }

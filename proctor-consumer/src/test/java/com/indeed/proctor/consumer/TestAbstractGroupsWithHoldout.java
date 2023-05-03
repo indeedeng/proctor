@@ -37,38 +37,30 @@ import static org.junit.Assert.assertTrue;
 public class TestAbstractGroupsWithHoldout {
 
     /**
-     * This is one simple example of a holdout-groupsWithCustom implementation that uses a hardcoded
-     * hold-out experiment, applies hold-out to all other experiments, uses the bucket with the
-     * smallest value in hold-out case, and uses the fallback value for most error cases.
-     *
-     * <p>Better implementations might use meta-tags or other properties to identify hold-out
-     * experiment, and also to identify experiments subject to hold-out groupsWithCustom, and have
-     * better strategies for selecting the hold-out bucket to use.
+     * This is one simple example of a holdout-groupsWithCustom implementation that uses a hardcoded hold-out experiment,
+     * applies hold-out to all other experiments, uses the bucket with the smallest value in hold-out case,
+     * and uses the fallback value for most error cases.
+     * <p>
+     * Better implementations might use meta-tags or other properties to identify hold-out experiment, and
+     * also to identify experiments subject to hold-out groupsWithCustom, and have better strategies for selecting
+     * the hold-out bucket to use.
      */
     static class ProctorGroupsWithHoldout extends AbstractGroups {
         final ProctorGroupStubber.StubTest holdoutMaster;
 
-        ProctorGroupsWithHoldout(
-                final ProctorResult proctorResult,
-                final ProctorGroupStubber.StubTest holdoutMaster) {
+        ProctorGroupsWithHoldout(final ProctorResult proctorResult, final ProctorGroupStubber.StubTest holdoutMaster) {
             super(proctorResult);
             this.holdoutMaster = holdoutMaster;
         }
 
         @Override
-        protected int overrideDeterminedBucketValue(
-                final String testName, @Nonnull final TestBucket determinedBucket) {
-            // for other experiments, if hold-out experiment is active, use bucket with value -1 if
-            // available.
-            if (!holdoutMaster.getName().equals(testName)
-                    && isBucketActive(holdoutMaster.getName(), 2, -1)) {
+        protected int overrideDeterminedBucketValue(final String testName, @Nonnull final TestBucket determinedBucket) {
+            // for other experiments, if hold-out experiment is active, use bucket with value -1 if available.
+            if (!holdoutMaster.getName().equals(testName) && isBucketActive(holdoutMaster.getName(), 2, -1)) {
                 // return bucket with smallest value
                 return Optional.ofNullable(getProctorResult().getTestDefinitions().get(testName))
                         .map(ConsumableTestDefinition::getBuckets)
-                        .flatMap(
-                                buckets ->
-                                        buckets.stream()
-                                                .min(Comparator.comparing(TestBucket::getValue)))
+                        .flatMap(buckets -> buckets.stream().min(Comparator.comparing(TestBucket::getValue)))
                         .map(TestBucket::getValue)
                         .orElse(determinedBucket.getValue());
             }
@@ -82,72 +74,39 @@ public class TestAbstractGroupsWithHoldout {
     @Before
     public void setUp() {
 
-        proctorResult =
-                new ProctorGroupStubber.ProctorResultStubBuilder()
-                        .withStubTest(
-                                ProctorGroupStubber.StubTest.HOLDOUT_MASTER_TEST,
-                                GROUP_1_BUCKET,
-                                INACTIVE_BUCKET,
-                                GROUP_1_BUCKET)
-                        .withStubTest(
-                                ProctorGroupStubber.StubTest.CONTROL_SELECTED_TEST,
-                                CONTROL_BUCKET_WITH_PAYLOAD,
-                                INACTIVE_BUCKET,
-                                CONTROL_BUCKET_WITH_PAYLOAD,
-                                GROUP_1_BUCKET_WITH_PAYLOAD)
-                        .withStubTest(
-                                ProctorGroupStubber.StubTest.GROUP1_SELECTED_TEST,
-                                GROUP_1_BUCKET_WITH_PAYLOAD,
-                                INACTIVE_BUCKET,
-                                CONTROL_BUCKET_WITH_PAYLOAD,
-                                GROUP_1_BUCKET_WITH_PAYLOAD)
-                        .withStubTest(
-                                ProctorGroupStubber.StubTest.INACTIVE_SELECTED_TEST,
-                                INACTIVE_BUCKET,
-                                INACTIVE_BUCKET,
-                                GROUP_1_BUCKET)
-                        // provides reference to FALLBACK_BUCKET that can be used in tests
-                        .withStubTest(
-                                ProctorGroupStubber.StubTest.GROUP_WITH_FALLBACK_TEST,
-                                GROUP_1_BUCKET,
-                                INACTIVE_BUCKET,
-                                GROUP_1_BUCKET,
-                                FALLBACK_TEST_BUCKET)
-                        // provides reference to FALLBACK_BUCKET that can be used in tests, no
-                        // resolved test
-                        .withStubTest(
-                                ProctorGroupStubber.StubTest.NO_BUCKETS_WITH_FALLBACK_TEST,
-                                null,
-                                INACTIVE_BUCKET,
-                                GROUP_1_BUCKET,
-                                FALLBACK_TEST_BUCKET)
-                        .withStubTest(
-                                ProctorGroupStubber.StubTest.MISSING_DEFINITION_TEST,
-                                GROUP_1_BUCKET)
-                        .build();
+        proctorResult = new ProctorGroupStubber.ProctorResultStubBuilder()
+                .withStubTest(ProctorGroupStubber.StubTest.HOLDOUT_MASTER_TEST, GROUP_1_BUCKET,
+                        INACTIVE_BUCKET, GROUP_1_BUCKET)
+                .withStubTest(ProctorGroupStubber.StubTest.CONTROL_SELECTED_TEST, CONTROL_BUCKET_WITH_PAYLOAD,
+                        INACTIVE_BUCKET, CONTROL_BUCKET_WITH_PAYLOAD, GROUP_1_BUCKET_WITH_PAYLOAD)
+                .withStubTest(ProctorGroupStubber.StubTest.GROUP1_SELECTED_TEST, GROUP_1_BUCKET_WITH_PAYLOAD,
+                        INACTIVE_BUCKET, CONTROL_BUCKET_WITH_PAYLOAD, GROUP_1_BUCKET_WITH_PAYLOAD)
+                .withStubTest(ProctorGroupStubber.StubTest.INACTIVE_SELECTED_TEST, INACTIVE_BUCKET,
+                        INACTIVE_BUCKET, GROUP_1_BUCKET)
+                // provides reference to FALLBACK_BUCKET that can be used in tests
+                .withStubTest(ProctorGroupStubber.StubTest.GROUP_WITH_FALLBACK_TEST, GROUP_1_BUCKET,
+                        INACTIVE_BUCKET, GROUP_1_BUCKET, FALLBACK_TEST_BUCKET)
+                // provides reference to FALLBACK_BUCKET that can be used in tests, no resolved test
+                .withStubTest(ProctorGroupStubber.StubTest.NO_BUCKETS_WITH_FALLBACK_TEST, null,
+                        INACTIVE_BUCKET, GROUP_1_BUCKET, FALLBACK_TEST_BUCKET)
+                .withStubTest(ProctorGroupStubber.StubTest.MISSING_DEFINITION_TEST, GROUP_1_BUCKET)
+                .build();
 
-        // using ProctorGroupsWithHoldout to make all tests except HOLDOUT_MASTER_TEST become
-        // inactive
+        // using ProctorGroupsWithHoldout to make all tests except HOLDOUT_MASTER_TEST become inactive
         groupsWithHoldOut = new ProctorGroupsWithHoldout(proctorResult, HOLDOUT_MASTER_TEST);
     }
 
     @Test
     public void testIsBucketActive() {
-        assertTrue(
-                groupsWithHoldOut.isBucketActive(
-                        CONTROL_SELECTED_TEST.getName(), -1)); // because of holdout
+        assertTrue(groupsWithHoldOut.isBucketActive(CONTROL_SELECTED_TEST.getName(), -1)); // because of holdout
         assertFalse(groupsWithHoldOut.isBucketActive(CONTROL_SELECTED_TEST.getName(), 0));
         assertFalse(groupsWithHoldOut.isBucketActive(CONTROL_SELECTED_TEST.getName(), 1));
 
-        assertTrue(
-                groupsWithHoldOut.isBucketActive(
-                        GROUP1_SELECTED_TEST.getName(), -1)); // because of holdout
+        assertTrue(groupsWithHoldOut.isBucketActive(GROUP1_SELECTED_TEST.getName(), -1)); // because of holdout
         assertFalse(groupsWithHoldOut.isBucketActive(GROUP1_SELECTED_TEST.getName(), 0));
         assertFalse(groupsWithHoldOut.isBucketActive(GROUP1_SELECTED_TEST.getName(), 1));
 
-        assertTrue(
-                groupsWithHoldOut.isBucketActive(
-                        CONTROL_SELECTED_TEST.getName(), -1, 42)); // because of holdout
+        assertTrue(groupsWithHoldOut.isBucketActive(CONTROL_SELECTED_TEST.getName(), -1, 42)); // because of holdout
         assertFalse(groupsWithHoldOut.isBucketActive(CONTROL_SELECTED_TEST.getName(), 0, 42));
 
         assertFalse(groupsWithHoldOut.isBucketActive("notexist", -1));
@@ -160,32 +119,19 @@ public class TestAbstractGroupsWithHoldout {
         assertThat(groupsWithHoldOut.getValue(CONTROL_SELECTED_TEST.getName(), 42)).isEqualTo(-1);
         assertThat(groupsWithHoldOut.getValue(GROUP1_SELECTED_TEST.getName(), 42)).isEqualTo(-1);
         assertThat(groupsWithHoldOut.getValue("notexist", 42)).isEqualTo(42); // no fallback bucket
+
     }
 
     @Test
     public void testGetPayload() {
-        assertThat(groupsWithHoldOut.getPayload(INACTIVE_SELECTED_TEST.getName()))
-                .isEqualTo(Payload.EMPTY_PAYLOAD);
-        assertThat(groupsWithHoldOut.getPayload(GROUP1_SELECTED_TEST.getName()))
-                .isEqualTo(Payload.EMPTY_PAYLOAD);
-        assertThat(groupsWithHoldOut.getPayload(CONTROL_SELECTED_TEST.getName()))
-                .isEqualTo(Payload.EMPTY_PAYLOAD);
-        assertThat(groupsWithHoldOut.getPayload(GROUP1_SELECTED_TEST.getName(), FALLBACK_BUCKET))
-                .isEqualTo(Payload.EMPTY_PAYLOAD);
-        assertThat(groupsWithHoldOut.getPayload(CONTROL_SELECTED_TEST.getName(), FALLBACK_BUCKET))
-                .isEqualTo(Payload.EMPTY_PAYLOAD);
-        assertThat(
-                        groupsWithHoldOut.getPayload(
-                                GROUP_WITH_FALLBACK_TEST.getName(), FALLBACK_BUCKET))
-                .isEqualTo(Payload.EMPTY_PAYLOAD); // payload of group1
-        assertThat(
-                        groupsWithHoldOut.getPayload(
-                                NO_BUCKETS_WITH_FALLBACK_TEST.getName(), FALLBACK_BUCKET))
-                .isEqualTo(FALLBACK_TEST_BUCKET.getPayload());
-        assertThat(
-                        groupsWithHoldOut.getPayload(
-                                NO_BUCKETS_WITH_FALLBACK_TEST.getName(), FALLBACK_NOPAYLOAD_BUCKET))
-                .isEqualTo(Payload.EMPTY_PAYLOAD);
+        assertThat(groupsWithHoldOut.getPayload(INACTIVE_SELECTED_TEST.getName())).isEqualTo(Payload.EMPTY_PAYLOAD);
+        assertThat(groupsWithHoldOut.getPayload(GROUP1_SELECTED_TEST.getName())).isEqualTo(Payload.EMPTY_PAYLOAD);
+        assertThat(groupsWithHoldOut.getPayload(CONTROL_SELECTED_TEST.getName())).isEqualTo(Payload.EMPTY_PAYLOAD);
+        assertThat(groupsWithHoldOut.getPayload(GROUP1_SELECTED_TEST.getName(), FALLBACK_BUCKET)).isEqualTo(Payload.EMPTY_PAYLOAD);
+        assertThat(groupsWithHoldOut.getPayload(CONTROL_SELECTED_TEST.getName(), FALLBACK_BUCKET)).isEqualTo(Payload.EMPTY_PAYLOAD);
+        assertThat(groupsWithHoldOut.getPayload(GROUP_WITH_FALLBACK_TEST.getName(), FALLBACK_BUCKET)).isEqualTo(Payload.EMPTY_PAYLOAD); // payload of group1
+        assertThat(groupsWithHoldOut.getPayload(NO_BUCKETS_WITH_FALLBACK_TEST.getName(), FALLBACK_BUCKET)).isEqualTo(FALLBACK_TEST_BUCKET.getPayload());
+        assertThat(groupsWithHoldOut.getPayload(NO_BUCKETS_WITH_FALLBACK_TEST.getName(), FALLBACK_NOPAYLOAD_BUCKET)).isEqualTo(Payload.EMPTY_PAYLOAD);
         assertThat(groupsWithHoldOut.getPayload("notexist")).isEqualTo(Payload.EMPTY_PAYLOAD);
     }
 
@@ -196,50 +142,32 @@ public class TestAbstractGroupsWithHoldout {
 
     @Test
     public void testToLongString() {
-        assertThat(groupsWithHoldOut.toLongString())
-                .isEqualTo(
-                        "abtst-inactive,bgtst-inactive,btntst-inactive,groupwithfallbacktst-inactive,holdout_tst-group1,no_definition_tst-group1");
+        assertThat(groupsWithHoldOut.toLongString()).isEqualTo("abtst-inactive,bgtst-inactive,btntst-inactive,groupwithfallbacktst-inactive,holdout_tst-group1,no_definition_tst-group1");
     }
 
     @Test
     public void testToLoggingString() {
-        assertThat(
-                        (new AbstractGroups(
-                                        new ProctorResult(
-                                                "0", emptyMap(), emptyMap(), emptyMap())) {})
-                                .toLoggingString())
-                .isEmpty();
-        assertThat(groupsWithHoldOut.toLoggingString())
-                .isEqualTo(
-                        "holdout_tst2,no_definition_tst2,#A1:holdout_tst2,#A1:no_definition_tst2");
+        assertThat((new AbstractGroups(new ProctorResult("0", emptyMap(), emptyMap(), emptyMap())) {}).toLoggingString()).isEmpty();
+        assertThat(groupsWithHoldOut.toLoggingString()).isEqualTo("holdout_tst2,no_definition_tst2,#A1:holdout_tst2,#A1:no_definition_tst2");
     }
 
     @Test
     public void testGetLoggingTestNames() {
         assertThat(Sets.newHashSet(groupsWithHoldOut.getLoggingTestNames()))
-                .containsExactlyInAnyOrder(
-                        HOLDOUT_MASTER_TEST.getName(), MISSING_DEFINITION_TEST.getName());
+                .containsExactlyInAnyOrder(HOLDOUT_MASTER_TEST.getName(), MISSING_DEFINITION_TEST.getName());
     }
 
     @Test
     public void testAppendTestGroupsWithoutAllocations() {
         StringBuilder builder = new StringBuilder();
-        groupsWithHoldOut.appendTestGroupsWithoutAllocations(
-                builder,
-                ',',
-                Lists.newArrayList(
-                        CONTROL_SELECTED_TEST.getName(), GROUP1_SELECTED_TEST.getName()));
+        groupsWithHoldOut.appendTestGroupsWithoutAllocations(builder, ',', Lists.newArrayList(CONTROL_SELECTED_TEST.getName(), GROUP1_SELECTED_TEST.getName()));
         assertThat(builder.toString().split(",")).containsExactly("bgtst-1", "abtst-1");
     }
 
     @Test
     public void testAppendTestGroupsWithAllocations() {
         StringBuilder builder = new StringBuilder();
-        groupsWithHoldOut.appendTestGroupsWithAllocations(
-                builder,
-                ',',
-                Lists.newArrayList(
-                        CONTROL_SELECTED_TEST.getName(), GROUP1_SELECTED_TEST.getName()));
+        groupsWithHoldOut.appendTestGroupsWithAllocations(builder, ',', Lists.newArrayList(CONTROL_SELECTED_TEST.getName(), GROUP1_SELECTED_TEST.getName()));
         assertThat(builder.toString().split(",")).containsExactly("#A1:bgtst-1", "#A1:abtst-1");
     }
 
@@ -249,38 +177,31 @@ public class TestAbstractGroupsWithHoldout {
         assertThat(groupsWithHoldOut.getJavaScriptConfig())
                 .hasSize(2)
                 .containsEntry(HOLDOUT_MASTER_TEST.getName(), 2)
-                .containsEntry(
-                        MISSING_DEFINITION_TEST.getName(),
-                        2) // continue to return due to absent definition
-        ;
+                .containsEntry(MISSING_DEFINITION_TEST.getName(), 2) // continue to return due to absent definition
+                ;
     }
 
     @Test
     public void testGetJavaScriptConfigLists() {
-        assertThat(
-                        groupsWithHoldOut.getJavaScriptConfig(
-                                new FakeTest[] {
-                                    new FakeTest("notexist", 42),
-                                    new FakeTest(CONTROL_SELECTED_TEST.getName(), 43),
-                                    new FakeTest(GROUP1_SELECTED_TEST.getName(), 44)
-                                }))
+        assertThat(groupsWithHoldOut.getJavaScriptConfig(new FakeTest[] {
+                new FakeTest("notexist", 42),
+                new FakeTest(CONTROL_SELECTED_TEST.getName(), 43),
+                new FakeTest(GROUP1_SELECTED_TEST.getName(), 44)}))
                 .containsExactly(
                         Arrays.asList(42, null), // no fallback
                         Arrays.asList(-1, null),
-                        Arrays.asList(-1, null));
+                        Arrays.asList(-1, null)
+                );
     }
 
     @Test
     public void testProctorResults() {
         // different data for bucket, else same, but not same instance
         assertThat(groupsWithHoldOut.getAsProctorResult()).isNotSameAs(proctorResult);
-        assertThat(groupsWithHoldOut.getAsProctorResult().getMatrixVersion())
-                .isEqualTo(proctorResult.getMatrixVersion());
-        assertThat(groupsWithHoldOut.getAsProctorResult().getBuckets())
-                .isNotEqualTo(proctorResult.getBuckets()); // not equal
-        assertThat(groupsWithHoldOut.getAsProctorResult().getAllocations())
-                .isEqualTo(proctorResult.getAllocations());
-        assertThat(groupsWithHoldOut.getAsProctorResult().getTestDefinitions())
-                .isEqualTo(proctorResult.getTestDefinitions());
+        assertThat(groupsWithHoldOut.getAsProctorResult().getMatrixVersion()).isEqualTo(proctorResult.getMatrixVersion());
+        assertThat(groupsWithHoldOut.getAsProctorResult().getBuckets()).isNotEqualTo(proctorResult.getBuckets()); // not equal
+        assertThat(groupsWithHoldOut.getAsProctorResult().getAllocations()).isEqualTo(proctorResult.getAllocations());
+        assertThat(groupsWithHoldOut.getAsProctorResult().getTestDefinitions()).isEqualTo(proctorResult.getTestDefinitions());
     }
+
 }

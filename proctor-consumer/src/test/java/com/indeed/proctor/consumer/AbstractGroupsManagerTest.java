@@ -32,18 +32,17 @@ public class AbstractGroupsManagerTest {
     public void testDetermineBuckets() {
         final Proctor proctorMock = mock(Proctor.class);
         final Identifiers identifiers = Identifiers.of(TestType.ANONYMOUS_USER, "fooUser");
-        final AbstractGroupsManager manager =
-                new AbstractGroupsManager(() -> proctorMock) {
-                    @Override
-                    public Map<String, String> getProvidedContext() {
-                        return null;
-                    }
+        final AbstractGroupsManager manager = new AbstractGroupsManager(() -> proctorMock) {
+            @Override
+            public Map<String, String> getProvidedContext() {
+                return null;
+            }
 
-                    @Override
-                    protected Map<String, TestBucket> getDefaultBucketValues() {
-                        return null;
-                    }
-                };
+            @Override
+            protected Map<String, TestBucket> getDefaultBucketValues() {
+                return null;
+            }
+        };
 
         final HttpServletRequest httpRequestMock = mock(HttpServletRequest.class);
         final HttpServletResponse httpResponseMock = mock(HttpServletResponse.class);
@@ -76,6 +75,7 @@ public class AbstractGroupsManagerTest {
             verifyNoMoreInteractions(httpRequestMock, httpResponseMock);
             clearInvocations(httpRequestMock, httpResponseMock);
         }
+
     }
 
     @Test
@@ -84,44 +84,41 @@ public class AbstractGroupsManagerTest {
         final ProctorResult proctorResultMock = mock(ProctorResult.class);
         final Logger loggerMock = mock(Logger.class);
         final Identifiers identifiers = Identifiers.of(TestType.ANONYMOUS_USER, "fooUser");
-        final AbstractGroupsManager manager =
-                new AbstractGroupsManager(
-                        () -> proctorMock,
-                        () ->
-                                new GroupsManagerInterceptor() {
-                                    @Override
-                                    public void beforeDetermineGroups(
-                                            final Identifiers identifiers,
-                                            final Map<String, Object> context,
-                                            final Map<String, Integer> forcedGroups) {
-                                        loggerMock.info("called before");
-                                    }
-
-                                    @Override
-                                    public void afterDetermineGroups(
-                                            final ProctorResult proctorResult) {
-                                        loggerMock.info("called after");
-                                    }
-                                }) {
+        final AbstractGroupsManager manager = new AbstractGroupsManager(
+                () -> proctorMock,
+                () -> new GroupsManagerInterceptor() {
                     @Override
-                    public Map<String, String> getProvidedContext() {
-                        return null;
+                    public void beforeDetermineGroups(
+                            final Identifiers identifiers,
+                            final Map<String, Object> context,
+                            final Map<String, Integer> forcedGroups
+                    ) {
+                        loggerMock.info("called before");
                     }
 
                     @Override
-                    protected Map<String, TestBucket> getDefaultBucketValues() {
-                        return null;
+                    public void afterDetermineGroups(final ProctorResult proctorResult) {
+                        loggerMock.info("called after");
                     }
-                };
+                }
+        ) {
+            @Override
+            public Map<String, String> getProvidedContext() {
+                return null;
+            }
+
+            @Override
+            protected Map<String, TestBucket> getDefaultBucketValues() {
+                return null;
+            }
+        };
 
         when(proctorMock.determineTestGroups(identifiers, emptyMap(), emptyMap()))
                 .thenReturn(proctorResultMock);
 
         manager.determineBucketsInternal(identifiers, emptyMap(), ForceGroupsOptions.empty());
 
-        verify(proctorMock)
-                .determineTestGroups(
-                        identifiers, emptyMap(), ForceGroupsOptions.empty(), emptyList());
+        verify(proctorMock).determineTestGroups(identifiers, emptyMap(), ForceGroupsOptions.empty(), emptyList());
         verify(loggerMock).info("called before");
         verify(loggerMock).info("called after");
     }

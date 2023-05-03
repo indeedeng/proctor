@@ -21,14 +21,21 @@ public class TestDynamicFilters {
                 Collections.emptySet(),
                 filters.determineTests(
                         Collections.<String, ConsumableTestDefinition>emptyMap(),
-                        Collections.<String>emptySet()));
+                        Collections.<String>emptySet()
+                )
+        );
         assertEquals(
                 Collections.emptySet(),
                 filters.determineTests(
                         ImmutableMap.of(
                                 "sometest", new ConsumableTestDefinition(),
-                                "sometest2", new ConsumableTestDefinition()),
-                        Sets.newHashSet("sometest")));
+                                "sometest2", new ConsumableTestDefinition()
+                        ),
+                        Sets.newHashSet(
+                                "sometest"
+                        )
+                )
+        );
     }
 
     @Test
@@ -38,24 +45,32 @@ public class TestDynamicFilters {
                 Collections.emptySet(),
                 filters.determineTests(
                         Collections.<String, ConsumableTestDefinition>emptyMap(),
-                        Collections.<String>emptySet()));
+                        Collections.<String>emptySet()
+                )
+        );
         assertEquals(
                 Sets.newHashSet("non-required"),
                 filters.determineTests(
                         ImmutableMap.of(
                                 "non-required", new ConsumableTestDefinition(),
-                                "required", new ConsumableTestDefinition()),
-                        Sets.newHashSet("required")));
+                                "required", new ConsumableTestDefinition()
+                        ),
+                        Sets.newHashSet(
+                                "required"
+                        )
+                )
+        );
     }
 
     @Test
     public void testPrefixFilters() {
-        final DynamicFilters filters =
-                new DynamicFilters(
-                        Arrays.asList(
-                                new TestNamePrefixFilter("abc_"),
-                                new TestNamePrefixFilter("def_"),
-                                new TestNamePrefixFilter("abc_def_")));
+        final DynamicFilters filters = new DynamicFilters(
+                Arrays.asList(
+                        new TestNamePrefixFilter("abc_"),
+                        new TestNamePrefixFilter("def_"),
+                        new TestNamePrefixFilter("abc_def_")
+                )
+        );
 
         assertEquals(
                 Sets.newHashSet("abc_def_ghi", "def_ghi", "abc_"),
@@ -65,17 +80,21 @@ public class TestDynamicFilters {
                                 "def_ghi", new ConsumableTestDefinition(),
                                 "abc_def_ghi", new ConsumableTestDefinition(),
                                 "abcdef", new ConsumableTestDefinition(),
-                                "ghi_abc", new ConsumableTestDefinition()),
-                        Collections.<String>emptySet()));
+                                "ghi_abc", new ConsumableTestDefinition()
+                        ),
+                        Collections.<String>emptySet()
+                )
+        );
     }
 
     @Test
     public void testTestTypeFilters() {
-        final DynamicFilters filters =
-                new DynamicFilters(
-                        Arrays.asList(
-                                new TestTypeFilter(TestType.RANDOM),
-                                new TestTypeFilter(TestType.EMAIL_ADDRESS)));
+        final DynamicFilters filters = new DynamicFilters(
+                Arrays.asList(
+                        new TestTypeFilter(TestType.RANDOM),
+                        new TestTypeFilter(TestType.EMAIL_ADDRESS)
+                )
+        );
 
         assertEquals(
                 Sets.newHashSet("random", "email"),
@@ -84,20 +103,28 @@ public class TestDynamicFilters {
                                 "random", constructTestDefinition(TestType.RANDOM),
                                 "email", constructTestDefinition(TestType.EMAIL_ADDRESS),
                                 "user", constructTestDefinition(TestType.ANONYMOUS_USER),
-                                "account", constructTestDefinition(TestType.AUTHENTICATED_USER)),
-                        Collections.<String>emptySet()));
+                                "account", constructTestDefinition(TestType.AUTHENTICATED_USER)
+                        ),
+                        Collections.<String>emptySet()
+                )
+        );
     }
 
     @Test
     public void testMatches() {
-        final DynamicFilters filters1 = new DynamicFilters(ImmutableList.of(new AnyMatchFilter()));
+        final DynamicFilters filters1 = new DynamicFilters(ImmutableList.of(
+                new AnyMatchFilter()
+        ));
 
-        assertThat(filters1.matches("any", constructTestDefinition(TestType.RANDOM))).isTrue();
+        assertThat(filters1.matches("any", constructTestDefinition(TestType.RANDOM)))
+                .isTrue();
 
-        final DynamicFilters filters2 =
-                new DynamicFilters(ImmutableList.of(new TestTypeFilter(TestType.EMAIL_ADDRESS)));
+        final DynamicFilters filters2 = new DynamicFilters(ImmutableList.of(
+                new TestTypeFilter(TestType.EMAIL_ADDRESS)
+        ));
 
-        assertThat(filters2.matches("any", constructTestDefinition(TestType.RANDOM))).isFalse();
+        assertThat(filters2.matches("any", constructTestDefinition(TestType.RANDOM)))
+                .isFalse();
     }
 
     private ConsumableTestDefinition constructTestDefinition(final TestType testType) {
@@ -108,8 +135,7 @@ public class TestDynamicFilters {
 
     private static class AnyMatchFilter implements DynamicFilter {
         @Override
-        public boolean matches(
-                final String testName, final ConsumableTestDefinition testDefinition) {
+        public boolean matches(final String testName, final ConsumableTestDefinition testDefinition) {
             return true;
         }
     }
@@ -122,8 +148,7 @@ public class TestDynamicFilters {
         }
 
         @Override
-        public boolean matches(
-                final String testName, final ConsumableTestDefinition testDefinition) {
+        public boolean matches(final String testName, final ConsumableTestDefinition testDefinition) {
             return testDefinition.getTestType().equals(testType);
         }
     }

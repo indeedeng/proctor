@@ -12,8 +12,7 @@ import org.apache.logging.log4j.Logger;
  * @author andrewk
  */
 public class TestGroupsJavascriptGeneratorTask extends TestGroupsGeneratorTask {
-    private static final Logger LOGGER =
-            LogManager.getLogger(TestGroupsJavascriptGeneratorTask.class);
+    private static final Logger LOGGER = LogManager.getLogger(TestGroupsJavascriptGeneratorTask.class);
     private final TestGroupsJavascriptGenerator gen = new TestGroupsJavascriptGenerator();
 
     private boolean useClosure;
@@ -27,8 +26,13 @@ public class TestGroupsJavascriptGeneratorTask extends TestGroupsGeneratorTask {
     }
 
     @Override
-    protected void generateSourceFiles(final ProctorSpecification specification)
-            throws CodeGenException {
-        gen.generate(specification, target, packageName, groupsClass, useClosure);
+    protected void generateSourceFiles(final ProctorSpecification specification) throws CodeGenException {
+        gen.generate(
+                specification,
+                target,
+                packageName,
+                groupsClass,
+                useClosure
+        );
     }
 }

@@ -40,7 +40,7 @@ public class TestTestNamePatternFilter {
         try {
             new TestNamePatternFilter("[invalid syntax regex");
             fail("Expected as IllegalArgumentException to be thrown");
-        } catch (final IllegalArgumentException e) {
+        } catch(final IllegalArgumentException e) {
             assertNotNull(e.getCause());
         }
     }

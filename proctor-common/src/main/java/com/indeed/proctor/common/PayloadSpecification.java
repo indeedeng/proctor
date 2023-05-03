@@ -13,9 +13,12 @@ import java.util.Map;
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PayloadSpecification {
-    @Nullable private String type;
-    @Nullable private String validator;
-    @Nullable private Map<String, String> schema;
+    @Nullable
+    private String type;
+    @Nullable
+    private String validator;
+    @Nullable
+    private Map<String, String> schema;
     private boolean allowForce;
 
     @CheckForNull
@@ -44,9 +47,7 @@ public class PayloadSpecification {
         this.validator = validator;
     }
 
-    public boolean getAllowForce() {
-        return allowForce;
-    }
+    public boolean getAllowForce() { return allowForce; }
 
     public void setAllowForce(final boolean allowForce) {
         this.allowForce = allowForce;

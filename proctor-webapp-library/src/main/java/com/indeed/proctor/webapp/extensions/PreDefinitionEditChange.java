@@ -9,5 +9,6 @@ public interface PreDefinitionEditChange {
             final TestDefinition existingTestDefinition,
             final TestDefinition testDefinitionToUpdate,
             final Map<String, String[]> extensionFields,
-            final DefinitionChangeLogger logger);
+            final DefinitionChangeLogger logger
+    );
 }

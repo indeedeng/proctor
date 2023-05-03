@@ -10,15 +10,12 @@ import java.util.Map;
 public abstract class AbstractJob {
     private final Map<Environment, ProctorStore> stores;
 
-    public AbstractJob(
-            final ProctorStore trunkStore,
-            final ProctorStore qaStore,
-            final ProctorStore productionStore) {
-        this.stores =
-                ImmutableMap.of(
-                        Environment.WORKING, trunkStore,
-                        Environment.QA, qaStore,
-                        Environment.PRODUCTION, productionStore);
+    public AbstractJob(final ProctorStore trunkStore, final ProctorStore qaStore, final ProctorStore productionStore) {
+        this.stores = ImmutableMap.of(
+                Environment.WORKING, trunkStore,
+                Environment.QA, qaStore,
+                Environment.PRODUCTION, productionStore
+        );
     }
 
     static void validateUsernamePassword(final String username, final String password) {

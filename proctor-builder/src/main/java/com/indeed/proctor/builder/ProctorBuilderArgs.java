@@ -9,7 +9,9 @@ import org.apache.commons.cli.PosixParser;
 
 import java.io.PrintWriter;
 
-/** @author parker */
+/**
+ * @author parker
+ */
 class ProctorBuilderArgs {
 
     private String outputdir;
@@ -24,32 +26,29 @@ class ProctorBuilderArgs {
     ProctorBuilderArgs() {
         options = new Options();
 
-        options.addOption(
-                OptionBuilder.hasArg(true)
-                        .withLongOpt("output")
-                        .withArgName("output directory")
-                        .withDescription("The directory to write into. Use - for STDOUT")
-                        .create("o"));
-        options.addOption(
-                OptionBuilder.hasArg(true)
-                        .withLongOpt("filename")
-                        .withArgName("filename")
-                        .withDescription("The filename to use. default=proctor-tests-matrix.json")
-                        .create("f"));
+        options.addOption(OptionBuilder.hasArg(true)
+                              .withLongOpt("output")
+                              .withArgName("output directory")
+                              .withDescription("The directory to write into. Use - for STDOUT")
+                              .create("o"));
+        options.addOption(OptionBuilder.hasArg(true)
+                              .withLongOpt("filename")
+                              .withArgName("filename")
+                              .withDescription("The filename to use. default=proctor-tests-matrix.json")
+                              .create("f"));
 
-        options.addOption(
-                OptionBuilder.hasArg(true)
-                        .withArgName("author")
-                        .withDescription("override for Artifact.Audit.author")
-                        .withLongOpt("author")
-                        .create("a"));
-        options.addOption(
-                OptionBuilder.hasArg(true)
-                        .withArgName("version")
-                        .withDescription("override for Artifact.Audit.version")
-                        .withLongOpt("version")
-                        .create("v"));
+        options.addOption(OptionBuilder.hasArg(true)
+                              .withArgName("author")
+                              .withDescription("override for Artifact.Audit.author")
+                              .withLongOpt("author")
+                              .create("a"));
+        options.addOption(OptionBuilder.hasArg(true)
+                              .withArgName("version")
+                              .withDescription("override for Artifact.Audit.version")
+                              .withLongOpt("version")
+                              .create("v"));
     }
+
 
     public final void parse(final String[] args) {
         final CommandLineParser parser = new PosixParser();
@@ -57,7 +56,7 @@ class ProctorBuilderArgs {
             final CommandLine result = parser.parse(options, args);
             extract(result);
         } catch (Exception e) {
-            System.err.println("Parameter Error - " + e.getMessage());
+            System.err.println("Parameter Error - "+e.getMessage());
             final PrintWriter pw = new PrintWriter(System.err);
             final HelpFormatter formatter = new HelpFormatter();
             formatter.printHelp(pw, 80, " ", "", options, 1, 2, "");
@@ -65,6 +64,7 @@ class ProctorBuilderArgs {
             System.exit(-1);
         }
     }
+
 
     protected void extract(final CommandLine results) {
         this.outputdir = results.getOptionValue("output", "-");
@@ -75,8 +75,7 @@ class ProctorBuilderArgs {
         }
         if (results.hasOption("version")) {
             final String v = results.getOptionValue("version");
-            if (v.length() > 0
-                    && v.charAt(0) == 'r') { // support "svn-like" revisions like 'r149569'
+            if (v.length() > 0 && v.charAt(0) == 'r') { // support "svn-like" revisions like 'r149569'
                 this.version = v.substring(1);
             } else {
                 this.version = v;

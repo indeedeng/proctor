@@ -34,8 +34,8 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
- * A decorator class for ProctorStore. This class caches result of read methods and invalidates
- * cache on add/update/delete methods
+ * A decorator class for ProctorStore.
+ * This class caches result of read methods and invalidates cache on add/update/delete methods
  *
  * @author yiqing
  */
@@ -45,7 +45,10 @@ public class CachingProctorStore implements ProctorStore {
     private static final long READ_TIMEOUT_IN_SECOND = 30;
     private static final long WRITE_TIMEOUT_IN_SECOND = 180;
 
-    /** ProctorStore delegate. We assume all the methods of delegate is thread-safe. */
+    /**
+     * ProctorStore delegate.
+     * We assume all the methods of delegate is thread-safe.
+     */
     private final ProctorStore delegate;
 
     private final CacheHolder cacheHolder;
@@ -76,10 +79,8 @@ public class CachingProctorStore implements ProctorStore {
 
     @Override
     public TestDefinition getCurrentTestDefinition(final String test) throws StoreException {
-        final TestMatrixDefinition testMatrixDefinition =
-                cacheHolder.getCachedCurrentTestMatrix().getTestMatrixDefinition();
-        Preconditions.checkNotNull(
-                testMatrixDefinition, "TestMatrix should contain non null TestMatrixDefinition");
+        final TestMatrixDefinition testMatrixDefinition = cacheHolder.getCachedCurrentTestMatrix().getTestMatrixDefinition();
+        Preconditions.checkNotNull(testMatrixDefinition, "TestMatrix should contain non null TestMatrixDefinition");
         return testMatrixDefinition.getTests().get(test);
     }
 
@@ -100,8 +101,7 @@ public class CachingProctorStore implements ProctorStore {
     }
 
     @Override
-    public TestDefinition getTestDefinition(final String test, final String fetchRevision)
-            throws StoreException {
+    public TestDefinition getTestDefinition(final String test, final String fetchRevision) throws StoreException {
         if (!cacheHolder.getCachedHistory().containsKey(test)) {
             LOGGER.info(String.format("Test {%s} doesn't exist", test));
             return null;
@@ -114,7 +114,9 @@ public class CachingProctorStore implements ProctorStore {
         }
     }
 
-    /** caching is not supported for this method */
+    /**
+     * caching is not supported for this method
+     **/
     @Nonnull
     @Override
     public List<Revision> getMatrixHistory(final int start, final int limit) throws StoreException {
@@ -123,25 +125,20 @@ public class CachingProctorStore implements ProctorStore {
 
     @Nonnull
     @Override
-    public List<Revision> getMatrixHistory(final Instant start, final Instant limit)
-            throws StoreException {
+    public List<Revision> getMatrixHistory(final Instant start, final Instant limit) throws StoreException {
         return delegate.getMatrixHistory(start, limit);
     }
 
     @Nonnull
     @Override
-    public List<Revision> getHistory(final String test, final int start, final int limit)
-            throws StoreException {
+    public List<Revision> getHistory(final String test, final int start, final int limit) throws StoreException {
         return HistoryUtil.selectHistorySet(cacheHolder.getCachedHistory().get(test), start, limit);
     }
 
     @Nonnull
     @Override
-    public List<Revision> getHistory(
-            final String test, final String revision, final int start, final int limit)
-            throws StoreException {
-        return HistoryUtil.selectRevisionHistorySetFrom(
-                cacheHolder.getCachedHistory().get(test), revision, start, limit);
+    public List<Revision> getHistory(final String test, final String revision, final int start, final int limit) throws StoreException {
+        return HistoryUtil.selectRevisionHistorySetFrom(cacheHolder.getCachedHistory().get(test), revision, start, limit);
     }
 
     @CheckForNull
@@ -152,16 +149,13 @@ public class CachingProctorStore implements ProctorStore {
 
     @Nonnull
     @Override
-    public List<TestEdit> getTestEdits(final String testName, final int start, final int limit)
-            throws StoreException {
+    public List<TestEdit> getTestEdits(final String testName, final int start, final int limit) throws StoreException {
         return delegate.getTestEdits(testName, start, limit);
     }
 
     @Nonnull
     @Override
-    public List<TestEdit> getTestEdits(
-            final String testName, final String revision, final int start, final int limit)
-            throws StoreException {
+    public List<TestEdit> getTestEdits(final String testName, final String revision, final int start, final int limit) throws StoreException {
         return delegate.getTestEdits(testName, revision, start, limit);
     }
 
@@ -176,20 +170,19 @@ public class CachingProctorStore implements ProctorStore {
         cacheHolder.refreshAll();
     }
 
-    /** @deprecated Please use {@link HistoryUtil#selectHistorySet(List, int, int)} */
+    /**
+     * @deprecated Please use {@link HistoryUtil#selectHistorySet(List, int, int)}
+     */
     @Deprecated
-    public static <T> List<T> selectHistorySet(
-            final List<T> histories, final int start, final int limit) {
+    public static <T> List<T> selectHistorySet(final List<T> histories, final int start, final int limit) {
         return HistoryUtil.selectHistorySet(histories, start, limit);
     }
 
     /**
-     * @deprecated Please use {@link HistoryUtil#selectRevisionHistorySetFrom(List, String, int,
-     *     int)}
+     * @deprecated Please use {@link HistoryUtil#selectRevisionHistorySetFrom(List, String, int, int)}
      */
     @Deprecated
-    public static List<Revision> selectRevisionHistorySetFrom(
-            final List<Revision> history, final String from, final int start, final int limit) {
+    public static List<Revision> selectRevisionHistorySetFrom(final List<Revision> history, final String from, final int start, final int limit) {
         return HistoryUtil.selectRevisionHistorySetFrom(history, from, start, limit);
     }
 
@@ -198,17 +191,19 @@ public class CachingProctorStore implements ProctorStore {
         return delegate.cleanUserWorkspace(username);
     }
 
-    /** Following three methods make side-effect and it would trigger cache refreshing at once */
+    /**
+     * Following three methods make side-effect and it would trigger cache refreshing at once
+     */
+
     @Override
     public void updateTestDefinition(
             final ChangeMetadata changeMetadata,
             final String previousVersion,
             final String testName,
             final TestDefinition testDefinition,
-            final Map<String, String> metadata)
-            throws StoreException.TestUpdateException {
-        delegate.updateTestDefinition(
-                changeMetadata, previousVersion, testName, testDefinition, metadata);
+            final Map<String, String> metadata
+    ) throws StoreException.TestUpdateException {
+        delegate.updateTestDefinition(changeMetadata, previousVersion, testName, testDefinition, metadata);
         cacheHolder.startRefreshCacheTask();
     }
 
@@ -217,8 +212,8 @@ public class CachingProctorStore implements ProctorStore {
             final ChangeMetadata changeMetadata,
             final String previousVersion,
             final String testName,
-            final TestDefinition testDefinition)
-            throws StoreException.TestUpdateException {
+            final TestDefinition testDefinition
+    ) throws StoreException.TestUpdateException {
         delegate.deleteTestDefinition(changeMetadata, previousVersion, testName, testDefinition);
         cacheHolder.startRefreshCacheTask();
     }
@@ -228,8 +223,8 @@ public class CachingProctorStore implements ProctorStore {
             final ChangeMetadata changeMetadata,
             final String testName,
             final TestDefinition testDefinition,
-            final Map<String, String> metadata)
-            throws StoreException.TestUpdateException {
+            final Map<String, String> metadata
+    ) throws StoreException.TestUpdateException {
         delegate.addTestDefinition(changeMetadata, testName, testDefinition, metadata);
         cacheHolder.startRefreshCacheTask();
     }
@@ -244,8 +239,7 @@ public class CachingProctorStore implements ProctorStore {
         return cacheHolder.scheduledFuture;
     }
 
-    private boolean isChangedRevision(final String test, final String revision)
-            throws StoreException {
+    private boolean isChangedRevision(final String test, final String revision) throws StoreException {
         final List<Revision> revisions = cacheHolder.getCachedHistory().get(test);
         if (revisions != null) {
             for (final Revision r : revisions) {
@@ -258,9 +252,9 @@ public class CachingProctorStore implements ProctorStore {
     }
 
     /**
-     * This class provides thread-safe read/write operations to the cached data including the latest
-     * version, revision histories of all ProTest, maximum 3 versions of test Matrix and maximum
-     * 5000 versions of test definitions.
+     * This class provides thread-safe read/write operations to the cached data including
+     * the latest version, revision histories of all ProTest, maximum 3 versions of test Matrix
+     * and maximum 5000 versions of test definitions.
      */
     class CacheHolder {
         private final ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
@@ -271,102 +265,88 @@ public class CachingProctorStore implements ProctorStore {
         private Map<String, List<Revision>> historyCache;
 
         /* version information won't change so we don't expire */
-        private final Cache<String, TestMatrixVersion> revisionTestMatrixCache =
-                CacheBuilder.newBuilder().maximumSize(3).build();
-        private final Cache<TDKey, TestDefinition> revisionTestDefinitionCache =
-                CacheBuilder.newBuilder()
-                        .maximumSize(5000) // 5000 * (the size of test definition) ~ 50 MB
-                        .build();
+        private final Cache<String, TestMatrixVersion> revisionTestMatrixCache = CacheBuilder.newBuilder()
+                .maximumSize(3)
+                .build();
+        private final Cache<TDKey, TestDefinition> revisionTestDefinitionCache = CacheBuilder.newBuilder()
+                .maximumSize(5000) // 5000 * (the size of test definition) ~ 50 MB
+                .build();
 
-        private final ScheduledExecutorService scheduledExecutorService =
-                Executors.newScheduledThreadPool(1);
+        private final ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(1);
         private ScheduledFuture<?> scheduledFuture;
 
-        /** background task to refresh cache */
-        final Runnable refreshCacheTask =
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            refreshAll();
-                        } catch (final Exception e) {
-                            LOGGER.error("Failed to update cache", e);
-                        }
-                    }
-                };
+        /**
+         * background task to refresh cache
+         */
+        final Runnable refreshCacheTask = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    refreshAll();
+                } catch (final Exception e) {
+                    LOGGER.error("Failed to update cache", e);
+                }
+            }
+        };
 
         @Nonnull
         public Map<String, List<Revision>> getCachedHistory() throws StoreException {
-            return synchronizedCacheRead(
-                    new Callable<Map<String, List<Revision>>>() {
-                        @Override
-                        public Map<String, List<Revision>> call() {
-                            return historyCache;
-                        }
-                    });
+            return synchronizedCacheRead(new Callable<Map<String, List<Revision>>>() {
+                @Override
+                public Map<String, List<Revision>> call() {
+                    return historyCache;
+                }
+            });
         }
 
         @Nonnull
         public String getCachedLatestVersion() throws StoreException {
-            return synchronizedCacheRead(
-                    new Callable<String>() {
-                        @Override
-                        public String call() {
-                            return cachedLatestTestMatrixVersion.getVersion();
-                        }
-                    });
+            return synchronizedCacheRead(new Callable<String>() {
+                @Override
+                public String call() {
+                    return cachedLatestTestMatrixVersion.getVersion();
+                }
+            });
         }
 
-        public TestMatrixVersion getCachedTestMatrix(final String fetchRevision)
-                throws StoreException {
-            return synchronizedCacheRead(
-                    new Callable<TestMatrixVersion>() {
-                        @Override
-                        public TestMatrixVersion call() throws StoreException {
-                            TestMatrixVersion testMatrix =
-                                    revisionTestMatrixCache.getIfPresent(fetchRevision);
-                            if (testMatrix == null) {
-                                LOGGER.debug("Cache miss for fetch revision: " + fetchRevision);
-                                testMatrix = delegate.getTestMatrix(fetchRevision);
-                                revisionTestMatrixCache.put(fetchRevision, testMatrix);
-                            }
-                            return testMatrix;
-                        }
-                    });
+        public TestMatrixVersion getCachedTestMatrix(final String fetchRevision) throws StoreException {
+            return synchronizedCacheRead(new Callable<TestMatrixVersion>() {
+                @Override
+                public TestMatrixVersion call() throws StoreException {
+                    TestMatrixVersion testMatrix = revisionTestMatrixCache.getIfPresent(fetchRevision);
+                    if (testMatrix == null) {
+                        LOGGER.debug("Cache miss for fetch revision: " + fetchRevision);
+                        testMatrix = delegate.getTestMatrix(fetchRevision);
+                        revisionTestMatrixCache.put(fetchRevision, testMatrix);
+                    }
+                    return testMatrix;
+                }
+            });
         }
 
         public TestMatrixVersion getCachedCurrentTestMatrix() throws StoreException {
-            return synchronizedCacheRead(
-                    new Callable<TestMatrixVersion>() {
-                        @Override
-                        public TestMatrixVersion call() throws StoreException {
-                            return cachedLatestTestMatrixVersion;
-                        }
-                    });
+            return synchronizedCacheRead(new Callable<TestMatrixVersion>() {
+                @Override
+                public TestMatrixVersion call() throws StoreException {
+                    return cachedLatestTestMatrixVersion;
+                }
+            });
         }
 
-        public TestDefinition getCachedTestDefinition(
-                final String testName, final String fetchRevision) throws StoreException {
-            return synchronizedCacheRead(
-                    new Callable<TestDefinition>() {
-                        @Override
-                        public TestDefinition call() throws Exception {
-                            final TDKey key = new TDKey(testName, fetchRevision);
-                            TestDefinition testDefinition =
-                                    revisionTestDefinitionCache.getIfPresent(key);
-                            if (testDefinition == null) {
-                                LOGGER.debug(
-                                        "Cache miss for test definition : name="
-                                                + testName
-                                                + " revision="
-                                                + fetchRevision);
-                                testDefinition =
-                                        delegate.getTestDefinition(testName, fetchRevision);
-                                revisionTestDefinitionCache.put(key, testDefinition);
-                            }
-                            return testDefinition;
-                        }
-                    });
+        public TestDefinition getCachedTestDefinition(final String testName, final String fetchRevision) throws StoreException {
+            return synchronizedCacheRead(new Callable<TestDefinition>() {
+                @Override
+                public TestDefinition call() throws Exception {
+                    final TDKey key = new TDKey(testName, fetchRevision);
+                    TestDefinition testDefinition = revisionTestDefinitionCache.getIfPresent(key);
+                    if (testDefinition == null) {
+                        LOGGER.debug("Cache miss for test definition : name=" + testName + " revision=" + fetchRevision);
+                        testDefinition = delegate.getTestDefinition(testName, fetchRevision);
+                        revisionTestDefinitionCache.put(key, testDefinition);
+                    }
+                    return testDefinition;
+                }
+            });
         }
 
         private boolean hasNewVersion() throws StoreException {
@@ -384,65 +364,52 @@ public class CachingProctorStore implements ProctorStore {
             if (hasNewVersion()) {
                 lockAndRefreshCache();
             } else {
-                LOGGER.debug(
-                        String.format(
-                                "[%s] Latest version is not changed. Do not refresh cache",
-                                delegate.getName()));
+                LOGGER.debug(String.format("[%s] Latest version is not changed. Do not refresh cache", delegate.getName()));
             }
         }
 
         /**
-         * This method refreshes cache data. Other read/write operations are blocked
+         * This method refreshes cache data.
+         * Other read/write operations are blocked
          *
          * @throws StoreException
          */
         private void lockAndRefreshCache() throws StoreException {
             LOGGER.debug(String.format("[%s] Refreshing cache data started", delegate.getName()));
-            synchronizedCacheWrite(
-                    new Callable<Void>() {
-                        @Override
-                        public Void call() throws StoreException {
-                            final TestMatrixVersion currentTestMatrix =
-                                    delegate.getCurrentTestMatrix();
-                            final Revision revision = delegate.getMatrixHistory(0, 1).get(0);
-                            final Map<String, List<Revision>> allHistories =
-                                    delegate.getAllHistories();
-                            revisionTestMatrixCache.put(revision.getRevision(), currentTestMatrix);
-                            cachedLatestTestMatrixVersion = currentTestMatrix;
-                            historyCache = allHistories;
-                            return null;
-                        }
-                    });
+            synchronizedCacheWrite(new Callable<Void>() {
+                @Override
+                public Void call() throws StoreException {
+                    final TestMatrixVersion currentTestMatrix = delegate.getCurrentTestMatrix();
+                    final Revision revision = delegate.getMatrixHistory(0, 1).get(0);
+                    final Map<String, List<Revision>> allHistories = delegate.getAllHistories();
+                    revisionTestMatrixCache.put(revision.getRevision(), currentTestMatrix);
+                    cachedLatestTestMatrixVersion = currentTestMatrix;
+                    historyCache = allHistories;
+                    return null;
+                }
+            });
             LOGGER.debug(String.format("[%s] Refreshing cache data finished", delegate.getName()));
         }
 
         /**
-         * This method initialize CacheHolder. It loads data to cache and starts background task to
-         * refresh cache periodically
+         * This method initialize CacheHolder.
+         * It loads data to cache and starts background task to refresh cache periodically
          *
          * @throws StoreException
          */
         public void start() throws StoreException {
-            LOGGER.info(
-                    String.format("[%s] Starting Caching for ProctorStore ", delegate.getName()));
+            LOGGER.info(String.format("[%s] Starting Caching for ProctorStore ", delegate.getName()));
             lockAndRefreshCache();
-            scheduledFuture =
-                    scheduledExecutorService.scheduleWithFixedDelay(
-                            refreshCacheTask,
-                            REFRESH_RATE_IN_SECOND,
-                            REFRESH_RATE_IN_SECOND,
-                            TimeUnit.SECONDS);
+            scheduledFuture = scheduledExecutorService
+                    .scheduleWithFixedDelay(refreshCacheTask, REFRESH_RATE_IN_SECOND, REFRESH_RATE_IN_SECOND, TimeUnit.SECONDS);
         }
 
         /**
-         * This method refreshes cache at once. Cache is invalidated until the method completes.
-         * Read operations are blocked in this method.
+         * This method refreshes cache at once.
+         * Cache is invalidated until the method completes. Read operations are blocked in this method.
          */
         public void startRefreshCacheTask() {
-            LOGGER.info(
-                    String.format(
-                            "[%s] Rescheduling UpdateCacheTask due to new updates.",
-                            delegate.getName()));
+            LOGGER.info(String.format("[%s] Rescheduling UpdateCacheTask due to new updates.", delegate.getName()));
             /*
              * cancel scheduled task, executing task is allowed to finish;
              */
@@ -453,17 +420,13 @@ public class CachingProctorStore implements ProctorStore {
                 LOGGER.error("failed to update the cache");
             }
 
-            scheduledFuture =
-                    scheduledExecutorService.scheduleWithFixedDelay(
-                            refreshCacheTask,
-                            REFRESH_RATE_IN_SECOND,
-                            REFRESH_RATE_IN_SECOND,
-                            TimeUnit.SECONDS);
+            scheduledFuture = scheduledExecutorService
+                    .scheduleWithFixedDelay(refreshCacheTask, REFRESH_RATE_IN_SECOND, REFRESH_RATE_IN_SECOND, TimeUnit.SECONDS);
         }
 
         /**
-         * This method provides an interface to perform thread-safe <b>read</b> operation. It only
-         * blocks other write operations.
+         * This method provides an interface to perform thread-safe <b>read</b> operation.
+         * It only blocks other write operations.
          *
          * @param callable
          * @param <T>
@@ -481,8 +444,7 @@ public class CachingProctorStore implements ProctorStore {
                         readLock.unlock();
                     }
                 } else {
-                    throw new StoreException(
-                            "Failed to acquire the lock. Timeout after " + READ_TIMEOUT_IN_SECOND);
+                    throw new StoreException("Failed to acquire the lock. Timeout after " + READ_TIMEOUT_IN_SECOND);
                 }
             } catch (final InterruptedException e) {
                 Thread.currentThread().interrupt();
@@ -491,8 +453,8 @@ public class CachingProctorStore implements ProctorStore {
         }
 
         /**
-         * This method provides an interface to perform thread-safe <b>write</b> operation. It
-         * blocks other read/write operations.
+         * This method provides an interface to perform thread-safe <b>write</b> operation.
+         * It blocks other read/write operations.
          *
          * @param callable
          * @param <T>
@@ -505,19 +467,16 @@ public class CachingProctorStore implements ProctorStore {
                     try {
                         return callable.call();
                     } catch (final Exception e) {
-                        throw new StoreException.TestUpdateException(
-                                "Failed to perform write operation to cache. ", e);
+                        throw new StoreException.TestUpdateException("Failed to perform write operation to cache. ", e);
                     } finally {
                         writeLock.unlock();
                     }
                 } else {
-                    throw new StoreException.TestUpdateException(
-                            "Failed to acquire the lock. Timeout after " + WRITE_TIMEOUT_IN_SECOND);
+                    throw new StoreException.TestUpdateException("Failed to acquire the lock. Timeout after " + WRITE_TIMEOUT_IN_SECOND);
                 }
             } catch (final InterruptedException e) {
                 Thread.currentThread().interrupt();
-                throw new StoreException.TestUpdateException(
-                        "Write operation to cache was interrupted", e);
+                throw new StoreException.TestUpdateException("Write operation to cache was interrupted", e);
             }
         }
 
@@ -539,8 +498,8 @@ public class CachingProctorStore implements ProctorStore {
                     return false;
                 }
                 final TDKey tdKey = (TDKey) o;
-                return Objects.equals(test, tdKey.test)
-                        && Objects.equals(fetchRevision, tdKey.fetchRevision);
+                return Objects.equals(test, tdKey.test) &&
+                        Objects.equals(fetchRevision, tdKey.fetchRevision);
             }
 
             @Override

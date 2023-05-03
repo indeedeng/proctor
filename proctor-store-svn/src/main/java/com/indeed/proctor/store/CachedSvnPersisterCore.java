@@ -21,14 +21,15 @@ import java.util.concurrent.TimeUnit;
 public class CachedSvnPersisterCore implements SvnPersisterCore {
     private static final Logger LOGGER = LogManager.getLogger(CachedSvnPersisterCore.class);
 
-    private final Cache<FileContentsKey, Object> testDefinitionCache =
-            CacheBuilder.newBuilder()
-                    .maximumSize(2048)
-                    .expireAfterAccess(6, TimeUnit.HOURS)
-                    .build();
+    private final Cache<FileContentsKey, Object> testDefinitionCache = CacheBuilder.newBuilder()
+        .maximumSize(2048)
+        .expireAfterAccess(6, TimeUnit.HOURS)
+        .build();
 
-    private final Cache<Long, TestVersionResult> versionCache =
-            CacheBuilder.newBuilder().maximumSize(3).expireAfterAccess(6, TimeUnit.HOURS).build();
+    private final Cache<Long, TestVersionResult> versionCache = CacheBuilder.newBuilder()
+            .maximumSize(3)
+            .expireAfterAccess(6, TimeUnit.HOURS)
+            .build();
 
     final SvnPersisterCoreImpl core;
 
@@ -58,9 +59,10 @@ public class CachedSvnPersisterCore implements SvnPersisterCore {
     }
 
     @Override
-    public <C> C getFileContents(
-            final Class<C> c, final String[] path, final C defaultValue, final String revision)
-            throws StoreException.ReadException, JsonProcessingException {
+    public <C> C getFileContents(final Class<C> c,
+                                 final String[] path,
+                                 final C defaultValue,
+                                 final String revision) throws StoreException.ReadException, JsonProcessingException {
         final FileContentsKey key = new FileContentsKey(c, path, core.parseRevisionOrDie(revision));
         final Object obj = testDefinitionCache.getIfPresent(key);
         if (obj == null) {
@@ -81,19 +83,17 @@ public class CachedSvnPersisterCore implements SvnPersisterCore {
     public void doInWorkingDirectory(
             final ChangeMetadata changeMetadata,
             final String previousVersion,
-            final FileBasedProctorStore.ProctorUpdater updater)
-            throws StoreException.TestUpdateException {
+            final FileBasedProctorStore.ProctorUpdater updater
+    ) throws StoreException.TestUpdateException {
         core.doInWorkingDirectory(changeMetadata, previousVersion, updater);
     }
 
     @Override
-    public TestVersionResult determineVersions(final String fetchRevision)
-            throws StoreException.ReadException {
+    public TestVersionResult determineVersions(final String fetchRevision) throws StoreException.ReadException {
         final Long parsedRevision = SvnPersisterCoreImpl.parseRevisionOrDie(fetchRevision);
         final TestVersionResult testVersionResult = versionCache.getIfPresent(parsedRevision);
         if (testVersionResult == null) {
-            final TestVersionResult newTestVersionResult =
-                    core.determineVersions(String.valueOf(parsedRevision));
+            final TestVersionResult newTestVersionResult = core.determineVersions(String.valueOf(parsedRevision));
             versionCache.put(parsedRevision, newTestVersionResult);
             return newTestVersionResult;
         } else {
@@ -115,7 +115,7 @@ public class CachedSvnPersisterCore implements SvnPersisterCore {
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() throws IOException{
         core.close();
     }
 

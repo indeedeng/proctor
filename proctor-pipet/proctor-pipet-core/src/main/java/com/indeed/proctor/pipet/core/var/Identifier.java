@@ -7,17 +7,18 @@ import com.indeed.proctor.pipet.core.config.JsonVarConfig;
 
 import java.util.Collection;
 
-/** A thin wrapper implementing PrefixVariable. */
+/**
+ * A thin wrapper implementing PrefixVariable.
+ */
 public class Identifier extends PrefixVariable {
 
     private final TestType testType;
 
-    protected Identifier(
-            final String varName,
-            final TestType testType,
-            final ExtractorSource source,
-            final String sourceKey,
-            final ValueExtractor extractor) {
+    protected Identifier(final String varName,
+                         final TestType testType,
+                         final ExtractorSource source,
+                         final String sourceKey,
+                         final ValueExtractor extractor) {
         super(varName, source, sourceKey, extractor);
         this.testType = testType;
     }
@@ -36,8 +37,7 @@ public class Identifier extends PrefixVariable {
     @Override
     public String getDefaultValue() {
         // Identifiers are optional and should identify each user uniquely.
-        // It wouldn't make sense to have a default because then all users would be put into the
-        // same bucket.
+        // It wouldn't make sense to have a default because then all users would be put into the same bucket.
         return null;
     }
 
@@ -64,8 +64,7 @@ public class Identifier extends PrefixVariable {
             }
 
             final Collection<TestType> registered = TestType.all();
-            // we cannot use registered.contains(TestType) because the TestType constructor is
-            // private
+            // we cannot use registered.contains(TestType) because the TestType constructor is private
             for (final TestType type : registered) {
                 if (type.name().equalsIgnoreCase(getVarName())) {
                     return type;
@@ -75,10 +74,8 @@ public class Identifier extends PrefixVariable {
         }
 
         public Identifier build() {
-            final TestType testType =
-                    Preconditions.checkNotNull(getTestType(), "TestType must be specified");
-            final String varName =
-                    Preconditions.checkNotNull(getVarName(), "VarName must be specified");
+            final TestType testType = Preconditions.checkNotNull(getTestType(), "TestType must be specified");
+            final String varName = Preconditions.checkNotNull(getVarName(), "VarName must be specified");
             final ExtractorSource source = getSource();
             final String sourceKey = computeSourceKey();
             final ValueExtractor valueExtractor = getOrCreateValueExtractor();
@@ -86,8 +83,12 @@ public class Identifier extends PrefixVariable {
         }
     }
 
-    public static Identifier forTestType(
-            final ExtractorSource extractorSource, final TestType testType) {
-        return Identifier.newBuilder().setTestType(testType).setSource(extractorSource).build();
+    public static Identifier forTestType(final ExtractorSource extractorSource,
+                                         final TestType testType) {
+        return Identifier.newBuilder()
+            .setTestType(testType)
+            .setSource(extractorSource)
+            .build();
     }
+
 }

@@ -44,22 +44,25 @@ class GitHistoryParser {
     private final DiffFormatter diffFormatter;
     private final Pattern testNamePattern;
 
-    private static final Cache<String, List<DiffEntry>> DIFF_ENTRIES_CACHE =
-            CacheBuilder.newBuilder().build();
+    private static final Cache<String, List<DiffEntry>> DIFF_ENTRIES_CACHE = CacheBuilder
+            .newBuilder()
+            .build();
 
     private GitHistoryParser(
             final RevWalk revWalk,
             final DiffFormatter diffFormatter,
-            final String definitionDirectory) {
+            final String definitionDirectory
+    ) {
         this.revWalk = revWalk;
         this.diffFormatter = diffFormatter;
         testNamePattern = compileTestNamePattern(definitionDirectory);
     }
 
-    /** @return a map of testnames and git commits making changes to given tests */
+    /**
+     * @return a map of testnames and git commits making changes to given tests
+     */
     Map<String, List<Revision>> parseFromHead(final ObjectId head) throws IOException {
-        final Map<String, List<Revision>> histories =
-                newHashMapWithExpectedSize(EXPECTED_NUMBER_ACTIVE_TESTS);
+        final Map<String, List<Revision>> histories = newHashMapWithExpectedSize(EXPECTED_NUMBER_ACTIVE_TESTS);
         final Set<ObjectId> visited = Sets.newHashSet();
         final Queue<RevCommit> queue = new LinkedList<>();
         queue.add(revWalk.parseCommit(head));
@@ -70,37 +73,40 @@ class GitHistoryParser {
         final long middle = System.currentTimeMillis();
         sortByDate(histories);
         final long end = System.currentTimeMillis();
-        LOGGER.info(
-                String.format(
-                        "Took %d ms to parse, %d ms to sort revisions in chronological order",
-                        middle - start, end - middle));
+        LOGGER.info(String.format("Took %d ms to parse, %d ms to sort revisions in chronological order", middle - start, end - middle));
         return histories;
     }
 
-    /** @return a revision details for a single revision */
+    /**
+     * @return a revision details for a single revision
+     */
     @Nonnull
     RevisionDetails parseRevisionDetails(final ObjectId revisionId) throws IOException {
         final RevCommit commit = revWalk.parseCommit(revisionId);
         final Revision revision = createRevisionFromCommit(commit);
         final Set<String> modifiedTests = getModifiedTests(commit);
-        return new RevisionDetails(revision, modifiedTests);
+        return new RevisionDetails(
+                revision,
+                modifiedTests
+        );
     }
 
-    /** Add a commit to all histories of all tests modified by this commit */
+    /**
+     * Add a commit to all histories of all tests modified by this commit
+     */
     private void parseCommit(
             final RevCommit commit,
             final Map<String, List<Revision>> histories,
             final Set<ObjectId> visited,
-            final Queue<RevCommit> queue)
-            throws IOException {
+            final Queue<RevCommit> queue
+    ) throws IOException {
         if (!visited.add(commit.getId())) {
             return;
         }
 
         final Set<String> modifiedTests = getModifiedTests(commit);
         for (final String testName : modifiedTests) {
-            final List<Revision> history =
-                    histories.computeIfAbsent(testName, x -> new ArrayList<>());
+            final List<Revision> history = histories.computeIfAbsent(testName, x -> new ArrayList<>());
             history.add(createRevisionFromCommit(commit));
         }
 
@@ -118,10 +124,7 @@ class GitHistoryParser {
             // get diff of this commit to its parent, as list of paths
             final List<DiffEntry> diffs = getDiffEntries(commit, parent);
             for (final DiffEntry diff : diffs) {
-                final String changePath =
-                        diff.getChangeType().equals(DiffEntry.ChangeType.DELETE)
-                                ? diff.getOldPath()
-                                : diff.getNewPath();
+                final String changePath = diff.getChangeType().equals(DiffEntry.ChangeType.DELETE) ? diff.getOldPath() : diff.getNewPath();
                 final Matcher testNameMatcher = testNamePattern.matcher(changePath);
 
                 if (testNameMatcher.matches()) {
@@ -133,11 +136,9 @@ class GitHistoryParser {
         return result;
     }
 
-    private List<DiffEntry> getDiffEntries(final RevCommit commit, final RevCommit parent)
-            throws IOException {
+    private List<DiffEntry> getDiffEntries(final RevCommit commit, final RevCommit parent) throws IOException {
         try {
-            return DIFF_ENTRIES_CACHE.get(
-                    commit.getName(), () -> diffFormatter.scan(parent.getTree(), commit.getTree()));
+            return DIFF_ENTRIES_CACHE.get(commit.getName(), () -> diffFormatter.scan(parent.getTree(), commit.getTree()));
         } catch (final ExecutionException e) {
             Throwables.propagateIfInstanceOf(e.getCause(), IOException.class);
             throw Throwables.propagate(e.getCause());
@@ -157,25 +158,20 @@ class GitHistoryParser {
      */
     @VisibleForTesting
     static Pattern compileTestNamePattern(final String definitionDirectory) {
-        return Pattern.compile(
-                definitionDirectory
-                        + File.separator
-                        + "(\\w+)"
-                        + File.separator
-                        + FileBasedProctorStore.TEST_DEFINITION_FILENAME);
+        return Pattern.compile(definitionDirectory +
+                File.separator + "(\\w+)" + File.separator + FileBasedProctorStore.TEST_DEFINITION_FILENAME);
     }
 
     static Revision createRevisionFromCommit(final RevCommit commit) {
         return new Revision(
                 commit.getName(),
                 determineAuthorId(commit),
-                new Date(
-                        (long) commit.getCommitTime() * 1000 /* convert seconds to milliseconds */),
-                commit.getFullMessage());
+                new Date((long) commit.getCommitTime() * 1000 /* convert seconds to milliseconds */),
+                commit.getFullMessage()
+        );
     }
 
-    static GitHistoryParser fromRepository(
-            final Repository repository, final String testDefinitionDirectory) {
+    static GitHistoryParser fromRepository(final Repository repository, final String testDefinitionDirectory) {
         final RevWalk revWalk = new RevWalk(repository);
         final DiffFormatter df = new DiffFormatter(DisabledOutputStream.INSTANCE);
         df.setRepository(repository);

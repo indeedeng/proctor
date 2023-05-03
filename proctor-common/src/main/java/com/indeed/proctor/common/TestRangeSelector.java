@@ -25,35 +25,32 @@ import java.util.Map.Entry;
 import java.util.function.Function;
 
 /**
- * This is perhaps not the greatest abstraction the world has seen; is meant to consolidate common
- * functionality needed for different types of choosers WITHOUT using inheritance
- *
+ * This is perhaps not the greatest abstraction the world has seen; is meant to consolidate common functionality needed for different types of choosers WITHOUT using inheritance
  * @author ketan
+ *
  */
 public class TestRangeSelector {
     private static final Logger LOGGER = LogManager.getLogger(TestRangeSelector.class);
 
-    @Nonnull private final String testName;
-    @Nonnull private final ConsumableTestDefinition testDefinition;
-    @Nonnull private final String[] rules;
-    @Nonnull private final TestBucket[][] rangeToBucket;
+    @Nonnull
+    private final String testName;
+    @Nonnull
+    private final ConsumableTestDefinition testDefinition;
+    @Nonnull
+    private final String[] rules;
+    @Nonnull
+    private final TestBucket[][] rangeToBucket;
     private final RuleEvaluator ruleEvaluator;
 
-    TestRangeSelector(
-            @Nonnull final ExpressionFactory expressionFactory,
-            @Nonnull final FunctionMapper functionMapper,
-            final String testName,
-            @Nonnull final ConsumableTestDefinition testDefinition) {
-        this(
-                new RuleEvaluator(expressionFactory, functionMapper, testDefinition.getConstants()),
-                testName,
-                testDefinition);
+    TestRangeSelector(@Nonnull final ExpressionFactory expressionFactory, @Nonnull final FunctionMapper functionMapper, final String testName, @Nonnull final ConsumableTestDefinition testDefinition) {
+        this(new RuleEvaluator(expressionFactory, functionMapper, testDefinition.getConstants()), testName, testDefinition);
     }
 
     TestRangeSelector(
             @Nonnull final RuleEvaluator ruleEvaluator,
             @Nonnull final String testName,
-            @Nonnull final ConsumableTestDefinition testDefinition) {
+            @Nonnull final ConsumableTestDefinition testDefinition
+    ) {
         this.ruleEvaluator = ruleEvaluator;
 
         this.testName = testName;
@@ -82,6 +79,7 @@ public class TestRangeSelector {
         return rangeToBucket[index];
     }
 
+<<<<<<< HEAD
     /**
      * @deprecated Use findMatchingRuleWithValueExpr(Map, Map) instead, which is more efficient.
      */
@@ -95,6 +93,13 @@ public class TestRangeSelector {
     }
 
     private int findMatchingRuleInternal(final Function<String, Boolean> evaluator, @Nonnull final Map<String, TestBucket> testGroups) {
+||||||| parent of a496e85b (PROC-960: Remove autostyle code)
+    public int findMatchingRule(
+            @Nonnull final Map<String, Object> values,
+            @Nonnull final Map<String, TestBucket> testGroups) {
+=======
+    public int findMatchingRule(@Nonnull final Map<String, Object> values, @Nonnull final Map<String, TestBucket> testGroups) {
+>>>>>>> a496e85b (PROC-960: Remove autostyle code)
         final TestDependency dependsOn = testDefinition.getDependsOn();
         if (dependsOn != null) {
             final TestBucket testBucket = testGroups.get(dependsOn.getTestName());
@@ -106,7 +111,13 @@ public class TestRangeSelector {
         @Nullable String rule = testDefinition.getRule();
         try {
             if (rule != null) {
+<<<<<<< HEAD
                 if (!evaluator.apply(rule)) {
+||||||| parent of a496e85b (PROC-960: Remove autostyle code)
+                if (!evaluateRule(rule, values)) {
+=======
+                if (! evaluateRule(rule, values)) {
+>>>>>>> a496e85b (PROC-960: Remove autostyle code)
                     return -1;
                 }
             }
@@ -133,6 +144,35 @@ public class TestRangeSelector {
         return -1;
     }
 
+<<<<<<< HEAD
+||||||| parent of a496e85b (PROC-960: Remove autostyle code)
+    private boolean evaluateRule(final String rule, @Nonnull final Map<String, Object> values)
+            throws InvalidRuleException {
+        try {
+            return ruleEvaluator.evaluateBooleanRule(rule, values);
+
+        } catch (final RuntimeException e) {
+            throw new InvalidRuleException(
+                    e,
+                    String.format(
+                            "Error evaluating rule '%s' for test '%s': '%s'. Failing evaluation and continuing.",
+                            rule, testName, e.getMessage()));
+        }
+    }
+
+=======
+    private boolean evaluateRule(final String rule, @Nonnull final Map<String, Object> values) throws InvalidRuleException {
+        try {
+            return ruleEvaluator.evaluateBooleanRule(rule, values);
+
+        } catch (final RuntimeException e) {
+            throw new InvalidRuleException(e, String.format(
+                    "Error evaluating rule '%s' for test '%s': '%s'. Failing evaluation and continuing.",
+                    rule, testName, e.getMessage()));
+        }
+    }
+
+>>>>>>> a496e85b (PROC-960: Remove autostyle code)
     @Nonnull
     public String[] getRules() {
         return rules;
@@ -144,8 +184,8 @@ public class TestRangeSelector {
     }
 
     /**
-     * Do not evaluate the rule, do not use the pseudo-random allocation algorithm, do not collect
-     * $200. This should ONLY be used by privileged code for debugging.
+     * Do not evaluate the rule, do not use the pseudo-random allocation algorithm, do not collect $200.
+     * This should ONLY be used by privileged code for debugging.
      *
      * @param value bucket number
      * @return a {@link TestBucket} with the specified value or null if none exists
@@ -165,15 +205,15 @@ public class TestRangeSelector {
         return testName;
     }
 
-    /** appends testbuckets in a notation a bit similar to Json */
-    protected void printTestBuckets(
-            @Nonnull final PrintWriter writer, @Nonnull final Map<String, String> parameters) {
+    /**
+     * appends testbuckets in a notation a bit similar to Json
+     */
+    protected void printTestBuckets(@Nonnull final PrintWriter writer, @Nonnull final Map<String, String> parameters) {
         final NumberFormat fmt = NumberFormat.getPercentInstance(Locale.US);
         fmt.setMaximumFractionDigits(2);
 
         writer.printf("{ ");
-        for (final Iterator<Entry<String, String>> iterator = parameters.entrySet().iterator();
-                iterator.hasNext(); ) {
+        for (final Iterator<Entry<String, String>> iterator = parameters.entrySet().iterator(); iterator.hasNext(); ) {
             final Entry<String, String> entry = iterator.next();
             writer.print(entry.getKey());
             writer.print("'");
@@ -206,9 +246,7 @@ public class TestRangeSelector {
                     writer.print(", ");
                 }
                 final Range range = ranges.get(j);
-                writer.printf(
-                        "%s%d='%s'",
-                        testName, range.getBucketValue(), fmt.format(range.getLength()));
+                writer.printf("%s%d='%s'", testName, range.getBucketValue(), fmt.format(range.getLength()));
             }
         }
         writer.print(" },");

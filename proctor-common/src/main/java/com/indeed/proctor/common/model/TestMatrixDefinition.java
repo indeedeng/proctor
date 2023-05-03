@@ -9,11 +9,10 @@ import java.util.Objects;
 import java.util.StringJoiner;
 
 public class TestMatrixDefinition {
-    @Nonnull private Map<String, TestDefinition> tests = Collections.emptyMap();
+    @Nonnull
+    private Map<String, TestDefinition> tests = Collections.emptyMap();
 
-    public TestMatrixDefinition() {
-        /* intentionally empty */
-    }
+    public TestMatrixDefinition() { /* intentionally empty */ }
 
     public TestMatrixDefinition(@Nonnull final Map<String, TestDefinition> tests) {
         this.tests = tests;

@@ -7,13 +7,19 @@ import javax.annotation.Nonnull;
 import java.util.Objects;
 import java.util.Set;
 
-/** Details of a single revision */
+/**
+ * Details of a single revision
+ */
 public class RevisionDetails {
-    @Nonnull private final Revision revision;
-    @Nonnull private final Set<String> modifiedTests;
+    @Nonnull
+    private final Revision revision;
+    @Nonnull
+    private final Set<String> modifiedTests;
 
     public RevisionDetails(
-            @Nonnull final Revision revision, @Nonnull final Set<String> modifiedTests) {
+            @Nonnull final Revision revision,
+            @Nonnull final Set<String> modifiedTests
+    ) {
         this.revision = revision;
         this.modifiedTests = ImmutableSet.copyOf(modifiedTests);
     }
@@ -37,8 +43,8 @@ public class RevisionDetails {
             return false;
         }
         final RevisionDetails that = (RevisionDetails) o;
-        return Objects.equals(revision, that.revision)
-                && Objects.equals(modifiedTests, that.modifiedTests);
+        return Objects.equals(revision, that.revision) &&
+                Objects.equals(modifiedTests, that.modifiedTests);
     }
 
     @Override

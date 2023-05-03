@@ -26,20 +26,26 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public abstract class AbstractProctorLoader extends DataLoadingTimerTask
-        implements Supplier<Proctor> {
+public abstract class AbstractProctorLoader extends DataLoadingTimerTask implements Supplier<Proctor> {
     private static final Logger LOGGER = LogManager.getLogger(AbstractProctorLoader.class);
-    protected static final VarExporter VAR_EXPORTER =
-            VarExporter.forNamespace(AbstractProctorLoader.class.getSimpleName()).includeInGlobal();
+    protected static final VarExporter VAR_EXPORTER = VarExporter
+            .forNamespace(AbstractProctorLoader.class.getSimpleName())
+            .includeInGlobal();
 
-    @Nullable protected final Map<String, TestSpecification> requiredTests;
-    @Nullable private Proctor current = null;
-    @Nullable private Audit lastAudit = null;
-    @Nullable private String lastLoadErrorMessage = "load never attempted";
+    @Nullable
+    protected final Map<String, TestSpecification> requiredTests;
+    @Nullable
+    private Proctor current = null;
+    @Nullable
+    private Audit lastAudit = null;
+    @Nullable
+    private String lastLoadErrorMessage = "load never attempted";
     private Set<String> loggedDynamicTests;
 
-    @Nonnull private final FunctionMapper functionMapper;
-    @Nonnull private final IdentifierValidator identifierValidator;
+    @Nonnull
+    private final FunctionMapper functionMapper;
+    @Nonnull
+    private final IdentifierValidator identifierValidator;
 
     private final ProvidedContext providedContext;
     protected final DynamicFilters dynamicFilters;
@@ -49,28 +55,29 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask
     public AbstractProctorLoader(
             @Nonnull final Class<?> cls,
             @Nonnull final ProctorSpecification specification,
-            @Nonnull final FunctionMapper functionMapper) {
+            @Nonnull final FunctionMapper functionMapper
+    ) {
         this(cls, specification, functionMapper, new IdentifierValidator.Noop());
         loggedDynamicTests = new HashSet<>();
     }
 
     /**
-     * @param cls name will be used as namespace for timer
-     * @param specification provides tests, context, dynamic filters
-     * @param functionMapper evaluates functions in allocation rules
+     * @param cls                 name will be used as namespace for timer
+     * @param specification       provides tests, context, dynamic filters
+     * @param functionMapper      evaluates functions in allocation rules
      * @param identifierValidator validates for preventing unintended activation of tests
      */
     public AbstractProctorLoader(
             @Nonnull final Class<?> cls,
             @Nonnull final ProctorSpecification specification,
             @Nonnull final FunctionMapper functionMapper,
-            @Nonnull final IdentifierValidator identifierValidator) {
+            @Nonnull final IdentifierValidator identifierValidator
+    ) {
         super(cls.getSimpleName());
         this.requiredTests = specification.getTests();
         this.providedContext = createProvidedContext(specification);
         if (!this.providedContext.shouldEvaluate()) {
-            LOGGER.debug(
-                    "providedContext Objects missing necessary functions for validation, rules will not be tested.");
+            LOGGER.debug("providedContext Objects missing necessary functions for validation, rules will not be tested.");
         }
         this.functionMapper = functionMapper;
         this.identifierValidator = identifierValidator;
@@ -82,20 +89,21 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask
      * user can override this function to provide a context for rule verification
      *
      * @return a context for rule verification
-     */
+     **/
     protected Map<String, Object> getRuleVerificationContext() {
         return Collections.<String, Object>emptyMap();
     }
 
     protected ProvidedContext createProvidedContext(final ProctorSpecification specification) {
-        return ProctorUtils.convertContextToTestableMap(
-                specification.getProvidedContext(), getRuleVerificationContext());
+        return ProctorUtils.convertContextToTestableMap(specification.getProvidedContext(), getRuleVerificationContext());
     }
 
     @CheckForNull
     abstract TestMatrixArtifact loadTestMatrix() throws IOException, MissingTestMatrixException, TestMatrixOutdatedException;
 
-    /** @return informative String for log/error messages */
+    /**
+     * @return informative String for log/error messages
+     */
     @Nonnull
     abstract String getSource();
 
@@ -123,19 +131,8 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask
         current = newProctor;
 
         final Audit lastAudit = Preconditions.checkNotNull(this.lastAudit, "Missing last audit");
-        setDataVersion(
-                lastAudit.getVersion()
-                        + " @ "
-                        + lastAudit.getUpdated()
-                        + " by "
-                        + lastAudit.getUpdatedBy());
-        LOGGER.info(
-                "Successfully loaded new test matrix definition: "
-                        + lastAudit.getVersion()
-                        + " @ "
-                        + lastAudit.getUpdated()
-                        + " by "
-                        + lastAudit.getUpdatedBy());
+        setDataVersion(lastAudit.getVersion() + " @ " + lastAudit.getUpdated() + " by " + lastAudit.getUpdatedBy());
+        LOGGER.info("Successfully loaded new test matrix definition: " + lastAudit.getVersion() + " @ " + lastAudit.getUpdated() + " by " + lastAudit.getUpdatedBy());
         return true;
     }
 
@@ -151,37 +148,27 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask
             return null;
         }
 
-        final Set<String> dynamicTests =
-                dynamicFilters.determineTests(testMatrix.getTests(), requiredTests.keySet());
+        final Set<String> dynamicTests = dynamicFilters.determineTests(
+                testMatrix.getTests(),
+                requiredTests.keySet()
+        );
         exportDynamicTests(dynamicTests);
         // modify testMatrix
-        final ProctorLoadResult loadResult =
-                ProctorUtils.verifyAndConsolidate(
-                        testMatrix,
-                        getSource(),
-                        requiredTests,
-                        functionMapper,
-                        providedContext,
-                        dynamicTests);
+        final ProctorLoadResult loadResult = ProctorUtils.verifyAndConsolidate(
+                testMatrix,
+                getSource(),
+                requiredTests,
+                functionMapper,
+                providedContext,
+                dynamicTests
+        );
 
-        loadResult
-                .getTestErrorMap()
-                .forEach(
-                        (testName, exception) -> {
-                            LOGGER.error(
-                                    String.format(
-                                            "Unable to load test matrix for a required test %s",
-                                            testName),
-                                    exception);
-                        });
-        loadResult
-                .getMissingTests()
-                .forEach(
-                        (testName) ->
-                                LOGGER.error(
-                                        String.format(
-                                                "A required test %s is missing from test matrix",
-                                                testName)));
+        loadResult.getTestErrorMap().forEach((testName, exception) -> {
+            LOGGER.error(String.format("Unable to load test matrix for a required test %s", testName), exception);
+        });
+        loadResult.getMissingTests().forEach((testName) ->
+                LOGGER.error(String.format("A required test %s is missing from test matrix", testName))
+        );
         loadResult.getDynamicTestErrorMap().forEach(this::logDynamicTests);
 
         final Audit newAudit = testMatrix.getAudit();
@@ -189,38 +176,30 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask
             final Audit audit = Preconditions.checkNotNull(newAudit, "Missing audit");
             if (lastAudit.getVersion().equals(audit.getVersion())) {
                 if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug(
-                            "Not reloading "
-                                    + getSource()
-                                    + " test matrix definition because audit is unchanged: "
-                                    + lastAudit.getVersion()
-                                    + " @ "
-                                    + lastAudit.getUpdated()
-                                    + " by "
-                                    + lastAudit.getUpdatedBy());
+                    LOGGER.debug("Not reloading " + getSource() + " test matrix definition because audit is unchanged: " + lastAudit.getVersion() + " @ " + lastAudit.getUpdated() + " by " + lastAudit.getUpdatedBy());
                 }
 
                 return null;
             }
         }
 
-        final Proctor proctor =
-                Proctor.construct(testMatrix, loadResult, functionMapper, identifierValidator);
-        //  kind of lame to modify lastAudit here but current in load(), but the interface is a
-        // little constraining
+        final Proctor proctor = Proctor.construct(testMatrix, loadResult, functionMapper, identifierValidator);
+        //  kind of lame to modify lastAudit here but current in load(), but the interface is a little constraining
         setLastAudit(newAudit);
         return proctor;
     }
 
     @VisibleForTesting
     protected void logDynamicTests(final String testName, final Exception exception) {
-        if (!loggedDynamicTests.contains(testName)) {
+        if(!loggedDynamicTests.contains(testName)) {
             // Intentionally not adding stack trace to log, to reduce log size,
             // message contains all the information that is valuable.
-            LOGGER.warn(
-                    String.format(
-                            "Unable to load test matrix for a dynamic test %s. Cause: %s Message: %s",
-                            testName, exception.getCause(), exception.getMessage()));
+            LOGGER.warn(String.format(
+                    "Unable to load test matrix for a dynamic test %s. Cause: %s Message: %s",
+                    testName,
+                    exception.getCause(),
+                    exception.getMessage()
+            ));
             loggedDynamicTests.add(testName);
         }
     }
@@ -247,16 +226,16 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask
     }
 
     @CheckForNull
-    @Export(
-            name = "last-error",
-            doc = "The last error message thrown by the loader. null indicates a successful load.")
+    @Export(name = "last-error", doc = "The last error message thrown by the loader. null indicates a successful load.")
     public String getLastLoadErrorMessage() {
         return lastLoadErrorMessage;
     }
 
     // this can be used in subclasses for healthchecks
 
-    /** @return true if there was a success and it came after the last error */
+    /**
+     * @return true if there was a success and it came after the last error
+     */
     public boolean isLoadedDataSuccessfullyRecently() {
         // most dataLoadTimer methods already exposed in parent class DataLoadingTimerTask
         return dataLoadTimer.isLoadedDataSuccessfullyRecently();

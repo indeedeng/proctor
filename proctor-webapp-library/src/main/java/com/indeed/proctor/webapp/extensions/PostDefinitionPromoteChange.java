@@ -10,5 +10,6 @@ public interface PostDefinitionPromoteChange {
             final Environment src,
             final Environment destination,
             final boolean isAutopromote,
-            final DefinitionChangeLogger logger);
+            final DefinitionChangeLogger logger
+    );
 }

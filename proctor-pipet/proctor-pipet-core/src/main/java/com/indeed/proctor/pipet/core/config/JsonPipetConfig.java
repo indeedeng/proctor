@@ -4,8 +4,8 @@ import java.util.Collections;
 import java.util.Map;
 
 /**
- * JSON configuration file that describes the extraction of context variables and identifiers and
- * also the conversion type of context variables.
+ * JSON configuration file that describes the extraction of context variables and identifiers and also the
+ * conversion type of context variables.
  */
 public class JsonPipetConfig {
     private Map<String, JsonContextVarConfig> context = Collections.emptyMap();

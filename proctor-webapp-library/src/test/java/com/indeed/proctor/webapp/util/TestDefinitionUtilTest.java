@@ -20,10 +20,10 @@ public class TestDefinitionUtilTest {
     private static final String TRUNK_REVISION = "tr";
     private static final String QA_REVISION = "qr";
     private static final String COMMIT_MESSAGE = "test commit message";
-    private static final List<Revision> TRUNK_HISTORY =
-            Collections.singletonList(new Revision(TRUNK_REVISION, null, null, COMMIT_MESSAGE));
-    private static final List<Revision> QA_HISTORY =
-            Collections.singletonList(new Revision(QA_REVISION, null, null, COMMIT_MESSAGE));
+    private static final List<Revision> TRUNK_HISTORY = Collections.singletonList(
+            new Revision(TRUNK_REVISION, null, null, COMMIT_MESSAGE));
+    private static final List<Revision> QA_HISTORY = Collections.singletonList(
+            new Revision(QA_REVISION, null, null, COMMIT_MESSAGE));
 
     @Test
     public void testGetResolvedLastVersion() throws StoreException {
@@ -34,25 +34,14 @@ public class TestDefinitionUtilTest {
 
         final TestDefinition mockedPromotedTestDefinition = mock(TestDefinition.class);
         Mockito.when(mockedPromotedTestDefinition.getVersion()).thenReturn(TRUNK_REVISION);
-        Mockito.when(qa.getCurrentTestDefinition(TEST_NAME))
-                .thenReturn(mockedPromotedTestDefinition);
-        Assertions.assertThat(
-                        TestDefinitionUtil.getResolvedLastVersion(
-                                        trunk, TEST_NAME, Environment.WORKING)
-                                .getRevision())
+        Mockito.when(qa.getCurrentTestDefinition(TEST_NAME)).thenReturn(mockedPromotedTestDefinition);
+        Assertions.assertThat(TestDefinitionUtil.getResolvedLastVersion(trunk, TEST_NAME, Environment.WORKING).getRevision())
                 .isEqualTo(TRUNK_HISTORY.get(0));
-        Assertions.assertThat(
-                        TestDefinitionUtil.getResolvedLastVersion(
-                                        trunk, TEST_NAME, Environment.WORKING)
-                                .getVersion())
+        Assertions.assertThat(TestDefinitionUtil.getResolvedLastVersion(trunk, TEST_NAME, Environment.WORKING).getVersion())
                 .isEqualTo(TRUNK_REVISION);
-        Assertions.assertThat(
-                        TestDefinitionUtil.getResolvedLastVersion(qa, TEST_NAME, Environment.QA)
-                                .getRevision())
+        Assertions.assertThat(TestDefinitionUtil.getResolvedLastVersion(qa, TEST_NAME, Environment.QA).getRevision())
                 .isEqualTo(QA_HISTORY.get(0));
-        Assertions.assertThat(
-                        TestDefinitionUtil.getResolvedLastVersion(qa, TEST_NAME, Environment.QA)
-                                .getVersion())
+        Assertions.assertThat(TestDefinitionUtil.getResolvedLastVersion(qa, TEST_NAME, Environment.QA).getVersion())
                 .isEqualTo(TRUNK_REVISION);
     }
 }

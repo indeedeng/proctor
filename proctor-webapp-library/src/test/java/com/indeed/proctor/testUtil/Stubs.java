@@ -14,13 +14,15 @@ import java.util.List;
 
 public class Stubs {
 
-    public static TestDefinition createTestDefinition(
-            final String bucketsString, final double[] ranges) {
+    public static TestDefinition createTestDefinition(final String bucketsString, final double[] ranges) {
         return createTestDefinition(bucketsString, TestType.RANDOM, "salt", ranges);
     }
 
     public static TestDefinition createTestDefinition(
-            final String bucketsString, final TestType testType, final double[] ranges) {
+            final String bucketsString,
+            final TestType testType,
+            final double[] ranges
+    ) {
         return createTestDefinition(bucketsString, testType, "salt", ranges);
     }
 
@@ -28,7 +30,8 @@ public class Stubs {
             final String bucketsString,
             final TestType testType,
             final String salt,
-            final double[] ranges) {
+            final double[] ranges
+    ) {
         return createTestDefinition(bucketsString, testType, salt, ranges, null);
     }
 
@@ -37,14 +40,17 @@ public class Stubs {
             final TestType testType,
             final String salt,
             final double[] ranges,
-            final Payload[] payloads) {
+            final Payload[] payloads
+    ) {
         return createTestDefinition(bucketsString, testType, salt, ranges, payloads, null);
     }
 
     public static TestDefinition createTestDefinition(
-            final String bucketsString, final double[] ranges, final List<String> allocationIds) {
-        return createTestDefinition(
-                bucketsString, TestType.RANDOM, "salt", ranges, null, allocationIds);
+            final String bucketsString,
+            final double[] ranges,
+            final List<String> allocationIds
+    ) {
+        return createTestDefinition(bucketsString, TestType.RANDOM, "salt", ranges, null, allocationIds);
     }
 
     public static TestDefinition createTestDefinition(
@@ -53,7 +59,8 @@ public class Stubs {
             final String salt,
             final double[] ranges,
             final Payload[] payloads,
-            final List<String> allocationIds) {
+            final List<String> allocationIds
+    ) {
         final List<Range> rangeList = new ArrayList<Range>();
         final String[] buckets = bucketsString.split(",");
         final List<TestBucket> buckList = new ArrayList<TestBucket>();
@@ -62,12 +69,12 @@ public class Stubs {
             final String bucket = buckets[i];
             final int colonInd = bucket.indexOf(':');
             final int bucketValue = Integer.parseInt(bucket.substring(colonInd + 1));
-            final TestBucket tempBucket =
-                    new TestBucket(
-                            bucket.substring(0, colonInd),
-                            bucketValue,
-                            "description",
-                            (payloads == null) ? null : payloads[i]);
+            final TestBucket tempBucket = new TestBucket(
+                    bucket.substring(0, colonInd),
+                    bucketValue,
+                    "description",
+                    (payloads == null) ? null : payloads[i]
+            );
             buckList.add(tempBucket);
             final double range = i >= ranges.length ? 0 : ranges[i];
             rangeList.add(new Range(bucketValue, range));
@@ -81,15 +88,6 @@ public class Stubs {
                 allocList.add(new Allocation(null, rangeList, allocationId));
             }
         }
-        return new TestDefinition(
-                EnvironmentVersion.UNKNOWN_REVISION,
-                null,
-                testType,
-                salt,
-                buckList,
-                allocList,
-                Collections.<String, Object>emptyMap(),
-                Collections.<String, Object>emptyMap(),
-                null);
+        return new TestDefinition(EnvironmentVersion.UNKNOWN_REVISION, null, testType, salt, buckList, allocList, Collections.<String, Object>emptyMap(), Collections.<String, Object>emptyMap(), null);
     }
 }

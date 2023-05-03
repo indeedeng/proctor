@@ -8,20 +8,21 @@ import javax.annotation.Nonnull;
 import java.io.IOException;
 
 class JsonParserUtils {
-    private JsonParserUtils() {}
+    private JsonParserUtils() {
+    }
 
     /**
      * Consume json object with the given consumer by iterating over its entries
      *
-     * @param jsonParser: jsonParser to consume. currentToken() must return START_OBJECT at the
-     *     beginning.
-     * @param consumer: consumer taking two arguments: json key and the current jsonParser. The
-     *     consumer must only parse and finishes to parse the corresponding value.
+     * @param jsonParser: jsonParser to consume. currentToken() must return START_OBJECT at the beginning.
+     * @param consumer:   consumer taking two arguments: json key and the current jsonParser.
+     *                    The consumer must only parse and finishes to parse the corresponding value.
      * @throws IOException
      */
     static void consumeJson(
-            @Nonnull final JsonParser jsonParser, final PartialJsonConsumer consumer)
-            throws IOException {
+            @Nonnull final JsonParser jsonParser,
+            final PartialJsonConsumer consumer
+    ) throws IOException {
         // The current position of jsonParser must be "{".
         Preconditions.checkState(jsonParser.currentToken() == JsonToken.START_OBJECT);
 

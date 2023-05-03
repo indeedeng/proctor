@@ -8,5 +8,6 @@ public interface PreDefinitionDeleteChange {
     void preDelete(
             final TestDefinition testDefinition,
             final Map<String, String[]> extensionFields,
-            final DefinitionChangeLogger logger);
+            final DefinitionChangeLogger logger
+    );
 }

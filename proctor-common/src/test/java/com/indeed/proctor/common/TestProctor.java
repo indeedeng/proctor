@@ -41,7 +41,9 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-/** @author piotr */
+/**
+ * @author piotr
+ */
 public class TestProctor {
     @Test
     public void testAppendTestMatrix_emptyProctor() throws IOException {
@@ -124,8 +126,7 @@ public class TestProctor {
 
     @Test
     public void testAppendTestMatrixFiltered_twoTest() throws IOException {
-        final JsonNode root =
-                appendTestMatrixFiltered_processAndGetRoot(Arrays.asList("one", "three"));
+        final JsonNode root = appendTestMatrixFiltered_processAndGetRoot(Arrays.asList("one", "three"));
 
         assertTrue(root.has("tests"));
         final JsonNode tests = root.get("tests");
@@ -138,8 +139,7 @@ public class TestProctor {
 
     @Test
     public void testAppendTestMatrixFiltered_allThreeTest() throws IOException {
-        final JsonNode root =
-                appendTestMatrixFiltered_processAndGetRoot(Arrays.asList("three", "two", "one"));
+        final JsonNode root = appendTestMatrixFiltered_processAndGetRoot(Arrays.asList("three", "two", "one"));
 
         assertTrue(root.has("tests"));
         final JsonNode tests = root.get("tests");
@@ -155,8 +155,7 @@ public class TestProctor {
     @Test
     public void testAppendTestMatrixFiltered_nonexistTests() throws IOException {
         // Ensure that invalid tests just return no tests at all.
-        final JsonNode root =
-                appendTestMatrixFiltered_processAndGetRoot(Arrays.asList("four", "eleventy"));
+        final JsonNode root = appendTestMatrixFiltered_processAndGetRoot(Arrays.asList("four", "eleventy"));
 
         assertTrue(root.has("tests"));
         final JsonNode tests = root.get("tests");
@@ -166,16 +165,14 @@ public class TestProctor {
     @Test
     public void testAppendTestMatrixFiltered_emptyTests() throws IOException {
         // Ensure that invalid tests just return no tests at all.
-        final JsonNode root =
-                appendTestMatrixFiltered_processAndGetRoot(Collections.<String>emptyList());
+        final JsonNode root = appendTestMatrixFiltered_processAndGetRoot(Collections.<String>emptyList());
 
         assertTrue(root.has("tests"));
         final JsonNode tests = root.get("tests");
         assertEquals(0, tests.size());
     }
 
-    private JsonNode appendTestMatrixFiltered_processAndGetRoot(final Collection<String> names)
-            throws IOException {
+    private JsonNode appendTestMatrixFiltered_processAndGetRoot(final Collection<String> names) throws IOException {
         final TestMatrixArtifact matrix = createThreeFakeTests();
         final Proctor proctor = Proctor.construct(matrix, null, RuleEvaluator.FUNCTION_MAPPER);
         final Writer writer = new StringWriter();
@@ -191,12 +188,8 @@ public class TestProctor {
         final Writer writer = new StringWriter();
         proctor.appendAllTests(writer);
         // Discard trailing empty strings to simplify length testing later.
-        final List<String> lines =
-                Lists.newArrayList(
-                        Splitter.on("\n")
-                                .trimResults()
-                                .omitEmptyStrings()
-                                .split(writer.toString()));
+        final List<String> lines = Lists.newArrayList(
+                Splitter.on("\n").trimResults().omitEmptyStrings().split(writer.toString()));
 
         // Confirm that all three tests show up in the output.
         // Note: theoretically, they could show up in any order and still be correct.
@@ -229,8 +222,7 @@ public class TestProctor {
 
     @Test
     public void testAppendTestsNameFiltered_allThreeTest() {
-        final List<String> lines =
-                appendTestsNameFiltered_process(Arrays.asList("one", "two", "three"));
+        final List<String> lines = appendTestsNameFiltered_process(Arrays.asList("one", "two", "three"));
 
         assertEquals(3, lines.size());
         assertTrue(lines.get(0).startsWith("one :"));
@@ -240,8 +232,7 @@ public class TestProctor {
 
     @Test
     public void testAppendTestsNameFiltered_nonexistTests() {
-        final List<String> lines =
-                appendTestsNameFiltered_process(Arrays.asList("four", "eleventy"));
+        final List<String> lines = appendTestsNameFiltered_process(Arrays.asList("four", "eleventy"));
 
         assertEquals(0, lines.size());
     }
@@ -280,13 +271,13 @@ public class TestProctor {
 
         final TestMatrixArtifact matrix = createTestMatrixWithOneRandomTest(testName);
 
-        final Proctor proctor =
-                new Proctor(
-                        matrix,
-                        null,
-                        Collections.singletonMap(testName, testChooser),
-                        Collections.singletonList(testName),
-                        new IdentifierValidator.Noop());
+        final Proctor proctor = new Proctor(
+                matrix,
+                null,
+                Collections.singletonMap(testName, testChooser),
+                Collections.singletonList(testName),
+                new IdentifierValidator.Noop()
+        );
 
         final Identifiers identifiersWithRandom = new Identifiers(Collections.emptyMap(), true);
         final Identifiers identifiersWithoutRandom = new Identifiers(Collections.emptyMap(), false);
@@ -294,8 +285,11 @@ public class TestProctor {
         final Map<String, Object> inputContext = Collections.emptyMap();
         final TestBucket testBucket = TestBucket.builder().build();
         final Allocation allocation = new Allocation();
-        final TestChooser.Result result = new TestChooser.Result(testBucket, allocation);
+        final TestChooser.Result result = new TestChooser.Result(
+                testBucket, allocation
+        );
 
+<<<<<<< HEAD
 <<<<<<< HEAD
         when(testChooser.choose(isNull(), eq(Collections.emptyMap()), anyMap(), eq(ForceGroupsOptions.empty()))).thenReturn(result);
 ||||||| parent of 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
@@ -305,23 +299,33 @@ public class TestProctor {
                         isNull(), eq(inputContext), anyMap(), eq(ForceGroupsOptions.empty())))
                 .thenReturn(result);
 >>>>>>> 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
+||||||| parent of a496e85b (PROC-960: Remove autostyle code)
+        when(testChooser.choose(
+                        isNull(), eq(inputContext), anyMap(), eq(ForceGroupsOptions.empty())))
+                .thenReturn(result);
+=======
+        when(testChooser.choose(isNull(), eq(inputContext), anyMap(), eq(ForceGroupsOptions.empty()))).thenReturn(result);
+>>>>>>> a496e85b (PROC-960: Remove autostyle code)
 
-        final ProctorResult proctorResultWithRandom =
-                proctor.determineTestGroups(
-                        identifiersWithRandom, inputContext, Collections.emptyMap());
-        final ProctorResult proctorResultWithoutRandom =
-                proctor.determineTestGroups(
-                        identifiersWithoutRandom, inputContext, Collections.emptyMap());
+        final ProctorResult proctorResultWithRandom = proctor.determineTestGroups(
+                identifiersWithRandom,
+                inputContext,
+                Collections.emptyMap()
+        );
+        final ProctorResult proctorResultWithoutRandom = proctor.determineTestGroups(
+                identifiersWithoutRandom,
+                inputContext,
+                Collections.emptyMap()
+        );
 
-        assertThat(proctorResultWithRandom.getBuckets())
-                .isEqualTo(Collections.singletonMap(testName, result.getTestBucket()));
-        assertThat(proctorResultWithRandom.getAllocations())
-                .isEqualTo(Collections.singletonMap(testName, result.getAllocation()));
+        assertThat(proctorResultWithRandom.getBuckets()).isEqualTo(Collections.singletonMap(testName, result.getTestBucket()));
+        assertThat(proctorResultWithRandom.getAllocations()).isEqualTo(Collections.singletonMap(testName, result.getAllocation()));
 
         assertThat(proctorResultWithoutRandom.getBuckets()).isEqualTo(Collections.emptyMap());
         assertThat(proctorResultWithoutRandom.getAllocations()).isEqualTo(Collections.emptyMap());
 
         // choose should not be called for identifiers with randomEnabled == false.
+<<<<<<< HEAD
 <<<<<<< HEAD
         verify(testChooser, times(1)).choose(
                 isNull(),
@@ -340,6 +344,17 @@ public class TestProctor {
         verify(testChooser, times(1))
                 .choose(isNull(), eq(inputContext), anyMap(), eq(ForceGroupsOptions.empty()));
 >>>>>>> 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
+||||||| parent of a496e85b (PROC-960: Remove autostyle code)
+        verify(testChooser, times(1))
+                .choose(isNull(), eq(inputContext), anyMap(), eq(ForceGroupsOptions.empty()));
+=======
+        verify(testChooser, times(1)).choose(
+                isNull(),
+                eq(inputContext),
+                anyMap(),
+                eq(ForceGroupsOptions.empty())
+        );
+>>>>>>> a496e85b (PROC-960: Remove autostyle code)
     }
 
     @Test
@@ -348,48 +363,53 @@ public class TestProctor {
         // it should be able to evaluate X.
 
         final TestBucket testBucket = new TestBucket("active", 1, "");
-        final Allocation allocation = new Allocation("", ImmutableList.of(new Range(1, 1.0)));
+        final Allocation allocation = new Allocation(
+                "",
+                ImmutableList.of(new Range(1, 1.0))
+        );
 
-        final ConsumableTestDefinition testDefinitionX =
-                ConsumableTestDefinition.fromTestDefinition(
-                        TestDefinition.builder()
-                                .setSalt("&X")
-                                .setTestType(TestType.ANONYMOUS_USER)
-                                .setDependsOn(new TestDependency("Y", 1))
-                                .addBuckets(testBucket)
-                                .addAllocations(allocation)
-                                .build());
-        final ConsumableTestDefinition testDefinitionY =
-                ConsumableTestDefinition.fromTestDefinition(
-                        TestDefinition.builder()
-                                .setSalt("&Y")
-                                .setTestType(TestType.ANONYMOUS_USER)
-                                .addBuckets(testBucket)
-                                .addAllocations(allocation)
-                                .build());
+        final ConsumableTestDefinition testDefinitionX = ConsumableTestDefinition.fromTestDefinition(
+                TestDefinition.builder()
+                        .setSalt("&X")
+                        .setTestType(TestType.ANONYMOUS_USER)
+                        .setDependsOn(new TestDependency("Y", 1))
+                        .addBuckets(testBucket)
+                        .addAllocations(allocation)
+                        .build()
+        );
+        final ConsumableTestDefinition testDefinitionY = ConsumableTestDefinition.fromTestDefinition(
+                TestDefinition.builder()
+                        .setSalt("&Y")
+                        .setTestType(TestType.ANONYMOUS_USER)
+                        .addBuckets(testBucket)
+                        .addAllocations(allocation)
+                        .build()
+        );
 
-        final Map<String, ConsumableTestDefinition> tests =
-                ImmutableMap.of(
-                        "X", testDefinitionX,
-                        "Y", testDefinitionY);
+        final Map<String, ConsumableTestDefinition> tests = ImmutableMap.of(
+                "X", testDefinitionX,
+                "Y", testDefinitionY
+        );
         final TestMatrixArtifact matrix = new TestMatrixArtifact();
         matrix.setTests(tests);
         matrix.setAudit(new Audit());
 
-        final Proctor proctor =
-                Proctor.construct(
-                        matrix,
-                        ProctorLoadResult.emptyResult(),
-                        RuleEvaluator.defaultFunctionMapperBuilder().build());
+        final Proctor proctor = Proctor.construct(
+                matrix,
+                ProctorLoadResult.emptyResult(),
+                RuleEvaluator.defaultFunctionMapperBuilder().build()
+        );
 
-        final ProctorResult proctorResult =
-                proctor.determineTestGroups(
-                        Identifiers.of(TestType.ANONYMOUS_USER, "cookie"),
-                        Collections.emptyMap(),
-                        Collections.emptyMap(),
-                        ImmutableList.of("X"));
+        final ProctorResult proctorResult = proctor.determineTestGroups(
+                Identifiers.of(TestType.ANONYMOUS_USER, "cookie"),
+                Collections.emptyMap(),
+                Collections.emptyMap(),
+                ImmutableList.of("X")
+        );
 
-        assertThat(proctorResult.getBuckets()).containsOnlyKeys("X").containsEntry("X", testBucket);
+        assertThat(proctorResult.getBuckets())
+                .containsOnlyKeys("X")
+                .containsEntry("X", testBucket);
         assertThat(proctorResult.getAllocations())
                 .containsOnlyKeys("X")
                 .containsEntry("X", allocation);
@@ -402,52 +422,57 @@ public class TestProctor {
     @Test
     public void testDetermineTestGroupsWithInvalidIdentifier() {
         final TestBucket testBucket = new TestBucket("active", 1, "");
-        final Allocation allocation = new Allocation("", ImmutableList.of(new Range(1, 1.0)));
+        final Allocation allocation = new Allocation(
+                "",
+                ImmutableList.of(new Range(1, 1.0))
+        );
 
-        final ConsumableTestDefinition testDefinitionX =
-                ConsumableTestDefinition.fromTestDefinition(
-                        TestDefinition.builder()
-                                .setSalt("&X")
-                                .setTestType(TestType.ANONYMOUS_USER)
-                                .addBuckets(testBucket)
-                                .addAllocations(allocation)
-                                .build());
-        final ConsumableTestDefinition testDefinitionY =
-                ConsumableTestDefinition.fromTestDefinition(
-                        TestDefinition.builder()
-                                .setSalt("&Y")
-                                .setTestType(TestType.AUTHENTICATED_USER)
-                                .addBuckets(testBucket)
-                                .addAllocations(allocation)
-                                .build());
+        final ConsumableTestDefinition testDefinitionX = ConsumableTestDefinition.fromTestDefinition(
+                TestDefinition.builder()
+                        .setSalt("&X")
+                        .setTestType(TestType.ANONYMOUS_USER)
+                        .addBuckets(testBucket)
+                        .addAllocations(allocation)
+                        .build()
+        );
+        final ConsumableTestDefinition testDefinitionY = ConsumableTestDefinition.fromTestDefinition(
+                TestDefinition.builder()
+                        .setSalt("&Y")
+                        .setTestType(TestType.AUTHENTICATED_USER)
+                        .addBuckets(testBucket)
+                        .addAllocations(allocation)
+                        .build()
+        );
 
-        final Map<String, ConsumableTestDefinition> tests =
-                ImmutableMap.of(
-                        "X", testDefinitionX,
-                        "Y", testDefinitionY);
+        final Map<String, ConsumableTestDefinition> tests = ImmutableMap.of(
+                "X", testDefinitionX,
+                "Y", testDefinitionY
+        );
         final TestMatrixArtifact matrix = new TestMatrixArtifact();
         matrix.setTests(tests);
         matrix.setAudit(new Audit());
 
-        final Proctor proctor =
-                Proctor.construct(
-                        matrix,
-                        ProctorLoadResult.emptyResult(),
-                        RuleEvaluator.defaultFunctionMapperBuilder().build(),
-                        (testType, identifier) ->
-                                !(testType.equals(TestType.AUTHENTICATED_USER)
-                                        && "logged-out".equals(identifier)));
+        final Proctor proctor = Proctor.construct(
+                matrix,
+                ProctorLoadResult.emptyResult(),
+                RuleEvaluator.defaultFunctionMapperBuilder().build(),
+                (testType, identifier) ->
+                        !(testType.equals(TestType.AUTHENTICATED_USER) && "logged-out".equals(identifier))
+        );
 
-        final ProctorResult proctorResult =
-                proctor.determineTestGroups(
-                        Identifiers.of(
-                                TestType.ANONYMOUS_USER, "cookie",
-                                TestType.AUTHENTICATED_USER, "logged-out"),
-                        Collections.emptyMap(),
-                        Collections.emptyMap(),
-                        ImmutableList.of("X"));
+        final ProctorResult proctorResult = proctor.determineTestGroups(
+                Identifiers.of(
+                        TestType.ANONYMOUS_USER, "cookie",
+                        TestType.AUTHENTICATED_USER, "logged-out"
+                ),
+                Collections.emptyMap(),
+                Collections.emptyMap(),
+                ImmutableList.of("X")
+        );
 
-        assertThat(proctorResult.getBuckets()).containsOnlyKeys("X").containsEntry("X", testBucket);
+        assertThat(proctorResult.getBuckets())
+                .containsOnlyKeys("X")
+                .containsEntry("X", testBucket);
         assertThat(proctorResult.getAllocations())
                 .containsOnlyKeys("X")
                 .containsEntry("X", allocation);
@@ -461,50 +486,55 @@ public class TestProctor {
     public void testDetermineTestGroups_ForceGroupsWithDefaultToFallback() {
         final TestBucket controlBucket = new TestBucket("control", 0, "");
         final TestBucket activeBucket = new TestBucket("active", 1, "");
-        final Allocation allocation = new Allocation("", ImmutableList.of(new Range(1, 1.0)));
+        final Allocation allocation = new Allocation(
+                "",
+                ImmutableList.of(new Range(1, 1.0))
+        );
 
-        final ConsumableTestDefinition testDefinitionX =
-                ConsumableTestDefinition.fromTestDefinition(
-                        TestDefinition.builder()
-                                .setSalt("&X")
-                                .setTestType(TestType.ANONYMOUS_USER)
-                                .addBuckets(controlBucket)
-                                .addBuckets(activeBucket)
-                                .addAllocations(allocation)
-                                .build());
-        final ConsumableTestDefinition testDefinitionY =
-                ConsumableTestDefinition.fromTestDefinition(
-                        TestDefinition.builder()
-                                .setSalt("&Y")
-                                .setTestType(TestType.ANONYMOUS_USER)
-                                .addBuckets(controlBucket)
-                                .addBuckets(activeBucket)
-                                .addAllocations(allocation)
-                                .build());
+        final ConsumableTestDefinition testDefinitionX = ConsumableTestDefinition.fromTestDefinition(
+                TestDefinition.builder()
+                        .setSalt("&X")
+                        .setTestType(TestType.ANONYMOUS_USER)
+                        .addBuckets(controlBucket)
+                        .addBuckets(activeBucket)
+                        .addAllocations(allocation)
+                        .build()
+        );
+        final ConsumableTestDefinition testDefinitionY = ConsumableTestDefinition.fromTestDefinition(
+                TestDefinition.builder()
+                        .setSalt("&Y")
+                        .setTestType(TestType.ANONYMOUS_USER)
+                        .addBuckets(controlBucket)
+                        .addBuckets(activeBucket)
+                        .addAllocations(allocation)
+                        .build()
+        );
 
-        final Map<String, ConsumableTestDefinition> tests =
-                ImmutableMap.of(
-                        "X", testDefinitionX,
-                        "Y", testDefinitionY);
+        final Map<String, ConsumableTestDefinition> tests = ImmutableMap.of(
+                "X", testDefinitionX,
+                "Y", testDefinitionY
+        );
         final TestMatrixArtifact matrix = new TestMatrixArtifact();
         matrix.setTests(tests);
         matrix.setAudit(new Audit());
 
-        final Proctor proctor =
-                Proctor.construct(
-                        matrix,
-                        ProctorLoadResult.emptyResult(),
-                        RuleEvaluator.defaultFunctionMapperBuilder().build());
+        final Proctor proctor = Proctor.construct(
+                matrix,
+                ProctorLoadResult.emptyResult(),
+                RuleEvaluator.defaultFunctionMapperBuilder().build()
+        );
 
-        final ProctorResult proctorResult =
-                proctor.determineTestGroups(
-                        Identifiers.of(TestType.ANONYMOUS_USER, "cookie"),
-                        Collections.emptyMap(),
-                        ForceGroupsOptions.builder()
-                                .putForceGroup("X", 0)
-                                .setDefaultMode(ForceGroupsDefaultMode.FALLBACK)
-                                .build(),
-                        Collections.emptyList());
+        final ProctorResult proctorResult = proctor.determineTestGroups(
+                Identifiers.of(
+                        TestType.ANONYMOUS_USER, "cookie"
+                ),
+                Collections.emptyMap(),
+                ForceGroupsOptions.builder()
+                        .putForceGroup("X", 0)
+                        .setDefaultMode(ForceGroupsDefaultMode.FALLBACK)
+                        .build(),
+                Collections.emptyList()
+        );
 
         assertThat(proctorResult.getBuckets())
                 .containsOnlyKeys("X")
@@ -522,54 +552,64 @@ public class TestProctor {
         final TestBucket inactiveBucket = new TestBucket("inactive", -1, "");
         final TestBucket controlBucket = new TestBucket("control", 0, "");
         final TestBucket activeBucket = new TestBucket("active", 1, "");
-        final Allocation allocationX =
-                new Allocation(
-                        "",
-                        ImmutableList.of(new Range(0, 0.5), new Range(-1, 0), new Range(1, 0.5)));
-        final Allocation allocationY =
-                new Allocation(
-                        "",
-                        ImmutableList.of(new Range(0, 0.3), new Range(-1, 0.4), new Range(1, 0.3)));
+        final Allocation allocationX = new Allocation(
+                "",
+                ImmutableList.of(
+                        new Range(0, 0.5),
+                        new Range(-1, 0),
+                        new Range(1, 0.5)
+                )
+        );
+        final Allocation allocationY = new Allocation(
+                "",
+                ImmutableList.of(
+                        new Range(0, 0.3),
+                        new Range(-1, 0.4),
+                        new Range(1, 0.3)
+                )
+        );
 
-        final ConsumableTestDefinition testDefinitionX =
-                ConsumableTestDefinition.fromTestDefinition(
-                        TestDefinition.builder()
-                                .setSalt("&X")
-                                .setTestType(TestType.ANONYMOUS_USER)
-                                .addBuckets(inactiveBucket, controlBucket, activeBucket)
-                                .addAllocations(allocationX)
-                                .build());
-        final ConsumableTestDefinition testDefinitionY =
-                ConsumableTestDefinition.fromTestDefinition(
-                        TestDefinition.builder()
-                                .setSalt("&Y")
-                                .setTestType(TestType.ANONYMOUS_USER)
-                                .addBuckets(inactiveBucket, controlBucket, activeBucket)
-                                .addAllocations(allocationY)
-                                .build());
+        final ConsumableTestDefinition testDefinitionX = ConsumableTestDefinition.fromTestDefinition(
+                TestDefinition.builder()
+                        .setSalt("&X")
+                        .setTestType(TestType.ANONYMOUS_USER)
+                        .addBuckets(inactiveBucket, controlBucket, activeBucket)
+                        .addAllocations(allocationX)
+                        .build()
+        );
+        final ConsumableTestDefinition testDefinitionY = ConsumableTestDefinition.fromTestDefinition(
+                TestDefinition.builder()
+                        .setSalt("&Y")
+                        .setTestType(TestType.ANONYMOUS_USER)
+                        .addBuckets(inactiveBucket, controlBucket, activeBucket)
+                        .addAllocations(allocationY)
+                        .build()
+        );
 
-        final Map<String, ConsumableTestDefinition> tests =
-                ImmutableMap.of(
-                        "X", testDefinitionX,
-                        "Y", testDefinitionY);
+        final Map<String, ConsumableTestDefinition> tests = ImmutableMap.of(
+                "X", testDefinitionX,
+                "Y", testDefinitionY
+        );
         final TestMatrixArtifact matrix = new TestMatrixArtifact();
         matrix.setTests(tests);
         matrix.setAudit(new Audit());
 
-        final Proctor proctor =
-                Proctor.construct(
-                        matrix,
-                        ProctorLoadResult.emptyResult(),
-                        RuleEvaluator.defaultFunctionMapperBuilder().build());
+        final Proctor proctor = Proctor.construct(
+                matrix,
+                ProctorLoadResult.emptyResult(),
+                RuleEvaluator.defaultFunctionMapperBuilder().build()
+        );
 
-        final ProctorResult proctorResult =
-                proctor.determineTestGroups(
-                        Identifiers.of(TestType.ANONYMOUS_USER, "cookie"),
-                        Collections.emptyMap(),
-                        ForceGroupsOptions.builder()
-                                .setDefaultMode(ForceGroupsDefaultMode.MIN_LIVE)
-                                .build(),
-                        Collections.emptyList());
+        final ProctorResult proctorResult = proctor.determineTestGroups(
+                Identifiers.of(
+                        TestType.ANONYMOUS_USER, "cookie"
+                ),
+                Collections.emptyMap(),
+                ForceGroupsOptions.builder()
+                        .setDefaultMode(ForceGroupsDefaultMode.MIN_LIVE)
+                        .build(),
+                Collections.emptyList()
+        );
 
         assertThat(proctorResult.getBuckets())
                 .containsEntry("X", controlBucket)
@@ -598,12 +638,8 @@ public class TestProctor {
         final Proctor proctor = Proctor.construct(matrix, null, RuleEvaluator.FUNCTION_MAPPER);
         final Writer writer = new StringWriter();
         proctor.appendTestsNameFiltered(writer, names);
-        final List<String> lines =
-                Lists.newArrayList(
-                        Splitter.on("\n")
-                                .trimResults()
-                                .omitEmptyStrings()
-                                .split(writer.toString()));
+        final List<String> lines = Lists.newArrayList(
+                Splitter.on("\n").trimResults().omitEmptyStrings().split(writer.toString()));
         Collections.sort(lines);
         return lines;
     }

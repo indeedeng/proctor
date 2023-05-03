@@ -16,7 +16,8 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 
 public class Serializers {
-    private Serializers() {}
+    private Serializers() {
+    }
 
     /**
      * Customized serializer class for suppressing scientific notation.
@@ -32,10 +33,7 @@ public class Serializers {
         }
 
         @Override
-        public void serialize(
-                final Double aDouble,
-                final JsonGenerator jsonGenerator,
-                final SerializerProvider serializerProvider)
+        public void serialize(final Double aDouble, final JsonGenerator jsonGenerator, final SerializerProvider serializerProvider)
                 throws IOException, JsonProcessingException {
             jsonGenerator.writeNumber(decimalFormat.format(aDouble));
         }
@@ -66,7 +64,9 @@ public class Serializers {
         return mapper;
     }
 
-    /** @return an {@link ObjectMapper} configured to do things as we want */
+    /**
+     * @return an {@link ObjectMapper} configured to do things as we want
+     */
     @Nonnull
     public static ObjectMapper strict() {
         final ObjectMapper mapper = new ObjectMapper();

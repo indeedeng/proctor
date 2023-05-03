@@ -16,7 +16,8 @@ import java.util.concurrent.TimeUnit;
 /** @author parker */
 final class SvnObjectPools {
 
-    private SvnObjectPools() {}
+    private SvnObjectPools() {
+    }
 
     private static class SVNClientManagerFactory extends BasePooledObjectFactory<SVNClientManager> {
 
@@ -24,7 +25,8 @@ final class SvnObjectPools {
         final String password;
         private final boolean requiresAuthentication;
 
-        private SVNClientManagerFactory(final String username, final String password) {
+        private SVNClientManagerFactory(final String username,
+                                        final String password) {
             requiresAuthentication = true;
             this.username = username;
             this.password = password;
@@ -39,8 +41,7 @@ final class SvnObjectPools {
         @Override
         public SVNClientManager create() throws Exception {
             if (requiresAuthentication) {
-                final BasicAuthenticationManager authManager =
-                        new BasicAuthenticationManager(username, password);
+                final BasicAuthenticationManager authManager = new BasicAuthenticationManager(username, password);
                 return SVNClientManager.newInstance(null, authManager);
             } else {
                 return SVNClientManager.newInstance();
@@ -57,23 +58,21 @@ final class SvnObjectPools {
             final SVNClientManager m = p.getObject();
             m.dispose();
         }
+
     }
 
     public static ObjectPool<SVNClientManager> clientManagerPool() {
         return createObjectPool(new SVNClientManagerFactory());
     }
 
-    public static ObjectPool<SVNClientManager> clientManagerPoolWithAuth(
-            final String username, final String password) {
+    public static ObjectPool<SVNClientManager> clientManagerPoolWithAuth(final String username, final String password) {
         return createObjectPool(new SVNClientManagerFactory(username, password));
     }
 
     private static <T> ObjectPool<T> createObjectPool(final PooledObjectFactory<T> factory) {
         final GenericObjectPoolConfig objectPoolConfig = new GenericObjectPoolConfig();
-        objectPoolConfig.setMinEvictableIdleTimeMillis(
-                TimeUnit.HOURS.toMillis(1)); // arbitrary, but positive so objects do get evicted
-        objectPoolConfig.setTimeBetweenEvictionRunsMillis(
-                TimeUnit.MINUTES.toMillis(10)); // arbitrary, but positive so objects do get evicted
+        objectPoolConfig.setMinEvictableIdleTimeMillis(TimeUnit.HOURS.toMillis(1)); // arbitrary, but positive so objects do get evicted
+        objectPoolConfig.setTimeBetweenEvictionRunsMillis(TimeUnit.MINUTES.toMillis(10)); // arbitrary, but positive so objects do get evicted
         objectPoolConfig.setJmxEnabled(false);
         objectPoolConfig.setBlockWhenExhausted(false);
         objectPoolConfig.setMaxTotal(-1); // uncapped number of objects in the pool
@@ -82,4 +81,5 @@ final class SvnObjectPools {
         abandonedConfig.setRemoveAbandonedTimeout((int) TimeUnit.MINUTES.toSeconds(30));
         return new GenericObjectPool<T>(factory, objectPoolConfig, abandonedConfig);
     }
+
 }

@@ -8,18 +8,19 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 
-/** The final variables used for determineTestBuckets(). */
+/**
+ * The final variables used for determineTestBuckets().
+ */
 public class ConvertedParameters {
     private final Map<String, Object> context;
     private final Identifiers identifiers;
     private final List<String> test;
     private final Map<String, Integer> forceGroups;
 
-    public ConvertedParameters(
-            final Map<String, Object> context,
-            final Identifiers identifiers,
-            final List<String> test,
-            final Map<String, Integer> forceGroups) {
+    public ConvertedParameters(final Map<String, Object> context,
+                               final Identifiers identifiers,
+                               final List<String> test,
+                               final Map<String, Integer> forceGroups) {
         this.context = ImmutableMap.copyOf(context);
         this.identifiers = identifiers;
         this.test = test != null ? ImmutableList.copyOf(test) : null;

@@ -13,23 +13,35 @@ import java.util.Properties;
 import java.util.regex.Pattern;
 
 /**
- * Deserializer of exported variables from response of {@link ViewExportedVariablesServlet} This
- * class is required because escape logic in {@link Variable} is not complete so naive
- * deserialization with {@link Properties} fails.
+ * Deserializer of exported variables from response of {@link ViewExportedVariablesServlet}
+ * This class is required because escape logic in {@link Variable} is not complete
+ * so naive deserialization with {@link Properties} fails.
  *
- * <p>This is a example case how deserialization fails. 1. Consider variable `var` that stores this
- * json as string { "value": "this string contains double quote \" "} 2. Verexporter expose this as
- * follows var={ "value": "this string contains double quote \" "} 3. When loading it as property,
- * `var` will be loaded as follows { "value": "this string contains double quote " "} 4. This is not
- * more valid json format.
+ * This is a example case how deserialization fails.
+ * 1. Consider variable `var` that stores this json as string
+ * { "value": "this string contains double quote \" "}
+ * 2. Verexporter expose this as follows
+ * var={ "value": "this string contains double quote \" "}
+ * 3. When loading it as property, `var` will be loaded as follows
+ * { "value": "this string contains double quote " "}
+ * 4. This is not more valid json format.
  */
 public class VarExportedVariablesDeserializer {
     /**
      * Pattern to match string that needs to be escaped with additional '\'
      *
-     * <p>Example string to match at the first character \ \\ \r \\: \\=
+     * Example string to match at the first character
+     * \
+     * \\
+     * \r
+     * \\:
+     * \\=
      *
-     * <p>Example string not to match at the first character abc \: \= \u0101
+     * Example string not to match at the first character
+     * abc
+     * \:
+     * \=
+     * \u0101
      */
     @VisibleForTesting
     static final Pattern ESCAPE_TARGET_PATTERN = Pattern.compile("\\\\(?!(:|=|u[0-9a-f]{4}))");
@@ -37,12 +49,13 @@ public class VarExportedVariablesDeserializer {
     private static final String ESCAPE_REPLACEMENT_STRING = "\\\\\\\\";
 
     /**
-     * Deserialize exported variables from response of {@link ViewExportedVariablesServlet} This
-     * loads the input as {@link Properties} after preprocess for correct escaping.
+     * Deserialize exported variables from response of {@link ViewExportedVariablesServlet}
+     * This loads the input as {@link Properties}
+     * after preprocess for correct escaping.
      *
-     * <p>Note that it's not possible to recover correct escaping for all possible cases. For
-     * example, "\\u1010\u1010" (as Java string literal) will be deserialized to "\u1010\u1010" (as
-     * Java string literal)
+     * Note that it's not possible to recover correct escaping for all possible cases.
+     * For example, "\\u1010\u1010" (as Java string literal) will be deserialized
+     * to "\u1010\u1010" (as Java string literal)
      */
     public static Properties deserialize(final String input) {
         final Properties properties = new Properties();
@@ -61,8 +74,11 @@ public class VarExportedVariablesDeserializer {
         return deserialize(IOUtils.toString(input));
     }
 
-    /** Make additional escape so that we can load it as Properties. */
+    /**
+     * Make additional escape so that we can load it as Properties.
+     */
     private static String escapeForProperties(final String input) {
-        return ESCAPE_TARGET_PATTERN.matcher(input).replaceAll(ESCAPE_REPLACEMENT_STRING);
+        return ESCAPE_TARGET_PATTERN.matcher(input)
+                .replaceAll(ESCAPE_REPLACEMENT_STRING);
     }
 }

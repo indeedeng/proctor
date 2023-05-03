@@ -5,43 +5,34 @@ import com.indeed.proctor.webapp.db.Environment;
 
 import java.util.Date;
 
-/** @author parker */
+/**
+* @author parker
+*/
 public class EnvironmentVersion {
     public static final String UNKNOWN_REVISION = "-1";
     public static final String UNKNOWN_VERSION = "-1";
-    public static final Revision FULL_UNKNOWN_REVISION =
-            new Revision(UNKNOWN_REVISION, "[unknown]", new Date(0), "History unknown");
+    public static final Revision FULL_UNKNOWN_REVISION = new Revision(UNKNOWN_REVISION, "[unknown]", new Date(0), "History unknown");
 
     private final String testName;
 
     // @Nullable - The last commit on the trunk branch
     private final Revision trunk;
-    private final String
-            trunkEffectiveRevision; // "effective" revision, used to bridge between different
-    // Proctor stores. This will be an SVN revision if the commit
-    // was copied from SVN.
+    private final String trunkEffectiveRevision; // "effective" revision, used to bridge between different Proctor stores. This will be an SVN revision if the commit was copied from SVN.
     // @Nullable - The last commit on the qa branch
     private final Revision qa;
-    private final String
-            qaEffectiveRevision; // "effective" revision, aka the 'version' number from the
-    // TestDefinition on the Production Branch. This should refer to a
-    // revision on the TRUNK branch
+    private final String qaEffectiveRevision; // "effective" revision, aka the 'version' number from the TestDefinition on the Production Branch. This should refer to a revision on the TRUNK branch
 
     // @Nullable - The last commit on the production
     private final Revision production;
-    private final String
-            productionEffectiveRevision; // "effective" revision, aka the 'version' number from the
-    // TestDefinition on the Production Branch. This should
-    // refer to a revision on the TRUNK branch
+    private final String productionEffectiveRevision; // "effective" revision, aka the 'version' number from the TestDefinition on the Production Branch. This should refer to a revision on the TRUNK branch
 
-    public EnvironmentVersion(
-            final String testName,
-            final Revision trunk,
-            final String trunkEffectiveRevision,
-            final Revision qa,
-            final String qaEffectiveRevision,
-            final Revision production,
-            final String productionEffectiveRevision) {
+    public EnvironmentVersion(final String testName,
+                              final Revision trunk,
+                              final String trunkEffectiveRevision,
+                              final Revision qa,
+                              final String qaEffectiveRevision,
+                              final Revision production,
+                              final String productionEffectiveRevision) {
         this.testName = testName;
         this.trunk = trunk;
         this.trunkEffectiveRevision = trunkEffectiveRevision;
@@ -51,21 +42,19 @@ public class EnvironmentVersion {
         this.productionEffectiveRevision = productionEffectiveRevision;
     }
 
-    public EnvironmentVersion(
-            final String testName,
-            final Revision trunk,
-            final Revision qa,
-            final String qaEffectiveRevision,
-            final Revision production,
-            final String productionEffectiveRevision) {
-        this(
-                testName,
-                trunk,
-                trunk.getRevision(),
-                qa,
-                qaEffectiveRevision,
-                production,
-                productionEffectiveRevision);
+    public EnvironmentVersion(final String testName,
+                              final Revision trunk,
+                              final Revision qa,
+                              final String qaEffectiveRevision,
+                              final Revision production,
+                              final String productionEffectiveRevision) {
+        this(testName,
+            trunk,
+            trunk.getRevision(),
+            qa,
+            qaEffectiveRevision,
+            production,
+            productionEffectiveRevision);
     }
 
     public String getTestName() {
@@ -107,13 +96,13 @@ public class EnvironmentVersion {
         return getRevision(production);
     }
 
+
     public String getProductionVersion() {
         return productionEffectiveRevision;
     }
 
     /**
      * Returns a String representing the revision associated with the branch.
-     *
      * @param branch
      * @return
      */
@@ -132,7 +121,6 @@ public class EnvironmentVersion {
 
     /**
      * Returns a {@link com.indeed.proctor.store.Revision} object associated with the branch.
-     *
      * @param branch
      * @return
      */

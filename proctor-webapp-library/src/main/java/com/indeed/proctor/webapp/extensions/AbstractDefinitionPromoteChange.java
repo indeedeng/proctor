@@ -5,15 +5,16 @@ import com.indeed.proctor.webapp.db.Environment;
 
 import java.util.Map;
 
-public abstract class AbstractDefinitionPromoteChange
-        implements PreDefinitionPromoteChange, PostDefinitionPromoteChange {
+public abstract class AbstractDefinitionPromoteChange implements PreDefinitionPromoteChange, PostDefinitionPromoteChange {
     @Override
     public void postPromote(
             final Map<String, String[]> extensionFields,
             final Environment src,
             final Environment destination,
             final boolean isAutopromote,
-            final DefinitionChangeLogger logger) {}
+            final DefinitionChangeLogger logger
+    ) {
+    }
 
     @Override
     public void prePromote(
@@ -22,5 +23,7 @@ public abstract class AbstractDefinitionPromoteChange
             final Environment src,
             final Environment destination,
             final boolean isAutopromote,
-            final DefinitionChangeLogger logger) {}
+            final DefinitionChangeLogger logger
+    ) {
+    }
 }

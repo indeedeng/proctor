@@ -16,9 +16,10 @@ import java.util.concurrent.locks.ReentrantLock;
 public class GitWorkspaceProviderImpl implements GitWorkspaceProvider {
     private static final Logger LOGGER = LogManager.getLogger(GitWorkspaceProviderImpl.class);
     private static final int DEFAULT_LOCK_TIMEOUT_SECONDS = 90;
-    /** The root directory into which all workspaces are created */
+    /**
+     * The root directory into which all workspaces are created
+     */
     private final File rootDirectory;
-
     private final Lock directoryLock;
     private final int lockTimeoutSeconds;
 
@@ -27,15 +28,10 @@ public class GitWorkspaceProviderImpl implements GitWorkspaceProvider {
     }
 
     public GitWorkspaceProviderImpl(final File rootDirectory, final int lockTimeoutSeconds) {
-        this.rootDirectory =
-                Preconditions.checkNotNull(rootDirectory, "Root Directory cannot be null");
+        this.rootDirectory = Preconditions.checkNotNull(rootDirectory, "Root Directory cannot be null");
         directoryLock = new ReentrantLock();
-        Preconditions.checkArgument(
-                rootDirectory.isDirectory(),
-                "File %s should be a directory",
-                rootDirectory.getAbsolutePath());
-        Preconditions.checkArgument(
-                rootDirectory.exists(), "File %s should exist", rootDirectory.getAbsolutePath());
+        Preconditions.checkArgument(rootDirectory.isDirectory(), "File %s should be a directory", rootDirectory.getAbsolutePath());
+        Preconditions.checkArgument(rootDirectory.exists(), "File %s should exist", rootDirectory.getAbsolutePath());
         this.lockTimeoutSeconds = lockTimeoutSeconds;
     }
 
@@ -56,11 +52,7 @@ public class GitWorkspaceProviderImpl implements GitWorkspaceProvider {
                     directoryLock.unlock();
                 }
             } else {
-                throw Throwables.propagate(
-                        new StoreException(
-                                "Attempt to acquire lock on working directory was timeout: "
-                                        + lockTimeoutSeconds
-                                        + "s. Maybe due to dead lock"));
+                throw Throwables.propagate(new StoreException("Attempt to acquire lock on working directory was timeout: " + lockTimeoutSeconds + "s. Maybe due to dead lock"));
             }
         } catch (final InterruptedException e) {
             LOGGER.error("Thread interrupted. ", e);
@@ -69,8 +61,7 @@ public class GitWorkspaceProviderImpl implements GitWorkspaceProvider {
     }
 
     @Override
-    public <T> T synchronizedUpdateOperation(final GitProctorCallable<T> callable)
-            throws StoreException.TestUpdateException {
+    public <T> T synchronizedUpdateOperation(final GitProctorCallable<T> callable) throws StoreException.TestUpdateException {
         try {
             if (directoryLock.tryLock(lockTimeoutSeconds, TimeUnit.SECONDS)) {
                 try {
@@ -79,11 +70,7 @@ public class GitWorkspaceProviderImpl implements GitWorkspaceProvider {
                     directoryLock.unlock();
                 }
             } else {
-                throw Throwables.propagate(
-                        new StoreException(
-                                "Attempt to acquire lock on working directory was timeout: "
-                                        + lockTimeoutSeconds
-                                        + "s. Maybe due to dead lock"));
+                throw Throwables.propagate(new StoreException("Attempt to acquire lock on working directory was timeout: " + lockTimeoutSeconds + "s. Maybe due to dead lock"));
             }
         } catch (final InterruptedException e) {
             LOGGER.error("Thread interrupted. ", e);
@@ -92,18 +79,17 @@ public class GitWorkspaceProviderImpl implements GitWorkspaceProvider {
     }
 
     public boolean cleanWorkingDirectory() {
-        synchronizedOperation(
-                new Callable<Void>() {
-                    @Override
-                    public Void call() {
-                        try {
-                            FileUtils.cleanDirectory(rootDirectory);
-                        } catch (final IOException e) {
-                            LOGGER.error("Unable to clean working directory", e);
-                        }
-                        return null;
-                    }
-                });
+        synchronizedOperation(new Callable<Void>() {
+            @Override
+            public Void call() {
+                try {
+                    FileUtils.cleanDirectory(rootDirectory);
+                } catch (final IOException e) {
+                    LOGGER.error("Unable to clean working directory", e);
+                }
+                return null;
+            }
+        });
         return true;
     }
 }

@@ -11,9 +11,10 @@ import org.tmatesoft.svn.core.SVNException;
 import java.util.List;
 
 /**
- * SVNDirEntryHandler that will collect the SVNDirEntries based on the Predicate Filter
- *
- * <p>It will store the parent DirEntry in parent
+ * SVNDirEntryHandler that will collect the SVNDirEntries based on the
+ * Predicate Filter
+ * <p/>
+ * It will store the parent DirEntry in parent
  */
 class FilterableSVNDirEntryHandler implements ISVNDirEntryHandler {
     final Predicate<SVNDirEntry> childFilter;

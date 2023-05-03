@@ -5,7 +5,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-/** @author parker Encapsulate all primitive-type configuration properties */
+/**
+ * @author parker
+ * Encapsulate all primitive-type configuration properties
+ */
 @Component
 public class WebappConfiguration {
     private final boolean useCompiledCSS;
@@ -19,7 +22,8 @@ public class WebappConfiguration {
             @Value("${use.compiled.css:true}") final boolean useCompiledCSS,
             @Value("${use.compiled.javascript:true}") final boolean useCompiledJavaScript,
             @Value("${verify.http.timeout:1000}") final int verifyHttpTimeout,
-            @Value("${verify.executor.threads:10}") final int verifyExecutorThreads) {
+            @Value("${verify.executor.threads:10}") final int verifyExecutorThreads
+    ) {
         this.useCompiledCSS = useCompiledCSS;
         this.useCompiledJavaScript = useCompiledJavaScript;
         this.verifyHttpTimeout = verifyHttpTimeout;

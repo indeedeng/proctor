@@ -82,9 +82,11 @@ public class TestExtractor {
         request.addHeader(LANGUAGE_HEADER_NAME, fr);
         request.setParameter(USER_IDENTIFIER_QUERY_PARAM, userId);
 
+
         request.setParameter("prforceGroups", "mytestbucket1");
 
         final RawParameters parameters = extractor.extract(request);
+
 
         assertNull(parameters.getTest());
         assertEquals("mytestbucket1", parameters.getForceGroups());
@@ -100,9 +102,11 @@ public class TestExtractor {
         request.addHeader(LANGUAGE_HEADER_NAME, fr);
         request.setParameter(USER_IDENTIFIER_QUERY_PARAM, userId);
 
+
         request.setParameter("test", "");
 
         final RawParameters parameters = extractor.extract(request);
+
 
         assertNotNull(parameters.getTest());
         assertTrue(parameters.getTest().isEmpty());
@@ -118,9 +122,11 @@ public class TestExtractor {
         request.addHeader(LANGUAGE_HEADER_NAME, fr);
         request.setParameter(USER_IDENTIFIER_QUERY_PARAM, userId);
 
+
         request.setParameter("test", "firsttest,,secondtest,thirdtest,,");
 
         final RawParameters parameters = extractor.extract(request);
+
 
         assertNotNull(parameters.getTest());
         assertEquals(3, parameters.getTest().size());
@@ -128,6 +134,7 @@ public class TestExtractor {
         assertTrue(parameters.getTest().contains("secondtest"));
         assertTrue(parameters.getTest().contains("thirdtest"));
     }
+
 
     @Test(expected = BadRequestException.class)
     public void testExtractWithMissingIdentifier() {
@@ -161,6 +168,7 @@ public class TestExtractor {
         request.addHeader(LANGUAGE_HEADER_NAME, fr);
         request.setParameter(USER_IDENTIFIER_QUERY_PARAM, userId);
 
+
         request.setParameter("id.blah", "True");
         request.setParameter("ctx.blah", "True");
         request.setParameter("blah", "True");
@@ -172,22 +180,21 @@ public class TestExtractor {
     private Extractor getBasicExtractor() {
         // default country
         final ContextVariable country =
-                ContextVariable.newBuilder()
-                        .setVarName("country")
-                        .setSourceKey("co")
-                        .setDefaultValue(DEFAULT_COUNTRY)
-                        .setConverter(ValueConverters.stringValueConverter())
-                        .build();
+            ContextVariable.newBuilder()
+                .setVarName("country")
+                .setSourceKey("co")
+                .setDefaultValue(DEFAULT_COUNTRY)
+                .setConverter(ValueConverters.stringValueConverter())
+                .build();
         // no default langauge
         final ContextVariable language =
-                ContextVariable.newBuilder()
+                    ContextVariable.newBuilder()
                         .setVarName("language")
                         .setSourceKey("X-Lang")
                         .setSource(ExtractorSource.HEADER)
                         .setConverter(ValueConverters.stringValueConverter())
                         .build();
-        final Identifier user =
-                Identifier.forTestType(ExtractorSource.QUERY, TestType.ANONYMOUS_USER);
+        final Identifier user = Identifier.forTestType(ExtractorSource.QUERY, TestType.ANONYMOUS_USER);
         return new Extractor(ImmutableList.of(country, language), ImmutableList.of(user));
     }
 }

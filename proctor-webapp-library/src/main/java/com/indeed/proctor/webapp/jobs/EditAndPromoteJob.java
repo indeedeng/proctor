@@ -65,7 +65,7 @@ import static com.indeed.proctor.webapp.util.IdentifierValidationUtil.validateMe
 import static com.indeed.proctor.webapp.util.IdentifierValidationUtil.validateTestName;
 import static com.indeed.proctor.webapp.util.NumberUtil.equalsWithinTolerance;
 
-// Todo: Separate EditAndPromoteJob to EditJob and PromoteJob
+//Todo: Separate EditAndPromoteJob to EditJob and PromoteJob
 @Component
 public class EditAndPromoteJob extends AbstractJob {
     private static final Logger LOGGER = LogManager.getLogger(EditAndPromoteJob.class);
@@ -77,8 +77,7 @@ public class EditAndPromoteJob extends AbstractJob {
     private List<PreDefinitionCreateChange> preDefinitionCreateChanges = Collections.emptyList();
     private List<PostDefinitionCreateChange> postDefinitionCreateChanges = Collections.emptyList();
     private List<PreDefinitionPromoteChange> preDefinitionPromoteChanges = Collections.emptyList();
-    private List<PostDefinitionPromoteChange> postDefinitionPromoteChanges =
-            Collections.emptyList();
+    private List<PostDefinitionPromoteChange> postDefinitionPromoteChanges = Collections.emptyList();
 
     private final BackgroundJobFactory jobFactory;
     private final BackgroundJobManager jobManager;
@@ -96,7 +95,8 @@ public class EditAndPromoteJob extends AbstractJob {
             final BackgroundJobFactory jobFactory,
             final ProctorPromoter promoter,
             final CommentFormatter commentFormatter,
-            final MatrixChecker matrixChecker) {
+            final MatrixChecker matrixChecker
+    ) {
         super(trunkStore, qaStore, productionStore);
         this.jobManager = jobManager;
         this.jobFactory = jobFactory;
@@ -109,7 +109,8 @@ public class EditAndPromoteJob extends AbstractJob {
     @Autowired(required = false)
     public void setDefinitionEditChanges(
             final List<PreDefinitionEditChange> preDefinitionEditChanges,
-            final List<PostDefinitionEditChange> postDefinitionEditChanges) {
+            final List<PostDefinitionEditChange> postDefinitionEditChanges
+    ) {
         this.preDefinitionEditChanges = preDefinitionEditChanges;
         this.postDefinitionEditChanges = postDefinitionEditChanges;
     }
@@ -117,7 +118,8 @@ public class EditAndPromoteJob extends AbstractJob {
     @Autowired(required = false)
     public void setDefinitionCreateChanges(
             final List<PreDefinitionCreateChange> preDefinitionCreateChanges,
-            final List<PostDefinitionCreateChange> postDefinitionCreateChanges) {
+            final List<PostDefinitionCreateChange> postDefinitionCreateChanges
+    ) {
         this.preDefinitionCreateChanges = preDefinitionCreateChanges;
         this.postDefinitionCreateChanges = postDefinitionCreateChanges;
     }
@@ -125,7 +127,8 @@ public class EditAndPromoteJob extends AbstractJob {
     @Autowired(required = false)
     public void setDefinitionPromoteChanges(
             final List<PreDefinitionPromoteChange> preDefinitionPromoteChanges,
-            final List<PostDefinitionPromoteChange> postDefinitionPromoteChanges) {
+            final List<PostDefinitionPromoteChange> postDefinitionPromoteChanges
+    ) {
         this.preDefinitionPromoteChanges = preDefinitionPromoteChanges;
         this.postDefinitionPromoteChanges = postDefinitionPromoteChanges;
     }
@@ -140,58 +143,39 @@ public class EditAndPromoteJob extends AbstractJob {
             final String testDefinitionJson,
             final String previousRevision,
             final Environment autopromoteTarget,
-            final Map<String, String[]> requestParameterMap) {
-        final BackgroundJob<Void> backgroundJob =
-                jobFactory.createBackgroundJob(
-                        createJobTitle(testName, username, author, isCreate, autopromoteTarget),
-                        author,
-                        createJobType(isCreate, autopromoteTarget),
-                        job -> {
-                            try {
-                                if (StringUtils.isBlank(testDefinitionJson)) {
-                                    throw new IllegalArgumentException(
-                                            "No new test definition given");
-                                }
-                                job.logWithTiming("Parsing test definition json", "parsing");
-                                final TestDefinition testDefinitionToUpdate =
-                                        parseTestDefinition(testDefinitionJson);
-                                job.logWithTiming(
-                                        "Finished parsing test definition json", "parsing");
-                                doEditInternal(
-                                        testName,
-                                        username,
-                                        password,
-                                        author,
-                                        isCreate,
-                                        comment,
-                                        testDefinitionToUpdate,
-                                        previousRevision,
-                                        autopromoteTarget,
-                                        requestParameterMap,
-                                        job);
-                            } catch (final GitNoAuthorizationException
-                                    | GitNoDevelperAccessLevelException
-                                    | IllegalArgumentException
-                                    | IncompatibleTestMatrixException exp) {
-                                job.logFailedJob(exp);
-                                LOGGER.info("Edit Failed: " + job.getTitle(), exp);
-                            } catch (final AutoPromoteFailedException exp) {
-                                job.logPartialSuccess(exp);
-                                LOGGER.warn(
-                                        "Edit Succeeded but Promote Failed: " + job.getTitle(),
-                                        exp);
-                            } catch (final Exception exp) {
-                                job.logFailedJob(exp);
-                                LOGGER.error("Edit Failed: " + job.getTitle(), exp);
-                            }
-                            return null;
-                        });
+            final Map<String, String[]> requestParameterMap
+    ) {
+        final BackgroundJob<Void> backgroundJob = jobFactory.createBackgroundJob(
+                createJobTitle(testName, username, author, isCreate, autopromoteTarget),
+                author,
+                createJobType(isCreate, autopromoteTarget),
+                job -> {
+                    try {
+                        if (StringUtils.isBlank(testDefinitionJson)) {
+                            throw new IllegalArgumentException("No new test definition given");
+                        }
+                        job.logWithTiming("Parsing test definition json", "parsing");
+                        final TestDefinition testDefinitionToUpdate = parseTestDefinition(testDefinitionJson);
+                        job.logWithTiming("Finished parsing test definition json", "parsing");
+                        doEditInternal(testName, username, password, author, isCreate, comment, testDefinitionToUpdate, previousRevision, autopromoteTarget, requestParameterMap, job);
+                    } catch (final GitNoAuthorizationException | GitNoDevelperAccessLevelException | IllegalArgumentException | IncompatibleTestMatrixException exp) {
+                        job.logFailedJob(exp);
+                        LOGGER.info("Edit Failed: " + job.getTitle(), exp);
+                    } catch (final AutoPromoteFailedException exp) {
+                        job.logPartialSuccess(exp);
+                        LOGGER.warn("Edit Succeeded but Promote Failed: " + job.getTitle(), exp);
+                    } catch (final Exception exp) {
+                        job.logFailedJob(exp);
+                        LOGGER.error("Edit Failed: " + job.getTitle(), exp);
+                    }
+                    return null;
+                }
+        );
         jobManager.submit(backgroundJob);
         return backgroundJob;
     }
 
-    private static TestDefinition parseTestDefinition(final String testDefinition)
-            throws IOException, JsonParseException, JsonMappingException {
+    private static TestDefinition parseTestDefinition(final String testDefinition) throws IOException, JsonParseException, JsonMappingException {
         final TestDefinition td = OBJECT_MAPPER.readValue(testDefinition, TestDefinition.class);
         // Until (PROC-72) is resolved, all of the 'empty' rules should get saved as NULL rules.
         if (StringUtils.isBlank(td.getRule())) {
@@ -215,53 +199,37 @@ public class EditAndPromoteJob extends AbstractJob {
             final TestDefinition testDefinitionToUpdate,
             final String previousRevision,
             final Environment autopromoteTarget,
-            final Map<String, String[]> requestParameterMap) {
+            final Map<String, String[]> requestParameterMap
+    ) {
 
-        final BackgroundJob<Void> backgroundJob =
-                jobFactory.createBackgroundJob(
-                        createJobTitle(testName, username, author, isCreate, autopromoteTarget),
-                        author,
-                        createJobType(isCreate, autopromoteTarget),
-                        job -> {
-                            try {
-                                doEditInternal(
-                                        testName,
-                                        username,
-                                        password,
-                                        author,
-                                        isCreate,
-                                        comment,
-                                        testDefinitionToUpdate,
-                                        previousRevision,
-                                        autopromoteTarget,
-                                        requestParameterMap,
-                                        job);
-                            } catch (final GitNoAuthorizationException
-                                    | GitNoDevelperAccessLevelException
-                                    | IllegalArgumentException
-                                    | IncompatibleTestMatrixException exp) {
-                                job.logFailedJob(exp);
-                                LOGGER.info("Edit Failed: " + job.getTitle(), exp);
-                            } catch (final AutoPromoteFailedException exp) {
-                                job.logPartialSuccess(exp);
-                                LOGGER.warn(
-                                        "Edit Succeeded but Promote Failed: " + job.getTitle(),
-                                        exp);
-                            } catch (Exception exp) {
-                                job.logFailedJob(exp);
-                                LOGGER.error("Edit Failed: " + job.getTitle(), exp);
-                            }
-                            return null;
-                        });
+        final BackgroundJob<Void> backgroundJob = jobFactory.createBackgroundJob(
+                createJobTitle(testName, username, author, isCreate, autopromoteTarget),
+                author,
+                createJobType(isCreate, autopromoteTarget),
+                job -> {
+                    try {
+                        doEditInternal(testName, username, password, author, isCreate, comment, testDefinitionToUpdate, previousRevision, autopromoteTarget, requestParameterMap, job);
+                    } catch (final GitNoAuthorizationException | GitNoDevelperAccessLevelException | IllegalArgumentException | IncompatibleTestMatrixException exp) {
+                        job.logFailedJob(exp);
+                        LOGGER.info("Edit Failed: " + job.getTitle(), exp);
+                    } catch (final AutoPromoteFailedException exp) {
+                        job.logPartialSuccess(exp);
+                        LOGGER.warn("Edit Succeeded but Promote Failed: " + job.getTitle(), exp);
+                    } catch (Exception exp) {
+                        job.logFailedJob(exp);
+                        LOGGER.error("Edit Failed: " + job.getTitle(), exp);
+                    }
+                    return null;
+                }
+        );
         jobManager.submit(backgroundJob);
         return backgroundJob;
     }
 
     /**
-     * Creates/updates test with given {@code testName} in trunk store to new state from {@code
-     * testDefinitionToUpdate}. {@code isCreate} is set if this is a new test definition. {@code
-     * autopromoteTarget} is set if the users requested the test be autopromoted to the environment.
-     *
+     * Creates/updates test with given {@code testName} in trunk store to new state from {@code testDefinitionToUpdate}.
+     * {@code isCreate} is set if this is a new test definition. {@code autopromoteTarget} is set if the users requested the
+     * test be autopromoted to the environment.
      * @param testName the test name to promote
      * @param username the username of the committer
      * @param password the password of the committer
@@ -287,39 +255,26 @@ public class EditAndPromoteJob extends AbstractJob {
             final String previousRevision,
             final Environment autopromoteTarget,
             final Map<String, String[]> requestParameterMap,
-            final BackgroundJob<Void> job)
-            throws Exception {
+            final BackgroundJob<Void> job
+    ) throws Exception {
         final Environment theEnvironment = WORKING; // only allow editing of TRUNK!
         final ProctorStore trunkStore = determineStoreFromEnvironment(theEnvironment);
         final EnvironmentVersion environmentVersion = promoter.getEnvironmentVersion(testName);
-        final String qaRevision =
-                environmentVersion == null
-                        ? EnvironmentVersion.UNKNOWN_REVISION
-                        : environmentVersion.getQaRevision();
-        final String prodRevision =
-                environmentVersion == null
-                        ? EnvironmentVersion.UNKNOWN_REVISION
-                        : environmentVersion.getProductionRevision();
-        final String nonEmptyComment =
-                isCreate
-                        ? formatDefaultCreateComment(testName, comment)
-                        : formatDefaultUpdateComment(testName, comment);
+        final String qaRevision = environmentVersion == null ? EnvironmentVersion.UNKNOWN_REVISION : environmentVersion.getQaRevision();
+        final String prodRevision = environmentVersion == null ? EnvironmentVersion.UNKNOWN_REVISION : environmentVersion.getProductionRevision();
+        final String nonEmptyComment = isCreate ? formatDefaultCreateComment(testName, comment)
+                : formatDefaultUpdateComment(testName, comment);
 
         validateUsernamePassword(username, password);
         validateComment(nonEmptyComment);
 
         if (previousRevision.length() > 0) {
             job.logWithTiming("(scm) getting history for '" + testName + "'", "getHistory");
-            final List<Revision> history =
-                    TestDefinitionUtil.getTestHistory(trunkStore, testName, 1);
+            final List<Revision> history = TestDefinitionUtil.getTestHistory(trunkStore, testName, 1);
             if (history.size() > 0) {
                 final Revision prevVersion = history.get(0);
                 if (!prevVersion.getRevision().equals(previousRevision)) {
-                    throw new IllegalArgumentException(
-                            "Test has been updated since "
-                                    + previousRevision
-                                    + " currently at "
-                                    + prevVersion.getRevision());
+                    throw new IllegalArgumentException("Test has been updated since " + previousRevision + " currently at " + prevVersion.getRevision());
                 }
             }
         } else {
@@ -328,13 +283,11 @@ public class EditAndPromoteJob extends AbstractJob {
         }
         job.log("(scm) Success: getting history for '" + testName + "'");
 
-        job.logWithTiming(
-                "(scm) loading existing test definition for '" + testName + "'", "loadDefinition");
+        job.logWithTiming("(scm) loading existing test definition for '" + testName + "'", "loadDefinition");
         final TestDefinition existingTestDefinition = trunkStore.getCurrentTestDefinition(testName);
 
         if (previousRevision.length() <= 0 && existingTestDefinition != null) {
-            throw new IllegalArgumentException(
-                    "Current tests exists with name : '" + testName + "'");
+            throw new IllegalArgumentException("Current tests exists with name : '" + testName + "'");
         }
 
         if (testDefinitionToUpdate == null) {
@@ -349,67 +302,55 @@ public class EditAndPromoteJob extends AbstractJob {
             handleAllocationIdsForNewTest(testDefinitionToUpdate);
         } else if (existingTestDefinition != null) {
             testDefinitionToUpdate.setVersion(existingTestDefinition.getVersion());
-            handleAllocationIdsForEditTest(
-                    testName, existingTestDefinition, testDefinitionToUpdate);
+            handleAllocationIdsForEditTest(testName, existingTestDefinition, testDefinitionToUpdate);
         }
         job.logWithTiming("verifying test definition and buckets", "Verify");
         validateBasicInformation(testDefinitionToUpdate, job);
 
-        final ConsumableTestDefinition consumableTestDefinition =
-                ProctorUtils.convertToConsumableTestDefinition(testDefinitionToUpdate);
-        ProctorUtils.verifyInternallyConsistentDefinition(
-                testName, "edit", consumableTestDefinition);
+        final ConsumableTestDefinition consumableTestDefinition = ProctorUtils.convertToConsumableTestDefinition(testDefinitionToUpdate);
+        ProctorUtils.verifyInternallyConsistentDefinition(testName, "edit", consumableTestDefinition);
 
-        // PreDefinitionEdit
+        //PreDefinitionEdit
         final DefinitionChangeLogger logger = new BackgroundJobLogger(job);
         if (isCreate) {
             if (!preDefinitionCreateChanges.isEmpty()) {
                 job.logWithTiming("Executing pre create extension tasks.", "preCreateExtension");
-                for (final PreDefinitionCreateChange preDefinitionCreateChange :
-                        preDefinitionCreateChanges) {
-                    preDefinitionCreateChange.preCreate(
-                            testDefinitionToUpdate, requestParameterMap, logger);
+                for (final PreDefinitionCreateChange preDefinitionCreateChange : preDefinitionCreateChanges) {
+                    preDefinitionCreateChange.preCreate(testDefinitionToUpdate, requestParameterMap, logger);
                 }
                 job.log("Finished pre create extension tasks.");
             }
         } else {
             if (!preDefinitionEditChanges.isEmpty()) {
                 job.logWithTiming("Executing pre edit extension tasks.", "preEditExtension");
-                for (final PreDefinitionEditChange preDefinitionEditChange :
-                        preDefinitionEditChanges) {
-                    preDefinitionEditChange.preEdit(
-                            existingTestDefinition,
-                            testDefinitionToUpdate,
-                            requestParameterMap,
-                            logger);
+                for (final PreDefinitionEditChange preDefinitionEditChange : preDefinitionEditChanges) {
+                    preDefinitionEditChange.preEdit(existingTestDefinition, testDefinitionToUpdate,
+                            requestParameterMap, logger);
                 }
                 job.log("Finished pre edit extension tasks.");
             }
         }
 
         // Change definition
-        final ChangeMetadata changeMeataData =
-                ChangeMetadata.builder()
-                        .setUsername(username)
-                        .setPassword(password)
-                        .setAuthor(author)
-                        .setComment(
-                                commentFormatter.formatFullComment(
-                                        nonEmptyComment, requestParameterMap))
-                        .build();
+        final ChangeMetadata changeMeataData = ChangeMetadata.builder()
+                .setUsername(username)
+                .setPassword(password)
+                .setAuthor(author)
+                .setComment(commentFormatter.formatFullComment(nonEmptyComment, requestParameterMap))
+                .build();
         if (existingTestDefinition == null) {
             job.logWithTiming("(scm) adding test definition in trunk", "scmAdd");
             trunkStore.addTestDefinition(
-                    changeMeataData, testName, testDefinitionToUpdate, Collections.emptyMap());
+                    changeMeataData,
+                    testName,
+                    testDefinitionToUpdate,
+                    Collections.emptyMap());
             job.log("(scm) Success: adding test definition in trunk");
         } else {
             job.logWithTiming("(scm) updating test definition in trunk", "scmUpdate");
             trunkStore.updateTestDefinition(
                     changeMeataData,
-                    previousRevision,
-                    testName,
-                    testDefinitionToUpdate,
-                    Collections.emptyMap());
+                    previousRevision, testName, testDefinitionToUpdate, Collections.emptyMap());
             job.log("(scm) Success: updating test definition in trunk");
         }
 
@@ -417,65 +358,42 @@ public class EditAndPromoteJob extends AbstractJob {
         if (isCreate) {
             if (!postDefinitionCreateChanges.isEmpty()) {
                 job.logWithTiming("Executing post create extension tasks.", "postCreateExtension");
-                for (final PostDefinitionCreateChange postDefinitionCreateChange :
-                        postDefinitionCreateChanges) {
-                    postDefinitionCreateChange.postCreate(
-                            testDefinitionToUpdate, requestParameterMap, logger);
+                for (final PostDefinitionCreateChange postDefinitionCreateChange : postDefinitionCreateChanges) {
+                    postDefinitionCreateChange.postCreate(testDefinitionToUpdate, requestParameterMap, logger);
                 }
                 job.log("Finished post create extension tasks.");
             }
         } else {
             if (!postDefinitionEditChanges.isEmpty()) {
                 job.logWithTiming("Executing post edit extension tasks.", "postEditExtension");
-                for (final PostDefinitionEditChange postDefinitionEditChange :
-                        postDefinitionEditChanges) {
-                    postDefinitionEditChange.postEdit(
-                            existingTestDefinition,
-                            testDefinitionToUpdate,
-                            requestParameterMap,
-                            logger);
+                for (final PostDefinitionEditChange postDefinitionEditChange : postDefinitionEditChanges) {
+                    postDefinitionEditChange.postEdit(existingTestDefinition, testDefinitionToUpdate,
+                            requestParameterMap, logger);
                 }
                 job.log("Finished post edit extension tasks.");
             }
         }
 
-        job.addUrl(
-                "/proctor/definition/"
-                        + EncodingUtil.urlEncodeUtf8(testName)
-                        + "?branch="
-                        + theEnvironment.getName(),
-                "View Test");
+        job.addUrl("/proctor/definition/" + EncodingUtil.urlEncodeUtf8(testName) + "?branch=" + theEnvironment.getName(), "View Test");
 
         // Autopromote if necessary
-        autoPromoter.maybeAutoPromote(
-                testName,
-                username,
-                password,
-                author,
-                testDefinitionToUpdate,
-                previousRevision,
-                autopromoteTarget,
-                requestParameterMap,
-                job,
-                trunkStore,
-                qaRevision,
-                prodRevision,
-                existingTestDefinition);
+        autoPromoter.maybeAutoPromote(testName, username, password, author, testDefinitionToUpdate, previousRevision,
+                autopromoteTarget, requestParameterMap, job, trunkStore, qaRevision, prodRevision, existingTestDefinition);
 
         job.logComplete();
         return true;
     }
 
+
+
     /**
      * @param testName the proctor test name
      * @param previous test definition before edit
-     * @param current test definition after edit
+     * @param current  test definition after edit
      */
-    private void handleAllocationIdsForEditTest(
-            final String testName, final TestDefinition previous, final TestDefinition current) {
+    private void handleAllocationIdsForEditTest(final String testName, final TestDefinition previous, final TestDefinition current) {
         // Update allocation id if necessary
-        final Set<Allocation> outdatedAllocations =
-                AllocationIdUtil.getOutdatedAllocations(previous, current);
+        final Set<Allocation> outdatedAllocations = AllocationIdUtil.getOutdatedAllocations(previous, current);
         for (final Allocation allocation : outdatedAllocations) {
             allocation.setId(AllocationIdUtil.getNextVersionOfAllocationId(allocation.getId()));
         }
@@ -484,20 +402,15 @@ public class EditAndPromoteJob extends AbstractJob {
          * Check whether has new allocations.
          * Doing this check to avoid getMaxUsedAllocationIdForTest when unnecessary because getMaxUsedAllocationIdForTest takes time
          */
-        final boolean needNewAllocId =
-                current.getAllocations().stream().anyMatch(x -> StringUtils.isEmpty(x.getId()));
+        final boolean needNewAllocId = current.getAllocations().stream().anyMatch(
+                x -> StringUtils.isEmpty(x.getId())
+        );
         // Generate new allocation id if any allocation id is empty
         if (needNewAllocId) {
-            // Get the max allocation id ever used from test definition history, including deleted
-            // allocations in the format like "#Z1"
+            // Get the max allocation id ever used from test definition history, including deleted allocations in the format like "#Z1"
             final Optional<String> maxAllocId = getMaxUsedAllocationIdForTest(testName);
             // Convert maxAllocId to base 10 integer, so that we can easily increment it
-            int maxAllocIdInt =
-                    maxAllocId.isPresent()
-                            ? AllocationIdUtil.convertBase26ToDecimal(
-                                    AllocationIdUtil.getAllocationName(maxAllocId.get())
-                                            .toCharArray())
-                            : -1;
+            int maxAllocIdInt = maxAllocId.isPresent() ? AllocationIdUtil.convertBase26ToDecimal(AllocationIdUtil.getAllocationName(maxAllocId.get()).toCharArray()) : -1;
             for (final Allocation allocation : current.getAllocations()) {
                 // Only generate for new allocation
                 if (StringUtils.isEmpty(allocation.getId())) {
@@ -514,14 +427,12 @@ public class EditAndPromoteJob extends AbstractJob {
     private Optional<String> getMaxUsedAllocationIdForTest(final String testName) {
         // Use trunk store
         final ProctorStore trunkStore = determineStoreFromEnvironment(WORKING);
-        final List<RevisionDefinition> revisionDefinitions =
-                TestDefinitionUtil.makeRevisionDefinitionList(trunkStore, testName, null, true);
+        final List<RevisionDefinition> revisionDefinitions = TestDefinitionUtil.makeRevisionDefinitionList(trunkStore, testName, null, true);
         return getMaxAllocationId(revisionDefinitions);
     }
 
     static Optional<String> getMaxAllocationId(final List<RevisionDefinition> revisionDefinitions) {
-        return revisionDefinitions.stream()
-                .map(RevisionDefinition::getDefinition)
+        return revisionDefinitions.stream().map(RevisionDefinition::getDefinition)
                 .filter(Objects::nonNull)
                 .flatMap(x -> x.getAllocations().stream())
                 .map(Allocation::getId)
@@ -530,7 +441,9 @@ public class EditAndPromoteJob extends AbstractJob {
                 .max(ALLOCATION_ID_COMPARATOR);
     }
 
-    /** @param testDefinition the test definition to generate allocation ids for */
+    /**
+     * @param testDefinition the test definition to generate allocation ids for
+     */
     private static void handleAllocationIdsForNewTest(final TestDefinition testDefinition) {
         for (int i = 0; i < testDefinition.getAllocations().size(); i++) {
             final Allocation allocation = testDefinition.getAllocations().get(i);
@@ -540,12 +453,12 @@ public class EditAndPromoteJob extends AbstractJob {
 
     /**
      * Validate required fields, metattag syntax, allocations and buckets
-     *
      * @throws IllegalArgumentException for violations
      */
     private static void validateBasicInformation(
-            final TestDefinition definition, final BackgroundJob<Void> backgroundJob)
-            throws IllegalArgumentException {
+            final TestDefinition definition,
+            final BackgroundJob<Void> backgroundJob
+    ) throws IllegalArgumentException {
         if (StringUtils.isBlank(definition.getDescription())) {
             throw new IllegalArgumentException("Description is required.");
         }
@@ -569,13 +482,14 @@ public class EditAndPromoteJob extends AbstractJob {
     }
 
     /**
-     * checks bucket names, allocation size sanity logs warnings for dodgy data
-     *
+     * checks bucket names, allocation size sanity
+     * logs warnings for dodgy data
      * @throws IllegalArgumentException for violations
      */
     private static void validateAllocationsAndBuckets(
-            final TestDefinition definition, final BackgroundJob<Void> backgroundJob)
-            throws IllegalArgumentException {
+            final TestDefinition definition,
+            final BackgroundJob<Void> backgroundJob
+    ) throws IllegalArgumentException {
         final Allocation allocation = definition.getAllocations().get(0);
         final List<Range> ranges = allocation.getRanges();
         final TestType testType = definition.getTestType();
@@ -587,8 +501,7 @@ public class EditAndPromoteJob extends AbstractJob {
         /* The number of buckets with allocation greater than zero */
         int numActiveBuckets = 0;
 
-        for (final Map.Entry<Integer, Double> integerDoubleEntry :
-                totalTestAllocationMap.entrySet()) {
+        for (final Map.Entry<Integer, Double> integerDoubleEntry : totalTestAllocationMap.entrySet()) {
             final double totalBucketAllocation = integerDoubleEntry.getValue();
             if (totalBucketAllocation > 0) {
                 numActiveBuckets++;
@@ -599,25 +512,14 @@ public class EditAndPromoteJob extends AbstractJob {
             should be the same size
         */
         if (numActiveBuckets > 1 && hasControlBucket) {
-            final double totalControlBucketAllocation =
-                    totalTestAllocationMap.get(controlBucketValue);
-            for (final Map.Entry<Integer, Double> integerDoubleEntry :
-                    totalTestAllocationMap.entrySet()) {
+            final double totalControlBucketAllocation = totalTestAllocationMap.get(controlBucketValue);
+            for (final Map.Entry<Integer, Double> integerDoubleEntry : totalTestAllocationMap.entrySet()) {
                 final double totalBucketAllocation = integerDoubleEntry.getValue();
                 if (totalBucketAllocation > 0) {
                     numActiveBuckets++;
                 }
-                if (integerDoubleEntry.getKey() > 0
-                        && totalBucketAllocation > 0
-                        && !equalsWithinTolerance(
-                                totalBucketAllocation, totalControlBucketAllocation)) {
-                    backgroundJob.log(
-                            "WARNING: Positive bucket total allocation size not same as control bucket total allocation size. \nBucket #"
-                                    + integerDoubleEntry.getKey()
-                                    + "="
-                                    + totalBucketAllocation
-                                    + ", Zero Bucket="
-                                    + totalControlBucketAllocation);
+                if (integerDoubleEntry.getKey() > 0 && totalBucketAllocation > 0 && !equalsWithinTolerance(totalBucketAllocation, totalControlBucketAllocation)) {
+                    backgroundJob.log("WARNING: Positive bucket total allocation size not same as control bucket total allocation size. \nBucket #" + integerDoubleEntry.getKey() + "=" + totalBucketAllocation + ", Zero Bucket=" + totalControlBucketAllocation);
                 }
             }
         }
@@ -636,10 +538,7 @@ public class EditAndPromoteJob extends AbstractJob {
         for (final TestBucket bucket : definition.getBuckets()) {
             final String name = bucket.getName();
             if (!isValidBucketName(name)) {
-                throw new IllegalArgumentException(
-                        "Bucket name must be alpha-numeric underscore and not start with a number, found: '"
-                                + name
-                                + "'");
+                throw new IllegalArgumentException("Bucket name must be alpha-numeric underscore and not start with a number, found: '" + name + "'");
             }
         }
     }
@@ -663,14 +562,15 @@ public class EditAndPromoteJob extends AbstractJob {
             final String username,
             final String author,
             final boolean isCreate,
-            final Environment autopromoteTarget) {
+            final Environment autopromoteTarget
+    ) {
         return String.format(
                 "(username:%s author:%s) %s %s",
-                username, author, createJobTitleString(isCreate, autopromoteTarget), testName);
+                username, author, createJobTitleString(isCreate, autopromoteTarget), testName
+        );
     }
 
-    private static String createJobTitleString(
-            final boolean isCreate, final Environment autopromoteTarget) {
+    private static String createJobTitleString(final boolean isCreate, final Environment autopromoteTarget) {
         final StringBuilder messageBuilder = new StringBuilder(40);
 
         if (isCreate) {
@@ -695,7 +595,9 @@ public class EditAndPromoteJob extends AbstractJob {
 
     @VisibleForTesting
     static BackgroundJob.JobType createJobType(
-            final boolean isCreate, final Environment autopromoteTarget) {
+            final boolean isCreate,
+            final Environment autopromoteTarget
+    ) {
         if (isCreate) {
             switch (autopromoteTarget) {
                 case QA:
@@ -726,56 +628,40 @@ public class EditAndPromoteJob extends AbstractJob {
             final String srcRevision,
             final Environment destination,
             final String destRevision,
-            final Map<String, String[]> requestParameterMap) {
-        final BackgroundJob<Void> backgroundJob =
-                jobFactory.createBackgroundJob(
-                        String.format(
-                                "(username:%s author:%s) promoting %s %s %1.7s to %s",
-                                username, author, testName, source, srcRevision, destination),
-                        author,
-                        BackgroundJob.JobType.TEST_PROMOTION,
-                        job -> {
-                            /*
-                               Valid permutations:
-                               TRUNK -> QA
-                               TRUNK -> PRODUCTION
-                               QA -> PRODUCTION
-                            */
-                            try {
-                                doPromoteInternal(
-                                        testName,
-                                        username,
-                                        password,
-                                        author,
-                                        source,
-                                        srcRevision,
-                                        destination,
-                                        destRevision,
-                                        requestParameterMap,
-                                        job,
-                                        false);
-                            } catch (final GitNoAuthorizationException
-                                    | GitNoMasterAccessLevelException
-                                    | GitNoDevelperAccessLevelException
-                                    | IllegalArgumentException exp) {
-                                job.logFailedJob(exp);
-                                LOGGER.info("Promotion Failed: " + job.getTitle(), exp);
-                            } catch (final Exception exp) {
-                                job.logFailedJob(exp);
-                                LOGGER.error("Promotion Failed: " + job.getTitle(), exp);
-                            }
-                            return null;
-                        });
+            final Map<String, String[]> requestParameterMap
+    ) {
+        final BackgroundJob<Void> backgroundJob = jobFactory.createBackgroundJob(
+                String.format("(username:%s author:%s) promoting %s %s %1.7s to %s", username, author, testName, source, srcRevision, destination),
+                author,
+                BackgroundJob.JobType.TEST_PROMOTION,
+                job -> {
+                    /*
+                        Valid permutations:
+                        TRUNK -> QA
+                        TRUNK -> PRODUCTION
+                        QA -> PRODUCTION
+                     */
+                    try {
+                        doPromoteInternal(testName, username, password, author, source, srcRevision, destination, destRevision, requestParameterMap, job, false);
+                    } catch (final GitNoAuthorizationException | GitNoMasterAccessLevelException | GitNoDevelperAccessLevelException | IllegalArgumentException exp) {
+                        job.logFailedJob(exp);
+                        LOGGER.info("Promotion Failed: " + job.getTitle(), exp);
+                    } catch (final Exception exp) {
+                        job.logFailedJob(exp);
+                        LOGGER.error("Promotion Failed: " + job.getTitle(), exp);
+                    }
+                    return null;
+                }
+        );
         jobManager.submit(backgroundJob);
         return backgroundJob;
     }
 
-    private static final Multimap<Environment, Environment> PROMOTE_ACTIONS =
-            ImmutableMultimap.<Environment, Environment>builder()
-                    .put(WORKING, QA)
-                    .put(WORKING, PRODUCTION)
-                    .put(QA, PRODUCTION)
-                    .build();
+    private final static Multimap<Environment, Environment> PROMOTE_ACTIONS = ImmutableMultimap.<Environment, Environment>builder()
+            .put(WORKING, QA)
+            .put(WORKING, PRODUCTION)
+            .put(QA, PRODUCTION)
+            .build();
 
     @VisibleForTesting
     Boolean doPromoteInternal(
@@ -789,27 +675,24 @@ public class EditAndPromoteJob extends AbstractJob {
             final String destRevision,
             final Map<String, String[]> requestParameterMap,
             final BackgroundJob<Void> job,
-            final boolean isAutopromote)
-            throws Exception {
+            final boolean isAutopromote
+    ) throws Exception {
         final Map<String, String> metadata = Collections.emptyMap();
         validateUsernamePassword(username, password);
 
         // TODO (parker) 9/5/12 - Verify that promoting to the destination branch won't cause issues
-        final TestDefinition testDefinition =
-                TestDefinitionUtil.getTestDefinitionTryCached(
-                        determineStoreFromEnvironment(source), source, testName, srcRevision);
+        final TestDefinition testDefinition = TestDefinitionUtil.getTestDefinitionTryCached(
+                determineStoreFromEnvironment(source),
+                source,
+                testName,
+                srcRevision);
         //            if (d == null) {
-        //                return "could not find " + testName + " on " + source + " with revision "
-        // + srcRevision;
+        //                return "could not find " + testName + " on " + source + " with revision " + srcRevision;
         //            }
         job.logWithTiming("Validating Matrix.", "matrixCheck");
-        final MatrixChecker.CheckMatrixResult result =
-                matrixChecker.checkMatrix(destination, testName, testDefinition);
+        final MatrixChecker.CheckMatrixResult result = matrixChecker.checkMatrix(destination, testName, testDefinition);
         if (!result.isValid()) {
-            throw new IllegalArgumentException(
-                    String.format(
-                            "Test Promotion not compatible, errors: %s",
-                            String.join("\n", result.getErrors())));
+            throw new IllegalArgumentException(String.format("Test Promotion not compatible, errors: %s", String.join("\n", result.getErrors())));
         }
         job.logWithTiming("Success: Validating Matrix.", "matrixCheck");
 
@@ -817,15 +700,9 @@ public class EditAndPromoteJob extends AbstractJob {
         final DefinitionChangeLogger logger = new BackgroundJobLogger(job);
         if (!preDefinitionPromoteChanges.isEmpty()) {
             job.logWithTiming("Executing pre promote extension tasks.", "prePromoteExtension");
-            for (final PreDefinitionPromoteChange preDefinitionPromoteChange :
-                    preDefinitionPromoteChanges) {
-                preDefinitionPromoteChange.prePromote(
-                        testDefinition,
-                        requestParameterMap,
-                        source,
-                        destination,
-                        isAutopromote,
-                        logger);
+            for (final PreDefinitionPromoteChange preDefinitionPromoteChange : preDefinitionPromoteChanges) {
+                preDefinitionPromoteChange.prePromote(testDefinition, requestParameterMap, source, destination,
+                        isAutopromote, logger);
             }
             job.log("Finished pre promote extension tasks.");
         }
@@ -833,31 +710,12 @@ public class EditAndPromoteJob extends AbstractJob {
         // Promote Change
         job.logWithTiming("Promoting experiment", "promote");
         if (!PROMOTE_ACTIONS.containsEntry(source, destination)) {
-            throw new IllegalArgumentException(
-                    "Invalid combination of source and destination: source="
-                            + source
-                            + " dest="
-                            + destination);
+            throw new IllegalArgumentException("Invalid combination of source and destination: source=" + source + " dest=" + destination);
         }
         try {
-            job.log(
-                    String.format(
-                            "(scm) promote %s %1.7s (%s to %s)",
-                            testName, srcRevision, source.getName(), destination.getName()));
-            promoter.promote(
-                    testName,
-                    source,
-                    srcRevision,
-                    destination,
-                    destRevision,
-                    username,
-                    password,
-                    author,
-                    metadata);
-            job.log(
-                    String.format(
-                            "(scm) Successfully promoted %s %1.7s (%s to %s)",
-                            testName, srcRevision, source.getName(), destination.getName()));
+            job.log(String.format("(scm) promote %s %1.7s (%s to %s)", testName, srcRevision, source.getName(), destination.getName()));
+            promoter.promote(testName, source, srcRevision, destination, destRevision, username, password, author, metadata);
+            job.log(String.format("(scm) Successfully promoted %s %1.7s (%s to %s)", testName, srcRevision, source.getName(), destination.getName()));
         } catch (final Exception t) {
             Throwables.propagateIfInstanceOf(t, ProctorPromoter.TestPromotionException.class);
             Throwables.propagateIfInstanceOf(t, StoreException.TestUpdateException.class);
@@ -867,29 +725,17 @@ public class EditAndPromoteJob extends AbstractJob {
         // PostDefinitionPromoteChanges
         if (!postDefinitionPromoteChanges.isEmpty()) {
             job.logWithTiming("Executing post promote extension tasks.", "postPromoteExtension");
-            for (final PostDefinitionPromoteChange postDefinitionPromoteChange :
-                    postDefinitionPromoteChanges) {
-                postDefinitionPromoteChange.postPromote(
-                        requestParameterMap, source, destination, isAutopromote, logger);
+            for (final PostDefinitionPromoteChange postDefinitionPromoteChange : postDefinitionPromoteChanges) {
+                postDefinitionPromoteChange.postPromote(requestParameterMap, source, destination, isAutopromote,
+                        logger);
             }
             job.log("Finished post promote extension tasks.");
         }
 
-        job.log(
-                String.format(
-                        "Promoted %s from %s (%1.7s) to %s (%1.7s)",
-                        testName,
-                        source.getName(),
-                        srcRevision,
-                        destination.getName(),
-                        destRevision));
-        job.addUrl(
-                "/proctor/definition/"
-                        + EncodingUtil.urlEncodeUtf8(testName)
-                        + "?branch="
-                        + destination.getName(),
-                "view " + testName + " on " + destination.getName());
+        job.log(String.format("Promoted %s from %s (%1.7s) to %s (%1.7s)", testName, source.getName(), srcRevision, destination.getName(), destRevision));
+        job.addUrl("/proctor/definition/" + EncodingUtil.urlEncodeUtf8(testName) + "?branch=" + destination.getName(), "view " + testName + " on " + destination.getName());
         return true;
+
     }
 
     static class PostEditActionFailedException extends RuntimeException {

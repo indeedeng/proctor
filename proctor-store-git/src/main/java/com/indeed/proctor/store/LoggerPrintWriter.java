@@ -7,7 +7,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
 
-/** java.io.PrintWriter adapter for org.apache.logging.log4j.Logger. */
+/**
+ * java.io.PrintWriter adapter for org.apache.logging.log4j.Logger.
+ */
 class LoggerPrintWriter extends PrintWriter {
     public LoggerPrintWriter(final Logger logger, final Level level) {
         super(new InternalLoggerWriter(logger, level));

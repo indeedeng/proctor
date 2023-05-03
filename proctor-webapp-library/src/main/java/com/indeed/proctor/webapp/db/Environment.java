@@ -12,7 +12,6 @@ public enum Environment {
 
     private final String name;
     private final int precedence;
-
     Environment(final String name, final int precedence) {
         this.name = name;
         this.precedence = precedence;
@@ -26,9 +25,8 @@ public enum Environment {
         return precedence;
     }
 
-    private static final Map<String, Environment> LOOKUP =
-            Maps.uniqueIndex(Arrays.asList(Environment.values()), Environment::getName);
-
+    private static final Map<String, Environment> LOOKUP = Maps.uniqueIndex(
+            Arrays.asList(Environment.values()), Environment::getName);
     public static Environment fromName(final String name) {
         if (name == null) {
             return null;

@@ -23,37 +23,32 @@ import org.tmatesoft.svn.core.wc.SVNWCUtil;
 import java.io.File;
 import java.io.IOException;
 
-/** @author parker */
+/**
+ * @author parker
+ */
 class SvnProctorUtils {
-    private SvnProctorUtils() {
-        throw new UnsupportedOperationException("SvnProctorUtils is a utils class");
-    }
+    private SvnProctorUtils() { throw new UnsupportedOperationException("SvnProctorUtils is a utils class"); }
 
     /**
      * Cleans up the directory using the client manager.
-     *
-     * <p>If the directory not a working directory or is some state that is not "NORMAL", a full
-     * checkout will be performed from HEAD.
-     *
-     * <p>Otherwise, an update will be attempted
+     * <p/>
+     * If the directory not a working directory or is some state that is not "NORMAL",
+     * a full checkout will be performed from HEAD.
+     * <p/>
+     * Otherwise, an update will be attempted
      *
      * @param userDir
      * @param userClientManager
      * @throws org.tmatesoft.svn.core.SVNException
      * @throws java.io.IOException
      */
-    static void cleanUpWorkingDir(
-            final Logger logger,
-            final File userDir,
-            final SVNURL svnUrl,
-            final SVNClientManager userClientManager)
-            throws SVNException, IOException {
+    static void cleanUpWorkingDir(final Logger logger,
+                                  final File userDir,
+                                  final SVNURL svnUrl,
+                                  final SVNClientManager userClientManager) throws SVNException, IOException {
         Preconditions.checkNotNull(userDir, "user dir should not be null");
         if (userDir.exists()) {
-            Preconditions.checkArgument(
-                    userDir.isDirectory(),
-                    "user dir (%s) should be a directory if it exists",
-                    userDir.getAbsolutePath());
+            Preconditions.checkArgument(userDir.isDirectory(), "user dir (%s) should be a directory if it exists", userDir.getAbsolutePath());
             Files.touch(userDir);
         } else {
             if (!userDir.mkdir()) {
@@ -70,74 +65,46 @@ class SvnProctorUtils {
             if (contentStatus == SVNStatusType.STATUS_NORMAL) {
                 long elapsed = -System.currentTimeMillis();
                 if (logger.isDebugEnabled()) {
-                    logger.debug(
-                            "(svn) current r"
-                                    + status.getRevision().getNumber()
-                                    + " svn update "
-                                    + svnUrl
-                                    + " into "
-                                    + userDir);
+                    logger.debug("(svn) current r" + status.getRevision().getNumber() +  " svn update " + svnUrl + " into " + userDir);
                 }
-                long workingDirRevision =
-                        updateClient.doUpdate(
-                                userDir, SVNRevision.HEAD, SVNDepth.INFINITY, false, false);
+                long workingDirRevision = updateClient.doUpdate(userDir, SVNRevision.HEAD, SVNDepth.INFINITY, false, false);
                 elapsed += System.currentTimeMillis();
-                logger.info(
-                        String.format(
-                                "Updated working directory (%s) to revision %d in %d ms",
-                                userDir.getAbsolutePath(), workingDirRevision, elapsed));
+                logger.info(String.format("Updated working directory (%s) to revision %d in %d ms", userDir.getAbsolutePath(), workingDirRevision, elapsed));
             } else {
-                logger.warn(
-                        String.format(
-                                "Working directory (%s) is in a bad state: %s Cleaning up and checking out fresh.",
-                                userDir.getAbsolutePath(), contentStatus));
+                logger.warn(String.format("Working directory (%s) is in a bad state: %s Cleaning up and checking out fresh.", userDir.getAbsolutePath(), contentStatus));
                 if (logger.isDebugEnabled()) {
-                    logger.debug(
-                            String.format(
-                                    "Deleting working directory contents (%s)",
-                                    userDir.getAbsolutePath()));
+                    logger.debug(String.format("Deleting working directory contents (%s)", userDir.getAbsolutePath()));
                 }
                 deleteDirectoryContents(userDir);
                 long elapsed = -System.currentTimeMillis();
                 if (logger.isDebugEnabled()) {
                     logger.debug("(svn) svn co " + svnUrl + " into " + userDir);
                 }
-                long workingDirRevision =
-                        updateClient.doCheckout(
-                                svnUrl, userDir, null, SVNRevision.HEAD, SVNDepth.INFINITY, false);
+                long workingDirRevision = updateClient.doCheckout(svnUrl, userDir, null, SVNRevision.HEAD, SVNDepth.INFINITY, false);
                 elapsed += System.currentTimeMillis();
-                logger.info(
-                        String.format(
-                                "Checked out working directory (%s) to revision %d in %d ms",
-                                userDir.getAbsolutePath(), workingDirRevision, elapsed));
+                logger.info(String.format("Checked out working directory (%s) to revision %d in %d ms", userDir.getAbsolutePath(), workingDirRevision, elapsed));
             }
         } else {
             long elapsed = -System.currentTimeMillis();
             if (logger.isDebugEnabled()) {
                 logger.debug("(svn) svn co " + svnUrl + " into " + userDir);
             }
-            long workingDirRevision =
-                    updateClient.doCheckout(
-                            svnUrl, userDir, null, SVNRevision.HEAD, SVNDepth.INFINITY, false);
+            long workingDirRevision = updateClient.doCheckout(svnUrl, userDir, null, SVNRevision.HEAD, SVNDepth.INFINITY, false);
             elapsed += System.currentTimeMillis();
-            logger.info(
-                    String.format(
-                            "Checked out working directory (%s) to revision %d in %d ms",
-                            userDir.getAbsolutePath(), workingDirRevision, elapsed));
+            logger.info(String.format("Checked out working directory (%s) to revision %d in %d ms", userDir.getAbsolutePath(), workingDirRevision, elapsed));
         }
     }
 
+
     static void doInWorkingDirectory(
-            final Logger logger,
-            final File userDir,
-            final String username,
-            final String password,
-            final SVNURL svnUrl,
-            final FileBasedProctorStore.ProctorUpdater updater,
-            final String comment)
-            throws IOException, SVNException, Exception {
-        final BasicAuthenticationManager authManager =
-                new BasicAuthenticationManager(username, password);
+        final Logger logger,
+        final File userDir,
+        final String username,
+        final String password,
+        final SVNURL svnUrl,
+        final FileBasedProctorStore.ProctorUpdater updater,
+        final String comment) throws IOException, SVNException, Exception {
+        final BasicAuthenticationManager authManager = new BasicAuthenticationManager(username, password);
         final SVNClientManager userClientManager = SVNClientManager.newInstance(null, authManager);
         final SVNWCClient wcClient = userClientManager.getWCClient();
 
@@ -155,33 +122,21 @@ class SvnProctorUtils {
                 updateClient.doCheckout(checkoutUrl, workingDir, null, SVNRevision.HEAD, SVNDepth.INFINITY, false);
             */
 
-            final FileBasedProctorStore.RcsClient rcsClient =
-                    new SvnPersisterCoreImpl.SvnRcsClient(wcClient);
+            final FileBasedProctorStore.RcsClient rcsClient = new SvnPersisterCoreImpl.SvnRcsClient(wcClient);
             final boolean thingsChanged = updater.doInWorkingDirectory(rcsClient, userDir);
 
             if (thingsChanged) {
                 final SVNCommitClient commitClient = userClientManager.getCommitClient();
-                final SVNCommitPacket commit =
-                        commitClient.doCollectCommitItems(
-                                new File[] {userDir},
-                                false,
-                                false,
-                                SVNDepth.INFINITY,
-                                new String[0]);
+                final SVNCommitPacket commit = commitClient.doCollectCommitItems(new File[]{userDir}, false, false, SVNDepth.INFINITY, new String[0]);
                 long elapsed = -System.currentTimeMillis();
-                final SVNCommitInfo info =
-                        commitClient.doCommit(commit, /* keepLocks */ false, comment);
+                final SVNCommitInfo info = commitClient.doCommit(commit, /* keepLocks */ false, comment);
                 elapsed += System.currentTimeMillis();
                 if (logger.isDebugEnabled()) {
-                    final StringBuilder changes =
-                            new StringBuilder(
-                                    "Committed " + commit.getCommitItems().length + " changes: ");
+                    final StringBuilder changes = new StringBuilder("Committed " + commit.getCommitItems().length + " changes: ");
                     for (final SVNCommitItem item : commit.getCommitItems()) {
                         changes.append(item.getKind() + " - " + item.getPath() + ", ");
                     }
-                    changes.append(
-                            String.format(
-                                    " in %d ms new revision: r%d", elapsed, info.getNewRevision()));
+                    changes.append(String.format(" in %d ms new revision: r%d", elapsed, info.getNewRevision()));
                     logger.debug(changes.toString());
                 }
             }
@@ -190,24 +145,26 @@ class SvnProctorUtils {
         }
     }
 
+
     /**
-     * Cloned from guava's com.google.common.io.Files in r9. It was later erased completely.
-     *
-     * <p>Deletes all the files within a directory. Does not delete the directory itself.
-     *
-     * <p>
-     *
-     * <p>If the file argument is a symbolic link or there is a symbolic link in the path leading to
-     * the directory, this method will do nothing. Symbolic links within the directory are not
-     * followed.
+     * Cloned from guava's com.google.common.io.Files in r9.  It was later erased completely.
+     * <p/>
+     * Deletes all the files within a directory. Does not delete the
+     * directory itself.
+     * <p/>
+     * <p>If the file argument is a symbolic link or there is a symbolic
+     * link in the path leading to the directory, this method will do
+     * nothing. Symbolic links within the directory are not followed.
      *
      * @param directory the directory to delete the contents of
      * @throws IllegalArgumentException if the argument is not a directory
      * @throws IOException if an I/O error occurs
      * @see #deleteRecursively
      */
-    private static void deleteDirectoryContents(File directory) throws IOException {
-        Preconditions.checkArgument(directory.isDirectory(), "Not a directory: %s", directory);
+    private static void deleteDirectoryContents(File directory)
+        throws IOException {
+        Preconditions.checkArgument(directory.isDirectory(),
+                                    "Not a directory: %s", directory);
         // Symbolic links will have different canonical and absolute paths
         if (!directory.getCanonicalPath().equals(directory.getAbsolutePath())) {
             return;
@@ -222,15 +179,13 @@ class SvnProctorUtils {
     }
 
     /**
-     * Cloned from guava's com.google.common.io.Files in r9. It was later erased completely.
-     *
-     * <p>Deletes a file or directory and all contents recursively.
-     *
-     * <p>
-     *
-     * <p>If the file argument is a symbolic link the link will be deleted but not the target of the
-     * link. If the argument is a directory, symbolic links within the directory will not be
-     * followed.
+     * Cloned from guava's com.google.common.io.Files in r9.  It was later erased completely.
+     * <p/>
+     * Deletes a file or directory and all contents recursively.
+     * <p/>
+     * <p>If the file argument is a symbolic link the link will be deleted
+     * but not the target of the link. If the argument is a directory,
+     * symbolic links within the directory will not be followed.
      *
      * @param file the file to delete
      * @throws IOException if an I/O error occurs
@@ -244,4 +199,5 @@ class SvnProctorUtils {
             throw new IOException("Failed to delete " + file);
         }
     }
+
 }

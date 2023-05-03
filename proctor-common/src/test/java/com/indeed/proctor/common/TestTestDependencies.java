@@ -28,165 +28,153 @@ public class TestTestDependencies {
 
     @Test
     public void testValidateDependencyAndReturnErrorReason_valid() {
-        final ConsumableTestDefinition definition =
-                ConsumableTestDefinition.fromTestDefinition(
-                        stubTestDefinition(TEST_NAME)
-                                .setDependsOn(new TestDependency(PARENT_TEST_NAME, BUCKET_VALUE))
-                                .build());
-        final ConsumableTestDefinition parentDefinition =
-                ConsumableTestDefinition.fromTestDefinition(
-                        stubTestDefinition(PARENT_TEST_NAME).build());
-        assertThat(
-                        TestDependencies.validateDependencyAndReturnReason(
-                                TEST_NAME,
-                                definition,
-                                ImmutableMap.of(
-                                        TEST_NAME, definition, PARENT_TEST_NAME, parentDefinition)))
-                .isEmpty();
+        final ConsumableTestDefinition definition = ConsumableTestDefinition.fromTestDefinition(
+                stubTestDefinition(TEST_NAME)
+                        .setDependsOn(new TestDependency(PARENT_TEST_NAME, BUCKET_VALUE))
+                        .build()
+        );
+        final ConsumableTestDefinition parentDefinition = ConsumableTestDefinition.fromTestDefinition(
+                stubTestDefinition(PARENT_TEST_NAME).build()
+        );
+        assertThat(TestDependencies.validateDependencyAndReturnReason(
+                TEST_NAME,
+                definition,
+                ImmutableMap.of(TEST_NAME, definition, PARENT_TEST_NAME, parentDefinition)
+        )).isEmpty();
     }
 
     @Test
     public void testValidateDependencyAndReturnErrorReason_noDependency() {
-        final ConsumableTestDefinition definition =
-                ConsumableTestDefinition.fromTestDefinition(stubTestDefinition(TEST_NAME).build());
-        assertThat(
-                        TestDependencies.validateDependencyAndReturnReason(
-                                TEST_NAME, definition, ImmutableMap.of(TEST_NAME, definition)))
-                .isEmpty();
+        final ConsumableTestDefinition definition = ConsumableTestDefinition.fromTestDefinition(
+                stubTestDefinition(TEST_NAME)
+                        .build()
+        );
+        assertThat(TestDependencies.validateDependencyAndReturnReason(
+                TEST_NAME,
+                definition,
+                ImmutableMap.of(TEST_NAME, definition)
+        )).isEmpty();
     }
 
     @Test
     public void testValidateDependencyAndReturnErrorReason_dependsOnItself() {
-        final ConsumableTestDefinition definition =
-                ConsumableTestDefinition.fromTestDefinition(
-                        stubTestDefinition(TEST_NAME)
-                                .setDependsOn(new TestDependency(TEST_NAME, BUCKET_VALUE))
-                                .build());
-        final ConsumableTestDefinition parentDefinition =
-                ConsumableTestDefinition.fromTestDefinition(
-                        stubTestDefinition(PARENT_TEST_NAME).build());
-        assertThat(
-                        TestDependencies.validateDependencyAndReturnReason(
-                                TEST_NAME,
-                                definition,
-                                ImmutableMap.of(
-                                        TEST_NAME, definition, PARENT_TEST_NAME, parentDefinition)))
-                .hasValue("A test example_tst depends on itself");
+        final ConsumableTestDefinition definition = ConsumableTestDefinition.fromTestDefinition(
+                stubTestDefinition(TEST_NAME)
+                        .setDependsOn(new TestDependency(TEST_NAME, BUCKET_VALUE))
+                        .build()
+        );
+        final ConsumableTestDefinition parentDefinition = ConsumableTestDefinition.fromTestDefinition(
+                stubTestDefinition(PARENT_TEST_NAME).build()
+        );
+        assertThat(TestDependencies.validateDependencyAndReturnReason(
+                TEST_NAME,
+                definition,
+                ImmutableMap.of(TEST_NAME, definition, PARENT_TEST_NAME, parentDefinition)
+        )).hasValue("A test example_tst depends on itself");
     }
 
     @Test
     public void testValidateDependencyAndReturnErrorReason_unknownTest() {
-        final ConsumableTestDefinition definition =
-                ConsumableTestDefinition.fromTestDefinition(
-                        stubTestDefinition(TEST_NAME)
-                                .setDependsOn(new TestDependency("___dummy", BUCKET_VALUE))
-                                .build());
-        final ConsumableTestDefinition parentDefinition =
-                ConsumableTestDefinition.fromTestDefinition(
-                        stubTestDefinition(PARENT_TEST_NAME).build());
-        assertThat(
-                        TestDependencies.validateDependencyAndReturnReason(
-                                TEST_NAME,
-                                definition,
-                                ImmutableMap.of(
-                                        TEST_NAME, definition, PARENT_TEST_NAME, parentDefinition)))
-                .hasValue("A test example_tst depends on an unknown or incompatible test ___dummy");
+        final ConsumableTestDefinition definition = ConsumableTestDefinition.fromTestDefinition(
+                stubTestDefinition(TEST_NAME)
+                        .setDependsOn(new TestDependency("___dummy", BUCKET_VALUE))
+                        .build()
+        );
+        final ConsumableTestDefinition parentDefinition = ConsumableTestDefinition.fromTestDefinition(
+                stubTestDefinition(PARENT_TEST_NAME).build()
+        );
+        assertThat(TestDependencies.validateDependencyAndReturnReason(
+                TEST_NAME,
+                definition,
+                ImmutableMap.of(TEST_NAME, definition, PARENT_TEST_NAME, parentDefinition)
+        )).hasValue("A test example_tst depends on an unknown or incompatible test ___dummy");
     }
 
     @Test
     public void testValidateDependencyAndReturnErrorReason_unknownBucket() {
         final int unknownBucketValue = 101;
-        final ConsumableTestDefinition definition =
-                ConsumableTestDefinition.fromTestDefinition(
-                        stubTestDefinition(TEST_NAME)
-                                .setDependsOn(
-                                        new TestDependency(PARENT_TEST_NAME, unknownBucketValue))
-                                .build());
-        final ConsumableTestDefinition parentDefinition =
-                ConsumableTestDefinition.fromTestDefinition(
-                        stubTestDefinition(PARENT_TEST_NAME).build());
-        assertThat(
-                        TestDependencies.validateDependencyAndReturnReason(
-                                TEST_NAME,
-                                definition,
-                                ImmutableMap.of(
-                                        TEST_NAME, definition, PARENT_TEST_NAME, parentDefinition)))
-                .hasValue("A test example_tst depends on an undefined bucket 101");
+        final ConsumableTestDefinition definition = ConsumableTestDefinition.fromTestDefinition(
+                stubTestDefinition(TEST_NAME)
+                        .setDependsOn(new TestDependency(PARENT_TEST_NAME, unknownBucketValue))
+                        .build()
+        );
+        final ConsumableTestDefinition parentDefinition = ConsumableTestDefinition.fromTestDefinition(
+                stubTestDefinition(PARENT_TEST_NAME).build()
+        );
+        assertThat(TestDependencies.validateDependencyAndReturnReason(
+                TEST_NAME,
+                definition,
+                ImmutableMap.of(TEST_NAME, definition, PARENT_TEST_NAME, parentDefinition)
+        )).hasValue("A test example_tst depends on an undefined bucket 101");
     }
 
     @Test
     public void testValidateDependencyAndReturnErrorReason_differentTestType() {
-        final ConsumableTestDefinition definition =
-                ConsumableTestDefinition.fromTestDefinition(
-                        stubTestDefinition(TEST_NAME)
-                                .setTestType(TestType.ANONYMOUS_USER)
-                                .setDependsOn(new TestDependency(PARENT_TEST_NAME, BUCKET_VALUE))
-                                .build());
-        final ConsumableTestDefinition parentDefinition =
-                ConsumableTestDefinition.fromTestDefinition(
-                        stubTestDefinition(PARENT_TEST_NAME)
-                                .setTestType(TestType.AUTHENTICATED_USER)
-                                .build());
-        assertThat(
-                        TestDependencies.validateDependencyAndReturnReason(
-                                TEST_NAME,
-                                definition,
-                                ImmutableMap.of(
-                                        TEST_NAME, definition, PARENT_TEST_NAME, parentDefinition)))
-                .hasValue(
-                        "A test example_tst depends on parent_tst with different test type: expected USER but ACCOUNT");
+        final ConsumableTestDefinition definition = ConsumableTestDefinition.fromTestDefinition(
+                stubTestDefinition(TEST_NAME)
+                        .setTestType(TestType.ANONYMOUS_USER)
+                        .setDependsOn(new TestDependency(PARENT_TEST_NAME, BUCKET_VALUE))
+                        .build()
+        );
+        final ConsumableTestDefinition parentDefinition = ConsumableTestDefinition.fromTestDefinition(
+                stubTestDefinition(PARENT_TEST_NAME)
+                        .setTestType(TestType.AUTHENTICATED_USER)
+                        .build()
+        );
+        assertThat(TestDependencies.validateDependencyAndReturnReason(
+                TEST_NAME,
+                definition,
+                ImmutableMap.of(TEST_NAME, definition, PARENT_TEST_NAME, parentDefinition)
+        )).hasValue("A test example_tst depends on parent_tst with different test type: expected USER but ACCOUNT");
     }
 
     @Test
     public void testValidateDependencyAndReturnErrorReason_sameSalt() {
         final String sharedSalt = "&shared_salt";
-        final ConsumableTestDefinition definition =
-                ConsumableTestDefinition.fromTestDefinition(
-                        stubTestDefinition(TEST_NAME)
-                                .setSalt(sharedSalt)
-                                .setDependsOn(new TestDependency(PARENT_TEST_NAME, BUCKET_VALUE))
-                                .build());
-        final ConsumableTestDefinition parentDefinition =
-                ConsumableTestDefinition.fromTestDefinition(
-                        stubTestDefinition(PARENT_TEST_NAME).setSalt(sharedSalt).build());
-        assertThat(
-                        TestDependencies.validateDependencyAndReturnReason(
-                                TEST_NAME,
-                                definition,
-                                ImmutableMap.of(
-                                        TEST_NAME, definition, PARENT_TEST_NAME, parentDefinition)))
-                .hasValue(
-                        "A test example_tst depends on parent_tst with the same salt: &shared_salt");
+        final ConsumableTestDefinition definition = ConsumableTestDefinition.fromTestDefinition(
+                stubTestDefinition(TEST_NAME)
+                        .setSalt(sharedSalt)
+                        .setDependsOn(new TestDependency(PARENT_TEST_NAME, BUCKET_VALUE))
+                        .build()
+        );
+        final ConsumableTestDefinition parentDefinition = ConsumableTestDefinition.fromTestDefinition(
+                stubTestDefinition(PARENT_TEST_NAME)
+                        .setSalt(sharedSalt)
+                        .build()
+        );
+        assertThat(TestDependencies.validateDependencyAndReturnReason(
+                TEST_NAME,
+                definition,
+                ImmutableMap.of(TEST_NAME, definition, PARENT_TEST_NAME, parentDefinition)
+        )).hasValue("A test example_tst depends on parent_tst with the same salt: &shared_salt");
     }
 
     @Test
     public void testValidateDependencyAndReturnErrorReason_negativeBucket() {
-        final ConsumableTestDefinition definition =
-                ConsumableTestDefinition.fromTestDefinition(
-                        stubTestDefinition(TEST_NAME)
-                                .setDependsOn(new TestDependency(PARENT_TEST_NAME, -1))
-                                .build());
-        final ConsumableTestDefinition parentDefinition =
-                ConsumableTestDefinition.fromTestDefinition(
-                        stubTestDefinition(PARENT_TEST_NAME)
-                                .addBuckets(
-                                        new TestBucket("inactive", -1, ""),
-                                        new TestBucket("active", BUCKET_VALUE, ""))
-                                .build());
-        assertThat(
-                        TestDependencies.validateDependencyAndReturnReason(
-                                TEST_NAME,
-                                definition,
-                                ImmutableMap.of(
-                                        TEST_NAME, definition, PARENT_TEST_NAME, parentDefinition)))
-                .hasValue("A test example_tst depends on negative bucket value -1 of parent_tst");
+        final ConsumableTestDefinition definition = ConsumableTestDefinition.fromTestDefinition(
+                stubTestDefinition(TEST_NAME)
+                        .setDependsOn(new TestDependency(PARENT_TEST_NAME, -1))
+                        .build()
+        );
+        final ConsumableTestDefinition parentDefinition = ConsumableTestDefinition.fromTestDefinition(
+                stubTestDefinition(PARENT_TEST_NAME)
+                        .addBuckets(new TestBucket("inactive", -1, ""), new TestBucket("active", BUCKET_VALUE, ""))
+                        .build()
+        );
+        assertThat(TestDependencies.validateDependencyAndReturnReason(
+                TEST_NAME,
+                definition,
+                ImmutableMap.of(TEST_NAME, definition, PARENT_TEST_NAME, parentDefinition)
+        )).hasValue("A test example_tst depends on negative bucket value -1 of parent_tst");
     }
 
     @Test
     public void testValidateDependencyAndReturnErrorReason_validWithDifferentTestType() {
-        final ConsumableTestDefinition definition =
-                ConsumableTestDefinition.fromTestDefinition(
-                        stubTestDefinition(TEST_NAME).setTestType(TestType.ANONYMOUS_USER).build());
+        final ConsumableTestDefinition definition = ConsumableTestDefinition.fromTestDefinition(
+                stubTestDefinition(TEST_NAME)
+                        .setTestType(TestType.ANONYMOUS_USER)
+                        .build()
+        );
 
         final TestType dependentTestType = TestType.register("ad_budget_segment");
 
@@ -194,54 +182,45 @@ public class TestTestDependencies {
         dependentTestType.addAllowedDependency(TestType.AUTHENTICATED_USER);
         dependentTestType.addAllowedDependency(TestType.EMAIL_ADDRESS);
 
-        final ConsumableTestDefinition dependentDefinition =
-                ConsumableTestDefinition.fromTestDefinition(
-                        stubTestDefinition(DEPENDENT_TEST_NAME)
-                                .setTestType(dependentTestType)
-                                .setDependsOn(new TestDependency(TEST_NAME, BUCKET_VALUE))
-                                .build());
+        final ConsumableTestDefinition dependentDefinition = ConsumableTestDefinition.fromTestDefinition(
+                stubTestDefinition(DEPENDENT_TEST_NAME)
+                        .setTestType(dependentTestType)
+                        .setDependsOn(new TestDependency(TEST_NAME, BUCKET_VALUE))
+                        .build()
+        );
 
-        assertThat(
-                        TestDependencies.validateDependencyAndReturnReason(
-                                DEPENDENT_TEST_NAME,
-                                dependentDefinition,
-                                ImmutableMap.of(
-                                        DEPENDENT_TEST_NAME,
-                                        dependentDefinition,
-                                        TEST_NAME,
-                                        definition)))
-                .isEmpty();
+        assertThat(TestDependencies.validateDependencyAndReturnReason(
+                DEPENDENT_TEST_NAME,
+                dependentDefinition,
+                ImmutableMap.of(DEPENDENT_TEST_NAME, dependentDefinition, TEST_NAME, definition)
+        )).isEmpty();
     }
 
     @Test
     public void testValidateDependencyAndReturnErrorReason_invalidWithDifferentTestType() {
-        final ConsumableTestDefinition definition =
-                ConsumableTestDefinition.fromTestDefinition(
-                        stubTestDefinition(TEST_NAME).setTestType(TestType.ANONYMOUS_USER).build());
+        final ConsumableTestDefinition definition = ConsumableTestDefinition.fromTestDefinition(
+                stubTestDefinition(TEST_NAME)
+                        .setTestType(TestType.ANONYMOUS_USER)
+                        .build()
+        );
 
         final TestType dependentTestType = TestType.register("ad_budget_segment");
 
         dependentTestType.addAllowedDependency(TestType.AUTHENTICATED_USER);
         dependentTestType.addAllowedDependency(TestType.EMAIL_ADDRESS);
 
-        final ConsumableTestDefinition dependentDefinition =
-                ConsumableTestDefinition.fromTestDefinition(
-                        stubTestDefinition(DEPENDENT_TEST_NAME)
-                                .setTestType(dependentTestType)
-                                .setDependsOn(new TestDependency(TEST_NAME, BUCKET_VALUE))
-                                .build());
+        final ConsumableTestDefinition dependentDefinition = ConsumableTestDefinition.fromTestDefinition(
+                stubTestDefinition(DEPENDENT_TEST_NAME)
+                        .setTestType(dependentTestType)
+                        .setDependsOn(new TestDependency(TEST_NAME, BUCKET_VALUE))
+                        .build()
+        );
 
-        assertThat(
-                        TestDependencies.validateDependencyAndReturnReason(
-                                DEPENDENT_TEST_NAME,
-                                dependentDefinition,
-                                ImmutableMap.of(
-                                        DEPENDENT_TEST_NAME,
-                                        dependentDefinition,
-                                        TEST_NAME,
-                                        definition)))
-                .hasValue(
-                        "A test dependent_tst depends on example_tst with different test type: expected ACCOUNT, EMAIL, ad_budget_segment but USER");
+        assertThat(TestDependencies.validateDependencyAndReturnReason(
+                DEPENDENT_TEST_NAME,
+                dependentDefinition,
+                ImmutableMap.of(DEPENDENT_TEST_NAME, dependentDefinition, TEST_NAME, definition)
+        )).hasValue("A test dependent_tst depends on example_tst with different test type: expected ACCOUNT, EMAIL, ad_budget_segment but USER");
     }
 
     @Test
@@ -252,13 +231,13 @@ public class TestTestDependencies {
         // E -> D
         // G -> F
         final List<String> testNames = ImmutableList.of("A", "B", "C", "D", "E", "F", "G");
-        final Map<String, String> parentMap =
-                ImmutableMap.of(
-                        "B", "A",
-                        "C", "B",
-                        "D", "B",
-                        "E", "D",
-                        "G", "F");
+        final Map<String, String> parentMap = ImmutableMap.of(
+                "B", "A",
+                "C", "B",
+                "D", "B",
+                "E", "D",
+                "G", "F"
+        );
 
         final Map<String, ConsumableTestDefinition> tests = constructTests(testNames, parentMap);
 
@@ -275,10 +254,10 @@ public class TestTestDependencies {
     @Test
     public void testDetermineEvaluationOrder_unknownDependency() {
         final List<String> testNames = ImmutableList.of("A", "B");
-        final Map<String, String> parentMap =
-                ImmutableMap.of(
-                        "A", "B",
-                        "B", "__dummy");
+        final Map<String, String> parentMap = ImmutableMap.of(
+                "A", "B",
+                "B", "__dummy"
+        );
 
         final Map<String, ConsumableTestDefinition> tests = constructTests(testNames, parentMap);
 
@@ -290,10 +269,10 @@ public class TestTestDependencies {
     @Test
     public void testDetermineEvaluationOrder_circularDependency() {
         final List<String> testNames = ImmutableList.of("A", "B");
-        final Map<String, String> parentMap =
-                ImmutableMap.of(
-                        "A", "B",
-                        "B", "A");
+        final Map<String, String> parentMap = ImmutableMap.of(
+                "A", "B",
+                "B", "A"
+        );
 
         final Map<String, ConsumableTestDefinition> tests = constructTests(testNames, parentMap);
 
@@ -310,13 +289,13 @@ public class TestTestDependencies {
         // E -> D
         // G -> F
         final List<String> testNames = ImmutableList.of("A", "B", "C", "D", "E", "F", "G");
-        final Map<String, String> parentMap =
-                ImmutableMap.of(
-                        "B", "A",
-                        "C", "B",
-                        "D", "B",
-                        "E", "D",
-                        "G", "F");
+        final Map<String, String> parentMap = ImmutableMap.of(
+                "B", "A",
+                "C", "B",
+                "D", "B",
+                "E", "D",
+                "G", "F"
+        );
 
         final Map<String, ConsumableTestDefinition> tests = constructTests(testNames, parentMap);
 
@@ -336,26 +315,21 @@ public class TestTestDependencies {
                 .containsExactlyInAnyOrder("G", "F");
         assertThat(TestDependencies.computeTransitiveDependencies(tests, ImmutableSet.of("G", "C")))
                 .containsExactlyInAnyOrder("G", "F", "C", "B", "A");
-        assertThat(
-                        TestDependencies.computeTransitiveDependencies(
-                                tests, ImmutableSet.of("G", "D", "C")))
+        assertThat(TestDependencies.computeTransitiveDependencies(tests, ImmutableSet.of("G", "D", "C")))
                 .containsExactlyInAnyOrder("G", "F", "D", "C", "B", "A");
     }
 
     @Test
     public void testComputeTransitiveDependencies_unknownDependency() {
         final List<String> testNames = ImmutableList.of("A", "B");
-        final Map<String, String> parentMap =
-                ImmutableMap.of(
-                        "A", "B",
-                        "B", "__dummy");
+        final Map<String, String> parentMap = ImmutableMap.of(
+                "A", "B",
+                "B", "__dummy"
+        );
 
         final Map<String, ConsumableTestDefinition> tests = constructTests(testNames, parentMap);
 
-        assertThatThrownBy(
-                        () ->
-                                TestDependencies.computeTransitiveDependencies(
-                                        tests, ImmutableSet.of("B")))
+        assertThatThrownBy(() -> TestDependencies.computeTransitiveDependencies(tests, ImmutableSet.of("B")))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Detected dependency on an unknown test __dummy");
     }
@@ -363,10 +337,10 @@ public class TestTestDependencies {
     @Test
     public void testComputeTransitiveDependencies_circularDependency() {
         final List<String> testNames = ImmutableList.of("A", "B");
-        final Map<String, String> parentMap =
-                ImmutableMap.of(
-                        "A", "B",
-                        "B", "A");
+        final Map<String, String> parentMap = ImmutableMap.of(
+                "A", "B",
+                "B", "A"
+        );
 
         final Map<String, ConsumableTestDefinition> tests = constructTests(testNames, parentMap);
 
@@ -378,12 +352,8 @@ public class TestTestDependencies {
     @Test
     public void testComputeTransitiveDependencies_unknownTest() {
         final List<String> testNames = ImmutableList.of("A");
-        final Map<String, ConsumableTestDefinition> tests =
-                constructTests(testNames, Collections.emptyMap());
-        assertThatThrownBy(
-                        () ->
-                                TestDependencies.computeTransitiveDependencies(
-                                        tests, ImmutableSet.of("A", "__unknown")))
+        final Map<String, ConsumableTestDefinition> tests = constructTests(testNames, Collections.emptyMap());
+        assertThatThrownBy(() -> TestDependencies.computeTransitiveDependencies(tests, ImmutableSet.of("A", "__unknown")))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("BUG: unknown test name __unknown is given");
     }
@@ -397,13 +367,13 @@ public class TestTestDependencies {
         // G -> F
         // H
         final List<String> testNames = ImmutableList.of("A", "B", "C", "D", "E", "F", "G", "H");
-        final Map<String, String> parentMap =
-                ImmutableMap.of(
-                        "B", "A",
-                        "C", "B",
-                        "D", "B",
-                        "E", "D",
-                        "G", "F");
+        final Map<String, String> parentMap = ImmutableMap.of(
+                "B", "A",
+                "C", "B",
+                "D", "B",
+                "E", "D",
+                "G", "F"
+        );
 
         final Map<String, ConsumableTestDefinition> tests = constructTests(testNames, parentMap);
 
@@ -423,44 +393,42 @@ public class TestTestDependencies {
     @Test
     public void testComputeMaximumDependencyChains_unknownTestName() {
         final List<String> testNames = ImmutableList.of("A");
-        final Map<String, ConsumableTestDefinition> tests =
-                constructTests(testNames, Collections.emptyMap());
+        final Map<String, ConsumableTestDefinition> tests = constructTests(testNames, Collections.emptyMap());
 
         assertThat(TestDependencies.computeMaximumDependencyChains(tests, "A")).isEqualTo(0);
-        assertThatThrownBy(
-                        () -> TestDependencies.computeMaximumDependencyChains(tests, "__unknown"))
+        assertThatThrownBy(() -> TestDependencies.computeMaximumDependencyChains(tests, "__unknown"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("BUG: unknown test name __unknown is given");
     }
 
     @Test
     public void testValidateDependenciesAndReturnReasons() {
-        final ConsumableTestDefinition definitionA =
-                ConsumableTestDefinition.fromTestDefinition(
-                        stubTestDefinition("A")
-                                .setDependsOn(new TestDependency("__dummy", BUCKET_VALUE))
-                                .build());
-        final ConsumableTestDefinition definitionB =
-                ConsumableTestDefinition.fromTestDefinition(
-                        stubTestDefinition("B")
-                                .setDependsOn(new TestDependency("A", BUCKET_VALUE))
-                                .build());
-        final ConsumableTestDefinition definitionC =
-                ConsumableTestDefinition.fromTestDefinition(
-                        stubTestDefinition("C")
-                                .setDependsOn(new TestDependency("C", BUCKET_VALUE))
-                                .build());
-        final ConsumableTestDefinition definitionD =
-                ConsumableTestDefinition.fromTestDefinition(
-                        stubTestDefinition("D")
-                                .setDependsOn(new TestDependency("B", BUCKET_VALUE))
-                                .build());
-        final Map<String, ConsumableTestDefinition> tests =
-                ImmutableMap.of(
-                        "A", definitionA,
-                        "B", definitionB,
-                        "C", definitionC,
-                        "D", definitionD);
+        final ConsumableTestDefinition definitionA = ConsumableTestDefinition.fromTestDefinition(
+                stubTestDefinition("A")
+                        .setDependsOn(new TestDependency("__dummy", BUCKET_VALUE))
+                        .build()
+        );
+        final ConsumableTestDefinition definitionB = ConsumableTestDefinition.fromTestDefinition(
+                stubTestDefinition("B")
+                        .setDependsOn(new TestDependency("A", BUCKET_VALUE))
+                        .build()
+        );
+        final ConsumableTestDefinition definitionC = ConsumableTestDefinition.fromTestDefinition(
+                stubTestDefinition("C")
+                        .setDependsOn(new TestDependency("C", BUCKET_VALUE))
+                        .build()
+        );
+        final ConsumableTestDefinition definitionD = ConsumableTestDefinition.fromTestDefinition(
+                stubTestDefinition("D")
+                        .setDependsOn(new TestDependency("B", BUCKET_VALUE))
+                        .build()
+        );
+        final Map<String, ConsumableTestDefinition> tests = ImmutableMap.of(
+                "A", definitionA,
+                "B", definitionB,
+                "C", definitionC,
+                "D", definitionD
+        );
         assertThat(TestDependencies.validateDependenciesAndReturnReasons(tests))
                 .containsOnlyKeys("A", "B", "C", "D")
                 .containsEntry("A", "A test A depends on an unknown or incompatible test __dummy")
@@ -474,12 +442,16 @@ public class TestTestDependencies {
                 .setTestType(TestType.ANONYMOUS_USER)
                 .setSalt("&" + testName)
                 .addBuckets(new TestBucket("active", BUCKET_VALUE, ""))
-                .addAllocations(
-                        new Allocation("", ImmutableList.of(new Range(BUCKET_VALUE, 1.0)), "#A1"));
+                .addAllocations(new Allocation("",
+                        ImmutableList.of(new Range(BUCKET_VALUE, 1.0)),
+                        "#A1"
+                ));
     }
 
     private static Map<String, ConsumableTestDefinition> constructTests(
-            final List<String> testNames, final Map<String, String> parentMap) {
+            final List<String> testNames,
+            final Map<String, String> parentMap
+    ) {
         final Map<String, ConsumableTestDefinition> tests = new HashMap<>();
         for (final String testName : testNames) {
             final TestDefinition.Builder builder = stubTestDefinition(testName);

@@ -10,36 +10,38 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Read interface of Proctor Store. It provides read access to test definitions and their histories
- * in the database. Each store has a single global linear history of states, each having a unique
- * revision id.
+ * Read interface of Proctor Store.
+ * It provides read access to test definitions and their histories in the database.
+ * Each store has a single global linear history of states, each having a unique revision id.
  *
- * <p>All methods throws {@link StoreException} when it failed to handle request because of errors
- * in the database.
+ * All methods throws {@link StoreException} when it failed to handle request because of errors in the database.
  *
  * @author parker
  */
 public interface ProctorReader {
-    /** @return the current test matrix in the database. */
+    /**
+     * @return the current test matrix in the database.
+     */
     TestMatrixVersion getCurrentTestMatrix() throws StoreException;
 
     /**
      * @param testName name of the test.
-     * @return a current test definition of a test in the database. null if the test is not found in
-     *     the current state.
+     * @return a current test definition of a test in the database.
+     * null if the test is not found in the current state.
      */
     @CheckForNull
     TestDefinition getCurrentTestDefinition(String testName) throws StoreException;
 
     /**
-     * Verifies the data store object is ready to operate. Throwing an exception allows the
-     * implementer to signal bad health status.
-     *
+     * Verifies the data store object is ready to operate.
+     * Throwing an exception allows the implementer to signal bad health status.
      * @throws StoreException if it's not ready to operate.
      */
     void verifySetup() throws StoreException;
 
-    /** @return the latest revision id. */
+    /**
+     * @return the latest revision id.
+     */
     @Nonnull
     String getLatestVersion() throws StoreException;
 
@@ -53,8 +55,8 @@ public interface ProctorReader {
     /**
      * @param testName name of the test
      * @param revisionId id of the revision
-     * @return a test definition of a test when the revision was made. null if the test is not found
-     *     at the revision
+     * @return a test definition of a test when the revision was made.
+     * null if the test is not found at the revision
      * @throws StoreException if the revision is not found.
      */
     @CheckForNull
@@ -62,8 +64,7 @@ public interface ProctorReader {
 
     /**
      * @param start offset of the first revision (0-indexed)
-     * @param limit limit of the number of revisions, -1 might be usable for unlimited (depending on
-     *     implementation)
+     * @param limit limit of the number of revisions, -1 might be usable for unlimited (depending on implementation)
      * @return a list of revisions for all tests ordered by recency.
      */
     @Nonnull
@@ -73,18 +74,15 @@ public interface ProctorReader {
      * @param sinceInclusive earliest date
      * @param untilExclusive latest date
      * @return a list of revisions for a test when test revision was made ordered by recency.
-     * @throws StoreException if the revision is not found, or date range is bigger than the
-     *     implementation allows
+     * @throws StoreException if the revision is not found, or date range is bigger than the implementation allows
      */
     @Nonnull
-    List<Revision> getMatrixHistory(Instant sinceInclusive, Instant untilExclusive)
-            throws StoreException;
+    List<Revision> getMatrixHistory(Instant sinceInclusive, Instant untilExclusive) throws StoreException;
 
     /**
      * @param testName name of the test
      * @param start offset of the first revision (0-indexed)
-     * @param limit limit of the number of revisions, -1 might be usable for unlimited (depending on
-     *     implementation)
+     * @param limit limit of the number of revisions, -1 might be usable for unlimited (depending on implementation)
      * @return a list of revisions for a test ordered by recency.
      */
     @Nonnull
@@ -93,18 +91,17 @@ public interface ProctorReader {
     /**
      * @param testName name of the test
      * @param start offset of the first revision (0-indexed)
-     * @param limit limit of the number of revisions, -1 might be usable for unlimited (depending on
-     *     implementation)
+     * @param limit limit of the number of revisions, -1 might be usable for unlimited (depending on implementation)
      * @return a list of revisions for a test when test revision was made ordered by recency.
      * @throws StoreException if the revision is not found.
      */
     @Nonnull
-    List<Revision> getHistory(String testName, String revisionId, int start, int limit)
-            throws StoreException;
+    List<Revision> getHistory(String testName, String revisionId, int start, int limit) throws StoreException;
 
     /**
      * @param revisionId id of the revision
-     * @return details of the single revision. null if the revision is not found in the store.
+     * @return details of the single revision.
+     * null if the revision is not found in the store.
      */
     @CheckForNull
     RevisionDetails getRevisionDetails(String revisionId) throws StoreException;
@@ -128,21 +125,21 @@ public interface ProctorReader {
      * @throws StoreException if the revision is not found
      */
     @Nonnull
-    List<TestEdit> getTestEdits(String testName, String revision, int start, int limit)
-            throws StoreException;
+    List<TestEdit> getTestEdits(String testName, String revision, int start, int limit) throws StoreException;
 
     /**
-     * Get all the revisions for all tests in history Same revision may appear in two or more lists
-     * if multiple tests are modified in the revision.
-     *
+     * Get all the revisions for all tests in history
+     * Same revision may appear in two or more lists if multiple tests are modified in the revision.
      * @return a list of revisions grouped by a test. Each list is ordered by recency.
-     * @deprecated does not scale, avoid if possible, prefer getMatrixHistory and getRevisionDetails
-     *     methods
+     * @deprecated does not scale, avoid if possible, prefer getMatrixHistory and getRevisionDetails methods
      */
     @Nonnull
     @Deprecated
     Map<String, List<Revision>> getAllHistories() throws StoreException;
 
-    /** Update the local state with the remote database. */
+    /**
+     * Update the local state with the remote database.
+     */
     void refresh() throws StoreException;
+
 }
