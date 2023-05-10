@@ -10,6 +10,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.el.ExpressionFactory;
 import javax.el.FunctionMapper;
+import javax.el.ValueExpression;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -101,10 +102,10 @@ class RandomTestChooser implements TestChooser<Void> {
     @Override
     public TestChooser.Result chooseInternal(
             @Nullable final Void identifier,
-            @Nonnull final Map<String, Object> values,
+            @Nonnull final Map<String, ValueExpression> localContext,
             @Nonnull final Map<String, TestBucket> testGroups
     ) {
-        final int matchingRuleIndex = testRangeSelector.findMatchingRule(values, testGroups);
+        final int matchingRuleIndex = testRangeSelector.findMatchingRuleWithValueExpr(localContext, testGroups);
         if (matchingRuleIndex < 0) {
             return TestChooser.Result.EMPTY;
         }

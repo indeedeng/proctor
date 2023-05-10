@@ -11,6 +11,7 @@ import org.junit.Test;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.el.ValueExpression;
 import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.Collections;
@@ -91,7 +92,7 @@ public class TestTestChooser {
         @Override
         public Result chooseInternal(
                 @Nullable final Void identifier,
-                @Nonnull final Map<String, Object> values,
+                @Nonnull final Map<String, ValueExpression> localContext,
                 @Nonnull final Map<String, TestBucket> testGroups
         ) {
             final Optional<Allocation> firstAllocation = consumableTestDefinition

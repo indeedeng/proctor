@@ -84,8 +84,7 @@ public class RuleEvaluator {
     }
 
     @Nonnull
-    ELContext createElContext(@Nonnull final Map<String, Object> values) {
-        final Map<String, ValueExpression> localContext = ProctorUtils.convertToValueExpressionMap(expressionFactory, values);
+    ELContext createElContext(@Nonnull final Map<String, ValueExpression> localContext) {
         @SuppressWarnings("unchecked")
         final VariableMapper variableMapper = new MulticontextReadOnlyVariableMapper(testConstants, localContext);
         return createELContext(variableMapper);
@@ -114,7 +113,16 @@ public class RuleEvaluator {
         };
     }
 
+    /**
+     * @deprecated Use evaluateBooleanRuleWithValueExpr(String, Map) instead, it's more efficient
+     */
+    @Deprecated
     public boolean evaluateBooleanRule(final String rule, @Nonnull final Map<String, Object> values) throws IllegalArgumentException {
+        final Map<String, ValueExpression> localContext = ProctorUtils.convertToValueExpressionMap(expressionFactory, values);
+        return evaluateBooleanRuleWithValueExpr(rule, localContext);
+    }
+
+    public boolean evaluateBooleanRuleWithValueExpr(final String rule, @Nonnull final Map<String, ValueExpression> localContext) throws IllegalArgumentException {
         if (StringUtils.isBlank(rule)) {
             return true;
         }
@@ -130,7 +138,7 @@ public class RuleEvaluator {
             return false;
         }
 
-        final ELContext elContext = createElContext(values);
+        final ELContext elContext = createElContext(localContext);
         final ValueExpression ve = expressionFactory.createValueExpression(elContext, rule, boolean.class);
         checkRuleIsBooleanType(rule, elContext, ve);
 
@@ -173,7 +181,7 @@ public class RuleEvaluator {
     @CheckForNull
     @Deprecated
     public Object evaluateRule(final String rule, final Map<String, Object> values, final Class expectedType) {
-        final ELContext elContext = createElContext(values);
+        final ELContext elContext = createElContext(ProctorUtils.convertToValueExpressionMap(expressionFactory, values));
         final ValueExpression ve = expressionFactory.createValueExpression(elContext, rule, expectedType);
         return ve.getValue(elContext);
     }

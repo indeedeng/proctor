@@ -9,6 +9,7 @@ import com.indeed.proctor.common.model.TestBucket;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.el.ValueExpression;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -41,14 +42,14 @@ interface TestChooser<IdentifierType> {
     @Nonnull
     TestChooser.Result chooseInternal(
             @Nullable IdentifierType identifier,
-            @Nonnull Map<String, Object> values,
+            @Nonnull final Map<String, ValueExpression> localContext,
             @Nonnull Map<String, TestBucket> testGroups
     );
 
     @Nonnull
     default TestChooser.Result choose(
             @Nullable final IdentifierType identifier,
-            @Nonnull final Map<String, Object> values,
+            @Nonnull final Map<String, ValueExpression> localContext,
             @Nonnull final Map<String, TestBucket> testGroups,
             @Nonnull final ForceGroupsOptions forceGroupsOptions
     ) {
@@ -77,7 +78,7 @@ interface TestChooser<IdentifierType> {
             return Result.EMPTY;
         }
 
-        final TestChooser.Result result = chooseInternal(identifier, values, testGroups);
+        final TestChooser.Result result = chooseInternal(identifier, localContext, testGroups);
 
         if (forceGroupsOptions.getDefaultMode().equals(ForceGroupsDefaultMode.MIN_LIVE)) {
             // replace the bucket with the minimum active bucket in the resolved allocation.
