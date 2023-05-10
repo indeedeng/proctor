@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.indeed.proctor.SampleOuterClass.Account;
+import com.indeed.proctor.common.ForceGroupsOptions;
 import com.indeed.proctor.common.Identifiers;
 import com.indeed.proctor.common.ProctorResult;
 import com.indeed.proctor.common.ProctorUtils;
@@ -616,6 +617,33 @@ public class TestUnitTestGroupsManager {
                 new MockHttpServletResponse(),
                 identifiers,
                 false,
+                testNameFilter);
+
+        //Only calc bucket allocation for filtered test names
+        assertThat(result.getBuckets())
+                .containsOnlyKeys("kluj", "map_payload", "no_buckets_specified", "payloaded");
+
+        assertThat(result.getAllocations())
+                .containsOnlyKeys("kluj", "map_payload", "no_buckets_specified", "payloaded");
+
+        final int expectedNumberOfTests = 15;
+
+        assertThat(result.getTestDefinitions().size()).isEqualTo(expectedNumberOfTests);
+    }
+
+    @Test
+    public void testProctorResultWithTestNameFilterWithoutHttp(){
+        final UnitTestGroupsContext testContext = UnitTestGroupsContext.newBuilder()
+                .setLoggedIn(true)
+                .setCountry("FR")
+                .setAccount(new Account(10))
+                .build();
+        final Identifiers identifiers = new Identifiers(TestType.USER, SAMPLE_ID);
+        final Collection<String> testNameFilter = ImmutableList.of("kluj", "map_payload", "no_buckets_specified", "payloaded");
+        final ProctorResult result = testContext.getProctorResult(
+                manager,
+                identifiers,
+                new ForceGroupsOptions.Builder().build(),
                 testNameFilter);
 
         //Only calc bucket allocation for filtered test names
