@@ -32,7 +32,7 @@ public class TestAbstractJsonProctorLoader {
     private ExampleJsonProctorLoader proctorLoader;
 
     @Test
-    public void testLoadJsonTestMatrix() throws IOException {
+    public void testLoadJsonTestMatrix() throws IOException, TestMatrixOutdatedException {
         proctorLoader = new ExampleJsonProctorLoader(
                 TESTS_IN_EXAMPLE_TEST_MATRIX,
                 Collections.emptySet()
@@ -66,7 +66,7 @@ public class TestAbstractJsonProctorLoader {
     }
 
     @Test
-    public void testLoadJsonTestMatrixWithUnrecognizedPayloadType() throws IOException {
+    public void testLoadJsonTestMatrixWithUnrecognizedPayloadType() throws IOException, TestMatrixOutdatedException {
         proctorLoader = new ExampleJsonProctorLoader(
                 ImmutableSet.of("exampletst"),
                 Collections.emptySet()
@@ -96,7 +96,7 @@ public class TestAbstractJsonProctorLoader {
     }
 
     @Test
-    public void testLoadJsonTestMatrixWithOneRequiredTest() throws IOException {
+    public void testLoadJsonTestMatrixWithOneRequiredTest() throws IOException, TestMatrixOutdatedException {
         proctorLoader = new ExampleJsonProctorLoader(
                 ImmutableSet.of("exampletst"),
                 Collections.emptySet()
@@ -113,7 +113,7 @@ public class TestAbstractJsonProctorLoader {
     }
 
     @Test
-    public void testLoadJsonTestMatrixWithMetaTags() throws IOException {
+    public void testLoadJsonTestMatrixWithMetaTags() throws IOException, TestMatrixOutdatedException {
         proctorLoader = new ExampleJsonProctorLoader(
                 Collections.emptySet(),
                 ImmutableSet.of("sometag", "example_tag")
@@ -144,7 +144,7 @@ public class TestAbstractJsonProctorLoader {
                     RuleEvaluator.defaultFunctionMapperBuilder().build());
         }
 
-        TestMatrixArtifact loadTestMatrix() throws IOException, MissingTestMatrixException {
+        TestMatrixArtifact loadTestMatrix() throws IOException, MissingTestMatrixException, TestMatrixOutdatedException{
             return null;
         }
 
