@@ -29,7 +29,7 @@ public class ClasspathProctorLoader extends AbstractJsonProctorLoader {
     }
 
     @Override
-    protected TestMatrixArtifact loadTestMatrix() throws IOException, MissingTestMatrixException {
+    protected TestMatrixArtifact loadTestMatrix() throws IOException, MissingTestMatrixException, TestMatrixOutdatedException {
         final InputStream resourceAsStream = getClass().getClassLoader().getResourceAsStream(resourcePath);
         if (resourceAsStream == null) {
             throw new MissingTestMatrixException("Could not load proctor test matrix from classpath: " + resourcePath);

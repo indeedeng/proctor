@@ -70,7 +70,7 @@ public abstract class AbstractJsonProctorLoader extends AbstractProctorLoader {
      * @throws IOException
      */
     @CheckForNull
-    protected TestMatrixArtifact loadJsonTestMatrix(@Nonnull final Reader reader) throws IOException {
+    protected TestMatrixArtifact loadJsonTestMatrix(@Nonnull final Reader reader) throws IOException, TestMatrixOutdatedException {
         try {
             final TestMatrixArtifact testMatrixArtifact = new TestMatrixArtifact();
 
