@@ -99,7 +99,7 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
     }
 
     @CheckForNull
-    abstract TestMatrixArtifact loadTestMatrix() throws IOException, MissingTestMatrixException;
+    abstract TestMatrixArtifact loadTestMatrix() throws IOException, MissingTestMatrixException, TestMatrixOutdatedException;
 
     /**
      * @return informative String for log/error messages
@@ -138,9 +138,14 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask impleme
 
     @CheckForNull
     public Proctor doLoad() throws IOException, MissingTestMatrixException {
-        final TestMatrixArtifact testMatrix = loadTestMatrix();
-        if (testMatrix == null) {
-            throw new MissingTestMatrixException("Failed to load Test Matrix from " + getSource());
+        final TestMatrixArtifact testMatrix;
+        try {
+            testMatrix = loadTestMatrix();
+            if (testMatrix == null) {
+                throw new MissingTestMatrixException("Failed to load Test Matrix from " + getSource());
+            }
+        } catch (final TestMatrixOutdatedException e) {
+            return null;
         }
 
         final Set<String> dynamicTests = dynamicFilters.determineTests(
