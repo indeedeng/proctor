@@ -36,7 +36,7 @@ public class FileProctorLoader extends AbstractJsonProctorLoader {
 
     @CheckForNull
     @Override
-    protected TestMatrixArtifact loadTestMatrix() throws IOException, MissingTestMatrixException {
+    protected TestMatrixArtifact loadTestMatrix() throws IOException, MissingTestMatrixException, TestMatrixOutdatedException {
         if (! inputFile.exists()) {
             throw new MissingTestMatrixException("File " + inputFile + " does not exist");
         }

@@ -45,7 +45,7 @@ public class StringProctorLoader extends AbstractJsonProctorLoader {
     }
 
     @Override
-    protected TestMatrixArtifact loadTestMatrix() throws IOException {
+    protected TestMatrixArtifact loadTestMatrix() throws IOException, TestMatrixOutdatedException {
         try (Reader reader = new StringReader(testMatrixJson)) {
             return loadJsonTestMatrix(reader);
         }

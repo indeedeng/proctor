@@ -45,7 +45,7 @@ public class UrlProctorLoader extends AbstractJsonProctorLoader {
 
     @CheckForNull
     @Override
-    protected TestMatrixArtifact loadTestMatrix() throws IOException {
+    protected TestMatrixArtifact loadTestMatrix() throws IOException, TestMatrixOutdatedException {
         try (Reader reader = new BufferedReader(new InputStreamReader(inputURL.openStream()))) {
             return loadJsonTestMatrix(reader);
         }
