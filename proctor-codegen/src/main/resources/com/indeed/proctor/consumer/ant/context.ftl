@@ -121,6 +121,16 @@ public class ${mainClassName} {
 </#list>
     }
 
+    public ProctorResult getProctorResult(@Nonnull final ${groupsManagerClassName} groupsManager,
+                                          @Nonnull final Identifiers identifiers,
+                                          @Nonnull final ForceGroupsOptions forceGroupsOptions,
+                                          final Collection<String> testNameFilter) {
+        return groupsManager.determineBuckets(identifiers, forceGroupsOptions, testNameFilter<#if contextArguments?has_content>, <#else>);</#if>
+<#list contextArguments?keys as contextArgumentName>
+                                              ${contextArgumentName}<#if contextArgumentName_has_next>,<#else>);</#if>
+</#list>
+    }
+
     /**
     * @deprecated Use ForceGroupsOptions for forcedGroups
     */

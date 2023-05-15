@@ -111,6 +111,22 @@ public class ${mainClassName} extends AbstractGroupsManager {
         return super.determineBucketsInternal(identifiers, context, forceGroupsOptions);
     }
 
+        public ProctorResult determineBuckets(final Identifiers identifiers,
+                                            final ForceGroupsOptions forceGroupsOptions, final Collection<String> testNameFilter<#if contextArguments?has_content>,<#else>) {</#if>
+<#list contextArguments?keys as contextArgumentName>
+                                    final ${contextArguments[contextArgumentName]?replace('$', '.')} ${contextArgumentName}<#if contextArgumentName_has_next>,<#else>) {</#if>
+</#list>
+        <#if contextArguments?has_content>
+        final Map<String, Object> context = new HashMap<String, Object>();
+            <#list contextArguments?keys as contextArgumentName>
+        context.put("${contextArgumentName}", ${contextArgumentName});
+            </#list>
+        <#else>
+        final Map<String, Object> context = Collections.emptyMap();
+        </#if>
+        return super.determineBucketsInternal(identifiers, context, forceGroupsOptions, testNameFilter);
+    }
+
     /**
      * @deprecated Use ForceGroupsOptions for forcedGroups
      */
