@@ -31,3 +31,15 @@ dependencies {
     implementation libs.assertj
     implementation libs.mockito
 }
+
+publishing {
+    publications {
+        mavenJavaWebappLib(MavenPublication) {
+            groupId = 'com.indeed'
+            artifactId = 'proctor-webapp-library' // use the name from ext['indeed.publish.name']
+            version = '9999-SNAPSHOT' // use whatever version makes sense for your project
+
+            from components.java
+        }
+    }
+}

@@ -1,3 +1,7 @@
+plugins {
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+}
+
 indeedOss.activateFeature 'library'
 indeedLibrary.name = 'proctor-common'
 
@@ -10,10 +14,6 @@ dependencies {
     implementation libs.commonsLang
     compileOnly libs.jsr305
     implementation libs.jacksonDatabind
-    implementation libs.tomcatElApi
-    implementation libs.tomcatJasperEl
-    implementation libs.tomcatJspApi
-    implementation libs.tomcatServletApi
     implementation libs.log4jApi
     implementation libs.log4jCore
     testImplementation libs.junit
@@ -23,4 +23,23 @@ dependencies {
     testImplementation libs.annotationApi
     testImplementation libs.mockito
     testImplementation libs.jsr305
+}
+
+publishing {
+    publications {
+        mavenJavaCommon(MavenPublication) {
+            groupId = 'com.indeed'
+            artifactId = 'proctor-common' // use the name from ext['indeed.publish.name']
+            version = '9999-SNAPSHOT' // use whatever version makes sense for your project
+
+            from components.java
+        }
+    }
+}
+
+shadowJar {
+    archiveClassifier.set('')
+
+    relocate 'javax.el', 'com.indeed.shaded.javax.el7'
+    relocate 'org.apache.tomcat', 'com.indeed.shaded.org.apache.el7'
 }

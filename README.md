@@ -70,6 +70,14 @@ How to Build:
 $ ./gradlew build
 ```
 
+# Local Install
+
+To test
+
+```bash
+$ ./gradlew publish
+```
+
 # Discussion
 
 Use the [indeedeng-proctor-users](https://groups.google.com/d/forum/indeedeng-proctor-users) Q&A forum to ask and answer questions about the use of Proctor.

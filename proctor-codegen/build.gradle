@@ -13,3 +13,15 @@ dependencies {
     testImplementation libs.junit
     testImplementation libs.assertj
 }
+
+publishing {
+    publications {
+        mavenJavaCodegen(MavenPublication) {
+            groupId = 'com.indeed'
+            artifactId = 'proctor-codegen' // use the name from ext['indeed.publish.name']
+            version = '9999-SNAPSHOT' // use whatever version makes sense for your project
+
+            from components.java
+        }
+    }
+}

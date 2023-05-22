@@ -13,11 +13,12 @@ dependencies {
     implementation libs.log4jCore
     implementation libs.log4jApi
     implementation libs.springWeb
-    implementation libs.servletApi
+    compileOnly libs.servletApi
     implementation libs.jacksonDatabind
     implementation libs.jacksonCore
     compileOnly libs.jsr305
     testImplementation libs.junit
+    testImplementation libs.servletApi
     testImplementation libs.springTest
     testImplementation libs.assertj
     testImplementation libs.springWebmvc
@@ -26,6 +27,14 @@ dependencies {
     testImplementation libs.annotationApi
 }
 
-java {
-    withJavadocJar()
+publishing {
+    publications {
+        mavenJavaConsumer(MavenPublication) {
+            groupId = 'com.indeed'
+            artifactId = 'proctor-consumer' // use the name from ext['indeed.publish.name']
+            version = '9999-SNAPSHOT' // use whatever version makes sense for your project
+
+            from components.java
+        }
+    }
 }
