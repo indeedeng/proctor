@@ -12,10 +12,8 @@ dependencies {
     implementation libs.jacksonDatabind
     implementation 'org.apache.commons:commons-lang3:3.5'
     testImplementation libs.jacksonCore
-    testImplementation 'javax.servlet:javax.servlet-api:3.0.1'
+    testImplementation libs.servletApi
     testImplementation libs.annotationApi
-    testImplementation libs.junit
-    testImplementation libs.assertj
     testImplementation libs.jsr305
     testImplementation 'com.indeed:util-core:1.0.49-1cfb888'
     testImplementation 'com.indeed:util-varexport:1.0.49-1cfb888'
@@ -38,5 +36,7 @@ task runWithJavaExec(type: JavaExec) {
 }
 
 compileTestJava.dependsOn(runWithJavaExec)
+
+tasks.named("runWithJavaExec").configure { dependsOn(":proctor-common:shadowJar") }
 
 description = 'proctor-codegen-test'

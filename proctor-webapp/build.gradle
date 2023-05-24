@@ -16,11 +16,14 @@ dependencies {
     implementation libs.annotationApi
     implementation 'org.apache.commons:commons-collections4:4.3'
     implementation 'io.swagger:swagger-annotations:1.5.21'
+    testImplementation libs.springTest
     testImplementation libs.tomcatJasperEl
     testImplementation libs.tomcatElApi
     providedCompile libs.tomcatJspApi
     providedCompile libs.tomcatServletApi
     compileOnly libs.jsr305
 }
+
+tasks.named("test").configure { dependsOn(":proctor-common:shadowJar") }
 
 description = 'proctor-webapp'

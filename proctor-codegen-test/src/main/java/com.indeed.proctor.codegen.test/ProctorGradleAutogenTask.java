@@ -6,13 +6,14 @@ import com.indeed.proctor.consumer.gen.TestGroupsGenerator;
 import com.indeed.proctor.consumer.gen.TestGroupsJavaGenerator;
 import com.indeed.proctor.consumer.gen.TestGroupsJavascriptGenerator;
 import org.apache.commons.io.filefilter.FileFilterUtils;
-import org.gradle.internal.impldep.org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
 
 /**
- * A Mojo that can combine multiple Proctor specifications and generate some type of file.
+ * A Java application that can combine multiple Proctor specifications and generate some type of file.
+ * Used to test code generation in proctor-codegen. Generate Java and JS code then clean up.
  *
  * @author andrewk
  */

@@ -19,6 +19,8 @@ dependencies {
     testImplementation libs.assertj
 }
 
+tasks.named("test").configure { dependsOn(":proctor-common:shadowJar") }
+
 publishing {
     publications {
         mavenJavaStoreGit(MavenPublication) {
