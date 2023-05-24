@@ -29,21 +29,7 @@ public class TestRandomTestChooser {
 
         final Map<String, ValueExpression> localContext = Collections.emptyMap();
         for (int i = 0; i < 100; i++) {
-<<<<<<< HEAD
-<<<<<<< HEAD
             final TestChooser.Result chosen = rtc.chooseInternal(null, localContext, Collections.emptyMap());
-||||||| parent of 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
-            final TestChooser.Result chosen = rtc.chooseInternal(null, values, Collections.emptyMap());
-=======
-            final TestChooser.Result chosen =
-                    rtc.chooseInternal(null, values, Collections.emptyMap());
->>>>>>> 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
-||||||| parent of a496e85b (PROC-960: Remove autostyle code)
-            final TestChooser.Result chosen =
-                    rtc.chooseInternal(null, values, Collections.emptyMap());
-=======
-            final TestChooser.Result chosen = rtc.chooseInternal(null, values, Collections.emptyMap());
->>>>>>> a496e85b (PROC-960: Remove autostyle code)
             assertNotNull(chosen);
             assertNotNull(chosen.getTestBucket());
             assertNotNull(chosen.getAllocation());
@@ -59,38 +45,10 @@ public class TestRandomTestChooser {
 
         final RandomTestChooser rtc = initializeRandomTestChooser(ranges, buckets);
 
-<<<<<<< HEAD
-<<<<<<< HEAD
         final int[] found = { 0, 0 };
         final Map<String, ValueExpression> localContext = Collections.emptyMap();
-||||||| parent of 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
-        final int[] found = { 0, 0 };
-        final Map<String, Object> values = Collections.emptyMap();
-=======
-        final int[] found = {0, 0};
-||||||| parent of a496e85b (PROC-960: Remove autostyle code)
-        final int[] found = {0, 0};
-=======
-        final int[] found = { 0, 0 };
->>>>>>> a496e85b (PROC-960: Remove autostyle code)
-        final Map<String, Object> values = Collections.emptyMap();
->>>>>>> 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
         for (int i = 0; i < 1000; i++) {
-<<<<<<< HEAD
-<<<<<<< HEAD
             final TestChooser.Result chosen = rtc.chooseInternal(null, localContext, Collections.emptyMap());
-||||||| parent of 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
-            final TestChooser.Result chosen = rtc.chooseInternal(null, values, Collections.emptyMap());
-=======
-            final TestChooser.Result chosen =
-                    rtc.chooseInternal(null, values, Collections.emptyMap());
->>>>>>> 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
-||||||| parent of a496e85b (PROC-960: Remove autostyle code)
-            final TestChooser.Result chosen =
-                    rtc.chooseInternal(null, values, Collections.emptyMap());
-=======
-            final TestChooser.Result chosen = rtc.chooseInternal(null, values, Collections.emptyMap());
->>>>>>> a496e85b (PROC-960: Remove autostyle code)
             assertNotNull(chosen);
             assertNotNull(chosen.getTestBucket());
             assertNotNull(chosen.getAllocation());
@@ -111,38 +69,10 @@ public class TestRandomTestChooser {
 
         final RandomTestChooser rtc = initializeRandomTestChooser(ranges, buckets);
 
-<<<<<<< HEAD
-<<<<<<< HEAD
         final int[] found = { 0, 0, 0 };
         final Map<String, ValueExpression> localContext = Collections.emptyMap();
-||||||| parent of 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
-        final int[] found = { 0, 0, 0 };
-        final Map<String, Object> values = Collections.emptyMap();
-=======
-        final int[] found = {0, 0, 0};
-||||||| parent of a496e85b (PROC-960: Remove autostyle code)
-        final int[] found = {0, 0, 0};
-=======
-        final int[] found = { 0, 0, 0 };
->>>>>>> a496e85b (PROC-960: Remove autostyle code)
-        final Map<String, Object> values = Collections.emptyMap();
->>>>>>> 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
         for (int i = 0; i < 1000; i++) {
-<<<<<<< HEAD
-<<<<<<< HEAD
             final TestChooser.Result chosen = rtc.chooseInternal(null, localContext, Collections.emptyMap());
-||||||| parent of 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
-            final TestChooser.Result chosen = rtc.chooseInternal(null, values, Collections.emptyMap());
-=======
-            final TestChooser.Result chosen =
-                    rtc.chooseInternal(null, values, Collections.emptyMap());
->>>>>>> 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
-||||||| parent of a496e85b (PROC-960: Remove autostyle code)
-            final TestChooser.Result chosen =
-                    rtc.chooseInternal(null, values, Collections.emptyMap());
-=======
-            final TestChooser.Result chosen = rtc.chooseInternal(null, values, Collections.emptyMap());
->>>>>>> a496e85b (PROC-960: Remove autostyle code)
             assertNotNull(chosen);
             assertNotNull(chosen.getTestBucket());
             assertNotNull(chosen.getAllocation());

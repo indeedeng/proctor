@@ -82,21 +82,7 @@ public class TestStandardTestChooser {
 
         final Map<String, ValueExpression> localContext = Collections.emptyMap();
         for (int i = 0; i < 100; i++) {
-<<<<<<< HEAD
-<<<<<<< HEAD
             final TestChooser.Result chosen = rtc.chooseInternal(String.valueOf(i), localContext, Collections.emptyMap());
-||||||| parent of 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
-            final TestChooser.Result chosen = rtc.chooseInternal(String.valueOf(i), values, Collections.emptyMap());
-=======
-            final TestChooser.Result chosen =
-                    rtc.chooseInternal(String.valueOf(i), values, Collections.emptyMap());
->>>>>>> 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
-||||||| parent of a496e85b (PROC-960: Remove autostyle code)
-            final TestChooser.Result chosen =
-                    rtc.chooseInternal(String.valueOf(i), values, Collections.emptyMap());
-=======
-            final TestChooser.Result chosen = rtc.chooseInternal(String.valueOf(i), values, Collections.emptyMap());
->>>>>>> a496e85b (PROC-960: Remove autostyle code)
             assertNotNull(chosen);
             assertNotNull(chosen.getTestBucket());
             assertNotNull(chosen.getAllocation());
@@ -189,34 +175,10 @@ public class TestStandardTestChooser {
         testDefinition.setBuckets(Collections.<TestBucket>emptyList());
 
         final RuleEvaluator ruleEvaluator = EasyMock.createMock(RuleEvaluator.class);
-<<<<<<< HEAD
-<<<<<<< HEAD
         EasyMock.expect(ruleEvaluator.evaluateBooleanRuleWithValueExpr(
                 EasyMock.<String>anyObject(),
                 EasyMock.<Map<String,ValueExpression>>anyObject()
         ))
-||||||| parent of 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
-        EasyMock.expect(ruleEvaluator.evaluateBooleanRule(
-                EasyMock.<String>anyObject(),
-                EasyMock.<Map<String,Object>>anyObject()
-        ))
-=======
-        EasyMock.expect(
-                        ruleEvaluator.evaluateBooleanRule(
-                                EasyMock.<String>anyObject(),
-                                EasyMock.<Map<String, Object>>anyObject()))
->>>>>>> 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
-||||||| parent of a496e85b (PROC-960: Remove autostyle code)
-        EasyMock.expect(
-                        ruleEvaluator.evaluateBooleanRule(
-                                EasyMock.<String>anyObject(),
-                                EasyMock.<Map<String, Object>>anyObject()))
-=======
-        EasyMock.expect(ruleEvaluator.evaluateBooleanRule(
-                EasyMock.<String>anyObject(),
-                EasyMock.<Map<String,Object>>anyObject()
-        ))
->>>>>>> a496e85b (PROC-960: Remove autostyle code)
                 // throw an unexpected type of runtime exception
                 .andThrow(new RuntimeException() {})
                 // Must be evaluated, or this was not a valid test
@@ -230,32 +192,8 @@ public class TestStandardTestChooser {
         );
 
         // Ensure no exceptions thrown.
-<<<<<<< HEAD
-<<<<<<< HEAD
         final TestChooser.Result chooseResult = new StandardTestChooser(selector)
                 .chooseInternal("identifier", Collections.<String, ValueExpression>emptyMap(), Collections.emptyMap());
-||||||| parent of 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
-        final TestChooser.Result chooseResult = new StandardTestChooser(selector)
-                .chooseInternal("identifier", Collections.<String, Object>emptyMap(), Collections.emptyMap());
-=======
-        final TestChooser.Result chooseResult =
-                new StandardTestChooser(selector)
-                        .chooseInternal(
-                                "identifier",
-                                Collections.<String, Object>emptyMap(),
-                                Collections.emptyMap());
->>>>>>> 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
-||||||| parent of a496e85b (PROC-960: Remove autostyle code)
-        final TestChooser.Result chooseResult =
-                new StandardTestChooser(selector)
-                        .chooseInternal(
-                                "identifier",
-                                Collections.<String, Object>emptyMap(),
-                                Collections.emptyMap());
-=======
-        final TestChooser.Result chooseResult = new StandardTestChooser(selector)
-                .chooseInternal("identifier", Collections.<String, Object>emptyMap(), Collections.emptyMap());
->>>>>>> a496e85b (PROC-960: Remove autostyle code)
 
         assertNotNull(chooseResult);
         assertNull( "Expected no bucket to be found ", chooseResult.getTestBucket());
@@ -287,32 +225,8 @@ public class TestStandardTestChooser {
             testDefinition
         );
 
-<<<<<<< HEAD
-<<<<<<< HEAD
         final TestChooser.Result chooseResult = new StandardTestChooser(selector)
             .chooseInternal("identifier", Collections.<String, ValueExpression>emptyMap(), Collections.emptyMap());
-||||||| parent of 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
-        final TestChooser.Result chooseResult = new StandardTestChooser(selector)
-            .chooseInternal("identifier", Collections.<String, Object>emptyMap(), Collections.emptyMap());
-=======
-        final TestChooser.Result chooseResult =
-                new StandardTestChooser(selector)
-                        .chooseInternal(
-                                "identifier",
-                                Collections.<String, Object>emptyMap(),
-                                Collections.emptyMap());
->>>>>>> 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
-||||||| parent of a496e85b (PROC-960: Remove autostyle code)
-        final TestChooser.Result chooseResult =
-                new StandardTestChooser(selector)
-                        .chooseInternal(
-                                "identifier",
-                                Collections.<String, Object>emptyMap(),
-                                Collections.emptyMap());
-=======
-        final TestChooser.Result chooseResult = new StandardTestChooser(selector)
-            .chooseInternal("identifier", Collections.<String, Object>emptyMap(), Collections.emptyMap());
->>>>>>> a496e85b (PROC-960: Remove autostyle code)
 
         assertNotNull(chooseResult);
         assertNull("Expected no bucket to be found", chooseResult.getTestBucket());
@@ -345,32 +259,8 @@ public class TestStandardTestChooser {
             testDefinition
         );
 
-<<<<<<< HEAD
-<<<<<<< HEAD
         final TestChooser.Result chooseResult = new StandardTestChooser(selector)
             .chooseInternal("identifier", Collections.<String, ValueExpression>emptyMap(), Collections.emptyMap());
-||||||| parent of 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
-        final TestChooser.Result chooseResult = new StandardTestChooser(selector)
-            .chooseInternal("identifier", Collections.<String, Object>emptyMap(), Collections.emptyMap());
-=======
-        final TestChooser.Result chooseResult =
-                new StandardTestChooser(selector)
-                        .chooseInternal(
-                                "identifier",
-                                Collections.<String, Object>emptyMap(),
-                                Collections.emptyMap());
->>>>>>> 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
-||||||| parent of a496e85b (PROC-960: Remove autostyle code)
-        final TestChooser.Result chooseResult =
-                new StandardTestChooser(selector)
-                        .chooseInternal(
-                                "identifier",
-                                Collections.<String, Object>emptyMap(),
-                                Collections.emptyMap());
-=======
-        final TestChooser.Result chooseResult = new StandardTestChooser(selector)
-            .chooseInternal("identifier", Collections.<String, Object>emptyMap(), Collections.emptyMap());
->>>>>>> a496e85b (PROC-960: Remove autostyle code)
 
         assertEquals("Test bucket with value 1 expected", 1, chooseResult.getTestBucket().getValue());
         assertEquals("Test allocation with id #B1 expected", "#B1", chooseResult.getAllocation().getId());
@@ -454,44 +344,12 @@ public class TestStandardTestChooser {
 
     private RuleEvaluator newRuleEvaluator(final boolean result) {
         final RuleEvaluator ruleEvaluator = EasyMock.createMock(RuleEvaluator.class);
-<<<<<<< HEAD
-<<<<<<< HEAD
         EasyMock.expect(ruleEvaluator.evaluateBooleanRuleWithValueExpr(
             EasyMock.<String>anyObject(),
             EasyMock.<Map<String,ValueExpression>>anyObject()
         ))
             .andReturn(result)
             .anyTimes();
-||||||| parent of 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
-        EasyMock.expect(ruleEvaluator.evaluateBooleanRule(
-            EasyMock.<String>anyObject(),
-            EasyMock.<Map<String,Object>>anyObject()
-        ))
-            .andReturn(result)
-            .anyTimes();
-=======
-        EasyMock.expect(
-                        ruleEvaluator.evaluateBooleanRule(
-                                EasyMock.<String>anyObject(),
-                                EasyMock.<Map<String, Object>>anyObject()))
-                .andReturn(result)
-                .anyTimes();
->>>>>>> 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
-||||||| parent of a496e85b (PROC-960: Remove autostyle code)
-        EasyMock.expect(
-                        ruleEvaluator.evaluateBooleanRule(
-                                EasyMock.<String>anyObject(),
-                                EasyMock.<Map<String, Object>>anyObject()))
-                .andReturn(result)
-                .anyTimes();
-=======
-        EasyMock.expect(ruleEvaluator.evaluateBooleanRule(
-            EasyMock.<String>anyObject(),
-            EasyMock.<Map<String,Object>>anyObject()
-        ))
-            .andReturn(result)
-            .anyTimes();
->>>>>>> a496e85b (PROC-960: Remove autostyle code)
         EasyMock.replay(ruleEvaluator);
         return ruleEvaluator;
     }
@@ -501,21 +359,7 @@ public class TestStandardTestChooser {
 
         final Map<String, ValueExpression> localContext = Collections.emptyMap();
         for (int accountId = 1; accountId < num; accountId++) { // deliberately skipping 0
-<<<<<<< HEAD
-<<<<<<< HEAD
             final TestChooser.Result chosen = rtc.chooseInternal(String.valueOf(accountId), localContext, Collections.emptyMap());
-||||||| parent of 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
-            final TestChooser.Result chosen = rtc.chooseInternal(String.valueOf(accountId), values, Collections.emptyMap());
-=======
-            final TestChooser.Result chosen =
-                    rtc.chooseInternal(String.valueOf(accountId), values, Collections.emptyMap());
->>>>>>> 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
-||||||| parent of a496e85b (PROC-960: Remove autostyle code)
-            final TestChooser.Result chosen =
-                    rtc.chooseInternal(String.valueOf(accountId), values, Collections.emptyMap());
-=======
-            final TestChooser.Result chosen = rtc.chooseInternal(String.valueOf(accountId), values, Collections.emptyMap());
->>>>>>> a496e85b (PROC-960: Remove autostyle code)
             assertNotNull(chosen);
             assertNotNull(chosen.getTestBucket());
             assertNotNull(chosen.getAllocation());

@@ -92,7 +92,6 @@ public class TestTestChooser {
         @Override
         public Result chooseInternal(
                 @Nullable final Void identifier,
-<<<<<<< HEAD
                 @Nonnull final Map<String, ValueExpression> localContext,
                 @Nonnull final Map<String, TestBucket> testGroups
         ) {
@@ -106,59 +105,6 @@ public class TestTestChooser {
                     .orElse(Stream.empty())
                     .map(Range::getBucketValue)
                     .max(Integer::compareTo);
-||||||| parent of 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
-                @Nonnull final Map<String, Object> values,
-                @Nonnull final Map<String, TestBucket> testGroups
-        ) {
-            final Optional<Allocation> firstAllocation = consumableTestDefinition
-                    .getAllocations()
-                    .stream()
-                    .findFirst();
-            final Optional<Integer> maxBucketValue = firstAllocation
-                    .map(Allocation::getRanges)
-                    .map(Collection::stream)
-                    .orElse(Stream.empty())
-                    .map(Range::getBucketValue)
-                    .max(Integer::compareTo);
-=======
-                @Nonnull final Map<String, Object> values,
-<<<<<<< HEAD
-                @Nonnull final Map<String, TestBucket> testGroups) {
-            final Optional<Allocation> firstAllocation =
-                    consumableTestDefinition.getAllocations().stream().findFirst();
-            final Optional<Integer> maxBucketValue =
-                    firstAllocation
-                            .map(Allocation::getRanges)
-                            .map(Collection::stream)
-                            .orElse(Stream.empty())
-                            .map(Range::getBucketValue)
-                            .max(Integer::compareTo);
->>>>>>> 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
-||||||| parent of a496e85b (PROC-960: Remove autostyle code)
-                @Nonnull final Map<String, TestBucket> testGroups) {
-            final Optional<Allocation> firstAllocation =
-                    consumableTestDefinition.getAllocations().stream().findFirst();
-            final Optional<Integer> maxBucketValue =
-                    firstAllocation
-                            .map(Allocation::getRanges)
-                            .map(Collection::stream)
-                            .orElse(Stream.empty())
-                            .map(Range::getBucketValue)
-                            .max(Integer::compareTo);
-=======
-                @Nonnull final Map<String, TestBucket> testGroups
-        ) {
-            final Optional<Allocation> firstAllocation = consumableTestDefinition
-                    .getAllocations()
-                    .stream()
-                    .findFirst();
-            final Optional<Integer> maxBucketValue = firstAllocation
-                    .map(Allocation::getRanges)
-                    .map(Collection::stream)
-                    .orElse(Stream.empty())
-                    .map(Range::getBucketValue)
-                    .max(Integer::compareTo);
->>>>>>> a496e85b (PROC-960: Remove autostyle code)
             return new Result(
                     maxBucketValue.map(this::getTestBucket).orElse(null),
                     firstAllocation.orElse(null)

@@ -32,33 +32,11 @@ public class TestAbstractJsonProctorLoader {
     private ExampleJsonProctorLoader proctorLoader;
 
     @Test
-<<<<<<< HEAD
     public void testLoadJsonTestMatrix() throws IOException, TestMatrixOutdatedException {
         proctorLoader = new ExampleJsonProctorLoader(
                 TESTS_IN_EXAMPLE_TEST_MATRIX,
                 Collections.emptySet()
         );
-||||||| parent of 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
-    public void testLoadJsonTestMatrix() throws IOException {
-        proctorLoader = new ExampleJsonProctorLoader(
-                TESTS_IN_EXAMPLE_TEST_MATRIX,
-                Collections.emptySet()
-        );
-=======
-    public void testLoadJsonTestMatrix() throws IOException {
-<<<<<<< HEAD
-        proctorLoader =
-                new ExampleJsonProctorLoader(TESTS_IN_EXAMPLE_TEST_MATRIX, Collections.emptySet());
->>>>>>> 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
-||||||| parent of a496e85b (PROC-960: Remove autostyle code)
-        proctorLoader =
-                new ExampleJsonProctorLoader(TESTS_IN_EXAMPLE_TEST_MATRIX, Collections.emptySet());
-=======
-        proctorLoader = new ExampleJsonProctorLoader(
-                TESTS_IN_EXAMPLE_TEST_MATRIX,
-                Collections.emptySet()
-        );
->>>>>>> a496e85b (PROC-960: Remove autostyle code)
 
         final String path = getClass().getResource("example-test-matrix.json").getPath();
         final File testMatrixFile = new File(path);
@@ -88,33 +66,11 @@ public class TestAbstractJsonProctorLoader {
     }
 
     @Test
-<<<<<<< HEAD
     public void testLoadJsonTestMatrixWithUnrecognizedPayloadType() throws IOException, TestMatrixOutdatedException {
         proctorLoader = new ExampleJsonProctorLoader(
                 ImmutableSet.of("exampletst"),
                 Collections.emptySet()
         );
-||||||| parent of 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
-    public void testLoadJsonTestMatrixWithUnrecognizedPayloadType() throws IOException {
-        proctorLoader = new ExampleJsonProctorLoader(
-                ImmutableSet.of("exampletst"),
-                Collections.emptySet()
-        );
-=======
-    public void testLoadJsonTestMatrixWithUnrecognizedPayloadType() throws IOException {
-<<<<<<< HEAD
-        proctorLoader =
-                new ExampleJsonProctorLoader(ImmutableSet.of("exampletst"), Collections.emptySet());
->>>>>>> 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
-||||||| parent of a496e85b (PROC-960: Remove autostyle code)
-        proctorLoader =
-                new ExampleJsonProctorLoader(ImmutableSet.of("exampletst"), Collections.emptySet());
-=======
-        proctorLoader = new ExampleJsonProctorLoader(
-                ImmutableSet.of("exampletst"),
-                Collections.emptySet()
-        );
->>>>>>> a496e85b (PROC-960: Remove autostyle code)
 
         final String path = getClass().getResource("unrecognized-payload-test-matrix.json").getPath();
         final File testMatrixFile = new File(path);
@@ -140,33 +96,11 @@ public class TestAbstractJsonProctorLoader {
     }
 
     @Test
-<<<<<<< HEAD
     public void testLoadJsonTestMatrixWithOneRequiredTest() throws IOException, TestMatrixOutdatedException {
         proctorLoader = new ExampleJsonProctorLoader(
                 ImmutableSet.of("exampletst"),
                 Collections.emptySet()
         );
-||||||| parent of 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
-    public void testLoadJsonTestMatrixWithOneRequiredTest() throws IOException {
-        proctorLoader = new ExampleJsonProctorLoader(
-                ImmutableSet.of("exampletst"),
-                Collections.emptySet()
-        );
-=======
-    public void testLoadJsonTestMatrixWithOneRequiredTest() throws IOException {
-<<<<<<< HEAD
-        proctorLoader =
-                new ExampleJsonProctorLoader(ImmutableSet.of("exampletst"), Collections.emptySet());
->>>>>>> 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
-||||||| parent of a496e85b (PROC-960: Remove autostyle code)
-        proctorLoader =
-                new ExampleJsonProctorLoader(ImmutableSet.of("exampletst"), Collections.emptySet());
-=======
-        proctorLoader = new ExampleJsonProctorLoader(
-                ImmutableSet.of("exampletst"),
-                Collections.emptySet()
-        );
->>>>>>> a496e85b (PROC-960: Remove autostyle code)
 
         final String path = getClass().getResource("example-test-matrix.json").getPath();
         final File testMatrixFile = new File(path);
@@ -179,35 +113,11 @@ public class TestAbstractJsonProctorLoader {
     }
 
     @Test
-<<<<<<< HEAD
     public void testLoadJsonTestMatrixWithMetaTags() throws IOException, TestMatrixOutdatedException {
         proctorLoader = new ExampleJsonProctorLoader(
                 Collections.emptySet(),
                 ImmutableSet.of("sometag", "example_tag")
         );
-||||||| parent of 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
-    public void testLoadJsonTestMatrixWithMetaTags() throws IOException {
-        proctorLoader = new ExampleJsonProctorLoader(
-                Collections.emptySet(),
-                ImmutableSet.of("sometag", "example_tag")
-        );
-=======
-    public void testLoadJsonTestMatrixWithMetaTags() throws IOException {
-<<<<<<< HEAD
-        proctorLoader =
-                new ExampleJsonProctorLoader(
-                        Collections.emptySet(), ImmutableSet.of("sometag", "example_tag"));
->>>>>>> 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
-||||||| parent of a496e85b (PROC-960: Remove autostyle code)
-        proctorLoader =
-                new ExampleJsonProctorLoader(
-                        Collections.emptySet(), ImmutableSet.of("sometag", "example_tag"));
-=======
-        proctorLoader = new ExampleJsonProctorLoader(
-                Collections.emptySet(),
-                ImmutableSet.of("sometag", "example_tag")
-        );
->>>>>>> a496e85b (PROC-960: Remove autostyle code)
 
         final String path = getClass().getResource("example-test-matrix.json").getPath();
         final File testMatrixFile = new File(path);

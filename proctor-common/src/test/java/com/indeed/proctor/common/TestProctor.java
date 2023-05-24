@@ -289,23 +289,7 @@ public class TestProctor {
                 testBucket, allocation
         );
 
-<<<<<<< HEAD
-<<<<<<< HEAD
         when(testChooser.choose(isNull(), eq(Collections.emptyMap()), anyMap(), eq(ForceGroupsOptions.empty()))).thenReturn(result);
-||||||| parent of 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
-        when(testChooser.choose(isNull(), eq(inputContext), anyMap(), eq(ForceGroupsOptions.empty()))).thenReturn(result);
-=======
-        when(testChooser.choose(
-                        isNull(), eq(inputContext), anyMap(), eq(ForceGroupsOptions.empty())))
-                .thenReturn(result);
->>>>>>> 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
-||||||| parent of a496e85b (PROC-960: Remove autostyle code)
-        when(testChooser.choose(
-                        isNull(), eq(inputContext), anyMap(), eq(ForceGroupsOptions.empty())))
-                .thenReturn(result);
-=======
-        when(testChooser.choose(isNull(), eq(inputContext), anyMap(), eq(ForceGroupsOptions.empty()))).thenReturn(result);
->>>>>>> a496e85b (PROC-960: Remove autostyle code)
 
         final ProctorResult proctorResultWithRandom = proctor.determineTestGroups(
                 identifiersWithRandom,
@@ -325,36 +309,12 @@ public class TestProctor {
         assertThat(proctorResultWithoutRandom.getAllocations()).isEqualTo(Collections.emptyMap());
 
         // choose should not be called for identifiers with randomEnabled == false.
-<<<<<<< HEAD
-<<<<<<< HEAD
         verify(testChooser, times(1)).choose(
                 isNull(),
                 eq(Collections.emptyMap()),
                 anyMap(),
                 eq(ForceGroupsOptions.empty())
         );
-||||||| parent of 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
-        verify(testChooser, times(1)).choose(
-                isNull(),
-                eq(inputContext),
-                anyMap(),
-                eq(ForceGroupsOptions.empty())
-        );
-=======
-        verify(testChooser, times(1))
-                .choose(isNull(), eq(inputContext), anyMap(), eq(ForceGroupsOptions.empty()));
->>>>>>> 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
-||||||| parent of a496e85b (PROC-960: Remove autostyle code)
-        verify(testChooser, times(1))
-                .choose(isNull(), eq(inputContext), anyMap(), eq(ForceGroupsOptions.empty()));
-=======
-        verify(testChooser, times(1)).choose(
-                isNull(),
-                eq(inputContext),
-                anyMap(),
-                eq(ForceGroupsOptions.empty())
-        );
->>>>>>> a496e85b (PROC-960: Remove autostyle code)
     }
 
     @Test
