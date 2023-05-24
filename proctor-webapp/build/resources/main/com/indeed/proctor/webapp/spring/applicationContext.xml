@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans	http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+        http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd">
+
+    <bean name="appProps" class="com.indeed.proctor.webapp.util.temp.ServletContextConfiguredPropertyPlaceholderConfigurer"/>
+
+    <bean id="storeFactory" class="com.indeed.proctor.webapp.db.RevisionControlStoreFactory">
+        <property name="scheduledExecutorService" ref="scheduledExecutorService"/>
+    </bean>
+
+    <bean id="trunk" factory-bean="storeFactory"
+          factory-method="getTrunkStore"
+          destroy-method="close">
+        <qualifier value="trunk"/>
+    </bean>
+    <bean id="qa" factory-bean="storeFactory"
+          factory-method="getQaStore"
+          destroy-method="close">
+        <qualifier value="qa" />
+    </bean>
+    <bean id="prod" factory-bean="storeFactory"
+          factory-method="getProductionStore"
+          destroy-method="close">
+        <qualifier value="production" />
+    </bean>
+
+    <!-- Scans the classpath of this application for @Components to deploy as beans -->
+    <context:component-scan base-package="com.indeed.proctor.webapp">
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+        <context:exclude-filter type="annotation" expression="org.springframework.context.annotation.Configuration"/>
+    </context:component-scan>
+
+    <bean id="proctorPromoter" class="com.indeed.proctor.common.ProctorPromoter">
+        <constructor-arg name="trunk" ref="trunk" />
+        <constructor-arg name="qa" ref="qa" />
+        <constructor-arg name="production" ref="prod" />
+        <constructor-arg name="executor" ref="proctorPromoterExecutorService" />
+    </bean>
+
+    <bean id="backgroundJobManager" class="com.indeed.proctor.webapp.jobs.BackgroundJobManager"/>
+    <bean id="backgroundJobFactory" class="com.indeed.proctor.webapp.jobs.BackgroundJobFactory"/>
+
+    <bean id="proctorSpecificationSource" class="com.indeed.proctor.webapp.RemoteProctorSpecificationSource" destroy-method="shutdown">
+        <constructor-arg name="httpTimeoutMillis" value="${verify.http.timeout:1000}"/>
+        <constructor-arg name="executorThreads" value="${verify.executor.threads:10}"/>
+        <constructor-arg name="trunk" ref="trunk" />
+        <constructor-arg name="qa" ref="qa" />
+        <constructor-arg name="production" ref="prod" />
+    </bean>
+
+    <bean id="proctorPromoterExecutorService" class="org.springframework.scheduling.concurrent.ThreadPoolExecutorFactoryBean" lazy-init="false">
+        <property name="corePoolSize" value="3"/>
+        <property name="maxPoolSize" value="3"/>
+        <property name="threadFactory">
+            <bean class="com.indeed.proctor.webapp.util.spring.ThreadFactoryBean">
+                <property name="nameFormat" value="ProctorPromoter-Thread-%d"/>
+            </bean>
+        </property>
+    </bean>
+
+    <bean id="scheduledExecutorService" class="org.springframework.scheduling.concurrent.ScheduledExecutorFactoryBean" lazy-init="false">
+        <property name="threadNamePrefix" value="ProctorWebappTasks"/>
+        <property name="continueScheduledExecutionAfterException" value="true"/>
+        <property name="poolSize" value="10"/>
+        <property name="threadFactory">
+            <bean class="com.indeed.proctor.webapp.util.spring.ThreadFactoryBean">
+                <property name="nameFormat" value="ProctorWebappTasks-Thread-%d"/>
+            </bean>
+        </property>
+        <!-- Add all of the Scheduled Tasks to the Executor Service: Use ScheduledTasks.java -->
+    </bean>
+</beans>

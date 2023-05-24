@@ -18,26 +18,23 @@ import org.springframework.web.context.WebApplicationContext;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
-
 /**
- * This test demonstrates and tests the integration with Spring using an HandlerInterceptorAdapter to
- * setup an AbstractGroups instance and logging a String provided by it
+ * This test demonstrates and tests the integration with Spring using an HandlerInterceptorAdapter
+ * to setup an AbstractGroups instance and logging a String provided by it
  */
 @RunWith(SpringRunner.class)
-@ContextConfiguration(classes={SampleSpringWebAppConfig.class})
+@ContextConfiguration(classes = {SampleSpringWebAppConfig.class})
 @WebAppConfiguration
 public class SampleSpringApplicationIntegrationTest {
 
-    @Autowired
-    private WebApplicationContext context;
+    @Autowired private WebApplicationContext context;
 
-    @Autowired
-    private SampleGroupsLogger groupsLogger;
+    @Autowired private SampleGroupsLogger groupsLogger;
 
     private MockMvc mockMvc;
 
     @Before
-    public void setUp () {
+    public void setUp() {
         mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
     }
 
@@ -48,43 +45,31 @@ public class SampleSpringApplicationIntegrationTest {
                 "user1",
                 "sample1_tst0",
                 "sample1_tst0,unused_tst0,#A1:sample1_tst0,#A1:unused_tst0",
-                "#A1:sample1_tst0"
-        );
-        runRequestAndCheck(
-                "user3",
-                "sample1_tst-1",
-                "unused_tst0,#A1:unused_tst0",
-                ""
-        );
+                "#A1:sample1_tst0");
+        runRequestAndCheck("user3", "sample1_tst-1", "unused_tst0,#A1:unused_tst0", "");
         runRequestAndCheck(
                 "user5",
                 "sample1_tst0",
                 "dynamic_include_tst0,sample1_tst0,unused_tst0,#A1:dynamic_include_tst0,#A1:sample1_tst0,#A1:unused_tst0",
-                "#A1:sample1_tst0"
-        );
+                "#A1:sample1_tst0");
     }
 
     private void runRequestAndCheck(
             final String identifier,
             final String expectedBody,
             final String expectedFullLogString,
-            final String expectedExposureLogString
-    ) throws Exception {
+            final String expectedExposureLogString)
+            throws Exception {
 
-        final MvcResult result = mockMvc.perform(get("/test").header("ctk", identifier))
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andReturn();
+        final MvcResult result =
+                mockMvc.perform(get("/test").header("ctk", identifier))
+                        .andExpect(MockMvcResultMatchers.status().isOk())
+                        .andReturn();
         final String body = result.getResponse().getContentAsString();
-        assertThat(body)
-                .isEqualTo(expectedBody);
+        assertThat(body).isEqualTo(expectedBody);
         assertThat(groupsLogger.getLogFullStringFromAbstractGroups())
                 .isEqualTo(expectedFullLogString);
-        assertThat(groupsLogger.getLogFullStringFromWriter())
-                .isEqualTo(expectedFullLogString);
-        assertThat(groupsLogger.getExposureString())
-                .isEqualTo(expectedExposureLogString);
+        assertThat(groupsLogger.getLogFullStringFromWriter()).isEqualTo(expectedFullLogString);
+        assertThat(groupsLogger.getExposureString()).isEqualTo(expectedExposureLogString);
     }
-
-
-
 }

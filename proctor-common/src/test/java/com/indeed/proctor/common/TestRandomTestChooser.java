@@ -22,14 +22,26 @@ import static org.junit.Assert.assertTrue;
 public class TestRandomTestChooser {
     @Test
     public void test100Percent() {
-        final List<Range> ranges = Lists.newArrayList(new Range(-1, 0.0), new Range(0, 0.0), new Range(1, 1.0));
-        final List<TestBucket> buckets = Lists.newArrayList(new TestBucket("inactive", -1, "zoot", null), new TestBucket("control", 0, "zoot", null), new TestBucket("test", 1, "zoot", null));
+        final List<Range> ranges =
+                Lists.newArrayList(new Range(-1, 0.0), new Range(0, 0.0), new Range(1, 1.0));
+        final List<TestBucket> buckets =
+                Lists.newArrayList(
+                        new TestBucket("inactive", -1, "zoot", null),
+                        new TestBucket("control", 0, "zoot", null),
+                        new TestBucket("test", 1, "zoot", null));
 
         final RandomTestChooser rtc = initializeRandomTestChooser(ranges, buckets);
 
         final Map<String, ValueExpression> localContext = Collections.emptyMap();
         for (int i = 0; i < 100; i++) {
+<<<<<<< HEAD
             final TestChooser.Result chosen = rtc.chooseInternal(null, localContext, Collections.emptyMap());
+||||||| parent of 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
+            final TestChooser.Result chosen = rtc.chooseInternal(null, values, Collections.emptyMap());
+=======
+            final TestChooser.Result chosen =
+                    rtc.chooseInternal(null, values, Collections.emptyMap());
+>>>>>>> 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
             assertNotNull(chosen);
             assertNotNull(chosen.getTestBucket());
             assertNotNull(chosen.getAllocation());
@@ -41,14 +53,32 @@ public class TestRandomTestChooser {
     @Test
     public void test5050Percent() {
         final List<Range> ranges = Lists.newArrayList(new Range(0, 0.5), new Range(1, 1.0));
-        final List<TestBucket> buckets = Lists.newArrayList(new TestBucket("control", 0, "zoot", null), new TestBucket("test", 1, "zoot", null));
+        final List<TestBucket> buckets =
+                Lists.newArrayList(
+                        new TestBucket("control", 0, "zoot", null),
+                        new TestBucket("test", 1, "zoot", null));
 
         final RandomTestChooser rtc = initializeRandomTestChooser(ranges, buckets);
 
+<<<<<<< HEAD
         final int[] found = { 0, 0 };
         final Map<String, ValueExpression> localContext = Collections.emptyMap();
+||||||| parent of 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
+        final int[] found = { 0, 0 };
+        final Map<String, Object> values = Collections.emptyMap();
+=======
+        final int[] found = {0, 0};
+        final Map<String, Object> values = Collections.emptyMap();
+>>>>>>> 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
         for (int i = 0; i < 1000; i++) {
+<<<<<<< HEAD
             final TestChooser.Result chosen = rtc.chooseInternal(null, localContext, Collections.emptyMap());
+||||||| parent of 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
+            final TestChooser.Result chosen = rtc.chooseInternal(null, values, Collections.emptyMap());
+=======
+            final TestChooser.Result chosen =
+                    rtc.chooseInternal(null, values, Collections.emptyMap());
+>>>>>>> 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
             assertNotNull(chosen);
             assertNotNull(chosen.getTestBucket());
             assertNotNull(chosen.getAllocation());
@@ -64,15 +94,38 @@ public class TestRandomTestChooser {
 
     @Test
     public void test333333Percent() {
-        final List<Range> ranges = Lists.newArrayList(new Range(0, 0.3333333333333333), new Range(1, 0.3333333333333333), new Range(2, 0.3333333333333333));
-        final List<TestBucket> buckets = Lists.newArrayList(new TestBucket("inactive", 0, "zoot", null), new TestBucket("control", 1, "zoot", null), new TestBucket("test", 2, "zoot", null));
+        final List<Range> ranges =
+                Lists.newArrayList(
+                        new Range(0, 0.3333333333333333),
+                        new Range(1, 0.3333333333333333),
+                        new Range(2, 0.3333333333333333));
+        final List<TestBucket> buckets =
+                Lists.newArrayList(
+                        new TestBucket("inactive", 0, "zoot", null),
+                        new TestBucket("control", 1, "zoot", null),
+                        new TestBucket("test", 2, "zoot", null));
 
         final RandomTestChooser rtc = initializeRandomTestChooser(ranges, buckets);
 
+<<<<<<< HEAD
         final int[] found = { 0, 0, 0 };
         final Map<String, ValueExpression> localContext = Collections.emptyMap();
+||||||| parent of 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
+        final int[] found = { 0, 0, 0 };
+        final Map<String, Object> values = Collections.emptyMap();
+=======
+        final int[] found = {0, 0, 0};
+        final Map<String, Object> values = Collections.emptyMap();
+>>>>>>> 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
         for (int i = 0; i < 1000; i++) {
+<<<<<<< HEAD
             final TestChooser.Result chosen = rtc.chooseInternal(null, localContext, Collections.emptyMap());
+||||||| parent of 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
+            final TestChooser.Result chosen = rtc.chooseInternal(null, values, Collections.emptyMap());
+=======
+            final TestChooser.Result chosen =
+                    rtc.chooseInternal(null, values, Collections.emptyMap());
+>>>>>>> 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
             assertNotNull(chosen);
             assertNotNull(chosen.getTestBucket());
             assertNotNull(chosen.getAllocation());
@@ -88,7 +141,8 @@ public class TestRandomTestChooser {
         assertTrue(found[2] < 400);
     }
 
-    static RandomTestChooser initializeRandomTestChooser(final List<Range> ranges, final List<TestBucket> buckets) {
+    static RandomTestChooser initializeRandomTestChooser(
+            final List<Range> ranges, final List<TestBucket> buckets) {
         final ExpressionFactory expressionFactory = new ExpressionFactoryImpl();
 
         final FunctionMapper functionMapper = RuleEvaluator.FUNCTION_MAPPER;
@@ -102,7 +156,9 @@ public class TestRandomTestChooser {
         allocations.add(new Allocation("${}", ranges, "#A1"));
         testDefinition.setAllocations(allocations);
 
-        final RandomTestChooser rtc = new RandomTestChooser(expressionFactory, functionMapper, "testName", testDefinition);
+        final RandomTestChooser rtc =
+                new RandomTestChooser(
+                        expressionFactory, functionMapper, "testName", testDefinition);
         return rtc;
     }
 }

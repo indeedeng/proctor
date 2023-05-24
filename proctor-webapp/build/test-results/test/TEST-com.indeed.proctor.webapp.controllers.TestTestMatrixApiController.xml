@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.indeed.proctor.webapp.controllers.TestTestMatrixApiController" tests="16" skipped="0" failures="0" errors="0" timestamp="2023-05-01T19:04:52" hostname="IT-USA-VY0740" time="0.089">
+  <properties/>
+  <testcase name="testGetRevisionDetailsThrowsNotFoundException" classname="com.indeed.proctor.webapp.controllers.TestTestMatrixApiController" time="0.003"/>
+  <testcase name="testGetTestDefinitionNotFound" classname="com.indeed.proctor.webapp.controllers.TestTestMatrixApiController" time="0.007"/>
+  <testcase name="testGetTestDefinitionHistoryForRevision" classname="com.indeed.proctor.webapp.controllers.TestTestMatrixApiController" time="0.029"/>
+  <testcase name="testGetTestHistoriesThrowsNotFoundException" classname="com.indeed.proctor.webapp.controllers.TestTestMatrixApiController" time="0.0"/>
+  <testcase name="testGetTestMatrixForRevision" classname="com.indeed.proctor.webapp.controllers.TestTestMatrixApiController" time="0.033"/>
+  <testcase name="testGetTestDefinitionHistoryForBranch" classname="com.indeed.proctor.webapp.controllers.TestTestMatrixApiController" time="0.001"/>
+  <testcase name="testGetTestDefinitionHistoryForBranchAndRevision" classname="com.indeed.proctor.webapp.controllers.TestTestMatrixApiController" time="0.002"/>
+  <testcase name="testGetTestMatrixForBranch" classname="com.indeed.proctor.webapp.controllers.TestTestMatrixApiController" time="0.0"/>
+  <testcase name="testGetTestDefinitionHistoryNotFound" classname="com.indeed.proctor.webapp.controllers.TestTestMatrixApiController" time="0.0"/>
+  <testcase name="testGetTestMatrixHistoryForBranchEmpty" classname="com.indeed.proctor.webapp.controllers.TestTestMatrixApiController" time="0.001"/>
+  <testcase name="testGetTestHistories" classname="com.indeed.proctor.webapp.controllers.TestTestMatrixApiController" time="0.005"/>
+  <testcase name="testGetTestDefinitionForBranch" classname="com.indeed.proctor.webapp.controllers.TestTestMatrixApiController" time="0.001"/>
+  <testcase name="testGetTestMatrixNotFound" classname="com.indeed.proctor.webapp.controllers.TestTestMatrixApiController" time="0.001"/>
+  <testcase name="testGetTestMatrixHistoryForRevisionEmpty" classname="com.indeed.proctor.webapp.controllers.TestTestMatrixApiController" time="0.0"/>
+  <testcase name="testGetRevisionDetails" classname="com.indeed.proctor.webapp.controllers.TestTestMatrixApiController" time="0.002"/>
+  <testcase name="testGetTestDefinitionForRevision" classname="com.indeed.proctor.webapp.controllers.TestTestMatrixApiController" time="0.002"/>
+  <system-out><![CDATA[INFO  [Test worker][2023-05-01T15:04:52,063] [com.indeed.proctor.webapp.util.TestDefinitionUtil.getTestDefinition] - Failed to get current test definition for: fooTest: Unknown revision 3
+INFO  [Test worker][2023-05-01T15:04:52,065] [com.indeed.proctor.webapp.util.TestDefinitionUtil.getTestDefinition] - Failed to get current test definition for: fooTest: Unknown revision 3
+INFO  [Test worker][2023-05-01T15:04:52,094] [com.indeed.proctor.webapp.controllers.AbstractController$RevisionRef.queryTestMatrixVersion] - Failed to find revision 3 in InMemoryProctorStore
+INFO  [Test worker][2023-05-01T15:04:52,095] [com.indeed.proctor.webapp.controllers.AbstractController$RevisionRef.queryTestMatrixVersion] - Failed to find revision 3 in InMemoryProctorStore
+INFO  [Test worker][2023-05-01T15:04:52,126] [com.indeed.proctor.webapp.controllers.AbstractController$RevisionRef.queryTestMatrixVersion] - Failed to find revision 4 in InMemoryProctorStore
+INFO  [Test worker][2023-05-01T15:04:52,131] [com.indeed.proctor.webapp.controllers.AbstractController$RevisionRef.queryTestDefinitionHistory] - Can not find revision 3 in any of stores
+INFO  [Test worker][2023-05-01T15:04:52,140] [com.indeed.proctor.webapp.controllers.AbstractController$RevisionRef.queryTestMatrixVersion] - Failed to find revision 1234 in InMemoryProctorStore
+INFO  [Test worker][2023-05-01T15:04:52,140] [com.indeed.proctor.webapp.controllers.AbstractController$RevisionRef.queryTestMatrixVersion] - Failed to find revision 1234 in InMemoryProctorStore
+INFO  [Test worker][2023-05-01T15:04:52,140] [com.indeed.proctor.webapp.controllers.AbstractController$RevisionRef.queryTestMatrixVersion] - Failed to find revision 1234 in InMemoryProctorStore
+INFO  [Test worker][2023-05-01T15:04:52,142] [com.indeed.proctor.webapp.util.TestDefinitionUtil.getTestDefinition] - Failed to get current test definition for: dummyTest: Unknown revision 3
+INFO  [Test worker][2023-05-01T15:04:52,142] [com.indeed.proctor.webapp.util.TestDefinitionUtil.getTestDefinition] - Failed to get current test definition for: dummyTest: Unknown revision 3
+INFO  [Test worker][2023-05-01T15:04:52,143] [com.indeed.proctor.webapp.util.TestDefinitionUtil.getTestDefinition] - Failed to get current test definition for: dummyTest: Unknown revision 4
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

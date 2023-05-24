@@ -7,14 +7,9 @@ import java.util.Collections;
 import java.util.List;
 
 public class HistoryUtil {
-    /**
-     * @return sublist avoiding any overflow from bad parameters
-     */
+    /** @return sublist avoiding any overflow from bad parameters */
     public static <T> List<T> selectHistorySet(
-            @Nullable final List<T> history,
-            final int start,
-            final int limit
-    ) {
+            @Nullable final List<T> history, final int start, final int limit) {
         if ((history == null) || (start >= history.size()) || (limit < 1)) {
             return Collections.emptyList();
         }
@@ -23,15 +18,12 @@ public class HistoryUtil {
         return history.subList(s, s + l);
     }
 
-    /**
-     * @return sublist starting at from avoiding any overflow from bad parameters
-     */
+    /** @return sublist starting at from avoiding any overflow from bad parameters */
     public static List<Revision> selectRevisionHistorySetFrom(
             @Nullable final List<Revision> history,
             final String from,
             final int start,
-            final int limit
-    ) {
+            final int limit) {
         if (history == null) {
             return Collections.emptyList();
         }

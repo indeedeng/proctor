@@ -24,51 +24,38 @@ import java.util.List;
 public abstract class TestGroupsGeneratorTask extends Task {
     protected static final Logger LOGGER = LogManager.getLogger(TestGroupsGeneratorTask.class);
 
-    /**
-     * A period of sleep to display warning messages to users
-     */
+    /** A period of sleep to display warning messages to users */
     private static final int SLEEP_TIME_FOR_WARNING = 3;
 
-    /**
-     * URL to the page for the dynamic filters migration
-     */
-    private static final String DYNAMIC_FILTERS_MIGRATION_URL = "https://github.com/indeedeng/proctor/issues/47";
+    /** URL to the page for the dynamic filters migration */
+    private static final String DYNAMIC_FILTERS_MIGRATION_URL =
+            "https://github.com/indeedeng/proctor/issues/47";
 
     /**
-     * Paths to input specification files separated by ","
-     * It allows two types of inputs
+     * Paths to input specification files separated by "," It allows two types of inputs
      *
-     * 1. A single path to json file that is not named
-     * providedcontext.json or dynamicfilters.json
-     * The json file holds all tests specifications (total specification).
+     * <p>1. A single path to json file that is not named providedcontext.json or
+     * dynamicfilters.json The json file holds all tests specifications (total specification).
      *
-     * 2. All other cases. one or more paths to json file
-     * or directory including json files, separated by comma.
-     * each json file is a single test specification
-     * or providedcontext.json or dynamicfilters.json.
+     * <p>2. All other cases. one or more paths to json file or directory including json files,
+     * separated by comma. each json file is a single test specification or providedcontext.json or
+     * dynamicfilters.json.
      *
-     * FIXME: current implementation is not strictly following this at this moment.
-     * Current limitations are
-     * * single path to "providedcontext.json" is handled as Type 1.
-     * * single path to "dynamicfilters.json" is handled as Type 1.
-     * * multiple paths to json files is handled as Type 1 and fails to parse.
+     * <p>FIXME: current implementation is not strictly following this at this moment. Current
+     * limitations are * single path to "providedcontext.json" is handled as Type 1. * single path
+     * to "dynamicfilters.json" is handled as Type 1. * multiple paths to json files is handled as
+     * Type 1 and fails to parse.
      */
     protected String input;
-    /**
-     * Target base directory to generate files
-     */
+    /** Target base directory to generate files */
     protected String target;
-    /**
-     * Package of generated source files
-     */
+    /** Package of generated source files */
     protected String packageName;
-    /**
-     * Name of generated group class
-     */
+    /** Name of generated group class */
     protected String groupsClass;
     /**
-     * Paths to generate a total specification json file.
-     * This is ignored when `input` specifies total specification json file.
+     * Paths to generate a total specification json file. This is ignored when `input` specifies
+     * total specification json file.
      */
     protected String specificationOutput;
 
@@ -113,10 +100,11 @@ public abstract class TestGroupsGeneratorTask extends Task {
     }
 
     /**
-     * Generates total specifications from any partial specifications found
-     * Output generate total specification to `specificationOutput`
+     * Generates total specifications from any partial specifications found Output generate total
+     * specification to `specificationOutput`
      */
-    protected ProctorSpecification mergePartialSpecifications(final List<File> files) throws CodeGenException {
+    protected ProctorSpecification mergePartialSpecifications(final List<File> files)
+            throws CodeGenException {
         if (files == null || files.size() == 0) {
             throw new CodeGenException("No specifications file input");
         }
@@ -125,22 +113,22 @@ public abstract class TestGroupsGeneratorTask extends Task {
         }
 
         // make directory if it doesn't exist
-        new File(specificationOutput.substring(0, specificationOutput.lastIndexOf(File.separator))).mkdirs();
+        new File(specificationOutput.substring(0, specificationOutput.lastIndexOf(File.separator)))
+                .mkdirs();
         final File specificationOutputFile = new File(specificationOutput);
         return TestGroupsGenerator.makeTotalSpecification(
-                files,
-                specificationOutputFile.getParent(),
-                specificationOutputFile.getName()
-        );
+                files, specificationOutputFile.getParent(), specificationOutputFile.getName());
     }
 
     @Override
     public void execute() throws BuildException {
         if (input == null) {
-            throw new BuildException("Undefined input files for code generation from specification");
+            throw new BuildException(
+                    "Undefined input files for code generation from specification");
         }
         if (target == null) {
-            throw new BuildException("Undefined target directory for code generation from specification");
+            throw new BuildException(
+                    "Undefined target directory for code generation from specification");
         }
 
         final String[] inputs = input.split(",");
@@ -173,7 +161,12 @@ public abstract class TestGroupsGeneratorTask extends Task {
                 try {
                     specification = mergePartialSpecifications(files);
                 } catch (final CodeGenException e) {
-                    throw new BuildException("Unable to generate total specification for inputs " + Arrays.asList(inputs) + " : " + e.getMessage(), e);
+                    throw new BuildException(
+                            "Unable to generate total specification for inputs "
+                                    + Arrays.asList(inputs)
+                                    + " : "
+                                    + e.getMessage(),
+                            e);
                 }
             }
 
@@ -187,26 +180,25 @@ public abstract class TestGroupsGeneratorTask extends Task {
         }
     }
 
-    /**
-     * Validate input specification and log messages
-     */
+    /** Validate input specification and log messages */
     private void validateSpecification(final ProctorSpecification specification) {
-        final boolean hasDuplicatedFilters = specification.getDynamicFilters()
-                .asCollection()
-                .stream()
-                .anyMatch(filter -> filter.getClass().isAnnotationPresent(Deprecated.class));
+        final boolean hasDuplicatedFilters =
+                specification.getDynamicFilters().asCollection().stream()
+                        .anyMatch(
+                                filter -> filter.getClass().isAnnotationPresent(Deprecated.class));
 
         if (hasDuplicatedFilters) {
-            log(String.join("\n",
-                    "=================================================================================",
-                    "Warning: Proctor detected this application is using deprecated dynamic filters.",
-                    "Please migrate to meta tags based filters.",
-                    "See " + DYNAMIC_FILTERS_MIGRATION_URL + " for details.",
-                    "",
-                    "Sleeping " + SLEEP_TIME_FOR_WARNING + " seconds",
-                    "================================================================================="
-                    ), LogLevel.WARN.getLevel()
-            );
+            log(
+                    String.join(
+                            "\n",
+                            "=================================================================================",
+                            "Warning: Proctor detected this application is using deprecated dynamic filters.",
+                            "Please migrate to meta tags based filters.",
+                            "See " + DYNAMIC_FILTERS_MIGRATION_URL + " for details.",
+                            "",
+                            "Sleeping " + SLEEP_TIME_FOR_WARNING + " seconds",
+                            "================================================================================="),
+                    LogLevel.WARN.getLevel());
         }
     }
 
@@ -215,5 +207,6 @@ public abstract class TestGroupsGeneratorTask extends Task {
      *
      * @param specification a input specification for source code generation
      */
-    protected abstract void generateSourceFiles(final ProctorSpecification specification) throws CodeGenException;
+    protected abstract void generateSourceFiles(final ProctorSpecification specification)
+            throws CodeGenException;
 }

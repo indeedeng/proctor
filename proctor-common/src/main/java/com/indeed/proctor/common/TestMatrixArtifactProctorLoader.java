@@ -9,14 +9,12 @@ import java.io.IOException;
 
 /**
  * Support using an already-loaded test matrix with an arbitrary specification.
+ *
  * @author syd
  */
-
 public class TestMatrixArtifactProctorLoader extends AbstractProctorLoader {
-    @Nonnull
-    private final String source;
-    @Nonnull
-    private final TestMatrixArtifact testMatrixArtifact;
+    @Nonnull private final String source;
+    @Nonnull private final TestMatrixArtifact testMatrixArtifact;
 
     public TestMatrixArtifactProctorLoader(
             @Nonnull ProctorSpecification proctorSpecification,

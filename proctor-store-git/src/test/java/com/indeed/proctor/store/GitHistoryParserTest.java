@@ -22,18 +22,15 @@ public class GitHistoryParserTest {
     @Test
     public void testSortByDate() {
         final Map<String, List<Revision>> testee = Maps.newHashMap();
-        testee.put("test1", Lists.newArrayList(
-                makeRandomRevision(5),
-                makeRandomRevision(8),
-                makeRandomRevision(1)
-        ));
-        testee.put("test2", Lists.newArrayList(
-                makeRandomRevision(10)
-        ));
+        testee.put(
+                "test1",
+                Lists.newArrayList(
+                        makeRandomRevision(5), makeRandomRevision(8), makeRandomRevision(1)));
+        testee.put("test2", Lists.newArrayList(makeRandomRevision(10)));
 
         GitHistoryParser.sortByDate(testee);
 
-        /** assert order is correct **/
+        /** assert order is correct * */
         for (final List<Revision> revisions : testee.values()) {
             Date prevDate = revisions.get(0).getDate();
             for (final Revision revision : revisions) {
@@ -45,7 +42,8 @@ public class GitHistoryParserTest {
 
     @Test
     public void testTestNamePattern() {
-        final Pattern pattern = GitHistoryParser.compileTestNamePattern("matrices/test-definitions");
+        final Pattern pattern =
+                GitHistoryParser.compileTestNamePattern("matrices/test-definitions");
         Matcher matcher = pattern.matcher("matrices/test-definitions/testname/definition.json");
         assertTrue(matcher.matches());
         assertEquals("testname", matcher.group(1));
@@ -55,7 +53,12 @@ public class GitHistoryParserTest {
     }
 
     private static Revision makeRandomRevision(final long date) {
-        final Revision result = new Revision(UUID.randomUUID().toString(), "author", new Date(date), String.valueOf(revisionCount));
+        final Revision result =
+                new Revision(
+                        UUID.randomUUID().toString(),
+                        "author",
+                        new Date(date),
+                        String.valueOf(revisionCount));
         revisionCount++;
         return result;
     }

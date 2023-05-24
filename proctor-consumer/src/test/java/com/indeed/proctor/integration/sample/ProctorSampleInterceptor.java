@@ -5,8 +5,8 @@ import com.indeed.proctor.common.Identifiers;
 import com.indeed.proctor.common.ProctorResult;
 import com.indeed.proctor.common.model.TestType;
 import com.indeed.proctor.consumer.ProctorGroupsWriter;
-import com.indeed.proctor.consumer.logging.TestMarkingObserver;
 import com.indeed.proctor.consumer.logging.TestGroupFormatter;
+import com.indeed.proctor.consumer.logging.TestMarkingObserver;
 import com.indeed.proctor.consumer.logging.TestUsageObserver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -24,13 +24,16 @@ public class ProctorSampleInterceptor extends HandlerInterceptorAdapter {
     private final SampleGroupsLogger groupLogger;
 
     // same logging as current AbstractGroups
-    final ProctorGroupsWriter legacyWriter = new ProctorGroupsWriter.Builder(
-            TestGroupFormatter.WITHOUT_ALLOC_ID, TestGroupFormatter.WITH_ALLOC_ID
-    ).build();
-    final ProctorGroupsWriter simpleWriter = ProctorGroupsWriter.Builder.withFormatter(TestGroupFormatter.WITH_ALLOC_ID).build();
+    final ProctorGroupsWriter legacyWriter =
+            new ProctorGroupsWriter.Builder(
+                            TestGroupFormatter.WITHOUT_ALLOC_ID, TestGroupFormatter.WITH_ALLOC_ID)
+                    .build();
+    final ProctorGroupsWriter simpleWriter =
+            ProctorGroupsWriter.Builder.withFormatter(TestGroupFormatter.WITH_ALLOC_ID).build();
 
     @Autowired
-    public ProctorSampleInterceptor(final SampleGroupsManager proctorGroupsManager, final SampleGroupsLogger groupLogger) {
+    public ProctorSampleInterceptor(
+            final SampleGroupsManager proctorGroupsManager, final SampleGroupsLogger groupLogger) {
         this.proctorGroupsManager = proctorGroupsManager;
         this.groupLogger = groupLogger;
     }
@@ -39,12 +42,11 @@ public class ProctorSampleInterceptor extends HandlerInterceptorAdapter {
     public boolean preHandle(
             final HttpServletRequest request,
             final HttpServletResponse response,
-            final Object handler
-    ) throws Exception {
+            final Object handler)
+            throws Exception {
         final String ctk = request.getHeader("ctk");
-        final Identifiers identifiers = new Identifiers(ImmutableMap.of(
-                TestType.ANONYMOUS_USER, ctk
-        ));
+        final Identifiers identifiers =
+                new Identifiers(ImmutableMap.of(TestType.ANONYMOUS_USER, ctk));
         final ProctorResult proctorResult = proctorGroupsManager.determineBuckets(identifiers);
         // prepare exposure logging
         final TestUsageObserver observer = new TestMarkingObserver(proctorResult);
@@ -53,7 +55,8 @@ public class ProctorSampleInterceptor extends HandlerInterceptorAdapter {
         // log determined buckets for segmentation in later later analysis outside proctor
         groupLogger.setLogFullStringFromAbstractGroups(proctorGroups.toLoggingString());
         // log using new new writer approach, but in same format as abstractGroups
-        groupLogger.setLogFullStringFromWriter(legacyWriter.writeGroupsAsString(proctorGroups.getAsProctorResult()));
+        groupLogger.setLogFullStringFromWriter(
+                legacyWriter.writeGroupsAsString(proctorGroups.getAsProctorResult()));
 
         // provide groups to request handlers as request property
         request.setAttribute(PROCTOR_GROUPS_ATTRIBUTE, proctorGroups);
@@ -66,8 +69,10 @@ public class ProctorSampleInterceptor extends HandlerInterceptorAdapter {
             final HttpServletRequest request,
             final HttpServletResponse response,
             final Object handler,
-            final Exception ex) throws Exception {
-        final TestMarkingObserver observer = (TestMarkingObserver) request.getAttribute(PROCTOR_OBSERVER_ATTRIBUTE);
+            final Exception ex)
+            throws Exception {
+        final TestMarkingObserver observer =
+                (TestMarkingObserver) request.getAttribute(PROCTOR_OBSERVER_ATTRIBUTE);
 
         // exposure logging using groups observed as used during the request
         groupLogger.setExposureString(simpleWriter.writeGroupsAsString(observer.asProctorResult()));

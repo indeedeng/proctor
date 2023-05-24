@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.indeed.proctor.webapp.db.GitProctorStoreFactoryTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2023-05-01T19:04:53" hostname="IT-USA-VY0740" time="0.003">
+  <properties/>
+  <testcase name="testCreateStoreWithGlobalCache" classname="com.indeed.proctor.webapp.db.GitProctorStoreFactoryTest" time="0.001"/>
+  <testcase name="testCreateStoreWithInvalidBranch" classname="com.indeed.proctor.webapp.db.GitProctorStoreFactoryTest" time="0.002"/>
+  <testcase name="testCreateStoreWithoutGlobalCache" classname="com.indeed.proctor.webapp.db.GitProctorStoreFactoryTest" time="0.0"/>
+  <system-out><![CDATA[INFO  [Test worker][2023-05-01T15:04:53,185] [com.indeed.proctor.webapp.db.GitProctorStoreFactory.createStoreWithGlobalCache] - Global cache is disabled
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

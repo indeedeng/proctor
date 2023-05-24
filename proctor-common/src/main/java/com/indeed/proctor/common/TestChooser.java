@@ -36,8 +36,8 @@ interface TestChooser<IdentifierType> {
     String getTestName();
 
     /**
-     * Do not directly call this outside this interface.
-     * We should call {@link #choose(Object, Map, Map, ForceGroupsOptions)}, instead.
+     * Do not directly call this outside this interface. We should call {@link #choose(Object, Map,
+     * Map, ForceGroupsOptions)}, instead.
      */
     @Nonnull
     TestChooser.Result chooseInternal(
@@ -51,21 +51,27 @@ interface TestChooser<IdentifierType> {
             @Nullable final IdentifierType identifier,
             @Nonnull final Map<String, ValueExpression> localContext,
             @Nonnull final Map<String, TestBucket> testGroups,
-            @Nonnull final ForceGroupsOptions forceGroupsOptions
-    ) {
+            @Nonnull final ForceGroupsOptions forceGroupsOptions) {
         final String testName = getTestName();
 
-        final Optional<Integer> forceGroupBucket = forceGroupsOptions.getForcedBucketValue(testName);
+        final Optional<Integer> forceGroupBucket =
+                forceGroupsOptions.getForcedBucketValue(testName);
         if (forceGroupBucket.isPresent()) {
             final TestBucket forcedTestBucket = getTestBucket(forceGroupBucket.get());
             if (forcedTestBucket != null) {
-                final Optional<Payload> forcePayloadValues = forceGroupsOptions.getForcedPayloadValue(testName);
+                final Optional<Payload> forcePayloadValues =
+                        forceGroupsOptions.getForcedPayloadValue(testName);
                 final Payload currentPayload = forcedTestBucket.getPayload();
-                if (currentPayload != null && currentPayload != Payload.EMPTY_PAYLOAD && forcePayloadValues.isPresent()) {
-                    final TestBucket forcedTestBucketWithForcedPayload = TestBucket.builder()
-                            .from(forcedTestBucket)
-                            .payload(validateForcePayload(currentPayload, forcePayloadValues.get()))
-                            .build();
+                if (currentPayload != null
+                        && currentPayload != Payload.EMPTY_PAYLOAD
+                        && forcePayloadValues.isPresent()) {
+                    final TestBucket forcedTestBucketWithForcedPayload =
+                            TestBucket.builder()
+                                    .from(forcedTestBucket)
+                                    .payload(
+                                            validateForcePayload(
+                                                    currentPayload, forcePayloadValues.get()))
+                                    .build();
                     return new Result(forcedTestBucketWithForcedPayload, null);
                 }
                 // use a forced bucket, skip choosing an allocation
@@ -86,12 +92,18 @@ interface TestChooser<IdentifierType> {
                     .map(Allocation::getRanges)
                     .map(Collection::stream)
                     .orElse(Stream.empty())
-                    .filter(allocationRange -> allocationRange.getLength() > 0) // filter out 0% allocation ranges
+                    .filter(
+                            allocationRange ->
+                                    allocationRange.getLength()
+                                            > 0) // filter out 0% allocation ranges
                     .map(Range::getBucketValue)
                     .min(Integer::compareTo) // find the minimum bucket value
-                    .flatMap(minActiveBucketValue -> Optional.ofNullable(getTestBucket(minActiveBucketValue)))
+                    .flatMap(
+                            minActiveBucketValue ->
+                                    Optional.ofNullable(getTestBucket(minActiveBucketValue)))
                     .map(minActiveBucket -> new Result(minActiveBucket, null))
-                    .orElse(Result.EMPTY); // skip choosing a test bucket if failed to find the minimum active bucket
+                    .orElse(Result.EMPTY); // skip choosing a test bucket if failed to find the
+            // minimum active bucket
         }
 
         return result;
@@ -115,7 +127,8 @@ interface TestChooser<IdentifierType> {
      * Validated Force Payload Map by checking that each forced key exists in the current payload and is of the same instance type. If forcePayload is invalid return currentPayload to not overwrite
      */
     @Nullable
-    default Payload validateForcePayloadMap(@Nullable final Payload currentPayload, @Nullable final Payload forcePayload) {
+    default Payload validateForcePayloadMap(
+            @Nullable final Payload currentPayload, @Nullable final Payload forcePayload) {
         final Map<String, Object> currentPayloadMap = currentPayload.getMap();
         final Map<String, Object> forcePayloadMap = forcePayload.getMap();
         final ObjectMapper objectMapper = new ObjectMapper();
@@ -125,25 +138,39 @@ interface TestChooser<IdentifierType> {
                 if (currentPayloadMap.containsKey(keyString)) {
                     try {
                         final Object forcePayloadValue = forcePayloadMap.get(keyString);
-                        // check current class of value and try to parse force value to it. force values are strings before validation
+                        // check current class of value and try to parse force value to it. force
+                        // values are strings before validation
                         if (currentPayloadMap.get(keyString) instanceof Double) {
                             validatedMap.put(keyString, forcePayloadValue);
                         } else if (currentPayloadMap.get(keyString) instanceof Double[]) {
-                            validatedMap.put(keyString, ((ArrayList<Double>)forcePayloadValue).toArray(new Double[0]));
+                            validatedMap.put(
+                                    keyString,
+                                    ((ArrayList<Double>) forcePayloadValue).toArray(new Double[0]));
                         } else if (currentPayloadMap.get(keyString) instanceof Long) {
-                            // ObjectMapper reads in as Object and automatically chooses Integer over Long this recasts to Long
-                            validatedMap.put(keyString, Long.valueOf((Integer)forcePayloadValue));
+                            // ObjectMapper reads in as Object and automatically chooses Integer
+                            // over Long this recasts to Long
+                            validatedMap.put(keyString, Long.valueOf((Integer) forcePayloadValue));
                         } else if (currentPayloadMap.get(keyString) instanceof Long[]) {
-                            // ObjectMapper reads in as Object and automatically chooses Integer[] over Long[] this recasts to Long[]
-                            validatedMap.put(keyString, objectMapper.readValue(objectMapper.writeValueAsString(forcePayloadValue), Long[].class));
+                            // ObjectMapper reads in as Object and automatically chooses Integer[]
+                            // over Long[] this recasts to Long[]
+                            validatedMap.put(
+                                    keyString,
+                                    objectMapper.readValue(
+                                            objectMapper.writeValueAsString(forcePayloadValue),
+                                            Long[].class));
                         } else if (currentPayloadMap.get(keyString) instanceof String) {
                             validatedMap.put(keyString, forcePayloadValue);
                         } else if (currentPayloadMap.get(keyString) instanceof String[]) {
-                            validatedMap.put(keyString, ((ArrayList<String>)forcePayloadValue).toArray(new String[0]));
+                            validatedMap.put(
+                                    keyString,
+                                    ((ArrayList<String>) forcePayloadValue).toArray(new String[0]));
                         } else {
                             return currentPayload;
                         }
-                    } catch (final IllegalArgumentException | ArrayStoreException | ClassCastException | IOException e) {
+                    } catch (final IllegalArgumentException
+                            | ArrayStoreException
+                            | ClassCastException
+                            | IOException e) {
                         return currentPayload;
                     }
                 } else {
@@ -155,25 +182,20 @@ interface TestChooser<IdentifierType> {
         return currentPayload;
     }
 
-    /**
-     * Models a result of an assigned bucket and allocation by {@code TestChooser}.
-     */
+    /** Models a result of an assigned bucket and allocation by {@code TestChooser}. */
     class Result {
         /**
-         * Empty result (no chosen buckets or no chosen allocations) which is typically used when
-         * 1: all allocation rules aren't matched to a context, and
-         * 2: forcing to use a fallback bucket.
+         * Empty result (no chosen buckets or no chosen allocations) which is typically used when 1:
+         * all allocation rules aren't matched to a context, and 2: forcing to use a fallback
+         * bucket.
          */
         public static final Result EMPTY = new Result(null, null);
 
-        @Nullable
-        private final TestBucket testBucket;
+        @Nullable private final TestBucket testBucket;
 
-        @Nullable
-        private final Allocation allocation;
+        @Nullable private final Allocation allocation;
 
-        Result(@Nullable final TestBucket testBucket,
-               @Nullable final Allocation allocation) {
+        Result(@Nullable final TestBucket testBucket, @Nullable final Allocation allocation) {
             this.testBucket = testBucket;
             this.allocation = allocation;
         }
@@ -187,7 +209,8 @@ interface TestChooser<IdentifierType> {
         }
 
         /**
-         * Returns a matched allocation in {@code TestChooser}. Returns null if any rules isn't matched.
+         * Returns a matched allocation in {@code TestChooser}. Returns null if any rules isn't
+         * matched.
          */
         @Nullable
         public Allocation getAllocation() {

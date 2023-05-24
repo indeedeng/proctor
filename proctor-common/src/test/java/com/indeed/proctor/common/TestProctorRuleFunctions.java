@@ -13,8 +13,8 @@ public class TestProctorRuleFunctions {
     public void testContains() {
         assertTrue(ProctorRuleFunctions.contains(Arrays.asList(1, 2, 3), 1));
         assertTrue(ProctorRuleFunctions.contains(Arrays.asList(1, 2, 3), 1L));
-        assertTrue(ProctorRuleFunctions.contains(Arrays.asList(1, 2, 3), (byte)1));
-        assertTrue(ProctorRuleFunctions.contains(Arrays.asList(1, 2, 3), (short)1));
+        assertTrue(ProctorRuleFunctions.contains(Arrays.asList(1, 2, 3), (byte) 1));
+        assertTrue(ProctorRuleFunctions.contains(Arrays.asList(1, 2, 3), (short) 1));
         assertTrue(ProctorRuleFunctions.contains(Arrays.asList(1L, 2L, 3L), 1L));
         assertTrue(ProctorRuleFunctions.contains(Arrays.asList(1L, 2L, 3L), 1));
 

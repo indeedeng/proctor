@@ -16,35 +16,38 @@ import java.io.IOException;
 /**
  * Take a random sampling of group determinations for a test or set of tests.
  *
- * Usage requires subclassing this controller and implementing {@link #getRandomGroups} which should return the Proctor groups
- * object for a given context and Identifiers. Generally this just means passing fields from the ProctorContext to
- * a groups manager and calling determineBuckets.
+ * <p>Usage requires subclassing this controller and implementing {@link #getRandomGroups} which
+ * should return the Proctor groups object for a given context and Identifiers. Generally this just
+ * means passing fields from the ProctorContext to a groups manager and calling determineBuckets.
  *
- * The ProctorContext class should be a bean that has all of the fields you need to run groups determination - usually
- * all of the fields in the specification's providedContext. Any field with a bean-style setter can be set using URL
- * parameters. The default implementation using reflection to populate the {@link ProctorContext} object.
+ * <p>The ProctorContext class should be a bean that has all of the fields you need to run groups
+ * determination - usually all of the fields in the specification's providedContext. Any field with
+ * a bean-style setter can be set using URL parameters. The default implementation using reflection
+ * to populate the {@link ProctorContext} object.
  *
- * Override {@link #resolveContext} and
- * {@link #printProctorContext}
- * to provide an implementation of context resolving that doesn't use reflection.
+ * <p>Override {@link #resolveContext} and {@link #printProctorContext} to provide an implementation
+ * of context resolving that doesn't use reflection.
  *
- * The page will be mapped at /sampleRandomGroups under wherever the controller is mapped.
+ * <p>The page will be mapped at /sampleRandomGroups under wherever the controller is mapped.
  *
  * @author jsgroth
  */
-public abstract class AbstractSampleRandomGroupsController<ProctorContext>  implements SampleRandomGroupsHttpHandler.ContextSupplier<ProctorContext> {
+public abstract class AbstractSampleRandomGroupsController<ProctorContext>
+        implements SampleRandomGroupsHttpHandler.ContextSupplier<ProctorContext> {
 
     private final Class<ProctorContext> contextClass;
     private final SampleRandomGroupsHttpHandler handler;
 
-    protected AbstractSampleRandomGroupsController(final AbstractProctorLoader proctorLoader,
-                                                   final Class<ProctorContext> contextClass) {
+    protected AbstractSampleRandomGroupsController(
+            final AbstractProctorLoader proctorLoader, final Class<ProctorContext> contextClass) {
         this.handler = new SampleRandomGroupsHttpHandler<ProctorContext>(proctorLoader, this);
         this.contextClass = contextClass;
     }
 
     @RequestMapping(value = "/sampleRandomGroups", method = RequestMethod.GET)
-    public void handleSampleRandomGroups(final HttpServletRequest request, final HttpServletResponse response) throws IOException, ServletException {
+    public void handleSampleRandomGroups(
+            final HttpServletRequest request, final HttpServletResponse response)
+            throws IOException, ServletException {
         handler.handleRequest(request, response);
     }
 
@@ -60,7 +63,8 @@ public abstract class AbstractSampleRandomGroupsController<ProctorContext>  impl
     }
 
     // Do some magic to turn request parameters into a context object
-    private ProctorContext getProctorContext(final HttpServletRequest request) throws IllegalAccessException, InstantiationException {
+    private ProctorContext getProctorContext(final HttpServletRequest request)
+            throws IllegalAccessException, InstantiationException {
         final ProctorContext proctorContext = contextClass.newInstance();
         final BeanWrapper beanWrapper = new BeanWrapperImpl(proctorContext);
         for (final PropertyDescriptor descriptor : beanWrapper.getPropertyDescriptors()) {
@@ -76,17 +80,20 @@ public abstract class AbstractSampleRandomGroupsController<ProctorContext>  impl
     }
 
     @Override
-    public String printProctorContext(final ProctorContext proctorContext)  {
+    public String printProctorContext(final ProctorContext proctorContext) {
         final StringBuilder sb = new StringBuilder();
         final BeanWrapper beanWrapper = new BeanWrapperImpl(proctorContext);
         for (final PropertyDescriptor descriptor : beanWrapper.getPropertyDescriptors()) {
             final String propertyName = descriptor.getName();
             if (!"class".equals(propertyName)) { // ignore class property which every object has
                 final Object propertyValue = beanWrapper.getPropertyValue(propertyName);
-                sb.append(propertyName).append(": '").append(propertyValue).append("'").append("\n");
+                sb.append(propertyName)
+                        .append(": '")
+                        .append(propertyValue)
+                        .append("'")
+                        .append("\n");
             }
         }
         return sb.toString();
     }
-
 }

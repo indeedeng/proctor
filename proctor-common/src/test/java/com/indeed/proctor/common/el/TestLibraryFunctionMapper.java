@@ -7,7 +7,6 @@ import java.lang.reflect.Method;
 
 import static org.junit.Assert.assertNotNull;
 
-
 public class TestLibraryFunctionMapper {
     public static void findMe() {
         /* intentionally empty */
@@ -20,8 +19,8 @@ public class TestLibraryFunctionMapper {
     @Test
     public void testConstruction() {
         final String key = "tlfm";
-        final LibraryFunctionMapper mapper = new LibraryFunctionMapper(
-                ImmutableMap.of(key, TestLibraryFunctionMapper.class));
+        final LibraryFunctionMapper mapper =
+                new LibraryFunctionMapper(ImmutableMap.of(key, TestLibraryFunctionMapper.class));
 
         final Method foundMe = mapper.resolveFunction(key, "findMe");
         assertNotNull(foundMe);

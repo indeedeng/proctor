@@ -12,13 +12,12 @@ import java.util.Map.Entry;
 
 /**
  * Represents the entirety of the test specification artifact as the consumers should consume it
+ *
  * @author ketan
  */
 public class TestMatrixArtifact {
-    @Nullable
-    private Audit audit;
-    @Nonnull
-    private Map<String, ConsumableTestDefinition> tests = new HashMap<>();
+    @Nullable private Audit audit;
+    @Nonnull private Map<String, ConsumableTestDefinition> tests = new HashMap<>();
 
     @Nullable
     public Audit getAudit() {
@@ -30,7 +29,8 @@ public class TestMatrixArtifact {
     }
 
     /* TODO: move somewhere better */
-    public static Map<String, Object> collectionsToSets(@Nonnull final Map<String, Object> inputMap) {
+    public static Map<String, Object> collectionsToSets(
+            @Nonnull final Map<String, Object> inputMap) {
         final Map<String, Object> newMap = Maps.newHashMap();
         for (final Entry<String, Object> entry : inputMap.entrySet()) {
             final String key = entry.getKey();
@@ -46,8 +46,10 @@ public class TestMatrixArtifact {
 
     @Nonnull
     public Map<String, ConsumableTestDefinition> getTests() {
-        // If setTests was called, return the mutable copy of the map because verification-and-consolidation rewrites it.
-        // That should probably change to returning a modified clone as long as this class needs to remain public.
+        // If setTests was called, return the mutable copy of the map because
+        // verification-and-consolidation rewrites it.
+        // That should probably change to returning a modified clone as long as this class needs to
+        // remain public.
         // Else immutable emptyMap is called.
         return tests;
     }

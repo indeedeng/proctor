@@ -25,24 +25,22 @@ import java.util.Map;
 import static java.util.stream.Collectors.joining;
 
 /**
- * Embodies the logic for a single test, including applicability rule and distribution.  {@link #choose(String, Map)} is the only useful entry point.
+ * Embodies the logic for a single test, including applicability rule and distribution. {@link
+ * #choose(String, Map)} is the only useful entry point.
+ *
  * @author ketan
  */
 @VisibleForTesting
 class StandardTestChooser implements TestChooser<String> {
-    @Nonnull
-    private final TestRangeSelector testRangeSelector;
-    @Nonnull
-    private final Hasher hasher;
-    @Nonnull
-    private final int[][] cutoffs;
+    @Nonnull private final TestRangeSelector testRangeSelector;
+    @Nonnull private final Hasher hasher;
+    @Nonnull private final int[][] cutoffs;
 
     public StandardTestChooser(
             @Nonnull final ExpressionFactory expressionFactory,
             @Nonnull final FunctionMapper functionMapper,
             @Nonnull final String testName,
-            @Nonnull final ConsumableTestDefinition testDefinition
-    ) {
+            @Nonnull final ConsumableTestDefinition testDefinition) {
         this(new TestRangeSelector(expressionFactory, functionMapper, testName, testDefinition));
     }
 
@@ -69,9 +67,7 @@ class StandardTestChooser implements TestChooser<String> {
 
     @Nonnull
     private static int[] constructCutoffArray(
-            @Nullable final String rule,
-            @Nonnull final List<Range> ranges
-    ) {
+            @Nullable final String rule, @Nonnull final List<Range> ranges) {
         final int[] cutoffs = new int[ranges.size() - 1];
 
         double bucketTotal = 0;
@@ -83,12 +79,19 @@ class StandardTestChooser implements TestChooser<String> {
         }
 
         //  I hate floating points.  TODO: extract a required precision constant/parameter?
-        if (bucketTotal < 0.9999 || bucketTotal > 1.0001) { //  compensate for FP imprecision.  TODO: determine what these bounds really should be by testing stuff
+        if (bucketTotal < 0.9999
+                || bucketTotal
+                        > 1.0001) { //  compensate for FP imprecision.  TODO: determine what these
+            // bounds really should be by testing stuff
             throw new IllegalArgumentException(
-                    "Buckets with rule " + rule + " don't add up to 1: "
-                            + ranges.stream().map(r -> Double.toString(r.getLength())).collect(joining(" + "))
-                            + " = " + bucketTotal
-            );
+                    "Buckets with rule "
+                            + rule
+                            + " don't add up to 1: "
+                            + ranges.stream()
+                                    .map(r -> Double.toString(r.getLength()))
+                                    .collect(joining(" + "))
+                            + " = "
+                            + bucketTotal);
         }
         return cutoffs;
     }
@@ -98,11 +101,14 @@ class StandardTestChooser implements TestChooser<String> {
 
         @Nonnull final Hasher result;
         // The standard naming convention is to let the test salt be == the test name
-        //  The '&' salt-prefix character is used (TEMPORARILY!) as a special flag indicated that the test name
-        //  should not be a parameter to the hashing function, thus allowing multiple tests to be 'linked'
+        //  The '&' salt-prefix character is used (TEMPORARILY!) as a special flag indicated that
+        // the test name
+        //  should not be a parameter to the hashing function, thus allowing multiple tests to be
+        // 'linked'
         //  through sharing the same prefixed test salt.
         //
-        // TODO This test should be replaced with a definitionVersion test once all proctor-consumer applications
+        // TODO This test should be replaced with a definitionVersion test once all proctor-consumer
+        // applications
         //  have been updated to use a lenient parser and we can safely add to the schema.
         //
         if (salt.startsWith("&")) {
@@ -128,22 +134,26 @@ class StandardTestChooser implements TestChooser<String> {
             return Result.EMPTY;
         }
 
-        final Allocation matchingAllocation = testRangeSelector.getTestDefinition().getAllocations().get(matchingRuleIndex);
+        final Allocation matchingAllocation =
+                testRangeSelector.getTestDefinition().getAllocations().get(matchingRuleIndex);
 
         return new Result(
                 chooseBucket(
                         cutoffs[matchingRuleIndex],
                         testRangeSelector.getBucketRange(matchingRuleIndex),
-                        Preconditions.checkNotNull(identifier, "Missing identifier")
-                ),
-                matchingAllocation
-        );
+                        Preconditions.checkNotNull(identifier, "Missing identifier")),
+                matchingAllocation);
     }
 
-    private TestBucket chooseBucket(@Nonnull final int[] matchingCutoffs, final TestBucket[] matchingBucketRange, @Nonnull final String identifier) {
+    private TestBucket chooseBucket(
+            @Nonnull final int[] matchingCutoffs,
+            final TestBucket[] matchingBucketRange,
+            @Nonnull final String identifier) {
         final int value = hasher.hash(identifier);
         int i;
-        for (i = 0; i < matchingCutoffs.length && value > matchingCutoffs[i]; i++) { /* intentionally empty */ }
+        for (i = 0; i < matchingCutoffs.length && value > matchingCutoffs[i]; i++) {
+            /* intentionally empty */
+        }
         return matchingBucketRange[i];
     }
 
@@ -193,16 +203,12 @@ class StandardTestChooser implements TestChooser<String> {
         return testRangeSelector.getTestName();
     }
 
-    /**
-     * @author matts
-     */
+    /** @author matts */
     private interface Hasher {
         int hash(@Nonnull String identifier);
     }
 
-    /**
-     * @author matts
-     */
+    /** @author matts */
     private abstract static class AbstractMD5Hasher implements Hasher {
         private final byte[] bytes;
 
@@ -223,11 +229,13 @@ class StandardTestChooser implements TestChooser<String> {
         }
 
         private static int convertToInt(final byte[] digest) {
-            final int offset = 12;  //  arbitrary choice; changing this would reshuffle all groups just like changing the salt
-            return (0xff & digest[offset+0]) << 24 |
-                    (0xff & digest[offset+1]) << 16 |
-                    (0xff & digest[offset+2]) << 8 |
-                    (0xff & digest[offset+3]);
+            final int offset =
+                    12; //  arbitrary choice; changing this would reshuffle all groups just like
+            // changing the salt
+            return (0xff & digest[offset + 0]) << 24
+                    | (0xff & digest[offset + 1]) << 16
+                    | (0xff & digest[offset + 2]) << 8
+                    | (0xff & digest[offset + 3]);
         }
     }
 
@@ -245,7 +253,8 @@ class StandardTestChooser implements TestChooser<String> {
         }
     }
 
-    // Modern salting technique, allowing multiple tests to be 'linked' through use of identical hashes
+    // Modern salting technique, allowing multiple tests to be 'linked' through use of identical
+    // hashes
     private static class TestSaltHasher extends AbstractMD5Hasher {
         private TestSaltHasher(@Nonnull final TestRangeSelector selector) {
             super(extractSalt(selector));

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta http-equiv="x-ua-compatible" content="IE=edge"/>
+<title>Test results - Class com.indeed.proctor.webapp.controllers.TestTestMatrixApiController</title>
+<link href="../css/base-style.css" rel="stylesheet" type="text/css"/>
+<link href="../css/style.css" rel="stylesheet" type="text/css"/>
+<script src="../js/report.js" type="text/javascript"></script>
+</head>
+<body>
+<div id="content">
+<h1>Class com.indeed.proctor.webapp.controllers.TestTestMatrixApiController</h1>
+<div class="breadcrumbs">
+<a href="../index.html">all</a> &gt; 
+<a href="../packages/com.indeed.proctor.webapp.controllers.html">com.indeed.proctor.webapp.controllers</a> &gt; TestTestMatrixApiController</div>
+<div id="summary">
+<table>
+<tr>
+<td>
+<div class="summaryGroup">
+<table>
+<tr>
+<td>
+<div class="infoBox" id="tests">
+<div class="counter">16</div>
+<p>tests</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="failures">
+<div class="counter">0</div>
+<p>failures</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="ignored">
+<div class="counter">0</div>
+<p>ignored</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="duration">
+<div class="counter">0.087s</div>
+<p>duration</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</td>
+<td>
+<div class="infoBox success" id="successRate">
+<div class="percent">100%</div>
+<p>successful</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div id="tabs">
+<ul class="tabLinks">
+<li>
+<a href="#tab0">Tests</a>
+</li>
+<li>
+<a href="#tab1">Standard output</a>
+</li>
+</ul>
+<div id="tab0" class="tab">
+<h2>Tests</h2>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Duration</th>
+<th>Result</th>
+</tr>
+</thead>
+<tr>
+<td class="success">testGetRevisionDetails</td>
+<td class="success">0.002s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">testGetRevisionDetailsThrowsNotFoundException</td>
+<td class="success">0.003s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">testGetTestDefinitionForBranch</td>
+<td class="success">0.001s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">testGetTestDefinitionForRevision</td>
+<td class="success">0.002s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">testGetTestDefinitionHistoryForBranch</td>
+<td class="success">0.001s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">testGetTestDefinitionHistoryForBranchAndRevision</td>
+<td class="success">0.002s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">testGetTestDefinitionHistoryForRevision</td>
+<td class="success">0.029s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">testGetTestDefinitionHistoryNotFound</td>
+<td class="success">0s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">testGetTestDefinitionNotFound</td>
+<td class="success">0.007s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">testGetTestHistories</td>
+<td class="success">0.005s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">testGetTestHistoriesThrowsNotFoundException</td>
+<td class="success">0s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">testGetTestMatrixForBranch</td>
+<td class="success">0s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">testGetTestMatrixForRevision</td>
+<td class="success">0.033s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">testGetTestMatrixHistoryForBranchEmpty</td>
+<td class="success">0.001s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">testGetTestMatrixHistoryForRevisionEmpty</td>
+<td class="success">0s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">testGetTestMatrixNotFound</td>
+<td class="success">0.001s</td>
+<td class="success">passed</td>
+</tr>
+</table>
+</div>
+<div id="tab1" class="tab">
+<h2>Standard output</h2>
+<span class="code">
+<pre>INFO  [Test worker][2023-05-01T15:04:52,063] [com.indeed.proctor.webapp.util.TestDefinitionUtil.getTestDefinition] - Failed to get current test definition for: fooTest: Unknown revision 3
+INFO  [Test worker][2023-05-01T15:04:52,065] [com.indeed.proctor.webapp.util.TestDefinitionUtil.getTestDefinition] - Failed to get current test definition for: fooTest: Unknown revision 3
+INFO  [Test worker][2023-05-01T15:04:52,094] [com.indeed.proctor.webapp.controllers.AbstractController$RevisionRef.queryTestMatrixVersion] - Failed to find revision 3 in InMemoryProctorStore
+INFO  [Test worker][2023-05-01T15:04:52,095] [com.indeed.proctor.webapp.controllers.AbstractController$RevisionRef.queryTestMatrixVersion] - Failed to find revision 3 in InMemoryProctorStore
+INFO  [Test worker][2023-05-01T15:04:52,126] [com.indeed.proctor.webapp.controllers.AbstractController$RevisionRef.queryTestMatrixVersion] - Failed to find revision 4 in InMemoryProctorStore
+INFO  [Test worker][2023-05-01T15:04:52,131] [com.indeed.proctor.webapp.controllers.AbstractController$RevisionRef.queryTestDefinitionHistory] - Can not find revision 3 in any of stores
+INFO  [Test worker][2023-05-01T15:04:52,140] [com.indeed.proctor.webapp.controllers.AbstractController$RevisionRef.queryTestMatrixVersion] - Failed to find revision 1234 in InMemoryProctorStore
+INFO  [Test worker][2023-05-01T15:04:52,140] [com.indeed.proctor.webapp.controllers.AbstractController$RevisionRef.queryTestMatrixVersion] - Failed to find revision 1234 in InMemoryProctorStore
+INFO  [Test worker][2023-05-01T15:04:52,140] [com.indeed.proctor.webapp.controllers.AbstractController$RevisionRef.queryTestMatrixVersion] - Failed to find revision 1234 in InMemoryProctorStore
+INFO  [Test worker][2023-05-01T15:04:52,142] [com.indeed.proctor.webapp.util.TestDefinitionUtil.getTestDefinition] - Failed to get current test definition for: dummyTest: Unknown revision 3
+INFO  [Test worker][2023-05-01T15:04:52,142] [com.indeed.proctor.webapp.util.TestDefinitionUtil.getTestDefinition] - Failed to get current test definition for: dummyTest: Unknown revision 3
+INFO  [Test worker][2023-05-01T15:04:52,143] [com.indeed.proctor.webapp.util.TestDefinitionUtil.getTestDefinition] - Failed to get current test definition for: dummyTest: Unknown revision 4
+</pre>
+</span>
+</div>
+</div>
+<div id="footer">
+<p>
+<div>
+<label class="hidden" id="label-for-line-wrapping-toggle" for="line-wrapping-toggle">Wrap lines
+<input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
+</label>
+</div>Generated by 
+<a href="http://www.gradle.org">Gradle 8.1.1</a> at May 1, 2023, 3:04:52 PM</p>
+</div>
+</div>
+</body>
+</html>

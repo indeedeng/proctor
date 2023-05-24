@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.indeed.proctor.webapp.jobs.AutoPromoterTest$TestAutoPromoterInstanceMethod" tests="9" skipped="0" failures="0" errors="0" timestamp="2023-05-01T19:04:53" hostname="IT-USA-VY0740" time="0.083">
+  <properties/>
+  <testcase name="testDoPromoteTestToEnvFailToPromoteToUnknownRevision" classname="com.indeed.proctor.webapp.jobs.AutoPromoterTest$TestAutoPromoterInstanceMethod" time="0.061"/>
+  <testcase name="testDoPromoteNewlyCreatedInactiveTestToQaAndProd" classname="com.indeed.proctor.webapp.jobs.AutoPromoterTest$TestAutoPromoterInstanceMethod" time="0.004"/>
+  <testcase name="testDoPromoteTestToEnvironmentWithoutIsAllocationOnlyChangeValidation" classname="com.indeed.proctor.webapp.jobs.AutoPromoterTest$TestAutoPromoterInstanceMethod" time="0.001"/>
+  <testcase name="testDoPromoteTestToEnvSuccess" classname="com.indeed.proctor.webapp.jobs.AutoPromoterTest$TestAutoPromoterInstanceMethod" time="0.003"/>
+  <testcase name="testMaybeAutoPromoteThrowsAutoPromoteException" classname="com.indeed.proctor.webapp.jobs.AutoPromoterTest$TestAutoPromoterInstanceMethod" time="0.001"/>
+  <testcase name="testDoPromoteTestToEnvFailToPromoteToTrunk" classname="com.indeed.proctor.webapp.jobs.AutoPromoterTest$TestAutoPromoterInstanceMethod" time="0.001"/>
+  <testcase name="testDoPromoteTestToQaAndProd" classname="com.indeed.proctor.webapp.jobs.AutoPromoterTest$TestAutoPromoterInstanceMethod" time="0.003"/>
+  <testcase name="testDoPromoteTestToEnvFailToPromoteNonAllocationChange" classname="com.indeed.proctor.webapp.jobs.AutoPromoterTest$TestAutoPromoterInstanceMethod" time="0.004"/>
+  <testcase name="testDoPromoteExistingTestToQaAndProd" classname="com.indeed.proctor.webapp.jobs.AutoPromoterTest$TestAutoPromoterInstanceMethod" time="0.004"/>
+  <system-out><![CDATA[INFO  [Test worker][2023-05-01T15:04:53,253] [com.indeed.proctor.webapp.util.TestDefinitionUtil.getMostRecentHistory] - No version history for [unit_tst]
+INFO  [Test worker][2023-05-01T15:04:53,253] [com.indeed.proctor.webapp.util.TestDefinitionUtil.getTestDefinition] - Ignore revision id -1
+INFO  [Test worker][2023-05-01T15:04:53,254] [com.indeed.proctor.webapp.util.TestDefinitionUtil.getMostRecentHistory] - No version history for [unit_tst]
+INFO  [Test worker][2023-05-01T15:04:53,254] [com.indeed.proctor.webapp.util.TestDefinitionUtil.getTestDefinition] - Ignore revision id -1
+INFO  [Test worker][2023-05-01T15:04:53,256] [com.indeed.proctor.webapp.util.TestDefinitionUtil.getMostRecentHistory] - No version history for [unit_tst]
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

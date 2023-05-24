@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.indeed.proctor.pipet.core.model.TestJsonResult" tests="1" skipped="0" failures="0" errors="0" timestamp="2023-05-01T19:04:43" hostname="IT-USA-VY0740" time="0.023">
+  <properties/>
+  <testcase name="testGenerateJsonBuckets" classname="com.indeed.proctor.pipet.core.model.TestJsonResult" time="0.023"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

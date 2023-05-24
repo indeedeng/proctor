@@ -37,13 +37,15 @@ public class LocalDirectoryStore extends FileBasedProctorStore {
 
     @Nonnull
     @Override
-    public List<Revision> getHistory(final String test, final int ignoredStart, final int limit) throws StoreException {
+    public List<Revision> getHistory(final String test, final int ignoredStart, final int limit)
+            throws StoreException {
         throw new UnsupportedOperationException("Not implemented yet");
     }
 
     @Nonnull
     @Override
-    public List<Revision> getHistory(String test, String revision, int start, int limit) throws StoreException {
+    public List<Revision> getHistory(String test, String revision, int start, int limit)
+            throws StoreException {
         throw new UnsupportedOperationException("Not implemented yet");
     }
 
@@ -55,13 +57,16 @@ public class LocalDirectoryStore extends FileBasedProctorStore {
 
     @Nonnull
     @Override
-    public List<TestEdit> getTestEdits(final String testName, final int start, final int limit) throws StoreException {
+    public List<TestEdit> getTestEdits(final String testName, final int start, final int limit)
+            throws StoreException {
         throw new UnsupportedOperationException("Not implemented yet");
     }
 
     @Nonnull
     @Override
-    public List<TestEdit> getTestEdits(final String testName, final String revision, final int start, final int limit) throws StoreException {
+    public List<TestEdit> getTestEdits(
+            final String testName, final String revision, final int start, final int limit)
+            throws StoreException {
         throw new UnsupportedOperationException("Not implemented yet");
     }
 
@@ -73,7 +78,8 @@ public class LocalDirectoryStore extends FileBasedProctorStore {
 
     @Nonnull
     @Override
-    public List<Revision> getMatrixHistory(final Instant sinceInclusive, final Instant untilExclusive) throws StoreException {
+    public List<Revision> getMatrixHistory(
+            final Instant sinceInclusive, final Instant untilExclusive) throws StoreException {
         throw new UnsupportedOperationException("Not implemented yet");
     }
 
@@ -91,7 +97,8 @@ public class LocalDirectoryStore extends FileBasedProctorStore {
     @Override
     public void verifySetup() throws StoreException {
         if (!this.baseDir.isDirectory()) {
-            throw new RuntimeException("Base dir (" + this.baseDir.getPath() + ") is not a directory.");
+            throw new RuntimeException(
+                    "Base dir (" + this.baseDir.getPath() + ") is not a directory.");
         }
         if (!this.baseDir.canRead()) {
             throw new RuntimeException("Cannot read from " + this.baseDir.getPath());

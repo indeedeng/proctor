@@ -36,6 +36,13 @@ $ rake clean serve
   => open http://localhost:4000/ in browser
 ```
 
+# Building
+
+```bash
+$ ./gradlew build
+$ ./gradlew test
+```
+
 # Discussion
 
 Use the [indeedeng-proctor-users](https://groups.google.com/d/forum/indeedeng-proctor-users) Q&A forum to ask and answer questions about the use of Proctor.

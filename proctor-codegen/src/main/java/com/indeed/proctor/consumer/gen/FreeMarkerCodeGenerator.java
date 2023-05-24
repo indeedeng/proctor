@@ -24,8 +24,7 @@ public abstract class FreeMarkerCodeGenerator {
             ProctorSpecification specification,
             Map<String, Object> baseContext,
             String packageName,
-            String className
-    );
+            String className);
 
     public static String toJavaIdentifier(final String s) {
         final StringBuilder sb = new StringBuilder();
@@ -94,39 +93,46 @@ public abstract class FreeMarkerCodeGenerator {
             final String className,
             final String templatePath,
             final String templateName,
-            final String fileExtension
-    ) throws CodeGenException {
+            final String fileExtension)
+            throws CodeGenException {
         final Configuration config = getFreemarkerConfiguration(templatePath);
 
         final Template template = loadTemplate(templateName, templatePath, config);
-        final File fullPath = new File(target + File.separator + packageToPath(packageName) + File.separator + className + fileExtension);
+        final File fullPath =
+                new File(
+                        target
+                                + File.separator
+                                + packageToPath(packageName)
+                                + File.separator
+                                + className
+                                + fileExtension);
         try {
             fullPath.getParentFile().mkdirs();
             final PrintWriter out = new PrintWriter(fullPath);
 
-            final Map<String, Object> rootMap = populateRootMap(specification, baseContext, packageName, className);
+            final Map<String, Object> rootMap =
+                    populateRootMap(specification, baseContext, packageName, className);
 
             final TemplateModel model = new SimpleHash(rootMap);
 
             template.process(model, out);
             out.close();
         } catch (final TemplateException e) {
-            throw new RuntimeException("Unable to run template " + templateName + " to: " + fullPath, e);
+            throw new RuntimeException(
+                    "Unable to run template " + templateName + " to: " + fullPath, e);
         } catch (final IOException e) {
             throw new RuntimeException("Unable to write to target file: " + fullPath, e);
         }
     }
 
     public static Template loadTemplate(
-            final String templateName,
-            final String templatePath,
-            final Configuration config
-    ) throws CodeGenException {
+            final String templateName, final String templatePath, final Configuration config)
+            throws CodeGenException {
         try {
             return config.getTemplate(templateName);
         } catch (final IOException e) {
-            throw new CodeGenException("Unable to load template " + templateName + " from " + templatePath, e);
+            throw new CodeGenException(
+                    "Unable to load template " + templateName + " from " + templatePath, e);
         }
     }
-
 }

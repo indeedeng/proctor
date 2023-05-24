@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.indeed.proctor.pipet.core.var.TestConverter" tests="5" skipped="0" failures="0" errors="0" timestamp="2023-05-01T19:04:43" hostname="IT-USA-VY0740" time="0.173">
+  <properties/>
+  <testcase name="testConvertContextVariables" classname="com.indeed.proctor.pipet.core.var.TestConverter" time="0.172"/>
+  <testcase name="testConvertForceGroups" classname="com.indeed.proctor.pipet.core.var.TestConverter" time="0.001"/>
+  <testcase name="testConvertContextVariables_MissingVariable" classname="com.indeed.proctor.pipet.core.var.TestConverter" time="0.0"/>
+  <testcase name="testConvertContextVariables_ConversionError" classname="com.indeed.proctor.pipet.core.var.TestConverter" time="0.0"/>
+  <testcase name="testConvertIdentifiers" classname="com.indeed.proctor.pipet.core.var.TestConverter" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

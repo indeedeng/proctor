@@ -22,11 +22,12 @@ public class RuleVerifyUtils {
 
     private static final Logger LOGGER = LogManager.getLogger(RuleVerifyUtils.class);
 
-    private RuleVerifyUtils() {
-    }
+    private RuleVerifyUtils() {}
 
     /**
-     * verifies EL syntax is correct, whether all identifiers are present in context, and whether it will evaluate to boolean
+     * verifies EL syntax is correct, whether all identifiers are present in context, and whether it
+     * will evaluate to boolean
+     *
      * @param shouldEvaluate if false, only checks syntax is correct
      */
     public static void verifyRule(
@@ -34,17 +35,22 @@ public class RuleVerifyUtils {
             final boolean shouldEvaluate,
             final ExpressionFactory expressionFactory,
             final ELContext elContext,
-            final Set<String> absentIdentifiers
-    ) throws InvalidRuleException {
+            final Set<String> absentIdentifiers)
+            throws InvalidRuleException {
         final String bareRule = removeElExpressionBraces(testRule);
         if (!StringUtils.isBlank(bareRule)) {
             final ValueExpression valueExpression;
             try {
-                valueExpression = expressionFactory.createValueExpression(elContext, testRule, Boolean.class);
+                valueExpression =
+                        expressionFactory.createValueExpression(elContext, testRule, Boolean.class);
             } catch (final ELException e) {
-                throw new InvalidRuleException(e, String.format("Unable to evaluate rule %s due to a syntax error. " +
-                        "Check that your rule is in the correct format and returns a boolean. For more information " +
-                        "read: https://opensource.indeedeng.io/proctor/docs/test-rules/.", testRule));
+                throw new InvalidRuleException(
+                        e,
+                        String.format(
+                                "Unable to evaluate rule %s due to a syntax error. "
+                                        + "Check that your rule is in the correct format and returns a boolean. For more information "
+                                        + "read: https://opensource.indeedeng.io/proctor/docs/test-rules/.",
+                                testRule));
             }
 
             if (shouldEvaluate) {
@@ -60,18 +66,26 @@ public class RuleVerifyUtils {
                 try {
                     root = ExpressionBuilder.createNode(testRule);
                 } catch (final ELException e) {
-                    throw new InvalidRuleException(e, String.format("Unable to evaluate rule %s due to a syntax error. " +
-                            "Check that your rule is in the correct format and returns a boolean. For more information " +
-                            "read: https://opensource.indeedeng.io/proctor/docs/test-rules/.", testRule));
+                    throw new InvalidRuleException(
+                            e,
+                            String.format(
+                                    "Unable to evaluate rule %s due to a syntax error. "
+                                            + "Check that your rule is in the correct format and returns a boolean. For more information "
+                                            + "read: https://opensource.indeedeng.io/proctor/docs/test-rules/.",
+                                    testRule));
                 }
 
                 // Check identifiers in the AST and verify variable names
-                final Node undefinedIdentifier = checkUndefinedIdentifier(root, elContext, absentIdentifiers);
+                final Node undefinedIdentifier =
+                        checkUndefinedIdentifier(root, elContext, absentIdentifiers);
                 if (undefinedIdentifier != null) {
-                    throw new InvalidRuleException(String.format("The variable %s is defined in rule %s, however it " +
-                            "is not defined in the application's test specification. Add the variable to your application's " +
-                            "providedContext.json or remove it from the rule, or if the application should not load your " +
-                            "test report the issue to the Proctor team.", undefinedIdentifier.getImage(), testRule));
+                    throw new InvalidRuleException(
+                            String.format(
+                                    "The variable %s is defined in rule %s, however it "
+                                            + "is not defined in the application's test specification. Add the variable to your application's "
+                                            + "providedContext.json or remove it from the rule, or if the application should not load your "
+                                            + "test report the issue to the Proctor team.",
+                                    undefinedIdentifier.getImage(), testRule));
                 }
 
                 // Evaluate rule with given context
@@ -79,17 +93,28 @@ public class RuleVerifyUtils {
                     try {
                         checkRuleIsBooleanType(testRule, elContext, valueExpression);
                     } catch (final IllegalArgumentException e) {
-                        throw new InvalidRuleException(e, String.format("Unable to evaluate rule %s due to a syntax error. " +
-                                "Check that your rule is in the correct format and returns a boolean. For more information " +
-                                "read: https://opensource.indeedeng.io/proctor/docs/test-rules/.", testRule));
+                        throw new InvalidRuleException(
+                                e,
+                                String.format(
+                                        "Unable to evaluate rule %s due to a syntax error. "
+                                                + "Check that your rule is in the correct format and returns a boolean. For more information "
+                                                + "read: https://opensource.indeedeng.io/proctor/docs/test-rules/.",
+                                        testRule));
                     }
 
                     valueExpression.getValue(elContext);
                 } catch (final ELException e) {
                     if (isIgnorable(root, absentIdentifiers)) {
-                        LOGGER.debug(String.format("Rule %s contains uninstantiated identifier(s) in %s, ignoring the failure", testRule, absentIdentifiers));
+                        LOGGER.debug(
+                                String.format(
+                                        "Rule %s contains uninstantiated identifier(s) in %s, ignoring the failure",
+                                        testRule, absentIdentifiers));
                     } else {
-                        throw new InvalidRuleException(e, String.format("Failed to evaluate a rule %s: " + e.getMessage(), testRule));
+                        throw new InvalidRuleException(
+                                e,
+                                String.format(
+                                        "Failed to evaluate a rule %s: " + e.getMessage(),
+                                        testRule));
                     }
                 }
             }
@@ -108,7 +133,8 @@ public class RuleVerifyUtils {
         return false;
     }
 
-    private static Node checkUndefinedIdentifier(final Node node, final ELContext elContext, final Set<String> absentIdentifiers) {
+    private static Node checkUndefinedIdentifier(
+            final Node node, final ELContext elContext, final Set<String> absentIdentifiers) {
         if (node instanceof AstIdentifier) {
             final String name = node.getImage();
             final boolean hasVariable = elContext.getVariableMapper().resolveVariable(name) != null;
@@ -117,7 +143,8 @@ public class RuleVerifyUtils {
             }
         } else {
             for (int i = 0; i < node.jjtGetNumChildren(); i++) {
-                final Node result = checkUndefinedIdentifier(node.jjtGetChild(i), elContext, absentIdentifiers);
+                final Node result =
+                        checkUndefinedIdentifier(node.jjtGetChild(i), elContext, absentIdentifiers);
                 if (result != null) {
                     return result;
                 }

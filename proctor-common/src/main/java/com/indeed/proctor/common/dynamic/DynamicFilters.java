@@ -22,17 +22,17 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Immutable collection of dynamic filters which is defined in ProctorSpecification and consumed in AbstractProctorLoader
+ * Immutable collection of dynamic filters which is defined in ProctorSpecification and consumed in
+ * AbstractProctorLoader
  */
 public class DynamicFilters implements JsonSerializable {
-    private static final List<Class<? extends DynamicFilter>> FILTER_TYPES = Collections.synchronizedList(
-            Lists.newArrayList(
-                    TestNamePrefixFilter.class,
-                    TestNamePatternFilter.class,
-                    MetaTagsFilter.class,
-                    MatchAllFilter.class
-            )
-    );
+    private static final List<Class<? extends DynamicFilter>> FILTER_TYPES =
+            Collections.synchronizedList(
+                    Lists.newArrayList(
+                            TestNamePrefixFilter.class,
+                            TestNamePatternFilter.class,
+                            MetaTagsFilter.class,
+                            MatchAllFilter.class));
 
     private final List<DynamicFilter> filters;
 
@@ -45,29 +45,22 @@ public class DynamicFilters implements JsonSerializable {
         this.filters = ImmutableList.copyOf(filters);
     }
 
-    /**
-     * Register custom filter types especially for serializer of specification json file
-     */
+    /** Register custom filter types especially for serializer of specification json file */
     @SafeVarargs
     public static void registerFilterTypes(final Class<? extends DynamicFilter>... types) {
         FILTER_TYPES.addAll(Arrays.asList(types));
     }
 
-    /**
-     * Get filter types especially for Jackson's serializer to call registerSubTypes
-     */
+    /** Get filter types especially for Jackson's serializer to call registerSubTypes */
     @SuppressWarnings("unchecked")
     public static Class<? extends DynamicFilter>[] getFilterTypes() {
         return (Class<? extends DynamicFilter>[]) FILTER_TYPES.toArray(new Class<?>[0]);
     }
 
-    /**
-     * Determine tests which should be dynamically resolved in proctor loader
-     */
+    /** Determine tests which should be dynamically resolved in proctor loader */
     public Set<String> determineTests(
             final Map<String, ConsumableTestDefinition> definedTests,
-            final Set<String> requiredTests
-    ) {
+            final Set<String> requiredTests) {
         return definedTests.entrySet().stream()
                 // Skip if testDefinition is null
                 .filter(entry -> entry.getValue() != null)
@@ -80,17 +73,11 @@ public class DynamicFilters implements JsonSerializable {
     }
 
     public final boolean matches(
-            @Nullable final String testName,
-            final ConsumableTestDefinition testDefinition
-    ) {
-        return filters.stream().anyMatch(
-                filter -> filter.matches(testName, testDefinition)
-        );
+            @Nullable final String testName, final ConsumableTestDefinition testDefinition) {
+        return filters.stream().anyMatch(filter -> filter.matches(testName, testDefinition));
     }
 
-    /**
-     * @return unmodifiable view of underlying dynamic filters
-     */
+    /** @return unmodifiable view of underlying dynamic filters */
     public Collection<DynamicFilter> asCollection() {
         return Collections.unmodifiableCollection(filters);
     }
@@ -113,14 +100,21 @@ public class DynamicFilters implements JsonSerializable {
     }
 
     @Override
-    public void serialize(final JsonGenerator gen, final SerializerProvider serializers) throws IOException {
-        final JsonSerializer<Object> serializer = serializers.findValueSerializer(DynamicFilter[].class);
+    public void serialize(final JsonGenerator gen, final SerializerProvider serializers)
+            throws IOException {
+        final JsonSerializer<Object> serializer =
+                serializers.findValueSerializer(DynamicFilter[].class);
         serializer.serialize(filters.toArray(), gen, serializers);
     }
 
     @Override
-    public void serializeWithType(final JsonGenerator gen, final SerializerProvider serializers, final TypeSerializer typeSer) throws IOException {
-        final JsonSerializer<Object> serializer = serializers.findValueSerializer(DynamicFilter[].class);
+    public void serializeWithType(
+            final JsonGenerator gen,
+            final SerializerProvider serializers,
+            final TypeSerializer typeSer)
+            throws IOException {
+        final JsonSerializer<Object> serializer =
+                serializers.findValueSerializer(DynamicFilter[].class);
         serializer.serializeWithType(filters.toArray(), gen, serializers, typeSer);
     }
 }

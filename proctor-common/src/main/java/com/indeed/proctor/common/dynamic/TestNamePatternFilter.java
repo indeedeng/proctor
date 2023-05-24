@@ -12,6 +12,7 @@ import java.util.regex.PatternSyntaxException;
 
 /**
  * A dynamic filter that matches test name using regular expression
+ *
  * @deprecated Use {@link MetaTagsFilter}
  */
 @Deprecated
@@ -29,7 +30,8 @@ public class TestNamePatternFilter implements DynamicFilter {
         try {
             this.pattern = Pattern.compile(regex);
         } catch (final PatternSyntaxException e) {
-            throw new IllegalArgumentException("the regular expression for test name pattern has syntax error.", e);
+            throw new IllegalArgumentException(
+                    "the regular expression for test name pattern has syntax error.", e);
         }
     }
 
@@ -42,7 +44,8 @@ public class TestNamePatternFilter implements DynamicFilter {
      * @return true if the testname matches the pattern
      */
     @Override
-    public boolean matches(@Nullable final String testName, final ConsumableTestDefinition testDefinition) {
+    public boolean matches(
+            @Nullable final String testName, final ConsumableTestDefinition testDefinition) {
         return !Strings.isNullOrEmpty(testName) && pattern.matcher(testName).matches();
     }
 

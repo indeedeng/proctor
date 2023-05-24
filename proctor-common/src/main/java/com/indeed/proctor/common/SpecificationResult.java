@@ -3,12 +3,9 @@ package com.indeed.proctor.common;
 import javax.annotation.Nullable;
 
 public class SpecificationResult {
-    @Nullable
-    private ProctorSpecification specification;
-    @Nullable
-    private String error;
-    @Nullable
-    private String exception;
+    @Nullable private ProctorSpecification specification;
+    @Nullable private String error;
+    @Nullable private String exception;
 
     @Nullable
     public ProctorSpecification getSpecification() {

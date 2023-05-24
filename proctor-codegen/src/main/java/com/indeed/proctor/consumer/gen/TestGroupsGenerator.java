@@ -30,9 +30,9 @@ import java.util.TreeSet;
 /**
  * Handles combining multiple proctor specs into one and building a root map for generating a
  * Proctor test groups file.
- * <p>
- * Note: heavily based off of the original TestGroupsJavaGenerator. populateRootMap
- * may still have some code only needed for Java.
+ *
+ * <p>Note: heavily based off of the original TestGroupsJavaGenerator. populateRootMap may still
+ * have some code only needed for Java.
  *
  * @author andrewk
  */
@@ -44,38 +44,37 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
     public static final String DYNAMIC_FILTERS_FILENAME = "dynamicfilters.json";
 
     /**
-     * If a folder of split jsons defining a proctor specification is provided, this method iterates over the folder
-     * contents, using the individual TestDefinition jsons and a providedcontext.json and dynamicfilters.json to create one large
-     * temporary ProctorSpecification json to be used for code generation
+     * If a folder of split jsons defining a proctor specification is provided, this method iterates
+     * over the folder contents, using the individual TestDefinition jsons and a
+     * providedcontext.json and dynamicfilters.json to create one large temporary
+     * ProctorSpecification json to be used for code generation
      */
     public static ProctorSpecification makeTotalSpecification(
-            final File inputDir,
-            final String targetDir
-    ) throws CodeGenException {
-        //If no name is provided use the name of the containing folder
-        return makeTotalSpecification(inputDir, targetDir, inputDir.getPath().substring(inputDir.getPath().lastIndexOf(File.separator) + 1) + "Groups.json");
+            final File inputDir, final String targetDir) throws CodeGenException {
+        // If no name is provided use the name of the containing folder
+        return makeTotalSpecification(
+                inputDir,
+                targetDir,
+                inputDir.getPath().substring(inputDir.getPath().lastIndexOf(File.separator) + 1)
+                        + "Groups.json");
     }
 
     public static ProctorSpecification makeTotalSpecification(
-            final File inputDir,
-            final String targetDir,
-            final String outputFileName
-    ) throws CodeGenException {
+            final File inputDir, final String targetDir, final String outputFileName)
+            throws CodeGenException {
         final File[] dirFiles = inputDir.listFiles();
         return makeTotalSpecification(Arrays.asList(dirFiles), targetDir, outputFileName);
     }
 
     /**
-     * Combines all input files into a total proctor specification
-     * and writes it to a file of the path `targetDir`/`outputFileName`.
+     * Combines all input files into a total proctor specification and writes it to a file of the
+     * path `targetDir`/`outputFileName`.
      *
      * @return combined total proctor specification
      */
     public static ProctorSpecification makeTotalSpecification(
-            final List<File> inputFiles,
-            final String targetDir,
-            final String outputFileName
-    ) throws CodeGenException {
+            final List<File> inputFiles, final String targetDir, final String outputFileName)
+            throws CodeGenException {
         final List<File> providedContextFiles = new ArrayList<>();
         final List<File> dynamicFiltersFiles = new ArrayList<>();
         for (final File file : inputFiles) {
@@ -88,15 +87,23 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
 
         if (providedContextFiles.size() != 1) {
             throw new CodeGenException(
-                    "Incorrect amount of " + PROVIDED_CONTEXT_FILENAME + " in specified input folder."
-                            + " expected 1 but " + providedContextFiles.size() + ": " + providedContextFiles
-            );
+                    "Incorrect amount of "
+                            + PROVIDED_CONTEXT_FILENAME
+                            + " in specified input folder."
+                            + " expected 1 but "
+                            + providedContextFiles.size()
+                            + ": "
+                            + providedContextFiles);
         }
         if (dynamicFiltersFiles.size() > 1) {
             throw new CodeGenException(
-                    "Incorrect amount of " + DYNAMIC_FILTERS_FILENAME + " in specified input folder."
-                            + " expected 0 or 1 but " + dynamicFiltersFiles.size() + ": " + dynamicFiltersFiles
-            );
+                    "Incorrect amount of "
+                            + DYNAMIC_FILTERS_FILENAME
+                            + " in specified input folder."
+                            + " expected 0 or 1 but "
+                            + dynamicFiltersFiles.size()
+                            + ": "
+                            + dynamicFiltersFiles);
         }
 
         final Map<String, TestSpecification> testSpec = new LinkedHashMap<>();
@@ -108,33 +115,48 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
                 try {
                     providedContext = OBJECT_MAPPER.readValue(file, Map.class);
                 } catch (final IOException e) {
-                    throw new CodeGenException("Could not read json correctly " + file.getAbsolutePath() + " for provided context", e);
+                    throw new CodeGenException(
+                            "Could not read json correctly "
+                                    + file.getAbsolutePath()
+                                    + " for provided context",
+                            e);
                 }
             } else if (fileName.equals(DYNAMIC_FILTERS_FILENAME)) {
                 try {
                     dynamicFilters = OBJECT_MAPPER.readValue(file, DynamicFilters.class);
                 } catch (final IOException e) {
-                    throw new CodeGenException("Could not read json correctly " + file.getAbsolutePath() + " for dynamic filters", e);
+                    throw new CodeGenException(
+                            "Could not read json correctly "
+                                    + file.getAbsolutePath()
+                                    + " for dynamic filters",
+                            e);
                 }
             } else if (fileName.endsWith(".json")) {
                 final TestSpecification spec;
                 try {
                     spec = OBJECT_MAPPER.readValue(file, TestSpecification.class);
                 } catch (final IOException e) {
-                    throw new CodeGenException("Could not read json correctly " + file.getAbsolutePath() + " for a test specification", e);
+                    throw new CodeGenException(
+                            "Could not read json correctly "
+                                    + file.getAbsolutePath()
+                                    + " for a test specification",
+                            e);
                 }
                 final String specName = fileName.substring(0, fileName.indexOf(".json"));
                 if (testSpec.containsKey(specName)) {
-                    throw new CodeGenException("Multiple " + fileName + " found, each test should only have 1 spec file");
+                    throw new CodeGenException(
+                            "Multiple "
+                                    + fileName
+                                    + " found, each test should only have 1 spec file");
                 }
                 testSpec.put(specName, spec);
             }
         }
-        final ProctorSpecification proctorSpecification = new ProctorSpecification(
-                ObjectUtils.defaultIfNull(providedContext, new LinkedHashMap<>()),
-                testSpec,
-                ObjectUtils.defaultIfNull(dynamicFilters, new DynamicFilters())
-        );
+        final ProctorSpecification proctorSpecification =
+                new ProctorSpecification(
+                        ObjectUtils.defaultIfNull(providedContext, new LinkedHashMap<>()),
+                        testSpec,
+                        ObjectUtils.defaultIfNull(dynamicFilters, new DynamicFilters()));
 
         validateProctorSpecification(proctorSpecification);
 
@@ -142,17 +164,18 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
         try {
             OBJECT_MAPPER.writerWithDefaultPrettyPrinter().writeValue(output, proctorSpecification);
         } catch (final IOException e) {
-            throw new CodeGenException("Could not write to temp file " + output.getAbsolutePath(), e);
+            throw new CodeGenException(
+                    "Could not write to temp file " + output.getAbsolutePath(), e);
         }
         return proctorSpecification;
     }
 
     /**
-     * Validate proctor specification at build time. Throws {@link CodeGenException} if an error is found.
+     * Validate proctor specification at build time. Throws {@link CodeGenException} if an error is
+     * found.
      */
-    private static void validateProctorSpecification(
-            final ProctorSpecification spec
-    ) throws CodeGenException {
+    private static void validateProctorSpecification(final ProctorSpecification spec)
+            throws CodeGenException {
         for (final Map.Entry<String, TestSpecification> entry : spec.getTests().entrySet()) {
             final String testName = entry.getKey();
             final TestSpecification testSpecification = entry.getValue();
@@ -161,17 +184,20 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
     }
 
     @VisibleForTesting
-    static void validateTestSpecification(
-            final String testName,
-            final TestSpecification testSpec
-    ) throws CodeGenException {
+    static void validateTestSpecification(final String testName, final TestSpecification testSpec)
+            throws CodeGenException {
         final Set<Integer> bucketValueSet = new HashSet<>();
         for (final Integer bucketValue : testSpec.getBuckets().values()) {
             if (bucketValue == null) {
-                throw new CodeGenException("specification of " + testName + " has null bucket value");
+                throw new CodeGenException(
+                        "specification of " + testName + " has null bucket value");
             }
             if (!bucketValueSet.add(bucketValue)) {
-                throw new CodeGenException("specification of " + testName + " has duplicated bucket value " + bucketValue);
+                throw new CodeGenException(
+                        "specification of "
+                                + testName
+                                + " has duplicated bucket value "
+                                + bucketValue);
             }
         }
     }
@@ -182,8 +208,7 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
             final ProctorSpecification spec,
             final Map<String, Object> baseContext,
             final String packageName,
-            final String className
-    ) {
+            final String className) {
         final Map<String, Object> rootMap = new HashMap<>(baseContext);
 
         final Map<String, TestSpecification> tests = spec.getTests();
@@ -198,22 +223,29 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
             final Set<Map<String, ?>> buckets = Sets.newLinkedHashSet();
 
             final TestSpecification testSpecification = tests.get(testName);
-            final Map.Entry<String, Integer>[] sortedBuckets = testSpecification.getBuckets()
-                    .entrySet()
-                    .toArray(new Map.Entry[testSpecification.getBuckets().size()]);
+            final Map.Entry<String, Integer>[] sortedBuckets =
+                    testSpecification
+                            .getBuckets()
+                            .entrySet()
+                            .toArray(new Map.Entry[testSpecification.getBuckets().size()]);
 
-            if(testSpecification.getPayload() != null && testSpecification.getPayload().getAllowForce()){
+            if (testSpecification.getPayload() != null
+                    && testSpecification.getPayload().getAllowForce()) {
                 forcePayloadTests.add(testName);
             }
 
-            Arrays.sort(sortedBuckets, new Comparator<Map.Entry<String, Integer>>() {
-                public int compare(final Map.Entry<String, Integer> e0, final Map.Entry<String, Integer> e1) {
-                    if (e0.getValue().intValue() < e1.getValue().intValue()) {
-                        return -1;
-                    }
-                    return e0.getValue() == e1.getValue() ? 0 : 1;
-                }
-            });
+            Arrays.sort(
+                    sortedBuckets,
+                    new Comparator<Map.Entry<String, Integer>>() {
+                        public int compare(
+                                final Map.Entry<String, Integer> e0,
+                                final Map.Entry<String, Integer> e1) {
+                            if (e0.getValue().intValue() < e1.getValue().intValue()) {
+                                return -1;
+                            }
+                            return e0.getValue() == e1.getValue() ? 0 : 1;
+                        }
+                    });
 
             boolean foundFallbackValue = false;
             for (final Map.Entry<String, Integer> bucket : sortedBuckets) {
@@ -230,17 +262,19 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
 
                 buckets.add(bucketDef);
 
-                foundFallbackValue = foundFallbackValue || (bucket.getValue() == testSpecification.getFallbackValue());
+                foundFallbackValue =
+                        foundFallbackValue
+                                || (bucket.getValue() == testSpecification.getFallbackValue());
             }
 
             if (!buckets.isEmpty() && !foundFallbackValue) {
                 throw new IllegalArgumentException(
                         "Specified fallback value "
                                 + testSpecification.getFallbackValue()
-                                + " for test " + testName
+                                + " for test "
+                                + testName
                                 + " is not in the list of standard values: "
-                                + Arrays.toString(sortedBuckets)
-                );
+                                + Arrays.toString(sortedBuckets));
             }
 
             final String name = toJavaIdentifier(testName);
@@ -259,35 +293,44 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
             // claimed she expects a payload.
             if (testSpecification.getPayload() != null) {
                 final String specifiedPayloadTypeName = testSpecification.getPayload().getType();
-                final PayloadType specifiedPayloadType = PayloadType.payloadTypeForName(specifiedPayloadTypeName);
+                final PayloadType specifiedPayloadType =
+                        PayloadType.payloadTypeForName(specifiedPayloadTypeName);
                 if (specifiedPayloadType == PayloadType.MAP) {
                     testDef.put("isMap", "true");
-                    for (final Map.Entry<String, String> entry : testSpecification.getPayload().getSchema().entrySet()) {
+                    for (final Map.Entry<String, String> entry :
+                            testSpecification.getPayload().getSchema().entrySet()) {
                         final Map<String, String> nestedPayloadsMap = new HashMap<>();
                         nestedPayloadsMap.put("key", entry.getKey());
-                        final PayloadType payloadTypeForValue = PayloadType.payloadTypeForName(entry.getValue());
+                        final PayloadType payloadTypeForValue =
+                                PayloadType.payloadTypeForName(entry.getValue());
                         if (payloadTypeForValue != PayloadType.MAP) {
                             nestedPayloadsMap.put("value", payloadTypeForValue.javaClassName);
-                            nestedPayloadsMap.put("valueWithoutArray",
-                                    payloadTypeForValue.javaClassName.substring(0, payloadTypeForValue.javaClassName.length() - 2));
+                            nestedPayloadsMap.put(
+                                    "valueWithoutArray",
+                                    payloadTypeForValue.javaClassName.substring(
+                                            0, payloadTypeForValue.javaClassName.length() - 2));
                             if (PayloadType.STRING_ARRAY == payloadTypeForValue) {
                                 nestedPayloadsMap.put("notANumber", "true");
                             }
-                            nestedPayloadsMap.put("payloadTypeName", payloadTypeForValue.payloadTypeName);
+                            nestedPayloadsMap.put(
+                                    "payloadTypeName", payloadTypeForValue.payloadTypeName);
                             nestedPayloadsList.add(nestedPayloadsMap);
                         } else {
-                            throw new IllegalArgumentException("Nested Map Payloads are not allowed");
+                            throw new IllegalArgumentException(
+                                    "Nested Map Payloads are not allowed");
                         }
                     }
                 }
-                if( specifiedPayloadType == PayloadType.JSON) {
+                if (specifiedPayloadType == PayloadType.JSON) {
                     testDef.put("isJson", "true");
                 }
                 addPayloadToTestDef(testDef, specifiedPayloadType);
             }
 
             if (testSpecification.getDescription() != null) {
-                testDef.put("description", StringEscapeUtils.escapeJava(testSpecification.getDescription()));
+                testDef.put(
+                        "description",
+                        StringEscapeUtils.escapeJava(testSpecification.getDescription()));
             }
             testDef.put("nestedPayloadsList", nestedPayloadsList);
 
@@ -307,5 +350,6 @@ public abstract class TestGroupsGenerator extends FreeMarkerCodeGenerator {
         return rootMap;
     }
 
-    abstract void addPayloadToTestDef(final Map<String, Object> testDef, final PayloadType specifiedPayloadType);
+    abstract void addPayloadToTestDef(
+            final Map<String, Object> testDef, final PayloadType specifiedPayloadType);
 }

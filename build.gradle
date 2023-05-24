@@ -1,0 +1,5 @@
+plugins {
+    id 'com.indeed.oss' version '1+'
+    id 'maven-publish'
+    id 'java'
+}

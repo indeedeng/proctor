@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.indeed.proctor.webapp.util.TestTestSearchUtil" tests="10" skipped="0" failures="0" errors="0" timestamp="2023-05-01T19:04:53" hostname="IT-USA-VY0740" time="0.004">
+  <properties/>
+  <testcase name="testMatchDescription" classname="com.indeed.proctor.webapp.util.TestTestSearchUtil" time="0.0"/>
+  <testcase name="testMatchActiveAllocation" classname="com.indeed.proctor.webapp.util.TestTestSearchUtil" time="0.001"/>
+  <testcase name="testMatchTestName" classname="com.indeed.proctor.webapp.util.TestTestSearchUtil" time="0.0"/>
+  <testcase name="testMatchTestType" classname="com.indeed.proctor.webapp.util.TestTestSearchUtil" time="0.0"/>
+  <testcase name="testGivenSetFirstComparator" classname="com.indeed.proctor.webapp.util.TestTestSearchUtil" time="0.002"/>
+  <testcase name="testMatchMetaTags" classname="com.indeed.proctor.webapp.util.TestTestSearchUtil" time="0.0"/>
+  <testcase name="testMatchBucketDescription" classname="com.indeed.proctor.webapp.util.TestTestSearchUtil" time="0.0"/>
+  <testcase name="testMatchBucket" classname="com.indeed.proctor.webapp.util.TestTestSearchUtil" time="0.0"/>
+  <testcase name="testMatchRule" classname="com.indeed.proctor.webapp.util.TestTestSearchUtil" time="0.001"/>
+  <testcase name="testMatchSalt" classname="com.indeed.proctor.webapp.util.TestTestSearchUtil" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

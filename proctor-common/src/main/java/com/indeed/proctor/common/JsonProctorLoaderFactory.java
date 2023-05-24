@@ -29,14 +29,12 @@ public class JsonProctorLoaderFactory {
     // Prefix of export variable name for specifications.
     private static final String EXPORT_NAME_PREFIX_FOR_SPECIFICATION = "specification";
 
-    protected static final VarExporter VAR_EXPORTER = VarExporter.forNamespace(JsonProctorLoaderFactory.class.getSimpleName());
+    protected static final VarExporter VAR_EXPORTER =
+            VarExporter.forNamespace(JsonProctorLoaderFactory.class.getSimpleName());
 
-    @Nullable
-    protected String classResourcePath;
-    @Nullable
-    protected String filePath;
-    @Nullable
-    protected ProctorSpecification _specification;
+    @Nullable protected String classResourcePath;
+    @Nullable protected String filePath;
+    @Nullable protected ProctorSpecification _specification;
 
     protected FunctionMapper functionMapper = RuleEvaluator.FUNCTION_MAPPER;
 
@@ -55,37 +53,30 @@ public class JsonProctorLoaderFactory {
         try (InputStream stream = specificationResource.getInputStream()) {
             this._specification = OBJECT_MAPPER.readValue(stream, ProctorSpecification.class);
         } catch (final IOException e) {
-            throw new IllegalArgumentException("Unable to read proctor specification from " + specificationResource, e);
+            throw new IllegalArgumentException(
+                    "Unable to read proctor specification from " + specificationResource, e);
         }
 
         exportJsonSpecification(
-                generateExportVariableNameFromResource(specificationResource),
-                this._specification
-        );
+                generateExportVariableNameFromResource(specificationResource), this._specification);
     }
 
     public void setSpecificationResource(@Nonnull final String specificationLocation) {
         if (specificationLocation.startsWith("classpath:")) {
             final String specificationClasspath = specificationLocation.replace("classpath:", "");
-            setSpecificationResource(new ClassPathResource(specificationClasspath, this.getClass()));
+            setSpecificationResource(
+                    new ClassPathResource(specificationClasspath, this.getClass()));
         } else {
             setSpecificationResource(new FileSystemResource(specificationLocation));
         }
     }
 
-    /**
-     * setSpecificationResource() is likely more convenient to use instead of this method.
-     */
+    /** setSpecificationResource() is likely more convenient to use instead of this method. */
     public void setSpecification(@Nonnull final ProctorSpecification specification) {
-        this._specification = Objects.requireNonNull(
-                specification,
-                "Null specifications are not supported"
-        );
+        this._specification =
+                Objects.requireNonNull(specification, "Null specifications are not supported");
 
-        exportJsonSpecification(
-                generateExportVariableNameFromObject(specification),
-                specification
-        );
+        exportJsonSpecification(generateExportVariableNameFromObject(specification), specification);
     }
 
     public void setFunctionMapper(@Nonnull final FunctionMapper functionMapper) {
@@ -95,19 +86,19 @@ public class JsonProctorLoaderFactory {
     @Nonnull
     public AbstractJsonProctorLoader getLoader() {
         if ((classResourcePath == null) == (filePath == null)) {
-            throw new IllegalStateException("Must have exactly one of classResourcePath or filePath");
+            throw new IllegalStateException(
+                    "Must have exactly one of classResourcePath or filePath");
         }
 
-        final ProctorSpecification specification = Preconditions.checkNotNull(
-                this._specification,
-                "Missing specification"
-        );
+        final ProctorSpecification specification =
+                Preconditions.checkNotNull(this._specification, "Missing specification");
 
         if (classResourcePath != null) {
             return new ClasspathProctorLoader(specification, classResourcePath, functionMapper);
         }
 
-        final AbstractJsonProctorLoader loader = new FileProctorLoader(specification, filePath, functionMapper);
+        final AbstractJsonProctorLoader loader =
+                new FileProctorLoader(specification, filePath, functionMapper);
         loader.addLoadReporter(reporters);
         return loader;
     }
@@ -118,7 +109,9 @@ public class JsonProctorLoaderFactory {
      */
     @Deprecated
     public void setDiffReporter(final AbstractProctorDiffReporter diffReporter) {
-        Preconditions.checkNotNull(diffReporter, "diff reporter can't be null use AbstractProctorDiffReporter for nop implementation");
+        Preconditions.checkNotNull(
+                diffReporter,
+                "diff reporter can't be null use AbstractProctorDiffReporter for nop implementation");
         setLoadReporters(ImmutableList.of(diffReporter));
     }
 
@@ -127,9 +120,7 @@ public class JsonProctorLoaderFactory {
     }
 
     private void exportJsonSpecification(
-            final String variableName,
-            final ProctorSpecification specification
-    ) {
+            final String variableName, final ProctorSpecification specification) {
         try {
             final ManagedVariable<String> managedVariable =
                     ManagedVariable.<String>builder()
@@ -146,7 +137,10 @@ public class JsonProctorLoaderFactory {
         return EXPORT_NAME_PREFIX_FOR_SPECIFICATION + "-" + resource.getFilename();
     }
 
-    private static String generateExportVariableNameFromObject(final ProctorSpecification specification) {
-        return EXPORT_NAME_PREFIX_FOR_SPECIFICATION + "-anonymous-" + Integer.toHexString(specification.hashCode());
+    private static String generateExportVariableNameFromObject(
+            final ProctorSpecification specification) {
+        return EXPORT_NAME_PREFIX_FOR_SPECIFICATION
+                + "-anonymous-"
+                + Integer.toHexString(specification.hashCode());
     }
 }

@@ -19,35 +19,28 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 /**
- * Models a payload value for a bucket in a test, generally meant to have one kind of value per bucket.
+ * Models a payload value for a bucket in a test, generally meant to have one kind of value per
+ * bucket.
  *
  * @author pwp
- *
- * NOTE: if you add a payload type here, also please add it to
- * proctor webapp's buckets.js indeed.proctor.editor.BucketsEditor.prototype.prettyPrintPayloadValue_
+ *     <p>NOTE: if you add a payload type here, also please add it to proctor webapp's buckets.js
+ *     indeed.proctor.editor.BucketsEditor.prototype.prettyPrintPayloadValue_
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Payload {
-    @Nullable
-    private Double doubleValue;
-    @Nullable
-    private Double[] doubleArray;
-    @Nullable
-    private Long longValue;
-    @Nullable
-    private Long[] longArray;
-    @Nullable
-    private String stringValue;
-    @Nullable
-    private String[] stringArray;
-    @Nullable
-    private Map<String, Object> map;
-    @Nullable
-    private JsonNode json;
+    @Nullable private Double doubleValue;
+    @Nullable private Double[] doubleArray;
+    @Nullable private Long longValue;
+    @Nullable private Long[] longArray;
+    @Nullable private String stringValue;
+    @Nullable private String[] stringArray;
+    @Nullable private Map<String, Object> map;
+    @Nullable private JsonNode json;
     // Used for returning something when we can't return a null.
     public static final Payload EMPTY_PAYLOAD = new Payload();
     // Error message for invalid user input
-    public static final String PAYLOAD_OVERWRITE_EXCEPTION = "Expected all properties to be empty: ";
+    public static final String PAYLOAD_OVERWRITE_EXCEPTION =
+            "Expected all properties to be empty: ";
 
     public Payload(final String value) {
         this.stringValue = value;
@@ -81,7 +74,9 @@ public class Payload {
         this.longArray = Arrays.copyOf(values, values.length);
     }
 
-    public Payload() { /* intentionally empty */ }
+    public Payload() {
+        /* intentionally empty */
+    }
 
     public Payload(@Nonnull final Payload other) {
         this.doubleValue = other.doubleValue;
@@ -100,15 +95,15 @@ public class Payload {
             this.map = new HashMap<>(other.map);
         }
         if (other.json != null) {
-           this.json = other.json.deepCopy();
+            this.json = other.json.deepCopy();
         }
     }
-
 
     @Nullable
     public Double getDoubleValue() {
         return doubleValue;
     }
+
     public void setDoubleValue(@Nullable final Double doubleValue) {
         precheckStateAllNull();
         this.doubleValue = doubleValue;
@@ -118,6 +113,7 @@ public class Payload {
     public Double[] getDoubleArray() {
         return doubleArray;
     }
+
     public void setDoubleArray(@Nullable final Double[] doubleArray) {
         precheckStateAllNull();
         this.doubleArray = doubleArray;
@@ -127,6 +123,7 @@ public class Payload {
     public Long getLongValue() {
         return longValue;
     }
+
     public void setLongValue(@Nullable final Long longValue) {
         precheckStateAllNull();
         this.longValue = longValue;
@@ -136,6 +133,7 @@ public class Payload {
     public Long[] getLongArray() {
         return longArray;
     }
+
     public void setLongArray(@Nullable final Long[] longArray) {
         precheckStateAllNull();
         this.longArray = longArray;
@@ -145,6 +143,7 @@ public class Payload {
     public String getStringValue() {
         return stringValue;
     }
+
     public void setStringValue(@Nullable final String stringValue) {
         precheckStateAllNull();
         this.stringValue = stringValue;
@@ -154,6 +153,7 @@ public class Payload {
     public String[] getStringArray() {
         return stringArray;
     }
+
     public void setStringArray(@Nullable final String[] stringArray) {
         precheckStateAllNull();
         this.stringArray = stringArray;
@@ -173,14 +173,14 @@ public class Payload {
     public Map<String, Object> getMap() {
         return map;
     }
+
     public void setMap(@Nullable final Map<String, Object> map) {
         precheckStateAllNull();
         this.map = map;
     }
     // Sanity check precondition for above setters
     private void precheckStateAllNull() throws IllegalStateException {
-        if (Stream.of(PayloadType.values())
-                .anyMatch(pt -> resolvers.get(pt).apply(this) != null) ) {
+        if (Stream.of(PayloadType.values()).anyMatch(pt -> resolvers.get(pt).apply(this) != null)) {
             throw new IllegalStateException(PAYLOAD_OVERWRITE_EXCEPTION + this);
         }
     }
@@ -193,7 +193,11 @@ public class Payload {
         if (map != null) {
             s.append(" map : [");
             for (final Map.Entry<String, Object> entry : map.entrySet()) {
-                s.append('(').append(entry.getKey()).append(',').append(entry.getValue()).append(')');
+                s.append('(')
+                        .append(entry.getKey())
+                        .append(',')
+                        .append(entry.getValue())
+                        .append(')');
             }
             s.append(']');
         }
@@ -235,6 +239,7 @@ public class Payload {
 
     /**
      * infers payloadtype based on the value that is set.
+     *
      * @return payloadType unless emptyPayload
      */
     @Nonnull
@@ -259,15 +264,13 @@ public class Payload {
     }
 
     /**
-     * @return the payload type as a string.  Used by Proctor Webapp.
+     * @return the payload type as a string. Used by Proctor Webapp.
      * @deprecated use fetchPayloadType
      */
     @Nonnull
     @Deprecated
     public String fetchType() {
-        return fetchPayloadType()
-                .map(t -> t.payloadTypeName)
-                .orElse("none");
+        return fetchPayloadType().map(t -> t.payloadTypeName).orElse("none");
     }
 
     public boolean sameType(@Nullable final Payload other) {
@@ -284,18 +287,17 @@ public class Payload {
     }
 
     public int numFieldsDefined() {
-        return (int) Stream.of(PayloadType.values())
-                .filter(pt -> resolvers.get(pt).apply(this) != null)
-                .count();
+        return (int)
+                Stream.of(PayloadType.values())
+                        .filter(pt -> resolvers.get(pt).apply(this) != null)
+                        .count();
     }
 
     /**
-     * @return "the" value of this Payload, stuffed into an Object.
-     * This is used for evaluating the "validator" portion of a
-     * PayloadSpecification against these Payloads.
-     *
-     * We don't want the JsonSerializer to know about this, so
-     * renamed to not begin with "get".
+     * @return "the" value of this Payload, stuffed into an Object. This is used for evaluating the
+     *     "validator" portion of a PayloadSpecification against these Payloads.
+     *     <p>We don't want the JsonSerializer to know about this, so renamed to not begin with
+     *     "get".
      */
     @CheckForNull
     public Object fetchAValue() {
@@ -319,17 +321,18 @@ public class Payload {
             return false;
         }
         final Payload payload = (Payload) o;
-        return Objects.equals(doubleValue, payload.doubleValue) &&
-                Arrays.equals(doubleArray, payload.doubleArray) &&
-                Objects.equals(longValue, payload.longValue) &&
-                Arrays.equals(longArray, payload.longArray) &&
-                Objects.equals(stringValue, payload.stringValue) &&
-                Arrays.equals(stringArray, payload.stringArray) &&
-                Objects.equals(json, payload.json) &&
-                comparePayloadMap(map, payload.map);
+        return Objects.equals(doubleValue, payload.doubleValue)
+                && Arrays.equals(doubleArray, payload.doubleArray)
+                && Objects.equals(longValue, payload.longValue)
+                && Arrays.equals(longArray, payload.longArray)
+                && Objects.equals(stringValue, payload.stringValue)
+                && Arrays.equals(stringArray, payload.stringArray)
+                && Objects.equals(json, payload.json)
+                && comparePayloadMap(map, payload.map);
     }
 
-    private static boolean comparePayloadMap(final Map<String, Object> a, final Map<String, Object> b) {
+    private static boolean comparePayloadMap(
+            final Map<String, Object> a, final Map<String, Object> b) {
         if (a != null && b != null && a.size() == b.size()) {
             boolean isEqual = true;
             for (final String keyString : a.keySet()) {
@@ -338,7 +341,9 @@ public class Payload {
                 }
                 final Object aValue = a.get(keyString);
                 final Object bValue = b.get(keyString);
-                if (aValue instanceof Double || aValue instanceof Long || aValue instanceof String) {
+                if (aValue instanceof Double
+                        || aValue instanceof Long
+                        || aValue instanceof String) {
                     isEqual &= Objects.equals(aValue, bValue);
                 } else if (aValue instanceof ArrayList && bValue instanceof ArrayList) {
                     isEqual &= Objects.equals(aValue, bValue);
@@ -346,11 +351,11 @@ public class Payload {
                     isEqual &= Arrays.equals(((ArrayList<?>) aValue).toArray(), (Object[]) bValue);
                 } else if (bValue instanceof ArrayList) {
                     isEqual &= Arrays.equals(((ArrayList<?>) bValue).toArray(), (Object[]) aValue);
-                } else if (aValue instanceof Double[]){
+                } else if (aValue instanceof Double[]) {
                     final Double[] aArr = (Double[]) aValue;
                     final Double[] bArr = (Double[]) bValue;
                     isEqual &= Arrays.equals(aArr, bArr);
-                } else if (aValue instanceof Long[]){
+                } else if (aValue instanceof Long[]) {
                     final Long[] aArr = (Long[]) aValue;
                     final Long[] bArr = (Long[]) bValue;
                     isEqual &= Arrays.equals(aArr, bArr);
@@ -376,15 +381,15 @@ public class Payload {
         return result;
     }
 
-
-    private final static Map<PayloadType, Function<Payload, Object>> resolvers = ImmutableMap.<PayloadType, Function<Payload, Object>>builder()
-            .put(PayloadType.DOUBLE_VALUE, Payload::getDoubleValue)
-            .put(PayloadType.DOUBLE_ARRAY, Payload::getDoubleArray)
-            .put(PayloadType.LONG_VALUE, Payload::getLongValue)
-            .put(PayloadType.LONG_ARRAY, Payload::getLongArray)
-            .put(PayloadType.STRING_VALUE, Payload::getStringValue)
-            .put(PayloadType.STRING_ARRAY, Payload::getStringArray)
-            .put(PayloadType.MAP, Payload::getMap)
-            .put(PayloadType.JSON, Payload::getJson)
-            .build();
+    private static final Map<PayloadType, Function<Payload, Object>> resolvers =
+            ImmutableMap.<PayloadType, Function<Payload, Object>>builder()
+                    .put(PayloadType.DOUBLE_VALUE, Payload::getDoubleValue)
+                    .put(PayloadType.DOUBLE_ARRAY, Payload::getDoubleArray)
+                    .put(PayloadType.LONG_VALUE, Payload::getLongValue)
+                    .put(PayloadType.LONG_ARRAY, Payload::getLongArray)
+                    .put(PayloadType.STRING_VALUE, Payload::getStringValue)
+                    .put(PayloadType.STRING_ARRAY, Payload::getStringArray)
+                    .put(PayloadType.MAP, Payload::getMap)
+                    .put(PayloadType.JSON, Payload::getJson)
+                    .build();
 }

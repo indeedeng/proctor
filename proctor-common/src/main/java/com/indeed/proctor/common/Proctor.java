@@ -39,11 +39,12 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
- * The sole entry point for client applications determining the test buckets for a particular client.
- * Basically a Factory to create ProctorResult for a given identifier and context, based on a TestMatrix and a specification.
- * Supposedly immutable result of loading a test matrix, so each reload creates a new instance of this class.
- * <p>
- * See {@link #determineTestGroups(Identifiers, Map, Map)}
+ * The sole entry point for client applications determining the test buckets for a particular
+ * client. Basically a Factory to create ProctorResult for a given identifier and context, based on
+ * a TestMatrix and a specification. Supposedly immutable result of loading a test matrix, so each
+ * reload creates a new instance of this class.
+ *
+ * <p>See {@link #determineTestGroups(Identifiers, Map, Map)}
  *
  * @author ketan
  */
@@ -51,23 +52,24 @@ public class Proctor {
     public static final Proctor EMPTY = createEmptyProctor();
 
     private static final Logger LOGGER = LogManager.getLogger(Proctor.class);
-    private static final ObjectWriter OBJECT_WRITER = Serializers
-            .lenient()
-            .configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false).writerWithDefaultPrettyPrinter();
+    private static final ObjectWriter OBJECT_WRITER =
+            Serializers.lenient()
+                    .configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false)
+                    .writerWithDefaultPrettyPrinter();
 
     public static Proctor construct(
             @Nonnull final TestMatrixArtifact matrix,
             @Nonnull final ProctorLoadResult loadResult,
-            @Nonnull final FunctionMapper functionMapper
-    ) {
+            @Nonnull final FunctionMapper functionMapper) {
         return construct(matrix, loadResult, functionMapper, new IdentifierValidator.Noop());
     }
 
     /**
      * Factory method to do the setup and transformation of inputs
      *
-     * @param matrix         a {@link TestMatrixArtifact} loaded by ProctorLoader
-     * @param loadResult     a {@link ProctorLoadResult} which contains result of validation of test definition
+     * @param matrix a {@link TestMatrixArtifact} loaded by ProctorLoader
+     * @param loadResult a {@link ProctorLoadResult} which contains result of validation of test
+     *     definition
      * @param functionMapper a given el {@link FunctionMapper}
      * @return constructed Proctor object
      */
@@ -78,6 +80,7 @@ public class Proctor {
             @Nonnull final FunctionMapper functionMapper,
             @Nonnull final IdentifierValidator identifierValidator
     ) {
+        final ExpressionFactory expressionFactory = RuleEvaluator.EXPRESSION_FACTORY;
         final Map<String, TestChooser<?>> testChoosers = Maps.newLinkedHashMap();
         final Map<String, String> versions = Maps.newLinkedHashMap();
 
@@ -95,9 +98,11 @@ public class Proctor {
             versions.put(testName, testDefinition.getVersion());
         }
 
-        final List<String> testEvaluationOrder = TestDependencies.determineEvaluationOrder(matrix.getTests());
+        final List<String> testEvaluationOrder =
+                TestDependencies.determineEvaluationOrder(matrix.getTests());
 
-        return new Proctor(matrix, loadResult, testChoosers, testEvaluationOrder, identifierValidator);
+        return new Proctor(
+                matrix, loadResult, testChoosers, testEvaluationOrder, identifierValidator);
     }
 
     @Nonnull
@@ -117,16 +122,19 @@ public class Proctor {
 
         final List<String> testEvaluationOrder = Collections.emptyList();
 
-        return new Proctor(testMatrix, loadResult, choosers, testEvaluationOrder, new IdentifierValidator.Noop());
+        return new Proctor(
+                testMatrix,
+                loadResult,
+                choosers,
+                testEvaluationOrder,
+                new IdentifierValidator.Noop());
     }
 
     static final long INT_RANGE = (long) Integer.MAX_VALUE - (long) Integer.MIN_VALUE;
     private final TestMatrixArtifact matrix;
     private final ProctorLoadResult loadResult;
-    @Nonnull
-    private final Map<String, TestChooser<?>> testChoosers;
-    @Nonnull
-    private final IdentifierValidator identifierValidator;
+    @Nonnull private final Map<String, TestChooser<?>> testChoosers;
+    @Nonnull private final IdentifierValidator identifierValidator;
 
     private final Map<String, ConsumableTestDefinition> testDefinitions = Maps.newLinkedHashMap();
 
@@ -139,8 +147,7 @@ public class Proctor {
             @Nonnull final ProctorLoadResult loadResult,
             @Nonnull final Map<String, TestChooser<?>> testChoosers,
             @Nonnull final List<String> testEvaluationOrder,
-            @Nonnull final IdentifierValidator identifierValidator
-    ) {
+            @Nonnull final IdentifierValidator identifierValidator) {
         this.matrix = matrix;
         this.loadResult = loadResult;
         this.testChoosers = testChoosers;
@@ -149,12 +156,14 @@ public class Proctor {
         }
         this.identifierValidator = identifierValidator;
         this.testEvaluationOrder = testEvaluationOrder;
-        this.evaluationOrderMap = IntStream.range(0, testEvaluationOrder.size())
-                .boxed()
-                .collect(Collectors.toMap(testEvaluationOrder::get, index -> index));
+        this.evaluationOrderMap =
+                IntStream.range(0, testEvaluationOrder.size())
+                        .boxed()
+                        .collect(Collectors.toMap(testEvaluationOrder::get, index -> index));
 
         VarExporter.forNamespace(Proctor.class.getSimpleName()).includeInGlobal().export(this, "");
-        VarExporter.forNamespace(DetailedExport.class.getSimpleName()).export(new DetailedExport(), "");  //  intentionally not in global
+        VarExporter.forNamespace(DetailedExport.class.getSimpleName())
+                .export(new DetailedExport(), ""); //  intentionally not in global
     }
 
     private static class DetailedExport {
@@ -166,15 +175,18 @@ public class Proctor {
     /**
      * Determine which test buckets apply to a particular client.
      *
-     * @param testType    the {@link TestType} of the test
-     * @param identifier  a unique-ish {@link String} identifying the client.
-     *                    This should be consistent across requests from the same client.
-     * @param context     a {@link Map} containing variables describing the context in which the request is executing.
-     *                    These will be supplied to any rules that execute to determine test eligibility.
-     * @param forceGroups a {@link Map} from a String test name to an Integer bucket value. For the specified test allocate the specified bucket (if valid) regardless
-     *                    of the standard logic
-     * @return a {@link ProctorResult} containing the test buckets that apply to this client as well as the versions of the tests that were executed
-     * @deprecated use {@link Proctor#determineTestGroups(Identifiers, Map, ForceGroupsOptions, Collection)} instead
+     * @param testType the {@link TestType} of the test
+     * @param identifier a unique-ish {@link String} identifying the client. This should be
+     *     consistent across requests from the same client.
+     * @param context a {@link Map} containing variables describing the context in which the request
+     *     is executing. These will be supplied to any rules that execute to determine test
+     *     eligibility.
+     * @param forceGroups a {@link Map} from a String test name to an Integer bucket value. For the
+     *     specified test allocate the specified bucket (if valid) regardless of the standard logic
+     * @return a {@link ProctorResult} containing the test buckets that apply to this client as well
+     *     as the versions of the tests that were executed
+     * @deprecated use {@link Proctor#determineTestGroups(Identifiers, Map, ForceGroupsOptions,
+     *     Collection)} instead
      */
     @SuppressWarnings("UnusedDeclaration") // TODO Remove deprecated
     @Nonnull
@@ -183,8 +195,7 @@ public class Proctor {
             final TestType testType,
             final String identifier,
             @Nonnull final Map<String, Object> context,
-            @Nonnull final Map<String, Integer> forceGroups
-    ) {
+            @Nonnull final Map<String, Integer> forceGroups) {
         final Identifiers identifiers = new Identifiers(testType, identifier);
 
         return determineTestGroups(identifiers, context, forceGroups);
@@ -193,28 +204,32 @@ public class Proctor {
     /**
      * Determine which test buckets apply to a particular client.
      *
-     * @param identifiers  a {@link Map} of unique-ish {@link String}s describing the request in the context of different {@link TestType}s.For example,
-     *                     {@link TestType#USER} has a CTK associated, {@link TestType#EMAIL} is an email address, {@link TestType#PAGE} might be a url-encoded String
-     *                     containing the normalized relevant page parameters
-     * @param inputContext a {@link Map} containing variables describing the context in which the request is executing. These will be supplied to any rules that
-     *                     execute to determine test eligibility.
-     * @param forceGroups  a {@link Map} from a String test name to an Integer bucket value. For the specified test allocate the specified bucket (if valid) regardless
-     *                     of the standard logic
-     * @return a {@link ProctorResult} containing the test buckets that apply to this client as well as the versions of the tests that were executed
-     * @deprecated use {@link Proctor#determineTestGroups(Identifiers, Map, ForceGroupsOptions, Collection)} instead
+     * @param identifiers a {@link Map} of unique-ish {@link String}s describing the request in the
+     *     context of different {@link TestType}s.For example, {@link TestType#USER} has a CTK
+     *     associated, {@link TestType#EMAIL} is an email address, {@link TestType#PAGE} might be a
+     *     url-encoded String containing the normalized relevant page parameters
+     * @param inputContext a {@link Map} containing variables describing the context in which the
+     *     request is executing. These will be supplied to any rules that execute to determine test
+     *     eligibility.
+     * @param forceGroups a {@link Map} from a String test name to an Integer bucket value. For the
+     *     specified test allocate the specified bucket (if valid) regardless of the standard logic
+     * @return a {@link ProctorResult} containing the test buckets that apply to this client as well
+     *     as the versions of the tests that were executed
+     * @deprecated use {@link Proctor#determineTestGroups(Identifiers, Map, ForceGroupsOptions,
+     *     Collection)} instead
      */
     @Nonnull
     @Deprecated
     public ProctorResult determineTestGroups(
             @Nonnull final Identifiers identifiers,
             @Nonnull final Map<String, Object> inputContext,
-            @Nonnull final Map<String, Integer> forceGroups
-    ) {
+            @Nonnull final Map<String, Integer> forceGroups) {
         return determineTestGroups(identifiers, inputContext, forceGroups, Collections.emptyList());
     }
 
     /**
-     * @deprecated Use {@link #determineTestGroups(Identifiers, Map, ForceGroupsOptions, Collection)}
+     * @deprecated Use {@link #determineTestGroups(Identifiers, Map, ForceGroupsOptions,
+     *     Collection)}
      */
     @Nonnull
     @Deprecated
@@ -222,48 +237,50 @@ public class Proctor {
             @Nonnull final Identifiers identifiers,
             @Nonnull final Map<String, Object> inputContext,
             @Nonnull final Map<String, Integer> forceGroups,
-            @Nonnull final Collection<String> testNameFilter
-    ) {
+            @Nonnull final Collection<String> testNameFilter) {
         return determineTestGroups(
                 identifiers,
                 inputContext,
-                ForceGroupsOptions.builder()
-                        .putAllForceGroups(forceGroups)
-                        .build(),
-                testNameFilter
-        );
+                ForceGroupsOptions.builder().putAllForceGroups(forceGroups).build(),
+                testNameFilter);
     }
 
     /**
      * See determineTestGroups() above. Adds a test name filter for returning a subset of tests.
      * This is useful for the Proctor REST API. It lacks a specification and needs a way to evaluate
-     * only the tests mentioned in the HTTP parameters by each particular query. Otherwise, there will be
-     * logged errors due to missing context variables.
+     * only the tests mentioned in the HTTP parameters by each particular query. Otherwise, there
+     * will be logged errors due to missing context variables.
      *
-     * @param identifiers        a {@link Map} of unique-ish {@link String}s describing the request in the context of different {@link TestType}s.For example,
-     *                           {@link TestType#USER} has a CTK associated, {@link TestType#EMAIL} is an email address, {@link TestType#PAGE} might be a url-encoded String
-     *                           containing the normalized relevant page parameters
-     * @param inputContext       a {@link Map} containing variables describing the context in which the request is executing. These will be supplied to any rules that
-     *                           execute to determine test eligibility.
-     * @param forceGroupsOptions a {@link Map} from a String test name to an Integer bucket value. For the specified test allocate the specified bucket (if valid) regardless
-     *                           of the standard logic
-     * @param testNameFilter     Only evaluates and returns the tests named in this collection. If empty, no filter is applied.
-     * @return a {@link ProctorResult} containing the test buckets that apply to this client as well as the versions of the tests that were executed
+     * @param identifiers a {@link Map} of unique-ish {@link String}s describing the request in the
+     *     context of different {@link TestType}s.For example, {@link TestType#USER} has a CTK
+     *     associated, {@link TestType#EMAIL} is an email address, {@link TestType#PAGE} might be a
+     *     url-encoded String containing the normalized relevant page parameters
+     * @param inputContext a {@link Map} containing variables describing the context in which the
+     *     request is executing. These will be supplied to any rules that execute to determine test
+     *     eligibility.
+     * @param forceGroupsOptions a {@link Map} from a String test name to an Integer bucket value.
+     *     For the specified test allocate the specified bucket (if valid) regardless of the
+     *     standard logic
+     * @param testNameFilter Only evaluates and returns the tests named in this collection. If
+     *     empty, no filter is applied.
+     * @return a {@link ProctorResult} containing the test buckets that apply to this client as well
+     *     as the versions of the tests that were executed
      */
     @Nonnull
     public ProctorResult determineTestGroups(
             @Nonnull final Identifiers identifiers,
             @Nonnull final Map<String, Object> inputContext,
             @Nonnull final ForceGroupsOptions forceGroupsOptions,
-            @Nonnull final Collection<String> testNameFilter
-    ) {
+            @Nonnull final Collection<String> testNameFilter) {
         final boolean determineAllTests = testNameFilter.isEmpty();
-        final Set<String> testNameFilterSet = testNameFilter.stream()
-                .filter(testChoosers::containsKey)
-                .collect(Collectors.toSet());
+        final Set<String> testNameFilterSet =
+                testNameFilter.stream()
+                        .filter(testChoosers::containsKey)
+                        .collect(Collectors.toSet());
 
         // ProctorResult requires SortedMap internally, avoid copy overhead
-        // use mutable map for legacy reasons, inside this codebase should not be modified after this method
+        // use mutable map for legacy reasons, inside this codebase should not be modified after
+        // this method
         final SortedMap<String, TestBucket> testGroups = new TreeMap<>();
         final SortedMap<String, Allocation> testAllocations = new TreeMap<>();
 
@@ -273,21 +290,24 @@ public class Proctor {
         } else {
             // Following code runs in a function of the number of transitive dependencies
             // instead of the number of all loaded tests.
-            final Set<String> transitiveDependencies = TestDependencies.computeTransitiveDependencies(
-                    testDefinitions,
-                    testNameFilterSet
-            );
-            filteredEvaluationOrder = transitiveDependencies.stream()
-                    .sorted(Comparator.comparing(evaluationOrderMap::get))
-                    .collect(Collectors.toList());
+            final Set<String> transitiveDependencies =
+                    TestDependencies.computeTransitiveDependencies(
+                            testDefinitions, testNameFilterSet);
+            filteredEvaluationOrder =
+                    transitiveDependencies.stream()
+                            .sorted(Comparator.comparing(evaluationOrderMap::get))
+                            .collect(Collectors.toList());
         }
 
         final Set<TestType> testTypesWithInvalidIdentifier = new HashSet<>();
         for (final TestType testType : identifiers.getAvailableTestTypes()) {
             final String identifier = identifiers.getIdentifier(testType);
             if ((identifier != null) && !identifierValidator.validate(testType, identifier)) {
-                final String invalidIdentifierMessage = String.format("An invalid identifier '%s' for test type '%s'"
-                        + " was detected. Using fallback buckets for the test type.", identifier, testType);
+                final String invalidIdentifierMessage =
+                        String.format(
+                                "An invalid identifier '%s' for test type '%s'"
+                                        + " was detected. Using fallback buckets for the test type.",
+                                identifier, testType);
                 if (identifier.isEmpty()) {
                     LOGGER.debug(invalidIdentifierMessage);
                 } else {
@@ -372,26 +392,30 @@ public class Proctor {
     }
 
     public void appendTests(final Writer sb, final TestType type) {
-        appendTests(sb, new Predicate<TestChooser<?>>() {
-            @Override
-            public boolean apply(final TestChooser<?> input) {
-                assert null != input;
-                return type == input.getTestDefinition().getTestType();
-            }
-        });
+        appendTests(
+                sb,
+                new Predicate<TestChooser<?>>() {
+                    @Override
+                    public boolean apply(final TestChooser<?> input) {
+                        assert null != input;
+                        return type == input.getTestDefinition().getTestType();
+                    }
+                });
     }
 
     public void appendTestsNameFiltered(final Writer sb, final Collection<String> testNameFilter) {
-        final Function<TestChooser<?>, String> getTestName = new Function<TestChooser<?>, String>() {
-            @Override
-            public String apply(final TestChooser<?> input) {
-                return input.getTestName();
-            }
-        };
+        final Function<TestChooser<?>, String> getTestName =
+                new Function<TestChooser<?>, String>() {
+                    @Override
+                    public String apply(final TestChooser<?> input) {
+                        return input.getTestName();
+                    }
+                };
         appendTests(sb, Predicates.compose(Predicates.in(testNameFilter), getTestName));
     }
 
-    public void appendTests(final Writer sb, @Nonnull final Predicate<TestChooser<?>> shouldIncludeTest) {
+    public void appendTests(
+            final Writer sb, @Nonnull final Predicate<TestChooser<?>> shouldIncludeTest) {
         final PrintWriter writer = new PrintWriter(sb);
         for (final Entry<String, TestChooser<?>> entry : testChoosers.entrySet()) {
             final String testName = entry.getKey();
@@ -404,20 +428,17 @@ public class Proctor {
         }
     }
 
-    /**
-     * appends json representation of testmatrix. Does not close the writer.
-     */
+    /** appends json representation of testmatrix. Does not close the writer. */
     public void appendTestMatrix(final Writer writer) throws IOException {
         OBJECT_WRITER.writeValue(writer, this.matrix);
     }
 
     /**
-     * appends json representation of testmatrix with only given testnames. Does not close the writer.
+     * appends json representation of testmatrix with only given testnames. Does not close the
+     * writer.
      */
     public void appendTestMatrixFiltered(
-            final Writer writer,
-            final Collection<String> testNameFilter
-    ) throws IOException {
+            final Writer writer, final Collection<String> testNameFilter) throws IOException {
         // Create new matrix object copied from the old one,
         // but keep only the tests with names in testNameFilter.
         final TestMatrixArtifact filtered = new TestMatrixArtifact();
@@ -425,5 +446,4 @@ public class Proctor {
         filtered.setTests(Maps.filterKeys(this.matrix.getTests(), Predicates.in(testNameFilter)));
         OBJECT_WRITER.writeValue(writer, filtered);
     }
-
 }

@@ -15,7 +15,8 @@ public class CommentFormatter {
         this.revisionCommitCommentFormatter = revisionCommitCommentFormatter;
     }
 
-    public String formatFullComment(final String comment, final Map<String, String[]> requestParameterMap) {
+    public String formatFullComment(
+            final String comment, final Map<String, String[]> requestParameterMap) {
         if (revisionCommitCommentFormatter != null) {
             return revisionCommitCommentFormatter.formatComment(comment, requestParameterMap);
         } else {

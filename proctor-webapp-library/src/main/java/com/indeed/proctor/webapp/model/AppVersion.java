@@ -2,15 +2,12 @@ package com.indeed.proctor.webapp.model;
 
 import com.google.common.collect.ComparisonChain;
 
-/**
- * @author parker
- */
+/** @author parker */
 public class AppVersion implements Comparable<AppVersion> {
     private final String app;
     private final String version;
 
-    public AppVersion(final String app,
-                      final String version) {
+    public AppVersion(final String app, final String version) {
         this.app = app;
         this.version = version;
     }

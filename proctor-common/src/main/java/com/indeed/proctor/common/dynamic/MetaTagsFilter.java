@@ -15,7 +15,8 @@ public class MetaTagsFilter implements DynamicFilter {
     private final Set<String> metaTags;
 
     public MetaTagsFilter(@JsonProperty("meta_tags") final Set<String> metaTags) {
-        Preconditions.checkArgument(!CollectionUtils.isEmpty(metaTags), "meta_tags should be non-empty string list.");
+        Preconditions.checkArgument(
+                !CollectionUtils.isEmpty(metaTags), "meta_tags should be non-empty string list.");
         this.metaTags = ImmutableSet.copyOf(metaTags);
     }
 

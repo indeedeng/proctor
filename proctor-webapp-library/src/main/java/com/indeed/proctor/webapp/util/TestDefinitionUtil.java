@@ -26,10 +26,11 @@ import static org.apache.commons.lang3.ObjectUtils.defaultIfNull;
 public class TestDefinitionUtil {
     private static final Logger LOGGER = LogManager.getLogger(TestDefinitionUtil.class);
 
-    public static List<RevisionDefinition> makeRevisionDefinitionList(final ProctorStore store,
-                                                                      final String testName,
-                                                                      final String startRevision,
-                                                                      final boolean useDefinitions) {
+    public static List<RevisionDefinition> makeRevisionDefinitionList(
+            final ProctorStore store,
+            final String testName,
+            final String startRevision,
+            final boolean useDefinitions) {
         final List<Revision> history = getTestHistory(store, testName, startRevision);
         final List<RevisionDefinition> revisionDefinitions = new ArrayList<>();
         if (useDefinitions) {
@@ -46,27 +47,29 @@ public class TestDefinitionUtil {
         return revisionDefinitions;
     }
 
-    /**
-     * Fast retrieval of the current Definition from the testMatrix
-     */
+    /** Fast retrieval of the current Definition from the testMatrix */
     // @Nullable
     @CheckForNull
-    public static TestDefinition getTestDefinition(final ProctorStore store, final String testName) {
+    public static TestDefinition getTestDefinition(
+            final ProctorStore store, final String testName) {
         try {
             return store.getCurrentTestDefinition(testName);
         } catch (final StoreException e) {
             // don't care about exception cause stacktrace for INFO level message
-            LOGGER.info("Failed to get current test definition for: " + testName + ": " + e.getMessage());
+            LOGGER.info(
+                    "Failed to get current test definition for: "
+                            + testName
+                            + ": "
+                            + e.getMessage());
             return null;
         }
     }
 
-    /**
-     * Slow? lookup of historic test definition
-     */
+    /** Slow? lookup of historic test definition */
     // @Nullable
     @CheckForNull
-    public static TestDefinition getTestDefinition(final ProctorStore store, final String testName, final String revision) {
+    public static TestDefinition getTestDefinition(
+            final ProctorStore store, final String testName, final String revision) {
         try {
             if ("-1".equals(revision)) {
                 LOGGER.info("Ignore revision id -1");
@@ -75,13 +78,19 @@ public class TestDefinitionUtil {
             return store.getTestDefinition(testName, revision);
         } catch (final StoreException e) {
             // don't care about exception cause stacktrace for INFO level message
-            LOGGER.info("Failed to get current test definition for: " + testName + ": " + e.getMessage());
+            LOGGER.info(
+                    "Failed to get current test definition for: "
+                            + testName
+                            + ": "
+                            + e.getMessage());
             return null;
         }
     }
 
     /**
-     * retrieves the TestDefinition from the ProctorStore using fast cache access for the latest version if possible
+     * retrieves the TestDefinition from the ProctorStore using fast cache access for the latest
+     * version if possible
+     *
      * @deprecated use other getTestDefinitionTryCached
      */
     @Deprecated
@@ -90,25 +99,20 @@ public class TestDefinitionUtil {
             final ProctorPromoter promoter, // obsolete after refactor
             final Environment environment,
             final String testName,
-            final String revision
-    ) {
-        return getTestDefinitionTryCached(
-                store,
-                environment,
-                testName,
-                revision);
+            final String revision) {
+        return getTestDefinitionTryCached(store, environment, testName, revision);
     }
 
     /**
-     * retrieves the TestDefinition from the ProctorStore using fast cache access for the latest version if possible
+     * retrieves the TestDefinition from the ProctorStore using fast cache access for the latest
+     * version if possible
      */
     @CheckForNull
     public static TestDefinition getTestDefinitionTryCached(
             final ProctorStore store,
             final Environment environment,
             final String testName,
-            final String revision
-    ) {
+            final String revision) {
         return getTestDefinitionTryCached(
                 store,
                 getResolvedLastVersion(store, testName, environment).getVersion(),
@@ -117,18 +121,19 @@ public class TestDefinitionUtil {
     }
 
     /**
-     * retrieves the TestDefinition from the ProctorStore using fast cache access for the latest version if possible
+     * retrieves the TestDefinition from the ProctorStore using fast cache access for the latest
+     * version if possible
      */
     @CheckForNull
     private static TestDefinition getTestDefinitionTryCached(
             final ProctorStore store,
             final String latestRevision,
             final String testName,
-            final String revision
-    ) {
-        if (revision.isEmpty() ||
-                (!"-1".equals(latestRevision) && revision.equals(latestRevision))) {
-            // if revision is environment latest version, fetching current environment version is more cache-friendly
+            final String revision) {
+        if (revision.isEmpty()
+                || (!"-1".equals(latestRevision) && revision.equals(latestRevision))) {
+            // if revision is environment latest version, fetching current environment version is
+            // more cache-friendly
             return getTestDefinition(store, testName);
         } else {
             return getTestDefinition(store, testName, revision);
@@ -141,7 +146,8 @@ public class TestDefinitionUtil {
      * @return null on errors, "-1" when no history or resolution failed
      */
     @CheckForNull
-    public static SingleEnvironmentVersion getResolvedLastVersion(final ProctorStore store, final String testName, final Environment environment) {
+    public static SingleEnvironmentVersion getResolvedLastVersion(
+            final ProctorStore store, final String testName, final Environment environment) {
         final List<Revision> history;
         try {
             history = getMostRecentHistory(store, testName);
@@ -163,7 +169,8 @@ public class TestDefinitionUtil {
     }
 
     // @Nonnull
-    private static List<Revision> getMostRecentHistory(final ProctorStore store, final String testName) throws StoreException {
+    private static List<Revision> getMostRecentHistory(
+            final ProctorStore store, final String testName) throws StoreException {
         final List<Revision> history = store.getHistory(testName, 0, 1);
         if (history.size() == 0) {
             LOGGER.info("No version history for [" + testName + "]");
@@ -171,21 +178,29 @@ public class TestDefinitionUtil {
         return history;
     }
 
-    private static String getEffectiveRevisionFromStore(final ProctorStore proctorStore, final String testName, final Revision revision) {
+    private static String getEffectiveRevisionFromStore(
+            final ProctorStore proctorStore, final String testName, final Revision revision) {
         try {
-            return identifyEffectiveRevision(proctorStore.getCurrentTestDefinition(testName), revision);
+            return identifyEffectiveRevision(
+                    proctorStore.getCurrentTestDefinition(testName), revision);
         } catch (final StoreException e) {
-            LOGGER.error("Unable to retrieve test definition for " + testName + " at " + revision
-                    + " in " + proctorStore.getName(), e);
+            LOGGER.error(
+                    "Unable to retrieve test definition for "
+                            + testName
+                            + " at "
+                            + revision
+                            + " in "
+                            + proctorStore.getName(),
+                    e);
             return UNKNOWN_VERSION;
         }
     }
 
+    private static final Pattern CHARM_MERGE_REVISION =
+            Pattern.compile("^merged r([\\d]+):", Pattern.MULTILINE);
 
-    private static final Pattern CHARM_MERGE_REVISION = Pattern.compile("^merged r([\\d]+):", Pattern.MULTILINE);
-
-    private static String identifyEffectiveRevision(final TestDefinition branchDefinition,
-                                                    final Revision branchRevision) {
+    private static String identifyEffectiveRevision(
+            final TestDefinition branchDefinition, final Revision branchRevision) {
         if (branchDefinition == null) {
             return UNKNOWN_VERSION;
         }
@@ -200,19 +215,22 @@ public class TestDefinitionUtil {
         return branchDefinition.getVersion();
     }
 
-    public static List<Revision> getTestHistory(final ProctorStore store, final String testName, final int limit) {
+    public static List<Revision> getTestHistory(
+            final ProctorStore store, final String testName, final int limit) {
         return getTestHistory(store, testName, null, limit);
     }
 
-    private static List<Revision> getTestHistory(final ProctorStore store, final String testName, final String startRevision) {
+    private static List<Revision> getTestHistory(
+            final ProctorStore store, final String testName, final String startRevision) {
         return getTestHistory(store, testName, startRevision, Integer.MAX_VALUE);
     }
 
     // @Nonnull
-    private static List<Revision> getTestHistory(final ProctorStore store,
-                                                 final String testName,
-                                                 final String startRevision,
-                                                 final int limit) {
+    private static List<Revision> getTestHistory(
+            final ProctorStore store,
+            final String testName,
+            final String startRevision,
+            final int limit) {
         try {
             final List<Revision> history;
             if (startRevision == null) {
@@ -226,7 +244,8 @@ public class TestDefinitionUtil {
             return history;
         } catch (final StoreException e) {
             // don't care about exception cause stacktrace for INFO level message
-            LOGGER.info("Failed to get current test history for: " + testName + ": " + e.getMessage());
+            LOGGER.info(
+                    "Failed to get current test history for: " + testName + ": " + e.getMessage());
             return null;
         }
     }

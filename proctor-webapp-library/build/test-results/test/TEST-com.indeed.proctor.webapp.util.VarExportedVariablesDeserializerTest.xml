@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.indeed.proctor.webapp.util.VarExportedVariablesDeserializerTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2023-05-01T19:04:53" hostname="IT-USA-VY0740" time="0.005">
+  <properties/>
+  <testcase name="testDeserialize_Symbols" classname="com.indeed.proctor.webapp.util.VarExportedVariablesDeserializerTest" time="0.003"/>
+  <testcase name="testEscapeTargetPattern" classname="com.indeed.proctor.webapp.util.VarExportedVariablesDeserializerTest" time="0.001"/>
+  <testcase name="testDeserialize_ImpossibleCase" classname="com.indeed.proctor.webapp.util.VarExportedVariablesDeserializerTest" time="0.0"/>
+  <testcase name="testDeserialize_simpleString" classname="com.indeed.proctor.webapp.util.VarExportedVariablesDeserializerTest" time="0.0"/>
+  <testcase name="testDeserialize_NonAscii" classname="com.indeed.proctor.webapp.util.VarExportedVariablesDeserializerTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

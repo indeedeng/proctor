@@ -1,0 +1,33 @@
+indeedOss.activateFeature 'library'
+indeedLibrary.name = 'proctor-webapp-library'
+
+dependencies {
+    implementation project(':proctor-common')
+    implementation project(':proctor-store')
+    implementation project(':proctor-store-svn')
+    implementation project(':proctor-store-git')
+    implementation 'com.indeed:util-varexport:1.0.49-1cfb888'
+    implementation 'com.indeed:util-core:1.0.49-1cfb888'
+    implementation libs.springBeans
+    implementation libs.springContext
+    implementation libs.springCore
+    implementation libs.springJdbc
+    implementation libs.springWeb
+    implementation libs.springWebmvc
+    implementation 'org.apache.commons:commons-collections4:4.3'
+    implementation 'org.apache.httpcomponents:httpclient:4.5.5'
+    implementation libs.commonsIo
+    implementation libs.jacksonCore
+    implementation libs.svnkit
+    implementation libs.guava
+    implementation libs.log4jCore
+    implementation libs.log4jApi
+    implementation libs.jacksonDatabind
+    implementation libs.commonsLang
+    implementation libs.tomcatElApi
+    compileOnly libs.tomcatServletApi
+    compileOnly libs.jsr305
+    implementation libs.junit
+    implementation libs.assertj
+    implementation libs.mockito
+}

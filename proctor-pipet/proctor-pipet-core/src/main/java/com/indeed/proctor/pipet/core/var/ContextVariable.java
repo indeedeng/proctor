@@ -4,19 +4,18 @@ import com.google.common.base.Preconditions;
 import com.indeed.proctor.pipet.core.config.ExtractorSource;
 import com.indeed.proctor.pipet.core.config.JsonContextVarConfig;
 
-/**
- * Implementation of PrefixVariable that also includes a ValueConverter for type conversion.
- */
+/** Implementation of PrefixVariable that also includes a ValueConverter for type conversion. */
 public class ContextVariable extends PrefixVariable {
     private final String defaultValue;
     private final ValueConverter converter;
 
-    public ContextVariable(final String varName,
-                           final ExtractorSource source,
-                           final String sourceKey,
-                           final ValueExtractor extractor,
-                           final String defaultValue,
-                           final ValueConverter converter) {
+    public ContextVariable(
+            final String varName,
+            final ExtractorSource source,
+            final String sourceKey,
+            final ValueExtractor extractor,
+            final String defaultValue,
+            final ValueConverter converter) {
         super(varName, source, sourceKey, extractor);
         this.defaultValue = defaultValue;
         this.converter = converter;
@@ -75,13 +74,7 @@ public class ContextVariable extends PrefixVariable {
             final String sourceKey = computeSourceKey();
             final ValueExtractor extractor = getOrCreateValueExtractor();
             return new ContextVariable(
-                varName,
-                source,
-                sourceKey,
-                extractor,
-                defaultValue,
-                converter
-            );
+                    varName, source, sourceKey, extractor, defaultValue, converter);
         }
     }
 }

@@ -29,58 +29,68 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class TestTestSearchUtil {
-    private static final Allocation ALLOCATION_100 = new Allocation(null, ImmutableList.of(
-            new Range(1, 1),
-            new Range(-1, 0),
-            new Range(0, 0)));
-    private static final Allocation ALLOCATION_0 = new Allocation(null, ImmutableList.of(
-            new Range(1, 0),
-            new Range(-1, 1),
-            new Range(0, 0)));
-    private static final Allocation ALLOCATION_50_50 = new Allocation(null, ImmutableList.of(
-            new Range(1, 0.5),
-            new Range(-1, 0),
-            new Range(0, 0.5)));
+    private static final Allocation ALLOCATION_100 =
+            new Allocation(
+                    null, ImmutableList.of(new Range(1, 1), new Range(-1, 0), new Range(0, 0)));
+    private static final Allocation ALLOCATION_0 =
+            new Allocation(
+                    null, ImmutableList.of(new Range(1, 0), new Range(-1, 1), new Range(0, 0)));
+    private static final Allocation ALLOCATION_50_50 =
+            new Allocation(
+                    null, ImmutableList.of(new Range(1, 0.5), new Range(-1, 0), new Range(0, 0.5)));
     private static final Allocation ALLOCATION_50_50_WITH_RULE = ALLOCATION_50_50;
 
     static {
         ALLOCATION_50_50_WITH_RULE.setRule("country == 'US'");
     }
 
-    private static final Allocation ALLOCATION_TEN_10S = new Allocation(null, IntStream.range(-1, 9)
-            .mapToObj(i -> new Range(i, 0.1))
-            .collect(Collectors.toList()));
+    private static final Allocation ALLOCATION_TEN_10S =
+            new Allocation(
+                    null,
+                    IntStream.range(-1, 9)
+                            .mapToObj(i -> new Range(i, 0.1))
+                            .collect(Collectors.toList()));
 
     private static final TestBucket INACTIVE_BUCKET = new TestBucket("inactive", -1, null);
     private static final TestBucket CONTROL_BUCKET = new TestBucket("control", 0, null);
-    private static final TestBucket CONTROL_BUCKET_WITH_DESCRIPTION = new TestBucket("control", 0, "This is CONTROL");
+    private static final TestBucket CONTROL_BUCKET_WITH_DESCRIPTION =
+            new TestBucket("control", 0, "This is CONTROL");
     private static final TestBucket ACTIVE_BUCKET = new TestBucket("active", 1, null);
-    private static final TestBucket ACTIVE_BUCKET_WITH_DESCRIPTION = new TestBucket("active", 1, "This is the test " +
-            "treatment 1");
+    private static final TestBucket ACTIVE_BUCKET_WITH_DESCRIPTION =
+            new TestBucket("active", 1, "This is the test " + "treatment 1");
 
-    private static final TestDefinition DEFAULT_DEFINITION = new TestDefinition(
-            "",
-            null,
-            TestType.ANONYMOUS_USER,
-            "&salt",
-            ImmutableList.of(INACTIVE_BUCKET, CONTROL_BUCKET, ACTIVE_BUCKET),
-            ImmutableList.of(ALLOCATION_50_50),
-            false,
-            Collections.emptyMap(),
-            Collections.emptyMap(),
-            null,
-            ImmutableList.of("example_tag_1", "example_tag_2"));
-    private static final TestDefinition DEFINITION_WITH_DESCRIPTION = new TestDefinition(DEFAULT_DEFINITION);
-    private static final TestDefinition DEFINITION_WITH_RULE = new TestDefinition(DEFAULT_DEFINITION);
-    private static final TestDefinition DEFINITION_WITH_BUCKET_RULE = new TestDefinition(DEFAULT_DEFINITION);
-    private static final TestDefinition DEFINITION_WITH_BUCKET_DESCRIPTION = new TestDefinition(DEFAULT_DEFINITION);
+    private static final TestDefinition DEFAULT_DEFINITION =
+            new TestDefinition(
+                    "",
+                    null,
+                    TestType.ANONYMOUS_USER,
+                    "&salt",
+                    ImmutableList.of(INACTIVE_BUCKET, CONTROL_BUCKET, ACTIVE_BUCKET),
+                    ImmutableList.of(ALLOCATION_50_50),
+                    false,
+                    Collections.emptyMap(),
+                    Collections.emptyMap(),
+                    null,
+                    ImmutableList.of("example_tag_1", "example_tag_2"));
+    private static final TestDefinition DEFINITION_WITH_DESCRIPTION =
+            new TestDefinition(DEFAULT_DEFINITION);
+    private static final TestDefinition DEFINITION_WITH_RULE =
+            new TestDefinition(DEFAULT_DEFINITION);
+    private static final TestDefinition DEFINITION_WITH_BUCKET_RULE =
+            new TestDefinition(DEFAULT_DEFINITION);
+    private static final TestDefinition DEFINITION_WITH_BUCKET_DESCRIPTION =
+            new TestDefinition(DEFAULT_DEFINITION);
 
     static {
         DEFINITION_WITH_DESCRIPTION.setDescription("Great a/b test!");
         DEFINITION_WITH_RULE.setRule("country == 'MX'");
-        DEFINITION_WITH_BUCKET_RULE.setAllocations(ImmutableList.of(ALLOCATION_50_50_WITH_RULE, ALLOCATION_0));
-        DEFINITION_WITH_BUCKET_DESCRIPTION.setBuckets(ImmutableList.of(INACTIVE_BUCKET,
-                CONTROL_BUCKET_WITH_DESCRIPTION, ACTIVE_BUCKET_WITH_DESCRIPTION));
+        DEFINITION_WITH_BUCKET_RULE.setAllocations(
+                ImmutableList.of(ALLOCATION_50_50_WITH_RULE, ALLOCATION_0));
+        DEFINITION_WITH_BUCKET_DESCRIPTION.setBuckets(
+                ImmutableList.of(
+                        INACTIVE_BUCKET,
+                        CONTROL_BUCKET_WITH_DESCRIPTION,
+                        ACTIVE_BUCKET_WITH_DESCRIPTION));
     }
 
     @Test
@@ -121,8 +131,9 @@ public class TestTestSearchUtil {
     public void testMatchBucketDescription() {
         assertTrue(matchBucketDescription(DEFAULT_DEFINITION, ""));
         assertFalse(matchBucketDescription(DEFAULT_DEFINITION, "this is"));
-        assertTrue(matchBucketDescription(DEFINITION_WITH_BUCKET_DESCRIPTION, "this is the test " +
-                "treatment 1"));
+        assertTrue(
+                matchBucketDescription(
+                        DEFINITION_WITH_BUCKET_DESCRIPTION, "this is the test " + "treatment 1"));
         assertFalse(matchBucketDescription(DEFINITION_WITH_BUCKET_DESCRIPTION, "treatment 2"));
     }
 
@@ -149,8 +160,9 @@ public class TestTestSearchUtil {
         assertTrue(matchActiveAllocation(ImmutableList.of(ALLOCATION_50_50)));
         assertTrue(matchActiveAllocation(ImmutableList.of(ALLOCATION_TEN_10S)));
         assertTrue(matchActiveAllocation(ImmutableList.of(ALLOCATION_0, ALLOCATION_50_50)));
-        assertTrue(matchActiveAllocation(ImmutableList.of(ALLOCATION_0, ALLOCATION_50_50,
-                ALLOCATION_100)));
+        assertTrue(
+                matchActiveAllocation(
+                        ImmutableList.of(ALLOCATION_0, ALLOCATION_50_50, ALLOCATION_100)));
     }
 
     @Test
@@ -165,21 +177,30 @@ public class TestTestSearchUtil {
 
     @Test
     public void testGivenSetFirstComparator() {
-        final ImmutableSet<String> favorites = ImmutableSet.of("WEIRD_test", "example_test", "nonexistent_test",
-                "GOOD_TEST" /*case sensitive check*/);
-        final Comparator<String> comparator = TestSearchUtil.givenSetFirstComparator(
-                favorites);
+        final ImmutableSet<String> favorites =
+                ImmutableSet.of(
+                        "WEIRD_test",
+                        "example_test",
+                        "nonexistent_test",
+                        "GOOD_TEST" /*case sensitive check*/);
+        final Comparator<String> comparator = TestSearchUtil.givenSetFirstComparator(favorites);
 
-        String[] sorted = Stream.of("WEIRD_test", "good_test", "example_test", "super_test", "A_test")
-                .sorted(comparator).toArray(String[]::new);
+        String[] sorted =
+                Stream.of("WEIRD_test", "good_test", "example_test", "super_test", "A_test")
+                        .sorted(comparator)
+                        .toArray(String[]::new);
         assertTrue(favorites.contains(sorted[0]));
         assertTrue(favorites.contains(sorted[1]));
         assertFalse(favorites.contains(sorted[2]));
         assertFalse(favorites.contains(sorted[3]));
         assertFalse(favorites.contains(sorted[4]));
 
-        sorted = Stream.of("WEIRD_test", "good_test", "example_test", "super_test", "A_test")
-                .sorted(comparator.thenComparing(String::compareToIgnoreCase)).toArray(String[]::new);
-        assertArrayEquals(new String[]{"example_test", "WEIRD_test", "A_test", "good_test", "super_test"}, sorted);
+        sorted =
+                Stream.of("WEIRD_test", "good_test", "example_test", "super_test", "A_test")
+                        .sorted(comparator.thenComparing(String::compareToIgnoreCase))
+                        .toArray(String[]::new);
+        assertArrayEquals(
+                new String[] {"example_test", "WEIRD_test", "A_test", "good_test", "super_test"},
+                sorted);
     }
 }

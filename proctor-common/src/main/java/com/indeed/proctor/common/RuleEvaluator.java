@@ -28,7 +28,6 @@ import java.util.Map;
  *
  * @author ketan
  * @author pwp
- *
  */
 public class RuleEvaluator {
     private static final Logger LOGGER = LogManager.getLogger(RuleEvaluator.class);
@@ -37,30 +36,27 @@ public class RuleEvaluator {
 
     static final ExpressionFactory EXPRESSION_FACTORY = new ExpressionFactoryImpl();
 
-    @Nonnull
-    final ExpressionFactory expressionFactory;
-    @Nonnull
-    final CompositeELResolver elResolver;
-    @Nonnull
-    private final Map<String, ValueExpression> testConstants;
-    @Nonnull
-    private final FunctionMapper functionMapper;
+    @Nonnull final ExpressionFactory expressionFactory;
+    @Nonnull final CompositeELResolver elResolver;
+    @Nonnull private final Map<String, ValueExpression> testConstants;
+    @Nonnull private final FunctionMapper functionMapper;
 
     RuleEvaluator(
             @Nonnull final ExpressionFactory expressionFactory,
             @Nonnull final FunctionMapper functionMapper,
-            @Nonnull final Map<String, Object> testConstantsMap
-    ) {
+            @Nonnull final Map<String, Object> testConstantsMap) {
         this.expressionFactory = expressionFactory;
 
         this.functionMapper = functionMapper;
 
         elResolver = constructStandardElResolver();
 
-        testConstants = ProctorUtils.convertToValueExpressionMap(expressionFactory, testConstantsMap);
+        testConstants =
+                ProctorUtils.convertToValueExpressionMap(expressionFactory, testConstantsMap);
     }
 
-    public static RuleEvaluator createDefaultRuleEvaluator(final Map<String, Object> testConstantsMap) {
+    public static RuleEvaluator createDefaultRuleEvaluator(
+            final Map<String, Object> testConstantsMap) {
         return new RuleEvaluator(EXPRESSION_FACTORY, FUNCTION_MAPPER, testConstantsMap);
     }
 
@@ -74,19 +70,20 @@ public class RuleEvaluator {
         return elResolver;
     }
 
-
     public static LibraryFunctionMapperBuilder defaultFunctionMapperBuilder() {
-        final LibraryFunctionMapperBuilder builder = new LibraryFunctionMapperBuilder()
-                                                .add("indeed", ProctorRuleFunctions.class) //backwards compatibility
-                                                .add("fn", LegacyTaglibFunctions.class)
-                                                .add("proctor", ProctorRuleFunctions.class);
+        final LibraryFunctionMapperBuilder builder =
+                new LibraryFunctionMapperBuilder()
+                        .add("indeed", ProctorRuleFunctions.class) // backwards compatibility
+                        .add("fn", LegacyTaglibFunctions.class)
+                        .add("proctor", ProctorRuleFunctions.class);
         return builder;
     }
 
     @Nonnull
     ELContext createElContext(@Nonnull final Map<String, ValueExpression> localContext) {
         @SuppressWarnings("unchecked")
-        final VariableMapper variableMapper = new MulticontextReadOnlyVariableMapper(testConstants, localContext);
+        final VariableMapper variableMapper =
+                new MulticontextReadOnlyVariableMapper(testConstants, localContext);
         return createELContext(variableMapper);
     }
 
@@ -127,12 +124,12 @@ public class RuleEvaluator {
             return true;
         }
         if (!rule.startsWith("${") || !rule.endsWith("}")) {
-            LOGGER.error("Invalid rule '" +  rule + "'");   //  TODO: should this be an exception?
+            LOGGER.error("Invalid rule '" + rule + "'"); //  TODO: should this be an exception?
             return false;
         }
         final String bareRule = ProctorUtils.removeElExpressionBraces(rule);
         if (StringUtils.isBlank(bareRule) || "true".equalsIgnoreCase(bareRule)) {
-            return true;    //  always passes
+            return true; //  always passes
         }
         if ("false".equalsIgnoreCase(bareRule)) {
             return false;
@@ -147,16 +144,18 @@ public class RuleEvaluator {
         if (result instanceof Boolean) {
             return ((Boolean) result);
         }
-        // this should never happen, evaluateRule throws ELException when it cannot coerce to Boolean
-        throw new IllegalArgumentException("Received non-boolean return value: "
-                + (result == null ? "null" : result.getClass().getCanonicalName())
-                + " from rule " + rule);
+        // this should never happen, evaluateRule throws ELException when it cannot coerce to
+        // Boolean
+        throw new IllegalArgumentException(
+                "Received non-boolean return value: "
+                        + (result == null ? "null" : result.getClass().getCanonicalName())
+                        + " from rule "
+                        + rule);
     }
 
-    /**
-     * @throws IllegalArgumentException if type of expression is not boolean
-     */
-    static void checkRuleIsBooleanType(final String rule, final ELContext elContext, final ValueExpression ve) {
+    /** @throws IllegalArgumentException if type of expression is not boolean */
+    static void checkRuleIsBooleanType(
+            final String rule, final ELContext elContext, final ValueExpression ve) {
         // apache-el is an expression language, not a rule language, and it is very lenient
         // sadly that means it will just evaluate to false when users make certain mistakes, e.g. by
         // coercing String value "xyz" to boolean false, instead of throwing an exception.
@@ -168,12 +167,14 @@ public class RuleEvaluator {
         }
         // allow null to be coerced for historic reasons
         if ((type != null) && (type != boolean.class)) {
-            throw new IllegalArgumentException("Received non-boolean return value: " + type + " from rule " + rule);
+            throw new IllegalArgumentException(
+                    "Received non-boolean return value: " + type + " from rule " + rule);
         }
     }
 
     /**
-     * @param expectedType class to coerce result to, use primitive instead of wrapper, e.g. boolean.class instead of Boolean.class.
+     * @param expectedType class to coerce result to, use primitive instead of wrapper, e.g.
+     *     boolean.class instead of Boolean.class.
      * @return null or a Boolean value representing the expression evaluation result
      * @throws RuntimeException: E.g. PropertyNotFound or other ELException when not of expectedType
      * @deprecated Use evaluateBooleanRule() instead, it checks against more errors
@@ -185,5 +186,4 @@ public class RuleEvaluator {
         final ValueExpression ve = expressionFactory.createValueExpression(elContext, rule, expectedType);
         return ve.getValue(elContext);
     }
-
 }

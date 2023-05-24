@@ -13,8 +13,7 @@ public class TestDependency {
     @JsonCreator
     public TestDependency(
             @JsonProperty("testName") final String testName,
-            @JsonProperty("bucketValue") final int bucketValue
-    ) {
+            @JsonProperty("bucketValue") final int bucketValue) {
         this.testName = testName;
         this.bucketValue = bucketValue;
     }

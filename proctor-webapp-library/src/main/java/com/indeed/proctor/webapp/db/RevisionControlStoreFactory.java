@@ -19,9 +19,10 @@ public class RevisionControlStoreFactory implements FactoryBean<StoreFactory> {
 
     @Value("${revision.control}")
     private String revisionControlType;
+
     private ScheduledExecutorService scheduledExecutorService;
 
-    private boolean cache;  // only svn
+    private boolean cache; // only svn
     private long tempDirCleanupAgeMinutes; // only svn
     private long scmRefreshMinutes; // only svn
     private long scmRefreshSeconds; // only svn
@@ -29,7 +30,7 @@ public class RevisionControlStoreFactory implements FactoryBean<StoreFactory> {
     private String scmUsername;
     private String scmPassword;
     private String testDefinitionsDirectory;
-    private String tempRootDirectory;  // only git
+    private String tempRootDirectory; // only git
 
     private int gitDirectoryLockTimeoutSeconds;
     private int gitPullPushTimeoutSeconds;
@@ -46,9 +47,7 @@ public class RevisionControlStoreFactory implements FactoryBean<StoreFactory> {
     private TrunkQaProdStoresFactory createFactory() throws IOException {
         if ("svn".equals(revisionControlType)) {
             Preconditions.checkArgument(
-                    globalCacheStore == null,
-                    "Global cache is not supported in SVN"
-            );
+                    globalCacheStore == null, "Global cache is not supported in SVN");
             if (scmRefreshMinutes > 0) {
                 scmRefreshSeconds = TimeUnit.MINUTES.toSeconds(scmRefreshMinutes);
             }
@@ -95,7 +94,8 @@ public class RevisionControlStoreFactory implements FactoryBean<StoreFactory> {
         return revisionControlType;
     }
 
-    public void setScheduledExecutorService(final ScheduledExecutorService scheduledExecutorService) {
+    public void setScheduledExecutorService(
+            final ScheduledExecutorService scheduledExecutorService) {
         this.scheduledExecutorService = scheduledExecutorService;
     }
 

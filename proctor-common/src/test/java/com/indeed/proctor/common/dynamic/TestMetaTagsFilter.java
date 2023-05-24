@@ -51,19 +51,20 @@ public class TestMetaTagsFilter {
         assertFilterMatchesEquals(false, filter, emptyList());
     }
 
-    private void assertFilterMatchesEquals(final boolean expected, final MetaTagsFilter filter, final List<String> testMetaTags) {
-        final ConsumableTestDefinition definition = new ConsumableTestDefinition(
-                "",
-                null,
-                TestType.EMAIL_ADDRESS,
-                null,
-                emptyList(),
-                emptyList(),
-                false,
-                emptyMap(),
-                null,
-                testMetaTags
-        );
+    private void assertFilterMatchesEquals(
+            final boolean expected, final MetaTagsFilter filter, final List<String> testMetaTags) {
+        final ConsumableTestDefinition definition =
+                new ConsumableTestDefinition(
+                        "",
+                        null,
+                        TestType.EMAIL_ADDRESS,
+                        null,
+                        emptyList(),
+                        emptyList(),
+                        false,
+                        emptyMap(),
+                        null,
+                        testMetaTags);
 
         assertEquals(expected, filter.matches("", definition));
     }
@@ -74,6 +75,8 @@ public class TestMetaTagsFilter {
 
         final String serializedFilter = OBJECT_MAPPER.writeValueAsString(filter);
 
-        assertEquals("{\"type\":\"meta_tags_filter\",\"meta_tags\":[\"test1\",\"test2\"]}", serializedFilter);
+        assertEquals(
+                "{\"type\":\"meta_tags_filter\",\"meta_tags\":[\"test1\",\"test2\"]}",
+                serializedFilter);
     }
 }

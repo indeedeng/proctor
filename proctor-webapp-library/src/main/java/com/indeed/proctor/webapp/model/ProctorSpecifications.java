@@ -15,70 +15,57 @@ import java.util.stream.Collectors;
 
 /**
  * a immutable set of proctor specifications (usually, from a single app)
- * <p>
- * This model allows multiple specifications because one application
- * may initiate more than one Proctor object with different specifications
- * for different usages/contexts
+ *
+ * <p>This model allows multiple specifications because one application may initiate more than one
+ * Proctor object with different specifications for different usages/contexts
  */
 public class ProctorSpecifications {
     private final Set<ProctorSpecification> specifications;
 
-    public ProctorSpecifications(
-            final Iterable<ProctorSpecification> specifications
-    ) {
+    public ProctorSpecifications(final Iterable<ProctorSpecification> specifications) {
         this.specifications = ImmutableSet.copyOf(specifications);
     }
 
-    /**
-     * Provide a view of set object of specifications
-     */
+    /** Provide a view of set object of specifications */
     @JsonValue
     public Set<ProctorSpecification> asSet() {
         return specifications;
     }
 
     /**
-     * Returns a map where keys are names of required tests in any specification
-     * and values of each key are a collection of test specifications of the test.
+     * Returns a map where keys are names of required tests in any specification and values of each
+     * key are a collection of test specifications of the test.
      */
     public Map<String, Collection<TestSpecification>> getRequiredTests() {
         final ImmutableMultimap.Builder<String, TestSpecification> builder =
                 ImmutableMultimap.builder();
-        specifications.forEach(specification ->
-                specification.getTests().forEach(builder::put)
-        );
+        specifications.forEach(specification -> specification.getTests().forEach(builder::put));
         return builder.build().asMap();
     }
 
     /**
-     * Returns a set of proctor test names that are resolved
-     * by a dynamic filter defined in one of specifications.
+     * Returns a set of proctor test names that are resolved by a dynamic filter defined in one of
+     * specifications.
      *
      * @param definedTests a map of test definitions in a test matrix used by dynamic filter.
      */
-    public Set<String> getDynamicTests(
-            final Map<String, ConsumableTestDefinition> definedTests
-    ) {
+    public Set<String> getDynamicTests(final Map<String, ConsumableTestDefinition> definedTests) {
         return this.specifications.stream()
-                .map(s -> s.getDynamicFilters()
-                        .determineTests(definedTests, s.getTests().keySet())
-                )
+                .map(s -> s.getDynamicFilters().determineTests(definedTests, s.getTests().keySet()))
                 .flatMap(Collection::stream)
                 .collect(Collectors.toSet());
     }
 
     /**
-     * Returns a set of proctor test names
-     * that are resolved by a test specification or dynamic filters
-     * <p>
-     * Note that a test in a specification will be included
-     * even if it's not defined in a test matrix.
+     * Returns a set of proctor test names that are resolved by a test specification or dynamic
+     * filters
+     *
+     * <p>Note that a test in a specification will be included even if it's not defined in a test
+     * matrix.
      *
      * @param definedTests a map of test definitions in a test matrix used by dynamic filter.
      */
-    public Set<String> getResolvedTests(
-            final Map<String, ConsumableTestDefinition> definedTests
-    ) {
+    public Set<String> getResolvedTests(final Map<String, ConsumableTestDefinition> definedTests) {
         final Set<String> requiredTests = getRequiredTests().keySet();
         final Set<String> dynamicTests = getDynamicTests(definedTests);
         return Sets.union(requiredTests, dynamicTests);

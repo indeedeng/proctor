@@ -6,12 +6,13 @@ import com.indeed.proctor.common.Identifiers;
 import com.indeed.proctor.common.model.TestType;
 import com.indeed.proctor.pipet.core.web.BadRequestException;
 import com.indeed.proctor.pipet.core.web.InternalServerException;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import java.util.Collections;
 import java.util.Map;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /** @author parker */
 public class TestConverter {
@@ -21,17 +22,17 @@ public class TestConverter {
     public void testConvertContextVariables() {
         final Converter converter = getBasicConverter();
 
-        final Map<String, String> rawVariables = ImmutableMap.of(
-            "loggedin", "1",
-            "char", "B"
-        );
+        final Map<String, String> rawVariables =
+                ImmutableMap.of(
+                        "loggedin", "1",
+                        "char", "B");
 
-        final RawParameters rawParameters = new RawParameters(
-            rawVariables,
-            Collections.<TestType, String>emptyMap(),
-            Collections.<String>emptyList(),
-            ""
-        );
+        final RawParameters rawParameters =
+                new RawParameters(
+                        rawVariables,
+                        Collections.<TestType, String>emptyMap(),
+                        Collections.<String>emptyList(),
+                        "");
 
         final ConvertedParameters convertedParameters = converter.convert(rawParameters);
         assertEquals(Boolean.TRUE, convertedParameters.getContext().get("loggedin"));
@@ -44,17 +45,17 @@ public class TestConverter {
     public void testConvertContextVariables_ConversionError() {
         final Converter converter = getBasicConverter();
 
-        final Map<String, String> rawVariables = ImmutableMap.of(
-            "loggedin", "1",
-            "char", "ABC"
-        );
+        final Map<String, String> rawVariables =
+                ImmutableMap.of(
+                        "loggedin", "1",
+                        "char", "ABC");
 
-        final RawParameters rawParameters = new RawParameters(
-            rawVariables,
-            Collections.<TestType, String>emptyMap(),
-            Collections.<String>emptyList(),
-            ""
-        );
+        final RawParameters rawParameters =
+                new RawParameters(
+                        rawVariables,
+                        Collections.<TestType, String>emptyMap(),
+                        Collections.<String>emptyList(),
+                        "");
 
         final ConvertedParameters convertedParameters = converter.convert(rawParameters);
     }
@@ -63,16 +64,14 @@ public class TestConverter {
     public void testConvertContextVariables_MissingVariable() {
         final Converter converter = getBasicConverter();
 
-        final Map<String, String> rawVariables = ImmutableMap.of(
-            "wrong-variable", "ABC"
-        );
+        final Map<String, String> rawVariables = ImmutableMap.of("wrong-variable", "ABC");
 
-        final RawParameters rawParameters = new RawParameters(
-            rawVariables,
-            Collections.<TestType, String>emptyMap(),
-            Collections.<String>emptyList(),
-            ""
-        );
+        final RawParameters rawParameters =
+                new RawParameters(
+                        rawVariables,
+                        Collections.<TestType, String>emptyMap(),
+                        Collections.<String>emptyList(),
+                        "");
 
         final ConvertedParameters convertedParameters = converter.convert(rawParameters);
     }
@@ -81,17 +80,17 @@ public class TestConverter {
     public void testConvertIdentifiers() {
         final Converter converter = new Converter(Collections.<ContextVariable>emptyList());
 
-        final Map<TestType, String> rawIds = ImmutableMap.of(
-            TestType.ANONYMOUS_USER, "user-123",
-            TestType.EMAIL_ADDRESS, "foo@example.com"
-        );
+        final Map<TestType, String> rawIds =
+                ImmutableMap.of(
+                        TestType.ANONYMOUS_USER, "user-123",
+                        TestType.EMAIL_ADDRESS, "foo@example.com");
 
-        final RawParameters rawParameters = new RawParameters(
-            Collections.<String, String>emptyMap(),
-            rawIds,
-            Collections.<String>emptyList(),
-            ""
-        );
+        final RawParameters rawParameters =
+                new RawParameters(
+                        Collections.<String, String>emptyMap(),
+                        rawIds,
+                        Collections.<String>emptyList(),
+                        "");
 
         final ConvertedParameters convertedParameters = converter.convert(rawParameters);
         final Identifiers ids = convertedParameters.getIdentifiers();
@@ -104,12 +103,12 @@ public class TestConverter {
     public void testConvertForceGroups() {
         final Converter converter = new Converter(Collections.<ContextVariable>emptyList());
 
-        final RawParameters rawParameters = new RawParameters(
-            Collections.<String, String>emptyMap(),
-            Collections.<TestType, String>emptyMap(),
-            Collections.<String>emptyList(),
-            "mytest1,othertest2"
-        );
+        final RawParameters rawParameters =
+                new RawParameters(
+                        Collections.<String, String>emptyMap(),
+                        Collections.<TestType, String>emptyMap(),
+                        Collections.<String>emptyList(),
+                        "mytest1,othertest2");
 
         final ConvertedParameters convertedParameters = converter.convert(rawParameters);
 
@@ -119,18 +118,17 @@ public class TestConverter {
         assertEquals(Integer.valueOf(2), forceGroups.get("othertest"));
     }
 
-
     private Converter getBasicConverter() {
         // default country
         final ContextVariable country =
-            ContextVariable.newBuilder()
-                .setVarName("char")
-                .setDefaultValue("A")
-                .setConverter(ValueConverters.characterValueConverter())
-                .build();
+                ContextVariable.newBuilder()
+                        .setVarName("char")
+                        .setDefaultValue("A")
+                        .setConverter(ValueConverters.characterValueConverter())
+                        .build();
         // no default langauge
         final ContextVariable language =
-                    ContextVariable.newBuilder()
+                ContextVariable.newBuilder()
                         .setVarName("loggedin")
                         .setConverter(ValueConverters.booleanValueConverter())
                         .build();

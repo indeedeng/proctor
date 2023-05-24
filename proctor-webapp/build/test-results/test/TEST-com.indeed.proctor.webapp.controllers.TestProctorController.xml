@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.indeed.proctor.webapp.controllers.TestProctorController" tests="2" skipped="0" failures="0" errors="0" timestamp="2023-05-01T19:04:51" hostname="IT-USA-VY0740" time="0.331">
+  <properties/>
+  <testcase name="testCompatibleSpecificationResultFromDynamicTest" classname="com.indeed.proctor.webapp.controllers.TestProctorController" time="0.328"/>
+  <testcase name="testCompatibleSpecificationResultFromRequiredTest" classname="com.indeed.proctor.webapp.controllers.TestProctorController" time="0.003"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

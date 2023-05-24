@@ -9,12 +9,9 @@ import java.util.Map;
 import java.util.Objects;
 
 public class ProctorSpecification {
-    @Nonnull
-    private Map<String, String> providedContext;
-    @Nonnull
-    private Map<String, TestSpecification> tests;
-    @Nonnull
-    private DynamicFilters dynamicFilters;
+    @Nonnull private Map<String, String> providedContext;
+    @Nonnull private Map<String, TestSpecification> tests;
+    @Nonnull private DynamicFilters dynamicFilters;
 
     public ProctorSpecification() {
         this(Collections.emptyMap(), Collections.emptyMap(), new DynamicFilters());
@@ -23,8 +20,7 @@ public class ProctorSpecification {
     public ProctorSpecification(
             @Nonnull final Map<String, String> providedContext,
             @Nonnull final Map<String, TestSpecification> tests,
-            @Nonnull final DynamicFilters dynamicFilters
-    ) {
+            @Nonnull final DynamicFilters dynamicFilters) {
         this.providedContext = Objects.requireNonNull(providedContext);
         this.tests = Objects.requireNonNull(tests);
         this.dynamicFilters = Objects.requireNonNull(dynamicFilters);
@@ -43,9 +39,7 @@ public class ProctorSpecification {
         this.providedContext = providedContext;
     }
 
-    /**
-     * @return the test specification for each named test.
-     */
+    /** @return the test specification for each named test. */
     @Nonnull
     public Map<String, TestSpecification> getTests() {
         return tests;

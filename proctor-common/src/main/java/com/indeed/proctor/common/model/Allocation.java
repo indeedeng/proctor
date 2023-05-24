@@ -13,38 +13,35 @@ public class Allocation {
 
     private static final String EMPTY_STRING = "";
 
-    @Nullable
-    private String rule;
+    @Nullable private String rule;
 
-    /**
-     * Map from a bucket name
-     */
-    @Nonnull
-    private List<Range> ranges = Collections.emptyList();
+    /** Map from a bucket name */
+    @Nonnull private List<Range> ranges = Collections.emptyList();
 
-    @Nonnull
-    private String id = EMPTY_STRING;
+    @Nonnull private String id = EMPTY_STRING;
 
-    @Nonnull
-    private String name = EMPTY_STRING;
+    @Nonnull private String name = EMPTY_STRING;
 
-    public Allocation() { /* intentionally empty */ }
+    public Allocation() {
+        /* intentionally empty */
+    }
 
-    public Allocation(@Nullable final String rule,
-                      @Nonnull final List<Range> ranges) {
+    public Allocation(@Nullable final String rule, @Nonnull final List<Range> ranges) {
         this(rule, ranges, EMPTY_STRING, EMPTY_STRING);
     }
 
-    public Allocation(@Nullable final String rule,
-                      @Nonnull final List<Range> ranges,
-                      @Nullable final String id) {
+    public Allocation(
+            @Nullable final String rule,
+            @Nonnull final List<Range> ranges,
+            @Nullable final String id) {
         this(rule, ranges, id, EMPTY_STRING);
     }
 
-    public Allocation(@Nullable final String rule,
-                      @Nonnull final List<Range> ranges,
-                      @Nullable final String id,
-                      @Nullable final String name) {
+    public Allocation(
+            @Nullable final String rule,
+            @Nonnull final List<Range> ranges,
+            @Nullable final String id,
+            @Nullable final String name) {
         this.rule = rule;
         this.ranges = ranges;
         this.id = Strings.nullToEmpty(id);
@@ -107,10 +104,10 @@ public class Allocation {
             return false;
         }
         final Allocation that = (Allocation) o;
-        return Objects.equal(rule, that.rule) &&
-                Objects.equal(ranges, that.ranges) &&
-                Objects.equal(id, that.id) &&
-                Objects.equal(name, that.name);
+        return Objects.equal(rule, that.rule)
+                && Objects.equal(ranges, that.ranges)
+                && Objects.equal(id, that.id)
+                && Objects.equal(name, that.name);
     }
 
     @Override
@@ -120,11 +117,18 @@ public class Allocation {
 
     @Override
     public String toString() {
-        return "Allocation{" +
-                "rule='" + rule + '\'' +
-                ", ranges=" + ranges +
-                ", id='" + id + '\'' +
-                ", name='" + name + '\'' +
-                '}';
+        return "Allocation{"
+                + "rule='"
+                + rule
+                + '\''
+                + ", ranges="
+                + ranges
+                + ", id='"
+                + id
+                + '\''
+                + ", name='"
+                + name
+                + '\''
+                + '}';
     }
 }

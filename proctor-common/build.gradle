@@ -1,0 +1,26 @@
+indeedOss.activateFeature 'library'
+indeedLibrary.name = 'proctor-common'
+
+dependencies {
+    implementation project(':proctor-tomcat-deps')
+    implementation 'com.indeed:util-core:1.0.49-1cfb888'
+    implementation 'com.indeed:util-varexport:1.0.49-1cfb888'
+    implementation libs.springCore
+    implementation libs.guava
+    implementation libs.commonsLang
+    compileOnly libs.jsr305
+    implementation libs.jacksonDatabind
+    implementation libs.tomcatElApi
+    implementation libs.tomcatJasperEl
+    implementation libs.tomcatJspApi
+    implementation libs.tomcatServletApi
+    implementation libs.log4jApi
+    implementation libs.log4jCore
+    testImplementation libs.junit
+    testImplementation libs.assertj
+    testImplementation libs.easymock
+    testImplementation libs.easymockclassext
+    testImplementation libs.annotationApi
+    testImplementation libs.mockito
+    testImplementation libs.jsr305
+}
