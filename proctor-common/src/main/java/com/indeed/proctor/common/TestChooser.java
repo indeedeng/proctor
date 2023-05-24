@@ -42,18 +42,9 @@ interface TestChooser<IdentifierType> {
     @Nonnull
     TestChooser.Result chooseInternal(
             @Nullable IdentifierType identifier,
-<<<<<<< HEAD
             @Nonnull final Map<String, ValueExpression> localContext,
             @Nonnull Map<String, TestBucket> testGroups
     );
-||||||| parent of a496e85b (PROC-960: Remove autostyle code)
-            @Nonnull Map<String, Object> values,
-            @Nonnull Map<String, TestBucket> testGroups);
-=======
-            @Nonnull Map<String, Object> values,
-            @Nonnull Map<String, TestBucket> testGroups
-    );
->>>>>>> a496e85b (PROC-960: Remove autostyle code)
 
     @Nonnull
     default TestChooser.Result choose(

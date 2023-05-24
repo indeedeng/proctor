@@ -78,7 +78,6 @@ public class Proctor {
             @Nonnull final FunctionMapper functionMapper,
             @Nonnull final IdentifierValidator identifierValidator
     ) {
-        final ExpressionFactory expressionFactory = RuleEvaluator.EXPRESSION_FACTORY;
         final Map<String, TestChooser<?>> testChoosers = Maps.newLinkedHashMap();
         final Map<String, String> versions = Maps.newLinkedHashMap();
 
@@ -88,25 +87,9 @@ public class Proctor {
             final TestType testType = testDefinition.getTestType();
             final TestChooser<?> testChooser;
             if (TestType.RANDOM.equals(testType)) {
-<<<<<<< HEAD
                 testChooser = new RandomTestChooser(RuleEvaluator.EXPRESSION_FACTORY, functionMapper, testName, testDefinition);
-||||||| parent of a496e85b (PROC-960: Remove autostyle code)
-                testChooser =
-                        new RandomTestChooser(
-                                expressionFactory, functionMapper, testName, testDefinition);
-=======
-                testChooser = new RandomTestChooser(expressionFactory, functionMapper, testName, testDefinition);
->>>>>>> a496e85b (PROC-960: Remove autostyle code)
             } else {
-<<<<<<< HEAD
                 testChooser = new StandardTestChooser(RuleEvaluator.EXPRESSION_FACTORY, functionMapper, testName, testDefinition);
-||||||| parent of a496e85b (PROC-960: Remove autostyle code)
-                testChooser =
-                        new StandardTestChooser(
-                                expressionFactory, functionMapper, testName, testDefinition);
-=======
-                testChooser = new StandardTestChooser(expressionFactory, functionMapper, testName, testDefinition);
->>>>>>> a496e85b (PROC-960: Remove autostyle code)
             }
             testChoosers.put(testName, testChooser);
             versions.put(testName, testDefinition.getVersion());
@@ -342,25 +325,9 @@ public class Proctor {
 
             final TestChooser.Result chooseResult;
             if (identifier == null) {
-<<<<<<< HEAD
                 chooseResult = ((RandomTestChooser) testChooser).choose(null, localContext, testGroups, forceGroupsOptions);
-||||||| parent of a496e85b (PROC-960: Remove autostyle code)
-                chooseResult =
-                        ((RandomTestChooser) testChooser)
-                                .choose(null, inputContext, testGroups, forceGroupsOptions);
-=======
-                chooseResult = ((RandomTestChooser) testChooser).choose(null, inputContext, testGroups, forceGroupsOptions);
->>>>>>> a496e85b (PROC-960: Remove autostyle code)
             } else {
-<<<<<<< HEAD
                 chooseResult = ((StandardTestChooser) testChooser).choose(identifier, localContext, testGroups, forceGroupsOptions);
-||||||| parent of a496e85b (PROC-960: Remove autostyle code)
-                chooseResult =
-                        ((StandardTestChooser) testChooser)
-                                .choose(identifier, inputContext, testGroups, forceGroupsOptions);
-=======
-                chooseResult = ((StandardTestChooser) testChooser).choose(identifier, inputContext, testGroups, forceGroupsOptions);
->>>>>>> a496e85b (PROC-960: Remove autostyle code)
             }
             if (chooseResult.getTestBucket() != null) {
                 testGroups.put(testName, chooseResult.getTestBucket());

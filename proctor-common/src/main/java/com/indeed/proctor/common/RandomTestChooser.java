@@ -102,21 +102,10 @@ class RandomTestChooser implements TestChooser<Void> {
     @Override
     public TestChooser.Result chooseInternal(
             @Nullable final Void identifier,
-<<<<<<< HEAD
             @Nonnull final Map<String, ValueExpression> localContext,
             @Nonnull final Map<String, TestBucket> testGroups
     ) {
         final int matchingRuleIndex = testRangeSelector.findMatchingRuleWithValueExpr(localContext, testGroups);
-||||||| parent of a496e85b (PROC-960: Remove autostyle code)
-            @Nonnull final Map<String, Object> values,
-            @Nonnull final Map<String, TestBucket> testGroups) {
-        final int matchingRuleIndex = testRangeSelector.findMatchingRule(values, testGroups);
-=======
-            @Nonnull final Map<String, Object> values,
-            @Nonnull final Map<String, TestBucket> testGroups
-    ) {
-        final int matchingRuleIndex = testRangeSelector.findMatchingRule(values, testGroups);
->>>>>>> a496e85b (PROC-960: Remove autostyle code)
         if (matchingRuleIndex < 0) {
             return TestChooser.Result.EMPTY;
         }

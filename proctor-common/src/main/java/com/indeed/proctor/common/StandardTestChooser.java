@@ -9,7 +9,6 @@ import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.Range;
 import com.indeed.proctor.common.model.TestBucket;
-import com.indeed.proctor.common.model.TestDependency;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -121,21 +120,10 @@ class StandardTestChooser implements TestChooser<String> {
     @Override
     public TestChooser.Result chooseInternal(
             @Nullable final String identifier,
-<<<<<<< HEAD
             @Nonnull final Map<String, ValueExpression> localContext,
             @Nonnull final Map<String, TestBucket> testGroups
     ) {
         final int matchingRuleIndex = testRangeSelector.findMatchingRuleWithValueExpr(localContext, testGroups);
-||||||| parent of a496e85b (PROC-960: Remove autostyle code)
-            @Nonnull final Map<String, Object> values,
-            @Nonnull final Map<String, TestBucket> testGroups) {
-        final int matchingRuleIndex = testRangeSelector.findMatchingRule(values, testGroups);
-=======
-            @Nonnull final Map<String, Object> values,
-            @Nonnull final Map<String, TestBucket> testGroups
-    ) {
-        final int matchingRuleIndex = testRangeSelector.findMatchingRule(values, testGroups);
->>>>>>> a496e85b (PROC-960: Remove autostyle code)
         if (matchingRuleIndex < 0) {
             return Result.EMPTY;
         }

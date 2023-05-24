@@ -85,7 +85,6 @@ public abstract class AbstractGroupsManager implements ProctorContextDescriptor 
     protected ProctorResult determineBucketsInternal(
             final Identifiers identifiers,
             final Map<String, Object> context,
-<<<<<<< HEAD
             final ForceGroupsOptions forceGroupsOptions
     ) {
         return determineBucketsInternal(identifiers, context, forceGroupsOptions, emptyList());
@@ -112,12 +111,6 @@ public abstract class AbstractGroupsManager implements ProctorContextDescriptor 
             final ForceGroupsOptions forceGroupsOptions,
             final Collection<String> testNameFilter
     ) {
-||||||| parent of a496e85b (PROC-960: Remove autostyle code)
-            final ForceGroupsOptions forceGroupsOptions) {
-=======
-            final ForceGroupsOptions forceGroupsOptions
-    ) {
->>>>>>> a496e85b (PROC-960: Remove autostyle code)
         final GroupsManagerInterceptor interceptor = interceptorSupplier.get();
         interceptor.beforeDetermineGroups(identifiers, context, forceGroupsOptions.getForceGroups());
 
@@ -130,24 +123,12 @@ public abstract class AbstractGroupsManager implements ProctorContextDescriptor 
                     emptyMap()
             );
         }
-<<<<<<< HEAD
         final ProctorResult proctorResult = proctor.determineTestGroups(
                 identifiers,
                 context,
                 forceGroupsOptions,
                 testNameFilter
         );
-||||||| parent of a496e85b (PROC-960: Remove autostyle code)
-        final ProctorResult proctorResult =
-                proctor.determineTestGroups(identifiers, context, forceGroupsOptions, emptyList());
-=======
-        final ProctorResult proctorResult = proctor.determineTestGroups(
-                identifiers,
-                context,
-                forceGroupsOptions,
-                emptyList()
-        );
->>>>>>> a496e85b (PROC-960: Remove autostyle code)
 
         interceptor.afterDetermineGroups(proctorResult);
         return proctorResult;
@@ -198,21 +179,7 @@ public abstract class AbstractGroupsManager implements ProctorContextDescriptor 
     }
 
     /**
-<<<<<<< HEAD
-<<<<<<< HEAD
      * servlet-based-application friendly version of determineBucketsInternal, also enabling forcing groups via request headers and cookies
-||||||| parent of 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
-     * servlet-based-application friendly version of determineBucketsInternal, also enabling forcing groups and payloads via request headers and cookies
-=======
-     * servlet-based-application friendly version of determineBucketsInternal, also enabling forcing
-     * groups and payloads via request headers and cookies
->>>>>>> 1ef67212 (PROC-960: Create gradlew and build files, working compile and test)
-||||||| parent of a496e85b (PROC-960: Remove autostyle code)
-     * servlet-based-application friendly version of determineBucketsInternal, also enabling forcing
-     * groups and payloads via request headers and cookies
-=======
-     * servlet-based-application friendly version of determineBucketsInternal, also enabling forcing groups and payloads via request headers and cookies
->>>>>>> a496e85b (PROC-960: Remove autostyle code)
      */
     protected ProctorResult determineBucketsInternal(
             final HttpServletRequest request,
@@ -220,7 +187,6 @@ public abstract class AbstractGroupsManager implements ProctorContextDescriptor 
             final Identifiers identifiers,
             final Map<String, Object> context,
             final boolean allowForcedGroups,
-<<<<<<< HEAD
             final Collection<String> testNameFilter
             ) {
         return determineBucketsInternal(
@@ -239,12 +205,6 @@ public abstract class AbstractGroupsManager implements ProctorContextDescriptor 
             final boolean allowForcedGroups,
             final Set<String> forcePayloadTests
     ) {
-||||||| parent of a496e85b (PROC-960: Remove autostyle code)
-            final Set<String> forcePayloadTests) {
-=======
-            final Set<String> forcePayloadTests
-    ) {
->>>>>>> a496e85b (PROC-960: Remove autostyle code)
         final ForceGroupsOptions forceGroupsOptions;
         if (allowForcedGroups) {
             forceGroupsOptions = ProctorConsumerUtils.parseForcedGroupsOptions(request, forcePayloadTests);

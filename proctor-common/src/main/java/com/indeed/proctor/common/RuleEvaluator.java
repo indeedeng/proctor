@@ -84,16 +84,7 @@ public class RuleEvaluator {
     }
 
     @Nonnull
-<<<<<<< HEAD
     ELContext createElContext(@Nonnull final Map<String, ValueExpression> localContext) {
-||||||| parent of a496e85b (PROC-960: Remove autostyle code)
-    ELContext createElContext(@Nonnull final Map<String, Object> values) {
-        final Map<String, ValueExpression> localContext =
-                ProctorUtils.convertToValueExpressionMap(expressionFactory, values);
-=======
-    ELContext createElContext(@Nonnull final Map<String, Object> values) {
-        final Map<String, ValueExpression> localContext = ProctorUtils.convertToValueExpressionMap(expressionFactory, values);
->>>>>>> a496e85b (PROC-960: Remove autostyle code)
         @SuppressWarnings("unchecked")
         final VariableMapper variableMapper = new MulticontextReadOnlyVariableMapper(testConstants, localContext);
         return createELContext(variableMapper);
@@ -122,7 +113,6 @@ public class RuleEvaluator {
         };
     }
 
-<<<<<<< HEAD
     /**
      * @deprecated Use evaluateBooleanRuleWithValueExpr(String, Map) instead, it's more efficient
      */
@@ -133,12 +123,6 @@ public class RuleEvaluator {
     }
 
     public boolean evaluateBooleanRuleWithValueExpr(final String rule, @Nonnull final Map<String, ValueExpression> localContext) throws IllegalArgumentException {
-||||||| parent of a496e85b (PROC-960: Remove autostyle code)
-    public boolean evaluateBooleanRule(final String rule, @Nonnull final Map<String, Object> values)
-            throws IllegalArgumentException {
-=======
-    public boolean evaluateBooleanRule(final String rule, @Nonnull final Map<String, Object> values) throws IllegalArgumentException {
->>>>>>> a496e85b (PROC-960: Remove autostyle code)
         if (StringUtils.isBlank(rule)) {
             return true;
         }
@@ -154,17 +138,8 @@ public class RuleEvaluator {
             return false;
         }
 
-<<<<<<< HEAD
         final ELContext elContext = createElContext(localContext);
         final ValueExpression ve = expressionFactory.createValueExpression(elContext, rule, boolean.class);
-||||||| parent of a496e85b (PROC-960: Remove autostyle code)
-        final ELContext elContext = createElContext(values);
-        final ValueExpression ve =
-                expressionFactory.createValueExpression(elContext, rule, boolean.class);
-=======
-        final ELContext elContext = createElContext(values);
-        final ValueExpression ve = expressionFactory.createValueExpression(elContext, rule, boolean.class);
->>>>>>> a496e85b (PROC-960: Remove autostyle code)
         checkRuleIsBooleanType(rule, elContext, ve);
 
         final Object result = ve.getValue(elContext);
@@ -205,21 +180,9 @@ public class RuleEvaluator {
      */
     @CheckForNull
     @Deprecated
-<<<<<<< HEAD
     public Object evaluateRule(final String rule, final Map<String, Object> values, final Class expectedType) {
         final ELContext elContext = createElContext(ProctorUtils.convertToValueExpressionMap(expressionFactory, values));
         final ValueExpression ve = expressionFactory.createValueExpression(elContext, rule, expectedType);
-||||||| parent of a496e85b (PROC-960: Remove autostyle code)
-    public Object evaluateRule(
-            final String rule, final Map<String, Object> values, final Class expectedType) {
-        final ELContext elContext = createElContext(values);
-        final ValueExpression ve =
-                expressionFactory.createValueExpression(elContext, rule, expectedType);
-=======
-    public Object evaluateRule(final String rule, final Map<String, Object> values, final Class expectedType) {
-        final ELContext elContext = createElContext(values);
-        final ValueExpression ve = expressionFactory.createValueExpression(elContext, rule, expectedType);
->>>>>>> a496e85b (PROC-960: Remove autostyle code)
         return ve.getValue(elContext);
     }
 

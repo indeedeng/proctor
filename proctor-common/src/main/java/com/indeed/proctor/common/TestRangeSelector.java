@@ -79,7 +79,6 @@ public class TestRangeSelector {
         return rangeToBucket[index];
     }
 
-<<<<<<< HEAD
     /**
      * @deprecated Use findMatchingRuleWithValueExpr(Map, Map) instead, which is more efficient.
      */
@@ -93,13 +92,6 @@ public class TestRangeSelector {
     }
 
     private int findMatchingRuleInternal(final Function<String, Boolean> evaluator, @Nonnull final Map<String, TestBucket> testGroups) {
-||||||| parent of a496e85b (PROC-960: Remove autostyle code)
-    public int findMatchingRule(
-            @Nonnull final Map<String, Object> values,
-            @Nonnull final Map<String, TestBucket> testGroups) {
-=======
-    public int findMatchingRule(@Nonnull final Map<String, Object> values, @Nonnull final Map<String, TestBucket> testGroups) {
->>>>>>> a496e85b (PROC-960: Remove autostyle code)
         final TestDependency dependsOn = testDefinition.getDependsOn();
         if (dependsOn != null) {
             final TestBucket testBucket = testGroups.get(dependsOn.getTestName());
@@ -111,13 +103,7 @@ public class TestRangeSelector {
         @Nullable String rule = testDefinition.getRule();
         try {
             if (rule != null) {
-<<<<<<< HEAD
                 if (!evaluator.apply(rule)) {
-||||||| parent of a496e85b (PROC-960: Remove autostyle code)
-                if (!evaluateRule(rule, values)) {
-=======
-                if (! evaluateRule(rule, values)) {
->>>>>>> a496e85b (PROC-960: Remove autostyle code)
                     return -1;
                 }
             }
@@ -144,35 +130,6 @@ public class TestRangeSelector {
         return -1;
     }
 
-<<<<<<< HEAD
-||||||| parent of a496e85b (PROC-960: Remove autostyle code)
-    private boolean evaluateRule(final String rule, @Nonnull final Map<String, Object> values)
-            throws InvalidRuleException {
-        try {
-            return ruleEvaluator.evaluateBooleanRule(rule, values);
-
-        } catch (final RuntimeException e) {
-            throw new InvalidRuleException(
-                    e,
-                    String.format(
-                            "Error evaluating rule '%s' for test '%s': '%s'. Failing evaluation and continuing.",
-                            rule, testName, e.getMessage()));
-        }
-    }
-
-=======
-    private boolean evaluateRule(final String rule, @Nonnull final Map<String, Object> values) throws InvalidRuleException {
-        try {
-            return ruleEvaluator.evaluateBooleanRule(rule, values);
-
-        } catch (final RuntimeException e) {
-            throw new InvalidRuleException(e, String.format(
-                    "Error evaluating rule '%s' for test '%s': '%s'. Failing evaluation and continuing.",
-                    rule, testName, e.getMessage()));
-        }
-    }
-
->>>>>>> a496e85b (PROC-960: Remove autostyle code)
     @Nonnull
     public String[] getRules() {
         return rules;

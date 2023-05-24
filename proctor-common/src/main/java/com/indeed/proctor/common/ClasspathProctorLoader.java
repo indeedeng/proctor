@@ -29,17 +29,8 @@ public class ClasspathProctorLoader extends AbstractJsonProctorLoader {
     }
 
     @Override
-<<<<<<< HEAD
     protected TestMatrixArtifact loadTestMatrix() throws IOException, MissingTestMatrixException, TestMatrixOutdatedException {
         final InputStream resourceAsStream = getClass().getClassLoader().getResourceAsStream(resourcePath);
-||||||| parent of a496e85b (PROC-960: Remove autostyle code)
-    protected TestMatrixArtifact loadTestMatrix() throws IOException, MissingTestMatrixException {
-        final InputStream resourceAsStream =
-                getClass().getClassLoader().getResourceAsStream(resourcePath);
-=======
-    protected TestMatrixArtifact loadTestMatrix() throws IOException, MissingTestMatrixException {
-        final InputStream resourceAsStream = getClass().getClassLoader().getResourceAsStream(resourcePath);
->>>>>>> a496e85b (PROC-960: Remove autostyle code)
         if (resourceAsStream == null) {
             throw new MissingTestMatrixException("Could not load proctor test matrix from classpath: " + resourcePath);
         }

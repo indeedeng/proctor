@@ -70,14 +70,7 @@ public abstract class AbstractJsonProctorLoader extends AbstractProctorLoader {
      * @throws IOException
      */
     @CheckForNull
-<<<<<<< HEAD
     protected TestMatrixArtifact loadJsonTestMatrix(@Nonnull final Reader reader) throws IOException, TestMatrixOutdatedException {
-||||||| parent of a496e85b (PROC-960: Remove autostyle code)
-    protected TestMatrixArtifact loadJsonTestMatrix(@Nonnull final Reader reader)
-            throws IOException {
-=======
-    protected TestMatrixArtifact loadJsonTestMatrix(@Nonnull final Reader reader) throws IOException {
->>>>>>> a496e85b (PROC-960: Remove autostyle code)
         try {
             final TestMatrixArtifact testMatrixArtifact = new TestMatrixArtifact();
 
