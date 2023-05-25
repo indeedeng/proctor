@@ -6,7 +6,6 @@ dependencies {
     implementation libs.commonsIo
     implementation libs.guava
     implementation libs.commonsLang
-    implementation libs.jacksonCore
     implementation libs.jacksonDatabind
     implementation libs.log4jApi
     implementation libs.log4jCore

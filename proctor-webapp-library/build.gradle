@@ -17,20 +17,17 @@ dependencies {
     implementation 'org.apache.commons:commons-collections4:4.3'
     implementation 'org.apache.httpcomponents:httpclient:4.5.5'
     implementation libs.commonsIo
-    implementation libs.jacksonCore
     implementation libs.svnkit
     implementation libs.guava
     implementation libs.log4jCore
     implementation libs.log4jApi
     implementation libs.jacksonDatabind
     implementation libs.commonsLang
-    implementation libs.tomcatElApi
-    compileOnly libs.tomcatServletApi
     compileOnly libs.jsr305
     implementation libs.servletApi
-    implementation libs.junit
-    implementation libs.assertj
-    implementation libs.mockito
+    testImplementation libs.junit
+    testImplementation libs.assertj
+    testImplementation libs.mockito
 }
 
 tasks.named("compileJava").configure { dependsOn(":proctor-common:jar") }
@@ -45,4 +42,8 @@ publishing {
             from components.java
         }
     }
+}
+
+task symbolicLinkLocalPublish(type: Exec) {
+    commandLine './symlinkproctor.sh'
 }

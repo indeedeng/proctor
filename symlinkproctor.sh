@@ -1,0 +1,1 @@
+mkdir  ~/.gradle/local-repo/maven/com && mkdir  ~/.gradle/local-repo/maven/com/indeed && ln -s ~/.m2/repository/com/indeed/*  ~/.gradle/local-repo/maven/com/indeed

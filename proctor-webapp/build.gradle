@@ -11,7 +11,6 @@ dependencies {
     implementation libs.springWebmvc
     implementation libs.springJdbc
     implementation 'javax.servlet:jstl:1.2'
-    implementation libs.jacksonCore
     implementation libs.jacksonDatabind
     implementation libs.annotationApi
     implementation 'org.apache.commons:commons-collections4:4.3'

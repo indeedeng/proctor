@@ -13,9 +13,8 @@ dependencies {
     implementation libs.log4jCore
     implementation libs.log4jApi
     implementation libs.springWeb
-    compileOnly libs.servletApi
     implementation libs.jacksonDatabind
-    implementation libs.jacksonCore
+    compileOnly libs.servletApi
     compileOnly libs.jsr305
     testImplementation libs.junit
     testImplementation libs.servletApi

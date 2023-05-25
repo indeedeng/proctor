@@ -18,3 +18,10 @@ publishing {
         }
     }
 }
+
+task linkLocalPublish(type: Exec) {
+    commandLine './symlinkproctor.sh'
+}
+
+
+tasks.named("linkLocalPublish").configure { dependsOn("publish") }
