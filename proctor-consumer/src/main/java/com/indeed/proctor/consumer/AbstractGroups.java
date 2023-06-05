@@ -7,6 +7,7 @@ import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.Payload;
 import com.indeed.proctor.common.model.TestBucket;
+import com.indeed.proctor.consumer.logging.ExposureLogger;
 import com.indeed.proctor.consumer.logging.TestUsageObserver;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -43,6 +44,9 @@ public abstract class AbstractGroups {
     @CheckForNull
     private TestUsageObserver testUsageObserver;
 
+    @CheckForNull
+    private final ExposureLogger exposureLogger;
+
     /**
      * A character to separate groups in logging output.
      */
@@ -52,6 +56,15 @@ public abstract class AbstractGroups {
      */
     protected static final char ALLOCATION_GROUP_SEPARATOR = ':';
     protected static final char TESTNAME_BUCKET_CONNECTOR = '-';
+    protected AbstractGroups(
+            final ProctorResult proctorResult,
+            @Nullable final TestUsageObserver testUsageObserver,
+            @Nullable final ExposureLogger exposureLogger
+    ) {
+        this.proctorResult = proctorResult;
+        this.testUsageObserver = testUsageObserver;
+        this.exposureLogger = exposureLogger;
+    }
 
     /**
      * Setup fields based on eagerly computed bucket allocations in ProctorResult.
@@ -62,8 +75,7 @@ public abstract class AbstractGroups {
             final ProctorResult proctorResult,
             @Nullable final TestUsageObserver testUsageObserver
     ) {
-        this.proctorResult = proctorResult;
-        this.testUsageObserver = testUsageObserver;
+        this(proctorResult, testUsageObserver, null);
     }
 
     /**
@@ -160,6 +172,9 @@ public abstract class AbstractGroups {
         bucketOpt.ifPresent(bucket -> {
             if (testUsageObserver != null) {
                 testUsageObserver.markUsedForToggling(testName);
+            }
+            if (exposureLogger != null) {
+                exposureLogger.logExposureInfo();
             }
         });
         return bucketOpt;
