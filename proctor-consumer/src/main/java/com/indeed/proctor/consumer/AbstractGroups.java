@@ -174,7 +174,7 @@ public abstract class AbstractGroups {
                 testUsageObserver.markUsedForToggling(testName);
             }
             if (exposureLogger != null) {
-                exposureLogger.logExposureInfo();
+                exposureLogger.logExposureInfo(this.proctorResult, testName);
             }
         });
         return bucketOpt;
