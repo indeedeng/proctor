@@ -8,11 +8,8 @@ import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.TestBucket;
 import org.junit.Test;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.awt.im.InputContext;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -58,13 +55,17 @@ public class ProctorResultTest {
                 "allocation1", new Allocation()
         );
         final Map<String, ConsumableTestDefinition> definitions = ImmutableMap.of("test1", new ConsumableTestDefinition());
-        final ProctorResult proctorResult = new ProctorResult("", buckets, allocations, definitions);
+        final Identifiers identifiers = new Identifiers(Collections.emptyMap());
+        final Map<String, Object> inputContext = Collections.emptyMap();
+        final ProctorResult proctorResult = new ProctorResult("", buckets, allocations, definitions, identifiers, inputContext);
         /*
          * Using isSame as intentionally instead of isEqualTo, because this test tries to ensure no entries are copied
          */
         assertThat(proctorResult.getBuckets()).isSameAs(buckets);
         assertThat(proctorResult.getAllocations()).isSameAs(allocations);
         assertThat(proctorResult.getTestDefinitions()).isSameAs(definitions);
+        assertThat(proctorResult.getIdentifiers()).isSameAs(identifiers);
+        assertThat(proctorResult.getInputContext()).isSameAs(inputContext);
     }
 
     @Test
@@ -75,7 +76,9 @@ public class ProctorResultTest {
         allocations.put("allocation1", new Allocation());
         final Map<String, ConsumableTestDefinition> definitions = new TreeMap<>();
         definitions.put("test1", new ConsumableTestDefinition());
-        final ProctorResult proctorResult1 = new ProctorResult("", buckets, allocations, definitions);
+        final Map<String, Object> inputContext = new HashMap<>();
+        inputContext.put("context", "");
+        final ProctorResult proctorResult1 = new ProctorResult("", buckets, allocations, definitions, new Identifiers(Collections.emptyMap()), inputContext);
         final ProctorResult proctorResult2 = ProctorResult.unmodifiableView(proctorResult1);
 
         // check changes to original result are visible in the View.
@@ -94,6 +97,9 @@ public class ProctorResultTest {
                 .isInstanceOf(UnsupportedOperationException.class);
         assertThatThrownBy(() ->
                 proctorResult2.getBuckets().put("forbid", new TestBucket("inactive", -1, "")))
+                .isInstanceOf(UnsupportedOperationException.class);
+        assertThatThrownBy(() ->
+                proctorResult2.getInputContext().clear())
                 .isInstanceOf(UnsupportedOperationException.class);
 
         // check changes to original result are visible in the View.
