@@ -323,7 +323,7 @@ public class TestTestMatrixApiController {
                 "revision", ImmutableMap.of(
                         "revision", trunkRevision,
                         "author", "testUser",
-                        "date", "1970-01-01T00:00:00.000+0000",
+                        "date", "1970-01-01T00:00:00.000+00:00",
                         "message", "testComment"
                 ),
                 "modifiedTests", singletonList(STUB_TEST_NAME)
