@@ -13,9 +13,11 @@ import java.io.IOException;
 
 /**
  * A Java application that can combine multiple Proctor specifications and generate some type of file.
- * Used to test code generation in proctor-codegen. Generate Java and JS code then clean up.
+ * Used to test code generation in proctor-codegen. Generate Java and JS code then clean up. This is minimal viable solution.
+ * During upgrade from maven to gradle turned maven MOJO gen plugins into a java app that accomplishes the use needed for proctor OSS.
+ * Instead of duplicating proctor-gradle-plugin just generate the code needed for testing proctor-codegen and clean up after.
  *
- * @author andrewk
+ * @author andrewk / zgoodwin
  */
 public abstract class ProctorGradleAutogenTask {
     private static final File outputDirectory = new File("../proctor-codegen-test/src/test/");

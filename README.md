@@ -72,10 +72,10 @@ $ ./gradlew build
 
 # Local Install
 
-To test
+To test with proctor-internal and other consumers of proctor OSS within Indeed
 
 ```bash
-$ ./gradlew publish
+$ ./gradlew linkLocalPublish
 ```
 
 # Discussion
