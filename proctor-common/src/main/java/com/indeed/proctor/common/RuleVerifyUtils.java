@@ -15,7 +15,7 @@ import javax.el.ValueExpression;
 import java.util.List;
 import java.util.Set;
 
-import static com.indeed.proctor.common.ProctorUtils.removeElExpressionBraces;
+import static com.indeed.proctor.common.ProctorUtils.isEmptyElExpression;
 import static com.indeed.proctor.common.RuleEvaluator.checkRuleIsBooleanType;
 
 public class RuleVerifyUtils {
@@ -36,8 +36,7 @@ public class RuleVerifyUtils {
             final ELContext elContext,
             final Set<String> absentIdentifiers
     ) throws InvalidRuleException {
-        final String bareRule = removeElExpressionBraces(testRule);
-        if (!StringUtils.isBlank(bareRule)) {
+        if (!isEmptyElExpression(testRule)) {
             final ValueExpression valueExpression;
             try {
                 valueExpression = expressionFactory.createValueExpression(elContext, testRule, Boolean.class);
