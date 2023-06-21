@@ -7,17 +7,9 @@ import com.indeed.proctor.common.model.TestBucket;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.awt.im.InputContext;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.*;
 
 import static java.util.Collections.emptyMap;
-import static java.util.Collections.emptySet;
 import static java.util.Collections.emptySortedMap;
 
 /**
@@ -126,12 +118,14 @@ public class ProctorResult {
             @Nonnull final SortedMap<String, Allocation> allocations,
             @Nonnull final Map<String, ConsumableTestDefinition> testDefinitions
     ) {
-        this.matrixVersion = matrixVersion;
-        this.buckets = buckets;
-        this.allocations = allocations;
-        this.testDefinitions = testDefinitions;
-        this.inputContext = emptyMap();
-        this.identifiers = new Identifiers(emptyMap());
+        this(
+                matrixVersion,
+                buckets,
+                allocations,
+                testDefinitions,
+                new Identifiers(emptyMap()),
+                emptyMap()
+        );
     }
 
     /**
