@@ -130,11 +130,11 @@ public class RuleEvaluator {
             LOGGER.error("Invalid rule '" +  rule + "'");   //  TODO: should this be an exception?
             return false;
         }
-        final String bareRule = ProctorUtils.removeElExpressionBraces(rule);
-        if (StringUtils.isBlank(bareRule) || "true".equalsIgnoreCase(bareRule)) {
+        final ProctorUtils.ElExpressionClassification ec = ProctorUtils.clasifyElExpression(rule, true);
+        if (ec == ProctorUtils.ElExpressionClassification.EMPTY || ec == ProctorUtils.ElExpressionClassification.CONSTANT_TRUE) {
             return true;    //  always passes
         }
-        if ("false".equalsIgnoreCase(bareRule)) {
+        if (ec == ProctorUtils.ElExpressionClassification.CONSTANT_FALSE) {
             return false;
         }
 

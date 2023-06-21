@@ -1135,8 +1135,7 @@ public abstract class ProctorUtils {
             }
             final String rule = allocation.getRule();
             final boolean lastAllocation = i == (allocations.size() - 1);
-            final String bareRule = removeElExpressionBraces(rule);
-            if (!lastAllocation && StringUtils.isBlank(bareRule)) {
+            if (!lastAllocation && isEmptyElExpression(rule)) {
                 throw new IncompatibleTestMatrixException(
                         "Allocation[" + i + "] for test " + testName + " from " + matrixSource + " has empty rule: "
                                 + allocation.getRule()
@@ -1257,6 +1256,68 @@ public abstract class ProctorUtils {
             return null;
         }
         return rule.substring(startchar, endchar + 1);
+    }
+
+    /**
+     * An allocaction-free version of {@code StringUtils.isBlank(removeElExpressionBraces(s))}
+     */
+    static boolean isEmptyElExpression(@Nullable final String rule) {
+        return ElExpressionClassification.EMPTY == clasifyElExpression(rule, false);
+    }
+
+    static ElExpressionClassification clasifyElExpression(
+        @Nullable final String rule,
+        final boolean checkForBooleanConstants
+    ) {
+        if (StringUtils.isBlank(rule)) {
+            return ElExpressionClassification.EMPTY;
+        }
+        int startchar = 0; // inclusive
+        int endchar = rule.length() - 1; // inclusive
+
+        // garbage free trim()
+        while (startchar < rule.length() && Character.isWhitespace(rule.charAt(startchar))) {
+            ++startchar;
+        }
+        while (endchar > startchar && Character.isWhitespace(rule.charAt(endchar))) {
+            --endchar;
+        }
+
+        if (rule.regionMatches(startchar, "${", 0, 2) && rule.charAt(endchar) == '}') {
+            startchar += 2; // skip "${"
+            --endchar; // skip '}'
+        }
+        // garbage free trim()
+        while (startchar < rule.length() && Character.isWhitespace(rule.charAt(startchar))) {
+            ++startchar;
+        }
+        while (endchar > startchar && Character.isWhitespace(rule.charAt(endchar))) {
+            --endchar;
+        }
+        if (endchar < startchar) {
+            return ElExpressionClassification.EMPTY;
+        }
+
+        if (checkForBooleanConstants) {
+            final String trueText = Boolean.TRUE.toString();
+            if (trueText.regionMatches(true, 0, rule, startchar, trueText.length())) {
+                return ElExpressionClassification.CONSTANT_TRUE;
+            }
+
+            final String falseText = Boolean.FALSE.toString();
+            if (falseText.regionMatches(true, 0, rule, startchar, falseText.length())) {
+                return ElExpressionClassification.CONSTANT_FALSE;
+            }
+        }
+
+        return ElExpressionClassification.OTHER;
+    }
+
+    enum ElExpressionClassification {
+        CONSTANT_TRUE,
+        CONSTANT_FALSE,
+        EMPTY,
+        OTHER;
     }
 
     // Make a new RuleEvaluator that captures the test constants.

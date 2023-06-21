@@ -36,6 +36,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.indeed.proctor.common.ProctorUtils.convertContextToTestableMap;
+import static com.indeed.proctor.common.ProctorUtils.isEmptyElExpression;
 import static com.indeed.proctor.common.ProctorUtils.isEmptyWhitespace;
 import static com.indeed.proctor.common.ProctorUtils.readSpecification;
 import static com.indeed.proctor.common.ProctorUtils.removeElExpressionBraces;
@@ -239,6 +240,25 @@ public class TestProctorUtils {
         assertEquals("${lang == 'en'", removeElExpressionBraces("${lang == 'en'"));
         // mis matched braces are not handled
         assertEquals("lang == 'en'}", removeElExpressionBraces("lang == 'en'}"));
+    }
+
+    @Test
+    public void testIsEmptyElExpression() {
+        assertTrue(isEmptyElExpression(""));
+        assertTrue(isEmptyElExpression(" "));
+        assertTrue(isEmptyElExpression(null));
+        assertTrue(isEmptyElExpression("\t"));
+        assertTrue(isEmptyElExpression(" ${} "));
+        assertTrue(isEmptyElExpression(" ${ } "));
+
+        assertFalse(isEmptyElExpression("${a}"));
+        assertFalse(isEmptyElExpression(" ${a} "));
+        assertFalse(isEmptyElExpression(" ${ a } "));
+        assertFalse(isEmptyElExpression(" ${ a}"));
+        assertFalse(isEmptyElExpression("${a } "));
+        assertFalse(isEmptyElExpression(" a "));
+        assertFalse(isEmptyElExpression("lang == 'en'"));
+        assertFalse(isEmptyElExpression("${lang == 'en'}"));
     }
 
     @Test

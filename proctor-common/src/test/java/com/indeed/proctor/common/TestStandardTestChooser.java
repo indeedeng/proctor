@@ -21,6 +21,7 @@ import javax.el.ValueExpression;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -200,6 +201,31 @@ public class TestStandardTestChooser {
         assertNull( "Expected no allocation to be found ", chooseResult.getAllocation());
 
         EasyMock.verify(ruleEvaluator);
+    }
+
+    @Test
+    public void testEvaluateBooleanRuleWithValueExpr() {
+        final BiConsumer<String, Boolean> assertEvaluatesTo = (rule, value) -> {
+            final RuleEvaluator evaluator = new RuleEvaluator(
+                ExpressionFactory.newInstance(),
+                RuleEvaluator.FUNCTION_MAPPER,
+                Collections.emptyMap());
+            final boolean result = evaluator.evaluateBooleanRuleWithValueExpr(rule, Collections.emptyMap());
+            assertEquals(value, result);
+        };
+
+        // fast-track
+        assertEvaluatesTo.accept("", true);
+        assertEvaluatesTo.accept("${}", true);
+        assertEvaluatesTo.accept("${    }", true);
+        assertEvaluatesTo.accept("${true}", true);
+        assertEvaluatesTo.accept("${TrUe}", true);
+        assertEvaluatesTo.accept("${false}", false);
+        assertEvaluatesTo.accept("${faLsE}", false);
+
+        // slow-track
+        assertEvaluatesTo.accept("${1 == 0}", false);
+        assertEvaluatesTo.accept("${1 == 1}", true);
     }
 
     @Test
