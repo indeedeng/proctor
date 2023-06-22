@@ -12,6 +12,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.Collections;
 import java.util.HashMap;
+import com.indeed.proctor.common.model.TestType;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -57,8 +58,9 @@ public class ProctorResultTest {
                 "allocation1", new Allocation()
         );
         final Map<String, ConsumableTestDefinition> definitions = ImmutableMap.of("test1", new ConsumableTestDefinition());
-        final Identifiers identifiers = new Identifiers(Collections.emptyMap());
-        final Map<String, Object> inputContext = Collections.emptyMap();
+        Map<TestType, String> testTypeStringMap = ImmutableMap.of(TestType.EMAIL_ADDRESS, "test");
+        final Identifiers identifiers = new Identifiers(testTypeStringMap);
+        final Map<String, Object> inputContext = ImmutableMap.of("AdvertiserId", "1231");
         final ProctorResult proctorResult = new ProctorResult("", buckets, allocations, definitions, identifiers, inputContext);
         /*
          * Using isSame as intentionally instead of isEqualTo, because this test tries to ensure no entries are copied
