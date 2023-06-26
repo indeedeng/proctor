@@ -120,7 +120,9 @@ public abstract class AbstractGroupsManager implements ProctorContextDescriptor 
             return new ProctorResult(Audit.EMPTY_VERSION,
                     new TreeMap<>(buckets), // legacy behavior uses mutable Map
                     emptySortedMap(),
-                    emptyMap()
+                    emptyMap(),
+                    identifiers,
+                    context
             );
         }
         final ProctorResult proctorResult = proctor.determineTestGroups(

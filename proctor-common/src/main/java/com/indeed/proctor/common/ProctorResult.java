@@ -9,14 +9,11 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
 import static java.util.Collections.emptyMap;
-import static java.util.Collections.emptySet;
 import static java.util.Collections.emptySortedMap;
 
 /**
@@ -29,6 +26,8 @@ public class ProctorResult {
             Audit.EMPTY_VERSION,
             emptySortedMap(),
             emptySortedMap(),
+            emptyMap(),
+            new Identifiers(emptyMap()),
             emptyMap()
     );
 
@@ -48,6 +47,10 @@ public class ProctorResult {
      */
     @Nonnull
     private final Map<String, ConsumableTestDefinition> testDefinitions;
+
+    private final Identifiers identifiers;
+
+    private final Map<String, Object> inputContext;
 
     /**
      * Create a ProctorResult with copies of the provided collections
@@ -112,16 +115,45 @@ public class ProctorResult {
      * @param allocations the determined allocation for each test
      * @param testDefinitions the original test definitions
      */
+    @Deprecated
     public ProctorResult(
             @Nonnull final String matrixVersion,
             @Nonnull final SortedMap<String, TestBucket> buckets,
             @Nonnull final SortedMap<String, Allocation> allocations,
             @Nonnull final Map<String, ConsumableTestDefinition> testDefinitions
     ) {
+        this(
+                matrixVersion,
+                buckets,
+                allocations,
+                testDefinitions,
+                new Identifiers(emptyMap()),
+                emptyMap()
+        );
+    }
+
+    /**
+     * Plain constructor, not creating TreeMaps.
+     *
+     * @param matrixVersion any string, used for debugging
+     * @param buckets the resolved bucket for each test
+     * @param allocations the determined allocation for each test
+     * @param testDefinitions the original test definitions
+     */
+    public ProctorResult(
+            @Nonnull final String matrixVersion,
+            @Nonnull final SortedMap<String, TestBucket> buckets,
+            @Nonnull final SortedMap<String, Allocation> allocations,
+            @Nonnull final Map<String, ConsumableTestDefinition> testDefinitions,
+            @Nonnull final Identifiers identifiers,
+            @Nonnull final Map<String, Object> inputContext
+    ) {
         this.matrixVersion = matrixVersion;
         this.buckets = buckets;
         this.allocations = allocations;
         this.testDefinitions = testDefinitions;
+        this.identifiers = identifiers;
+        this.inputContext = inputContext;
     }
 
     /**
@@ -134,7 +166,9 @@ public class ProctorResult {
                 // using fields directly because methods do not expose SortedMap type
                 Collections.unmodifiableSortedMap(proctorResult.buckets),
                 Collections.unmodifiableSortedMap(proctorResult.allocations),
-                Collections.unmodifiableMap(proctorResult.testDefinitions)
+                Collections.unmodifiableMap(proctorResult.testDefinitions),
+                proctorResult.identifiers,
+                Collections.unmodifiableMap(proctorResult.inputContext)
         );
     }
 
@@ -164,5 +198,15 @@ public class ProctorResult {
     @Nonnull
     public Map<String, ConsumableTestDefinition> getTestDefinitions() {
         return testDefinitions;
+    }
+
+    @Nonnull
+    public Identifiers getIdentifiers() {
+        return identifiers;
+    }
+
+    @Nonnull
+    public Map<String, Object> getInputContext() {
+        return inputContext;
     }
 }
