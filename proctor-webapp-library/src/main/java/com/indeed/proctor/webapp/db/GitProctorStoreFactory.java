@@ -18,6 +18,7 @@ import org.apache.logging.log4j.Logger;
 import javax.annotation.Nullable;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.concurrent.ScheduledExecutorService;
 
 public class GitProctorStoreFactory implements TrunkQaProdStoresFactory {
@@ -190,7 +191,7 @@ public class GitProctorStoreFactory implements TrunkQaProdStoresFactory {
      * @return
      */
     private File identifyImplicitTempRoot() throws IOException {
-        final File tempFile = File.createTempFile("implicit", GitProctorStoreFactory.class.getSimpleName());
+        final File tempFile = Files.createTempFile("implicit", GitProctorStoreFactory.class.getSimpleName()).toFile();
 
         tempFile.delete();
         return tempFile.getParentFile();
