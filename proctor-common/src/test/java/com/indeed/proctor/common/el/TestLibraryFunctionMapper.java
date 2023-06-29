@@ -6,6 +6,7 @@ import org.junit.Test;
 import java.lang.reflect.Method;
 
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 
 public class TestLibraryFunctionMapper {
@@ -28,5 +29,8 @@ public class TestLibraryFunctionMapper {
 
         final Method foundMeToo = mapper.resolveFunction(key, "findMeToo");
         assertNotNull(foundMeToo);
+
+        final Method notFound = mapper.resolveFunction(key, "toString");
+        assertNull(notFound);
     }
 }

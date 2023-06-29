@@ -17,7 +17,6 @@ import java.util.Map.Entry;
 public class LibraryFunctionMapper extends FunctionMapper {
     @Nonnull
     private final Map<String, Map<String, Method>> libraries = Maps.newHashMap();
-    private static final int PUBLIC_AND_STATIC = Modifier.PUBLIC | Modifier.STATIC;
 
     public LibraryFunctionMapper(@Nonnull final Map<String, Class<?>> libraryClasses) {
         for (final Entry<String, Class<?>> entry : libraryClasses.entrySet()) {
@@ -31,10 +30,9 @@ public class LibraryFunctionMapper extends FunctionMapper {
         final Map<String, Method> libraryFunctions = Maps.newHashMap();
         for (final Method m : c.getMethods()) {
             final int modifiers = m.getModifiers();
-            if ((modifiers & PUBLIC_AND_STATIC) == 0) {
-                continue;
+            if (Modifier.isPublic(modifiers) && Modifier.isStatic(modifiers)) {
+                libraryFunctions.put(m.getName(), m);
             }
-            libraryFunctions.put(m.getName(), m);
         }
         return libraryFunctions;
     }
