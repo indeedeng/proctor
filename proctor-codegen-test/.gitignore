@@ -1,9 +1,3 @@
-/build
-/buildlib
-/dist
-/classes
-/target
-/*.iml
 src/test/java/com/indeed/proctor/codegen/
 src/test/resources/com/indeed/proctor/groups/temp
 src/test/resources/com/indeed/proctor/groups/*.js

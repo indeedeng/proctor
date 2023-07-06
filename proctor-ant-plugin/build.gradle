@@ -17,15 +17,3 @@ dependencies {
     testImplementation libs.jsr305
     compileOnly libs.jsr305
 }
-
-publishing {
-    publications {
-        mavenJavaAntPlugin(MavenPublication) {
-            groupId = 'com.indeed'
-            artifactId = 'proctor-ant-plugin' // use the name from ext['indeed.publish.name']
-            version = '9999-SNAPSHOT' // use whatever version makes sense for your project
-
-            from components.java
-        }
-    }
-}

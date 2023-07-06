@@ -31,18 +31,6 @@ dependencies {
     testImplementation libs.jsr305
 }
 
-publishing {
-    publications {
-        mavenJavaCommon(MavenPublication) {
-            groupId = 'com.indeed'
-            artifactId = 'proctor-common' // use the name from ext['indeed.publish.name']
-            version = '9999-SNAPSHOT' // use whatever version makes sense for your project
-
-            from components.java
-        }
-    }
-}
-
 shadowJar {
     archiveClassifier.set('')
 

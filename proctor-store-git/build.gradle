@@ -20,15 +20,3 @@ dependencies {
 }
 
 tasks.named("test").configure { dependsOn(":proctor-common:shadowJar") }
-
-publishing {
-    publications {
-        mavenJavaStoreGit(MavenPublication) {
-            groupId = 'com.indeed'
-            artifactId = 'proctor-store-git' // use the name from ext['indeed.publish.name']
-            version = '9999-SNAPSHOT' // use whatever version makes sense for your project
-
-            from components.java
-        }
-    }
-}

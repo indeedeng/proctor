@@ -5,15 +5,3 @@ dependencies {
     api libs.tomcatElApi
     api libs.tomcatJasperEl
 }
-
-publishing {
-    publications {
-        mavenJavaTomcatDeps(MavenPublication) {
-            groupId = 'com.indeed'
-            artifactId = 'proctor-tomcat-deps' // use the name from ext['indeed.publish.name']
-            version = '9999-SNAPSHOT' // use whatever version makes sense for your project
-
-            from components.java
-        }
-    }
-}

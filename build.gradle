@@ -1,27 +1,12 @@
 plugins {
     id 'com.indeed.oss' version '1+'
-    id 'maven-publish'
-    id 'java'
 }
 
 indeedOss.activateFeature 'library'
 indeedLibrary.name = 'proctor-parent'
 
-publishing {
-    publications {
-        mavenJavaParent(MavenPublication) {
-            groupId = 'com.indeed'
-            artifactId = 'proctor-parent' // use the name from ext['indeed.publish.name']
-            version = '9999-SNAPSHOT' // use whatever version makes sense for your project
-
-            from components.java
-        }
-    }
-}
 
 task linkLocalPublish(type: Exec) {
+    dependsOn 'publishToMavenLocal'
     commandLine './symlinkproctor.sh'
 }
-
-
-tasks.named("linkLocalPublish").configure { dependsOn("publish") }

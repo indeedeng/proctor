@@ -6,7 +6,7 @@ dependencies {
     implementation project(':proctor-consumer')
     implementation project(':proctor-store')
     implementation project(':proctor-store-git')
-    implementation 'commons-cli:commons-cli:1.1'
+    implementation libs.commonsCli
     implementation libs.log4jApi
     implementation libs.log4jCore
     implementation libs.jacksonCore
@@ -16,15 +16,3 @@ dependencies {
 }
 
 tasks.named("test").configure { dependsOn(":proctor-common:shadowJar") }
-
-publishing {
-    publications {
-        mavenJavaBuilder(MavenPublication) {
-            groupId = 'com.indeed'
-            artifactId = 'proctor-builder' // use the name from ext['indeed.publish.name']
-            version = '9999-SNAPSHOT' // use whatever version makes sense for your project
-
-            from components.java
-        }
-    }
-}

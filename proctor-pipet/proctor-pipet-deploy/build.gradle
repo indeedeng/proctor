@@ -3,8 +3,14 @@
  */
 
 plugins {
-    id 'com.indeed.java-conventions'
     id 'war'
+}
+
+repositories {
+    mavenLocal()
+    maven {
+        url = uri('https://repo.maven.apache.org/maven2/')
+    }
 }
 
 dependencies {
@@ -17,17 +23,13 @@ dependencies {
     implementation 'com.indeed:util-varexport:1.0.49-1cfb888'
     implementation libs.annotationApi
     implementation libs.servletApi
+    implementation libs.guava
     compileOnly libs.jsr305
 }
-
-description = 'proctor-pipet-deploy'
 
 java {
     withJavadocJar()
 }
 
 tasks.named("test").configure { dependsOn(":proctor-common:shadowJar") }
-
-tasks.named('jar') {
-    enabled = true
-}
+tasks.named("war").configure { dependsOn(":proctor-common:shadowJar") }
