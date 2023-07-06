@@ -6,12 +6,7 @@ plugins {
     id 'war'
 }
 
-repositories {
-    mavenLocal()
-    maven {
-        url = uri('https://repo.maven.apache.org/maven2/')
-    }
-}
+indeedOss.activateFeature 'java'
 
 dependencies {
     implementation project(':proctor-common')
