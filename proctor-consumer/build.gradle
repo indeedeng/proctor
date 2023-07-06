@@ -25,6 +25,3 @@ dependencies {
     testImplementation libs.jsr305
     testImplementation libs.annotationApi
 }
-
-tasks.named("test").configure { dependsOn(":proctor-common:shadowJar") }
-

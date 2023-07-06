@@ -35,5 +35,3 @@ dependencies {
     providedCompile libs.tomcatServletApi
     compileOnly libs.jsr305
 }
-
-tasks.named("test").configure { dependsOn(":proctor-common:shadowJar") }

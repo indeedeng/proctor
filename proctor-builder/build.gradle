@@ -14,5 +14,3 @@ dependencies {
     implementation libs.guava
     implementation libs.commonsLang
 }
-
-tasks.named("test").configure { dependsOn(":proctor-common:shadowJar") }

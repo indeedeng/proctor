@@ -30,6 +30,3 @@ dependencies {
 java {
     withJavadocJar()
 }
-
-tasks.named("test").configure { dependsOn(":proctor-common:shadowJar") }
-tasks.named("war").configure { dependsOn(":proctor-common:shadowJar") }

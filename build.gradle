@@ -1,5 +1,6 @@
 plugins {
     id 'com.indeed.oss' version '1+'
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
 
 indeedOss.activateFeature 'library'
@@ -9,4 +10,14 @@ indeedLibrary.name = 'proctor-parent'
 task linkLocalPublish(type: Exec) {
     dependsOn 'publishToMavenLocal'
     commandLine './symlinkproctor.sh'
+}
+
+dependencies {
+    api libs.tomcatElApi
+    api libs.tomcatJasperEl
+}
+
+shadowJar {
+    relocate 'javax.el', 'com.indeed.shaded.javax.el7'
+    relocate 'org.apache.el', 'com.indeed.shaded.org.apache.el7'
 }

@@ -19,5 +19,3 @@ dependencies {
     testImplementation libs.mockito
     testImplementation libs.servletApi
 }
-
-tasks.named("test").configure { dependsOn(":proctor-common:shadowJar") }

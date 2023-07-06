@@ -51,5 +51,3 @@ task runWithJavaExec(type: JavaExec) {
 }
 
 compileTestJava.dependsOn(runWithJavaExec)
-tasks.named("startScripts").configure { dependsOn(":proctor-common:shadowJar") }
-tasks.named("runWithJavaExec").configure { dependsOn(":proctor-common:shadowJar") }
