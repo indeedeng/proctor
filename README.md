@@ -72,11 +72,28 @@ $ ./gradlew build
 
 # Local Install
 
-To test with proctor-internal and other consumers of proctor OSS within Indeed
+Run the following gradle command and note the local version from the output:
 
 ```bash
-$ ./gradlew linkLocalPublish
+$ ./gradlew publish
 ```
+
+Example output:
+
+```
+Calculating version to use for publish ...
+Now using version: 0.local.20230711170543
+
+> Task :proctor-common:compileJava
+```
+
+To test with proctor-internal and other consumers of proctor OSS within Indeed run the symlink bash script to associate local maven repo with local gradle repo:
+
+```bash
+$ ./symlinkproctor.sh
+```
+
+After creating the symlink set the proctor version in the build.gradle to version from publish. Example above would be using `0.local.20230711170543`
 
 # Discussion
 
