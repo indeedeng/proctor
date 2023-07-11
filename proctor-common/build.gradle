@@ -32,6 +32,10 @@ dependencies {
 }
 
 shadowJar {
+    archiveClassifier.set('')
     relocate 'javax.el', 'com.indeed.shaded.javax.el7'
     relocate 'org.apache.el', 'com.indeed.shaded.org.apache.el7'
+    relocate 'org.apache.tomcat', 'com.indeed.shaded.org.apache.el7'
 }
+
+shadowJar.shouldRunAfter jar
