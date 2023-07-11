@@ -1,3 +1,7 @@
+plugins {
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+}
+
 indeedOss.activateFeature 'library'
 indeedLibrary.name = 'proctor-common'
 
@@ -25,4 +29,9 @@ dependencies {
     testImplementation libs.annotationApi
     testImplementation libs.mockito
     testImplementation libs.jsr305
+}
+
+shadowJar {
+    relocate 'javax.el', 'com.indeed.shaded.javax.el7'
+    relocate 'org.apache.el', 'com.indeed.shaded.org.apache.el7'
 }
