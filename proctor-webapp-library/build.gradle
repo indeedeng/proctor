@@ -2,7 +2,7 @@ indeedOss.activateFeature 'library'
 indeedLibrary.name = 'proctor-webapp-library'
 
 dependencies {
-    implementation project(':proctor-common')
+    implementation project(path: ':proctor-common', configuration: 'shadow')
     implementation project(':proctor-store')
     implementation project(':proctor-store-svn')
     implementation project(':proctor-store-git')
@@ -30,3 +30,5 @@ dependencies {
     testImplementation libs.assertj
     testImplementation libs.mockito
 }
+
+compileJava.dependsOn(':proctor-common:jar')

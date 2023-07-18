@@ -21,3 +21,5 @@ dependencies {
     testImplementation libs.junit
     testImplementation libs.assertj
 }
+
+test.dependsOn(':proctor-common:shadowJar')

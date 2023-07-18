@@ -25,3 +25,5 @@ dependencies {
 java {
     withJavadocJar()
 }
+
+test.dependsOn(':proctor-common:shadowJar')
