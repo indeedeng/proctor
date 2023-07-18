@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.function.Function;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
@@ -29,108 +28,83 @@ public class TestTestDefinition {
                 sampleConstants(),
                 sampleSpecialConstants(),
                 "sample test",
-                ImmutableList.of("sample_test_tag")
-        );
+                ImmutableList.of("sample_test_tag"));
     }
 
     private static Map<String, Object> sampleSpecialConstants() {
-        return ImmutableMap.of(
-                "__COUNTRIES", Lists.newArrayList("US")
-        );
+        return ImmutableMap.of("__COUNTRIES", Lists.newArrayList("US"));
     }
 
     private static Map<String, Object> sampleConstants() {
-        return ImmutableMap.of(
-                "COUNTRY_A", "US"
-        );
+        return ImmutableMap.of("COUNTRY_A", "US");
     }
 
     private static List<Allocation> sampleAllocations() {
         return Lists.newArrayList(
                 new Allocation(
-                        "country == COUNTRY_A",
-                        Lists.newArrayList(
-                                new Range(
-                                        -1,
-                                        1.0
-                                )
-                        ),
-                        "#A1"
-                )
-        );
+                        "country == COUNTRY_A", Lists.newArrayList(new Range(-1, 1.0)), "#A1"));
     }
 
     private static List<TestBucket> sampleDoublePayloadBuckets() {
-        return Lists.newArrayList(
-                new TestBucket(
-                        "inactive",
-                        -1,
-                        "inactive",
-                        new Payload(1.0)
-                )
-        );
+        return Lists.newArrayList(new TestBucket("inactive", -1, "inactive", new Payload(1.0)));
     }
 
     private static List<TestBucket> sampleStringArrayBuckets() {
         return Lists.newArrayList(
                 new TestBucket(
-                        "inactive",
-                        -1,
-                        "inactive",
-                        new Payload(new String[]{"foo", "bar"})
-                )
-        );
+                        "inactive", -1, "inactive", new Payload(new String[] {"foo", "bar"})));
     }
 
     @Test
     public void testEqualityWithAlmostEmptyTestDefinition() {
         // compare minimal TestDefinition to minimal that has one change
-        for (final Function<TestDefinition, TestDefinition> modifier : Arrays.asList(
-                (Function<TestDefinition, TestDefinition>) input -> {
-                    input.setVersion("new version");
-                    return input;
-                },
-                input -> {
-                    input.setRule("new rule");
-                    return input;
-                },
-                input -> {
-                    input.setSalt("new salt");
-                    return input;
-                },
-                input -> {
-                    input.setTestType(TestType.EMAIL_ADDRESS);
-                    return input;
-                },
-                input -> {
-                    input.setSilent(true);
-                    return input;
-                },
-                input -> {
-                    input.setDescription("new Description");
-                    return input;
-                },
-                input -> {
-                    input.setBuckets(TestTestDefinition.sampleDoublePayloadBuckets());
-                    return input;
-                },
-                input -> {
-                    input.setBuckets(TestTestDefinition.sampleStringArrayBuckets());
-                    return input;
-                },
-                input -> {
-                    input.setAllocations(TestTestDefinition.sampleAllocations());
-                    return input;
-                },
-                input -> {
-                    input.setConstants(TestTestDefinition.sampleConstants());
-                    return input;
-                },
-                input -> {
-                    input.setSpecialConstants(TestTestDefinition.sampleSpecialConstants());
-                    return input;
-                }
-        )) {
+        for (final Function<TestDefinition, TestDefinition> modifier :
+                Arrays.asList(
+                        (Function<TestDefinition, TestDefinition>)
+                                input -> {
+                                    input.setVersion("new version");
+                                    return input;
+                                },
+                        input -> {
+                            input.setRule("new rule");
+                            return input;
+                        },
+                        input -> {
+                            input.setSalt("new salt");
+                            return input;
+                        },
+                        input -> {
+                            input.setTestType(TestType.EMAIL_ADDRESS);
+                            return input;
+                        },
+                        input -> {
+                            input.setSilent(true);
+                            return input;
+                        },
+                        input -> {
+                            input.setDescription("new Description");
+                            return input;
+                        },
+                        input -> {
+                            input.setBuckets(TestTestDefinition.sampleDoublePayloadBuckets());
+                            return input;
+                        },
+                        input -> {
+                            input.setBuckets(TestTestDefinition.sampleStringArrayBuckets());
+                            return input;
+                        },
+                        input -> {
+                            input.setAllocations(TestTestDefinition.sampleAllocations());
+                            return input;
+                        },
+                        input -> {
+                            input.setConstants(TestTestDefinition.sampleConstants());
+                            return input;
+                        },
+                        input -> {
+                            input.setSpecialConstants(TestTestDefinition.sampleSpecialConstants());
+                            return input;
+                        })) {
             final TestDefinition initialTest = new TestDefinition();
             final TestDefinition modifiedTest = modifier.apply(new TestDefinition());
             final TestDefinition anotherModifiedTest = modifier.apply(new TestDefinition());
@@ -145,99 +119,109 @@ public class TestTestDefinition {
         // compare a filled sample with one that has changes in the collections
         final TestDefinition sampleTest = sample();
 
-        for (final Function<TestDefinition, TestDefinition> modifier : Arrays.asList(
-                (Function<TestDefinition, TestDefinition>) input -> {
-                    input.getAllocations().get(0).setRule("new allocation Rule");
-                    return input;
-                },
-                input -> {
-                    input.getAllocations().get(0).setId("new Id");
-                    return input;
-                },
-                input -> {
-                    input.getAllocations().get(0).getRanges().get(0).setLength(0.3);
-                    return input;
-                },
-                input -> {
-                    input.getAllocations().get(0).getRanges().get(0).setBucketValue(7);
-                    return input;
-                },
-                // buckets, special case due to bad equals method
-                input -> {
-                    input.setBuckets(null);
-                    return input;
-                },
-                input -> {
-                    input.getBuckets().set(0,
-                            TestBucket.builder()
-                                    .from(input.getBuckets().get(0))
-                                    .name("new bucket name")
-                                    .build()
-                    );
-                    return input;
-                },
-                input -> {
-                    input.getBuckets().set(0,
-                            TestBucket.builder()
-                                    .from(input.getBuckets().get(0))
-                                    .description("new bucket description")
-                                    .build()
-                    );
-                    return input;
-                },
-                input -> {
-                    input.getBuckets().set(0,
-                            TestBucket.builder()
-                                    .from(input.getBuckets().get(0))
-                                    .value(42)
-                                    .build()
-                    );
-                    return input;
-                },
-                input -> {
-                    input.getBuckets().set(0,
-                            TestBucket.builder()
-                                    .from(input.getBuckets().get(0))
-                                    .payload(Payload.EMPTY_PAYLOAD)
-                                    .build()
-                    );
-                    return input;
-                },
-                input -> {
-                    input.getBuckets().set(0,
-                            TestBucket.builder()
-                                    .from(input.getBuckets().get(0))
-                                    .payload(new Payload(42.1))
-                                    .build()
-                    );
-                    return input;
-                },
-                input -> {
-                    input.getBuckets().set(0,
-                            TestBucket.builder()
-                                    .from(input.getBuckets().get(0))
-                                    .payload(new Payload("1"))
-                                    .build()
-                    );
-                    return input;
-                },
-                input -> {
-                    input.setConstants(ImmutableMap.of("COUNTRY_A", "CA"));
-                    return input;
-                },
-                input -> {
-                    input.setConstants(ImmutableMap.of("COUNTRY_A", "US", "COUNTRY_B", "CA"));
-                    return input;
-                },
-                input -> {
-                    input.setConstants(ImmutableMap.of("COUNTRY_A", Lists.newArrayList("CA")));
-                    return input;
-                },
-                input -> {
-                    input.setConstants(ImmutableMap.of("COUNTRY_A", Lists.newArrayList("US", "CA")));
-                    return input;
-                }
-        )) {
+        for (final Function<TestDefinition, TestDefinition> modifier :
+                Arrays.asList(
+                        (Function<TestDefinition, TestDefinition>)
+                                input -> {
+                                    input.getAllocations().get(0).setRule("new allocation Rule");
+                                    return input;
+                                },
+                        input -> {
+                            input.getAllocations().get(0).setId("new Id");
+                            return input;
+                        },
+                        input -> {
+                            input.getAllocations().get(0).getRanges().get(0).setLength(0.3);
+                            return input;
+                        },
+                        input -> {
+                            input.getAllocations().get(0).getRanges().get(0).setBucketValue(7);
+                            return input;
+                        },
+                        // buckets, special case due to bad equals method
+                        input -> {
+                            input.setBuckets(null);
+                            return input;
+                        },
+                        input -> {
+                            input.getBuckets()
+                                    .set(
+                                            0,
+                                            TestBucket.builder()
+                                                    .from(input.getBuckets().get(0))
+                                                    .name("new bucket name")
+                                                    .build());
+                            return input;
+                        },
+                        input -> {
+                            input.getBuckets()
+                                    .set(
+                                            0,
+                                            TestBucket.builder()
+                                                    .from(input.getBuckets().get(0))
+                                                    .description("new bucket description")
+                                                    .build());
+                            return input;
+                        },
+                        input -> {
+                            input.getBuckets()
+                                    .set(
+                                            0,
+                                            TestBucket.builder()
+                                                    .from(input.getBuckets().get(0))
+                                                    .value(42)
+                                                    .build());
+                            return input;
+                        },
+                        input -> {
+                            input.getBuckets()
+                                    .set(
+                                            0,
+                                            TestBucket.builder()
+                                                    .from(input.getBuckets().get(0))
+                                                    .payload(Payload.EMPTY_PAYLOAD)
+                                                    .build());
+                            return input;
+                        },
+                        input -> {
+                            input.getBuckets()
+                                    .set(
+                                            0,
+                                            TestBucket.builder()
+                                                    .from(input.getBuckets().get(0))
+                                                    .payload(new Payload(42.1))
+                                                    .build());
+                            return input;
+                        },
+                        input -> {
+                            input.getBuckets()
+                                    .set(
+                                            0,
+                                            TestBucket.builder()
+                                                    .from(input.getBuckets().get(0))
+                                                    .payload(new Payload("1"))
+                                                    .build());
+                            return input;
+                        },
+                        input -> {
+                            input.setConstants(ImmutableMap.of("COUNTRY_A", "CA"));
+                            return input;
+                        },
+                        input -> {
+                            input.setConstants(
+                                    ImmutableMap.of("COUNTRY_A", "US", "COUNTRY_B", "CA"));
+                            return input;
+                        },
+                        input -> {
+                            input.setConstants(
+                                    ImmutableMap.of("COUNTRY_A", Lists.newArrayList("CA")));
+                            return input;
+                        },
+                        input -> {
+                            input.setConstants(
+                                    ImmutableMap.of("COUNTRY_A", Lists.newArrayList("US", "CA")));
+                            return input;
+                        })) {
             final TestDefinition anotherTest = modifier.apply(sample());
             assertThat(sampleTest).isNotEqualTo(anotherTest);
         }
@@ -248,12 +232,14 @@ public class TestTestDefinition {
         final TestDefinition otherTest = sample();
         final TestDefinition sampleTest = sample();
         assertEquals(sampleTest.hashCode(), otherTest.hashCode());
-        otherTest.getBuckets().set(0,
-                TestBucket.builder()
-                        .from(otherTest.getBuckets().get(0))
-                        .description("changed")
-                        .build()
-        );
+        otherTest
+                .getBuckets()
+                .set(
+                        0,
+                        TestBucket.builder()
+                                .from(otherTest.getBuckets().get(0))
+                                .description("changed")
+                                .build());
         assertNotEquals(sampleTest.hashCode(), otherTest.hashCode());
     }
 
@@ -272,24 +258,23 @@ public class TestTestDefinition {
         final List<String> metatags = ImmutableList.of("sample_test_tag");
         final TestDependency dependsOn = new TestDependency("sample_par_test", 1);
 
-        final TestDefinition definition1 = TestDefinition.builder()
-                .setVersion(version)
-                .setRule(rule)
-                .setTestType(testType)
-                .setSalt(salt)
-                .setBuckets(buckets)
-                .setAllocations(allocations)
-                .setSilent(silent)
-                .setConstants(constants)
-                .setSpecialConstants(specialContants)
-                .setDescription(description)
-                .setMetaTags(metatags)
-                .setDependsOn(dependsOn)
-                .build();
+        final TestDefinition definition1 =
+                TestDefinition.builder()
+                        .setVersion(version)
+                        .setRule(rule)
+                        .setTestType(testType)
+                        .setSalt(salt)
+                        .setBuckets(buckets)
+                        .setAllocations(allocations)
+                        .setSilent(silent)
+                        .setConstants(constants)
+                        .setSpecialConstants(specialContants)
+                        .setDescription(description)
+                        .setMetaTags(metatags)
+                        .setDependsOn(dependsOn)
+                        .build();
 
-        final TestDefinition definition2 = TestDefinition.builder()
-                .from(definition1)
-                .build();
+        final TestDefinition definition2 = TestDefinition.builder().from(definition1).build();
 
         for (final TestDefinition definition : Arrays.asList(definition1, definition2)) {
             assertThat(definition.getVersion()).isEqualTo(version);
@@ -306,5 +291,4 @@ public class TestTestDefinition {
             assertThat(definition.getDependsOn()).isEqualTo(dependsOn);
         }
     }
-
 }

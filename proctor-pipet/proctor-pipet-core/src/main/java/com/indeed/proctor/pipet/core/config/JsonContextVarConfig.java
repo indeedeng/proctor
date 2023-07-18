@@ -2,9 +2,7 @@ package com.indeed.proctor.pipet.core.config;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
-/**
- * Context variable configuration, which also requires type conversion.
- */
+/** Context variable configuration, which also requires type conversion. */
 public class JsonContextVarConfig extends JsonVarConfig {
     private String type;
 

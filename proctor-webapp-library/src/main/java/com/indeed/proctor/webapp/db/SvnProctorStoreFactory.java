@@ -19,10 +19,7 @@ import java.io.IOException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-/**
- * @author parker
- * Proctor webapp with svn is not actively supported
- */
+/** @author parker Proctor webapp with svn is not actively supported */
 public class SvnProctorStoreFactory implements TrunkQaProdStoresFactory {
     private static final Logger LOGGER = LogManager.getLogger(SvnProctorStoreFactory.class);
 
@@ -32,7 +29,8 @@ public class SvnProctorStoreFactory implements TrunkQaProdStoresFactory {
     private String svnPath;
     private String svnUsername;
     private String svnPassword;
-    private String testDefinitionsDirectory = FileBasedProctorStore.DEFAULT_TEST_DEFINITIONS_DIRECTORY;
+    private String testDefinitionsDirectory =
+            FileBasedProctorStore.DEFAULT_TEST_DEFINITIONS_DIRECTORY;
 
     /* The root directory into which we should put the "qa-matrices" or "trunk-matrices"
      * If not set - a the temp directory will be used
@@ -47,14 +45,16 @@ public class SvnProctorStoreFactory implements TrunkQaProdStoresFactory {
     // The period to use when scheduling a refresh of the svn directory
     private long svnRefreshMillis = TimeUnit.SECONDS.toMillis(300);
 
-    public SvnProctorStoreFactory(final ScheduledExecutorService executor,
-                                  final boolean cache,
-                                  final long tempDirCleanupAgeMinutes,
-                                  final long svnRefreshSeconds,
-                                  final String svnPath,
-                                  final String svnUsername,
-                                  final String svnPassword,
-                                  final String testDefinitionsDirectory) throws IOException {
+    public SvnProctorStoreFactory(
+            final ScheduledExecutorService executor,
+            final boolean cache,
+            final long tempDirCleanupAgeMinutes,
+            final long svnRefreshSeconds,
+            final String svnPath,
+            final String svnUsername,
+            final String svnPassword,
+            final String testDefinitionsDirectory)
+            throws IOException {
         this.executor = executor;
         this.cache = cache;
         this.tempDirCleanupAgeMillis = TimeUnit.MINUTES.toMillis(tempDirCleanupAgeMinutes);
@@ -82,29 +82,58 @@ public class SvnProctorStoreFactory implements TrunkQaProdStoresFactory {
     }
 
     public ProctorStore createStore(final String relativePath) {
-        Preconditions.checkArgument(tempDirCleanupAgeMillis > 0, "tempDirCleanupAgeMillis %s must be greater than zero", tempDirCleanupAgeMillis);
+        Preconditions.checkArgument(
+                tempDirCleanupAgeMillis > 0,
+                "tempDirCleanupAgeMillis %s must be greater than zero",
+                tempDirCleanupAgeMillis);
         final File tempDirectory = createTempDirectoryForPath(relativePath);
 
-        Preconditions.checkArgument(StringUtils.isNotBlank(svnPath), "svn.path property cannot be empty");
+        Preconditions.checkArgument(
+                StringUtils.isNotBlank(svnPath), "svn.path property cannot be empty");
         // TODO (parker) 9/13/12 - sanity check that path + relative path make a valid url
         final String fullPath = svnPath + relativePath;
 
-        final SvnWorkspaceProviderImpl provider = new SvnWorkspaceProviderImpl(tempDirectory, tempDirCleanupAgeMillis);
-        final SvnPersisterCoreImpl svncore = new SvnPersisterCoreImpl(fullPath, svnUsername, svnPassword, testDefinitionsDirectory, provider, true /* shutdown provider */);
+        final SvnWorkspaceProviderImpl provider =
+                new SvnWorkspaceProviderImpl(tempDirectory, tempDirCleanupAgeMillis);
+        final SvnPersisterCoreImpl svncore =
+                new SvnPersisterCoreImpl(
+                        fullPath,
+                        svnUsername,
+                        svnPassword,
+                        testDefinitionsDirectory,
+                        provider,
+                        true /* shutdown provider */);
 
         // actively clean up directories every hour: (not relying on cache eviction)
-        final long cleanupScheduleMillis = Math.min(TimeUnit.HOURS.toMillis(1), tempDirCleanupAgeMillis);
-        LOGGER.info("Scheduling SvnWorkspaceProvider every " + cleanupScheduleMillis + " milliseconds for dir: " + tempDirectory + " with age millis " + tempDirCleanupAgeMillis);
-        executor.scheduleWithFixedDelay(provider, cleanupScheduleMillis, cleanupScheduleMillis, TimeUnit.MILLISECONDS);
+        final long cleanupScheduleMillis =
+                Math.min(TimeUnit.HOURS.toMillis(1), tempDirCleanupAgeMillis);
+        LOGGER.info(
+                "Scheduling SvnWorkspaceProvider every "
+                        + cleanupScheduleMillis
+                        + " milliseconds for dir: "
+                        + tempDirectory
+                        + " with age millis "
+                        + tempDirCleanupAgeMillis);
+        executor.scheduleWithFixedDelay(
+                provider, cleanupScheduleMillis, cleanupScheduleMillis, TimeUnit.MILLISECONDS);
 
         if (svnRefreshMillis > 0) {
             final SvnDirectoryRefresher refresher = svncore.createRefresherTask();
-            LOGGER.info("Scheduling SvnDirectoryRefresher every " + svnRefreshMillis + " milliseconds for dir: " + refresher.getDirectoryPath());
-            executor.scheduleWithFixedDelay(refresher, svnRefreshMillis, svnRefreshMillis, TimeUnit.MILLISECONDS);
+            LOGGER.info(
+                    "Scheduling SvnDirectoryRefresher every "
+                            + svnRefreshMillis
+                            + " milliseconds for dir: "
+                            + refresher.getDirectoryPath());
+            executor.scheduleWithFixedDelay(
+                    refresher, svnRefreshMillis, svnRefreshMillis, TimeUnit.MILLISECONDS);
         }
 
-        final SvnProctor store = new SvnProctor(cache ? new CachedSvnPersisterCore(svncore) : svncore, testDefinitionsDirectory);
-        final VarExporter exporter = VarExporter.forNamespace(SvnProctor.class.getSimpleName()).includeInGlobal();
+        final SvnProctor store =
+                new SvnProctor(
+                        cache ? new CachedSvnPersisterCore(svncore) : svncore,
+                        testDefinitionsDirectory);
+        final VarExporter exporter =
+                VarExporter.forNamespace(SvnProctor.class.getSimpleName()).includeInGlobal();
         final String prefix = relativePath.substring(1).replace('/', '-');
         exporter.export(store, prefix + "-");
         return store;
@@ -116,7 +145,8 @@ public class SvnProctorStoreFactory implements TrunkQaProdStoresFactory {
      * @return
      */
     private File identifyImplicitTempRoot() throws IOException {
-        final File tempFile = File.createTempFile("implicit", SvnProctorStoreFactory.class.getSimpleName());
+        final File tempFile =
+                File.createTempFile("implicit", SvnProctorStoreFactory.class.getSimpleName());
 
         tempFile.delete();
         return tempFile.getParentFile();
@@ -124,7 +154,8 @@ public class SvnProctorStoreFactory implements TrunkQaProdStoresFactory {
 
     private File createTempDirectoryForPath(final String relativePath) {
         // replace "/" with "-" omit first "/" but omitEmptyStrings
-        final String dirName = CharMatcher.is(File.separatorChar).trimAndCollapseFrom(relativePath, '-');
+        final String dirName =
+                CharMatcher.is(File.separatorChar).trimAndCollapseFrom(relativePath, '-');
         final File parent = tempRoot != null ? tempRoot : implicitTempRoot;
         final File temp = new File(parent, dirName);
         if (temp.exists()) {

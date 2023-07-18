@@ -13,7 +13,7 @@ import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.List;
 
-public class ShowTestMatrixHandler implements HttpRequestHandler{
+public class ShowTestMatrixHandler implements HttpRequestHandler {
     private final List<Supplier<Proctor>> proctorSuppliers;
 
     public ShowTestMatrixHandler(final Supplier<Proctor> proctorSupplier) {
@@ -25,11 +25,13 @@ public class ShowTestMatrixHandler implements HttpRequestHandler{
     }
 
     @Override
-    public void handleRequest(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException {
+    public void handleRequest(final HttpServletRequest request, final HttpServletResponse response)
+            throws ServletException, IOException {
         response.setContentType("text/plain;charset=UTF-8");
 
         // Only output matching test names if not null.
-        final Collection<String> testNameFilter = ShowHandlerParamUtil.getTestQueryParameters(request);
+        final Collection<String> testNameFilter =
+                ShowHandlerParamUtil.getTestQueryParameters(request);
 
         final PrintWriter writer = response.getWriter();
 

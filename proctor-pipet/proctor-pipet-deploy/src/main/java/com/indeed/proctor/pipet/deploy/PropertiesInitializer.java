@@ -16,15 +16,16 @@ import java.util.List;
 
 /**
  * Adds Spring property sources for the following locations in this order:
- * WEB-INF/config/pipet-base.properties
- * ${catalina.base}/conf/pipet.properties
- * path pointed to by propertyPlaceholderResourceLocation Tomcat context parameter
+ * WEB-INF/config/pipet-base.properties ${catalina.base}/conf/pipet.properties path pointed to by
+ * propertyPlaceholderResourceLocation Tomcat context parameter
  *
- * Extend to customize properties file name and/or paths.
+ * <p>Extend to customize properties file name and/or paths.
  */
-public class PropertiesInitializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+public class PropertiesInitializer
+        implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
-    private static final String contextPropertiesParameterName = "propertyPlaceholderResourceLocation";
+    private static final String contextPropertiesParameterName =
+            "propertyPlaceholderResourceLocation";
 
     @Override
     public void initialize(final ConfigurableApplicationContext applicationContext) {
@@ -37,7 +38,8 @@ public class PropertiesInitializer implements ApplicationContextInitializer<Conf
         addPropertySources(applicationContext, propSources);
     }
 
-    protected List<String> getPropertyLocations(final ConfigurableApplicationContext applicationContext) {
+    protected List<String> getPropertyLocations(
+            final ConfigurableApplicationContext applicationContext) {
         List<String> propertyLocations = Lists.newArrayList();
 
         propertyLocations.addAll(getBasePropertyLocations(applicationContext));
@@ -47,9 +49,10 @@ public class PropertiesInitializer implements ApplicationContextInitializer<Conf
         return propertyLocations;
     }
 
-    protected boolean tryAddPropertySource(final ConfigurableApplicationContext applicationContext,
-                                           final MutablePropertySources propSources,
-                                           final String filePath) {
+    protected boolean tryAddPropertySource(
+            final ConfigurableApplicationContext applicationContext,
+            final MutablePropertySources propSources,
+            final String filePath) {
 
         if (filePath == null) {
             return false;
@@ -73,9 +76,9 @@ public class PropertiesInitializer implements ApplicationContextInitializer<Conf
      * @param applicationContext Context to use for loading
      * @param propSources Where to append to
      */
-    protected void addPropertySources(final ConfigurableApplicationContext applicationContext,
-                                      final MutablePropertySources propSources) {
-    }
+    protected void addPropertySources(
+            final ConfigurableApplicationContext applicationContext,
+            final MutablePropertySources propSources) {}
 
     protected String getWebappName() {
         return "pipet";
@@ -90,7 +93,8 @@ public class PropertiesInitializer implements ApplicationContextInitializer<Conf
         return fileName;
     }
 
-    protected List<String> getBasePropertyLocations(ConfigurableApplicationContext applicationContext) {
+    protected List<String> getBasePropertyLocations(
+            ConfigurableApplicationContext applicationContext) {
         String configFile = getRepoConfigLocation() + getConfigFileName("base");
         return Lists.newArrayList(configFile);
     }
@@ -99,7 +103,8 @@ public class PropertiesInitializer implements ApplicationContextInitializer<Conf
         return "WEB-INF/config/";
     }
 
-    protected List<String> getTomcatConfPropertyLocations(ConfigurableApplicationContext applicationContext) {
+    protected List<String> getTomcatConfPropertyLocations(
+            ConfigurableApplicationContext applicationContext) {
         String tomcatPropFile = getTomcatConfDir() + getConfigFileName(null);
         return Lists.newArrayList(tomcatPropFile);
     }
@@ -108,15 +113,19 @@ public class PropertiesInitializer implements ApplicationContextInitializer<Conf
         return "file:" + System.getProperty("catalina.base") + "/conf/";
     }
 
-    protected List<String> getTomcatContextPropertyLocations(ConfigurableApplicationContext applicationContext) {
+    protected List<String> getTomcatContextPropertyLocations(
+            ConfigurableApplicationContext applicationContext) {
         if (!(applicationContext instanceof ConfigurableWebApplicationContext)) {
             return Collections.emptyList();
         }
-        ConfigurableWebApplicationContext webApplicationContext = (ConfigurableWebApplicationContext) applicationContext;
+        ConfigurableWebApplicationContext webApplicationContext =
+                (ConfigurableWebApplicationContext) applicationContext;
         List<String> locations = Lists.newArrayList();
-        final String tomcatContextPropertiesFile = webApplicationContext.getServletContext().getInitParameter(contextPropertiesParameterName);
+        final String tomcatContextPropertiesFile =
+                webApplicationContext
+                        .getServletContext()
+                        .getInitParameter(contextPropertiesParameterName);
         locations.add("file:" + tomcatContextPropertiesFile);
         return locations;
     }
-
 }

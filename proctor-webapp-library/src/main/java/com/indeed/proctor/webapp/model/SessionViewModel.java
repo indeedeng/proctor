@@ -1,8 +1,6 @@
 package com.indeed.proctor.webapp.model;
 
-/**
- * @author parker
- */
+/** @author parker */
 public class SessionViewModel {
 
     /* "Session" Variables */
@@ -11,7 +9,11 @@ public class SessionViewModel {
     private final String compiledJavaScriptUrl;
     private final String nonCompiledJavaScriptUrl;
 
-    private SessionViewModel(boolean useCompiledCSS, boolean useCompiledJavaScript, String compiledJavaScriptUrl, String nonCompiledJavaScriptUrl) {
+    private SessionViewModel(
+            boolean useCompiledCSS,
+            boolean useCompiledJavaScript,
+            String compiledJavaScriptUrl,
+            String nonCompiledJavaScriptUrl) {
         this.useCompiledCSS = useCompiledCSS;
         this.useCompiledJavaScript = useCompiledJavaScript;
         this.compiledJavaScriptUrl = compiledJavaScriptUrl;
@@ -65,7 +67,11 @@ public class SessionViewModel {
         }
 
         public SessionViewModel build() {
-            return new SessionViewModel(_useCompiledCSS, _useCompiledJavaScript, _compiledJavaScriptUrl, _nonCompiledJavaScriptUrl);
+            return new SessionViewModel(
+                    _useCompiledCSS,
+                    _useCompiledJavaScript,
+                    _compiledJavaScriptUrl,
+                    _nonCompiledJavaScriptUrl);
         }
     }
 }

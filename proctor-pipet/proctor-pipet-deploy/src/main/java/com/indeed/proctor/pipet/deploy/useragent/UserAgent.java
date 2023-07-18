@@ -14,27 +14,24 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.Iterator;
 
 /**
- * Wrapper around bitwalker UserAgentUtils that provides lots of helpful convenience methods
- * for defining proctor rules.
+ * Wrapper around bitwalker UserAgentUtils that provides lots of helpful convenience methods for
+ * defining proctor rules.
  *
  * @see eu.bitwalker.useragentutils.UserAgent
  * @author gaurav
  * @author matts
  */
 public class UserAgent {
-    @Nonnull
-    private final eu.bitwalker.useragentutils.UserAgent userAgent;
-    @Nonnull
-    private final VersionedOS os;
-    @Nonnull
-    private final UserAgentVersion version;
-    @Nonnull
-    private final String userAgentString;
+    @Nonnull private final eu.bitwalker.useragentutils.UserAgent userAgent;
+    @Nonnull private final VersionedOS os;
+    @Nonnull private final UserAgentVersion version;
+    @Nonnull private final String userAgentString;
 
     @Deprecated // Use UserAgent#parseUserAgentString instead
     public UserAgent(@Nonnull final String userAgentString) {
         this.userAgentString = userAgentString;
-        this.userAgent = eu.bitwalker.useragentutils.UserAgent.parseUserAgentString(userAgentString);
+        this.userAgent =
+                eu.bitwalker.useragentutils.UserAgent.parseUserAgentString(userAgentString);
         this.os = VersionedOS.fromUserAgent(this);
         this.version = UserAgentVersion.from(userAgent.getBrowserVersion());
     }
@@ -42,8 +39,7 @@ public class UserAgent {
     private UserAgent(
             @Nullable final String userAgentHeader,
             @Nonnull final eu.bitwalker.useragentutils.UserAgent delegate,
-            @Nonnull final UserAgentVersion version
-    ) {
+            @Nonnull final UserAgentVersion version) {
         this.userAgentString = Strings.nullToEmpty(userAgentHeader);
         this.userAgent = delegate;
         this.os = VersionedOS.fromUserAgent(this);
@@ -96,15 +92,17 @@ public class UserAgent {
     }
 
     /**
-     * Delegate method
-     * Detects the detailed version information of the browser. Depends on the userAgent to be available.
-     * Use it only after using UserAgent(String) or UserAgent.parseUserAgent(String).
-     * Returns UserAgent.UNKNOWN_VERSION if it can not detect the version information.
+     * Delegate method Detects the detailed version information of the browser. Depends on the
+     * userAgent to be available. Use it only after using UserAgent(String) or
+     * UserAgent.parseUserAgent(String). Returns UserAgent.UNKNOWN_VERSION if it can not detect the
+     * version information.
+     *
      * @return Version
      */
     @Nonnull
     public Version getBrowserVersion() {
-        return MoreObjects.firstNonNull(userAgent.getBrowserVersion(), UserAgentVersion.UNKNOWN_VERSION);
+        return MoreObjects.firstNonNull(
+                userAgent.getBrowserVersion(), UserAgentVersion.UNKNOWN_VERSION);
     }
 
     @Nonnull
@@ -135,19 +133,19 @@ public class UserAgent {
 
     /**
      * Determines whether user agent is a tablet
+     *
      * @return true if tablet
      */
     public boolean isTablet() {
-        return DeviceType.TABLET.equals(getDeviceType()) ||
-                userAgentString.contains(NEXUS_7_SIGNATURE) ||
-                userAgentString.contains(KINDLE_FIRE_SIGNATURE);
+        return DeviceType.TABLET.equals(getDeviceType())
+                || userAgentString.contains(NEXUS_7_SIGNATURE)
+                || userAgentString.contains(KINDLE_FIRE_SIGNATURE);
     }
 
     public boolean isIOS() {
         final OperatingSystem operatingSystemGroup = getOperatingSystem().getGroup();
 
-        return isMobileDevice() &&
-                OperatingSystem.IOS.equals(operatingSystemGroup);
+        return isMobileDevice() && OperatingSystem.IOS.equals(operatingSystemGroup);
     }
 
     public boolean isChromeForIOS() {
@@ -170,15 +168,16 @@ public class UserAgent {
 
     public boolean isSmartPhone() {
         OperatingSystem operatingSystemGroup = getOperatingSystem().getGroup();
-        return isMobileDevice() &&
-                (OperatingSystem.IOS.equals(operatingSystemGroup)
-                || OperatingSystem.ANDROID.equals(operatingSystemGroup)
-                || OperatingSystem.WINDOWS_MOBILE7.equals(getOperatingSystem()));
+        return isMobileDevice()
+                && (OperatingSystem.IOS.equals(operatingSystemGroup)
+                        || OperatingSystem.ANDROID.equals(operatingSystemGroup)
+                        || OperatingSystem.WINDOWS_MOBILE7.equals(getOperatingSystem()));
     }
 
     /**
-     * Mobile devices that are not tablets are regarded as phones.
-     * It is difficult to distinguish non-cellular handhelds
+     * Mobile devices that are not tablets are regarded as phones. It is difficult to distinguish
+     * non-cellular handhelds
+     *
      * @return true if mobile device and not a tablet
      */
     public boolean isPhone() {
@@ -189,9 +188,13 @@ public class UserAgent {
         return isPhone() && !isSmartPhone();
     }
 
-    private boolean meetsMinimumVersion(final int minMajorVersion, final int minMinorVersion,
-                                     final int majorVersion, final int minorVersion) {
-        return (majorVersion > minMajorVersion) || (majorVersion == minMajorVersion && minorVersion >= minMinorVersion);
+    private boolean meetsMinimumVersion(
+            final int minMajorVersion,
+            final int minMinorVersion,
+            final int majorVersion,
+            final int minorVersion) {
+        return (majorVersion > minMajorVersion)
+                || (majorVersion == minMajorVersion && minorVersion >= minMinorVersion);
     }
 
     @Override
@@ -213,7 +216,7 @@ public class UserAgent {
         private HttpServletRequest request;
         private String userAgentString;
 
-        private Builder() { }
+        private Builder() {}
 
         public Builder setRequest(@Nonnull final HttpServletRequest request) {
             this.request = request;
@@ -249,7 +252,8 @@ public class UserAgent {
             final eu.bitwalker.useragentutils.UserAgent userAgent =
                     eu.bitwalker.useragentutils.UserAgent.parseUserAgentString(userAgentString);
 
-            final eu.bitwalker.useragentutils.UserAgent userAgentToUse = MoreObjects.firstNonNull(userAgent, UNKNOWN_USER_AGENT);
+            final eu.bitwalker.useragentutils.UserAgent userAgentToUse =
+                    MoreObjects.firstNonNull(userAgent, UNKNOWN_USER_AGENT);
             final UserAgentVersion version = UserAgentVersion.from(userAgent.getBrowserVersion());
 
             return new UserAgent(userAgentString, userAgentToUse, version);
@@ -263,7 +267,6 @@ public class UserAgent {
                 return new UserAgent(userAgentString, UNKNOWN_USER_AGENT, UserAgentVersion.UNKNOWN);
             }
         }
-
     }
 
     /**
@@ -275,12 +278,9 @@ public class UserAgent {
      */
     protected static int getIntegerParameter(String argument, int defaultValue) {
         try {
-            return argument != null
-                   ? Integer.parseInt(argument)
-                   : defaultValue;
+            return argument != null ? Integer.parseInt(argument) : defaultValue;
         } catch (NumberFormatException e) {
             return defaultValue;
         }
     }
-
 }

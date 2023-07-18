@@ -1,8 +1,8 @@
 package com.indeed.proctor.common;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javax.annotation.Nonnull;
 import java.io.File;
@@ -16,33 +16,33 @@ import java.net.URL;
 public class TestMatrixVerifier {
     private static final Logger LOGGER = LogManager.getLogger(TestMatrixVerifier.class);
 
-    @Nonnull
-    private static final ObjectMapper OBJECT_MAPPER = Serializers.lenient();
-    @Nonnull
-    private final String source;
-    @Nonnull
-    private final String testMatrixJson;
+    @Nonnull private static final ObjectMapper OBJECT_MAPPER = Serializers.lenient();
+    @Nonnull private final String source;
+    @Nonnull private final String testMatrixJson;
     private final int connectionTimeout;
 
     public TestMatrixVerifier(
             @Nonnull final String source,
             @Nonnull final String testMatrixJson,
-            final int connectionTimeout
-    ) {
+            final int connectionTimeout) {
         this.source = source;
         this.testMatrixJson = testMatrixJson;
         this.connectionTimeout = connectionTimeout;
     }
 
     @SuppressWarnings("UnusedDeclaration") // TODO Remove?
-    public boolean verifyArtifact(@Nonnull final URL requiredTestsUrl) throws IncompatibleTestMatrixException, IOException, MisconfiguredProctorConsumerException, MissingTestMatrixException {
-        final HttpURLConnection urlConnection = (HttpURLConnection) requiredTestsUrl.openConnection();
+    public boolean verifyArtifact(@Nonnull final URL requiredTestsUrl)
+            throws IncompatibleTestMatrixException, IOException,
+                    MisconfiguredProctorConsumerException, MissingTestMatrixException {
+        final HttpURLConnection urlConnection =
+                (HttpURLConnection) requiredTestsUrl.openConnection();
         urlConnection.setReadTimeout(connectionTimeout);
 
         InputStream inputStream = null;
         try {
             inputStream = urlConnection.getInputStream();
-            final SpecificationResult specResults = OBJECT_MAPPER.readValue(inputStream, SpecificationResult.class);
+            final SpecificationResult specResults =
+                    OBJECT_MAPPER.readValue(inputStream, SpecificationResult.class);
 
             final String errorMessage = specResults.getError();
             if (errorMessage != null) {
@@ -63,15 +63,21 @@ public class TestMatrixVerifier {
         }
     }
 
-    private boolean verifyArtifact(final ProctorSpecification spec) throws IOException, IncompatibleTestMatrixException, MissingTestMatrixException {
+    private boolean verifyArtifact(final ProctorSpecification spec)
+            throws IOException, IncompatibleTestMatrixException, MissingTestMatrixException {
         final StringProctorLoader loader = new StringProctorLoader(spec, source, testMatrixJson);
         loader.doLoad();
         return true;
     }
 
-    public static void main(@Nonnull final String[] args) throws IOException, IncompatibleTestMatrixException, MisconfiguredProctorConsumerException, MissingTestMatrixException {
+    public static void main(@Nonnull final String[] args)
+            throws IOException, IncompatibleTestMatrixException,
+                    MisconfiguredProctorConsumerException, MissingTestMatrixException {
         if (args.length != 2) {
-            System.err.println("Usage: java " + TestMatrixVerifier.class.getCanonicalName() + " <required-tests.json> <test-matrix.json>");
+            System.err.println(
+                    "Usage: java "
+                            + TestMatrixVerifier.class.getCanonicalName()
+                            + " <required-tests.json> <test-matrix.json>");
             System.exit(-2);
         }
 
@@ -79,9 +85,11 @@ public class TestMatrixVerifier {
         final String testMatrixFilename = args[1];
 
         final String testMatrixJson = readTestMatrix(testMatrixFilename);
-        final TestMatrixVerifier verifier = new TestMatrixVerifier(testMatrixFilename, testMatrixJson, 15*1000);
+        final TestMatrixVerifier verifier =
+                new TestMatrixVerifier(testMatrixFilename, testMatrixJson, 15 * 1000);
 
-        final ProctorSpecification spec = OBJECT_MAPPER.readValue(new File(specificationFile), ProctorSpecification.class);
+        final ProctorSpecification spec =
+                OBJECT_MAPPER.readValue(new File(specificationFile), ProctorSpecification.class);
         verifier.verifyArtifact(spec);
         LOGGER.info("Success verifying testMatrix against " + specificationFile);
     }

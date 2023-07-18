@@ -13,9 +13,7 @@ import javax.servlet.jsp.tagext.TagSupport;
 import java.io.IOException;
 import java.util.Map;
 
-/**
- * @author yosukey
- */
+/** @author yosukey */
 public class RenderHelpButtonTagHandler extends TagSupport {
     public enum HelpType {
         TEST_TYPE,
@@ -23,12 +21,16 @@ public class RenderHelpButtonTagHandler extends TagSupport {
         AUTO_PROMOTION
     }
 
-    private static final String TEST_TYPE_DEFAULT_URL = "http://opensource.indeedeng.io/proctor/docs/terminology/#test-type";
-    private static final String RULE_DEFAULT_URL = "http://opensource.indeedeng.io/proctor/docs/test-rules/";
+    private static final String TEST_TYPE_DEFAULT_URL =
+            "http://opensource.indeedeng.io/proctor/docs/terminology/#test-type";
+    private static final String RULE_DEFAULT_URL =
+            "http://opensource.indeedeng.io/proctor/docs/test-rules/";
     private static final Logger LOGGER = LogManager.getLogger(RenderHelpButtonTagHandler.class);
     private HelpType helpType;
 
-    public void setHelpType(HelpType helpType) { this.helpType = helpType; }
+    public void setHelpType(HelpType helpType) {
+        this.helpType = helpType;
+    }
 
     public int doStartTag() {
         try {
@@ -44,15 +46,19 @@ public class RenderHelpButtonTagHandler extends TagSupport {
         if (Strings.isNullOrEmpty(helpURL)) {
             return "";
         }
-        return String.format("<a class=\"ui-help-button\" target=\"_blank\" href=\"%s\">?</a>", helpURL);
+        return String.format(
+                "<a class=\"ui-help-button\" target=\"_blank\" href=\"%s\">?</a>", helpURL);
     }
 
     public String getHelpURL(final HelpType helpType) {
         final ServletContext servletContext = pageContext.getServletContext();
-        final WebApplicationContext context = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
-        final Map<String, HelpURLInformation> formatterBeans = BeanFactoryUtils.beansOfTypeIncludingAncestors(context, HelpURLInformation.class);
+        final WebApplicationContext context =
+                WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
+        final Map<String, HelpURLInformation> formatterBeans =
+                BeanFactoryUtils.beansOfTypeIncludingAncestors(context, HelpURLInformation.class);
         if (formatterBeans.size() == 1) {
-            HelpURLInformation helpURLInformation = (HelpURLInformation) formatterBeans.values().toArray()[0];
+            HelpURLInformation helpURLInformation =
+                    (HelpURLInformation) formatterBeans.values().toArray()[0];
             switch (helpType) {
                 case TEST_TYPE:
                     return helpURLInformation.getTestTypeHelpURL();
@@ -64,7 +70,10 @@ public class RenderHelpButtonTagHandler extends TagSupport {
                     return "";
             }
         } else if (formatterBeans.size() > 1) {
-            LOGGER.warn("Multiple beans of type " + HelpURLInformation.class.getSimpleName() + " found, expected 0 or 1.");
+            LOGGER.warn(
+                    "Multiple beans of type "
+                            + HelpURLInformation.class.getSimpleName()
+                            + " found, expected 0 or 1.");
         }
         return getDefaultHelpURL(helpType);
     }

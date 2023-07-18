@@ -9,7 +9,6 @@ import com.indeed.proctor.common.model.TestMatrixVersion;
 import com.indeed.proctor.common.model.TestType;
 import com.indeed.proctor.store.ProctorStore;
 import com.indeed.proctor.store.StoreException;
-
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 import org.springframework.test.web.servlet.MockMvc;
@@ -35,11 +34,8 @@ public class TestSearchApiControllerTest {
         final TestDefinition definition = new TestDefinition();
         definition.setTestType(TestType.ANONYMOUS_USER);
         definition.setSalt("&traveltotokyotst");
-        final TestMatrixDefinition testMatrixDefinition = new TestMatrixDefinition(
-            ImmutableMap.of(
-                "traveltotokyotst", definition
-            )
-        );
+        final TestMatrixDefinition testMatrixDefinition =
+                new TestMatrixDefinition(ImmutableMap.of("traveltotokyotst", definition));
         final TestMatrixVersion testMatrixVersion = new TestMatrixVersion();
         testMatrixVersion.setTestMatrixDefinition(testMatrixDefinition);
 
@@ -51,41 +47,37 @@ public class TestSearchApiControllerTest {
     @Test
     public void testSearchEndpoint() throws Exception {
         final ProctorStore store = createMockProctorStore();
-        final TestSearchApiController testSearchApiController = new TestSearchApiController(null, store, store, store);
+        final TestSearchApiController testSearchApiController =
+                new TestSearchApiController(null, store, store, store);
         final MockMvc mockMvc = MockMvcBuilders.standaloneSetup(testSearchApiController).build();
-        mockMvc.perform(
-            MockMvcRequestBuilders.get("/proctor/matrix/tests")
-                        .param("q", "tokyo tst")
-        )
-        .andExpect(MockMvcResultMatchers.status().isOk())
-        .andExpect(MockMvcResultMatchers.content().string(CoreMatchers.containsString("traveltotokyotst")));
+        mockMvc.perform(MockMvcRequestBuilders.get("/proctor/matrix/tests").param("q", "tokyo tst"))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(
+                        MockMvcResultMatchers.content()
+                                .string(CoreMatchers.containsString("traveltotokyotst")));
     }
 
     @Test
     public void testComparator() {
-        final ProctorTest a20 =
-                new ProctorTest("a", new TestDefinition(), 20);
-        final ProctorTest b10 =
-                new ProctorTest("b", new TestDefinition(), 10);
-        final ProctorTest c30 =
-                new ProctorTest("c", new TestDefinition(), 30);
+        final ProctorTest a20 = new ProctorTest("a", new TestDefinition(), 20);
+        final ProctorTest b10 = new ProctorTest("b", new TestDefinition(), 10);
+        final ProctorTest c30 = new ProctorTest("c", new TestDefinition(), 30);
 
         final Set<String> favoriteTests = ImmutableSet.of("b");
         assertThat(
-                Ordering.from(getComparator(TESTNAME, favoriteTests))
-                        .sortedCopy(Arrays.asList(b10, c30, a20))
-        ).containsExactly(a20, b10, c30);
+                        Ordering.from(getComparator(TESTNAME, favoriteTests))
+                                .sortedCopy(Arrays.asList(b10, c30, a20)))
+                .containsExactly(a20, b10, c30);
 
         assertThat(
-                Ordering.from(getComparator(FAVORITESFIRST, favoriteTests))
-                        .sortedCopy(Arrays.asList(b10, c30, a20))
-        ).containsExactly(b10, a20, c30);
+                        Ordering.from(getComparator(FAVORITESFIRST, favoriteTests))
+                                .sortedCopy(Arrays.asList(b10, c30, a20)))
+                .containsExactly(b10, a20, c30);
 
         assertThat(
-                Ordering.from(getComparator(UPDATEDDATE, favoriteTests))
-                        .sortedCopy(Arrays.asList(b10, c30, a20))
-        ).containsExactly(c30, a20, b10);
-
+                        Ordering.from(getComparator(UPDATEDDATE, favoriteTests))
+                                .sortedCopy(Arrays.asList(b10, c30, a20)))
+                .containsExactly(c30, a20, b10);
     }
 
     @Test
@@ -95,21 +87,19 @@ public class TestSearchApiControllerTest {
         definition.setSalt("&traveltotokyotst");
 
         assertThat(
-                matchesAllIgnoreCase(
-                        "traveltotokyotst",
-                        definition,
-                        TestSearchApiController.FilterType.ALL,
-                        Arrays.asList("Travel", "Tokyo", "User")
-                )
-        ).isTrue();
+                        matchesAllIgnoreCase(
+                                "traveltotokyotst",
+                                definition,
+                                TestSearchApiController.FilterType.ALL,
+                                Arrays.asList("Travel", "Tokyo", "User")))
+                .isTrue();
 
         assertThat(
-                matchesAllIgnoreCase(
-                        "traveltotokyotst",
-                        definition,
-                        TestSearchApiController.FilterType.ALL,
-                        Arrays.asList("Travel", "Kyoto")
-                )
-        ).isFalse();
+                        matchesAllIgnoreCase(
+                                "traveltotokyotst",
+                                definition,
+                                TestSearchApiController.FilterType.ALL,
+                                Arrays.asList("Travel", "Kyoto")))
+                .isFalse();
     }
 }

@@ -13,10 +13,10 @@ import javax.servlet.jsp.tagext.TagSupport;
 import java.io.IOException;
 import java.util.Map;
 
-/**
- */
+/** */
 public class RenderEditPageInjectionTemplatesTagHandler extends TagSupport {
-    private static final Logger LOGGER = LogManager.getLogger(RenderEditPageInjectionTemplatesTagHandler.class);
+    private static final Logger LOGGER =
+            LogManager.getLogger(RenderEditPageInjectionTemplatesTagHandler.class);
 
     private EditPagePosition position;
     private String testName;
@@ -52,13 +52,18 @@ public class RenderEditPageInjectionTemplatesTagHandler extends TagSupport {
     private String renderTemplates() {
         final StringBuilder renderedHTML = new StringBuilder();
         final ServletContext servletContext = pageContext.getServletContext();
-        final WebApplicationContext context = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
+        final WebApplicationContext context =
+                WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
         try {
-            final Map<String, EditPageRenderer> rendererBeans = BeanFactoryUtils.beansOfTypeIncludingAncestors(context, EditPageRenderer.class);
+            final Map<String, EditPageRenderer> rendererBeans =
+                    BeanFactoryUtils.beansOfTypeIncludingAncestors(context, EditPageRenderer.class);
             for (final EditPageRenderer renderer : rendererBeans.values()) {
                 if (position == renderer.getEditPagePosition()) {
-                    renderedHTML.append(renderer.getRenderedHtml(testName, testDefinitionJson, isCreate));
-                    renderedHTML.append(renderer.getRenderedHtml(pageContext, testName, testDefinitionJson, isCreate));
+                    renderedHTML.append(
+                            renderer.getRenderedHtml(testName, testDefinitionJson, isCreate));
+                    renderedHTML.append(
+                            renderer.getRenderedHtml(
+                                    pageContext, testName, testDefinitionJson, isCreate));
                 }
             }
         } catch (Exception e) {

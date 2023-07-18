@@ -7,13 +7,16 @@ import javax.el.VariableMapper;
 import java.util.Map;
 
 /**
- * Provides services for the Unified Expression Language to look up variables in priority order given the input contexts.
+ * Provides services for the Unified Expression Language to look up variables in priority order
+ * given the input contexts.
+ *
  * @author ketan
  */
 public class MulticontextReadOnlyVariableMapper extends VariableMapper {
-    @Nonnull
-    private final Map<String, ValueExpression>[] contexts;
-    public MulticontextReadOnlyVariableMapper(@Nonnull final Map<String, ValueExpression>...contexts) {
+    @Nonnull private final Map<String, ValueExpression>[] contexts;
+
+    public MulticontextReadOnlyVariableMapper(
+            @Nonnull final Map<String, ValueExpression>... contexts) {
         this.contexts = contexts;
     }
 
@@ -31,7 +34,8 @@ public class MulticontextReadOnlyVariableMapper extends VariableMapper {
     }
 
     @Nullable
-    public static ValueExpression resolve(final String variableName, @Nonnull final Map<String, ValueExpression>...contexts) {
+    public static ValueExpression resolve(
+            final String variableName, @Nonnull final Map<String, ValueExpression>... contexts) {
         for (final Map<String, ValueExpression> context : contexts) {
             final ValueExpression ve = context.get(variableName);
             if (ve != null) {

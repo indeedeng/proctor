@@ -13,10 +13,10 @@ import javax.servlet.jsp.tagext.TagSupport;
 import java.io.IOException;
 import java.util.Map;
 
-/**
- */
+/** */
 public class FormatCommitMessageDisplayTagHandler extends TagSupport {
-    private static final Logger LOGGER = LogManager.getLogger(FormatCommitMessageDisplayTagHandler.class);
+    private static final Logger LOGGER =
+            LogManager.getLogger(FormatCommitMessageDisplayTagHandler.class);
 
     private String commitMessage;
 
@@ -36,18 +36,25 @@ public class FormatCommitMessageDisplayTagHandler extends TagSupport {
 
     public String formatMessage(final String commitMessage) {
         final ServletContext servletContext = pageContext.getServletContext();
-        final WebApplicationContext context = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
+        final WebApplicationContext context =
+                WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
         try {
-            final Map<String, CommitMessageDisplayFormatter> formatterBeans = BeanFactoryUtils.beansOfTypeIncludingAncestors(context,CommitMessageDisplayFormatter.class);
+            final Map<String, CommitMessageDisplayFormatter> formatterBeans =
+                    BeanFactoryUtils.beansOfTypeIncludingAncestors(
+                            context, CommitMessageDisplayFormatter.class);
 
             if (formatterBeans.size() == 0) {
-                //No bean found, which is acceptable.
+                // No bean found, which is acceptable.
                 return StringEscapeUtils.escapeHtml4(commitMessage);
             } else if (formatterBeans.size() == 1) {
-                CommitMessageDisplayFormatter formatter = (CommitMessageDisplayFormatter) formatterBeans.values().toArray()[0];
+                CommitMessageDisplayFormatter formatter =
+                        (CommitMessageDisplayFormatter) formatterBeans.values().toArray()[0];
                 return formatter.formatMessage(commitMessage);
             } else {
-                throw new IllegalArgumentException("Multiple beans of type " + CommitMessageDisplayFormatter.class.getSimpleName()  + " found, expected 0 or 1.");
+                throw new IllegalArgumentException(
+                        "Multiple beans of type "
+                                + CommitMessageDisplayFormatter.class.getSimpleName()
+                                + " found, expected 0 or 1.");
             }
         } catch (Exception e) {
             LOGGER.error("An error occurred when formatting commit message.", e);

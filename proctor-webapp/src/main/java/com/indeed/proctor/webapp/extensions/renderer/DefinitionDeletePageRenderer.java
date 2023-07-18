@@ -2,8 +2,7 @@ package com.indeed.proctor.webapp.extensions.renderer;
 
 import javax.servlet.jsp.PageContext;
 
-/**
- */
+/** */
 public interface DefinitionDeletePageRenderer {
     enum DefinitionDeletePagePosition {
         TOP_FORM,
@@ -15,11 +14,11 @@ public interface DefinitionDeletePageRenderer {
     DefinitionDeletePagePosition getDefinitionDeletePagePosition();
 
     @Deprecated
-    default String getRenderedHtml(final String testName){
+    default String getRenderedHtml(final String testName) {
         return "";
     }
 
-    default String getRenderedHtml(final PageContext pageContext, final String testName){
+    default String getRenderedHtml(final PageContext pageContext, final String testName) {
         return "";
     }
 }

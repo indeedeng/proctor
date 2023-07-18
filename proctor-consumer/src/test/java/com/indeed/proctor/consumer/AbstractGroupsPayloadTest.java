@@ -19,12 +19,20 @@ public class AbstractGroupsPayloadTest {
     @Test
     public void testConvertToStringValue() {
         // not sure is this behavior is required
-        assertThat(subclass.convertToStringValue(makeStubMapPayload(MAP_KEY, null), MAP_KEY)).isNull();
-        assertThatThrownBy(() -> subclass.convertToStringValue(makeStubMapPayload(MAP_KEY, 42), MAP_KEY))
+        assertThat(subclass.convertToStringValue(makeStubMapPayload(MAP_KEY, null), MAP_KEY))
+                .isNull();
+        assertThatThrownBy(
+                        () ->
+                                subclass.convertToStringValue(
+                                        makeStubMapPayload(MAP_KEY, 42), MAP_KEY))
                 .isInstanceOf(ClassCastException.class)
                 .hasMessageContaining("42");
-        assertThat(subclass.convertToStringValue(makeStubMapPayload(MAP_KEY, "footest"), MAP_KEY)).isEqualTo("footest");
-        assertThatThrownBy(() -> subclass.convertToStringValue(makeStubMapPayload("notexist", "footest"), MAP_KEY))
+        assertThat(subclass.convertToStringValue(makeStubMapPayload(MAP_KEY, "footest"), MAP_KEY))
+                .isEqualTo("footest");
+        assertThatThrownBy(
+                        () ->
+                                subclass.convertToStringValue(
+                                        makeStubMapPayload("notexist", "footest"), MAP_KEY))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining(MAP_KEY)
                 .hasMessageContaining("notexist");
@@ -32,14 +40,24 @@ public class AbstractGroupsPayloadTest {
 
     @Test
     public void testConvertToDoubleValue() {
-        assertThatThrownBy(() -> subclass.convertToDoubleValue(makeStubMapPayload(MAP_KEY, null), MAP_KEY))
+        assertThatThrownBy(
+                        () ->
+                                subclass.convertToDoubleValue(
+                                        makeStubMapPayload(MAP_KEY, null), MAP_KEY))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessageContaining(MAP_KEY);
-        assertThatThrownBy(() -> subclass.convertToDoubleValue(makeStubMapPayload(MAP_KEY, "foo"), MAP_KEY))
+        assertThatThrownBy(
+                        () ->
+                                subclass.convertToDoubleValue(
+                                        makeStubMapPayload(MAP_KEY, "foo"), MAP_KEY))
                 .isInstanceOf(ClassCastException.class)
                 .hasMessageContaining("foo");
-        assertThat(subclass.convertToDoubleValue(makeStubMapPayload(MAP_KEY, 42), MAP_KEY)).isEqualTo(42.0);
-        assertThatThrownBy(() -> subclass.convertToDoubleValue(makeStubMapPayload("notexist", "footest"), MAP_KEY))
+        assertThat(subclass.convertToDoubleValue(makeStubMapPayload(MAP_KEY, 42), MAP_KEY))
+                .isEqualTo(42.0);
+        assertThatThrownBy(
+                        () ->
+                                subclass.convertToDoubleValue(
+                                        makeStubMapPayload("notexist", "footest"), MAP_KEY))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining(MAP_KEY)
                 .hasMessageContaining("notexist");
@@ -47,15 +65,26 @@ public class AbstractGroupsPayloadTest {
 
     @Test
     public void testConvertToLongValue() {
-        assertThatThrownBy(() -> subclass.convertToLongValue(makeStubMapPayload(MAP_KEY, null), MAP_KEY))
+        assertThatThrownBy(
+                        () ->
+                                subclass.convertToLongValue(
+                                        makeStubMapPayload(MAP_KEY, null), MAP_KEY))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessageContaining(MAP_KEY);
-        assertThatThrownBy(() -> subclass.convertToLongValue(makeStubMapPayload(MAP_KEY, "foo"), MAP_KEY))
+        assertThatThrownBy(
+                        () ->
+                                subclass.convertToLongValue(
+                                        makeStubMapPayload(MAP_KEY, "foo"), MAP_KEY))
                 .isInstanceOf(ClassCastException.class)
                 .hasMessageContaining("foo");
-        assertThat(subclass.convertToLongValue(makeStubMapPayload(MAP_KEY, 42), MAP_KEY)).isEqualTo(42L);
-        assertThat(subclass.convertToLongValue(makeStubMapPayload(MAP_KEY, 42.3), MAP_KEY)).isEqualTo(42L);
-        assertThatThrownBy(() -> subclass.convertToLongValue(makeStubMapPayload("notexist", "footest"), MAP_KEY))
+        assertThat(subclass.convertToLongValue(makeStubMapPayload(MAP_KEY, 42), MAP_KEY))
+                .isEqualTo(42L);
+        assertThat(subclass.convertToLongValue(makeStubMapPayload(MAP_KEY, 42.3), MAP_KEY))
+                .isEqualTo(42L);
+        assertThatThrownBy(
+                        () ->
+                                subclass.convertToLongValue(
+                                        makeStubMapPayload("notexist", "footest"), MAP_KEY))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining(MAP_KEY)
                 .hasMessageContaining("notexist");
@@ -63,16 +92,31 @@ public class AbstractGroupsPayloadTest {
 
     @Test
     public void testConvertToStringArray() {
-        assertThatThrownBy(() -> subclass.convertToStringArray(makeStubMapPayload(MAP_KEY, null), MAP_KEY))
+        assertThatThrownBy(
+                        () ->
+                                subclass.convertToStringArray(
+                                        makeStubMapPayload(MAP_KEY, null), MAP_KEY))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessageContaining(MAP_KEY);
-        assertThat(subclass.convertToStringArray(makeStubMapPayload(MAP_KEY, singletonList("footest")), MAP_KEY)).isEqualTo(new String[]{"footest"});
-        assertThatThrownBy(() -> subclass.convertToStringArray(makeStubMapPayload(MAP_KEY, singletonList(42)), MAP_KEY))
+        assertThat(
+                        subclass.convertToStringArray(
+                                makeStubMapPayload(MAP_KEY, singletonList("footest")), MAP_KEY))
+                .isEqualTo(new String[] {"footest"});
+        assertThatThrownBy(
+                        () ->
+                                subclass.convertToStringArray(
+                                        makeStubMapPayload(MAP_KEY, singletonList(42)), MAP_KEY))
                 .isInstanceOf(ClassCastException.class)
                 .hasMessageContaining("42");
         // not sure if this behavior is required
-        assertThat(subclass.convertToStringArray(makeStubMapPayload(MAP_KEY, singletonList(null)), MAP_KEY)).isEqualTo(new String[]{null});
-        assertThatThrownBy(() -> subclass.convertToStringArray(makeStubMapPayload("notexist", "footest"), MAP_KEY))
+        assertThat(
+                        subclass.convertToStringArray(
+                                makeStubMapPayload(MAP_KEY, singletonList(null)), MAP_KEY))
+                .isEqualTo(new String[] {null});
+        assertThatThrownBy(
+                        () ->
+                                subclass.convertToStringArray(
+                                        makeStubMapPayload("notexist", "footest"), MAP_KEY))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining(MAP_KEY)
                 .hasMessageContaining("notexist");
@@ -80,17 +124,32 @@ public class AbstractGroupsPayloadTest {
 
     @Test
     public void testConvertToDoubleArray() {
-        assertThatThrownBy(() -> subclass.convertToDoubleArray(makeStubMapPayload(MAP_KEY, null), MAP_KEY))
+        assertThatThrownBy(
+                        () ->
+                                subclass.convertToDoubleArray(
+                                        makeStubMapPayload(MAP_KEY, null), MAP_KEY))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessageContaining(MAP_KEY);
-        assertThatThrownBy(() -> subclass.convertToDoubleArray(makeStubMapPayload(MAP_KEY, singletonList(null)), MAP_KEY))
+        assertThatThrownBy(
+                        () ->
+                                subclass.convertToDoubleArray(
+                                        makeStubMapPayload(MAP_KEY, singletonList(null)), MAP_KEY))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessageContaining(MAP_KEY);
-        assertThatThrownBy(() -> subclass.convertToLongArray(makeStubMapPayload(MAP_KEY, "foo"), MAP_KEY))
+        assertThatThrownBy(
+                        () ->
+                                subclass.convertToLongArray(
+                                        makeStubMapPayload(MAP_KEY, "foo"), MAP_KEY))
                 .isInstanceOf(ClassCastException.class)
                 .hasMessageContaining("foo");
-        assertThat(subclass.convertToDoubleArray(makeStubMapPayload(MAP_KEY, singletonList(42)), MAP_KEY)).isEqualTo(new Double[]{42.0});
-        assertThatThrownBy(() -> subclass.convertToDoubleArray(makeStubMapPayload("notexist", "footest"), MAP_KEY))
+        assertThat(
+                        subclass.convertToDoubleArray(
+                                makeStubMapPayload(MAP_KEY, singletonList(42)), MAP_KEY))
+                .isEqualTo(new Double[] {42.0});
+        assertThatThrownBy(
+                        () ->
+                                subclass.convertToDoubleArray(
+                                        makeStubMapPayload("notexist", "footest"), MAP_KEY))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining(MAP_KEY)
                 .hasMessageContaining("notexist");
@@ -98,17 +157,32 @@ public class AbstractGroupsPayloadTest {
 
     @Test
     public void testConvertToLongArray() {
-        assertThatThrownBy(() -> subclass.convertToLongArray(makeStubMapPayload(MAP_KEY, null), MAP_KEY))
+        assertThatThrownBy(
+                        () ->
+                                subclass.convertToLongArray(
+                                        makeStubMapPayload(MAP_KEY, null), MAP_KEY))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessageContaining(MAP_KEY);
-        assertThatThrownBy(() -> subclass.convertToLongArray(makeStubMapPayload(MAP_KEY, singletonList(null)), MAP_KEY))
+        assertThatThrownBy(
+                        () ->
+                                subclass.convertToLongArray(
+                                        makeStubMapPayload(MAP_KEY, singletonList(null)), MAP_KEY))
                 .isInstanceOf(NullPointerException.class)
                 .hasMessageContaining(MAP_KEY);
-        assertThatThrownBy(() -> subclass.convertToLongArray(makeStubMapPayload(MAP_KEY, "foo"), MAP_KEY))
+        assertThatThrownBy(
+                        () ->
+                                subclass.convertToLongArray(
+                                        makeStubMapPayload(MAP_KEY, "foo"), MAP_KEY))
                 .isInstanceOf(ClassCastException.class)
                 .hasMessageContaining("foo");
-        assertThat(subclass.convertToLongArray(makeStubMapPayload(MAP_KEY, singletonList(42)), MAP_KEY)).isEqualTo(new Long[]{42L});
-        assertThatThrownBy(() -> subclass.convertToLongArray(makeStubMapPayload("notexist", "footest"), MAP_KEY))
+        assertThat(
+                        subclass.convertToLongArray(
+                                makeStubMapPayload(MAP_KEY, singletonList(42)), MAP_KEY))
+                .isEqualTo(new Long[] {42L});
+        assertThatThrownBy(
+                        () ->
+                                subclass.convertToLongArray(
+                                        makeStubMapPayload("notexist", "footest"), MAP_KEY))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining(MAP_KEY)
                 .hasMessageContaining("notexist");
@@ -121,6 +195,5 @@ public class AbstractGroupsPayloadTest {
         return payload;
     }
 
-    private static class GroupsPayloadTestClass extends AbstractGroupsPayload {
-    }
+    private static class GroupsPayloadTestClass extends AbstractGroupsPayload {}
 }

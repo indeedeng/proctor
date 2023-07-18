@@ -10,6 +10,7 @@ import java.util.List;
 public class BackgroundJobFactory {
     @Autowired(required = false)
     private List<BeforeBackgroundJobExecute> beforeBackgroundJobExecutes = Collections.emptyList();
+
     @Autowired(required = false)
     private List<AfterBackgroundJobExecute> afterBackgroundJobExecutes = Collections.emptyList();
 
@@ -17,11 +18,11 @@ public class BackgroundJobFactory {
         T execute(BackgroundJob<T> job) throws Exception;
     }
 
-    public <T> BackgroundJob<T> createBackgroundJob(final String jobTitle,
-                                                    final String username,
-                                                    final BackgroundJob.JobType jobType,
-                                                    final Executor<T> executor
-    ) {
+    public <T> BackgroundJob<T> createBackgroundJob(
+            final String jobTitle,
+            final String username,
+            final BackgroundJob.JobType jobType,
+            final Executor<T> executor) {
         return new BackgroundJob<T>() {
             @Override
             public String getTitle() {

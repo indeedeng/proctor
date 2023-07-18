@@ -10,11 +10,16 @@ import static org.junit.Assert.assertTrue;
 
 public class GitAPIExceptionWrapperTest {
     private static final String GIT_URL = "repository.git";
-    private static final TransportException NOT_AUTHORIZED_EXCEPTION = new TransportException("not authorized");
-    private static final TransportException DEVELOPER_ACCESS_LEVEL_EXCEPTION = new TransportException("git-receive-pack not permitted");
-    private static final TransportException SERVER_ERROR_EXCEPTION = new TransportException("500 Internal Server Error");
-    private static final TransportException SERVER_ERROR_EXCEPTION2 = new TransportException("502 Bad Gateway");
-    private static final IllegalStateException MASTER_ACCESS_LEVEL_EXCEPTION = new IllegalStateException("pre-receive hook declined");
+    private static final TransportException NOT_AUTHORIZED_EXCEPTION =
+            new TransportException("not authorized");
+    private static final TransportException DEVELOPER_ACCESS_LEVEL_EXCEPTION =
+            new TransportException("git-receive-pack not permitted");
+    private static final TransportException SERVER_ERROR_EXCEPTION =
+            new TransportException("500 Internal Server Error");
+    private static final TransportException SERVER_ERROR_EXCEPTION2 =
+            new TransportException("502 Bad Gateway");
+    private static final IllegalStateException MASTER_ACCESS_LEVEL_EXCEPTION =
+            new IllegalStateException("pre-receive hook declined");
 
     private GitAPIExceptionWrapper gitAPIExceptionWrapper;
 
@@ -39,7 +44,8 @@ public class GitAPIExceptionWrapperTest {
             assertEquals(exception, result);
         }
         {
-            final TestUpdateException exception = getTestUpdateException(DEVELOPER_ACCESS_LEVEL_EXCEPTION);
+            final TestUpdateException exception =
+                    getTestUpdateException(DEVELOPER_ACCESS_LEVEL_EXCEPTION);
             final TestUpdateException result = gitAPIExceptionWrapper.wrapException(exception);
             assertEquals(exception, result);
         }
@@ -59,7 +65,8 @@ public class GitAPIExceptionWrapperTest {
 
     @Test
     public void testWrapExceptionInGitNoDeveloperAccessLevelException() {
-        final TestUpdateException exception = getTestUpdateException(DEVELOPER_ACCESS_LEVEL_EXCEPTION);
+        final TestUpdateException exception =
+                getTestUpdateException(DEVELOPER_ACCESS_LEVEL_EXCEPTION);
         final TestUpdateException result = gitAPIExceptionWrapper.wrapException(exception);
         assertTrue(result instanceof GitNoDevelperAccessLevelException);
     }

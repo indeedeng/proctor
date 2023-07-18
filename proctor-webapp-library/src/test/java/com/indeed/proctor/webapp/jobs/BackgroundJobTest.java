@@ -21,8 +21,10 @@ public class BackgroundJobTest {
         job = createBackgroundJob(function);
     }
 
-    private BackgroundJob<Object> createBackgroundJob(final BackgroundJobFactory.Executor<Object> function) {
-        return BACKGROUND_JOB_FACTORY.createBackgroundJob("fooTitle", "fooUser", BackgroundJob.JobType.TEST_EDIT, function);
+    private BackgroundJob<Object> createBackgroundJob(
+            final BackgroundJobFactory.Executor<Object> function) {
+        return BACKGROUND_JOB_FACTORY.createBackgroundJob(
+                "fooTitle", "fooUser", BackgroundJob.JobType.TEST_EDIT, function);
     }
 
     @Test

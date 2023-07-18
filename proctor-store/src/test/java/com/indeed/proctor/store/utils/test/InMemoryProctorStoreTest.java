@@ -22,9 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertNull;
 
-/**
- * @author yiqing
- */
+/** @author yiqing */
 public class InMemoryProctorStoreTest {
 
     private InMemoryProctorStore testee;
@@ -32,12 +30,20 @@ public class InMemoryProctorStoreTest {
     @Before
     public void setUp() throws StoreException.TestUpdateException {
         testee = new InMemoryProctorStore();
-        testee.addTestDefinition("Mike", "pwd", "tst1",
+        testee.addTestDefinition(
+                "Mike",
+                "pwd",
+                "tst1",
                 createDummyTestDefinition("1", "tst1"),
-                Collections.emptyMap(), "commit tst1");
-        testee.addTestDefinition("William", "pwd", "tst2",
+                Collections.emptyMap(),
+                "commit tst1");
+        testee.addTestDefinition(
+                "William",
+                "pwd",
+                "tst2",
                 createDummyTestDefinition("2", "tst2"),
-                Collections.emptyMap(), "commit tst2");
+                Collections.emptyMap(),
+                "commit tst2");
     }
 
     @Test
@@ -55,22 +61,14 @@ public class InMemoryProctorStoreTest {
         assertThat(testee.getAllHistories()).isEmpty();
         assertThat(testee.getMatrixHistory(0, 1))
                 .containsExactly(
-                        new Revision(
-                                "0",
-                                "proctor",
-                                new Date(0),
-                                "initialize in-memory store"
-                        )
-                );
+                        new Revision("0", "proctor", new Date(0), "initialize in-memory store"));
         assertThat(testee.getHistory("tst1", 0, 1)).isEmpty();
         assertThatThrownBy(() -> testee.getHistory("tst1", "1", 0, 1))
                 .isInstanceOf(StoreException.class)
                 .hasMessageContaining("Unknown revision 1");
         assertThat(testee.getLatestVersion()).isEqualTo("0");
-        assertThat(testee.getRevisionDetails("0").getRevision().getAuthor())
-                .isEqualTo("proctor");
-        assertThat(testee.getRevisionDetails("0").getModifiedTests())
-                .isEmpty();
+        assertThat(testee.getRevisionDetails("0").getRevision().getAuthor()).isEqualTo("proctor");
+        assertThat(testee.getRevisionDetails("0").getModifiedTests()).isEmpty();
     }
 
     @Test
@@ -94,7 +92,14 @@ public class InMemoryProctorStoreTest {
     public void testEditTest() throws StoreException {
         final TestDefinition dummyTestDefinition = createDummyTestDefinition("3", "tst1");
         dummyTestDefinition.setDescription("tst1 description has been updated");
-        testee.updateTestDefinition("Alex", "pwd", "1", "tst1", dummyTestDefinition, Collections.emptyMap(), "update tst1 description");
+        testee.updateTestDefinition(
+                "Alex",
+                "pwd",
+                "1",
+                "tst1",
+                dummyTestDefinition,
+                Collections.emptyMap(),
+                "update tst1 description");
 
         /* verify tst1 history */
         final Map<String, List<Revision>> allHistories = testee.getAllHistories();
@@ -105,12 +110,9 @@ public class InMemoryProctorStoreTest {
         assertThat(editRevision.getAuthor()).isEqualTo("Alex");
         assertThat(editRevision.getRevision()).isEqualTo("3");
         assertThat(testee.getTestDefinition("tst1", "0")).isNull();
-        assertThat(testee.getTestDefinition("tst1", "1")).isEqualTo(
-                createDummyTestDefinition("1", "tst1")
-        );
-        assertThat(testee.getTestDefinition("tst1", "3")).isEqualTo(
-                dummyTestDefinition
-        );
+        assertThat(testee.getTestDefinition("tst1", "1"))
+                .isEqualTo(createDummyTestDefinition("1", "tst1"));
+        assertThat(testee.getTestDefinition("tst1", "3")).isEqualTo(dummyTestDefinition);
 
         /* verify tst2 history */
         assertThat(allHistories.get("tst2")).hasSize(1);
@@ -118,8 +120,10 @@ public class InMemoryProctorStoreTest {
         final TestMatrixVersion currentTestMatrix = testee.getCurrentTestMatrix();
         assertThat(currentTestMatrix.getVersion()).isEqualTo("3");
 
-        final Map<String, TestDefinition> tests = currentTestMatrix.getTestMatrixDefinition().getTests();
-        assertThat(tests.get("tst1").getDescription()).isEqualTo("tst1 description has been updated");
+        final Map<String, TestDefinition> tests =
+                currentTestMatrix.getTestMatrixDefinition().getTests();
+        assertThat(tests.get("tst1").getDescription())
+                .isEqualTo("tst1 description has been updated");
 
         final List<Revision> tst1 = testee.getHistory("tst1", 0, 3);
         assertThat(tst1).hasSize(2);
@@ -134,11 +138,17 @@ public class InMemoryProctorStoreTest {
     public void testEditTestIncorrectPreviousRevision() {
         final TestDefinition dummyTestDefinition = createDummyTestDefinition("3", "tst1");
         dummyTestDefinition.setDescription("tst1 description has been updated");
-        assertThatThrownBy(() ->
-                testee.updateTestDefinition("Alex", "pwd", "incorrectPreviousVersion",
-                        "tst1", dummyTestDefinition, Collections.emptyMap(), "update tst1 description")
-        ).isInstanceOf(StoreException.TestUpdateException.class);
-
+        assertThatThrownBy(
+                        () ->
+                                testee.updateTestDefinition(
+                                        "Alex",
+                                        "pwd",
+                                        "incorrectPreviousVersion",
+                                        "tst1",
+                                        dummyTestDefinition,
+                                        Collections.emptyMap(),
+                                        "update tst1 description"))
+                .isInstanceOf(StoreException.TestUpdateException.class);
     }
 
     @Test
@@ -157,49 +167,29 @@ public class InMemoryProctorStoreTest {
         final TestDefinition foo2 = createDummyTestDefinition("2", "foo");
         final TestDefinition foo3 = createDummyTestDefinition("3", "foo");
 
-        testee.addTestDefinition(
-                "Bob", "bob", "foo",
-                foo1,
-                Collections.emptyMap(),
-                "comment"
-        );
+        testee.addTestDefinition("Bob", "bob", "foo", foo1, Collections.emptyMap(), "comment");
         final TestEdit edit1 = new TestEdit(getLatestRevision(), foo1);
 
         testee.updateTestDefinition(
-                "Bob", "bob", "1",
-                "foo",
-                foo2,
-                Collections.emptyMap(),
-                "comment"
-        );
+                "Bob", "bob", "1", "foo", foo2, Collections.emptyMap(), "comment");
         final TestEdit edit2 = new TestEdit(getLatestRevision(), foo2);
 
         testee.updateTestDefinition(
-                "Bob", "bob", "2",
-                "foo",
-                foo3,
-                Collections.emptyMap(),
-                "comment"
-        );
+                "Bob", "bob", "2", "foo", foo3, Collections.emptyMap(), "comment");
         final TestEdit edit3 = new TestEdit(getLatestRevision(), foo3);
 
-        assertThat(testee.getTestEdits("foo", 0, 5))
-                .containsExactly(edit3, edit2, edit1);
+        assertThat(testee.getTestEdits("foo", 0, 5)).containsExactly(edit3, edit2, edit1);
 
-        assertThat(testee.getTestEdits("foo", "3", 0, 5))
-                .containsExactly(edit3, edit2, edit1);
+        assertThat(testee.getTestEdits("foo", "3", 0, 5)).containsExactly(edit3, edit2, edit1);
 
         // test limit
-        assertThat(testee.getTestEdits("foo", "3", 0, 2))
-                .containsExactly(edit3, edit2);
+        assertThat(testee.getTestEdits("foo", "3", 0, 2)).containsExactly(edit3, edit2);
 
         // test start
-        assertThat(testee.getTestEdits("foo", "3", 1, 2))
-                .containsExactly(edit2, edit1);
+        assertThat(testee.getTestEdits("foo", "3", 1, 2)).containsExactly(edit2, edit1);
 
         // with old revision
-        assertThat(testee.getTestEdits("foo", "2", 0, 1))
-                .containsExactly(edit2);
+        assertThat(testee.getTestEdits("foo", "2", 0, 1)).containsExactly(edit2);
 
         // with unknown revision
         assertThatThrownBy(() -> testee.getTestEdits("foo", "10", 0, 1))
@@ -207,33 +197,33 @@ public class InMemoryProctorStoreTest {
                 .hasMessageContaining("Unknown revision 1");
 
         // with unknown test
-        assertThat(testee.getTestEdits("bar", "2", 0, 1))
-                .isEmpty();
+        assertThat(testee.getTestEdits("bar", "2", 0, 1)).isEmpty();
     }
 
     private Revision getLatestRevision() throws StoreException {
         return testee.getRevisionDetails(testee.getLatestVersion()).getRevision();
     }
 
-    public static TestDefinition createDummyTestDefinition(final String version, final String testName) {
+    public static TestDefinition createDummyTestDefinition(
+            final String version, final String testName) {
 
-        final List<TestBucket> buckets = Lists.newArrayList(
-                new TestBucket("inactive", -1, ""),
-                new TestBucket("control", 0, ""),
-                new TestBucket("active", 1, "make it active")
-        );
+        final List<TestBucket> buckets =
+                Lists.newArrayList(
+                        new TestBucket("inactive", -1, ""),
+                        new TestBucket("control", 0, ""),
+                        new TestBucket("active", 1, "make it active"));
 
-        final List<Allocation> allocations = Lists.newArrayList(
-                new Allocation("", Lists.newArrayList(
-                        new Range(0, 0.1),
-                        new Range(-1, 0.8),
-                        new Range(1, 0.1)
-                ))
-        );
+        final List<Allocation> allocations =
+                Lists.newArrayList(
+                        new Allocation(
+                                "",
+                                Lists.newArrayList(
+                                        new Range(0, 0.1), new Range(-1, 0.8), new Range(1, 0.1))));
 
         final Map<String, Object> constants = Collections.emptyMap();
         final Map<String, Object> specialConstants = Collections.emptyMap();
-        return new TestDefinition(version,
+        return new TestDefinition(
+                version,
                 "rule-" + version,
                 TestType.ANONYMOUS_USER,
                 "salt-" + version,
@@ -241,7 +231,6 @@ public class InMemoryProctorStoreTest {
                 allocations,
                 constants,
                 specialConstants,
-                "description of " + testName
-        );
+                "description of " + testName);
     }
 }

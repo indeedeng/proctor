@@ -7,16 +7,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class TestForceGroupsDefaultMode {
     @Test
     public void testGetToken_InitialHasNoToken() {
-        assertThat(ForceGroupsDefaultMode.getInitial().getToken())
-                .isEmpty();
+        assertThat(ForceGroupsDefaultMode.getInitial().getToken()).isEmpty();
     }
 
     @Test
     public void testGetToken_NonInitialHasToken() {
         for (final ForceGroupsDefaultMode mode : ForceGroupsDefaultMode.values()) {
             if (!mode.equals(ForceGroupsDefaultMode.getInitial())) {
-                assertThat(mode.getToken())
-                        .isNotEmpty();
+                assertThat(mode.getToken()).isNotEmpty();
             }
         }
     }
@@ -34,8 +32,7 @@ public class TestForceGroupsDefaultMode {
 
     @Test
     public void testGetToken_Fallback() {
-        assertThat(ForceGroupsDefaultMode.FALLBACK.getToken())
-                .hasValue("default_to_fallback");
+        assertThat(ForceGroupsDefaultMode.FALLBACK.getToken()).hasValue("default_to_fallback");
     }
 
     @Test
@@ -52,8 +49,7 @@ public class TestForceGroupsDefaultMode {
 
     @Test
     public void testGetToken_MinLive() {
-        assertThat(ForceGroupsDefaultMode.MIN_LIVE.getToken())
-                .hasValue("default_to_min_live");
+        assertThat(ForceGroupsDefaultMode.MIN_LIVE.getToken()).hasValue("default_to_min_live");
     }
 
     @Test
@@ -70,19 +66,16 @@ public class TestForceGroupsDefaultMode {
 
     @Test
     public void testFromToken_EmptyString() {
-        assertThat(ForceGroupsDefaultMode.fromToken(""))
-                .isEmpty();
+        assertThat(ForceGroupsDefaultMode.fromToken("")).isEmpty();
     }
 
     @Test
     public void testFromToken_Null() {
-        assertThat(ForceGroupsDefaultMode.fromToken(null))
-                .isEmpty();
+        assertThat(ForceGroupsDefaultMode.fromToken(null)).isEmpty();
     }
 
     @Test
     public void testFromToken_UnknownToken() {
-        assertThat(ForceGroupsDefaultMode.fromToken("here is unknown token"))
-                .isEmpty();
+        assertThat(ForceGroupsDefaultMode.fromToken("here is unknown token")).isEmpty();
     }
 }

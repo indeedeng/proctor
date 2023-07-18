@@ -16,9 +16,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
-/**
- * @author parker
- */
+/** @author parker */
 public class LocalDirectoryCore implements FileBasedPersisterCore {
     private static final Logger LOGGER = LogManager.getLogger(LocalDirectoryCore.class);
     private final ObjectMapper objectMapper = Serializers.lenient();
@@ -32,7 +30,12 @@ public class LocalDirectoryCore implements FileBasedPersisterCore {
     }
 
     @Override
-    public <C> C getFileContents(final Class<C> c, final String[] path_parts, final C defaultValue, final String revision) throws StoreException.ReadException, JsonProcessingException {
+    public <C> C getFileContents(
+            final Class<C> c,
+            final String[] path_parts,
+            final C defaultValue,
+            final String revision)
+            throws StoreException.ReadException, JsonProcessingException {
         final String path = String.join(File.separator, path_parts);
         FileReader reader = null;
 
@@ -56,7 +59,7 @@ public class LocalDirectoryCore implements FileBasedPersisterCore {
                 try {
                     reader.close();
                 } catch (final IOException e) {
-                    LOGGER.error("Suppressing throwable thrown when closing "+reader, e);
+                    LOGGER.error("Suppressing throwable thrown when closing " + reader, e);
                 }
             }
         }
@@ -69,8 +72,7 @@ public class LocalDirectoryCore implements FileBasedPersisterCore {
 
     static class LocalRcsClient implements FileBasedProctorStore.RcsClient {
         @Override
-        public void add(final File file) throws Exception {
-        }
+        public void add(final File file) throws Exception {}
 
         @Override
         public void delete(final File testDefinitionDirectory) throws Exception {
@@ -83,36 +85,46 @@ public class LocalDirectoryCore implements FileBasedPersisterCore {
         }
     }
 
-
     @Override
-    public void doInWorkingDirectory(final ChangeMetadata changeMetadata, final String previousVersion, final FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException {
+    public void doInWorkingDirectory(
+            final ChangeMetadata changeMetadata,
+            final String previousVersion,
+            final FileBasedProctorStore.ProctorUpdater updater)
+            throws StoreException.TestUpdateException {
         try {
             final FileBasedProctorStore.RcsClient rcsClient = new LocalRcsClient();
             final boolean thingsChanged = updater.doInWorkingDirectory(rcsClient, baseDir);
         } catch (final Exception e) {
-            throw new StoreException.TestUpdateException("LocalCore: Unable to perform operation: " + e.getMessage(), e);
+            throw new StoreException.TestUpdateException(
+                    "LocalCore: Unable to perform operation: " + e.getMessage(), e);
         } finally {
         }
     }
 
     @Override
-    public TestVersionResult determineVersions(final String fetchRevision) throws StoreException.ReadException {
+    public TestVersionResult determineVersions(final String fetchRevision)
+            throws StoreException.ReadException {
         final File testDir = new File(baseDir + File.separator + testDefinitionsDirectory);
-        // List all of the directories, excluding the directories created by svn (implementation is ignoring directories named '.svn'
-        final File[] testDefFiles = testDir.listFiles( (FileFilter) FileFilterUtils.makeSVNAware(FileFilterUtils.directoryFileFilter()) );
-        final List<TestVersionResult.Test> tests = Lists.newArrayListWithExpectedSize(testDefFiles.length);
+        // List all of the directories, excluding the directories created by svn (implementation is
+        // ignoring directories named '.svn'
+        final File[] testDefFiles =
+                testDir.listFiles(
+                        (FileFilter)
+                                FileFilterUtils.makeSVNAware(
+                                        FileFilterUtils.directoryFileFilter()));
+        final List<TestVersionResult.Test> tests =
+                Lists.newArrayListWithExpectedSize(testDefFiles.length);
         for (final File testDefFile : testDefFiles) {
             final String testName = testDefFile.getName();
             tests.add(new TestVersionResult.Test(testName, fetchRevision));
         }
 
         return new TestVersionResult(
-            tests,
-            new Date(System.currentTimeMillis()),
-            System.getenv("USER"),
-            String.valueOf(System.currentTimeMillis()),
-            ""
-        );
+                tests,
+                new Date(System.currentTimeMillis()),
+                System.getenv("USER"),
+                String.valueOf(System.currentTimeMillis()),
+                "");
     }
 
     @Override

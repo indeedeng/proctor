@@ -15,7 +15,8 @@ public class SampleController {
     @RequestMapping("test")
     @ResponseBody
     public String getTest(final HttpServletRequest request) {
-        final SampleProctorGroups proctorGroups = (SampleProctorGroups) request.getAttribute(PROCTOR_GROUPS_ATTRIBUTE);
+        final SampleProctorGroups proctorGroups =
+                (SampleProctorGroups) request.getAttribute(PROCTOR_GROUPS_ATTRIBUTE);
         return SAMPLE_1_TST + proctorGroups.getSample1_tstValue();
     }
 }

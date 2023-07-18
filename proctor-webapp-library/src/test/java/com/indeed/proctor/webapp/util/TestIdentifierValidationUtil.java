@@ -23,23 +23,31 @@ public class TestIdentifierValidationUtil {
         final String maxLengthName = StringUtils.repeat("a", 100);
         final String tooLongName = StringUtils.repeat("a", 101);
 
-        for (final String input : new String[]{"", "0", "_", "__", ".", "_0", "0_", "a_0", "0_a", "a#b"}) {
+        for (final String input :
+                new String[] {"", "0", "_", "__", ".", "_0", "0_", "a_0", "0_a", "a#b"}) {
             assertThatThrownBy(() -> validateTestName(input))
                     .isInstanceOf(IllegalArgumentException.class)
-                    .hasMessageContaining("Test Name must be alpha-numeric underscore and not start/end with a number");
+                    .hasMessageContaining(
+                            "Test Name must be alpha-numeric underscore and not start/end with a number");
         }
         assertThatThrownBy(() -> validateTestName(tooLongName))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Test Name length can't be longer than 100");
 
         // Nothing happens for valid test names
-        assertThat(Arrays.asList(
-                "a", "A",
-                "a_a", "a1a",
-                "_0_", "_0___",
-                "_a_b_", "_a", "a_",
-                maxLengthName
-        )).allSatisfy(IdentifierValidationUtil::validateTestName);
+        assertThat(
+                        Arrays.asList(
+                                "a",
+                                "A",
+                                "a_a",
+                                "a1a",
+                                "_0_",
+                                "_0___",
+                                "_a_b_",
+                                "_a",
+                                "a_",
+                                maxLengthName))
+                .allSatisfy(IdentifierValidationUtil::validateTestName);
     }
 
     @Test
@@ -47,37 +55,63 @@ public class TestIdentifierValidationUtil {
         final String maxLengthName = StringUtils.repeat("a", 100);
         final String tooLongName = StringUtils.repeat("a", 101);
 
-        assertThat(Arrays.asList(
-                "a", "A",
-                "a_a", "a_b", "0a", "a1a", "a.a", "a:a",
-                "_0_", "_0___",
-                "_a_b_", "_a", "a_",
-                "_0", "0", "0_",
-                "a_0", "0_a",
-                maxLengthName
-        )).allMatch(IdentifierValidationUtil::isValidMetaTag);
+        assertThat(
+                        Arrays.asList(
+                                "a",
+                                "A",
+                                "a_a",
+                                "a_b",
+                                "0a",
+                                "a1a",
+                                "a.a",
+                                "a:a",
+                                "_0_",
+                                "_0___",
+                                "_a_b_",
+                                "_a",
+                                "a_",
+                                "_0",
+                                "0",
+                                "0_",
+                                "a_0",
+                                "0_a",
+                                maxLengthName))
+                .allMatch(IdentifierValidationUtil::isValidMetaTag);
 
-        assertThat(Arrays.asList(
-                "", "_", "__",
-                ",", ";",
-                ".", ":",
-                "a.", "a:", ".a", ":a",
-                "a#b", tooLongName
-        )).as("should be invalid").allMatch(metaTag -> !IdentifierValidationUtil.isValidMetaTag(metaTag));
+        assertThat(
+                        Arrays.asList(
+                                "",
+                                "_",
+                                "__",
+                                ",",
+                                ";",
+                                ".",
+                                ":",
+                                "a.",
+                                "a:",
+                                ".a",
+                                ":a",
+                                "a#b",
+                                tooLongName))
+                .as("should be invalid")
+                .allMatch(metaTag -> !IdentifierValidationUtil.isValidMetaTag(metaTag));
     }
 
     @Test
     public void testIsValidMetaTags() {
-        final TestDefinition invalidMetaTagDefinition = createTestDefinition(ImmutableList.of("0", "_", "a", "__"));
+        final TestDefinition invalidMetaTagDefinition =
+                createTestDefinition(ImmutableList.of("0", "_", "a", "__"));
         final TestDefinition emptyMetaTagDefinition = createTestDefinition(ImmutableList.of());
-        final TestDefinition validMetaTagDefinition = createTestDefinition(ImmutableList.of("a", "a_a"));
+        final TestDefinition validMetaTagDefinition =
+                createTestDefinition(ImmutableList.of("a", "a_a"));
 
         assertThatThrownBy(() -> validateMetaTags(invalidMetaTagDefinition))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Meta Tag must \n" +
-                        " - be alpha-numeric underscore\n" +
-                        " - not be longer than 100\n" +
-                        " but found: [_, __]");
+                .hasMessageContaining(
+                        "Meta Tag must \n"
+                                + " - be alpha-numeric underscore\n"
+                                + " - not be longer than 100\n"
+                                + " but found: [_, __]");
 
         // Nothing happens for valid meta tags
         validateMetaTags(emptyMetaTagDefinition);
@@ -96,8 +130,7 @@ public class TestIdentifierValidationUtil {
                 Collections.emptyMap(),
                 Collections.emptyMap(),
                 "",
-                metaTags
-        );
+                metaTags);
     }
 
     @Test
@@ -106,6 +139,5 @@ public class TestIdentifierValidationUtil {
                 .allMatch(name -> !isValidBucketName(name));
         assertThat(Arrays.asList("valid_bucket_Name", "valid_bucket_Name0"))
                 .allMatch(name -> isValidBucketName(name));
-
     }
 }

@@ -14,10 +14,10 @@ import javax.servlet.jsp.tagext.TagSupport;
 import java.io.IOException;
 import java.util.Map;
 
-/**
- */
+/** */
 public class RenderDefinitionHistoryPageInjectionTemplatesHandler extends TagSupport {
-    private static final Logger LOGGER = LogManager.getLogger(RenderDefinitionHistoryPageInjectionTemplatesHandler.class);
+    private static final Logger LOGGER =
+            LogManager.getLogger(RenderDefinitionHistoryPageInjectionTemplatesHandler.class);
 
     private DefinitionHistoryPagePosition position;
     private String testName;
@@ -48,13 +48,17 @@ public class RenderDefinitionHistoryPageInjectionTemplatesHandler extends TagSup
     private String renderTemplates() {
         final StringBuilder renderedHTML = new StringBuilder();
         final ServletContext servletContext = pageContext.getServletContext();
-        final WebApplicationContext context = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
+        final WebApplicationContext context =
+                WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
         try {
-            final Map<String, DefinitionHistoryPageRenderer> rendererBeans = BeanFactoryUtils.beansOfTypeIncludingAncestors(context, DefinitionHistoryPageRenderer.class);
+            final Map<String, DefinitionHistoryPageRenderer> rendererBeans =
+                    BeanFactoryUtils.beansOfTypeIncludingAncestors(
+                            context, DefinitionHistoryPageRenderer.class);
             for (final DefinitionHistoryPageRenderer renderer : rendererBeans.values()) {
                 if (position == renderer.getDefinitionHistoryPagePositionPosition()) {
                     renderedHTML.append(renderer.getRenderedHtml(testName, testDefinitionVersion));
-                    renderedHTML.append(renderer.getRenderedHtml(pageContext, testName, testDefinitionVersion));
+                    renderedHTML.append(
+                            renderer.getRenderedHtml(pageContext, testName, testDefinitionVersion));
                 }
             }
         } catch (Exception e) {

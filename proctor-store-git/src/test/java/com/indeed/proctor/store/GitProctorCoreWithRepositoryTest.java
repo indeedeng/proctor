@@ -27,8 +27,7 @@ public class GitProctorCoreWithRepositoryTest extends RepositoryTestCase {
 
     private String gitUrl;
 
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     @Override
     public void setUp() throws Exception {
@@ -47,13 +46,9 @@ public class GitProctorCoreWithRepositoryTest extends RepositoryTestCase {
         final File workingDir = temporaryFolder.newFolder("testCloneRepository");
 
         // Run cloneRepository
-        final GitProctorCore gitProctorCore = new GitProctorCore(
-                gitUrl,
-                GIT_USERNAME,
-                GIT_PASSWORD,
-                TEST_DEFINITION_DIRECTORY,
-                workingDir
-        );
+        final GitProctorCore gitProctorCore =
+                new GitProctorCore(
+                        gitUrl, GIT_USERNAME, GIT_PASSWORD, TEST_DEFINITION_DIRECTORY, workingDir);
 
         final Git git = gitProctorCore.getGit();
 
@@ -67,9 +62,7 @@ public class GitProctorCoreWithRepositoryTest extends RepositoryTestCase {
         assertThat(localCommitMessage).isEqualTo(COMMIT_MESSAGE);
     }
 
-    /**
-     * clone repo having master and test branch with only fetching refs of test branch
-     */
+    /** clone repo having master and test branch with only fetching refs of test branch */
     @Test
     public void testCloneRepositoryWithSingleBranch() throws Exception {
         final File workingDir = temporaryFolder.newFolder("testCloneRepositoryWithSingleBranch");
@@ -85,19 +78,20 @@ public class GitProctorCoreWithRepositoryTest extends RepositoryTestCase {
         remoteGit.commit().setMessage(commitMessage).call();
 
         // Run cloneRepository with single branch
-        final GitProctorCore gitProctorCore = new GitProctorCore(
-                gitUrl,
-                GIT_USERNAME,
-                GIT_PASSWORD,
-                TEST_DEFINITION_DIRECTORY,
-                workingDir,
-                branchName
-        );
+        final GitProctorCore gitProctorCore =
+                new GitProctorCore(
+                        gitUrl,
+                        GIT_USERNAME,
+                        GIT_PASSWORD,
+                        TEST_DEFINITION_DIRECTORY,
+                        workingDir,
+                        branchName);
 
         final Git git = gitProctorCore.getGit();
 
         assertNotNull(git);
-        final List<Ref> branchList = git.branchList().setListMode(ListBranchCommand.ListMode.ALL).call();
+        final List<Ref> branchList =
+                git.branchList().setListMode(ListBranchCommand.ListMode.ALL).call();
         // should not contain master
         assertThat(branchList.stream().map(Ref::getName))
                 .containsExactlyInAnyOrder("refs/heads/" + branchName, "refs/remotes/origin/test");

@@ -39,10 +39,8 @@ public class AbstractProctorLoaderTest {
 
     @Test
     public void testLoaderTimerFunctionsNoLoad() {
-        when(dataLoaderTimerMock.getSecondsSinceLastLoadCheck())
-                .thenReturn(null);
-        when(dataLoaderTimerMock.isLoadedDataSuccessfullyRecently())
-                .thenReturn(false);
+        when(dataLoaderTimerMock.getSecondsSinceLastLoadCheck()).thenReturn(null);
+        when(dataLoaderTimerMock.isLoadedDataSuccessfullyRecently()).thenReturn(false);
 
         final TestProctorLoader loader = createTestProctorLoader(dataLoaderTimerMock);
         assertThat(loader.getSecondsSinceLastLoadCheck()).isNull();
@@ -51,10 +49,8 @@ public class AbstractProctorLoaderTest {
 
     @Test
     public void testLoaderTimerFunctionsLoadSuccess() {
-        when(dataLoaderTimerMock.isLoadedDataSuccessfullyRecently())
-                .thenReturn(true);
-        when(dataLoaderTimerMock.getSecondsSinceLastLoadCheck())
-                .thenReturn(42);
+        when(dataLoaderTimerMock.isLoadedDataSuccessfullyRecently()).thenReturn(true);
+        when(dataLoaderTimerMock.getSecondsSinceLastLoadCheck()).thenReturn(42);
 
         final TestProctorLoader loader = createTestProctorLoader(dataLoaderTimerMock);
         assertThat(loader.getSecondsSinceLastLoadCheck()).isEqualTo(42);
@@ -65,14 +61,15 @@ public class AbstractProctorLoaderTest {
     public void testLoaderLoadWithChange() {
         final Proctor proctorMock = mock(Proctor.class);
         final Audit audit = getAuditMockForLoad();
-        final TestProctorLoader loader = new TestProctorLoader(dataLoaderTimerMock) {
-            @Nullable
-            @Override
-            public Proctor doLoad() {
-                setLastAudit(audit);
-                return proctorMock;
-            }
-        };
+        final TestProctorLoader loader =
+                new TestProctorLoader(dataLoaderTimerMock) {
+                    @Nullable
+                    @Override
+                    public Proctor doLoad() {
+                        setLastAudit(audit);
+                        return proctorMock;
+                    }
+                };
         assertThat(loader.load()).isTrue();
         assertThat(loader.get()).isEqualTo(proctorMock);
     }
@@ -80,28 +77,30 @@ public class AbstractProctorLoaderTest {
     @Test
     public void testLoaderLoadNoChange() {
         final Audit audit = getAuditMockForLoad();
-        final TestProctorLoader loader = new TestProctorLoader(dataLoaderTimerMock) {
-            @Nullable
-            @Override
-            public Proctor doLoad() {
-                setLastAudit(audit);
-                return null;
-            }
-        };
+        final TestProctorLoader loader =
+                new TestProctorLoader(dataLoaderTimerMock) {
+                    @Nullable
+                    @Override
+                    public Proctor doLoad() {
+                        setLastAudit(audit);
+                        return null;
+                    }
+                };
         assertThat(loader.load()).isTrue();
     }
 
     @Test
     public void testLoaderLoadException() {
         final RuntimeException exceptionStub = new RuntimeException("test exception");
-        final TestProctorLoader loader = new TestProctorLoader(dataLoaderTimerMock) {
-            @Nullable
-            @Override
-            public Proctor doLoad() {
+        final TestProctorLoader loader =
+                new TestProctorLoader(dataLoaderTimerMock) {
+                    @Nullable
+                    @Override
+                    public Proctor doLoad() {
 
-                throw exceptionStub;
-            }
-        };
+                        throw exceptionStub;
+                    }
+                };
         try {
             loader.load();
             fail("Expected RTE");
@@ -119,42 +118,48 @@ public class AbstractProctorLoaderTest {
 
         final TestMatrixArtifact matrix = new TestMatrixArtifact();
         matrix.setAudit(audit);
-        matrix.setTests(ImmutableMap.<String, ConsumableTestDefinition>builder()
-                .put(testName, createStubDefinition())
-                .build());
+        matrix.setTests(
+                ImmutableMap.<String, ConsumableTestDefinition>builder()
+                        .put(testName, createStubDefinition())
+                        .build());
 
-        final Map<String, TestSpecification> tests = ImmutableMap.<String, TestSpecification>builder()
-                .put(testName, new TestSpecification())
-                .build();
-        final ProctorSpecification proctorSpecification = new ProctorSpecification(
-                Collections.emptyMap(), tests, new DynamicFilters());
+        final Map<String, TestSpecification> tests =
+                ImmutableMap.<String, TestSpecification>builder()
+                        .put(testName, new TestSpecification())
+                        .build();
+        final ProctorSpecification proctorSpecification =
+                new ProctorSpecification(Collections.emptyMap(), tests, new DynamicFilters());
 
-        final IdentifierValidator identifierValidator = (testType, identifier) -> !"foo".equals(identifier);
+        final IdentifierValidator identifierValidator =
+                (testType, identifier) -> !"foo".equals(identifier);
 
-        final TestProctorLoader loader = new TestProctorLoader(dataLoaderTimerMock, proctorSpecification, identifierValidator) {
-            @Nullable
-            @Override
-            TestMatrixArtifact loadTestMatrix() {
-                return matrix;
-            }
-        };
-
+        final TestProctorLoader loader =
+                new TestProctorLoader(
+                        dataLoaderTimerMock, proctorSpecification, identifierValidator) {
+                    @Nullable
+                    @Override
+                    TestMatrixArtifact loadTestMatrix() {
+                        return matrix;
+                    }
+                };
 
         final Proctor proctor = loader.doLoad();
 
-        assertThat(proctor.determineTestGroups(
-                Identifiers.of(TestType.ANONYMOUS_USER, "foo"),
-                Collections.emptyMap(),
-                Collections.emptyMap()
-        ).getBuckets())
+        assertThat(
+                        proctor.determineTestGroups(
+                                        Identifiers.of(TestType.ANONYMOUS_USER, "foo"),
+                                        Collections.emptyMap(),
+                                        Collections.emptyMap())
+                                .getBuckets())
                 .as("it should assign no bucket as 'foo' identifier is invalid")
                 .doesNotContainKey(testName);
 
-        assertThat(proctor.determineTestGroups(
-                Identifiers.of(TestType.ANONYMOUS_USER, "bar"),
-                Collections.emptyMap(),
-                Collections.emptyMap()
-        ).getBuckets())
+        assertThat(
+                        proctor.determineTestGroups(
+                                        Identifiers.of(TestType.ANONYMOUS_USER, "bar"),
+                                        Collections.emptyMap(),
+                                        Collections.emptyMap())
+                                .getBuckets())
                 .as("it should assign some bucket as 'bar' identifier is valid")
                 .containsKey(testName);
     }
@@ -170,36 +175,43 @@ public class AbstractProctorLoaderTest {
         final String tagname = "fooTag";
         final ConsumableTestDefinition dynamicIncludedDefinition = createStubDefinition();
         dynamicIncludedDefinition.setMetaTags(ImmutableList.of(tagname));
-        matrix.setTests(ImmutableMap.<String, ConsumableTestDefinition>builder()
-                .put(requiredTestname, createStubDefinition())
-                .put(dynamicAddedTestname, dynamicIncludedDefinition)
-                .build());
+        matrix.setTests(
+                ImmutableMap.<String, ConsumableTestDefinition>builder()
+                        .put(requiredTestname, createStubDefinition())
+                        .put(dynamicAddedTestname, dynamicIncludedDefinition)
+                        .build());
         final TestSpecification specification = new TestSpecification();
-        final Map<String, TestSpecification> tests = ImmutableMap.<String, TestSpecification>builder()
-                .put(requiredTestname, specification)
-                .build();
-        final DynamicFilters filters = new DynamicFilters(ImmutableList.of(new MetaTagsFilter(singleton(tagname))));
-        final ProctorSpecification proctorSpecification = new ProctorSpecification(Collections.emptyMap(), tests, filters);
-        final TestProctorLoader loader = new TestProctorLoader(dataLoaderTimerMock, proctorSpecification) {
-            @Nullable
-            @Override
-            TestMatrixArtifact loadTestMatrix() {
-                return matrix;
-            }
-        };
+        final Map<String, TestSpecification> tests =
+                ImmutableMap.<String, TestSpecification>builder()
+                        .put(requiredTestname, specification)
+                        .build();
+        final DynamicFilters filters =
+                new DynamicFilters(ImmutableList.of(new MetaTagsFilter(singleton(tagname))));
+        final ProctorSpecification proctorSpecification =
+                new ProctorSpecification(Collections.emptyMap(), tests, filters);
+        final TestProctorLoader loader =
+                new TestProctorLoader(dataLoaderTimerMock, proctorSpecification) {
+                    @Nullable
+                    @Override
+                    TestMatrixArtifact loadTestMatrix() {
+                        return matrix;
+                    }
+                };
 
         // execute
         final Proctor proctor = loader.doLoad();
 
         // verify
-        final ProctorResult proctorResult = proctor.determineTestGroups(
-                Identifiers.of(TestType.ANONYMOUS_USER, "foo"),
-                Collections.emptyMap(),
-                Collections.emptyMap());
+        final ProctorResult proctorResult =
+                proctor.determineTestGroups(
+                        Identifiers.of(TestType.ANONYMOUS_USER, "foo"),
+                        Collections.emptyMap(),
+                        Collections.emptyMap());
         assertThat(proctor.getLoadResult().getTestsWithErrors()).isEmpty();
         assertThat(proctor.getLoadResult().getMissingTests()).isEmpty();
         assertThat(proctor.getLoadResult().getDynamicTestErrorMap()).isEmpty();
-        assertThat(proctorResult.getTestDefinitions()).containsOnlyKeys(requiredTestname, dynamicAddedTestname);
+        assertThat(proctorResult.getTestDefinitions())
+                .containsOnlyKeys(requiredTestname, dynamicAddedTestname);
     }
 
     @Test
@@ -217,7 +229,8 @@ public class AbstractProctorLoaderTest {
         final ConsumableTestDefinition consumableTestDefinition = new ConsumableTestDefinition();
         consumableTestDefinition.setTestType(TestType.ANONYMOUS_USER);
         consumableTestDefinition.setBuckets(ImmutableList.of(new TestBucket("inactive", -1, "")));
-        consumableTestDefinition.setAllocations(ImmutableList.of(new Allocation("", ImmutableList.of(new Range(-1, 1.0)))));
+        consumableTestDefinition.setAllocations(
+                ImmutableList.of(new Allocation("", ImmutableList.of(new Range(-1, 1.0)))));
         return consumableTestDefinition;
     }
 
@@ -240,14 +253,21 @@ public class AbstractProctorLoaderTest {
             this(dataLoaderTimer, new ProctorSpecification());
         }
 
-        public TestProctorLoader(final DataLoadTimer dataLoaderTimer, final ProctorSpecification specification) {
+        public TestProctorLoader(
+                final DataLoadTimer dataLoaderTimer, final ProctorSpecification specification) {
             super(TestProctorLoader.class, specification, new FunctionMapperImpl());
             this.dataLoadTimer = dataLoaderTimer;
         }
 
-        public TestProctorLoader(final DataLoadTimer dataLoaderTimer, final ProctorSpecification specification,
-                                 final IdentifierValidator identifierValidator) {
-            super(TestProctorLoader.class, specification, new FunctionMapperImpl(), identifierValidator);
+        public TestProctorLoader(
+                final DataLoadTimer dataLoaderTimer,
+                final ProctorSpecification specification,
+                final IdentifierValidator identifierValidator) {
+            super(
+                    TestProctorLoader.class,
+                    specification,
+                    new FunctionMapperImpl(),
+                    identifierValidator);
             this.dataLoadTimer = dataLoaderTimer;
         }
 

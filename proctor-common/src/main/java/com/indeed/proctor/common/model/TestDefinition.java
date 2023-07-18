@@ -23,50 +23,39 @@ import static java.util.Collections.emptyList;
 public class TestDefinition {
 
     /**
-     * "-1" when for definitions on the trunk branch.
-     * On other branches, the revision of the definition on the trunk branch from which it was promoted
+     * "-1" when for definitions on the trunk branch. On other branches, the revision of the
+     * definition on the trunk branch from which it was promoted
      */
     private String version;
-    @Nonnull
-    private Map<String, Object> constants = Collections.emptyMap();
-    @Nonnull
-    private Map<String, Object> specialConstants = Collections.emptyMap();
-    @Nonnull
-    private String salt;
-    @Nullable
-    private String rule;
-    @Nonnull
-    private List<TestBucket> buckets = emptyList();
-    //  there are multiple ways to allocate the buckets based on rules, but most tests will probably just have one Allocation
-    @Nonnull
-    private List<Allocation> allocations = emptyList();
+
+    @Nonnull private Map<String, Object> constants = Collections.emptyMap();
+    @Nonnull private Map<String, Object> specialConstants = Collections.emptyMap();
+    @Nonnull private String salt;
+    @Nullable private String rule;
+    @Nonnull private List<TestBucket> buckets = emptyList();
+    //  there are multiple ways to allocate the buckets based on rules, but most tests will probably
+    // just have one Allocation
+    @Nonnull private List<Allocation> allocations = emptyList();
     private boolean silent;
     /**
      * Mutable tags used by applications for any kind of purpose (filtering, special treatments)
      * Validated by IdentifierValidationUtil
      */
-    @Nonnull
-    private List<String> metaTags = emptyList();
+    @Nonnull private List<String> metaTags = emptyList();
 
-    /**
-     * For advisory purposes only
-     */
-    @Nonnull
-    private TestType testType;
-    @Nullable
-    private String description;
+    /** For advisory purposes only */
+    @Nonnull private TestType testType;
 
-    /**
-     * @see #getDependsOn()
-     */
-    @Nullable
-    private TestDependency dependsOn;
+    @Nullable private String description;
 
-    public TestDefinition() { /* intentionally empty */ }
+    /** @see #getDependsOn() */
+    @Nullable private TestDependency dependsOn;
 
-    /**
-     * @deprecated Use {@link #builder()}
-     */
+    public TestDefinition() {
+        /* intentionally empty */
+    }
+
+    /** @deprecated Use {@link #builder()} */
     @Deprecated
     public TestDefinition(
             final String version,
@@ -77,9 +66,9 @@ public class TestDefinition {
             @Nonnull final List<Allocation> allocations,
             @Nonnull final Map<String, Object> constants,
             @Nonnull final Map<String, Object> specialConstants,
-            @Nullable final String description
-    ) {
-        this(version,
+            @Nullable final String description) {
+        this(
+                version,
                 rule,
                 testType,
                 salt,
@@ -92,9 +81,7 @@ public class TestDefinition {
                 emptyList());
     }
 
-    /**
-     * @deprecated Use {@link #builder()}
-     */
+    /** @deprecated Use {@link #builder()} */
     @Deprecated
     public TestDefinition(
             final String version,
@@ -106,9 +93,9 @@ public class TestDefinition {
             final boolean silent,
             @Nonnull final Map<String, Object> constants,
             @Nonnull final Map<String, Object> specialConstants,
-            @Nullable final String description
-    ) {
-        this(version,
+            @Nullable final String description) {
+        this(
+                version,
                 rule,
                 testType,
                 salt,
@@ -121,9 +108,7 @@ public class TestDefinition {
                 emptyList());
     }
 
-    /**
-     * @deprecated Use {@link #builder()}
-     */
+    /** @deprecated Use {@link #builder()} */
     @Deprecated
     public TestDefinition(
             final String version,
@@ -136,8 +121,7 @@ public class TestDefinition {
             @Nonnull final Map<String, Object> constants,
             @Nonnull final Map<String, Object> specialConstants,
             @Nullable final String description,
-            @Nonnull final List<String> metaTags
-    ) {
+            @Nonnull final List<String> metaTags) {
         this.version = version;
         this.constants = constants;
         this.specialConstants = specialConstants;
@@ -178,9 +162,7 @@ public class TestDefinition {
         return version;
     }
 
-    /**
-     * @deprecated Use {@link #builder()}
-     */
+    /** @deprecated Use {@link #builder()} */
     @Deprecated
     public void setVersion(final String version) {
         this.version = version;
@@ -191,9 +173,7 @@ public class TestDefinition {
         return constants;
     }
 
-    /**
-     * @deprecated Use {@link #builder()}
-     */
+    /** @deprecated Use {@link #builder()} */
     @Deprecated
     @SuppressWarnings("UnusedDeclaration")
     public void setConstants(@Nonnull final Map<String, Object> constants) {
@@ -205,9 +185,7 @@ public class TestDefinition {
         return specialConstants;
     }
 
-    /**
-     * @deprecated Use {@link #builder()}
-     */
+    /** @deprecated Use {@link #builder()} */
     @Deprecated
     @SuppressWarnings("UnusedDeclaration")
     public void setSpecialConstants(@Nonnull final Map<String, Object> specialConstants) {
@@ -228,24 +206,19 @@ public class TestDefinition {
         setRule(subrule);
     }
 
-    /**
-     * @deprecated Use {@link #builder()}
-     */
+    /** @deprecated Use {@link #builder()} */
     @Deprecated
     @SuppressWarnings("UnusedDeclaration")
     public void setRule(@Nullable final String rule) {
         this.rule = rule;
     }
 
-
     @Nonnull
     public String getSalt() {
         return salt;
     }
 
-    /**
-     * @deprecated Use {@link #builder()}
-     */
+    /** @deprecated Use {@link #builder()} */
     @Deprecated
     @SuppressWarnings("UnusedDeclaration")
     public void setSalt(@Nonnull final String salt) {
@@ -257,9 +230,7 @@ public class TestDefinition {
         return buckets;
     }
 
-    /**
-     * @deprecated Use {@link #builder()}
-     */
+    /** @deprecated Use {@link #builder()} */
     @Deprecated
     @SuppressWarnings("UnusedDeclaration")
     public void setBuckets(@Nonnull final List<TestBucket> buckets) {
@@ -271,18 +242,14 @@ public class TestDefinition {
         return allocations;
     }
 
-    /**
-     * @deprecated Use {@link #builder()}
-     */
+    /** @deprecated Use {@link #builder()} */
     @Deprecated
     @SuppressWarnings("UnusedDeclaration")
     public void setAllocations(@Nonnull final List<Allocation> allocations) {
         this.allocations = allocations;
     }
 
-    /**
-     * @deprecated Use {@link #builder()}
-     */
+    /** @deprecated Use {@link #builder()} */
     @Deprecated
     public void setSilent(final boolean silent) {
         this.silent = silent;
@@ -297,18 +264,14 @@ public class TestDefinition {
         return testType;
     }
 
-    /**
-     * @deprecated Use {@link #builder()}
-     */
+    /** @deprecated Use {@link #builder()} */
     @Deprecated
     @SuppressWarnings("UnusedDeclaration")
     public void setTestType(final TestType testType) {
         this.testType = testType;
     }
 
-    /**
-     * @deprecated Use {@link #builder()}
-     */
+    /** @deprecated Use {@link #builder()} */
     @Deprecated
     public void setDescription(final String description) {
         this.description = description;
@@ -319,34 +282,28 @@ public class TestDefinition {
         return description;
     }
 
-    /**
-     * metaTags allow to group and filter tests.
-     */
+    /** metaTags allow to group and filter tests. */
     @Nonnull
     public List<String> getMetaTags() {
         return this.metaTags;
     }
 
-    /**
-     * @deprecated Use {@link #builder()}
-     */
+    /** @deprecated Use {@link #builder()} */
     @Deprecated
     public void setMetaTags(final List<String> metaTags) {
         this.metaTags = metaTags;
     }
 
     /**
-     * Dependency to activate this test.
-     * This test won't be evaluated if the dependency condition isn't satisfied.
+     * Dependency to activate this test. This test won't be evaluated if the dependency condition
+     * isn't satisfied.
      */
     @Nullable
     public TestDependency getDependsOn() {
         return dependsOn;
     }
 
-    /**
-     * @deprecated Use {@link #builder()}
-     */
+    /** @deprecated Use {@link #builder()} */
     @Deprecated
     public void setDependsOn(@Nullable final TestDependency dependsOn) {
         this.dependsOn = dependsOn;
@@ -354,45 +311,74 @@ public class TestDefinition {
 
     @Override
     public String toString() {
-        return "TestDefinition{" +
-                "version='" + version + '\'' +
-                ", constants=" + constants +
-                ", specialConstants=" + specialConstants +
-                ", salt='" + salt + '\'' +
-                ", rule='" + rule + '\'' +
-                ", buckets=" + buckets +
-                ", allocations=" + allocations +
-                ", silent=" + silent +
-                ", testType=" + testType +
-                ", description='" + description + '\'' +
-                ", metaTags=" + metaTags +
-                ", dependsOn=" + dependsOn +
-                '}';
+        return "TestDefinition{"
+                + "version='"
+                + version
+                + '\''
+                + ", constants="
+                + constants
+                + ", specialConstants="
+                + specialConstants
+                + ", salt='"
+                + salt
+                + '\''
+                + ", rule='"
+                + rule
+                + '\''
+                + ", buckets="
+                + buckets
+                + ", allocations="
+                + allocations
+                + ", silent="
+                + silent
+                + ", testType="
+                + testType
+                + ", description='"
+                + description
+                + '\''
+                + ", metaTags="
+                + metaTags
+                + ", dependsOn="
+                + dependsOn
+                + '}';
     }
 
     @Override
     public int hashCode() {
-        // because TestBuckets.hashCode() only considers name for unknown reasons, need to use testBuckets.fullHashCode()
+        // because TestBuckets.hashCode() only considers name for unknown reasons, need to use
+        // testBuckets.fullHashCode()
         final List<Object> bucketWrappers = new ArrayList<>();
         if (buckets != null) {
             for (final TestBucket bucket : buckets) {
-                bucketWrappers.add(new Object() {
-                    @Override
-                    public int hashCode() {
-                        return bucket.fullHashCode();
-                    }
-                });
+                bucketWrappers.add(
+                        new Object() {
+                            @Override
+                            public int hashCode() {
+                                return bucket.fullHashCode();
+                            }
+                        });
             }
         }
-        return Objects.hash(version, constants, specialConstants, salt, rule, bucketWrappers, allocations, silent,
-                testType, description, metaTags, dependsOn);
+        return Objects.hash(
+                version,
+                constants,
+                specialConstants,
+                salt,
+                rule,
+                bucketWrappers,
+                allocations,
+                silent,
+                testType,
+                description,
+                metaTags,
+                dependsOn);
     }
 
     /**
-     * similar to generated equals() method, but special treatment of buckets,
-     * because testBucket has unconventional equals/hashcode implementation for undocumented reason.
+     * similar to generated equals() method, but special treatment of buckets, because testBucket
+     * has unconventional equals/hashcode implementation for undocumented reason.
      *
-     * Difference is checked by Unit test.
+     * <p>Difference is checked by Unit test.
      */
     @Override
     public boolean equals(final Object otherDefinition) {
@@ -403,26 +389,29 @@ public class TestDefinition {
             return false;
         }
         final TestDefinition that = (TestDefinition) otherDefinition;
-        return silent == that.silent &&
-                Objects.equals(version, that.version) &&
-                Objects.equals(constants, that.constants) &&
-                Objects.equals(specialConstants, that.specialConstants) &&
-                Objects.equals(salt, that.salt) &&
-                Objects.equals(rule, that.rule) &&
-                bucketListEqual(buckets, that.buckets) && // difference here
-                Objects.equals(allocations, that.allocations) &&
-                Objects.equals(testType, that.testType) &&
-                Objects.equals(description, that.description) &&
-                Objects.equals(metaTags, that.metaTags) &&
-                Objects.equals(dependsOn, that.dependsOn);
+        return silent == that.silent
+                && Objects.equals(version, that.version)
+                && Objects.equals(constants, that.constants)
+                && Objects.equals(specialConstants, that.specialConstants)
+                && Objects.equals(salt, that.salt)
+                && Objects.equals(rule, that.rule)
+                && bucketListEqual(buckets, that.buckets)
+                && // difference here
+                Objects.equals(allocations, that.allocations)
+                && Objects.equals(testType, that.testType)
+                && Objects.equals(description, that.description)
+                && Objects.equals(metaTags, that.metaTags)
+                && Objects.equals(dependsOn, that.dependsOn);
     }
 
     @VisibleForTesting
-    static boolean bucketListEqual(final List<TestBucket> bucketsA, final List<TestBucket> bucketsB) {
+    static boolean bucketListEqual(
+            final List<TestBucket> bucketsA, final List<TestBucket> bucketsB) {
         if (bucketsA == bucketsB) {
             return true;
         }
-        // TestBucket Equal returns true too often, but false means false. This also handles single-sided null cases and different list size.
+        // TestBucket Equal returns true too often, but false means false. This also handles
+        // single-sided null cases and different list size.
         if (!Objects.equals(bucketsA, bucketsB)) {
             return false;
         }

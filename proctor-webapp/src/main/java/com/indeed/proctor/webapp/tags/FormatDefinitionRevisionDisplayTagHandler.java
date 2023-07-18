@@ -14,10 +14,10 @@ import javax.servlet.jsp.tagext.TagSupport;
 import java.io.IOException;
 import java.util.Map;
 
-/**
- */
+/** */
 public class FormatDefinitionRevisionDisplayTagHandler extends TagSupport {
-    private static final Logger LOGGER = LogManager.getLogger(FormatDefinitionRevisionDisplayTagHandler.class);
+    private static final Logger LOGGER =
+            LogManager.getLogger(FormatDefinitionRevisionDisplayTagHandler.class);
 
     private Revision revision;
 
@@ -36,20 +36,33 @@ public class FormatDefinitionRevisionDisplayTagHandler extends TagSupport {
     }
 
     public String formatRevisionDisplay(final Revision revision) {
-        final String defaultFormattedRevision = revision.getAuthor() + " @ " + revision.getDate() + " (" + revision.getRevision() + ")";
+        final String defaultFormattedRevision =
+                revision.getAuthor()
+                        + " @ "
+                        + revision.getDate()
+                        + " ("
+                        + revision.getRevision()
+                        + ")";
         final ServletContext servletContext = pageContext.getServletContext();
-        final WebApplicationContext context = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
+        final WebApplicationContext context =
+                WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
         try {
-            final Map<String, DefinitionRevisionDisplayFormatter> formatterBeans = BeanFactoryUtils.beansOfTypeIncludingAncestors(context,DefinitionRevisionDisplayFormatter.class);
+            final Map<String, DefinitionRevisionDisplayFormatter> formatterBeans =
+                    BeanFactoryUtils.beansOfTypeIncludingAncestors(
+                            context, DefinitionRevisionDisplayFormatter.class);
 
             if (formatterBeans.isEmpty()) {
-                //No bean found, which is acceptable.
+                // No bean found, which is acceptable.
                 return StringEscapeUtils.escapeHtml4(defaultFormattedRevision);
             } else if (formatterBeans.size() == 1) {
-                final DefinitionRevisionDisplayFormatter formatter = formatterBeans.values().iterator().next();
+                final DefinitionRevisionDisplayFormatter formatter =
+                        formatterBeans.values().iterator().next();
                 return formatter.formatRevision(revision);
             } else {
-                throw new IllegalArgumentException("Multiple beans of type " + DefinitionRevisionDisplayFormatter.class.getSimpleName()  + " found, expected 0 or 1.");
+                throw new IllegalArgumentException(
+                        "Multiple beans of type "
+                                + DefinitionRevisionDisplayFormatter.class.getSimpleName()
+                                + " found, expected 0 or 1.");
             }
         } catch (final Exception e) {
             LOGGER.error("An error occurred when retrieving revision url.", e);

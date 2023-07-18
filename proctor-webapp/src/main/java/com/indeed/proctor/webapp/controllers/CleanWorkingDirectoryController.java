@@ -19,9 +19,7 @@ import org.springframework.web.servlet.view.RedirectView;
 
 import javax.servlet.http.HttpServletRequest;
 
-/**
- * @author parker
- */
+/** @author parker */
 @RequestMapping({"/", "/proctor"})
 @Controller
 public class CleanWorkingDirectoryController extends AbstractController {
@@ -30,20 +28,22 @@ public class CleanWorkingDirectoryController extends AbstractController {
     private final BackgroundJobFactory jobFactory;
 
     @Autowired
-    public CleanWorkingDirectoryController(final WebappConfiguration configuration,
-                                           @Qualifier("trunk") final ProctorStore trunkStore,
-                                           @Qualifier("qa") final ProctorStore qaStore,
-                                           @Qualifier("production") final ProctorStore productionStore,
-                                           final BackgroundJobManager jobManager,
-                                           final BackgroundJobFactory jobFactory) {
+    public CleanWorkingDirectoryController(
+            final WebappConfiguration configuration,
+            @Qualifier("trunk") final ProctorStore trunkStore,
+            @Qualifier("qa") final ProctorStore qaStore,
+            @Qualifier("production") final ProctorStore productionStore,
+            final BackgroundJobManager jobManager,
+            final BackgroundJobFactory jobFactory) {
         super(configuration, trunkStore, qaStore, productionStore);
         this.jobManager = jobManager;
         this.jobFactory = jobFactory;
     }
 
     @RequestMapping(value = "/rpc/svn/clean-working-directory", method = RequestMethod.POST)
-    public View cleanWorkingDirectory(final HttpServletRequest request,
-                                      @RequestParam(required = false) final String username) {
+    public View cleanWorkingDirectory(
+            final HttpServletRequest request,
+            @RequestParam(required = false) final String username) {
         final BackgroundJob<Boolean> job = createCleanWorkingDirectoryJob(username);
         jobManager.submit(job);
 
@@ -66,18 +66,27 @@ public class CleanWorkingDirectoryController extends AbstractController {
                     @Override
                     public Boolean execute(final BackgroundJob<Boolean> job) {
                         boolean success = true;
-                        for (final Environment env : new Environment[] { Environment.WORKING, Environment.QA, Environment.PRODUCTION }) {
-                            success &= cleanUserWorkspace(env, determineStoreFromEnvironment(env), job);
+                        for (final Environment env :
+                                new Environment[] {
+                                    Environment.WORKING, Environment.QA, Environment.PRODUCTION
+                                }) {
+                            success &=
+                                    cleanUserWorkspace(
+                                            env, determineStoreFromEnvironment(env), job);
                         }
                         return success;
                     }
-                    private boolean cleanUserWorkspace(final Environment environment,
-                                                       final ProctorStore store,
-                                                       final BackgroundJob<Boolean> job) {
-                        job.log(String.format("Cleaning %s workspace for user %s", environment.getName(), username));
+
+                    private boolean cleanUserWorkspace(
+                            final Environment environment,
+                            final ProctorStore store,
+                            final BackgroundJob<Boolean> job) {
+                        job.log(
+                                String.format(
+                                        "Cleaning %s workspace for user %s",
+                                        environment.getName(), username));
                         return store.cleanUserWorkspace(username);
                     }
-                }
-        );
+                });
     }
 }

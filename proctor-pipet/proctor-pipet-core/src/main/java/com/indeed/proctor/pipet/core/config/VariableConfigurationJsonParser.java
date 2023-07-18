@@ -29,16 +29,18 @@ import java.util.concurrent.ConcurrentMap;
 /** @author parker */
 public class VariableConfigurationJsonParser {
 
-    private final ConcurrentMap<String, ValueConverter> registeredValueConverters = Maps.newConcurrentMap();
+    private final ConcurrentMap<String, ValueConverter> registeredValueConverters =
+            Maps.newConcurrentMap();
 
     private final ObjectMapper deserializer = Serializers.strict();
 
     // additional identifiers to use if those from the JsonPipetConfig are not available
-    final List<Identifier> additionalIdentifiers = Collections.synchronizedList(Lists.<Identifier>newArrayList());
+    final List<Identifier> additionalIdentifiers =
+            Collections.synchronizedList(Lists.<Identifier>newArrayList());
 
     // additional identifiers to use from the JsonPipetConfig
-    final List<ContextVariable> additionalVariables = Collections.synchronizedList(Lists.<ContextVariable>newArrayList());
-
+    final List<ContextVariable> additionalVariables =
+            Collections.synchronizedList(Lists.<ContextVariable>newArrayList());
 
     private VariableConfigurationJsonParser() {
         registerStandardConverters();
@@ -84,13 +86,14 @@ public class VariableConfigurationJsonParser {
         final ImmutableList.Builder<ContextVariable> contextList = ImmutableList.builder();
         for (Map.Entry<String, JsonContextVarConfig> e : jsonPipetConfig.getContext().entrySet()) {
             final JsonContextVarConfig config = e.getValue();
-            contextList.add(ContextVariable.newBuilder()
-                                .setVarName(e.getKey())
-                                .setSource(config.getSource())
-                                .setSourceKey(config.getSourceKey())
-                                .setDefaultValue(config.getDefaultValue())
-                                .setConverter(lookupConverter(config.getType()))
-                                .build());
+            contextList.add(
+                    ContextVariable.newBuilder()
+                            .setVarName(e.getKey())
+                            .setSource(config.getSource())
+                            .setSourceKey(config.getSourceKey())
+                            .setDefaultValue(config.getDefaultValue())
+                            .setConverter(lookupConverter(config.getType()))
+                            .build());
         }
         contextList.addAll(additionalVariables);
         return contextList.build();
@@ -100,11 +103,12 @@ public class VariableConfigurationJsonParser {
         final ImmutableList.Builder<Identifier> identifierList = ImmutableList.builder();
         for (Map.Entry<String, JsonVarConfig> e : jsonPipetConfig.getIdentifiers().entrySet()) {
             final JsonVarConfig config = e.getValue();
-            identifierList.add(Identifier.newBuilder()
-                                   .setVarName(e.getKey())
-                                   .setSource(config.getSource())
-                                   .setSourceKey(config.getSourceKey())
-                                   .build());
+            identifierList.add(
+                    Identifier.newBuilder()
+                            .setVarName(e.getKey())
+                            .setSource(config.getSource())
+                            .setSourceKey(config.getSourceKey())
+                            .build());
         }
         identifierList.addAll(additionalIdentifiers);
         return identifierList.build();
@@ -131,7 +135,6 @@ public class VariableConfigurationJsonParser {
         clearAdditionalIdentifiers();
         return this;
     }
-
 
     public VariableConfigurationJsonParser registerStandardConverters() {
         // Primitives
@@ -174,22 +177,26 @@ public class VariableConfigurationJsonParser {
         return this;
     }
 
-    public VariableConfigurationJsonParser registerValueConverterByType(final String type, final ValueConverter converter) {
+    public VariableConfigurationJsonParser registerValueConverterByType(
+            final String type, final ValueConverter converter) {
         Preconditions.checkArgument(!Strings.isNullOrEmpty(type), "Type must not be empty or null");
         Preconditions.checkNotNull(converter, "ValueConverter cannot be null");
         registeredValueConverters.put(type, converter);
         return this;
     }
 
-    public VariableConfigurationJsonParser registerValueConverterByCanonicalName(final ValueConverter converter) {
+    public VariableConfigurationJsonParser registerValueConverterByCanonicalName(
+            final ValueConverter converter) {
         return registerValueConverterByType(converter.getType().getCanonicalName(), converter);
     }
 
-    public VariableConfigurationJsonParser registerValueConverterBySimpleName(final ValueConverter converter) {
+    public VariableConfigurationJsonParser registerValueConverterBySimpleName(
+            final ValueConverter converter) {
         return registerValueConverterByType(converter.getType().getSimpleName(), converter);
     }
 
-    public VariableConfigurationJsonParser registerValueConverterByName(final ValueConverter converter) {
+    public VariableConfigurationJsonParser registerValueConverterByName(
+            final ValueConverter converter) {
         return registerValueConverterByType(converter.getType().getName(), converter);
     }
 
@@ -197,14 +204,18 @@ public class VariableConfigurationJsonParser {
     ValueConverter lookupConverter(final String type) {
         final ValueConverter converter = registeredValueConverters.get(type);
         if (converter == null) {
-            // Unrecognized type name. You should add any custom converters here and as an implementation of ValueConverter.
+            // Unrecognized type name. You should add any custom converters here and as an
+            // implementation of ValueConverter.
             throw new ConfigurationException(
-                String.format("Type '%s' unrecognized. VariableConfigurationJsonParser missing converter for this type.", type));
+                    String.format(
+                            "Type '%s' unrecognized. VariableConfigurationJsonParser missing converter for this type.",
+                            type));
         }
         return converter;
     }
 
-    public VariableConfigurationJsonParser addIdentifier(final ExtractorSource extractorSource, final TestType... testTypes) {
+    public VariableConfigurationJsonParser addIdentifier(
+            final ExtractorSource extractorSource, final TestType... testTypes) {
         for (final TestType testType : testTypes) {
             additionalIdentifiers.add(Identifier.forTestType(extractorSource, testType));
         }

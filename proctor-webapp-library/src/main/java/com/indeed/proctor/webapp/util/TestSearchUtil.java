@@ -13,13 +13,14 @@ public class TestSearchUtil {
         return testName.toLowerCase().contains(lowerQuery);
     }
 
-    public static boolean matchDescription(final TestDefinition definition, final String lowerQuery) {
+    public static boolean matchDescription(
+            final TestDefinition definition, final String lowerQuery) {
         return Strings.nullToEmpty(definition.getDescription()).toLowerCase().contains(lowerQuery);
     }
 
     public static boolean matchRule(final TestDefinition definition, final String lowerQuery) {
-        return Strings.nullToEmpty(definition.getRule()).toLowerCase().contains(lowerQuery) ||
-                definition.getAllocations().stream()
+        return Strings.nullToEmpty(definition.getRule()).toLowerCase().contains(lowerQuery)
+                || definition.getAllocations().stream()
                         .map(allocation -> Strings.nullToEmpty(allocation.getRule()).toLowerCase())
                         .anyMatch(rule -> rule.contains(lowerQuery));
     }
@@ -30,7 +31,8 @@ public class TestSearchUtil {
                 .anyMatch(name -> name.contains(lowerQuery));
     }
 
-    public static boolean matchBucketDescription(final TestDefinition definition, final String lowerQuery) {
+    public static boolean matchBucketDescription(
+            final TestDefinition definition, final String lowerQuery) {
         return definition.getBuckets().stream()
                 .map(testBucket -> Strings.nullToEmpty(testBucket.getDescription()).toLowerCase())
                 .anyMatch(description -> description.contains(lowerQuery));
@@ -44,28 +46,31 @@ public class TestSearchUtil {
         return definition.getSalt().toLowerCase().contains(lowerQuery);
     }
 
-    public static boolean matchAll(final String testName, final TestDefinition definition, final String lowerQuery) {
-        return matchTestName(testName, lowerQuery) ||
-                matchDescription(definition, lowerQuery) ||
-                matchRule(definition, lowerQuery) ||
-                matchBucket(definition, lowerQuery) ||
-                matchBucketDescription(definition, lowerQuery) ||
-                matchTestType(definition, lowerQuery) ||
-                matchMetaTags(definition, lowerQuery) ||
-                matchSalt(definition, lowerQuery);
+    public static boolean matchAll(
+            final String testName, final TestDefinition definition, final String lowerQuery) {
+        return matchTestName(testName, lowerQuery)
+                || matchDescription(definition, lowerQuery)
+                || matchRule(definition, lowerQuery)
+                || matchBucket(definition, lowerQuery)
+                || matchBucketDescription(definition, lowerQuery)
+                || matchTestType(definition, lowerQuery)
+                || matchMetaTags(definition, lowerQuery)
+                || matchSalt(definition, lowerQuery);
     }
 
     public static boolean matchActiveAllocation(final List<Allocation> allocations) {
         return allocations.stream()
-                .anyMatch(allocation -> allocation.getRanges().stream()
-                        .allMatch(range -> range.getLength() < 1));
+                .anyMatch(
+                        allocation ->
+                                allocation.getRanges().stream()
+                                        .allMatch(range -> range.getLength() < 1));
     }
 
     public static boolean matchMetaTags(final TestDefinition definition, final String lowerQuery) {
-        return Strings.isNullOrEmpty(lowerQuery) ||
-                definition.getMetaTags().stream()
-                .map(metaTag -> metaTag.toLowerCase())
-                .anyMatch(name -> name.contains(lowerQuery));
+        return Strings.isNullOrEmpty(lowerQuery)
+                || definition.getMetaTags().stream()
+                        .map(metaTag -> metaTag.toLowerCase())
+                        .anyMatch(name -> name.contains(lowerQuery));
     }
 
     /**

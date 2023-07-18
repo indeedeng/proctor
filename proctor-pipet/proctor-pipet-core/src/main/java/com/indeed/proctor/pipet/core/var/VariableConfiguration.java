@@ -15,8 +15,7 @@ public final class VariableConfiguration {
 
     private final JsonPipetConfig jsonConfig;
 
-    public VariableConfiguration(final Extractor extractor,
-                                 final Converter converter) {
+    public VariableConfiguration(final Extractor extractor, final Converter converter) {
         this.extractor = extractor;
         this.converter = converter;
 

@@ -1,13 +1,9 @@
 package com.indeed.proctor.consumer;
 
 public interface Test {
-    /**
-     * @return the name of the test
-     */
+    /** @return the name of the test */
     String getName();
 
-    /**
-     * @return the fallback bucket value
-     */
+    /** @return the fallback bucket value */
     int getFallbackValue();
 }

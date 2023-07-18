@@ -24,8 +24,8 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * A decorator class for ProctorStore
- * This class handle latest test definition and history shared across multiple instance.
+ * A decorator class for ProctorStore This class handle latest test definition and history shared
+ * across multiple instance.
  */
 public class GlobalCachingProctorStore implements ProctorStore {
     private static final Logger LOGGER = LogManager.getLogger(GlobalCachingProctorStore.class);
@@ -34,10 +34,10 @@ public class GlobalCachingProctorStore implements ProctorStore {
     private final GlobalCacheStore globalCacheStore;
     private final Environment environment;
 
-    public GlobalCachingProctorStore(final ProctorStore delegate,
-                                     final GlobalCacheStore globalCacheStore,
-                                     final Environment environment
-    ) {
+    public GlobalCachingProctorStore(
+            final ProctorStore delegate,
+            final GlobalCacheStore globalCacheStore,
+            final Environment environment) {
         this.delegate = delegate;
         this.globalCacheStore = globalCacheStore;
         this.environment = environment;
@@ -55,7 +55,8 @@ public class GlobalCachingProctorStore implements ProctorStore {
 
     @Override
     public TestDefinition getCurrentTestDefinition(final String test) throws StoreException {
-        final Optional<TestDefinition> cachedDefinitionOpt = globalCacheStore.getCachedTestDefinition(environment, test);
+        final Optional<TestDefinition> cachedDefinitionOpt =
+                globalCacheStore.getCachedTestDefinition(environment, test);
         if (cachedDefinitionOpt.isPresent()) {
             return cachedDefinitionOpt.get();
         }
@@ -78,9 +79,10 @@ public class GlobalCachingProctorStore implements ProctorStore {
             final String previousVersion,
             final String testName,
             final TestDefinition testDefinition,
-            final Map<String, String> metadata
-    ) throws StoreException.TestUpdateException {
-        delegate.updateTestDefinition(changeMetadata, previousVersion, testName, testDefinition, metadata);
+            final Map<String, String> metadata)
+            throws StoreException.TestUpdateException {
+        delegate.updateTestDefinition(
+                changeMetadata, previousVersion, testName, testDefinition, metadata);
         updateGlobalCache(testName, testDefinition);
     }
 
@@ -89,8 +91,8 @@ public class GlobalCachingProctorStore implements ProctorStore {
             final ChangeMetadata changeMetadata,
             final String previousVersion,
             final String testName,
-            final TestDefinition testDefinition
-    ) throws StoreException.TestUpdateException {
+            final TestDefinition testDefinition)
+            throws StoreException.TestUpdateException {
         delegate.deleteTestDefinition(changeMetadata, previousVersion, testName, testDefinition);
         updateGlobalCache(testName, null);
     }
@@ -100,8 +102,8 @@ public class GlobalCachingProctorStore implements ProctorStore {
             final ChangeMetadata changeMetadata,
             final String testName,
             final TestDefinition testDefinition,
-            final Map<String, String> metadata
-    ) throws StoreException.TestUpdateException {
+            final Map<String, String> metadata)
+            throws StoreException.TestUpdateException {
         delegate.addTestDefinition(changeMetadata, testName, testDefinition, metadata);
         updateGlobalCache(testName, testDefinition);
     }
@@ -118,8 +120,10 @@ public class GlobalCachingProctorStore implements ProctorStore {
     }
 
     @Override
-    public TestDefinition getTestDefinition(final String test, final String fetchRevision) throws StoreException {
-        final Optional<TestDefinition> cachedDefinitionOpt = globalCacheStore.getCachedTestDefinition(environment, test, fetchRevision);
+    public TestDefinition getTestDefinition(final String test, final String fetchRevision)
+            throws StoreException {
+        final Optional<TestDefinition> cachedDefinitionOpt =
+                globalCacheStore.getCachedTestDefinition(environment, test, fetchRevision);
         if (cachedDefinitionOpt.isPresent()) {
             return cachedDefinitionOpt.get();
         }
@@ -134,15 +138,19 @@ public class GlobalCachingProctorStore implements ProctorStore {
 
     @Nonnull
     @Override
-    public List<Revision> getMatrixHistory(final Instant sinceInclusive, final Instant untilExclusive) throws StoreException {
+    public List<Revision> getMatrixHistory(
+            final Instant sinceInclusive, final Instant untilExclusive) throws StoreException {
         return delegate.getMatrixHistory(sinceInclusive, untilExclusive);
     }
 
     @Nonnull
     @Override
-    public List<Revision> getHistory(final String test, final int start, final int limit) throws StoreException {
-        final Optional<List<Revision>> cachedHistoryOpt = globalCacheStore.getCachedHistory(environment, test).map(
-                history -> HistoryUtil.selectHistorySet(history, start, limit));
+    public List<Revision> getHistory(final String test, final int start, final int limit)
+            throws StoreException {
+        final Optional<List<Revision>> cachedHistoryOpt =
+                globalCacheStore
+                        .getCachedHistory(environment, test)
+                        .map(history -> HistoryUtil.selectHistorySet(history, start, limit));
         if (cachedHistoryOpt.isPresent()) {
             return cachedHistoryOpt.get();
         }
@@ -151,9 +159,16 @@ public class GlobalCachingProctorStore implements ProctorStore {
 
     @Nonnull
     @Override
-    public List<Revision> getHistory(final String test, final String revision, final int start, final int limit) throws StoreException {
-        final Optional<List<Revision>> cachedHistoryOpt = globalCacheStore.getCachedHistory(environment, test).map(
-                history -> HistoryUtil.selectRevisionHistorySetFrom(history, revision, start, limit));
+    public List<Revision> getHistory(
+            final String test, final String revision, final int start, final int limit)
+            throws StoreException {
+        final Optional<List<Revision>> cachedHistoryOpt =
+                globalCacheStore
+                        .getCachedHistory(environment, test)
+                        .map(
+                                history ->
+                                        HistoryUtil.selectRevisionHistorySetFrom(
+                                                history, revision, start, limit));
         if (cachedHistoryOpt.isPresent()) {
             return cachedHistoryOpt.get();
         }
@@ -168,13 +183,16 @@ public class GlobalCachingProctorStore implements ProctorStore {
 
     @Nonnull
     @Override
-    public List<TestEdit> getTestEdits(final String testName, final int start, final int limit) throws StoreException {
+    public List<TestEdit> getTestEdits(final String testName, final int start, final int limit)
+            throws StoreException {
         return delegate.getTestEdits(testName, start, limit);
     }
 
     @Nonnull
     @Override
-    public List<TestEdit> getTestEdits(final String testName, final String revision, final int start, final int limit) throws StoreException {
+    public List<TestEdit> getTestEdits(
+            final String testName, final String revision, final int start, final int limit)
+            throws StoreException {
         return delegate.getTestEdits(testName, revision, start, limit);
     }
 
@@ -194,20 +212,20 @@ public class GlobalCachingProctorStore implements ProctorStore {
         delegate.close();
     }
 
-    private void updateGlobalCache(final String testName,
-                                   @Nullable final TestDefinition testDefinition
-    ) {
+    private void updateGlobalCache(
+            final String testName, @Nullable final TestDefinition testDefinition) {
         LOGGER.info("Start updating the global cache for " + testName);
         try {
             final List<Revision> revisions = delegate.getHistory(testName, 0, Integer.MAX_VALUE);
             globalCacheStore.updateCache(environment, testName, testDefinition, revisions);
         } catch (final StoreException e) {
-            final String errorMessage = "Failed to update the global cache for " + testName
-                    + " since history can't be read from proctor store";
+            final String errorMessage =
+                    "Failed to update the global cache for "
+                            + testName
+                            + " since history can't be read from proctor store";
             LOGGER.error(errorMessage, e);
             throw new GlobalCacheUpdateException.HistoryReadException(errorMessage, e);
         }
         LOGGER.info("Finish updating the global cache for " + testName);
     }
 }
-

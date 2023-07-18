@@ -13,10 +13,10 @@ import javax.servlet.jsp.tagext.TagSupport;
 import java.io.IOException;
 import java.util.Map;
 
-/**
- */
+/** */
 public class RenderDefinitionDeletePageInjectionTemplatesHandler extends TagSupport {
-    private static final Logger LOGGER = LogManager.getLogger(RenderDefinitionDeletePageInjectionTemplatesHandler.class);
+    private static final Logger LOGGER =
+            LogManager.getLogger(RenderDefinitionDeletePageInjectionTemplatesHandler.class);
 
     private DefinitionDeletePagePosition position;
     private String testName;
@@ -42,9 +42,12 @@ public class RenderDefinitionDeletePageInjectionTemplatesHandler extends TagSupp
     private String renderTemplates() {
         final StringBuilder renderedHTML = new StringBuilder();
         final ServletContext servletContext = pageContext.getServletContext();
-        final WebApplicationContext context = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
+        final WebApplicationContext context =
+                WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
         try {
-            final Map<String, DefinitionDeletePageRenderer> rendererBeans = BeanFactoryUtils.beansOfTypeIncludingAncestors(context, DefinitionDeletePageRenderer.class);
+            final Map<String, DefinitionDeletePageRenderer> rendererBeans =
+                    BeanFactoryUtils.beansOfTypeIncludingAncestors(
+                            context, DefinitionDeletePageRenderer.class);
             for (final DefinitionDeletePageRenderer renderer : rendererBeans.values()) {
                 if (position == renderer.getDefinitionDeletePagePosition()) {
                     renderedHTML.append(renderer.getRenderedHtml(testName));

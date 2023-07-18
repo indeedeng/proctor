@@ -7,22 +7,17 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
- * Shim class so that Indeed internal code can refer to an indeed class, in case we need to tweak the
- *  version detection later.
+ * Shim class so that Indeed internal code can refer to an indeed class, in case we need to tweak
+ * the version detection later.
  *
  * @author matts
  */
 public class UserAgentVersion {
-    @Nonnull
-    private final String version;
+    @Nonnull private final String version;
     private final int major;
     private final int minor;
 
-    public UserAgentVersion(
-            @Nullable final String version,
-            final int major,
-            final int minor
-    ) {
+    public UserAgentVersion(@Nullable final String version, final int major, final int minor) {
         this.version = Strings.nullToEmpty(version);
         this.major = major;
         this.minor = minor;
@@ -47,10 +42,12 @@ public class UserAgentVersion {
         }
 
         final String majorVersion = version.getMajorVersion();
-        final int majorVersionNumber = null == majorVersion ? -1 : UserAgent.getIntegerParameter(majorVersion, -1);
+        final int majorVersionNumber =
+                null == majorVersion ? -1 : UserAgent.getIntegerParameter(majorVersion, -1);
 
         final String minorVersion = version.getMinorVersion();
-        final int minorVersionNumber= null == minorVersion ? -1 : UserAgent.getIntegerParameter(minorVersion, -1);
+        final int minorVersionNumber =
+                null == minorVersion ? -1 : UserAgent.getIntegerParameter(minorVersion, -1);
 
         return new UserAgentVersion(version.getVersion(), majorVersionNumber, minorVersionNumber);
     }

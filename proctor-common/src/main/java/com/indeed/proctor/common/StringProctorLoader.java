@@ -10,20 +10,18 @@ import java.io.StringReader;
 
 /**
  * Support class for loading a test matrix artifact from a JSON file
+ *
  * @author ketan
  */
 public class StringProctorLoader extends AbstractJsonProctorLoader {
-    @Nonnull
-    private final String source;
-    @Nonnull
-    private final String testMatrixJson;
+    @Nonnull private final String source;
+    @Nonnull private final String testMatrixJson;
 
     public StringProctorLoader(
             @Nonnull final ProctorSpecification specification,
             @Nonnull final String source,
             @Nonnull final String testMatrixJson,
-            @Nonnull final FunctionMapper functionMapper
-    ) {
+            @Nonnull final FunctionMapper functionMapper) {
         super(StringProctorLoader.class, specification, functionMapper);
 
         this.source = source;
@@ -33,8 +31,7 @@ public class StringProctorLoader extends AbstractJsonProctorLoader {
     public StringProctorLoader(
             @Nonnull final ProctorSpecification specification,
             @Nonnull final String source,
-            @Nonnull final String testMatrixJson
-    ) {
+            @Nonnull final String testMatrixJson) {
         this(specification, source, testMatrixJson, RuleEvaluator.FUNCTION_MAPPER);
     }
 

@@ -14,9 +14,9 @@ import java.util.Map;
 /**
  * Converts RawQueryParameters into their correct, final types.
  *
- * Context variables are converted according to the pipet configuration.
+ * <p>Context variables are converted according to the pipet configuration.
  *
- * This is mostly cleaning up parameters and types to work with determineTestBuckets.
+ * <p>This is mostly cleaning up parameters and types to work with determineTestBuckets.
  */
 public class Converter {
     private final List<ContextVariable> contextList;
@@ -30,8 +30,7 @@ public class Converter {
                 convertContext(raw.getContext()),
                 convertIdentifiers(raw.getIdentifiers()),
                 raw.getTest(), // Already correct type. No processing needed.
-                convertForceGroups(raw.getForceGroups())
-        );
+                convertForceGroups(raw.getForceGroups()));
     }
 
     private Map<String, Object> convertContext(final Map<String, String> contextValues) {
@@ -43,19 +42,25 @@ public class Converter {
 
             if (rawValue == null) {
                 // This shouldn't happen for context variables.
-                // Extractor should not allow contexts to be null or should replace them with defaults.
-                throw new InternalServerException(String.format(
-                        "Context variable '%s' is null. This may be a server bug.", varName));
+                // Extractor should not allow contexts to be null or should replace them with
+                // defaults.
+                throw new InternalServerException(
+                        String.format(
+                                "Context variable '%s' is null. This may be a server bug.",
+                                varName));
             }
 
             try {
                 final Object value = context.getConverter().convert(rawValue);
                 converted.put(varName, value);
             } catch (final ValueConversionException e) {
-                // When debugging, users are likely to get conversion errors due to typos or misunderstandings.
-                // Include as much information as possible so they can figure out what they did wrong.
+                // When debugging, users are likely to get conversion errors due to typos or
+                // misunderstandings.
+                // Include as much information as possible so they can figure out what they did
+                // wrong.
                 throw new BadRequestException(
-                        String.format("Could not convert raw value '%s' to type '%s' for context variable '%s': %s",
+                        String.format(
+                                "Could not convert raw value '%s' to type '%s' for context variable '%s': %s",
                                 rawValue, context.getType(), varName, e.getMessage()));
             }
         }
@@ -67,12 +72,11 @@ public class Converter {
         return new Identifiers(ImmutableMap.copyOf(identifiers), true);
     }
 
-    /**
-     * forceGroups should be a mapping of test name to integer bucket value.
-     */
+    /** forceGroups should be a mapping of test name to integer bucket value. */
     private Map<String, Integer> convertForceGroups(final String forceGroups) {
         // Same format as Proctor's force groups parameter.
-        // The client can store this force parameter in a cookie and not worry about parsing it at all.
+        // The client can store this force parameter in a cookie and not worry about parsing it at
+        // all.
         // NOTE: this is technically a @VisibleForTesting method!!
         return ProctorConsumerUtils.parseForceGroupsList(forceGroups);
     }

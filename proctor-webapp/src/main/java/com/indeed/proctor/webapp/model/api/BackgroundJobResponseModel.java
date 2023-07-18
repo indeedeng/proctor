@@ -4,11 +4,13 @@ import com.indeed.proctor.webapp.jobs.BackgroundJob;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
-import javax.annotation.CheckForNull;
 import java.util.List;
 import java.util.UUID;
 
-@ApiModel(value = "Background Job status", description = "For asynchronous requests starting background jobs, returns data to poll status.")
+@ApiModel(
+        value = "Background Job status",
+        description =
+                "For asynchronous requests starting background jobs, returns data to poll status.")
 public class BackgroundJobResponseModel {
 
     private final BackgroundJob.JobInfo jobInfo;
@@ -46,7 +48,8 @@ public class BackgroundJobResponseModel {
         return jobInfo.isRunning();
     }
 
-    @ApiModelProperty("a list of urls that is gerated by the job and shown on result page in web interface.")
+    @ApiModelProperty(
+            "a list of urls that is gerated by the job and shown on result page in web interface.")
     public List<BackgroundJob.ResultUrl> getUrls() {
         return jobInfo.getUrls();
     }

@@ -18,35 +18,26 @@ import static java.util.Collections.emptySortedMap;
 
 /**
  * Return value from {@link Proctor#determineTestGroups(Identifiers, java.util.Map, java.util.Map)}
- * @author ketan
  *
+ * @author ketan
  */
 public class ProctorResult {
-    public static final ProctorResult EMPTY = new ProctorResult(
-            Audit.EMPTY_VERSION,
-            emptySortedMap(),
-            emptySortedMap(),
-            emptyMap(),
-            new Identifiers(emptyMap()),
-            emptyMap()
-    );
+    public static final ProctorResult EMPTY =
+            new ProctorResult(
+                    Audit.EMPTY_VERSION,
+                    emptySortedMap(),
+                    emptySortedMap(),
+                    emptyMap(),
+                    new Identifiers(emptyMap()),
+                    emptyMap());
 
     private final String matrixVersion;
-    /**
-     * maps from testname to bucket
-     */
-    @Nonnull
-    private final SortedMap<String, TestBucket> buckets;
-    /**
-     * maps from testname to allocation
-     */
-    @Nonnull
-    private final SortedMap<String, Allocation> allocations;
-    /**
-     * maps from testname to TestDefinition
-     */
-    @Nonnull
-    private final Map<String, ConsumableTestDefinition> testDefinitions;
+    /** maps from testname to bucket */
+    @Nonnull private final SortedMap<String, TestBucket> buckets;
+    /** maps from testname to allocation */
+    @Nonnull private final SortedMap<String, Allocation> allocations;
+    /** maps from testname to TestDefinition */
+    @Nonnull private final Map<String, ConsumableTestDefinition> testDefinitions;
 
     private final Identifiers identifiers;
 
@@ -54,6 +45,7 @@ public class ProctorResult {
 
     /**
      * Create a ProctorResult with copies of the provided collections
+     *
      * @deprecated this constructor creates copies of all inputs
      */
     @Deprecated
@@ -61,13 +53,13 @@ public class ProctorResult {
             @Nonnull final int matrixVersion,
             @Nonnull final Map<String, TestBucket> buckets,
             // allowing null for historical reasons
-            @Nullable final Map<String, ConsumableTestDefinition> testDefinitions
-    ) {
+            @Nullable final Map<String, ConsumableTestDefinition> testDefinitions) {
         this(Integer.toString(matrixVersion), buckets, emptyMap(), testDefinitions);
     }
 
     /**
      * Create a ProctorResult with copies of the provided collections
+     *
      * @deprecated this constructor creates copies of all inputs
      */
     @Deprecated
@@ -75,13 +67,13 @@ public class ProctorResult {
             @Nonnull final String matrixVersion,
             @Nonnull final Map<String, TestBucket> buckets,
             // allowing null for historical reasons
-            @Nullable final Map<String, ConsumableTestDefinition> testDefinitions
-    ) {
+            @Nullable final Map<String, ConsumableTestDefinition> testDefinitions) {
         this(matrixVersion, buckets, emptyMap(), testDefinitions);
     }
 
     /**
      * Create a ProctorResult with copies of the provided collections
+     *
      * @param matrixVersion any string, used for debugging
      * @param buckets the resolved bucket for each test
      * @param allocations the determined allocation for each test
@@ -94,17 +86,17 @@ public class ProctorResult {
             @Nonnull final Map<String, TestBucket> buckets,
             @Nonnull final Map<String, Allocation> allocations,
             // allowing null for historical reasons
-            @Nullable final Map<String, ConsumableTestDefinition> testDefinitions
-    ) {
-        // Potentially client applications might need to build ProctorResult instances in each request, and some apis
-        // have large proctorResult objects, so if teams use this constructor, this may have a noticeable
+            @Nullable final Map<String, ConsumableTestDefinition> testDefinitions) {
+        // Potentially client applications might need to build ProctorResult instances in each
+        // request, and some apis
+        // have large proctorResult objects, so if teams use this constructor, this may have a
+        // noticeable
         // impact on latency and GC, so ideally clients should avoid this constructor.
         this(
                 matrixVersion,
                 new TreeMap<>(buckets),
                 new TreeMap<>(allocations),
-                (testDefinitions == null) ? emptyMap() : new HashMap<>(testDefinitions)
-        );
+                (testDefinitions == null) ? emptyMap() : new HashMap<>(testDefinitions));
     }
 
     /**
@@ -120,16 +112,14 @@ public class ProctorResult {
             @Nonnull final String matrixVersion,
             @Nonnull final SortedMap<String, TestBucket> buckets,
             @Nonnull final SortedMap<String, Allocation> allocations,
-            @Nonnull final Map<String, ConsumableTestDefinition> testDefinitions
-    ) {
+            @Nonnull final Map<String, ConsumableTestDefinition> testDefinitions) {
         this(
                 matrixVersion,
                 buckets,
                 allocations,
                 testDefinitions,
                 new Identifiers(emptyMap()),
-                emptyMap()
-        );
+                emptyMap());
     }
 
     /**
@@ -146,8 +136,7 @@ public class ProctorResult {
             @Nonnull final SortedMap<String, Allocation> allocations,
             @Nonnull final Map<String, ConsumableTestDefinition> testDefinitions,
             @Nonnull final Identifiers identifiers,
-            @Nonnull final Map<String, Object> inputContext
-    ) {
+            @Nonnull final Map<String, Object> inputContext) {
         this.matrixVersion = matrixVersion;
         this.buckets = buckets;
         this.allocations = allocations;
@@ -157,8 +146,8 @@ public class ProctorResult {
     }
 
     /**
-     * @return a new Proctor Result, which does not allow modifying the contained collections.
-     * The result's fields are views of the original fields, to reduce memory allocation effort.
+     * @return a new Proctor Result, which does not allow modifying the contained collections. The
+     *     result's fields are views of the original fields, to reduce memory allocation effort.
      */
     public static ProctorResult unmodifiableView(final ProctorResult proctorResult) {
         return new ProctorResult(
@@ -168,8 +157,7 @@ public class ProctorResult {
                 Collections.unmodifiableSortedMap(proctorResult.allocations),
                 Collections.unmodifiableMap(proctorResult.testDefinitions),
                 proctorResult.identifiers,
-                Collections.unmodifiableMap(proctorResult.inputContext)
-        );
+                Collections.unmodifiableMap(proctorResult.inputContext));
     }
 
     @SuppressWarnings("UnusedDeclaration")
@@ -177,18 +165,14 @@ public class ProctorResult {
         return matrixVersion;
     }
 
-    /**
-     * @return a SortedMap (should be ordered by testname)
-     */
+    /** @return a SortedMap (should be ordered by testname) */
     @Nonnull
     // returning Map instead of SortedMap for historic reasons (changing breaks compiled libraries)
     public Map<String, TestBucket> getBuckets() {
         return buckets;
     }
 
-    /**
-     * @return a SortedMap (should be ordered by testname)
-     */
+    /** @return a SortedMap (should be ordered by testname) */
     @Nonnull
     // returning Map instead of SortedMap for historic reasons (changing breaks compiled libraries)
     public Map<String, Allocation> getAllocations() {

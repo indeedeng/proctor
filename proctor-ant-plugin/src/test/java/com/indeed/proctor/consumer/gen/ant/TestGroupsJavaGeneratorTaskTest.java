@@ -33,12 +33,9 @@ public class TestGroupsJavaGeneratorTaskTest {
     private final ProctorSpecification specification = new ProctorSpecification();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    @Rule
-    public TemporaryFolder inputDirectory = new TemporaryFolder();
-    @Rule
-    public TemporaryFolder outputDirectory = new TemporaryFolder();
-    @Rule
-    public ExpectedException thrown = ExpectedException.none();
+    @Rule public TemporaryFolder inputDirectory = new TemporaryFolder();
+    @Rule public TemporaryFolder outputDirectory = new TemporaryFolder();
+    @Rule public ExpectedException thrown = ExpectedException.none();
 
     @Before
     public void setUp() {
@@ -47,57 +44,34 @@ public class TestGroupsJavaGeneratorTaskTest {
                 ImmutableMap.of(
                         "inactive", -1,
                         "control", 0,
-                        "active", 1
-                )
-        );
+                        "active", 1));
         specification.setTests(
                 ImmutableMap.of(
                         "one", testSpecification,
-                        "three", testSpecification
-                )
-        );
-        specification.setProvidedContext(
-                ImmutableMap.of(
-                        "country", "String"
-                )
-        );
+                        "three", testSpecification));
+        specification.setProvidedContext(ImmutableMap.of("country", "String"));
         specification.setDynamicFilters(
-                new DynamicFilters(
-                        Collections.singletonList(new TestNamePrefixFilter("two"))
-                )
-        );
+                new DynamicFilters(Collections.singletonList(new TestNamePrefixFilter("two"))));
     }
 
     @Test
     public void testSingleSpecification() throws IOException {
         final File singleSpecification = writeSingleSpecification(specification);
-        execute(
-                singleSpecification.getPath(),
-                outputDirectory.getRoot().getPath(),
-                null
-        );
+        execute(singleSpecification.getPath(), outputDirectory.getRoot().getPath(), null);
         assertAllGenerated(outputDirectory.getRoot());
     }
 
     @Test
     public void testNoInput() {
         thrown.expect(BuildException.class);
-        execute(
-                null,
-                outputDirectory.getRoot().getPath(),
-                null
-        );
+        execute(null, outputDirectory.getRoot().getPath(), null);
     }
 
     @Test
     public void testNoOutput() throws IOException {
         final File singleSpecification = writeSingleSpecification(specification);
         thrown.expect(BuildException.class);
-        execute(
-                singleSpecification.getPath(),
-                null,
-                null
-        );
+        execute(singleSpecification.getPath(), null, null);
     }
 
     @Test
@@ -107,167 +81,107 @@ public class TestGroupsJavaGeneratorTaskTest {
         execute(
                 singleSpecification.getPath(),
                 outputDirectory.getRoot().getPath(),
-                dummyOutput.getPath()
-        );
+                dummyOutput.getPath());
         assertAllGenerated(outputDirectory.getRoot());
-        assertFalse("specification output won't be generated for a single specification", dummyOutput.isFile());
+        assertFalse(
+                "specification output won't be generated for a single specification",
+                dummyOutput.isFile());
     }
 
     @Test
     public void testMultiSpecifications() throws IOException {
-        final File inputRoot = writeMultiSpecifications(
-                "spec",
-                specification,
-                null,
-                true,
-                false
-        );
+        final File inputRoot = writeMultiSpecifications("spec", specification, null, true, false);
         final File outputSpecification = new File(outputDirectory.getRoot(), "spec.json");
         execute(
                 inputRoot.getPath(),
                 outputDirectory.getRoot().getPath(),
-                outputSpecification.getPath()
-        );
+                outputSpecification.getPath());
         assertAllGenerated(outputDirectory.getRoot());
         assertTrue("specification output should be generated", outputSpecification.isFile());
     }
 
     @Test
     public void testMultiSpecificationsWithFilter() throws IOException {
-        final File inputRoot = writeMultiSpecifications(
-                "spec",
-                specification,
-                null,
-                true,
-                true
-        );
+        final File inputRoot = writeMultiSpecifications("spec", specification, null, true, true);
         final File outputSpecification = new File(outputDirectory.getRoot(), "spec.json");
         execute(
                 inputRoot.getPath(),
                 outputDirectory.getRoot().getPath(),
-                outputSpecification.getPath()
-        );
+                outputSpecification.getPath());
         assertAllGenerated(outputDirectory.getRoot());
         assertTrue("specification output should be generated", outputSpecification.isFile());
     }
 
     @Test
     public void testMultiSpecificationsWithoutOutput() throws IOException {
-        final File inputRoot = writeMultiSpecifications(
-                "spec",
-                specification,
-                null,
-                true,
-                true
-        );
+        final File inputRoot = writeMultiSpecifications("spec", specification, null, true, true);
         thrown.expect(BuildException.class);
-        execute(
-                inputRoot.getPath(),
-                outputDirectory.getRoot().getPath(),
-                null
-        );
+        execute(inputRoot.getPath(), outputDirectory.getRoot().getPath(), null);
     }
 
     @Test
     public void testMultiDirectory() throws IOException {
-        final File inputRoot1 = writeMultiSpecifications(
-                "spec1",
-                specification,
-                Sets.newHashSet("one"),
-                true,
-                false
-        );
-        final File inputRoot2 = writeMultiSpecifications(
-                "spec2",
-                specification,
-                Sets.newHashSet("three"),
-                false,
-                true
-        );
+        final File inputRoot1 =
+                writeMultiSpecifications(
+                        "spec1", specification, Sets.newHashSet("one"), true, false);
+        final File inputRoot2 =
+                writeMultiSpecifications(
+                        "spec2", specification, Sets.newHashSet("three"), false, true);
         final File outputSpecification = new File(outputDirectory.getRoot(), "spec.json");
         execute(
                 String.format("%s, %s", inputRoot1.getPath(), inputRoot2.getPath()),
                 outputDirectory.getRoot().getPath(),
-                outputSpecification.getPath()
-        );
+                outputSpecification.getPath());
         assertAllGenerated(outputDirectory.getRoot());
         assertTrue("specification output should be generated", outputSpecification.isFile());
     }
 
     @Test
     public void testMultiDirectoryWithOnlyContextFile() throws IOException {
-        final File inputRoot1 = writeMultiSpecifications(
-                "spec1",
-                specification,
-                null,
-                false,
-                false
-        );
-        final File inputRoot2 = writeMultiSpecifications(
-                "spec2",
-                specification,
-                new HashSet<String>(),
-                true,
-                false
-        );
+        final File inputRoot1 =
+                writeMultiSpecifications("spec1", specification, null, false, false);
+        final File inputRoot2 =
+                writeMultiSpecifications(
+                        "spec2", specification, new HashSet<String>(), true, false);
         final File outputSpecification = new File(outputDirectory.getRoot(), "spec.json");
         execute(
                 String.format("%s, %s", inputRoot1.getPath(), inputRoot2.getPath()),
                 outputDirectory.getRoot().getPath(),
-                outputSpecification.getPath()
-        );
+                outputSpecification.getPath());
         assertAllGenerated(outputDirectory.getRoot());
         assertTrue("specification output should be generated", outputSpecification.isFile());
     }
 
     @Test
     public void testMultiDirectoryWithMultipleContextFile() throws IOException {
-        final File inputRoot1 = writeMultiSpecifications(
-                "spec1",
-                specification,
-                Sets.newHashSet("one"),
-                true,
-                false
-        );
-        final File inputRoot2 = writeMultiSpecifications(
-                "spec2",
-                specification,
-                Sets.newHashSet("three"),
-                true,
-                false
-        );
+        final File inputRoot1 =
+                writeMultiSpecifications(
+                        "spec1", specification, Sets.newHashSet("one"), true, false);
+        final File inputRoot2 =
+                writeMultiSpecifications(
+                        "spec2", specification, Sets.newHashSet("three"), true, false);
         final File outputSpecification = new File(outputDirectory.getRoot(), "spec.json");
         thrown.expect(BuildException.class);
         execute(
                 String.format("%s, %s", inputRoot1.getPath(), inputRoot2.getPath()),
                 outputDirectory.getRoot().getPath(),
-                outputSpecification.getPath()
-        );
+                outputSpecification.getPath());
     }
 
     @Test
     public void testMultiDirectoryWithMultipleFilterFile() throws IOException {
-        final File inputRoot1 = writeMultiSpecifications(
-                "spec1",
-                specification,
-                Sets.newHashSet("one"),
-                true,
-                true
-        );
-        final File inputRoot2 = writeMultiSpecifications(
-                "spec2",
-                specification,
-                Sets.newHashSet("three"),
-                false,
-                true
-        );
+        final File inputRoot1 =
+                writeMultiSpecifications(
+                        "spec1", specification, Sets.newHashSet("one"), true, true);
+        final File inputRoot2 =
+                writeMultiSpecifications(
+                        "spec2", specification, Sets.newHashSet("three"), false, true);
         final File outputSpecification = new File(outputDirectory.getRoot(), "spec.json");
         thrown.expect(BuildException.class);
         execute(
                 String.format("%s, %s", inputRoot1.getPath(), inputRoot2.getPath()),
                 outputDirectory.getRoot().getPath(),
-                outputSpecification.getPath()
-        );
+                outputSpecification.getPath());
     }
 
     private void assertAllGenerated(final File root) {
@@ -281,7 +195,8 @@ public class TestGroupsJavaGeneratorTaskTest {
         assertTrue("context class should be generated", contextClass.isFile());
     }
 
-    private File writeSingleSpecification(final ProctorSpecification specification) throws IOException {
+    private File writeSingleSpecification(final ProctorSpecification specification)
+            throws IOException {
         final File file = inputDirectory.newFile("specification.json");
         objectMapper.writeValue(file, specification);
         return file;
@@ -292,8 +207,8 @@ public class TestGroupsJavaGeneratorTaskTest {
             final ProctorSpecification specification,
             @Nullable final Set<String> chosenTest,
             final boolean writeContext,
-            final boolean writeFilter
-    ) throws IOException {
+            final boolean writeFilter)
+            throws IOException {
         final File root = inputDirectory.newFolder(directoryName);
 
         if (writeContext) {
@@ -308,7 +223,8 @@ public class TestGroupsJavaGeneratorTaskTest {
             objectMapper.writeValue(dynamicFiltersFile, specification.getDynamicFilters());
         }
 
-        for (final Map.Entry<String, TestSpecification> entry : specification.getTests().entrySet()) {
+        for (final Map.Entry<String, TestSpecification> entry :
+                specification.getTests().entrySet()) {
             final String testName = entry.getKey();
             if ((chosenTest != null) && !chosenTest.contains(testName)) {
                 continue;
@@ -322,10 +238,7 @@ public class TestGroupsJavaGeneratorTaskTest {
     }
 
     private void execute(
-            final String input,
-            final String target,
-            final String specificationOutput
-    ) {
+            final String input, final String target, final String specificationOutput) {
         execute(
                 input,
                 target,
@@ -333,8 +246,7 @@ public class TestGroupsJavaGeneratorTaskTest {
                 PACKAGE_NAME,
                 GROUPS_CLASS,
                 GROUPS_MANAGER_CLASS,
-                CONTEXT_CLASS
-        );
+                CONTEXT_CLASS);
     }
 
     private void execute(
@@ -344,8 +256,7 @@ public class TestGroupsJavaGeneratorTaskTest {
             final String packageName,
             final String groupsClass,
             final String groupsManagerClass,
-            final String contextClass
-    ) {
+            final String contextClass) {
         final TestGroupsJavaGeneratorTask task = new TestGroupsJavaGeneratorTask();
         if (input != null) {
             task.setInput(input);

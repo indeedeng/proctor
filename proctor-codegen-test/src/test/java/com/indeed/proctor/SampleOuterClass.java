@@ -1,8 +1,6 @@
 package com.indeed.proctor;
 
-/**
- * @author matts
- */
+/** @author matts */
 public class SampleOuterClass {
     public static final class Account {
         public final int id;

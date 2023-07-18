@@ -3,7 +3,7 @@ package com.indeed.proctor.pipet.core.model;
 /**
  * Standard envelope response to JSON web requests.
  *
- * data should be a JSON-serializable object, like a JsonResult.
+ * <p>data should be a JSON-serializable object, like a JsonResult.
  */
 public class JsonResponse<JsonData> {
     private final JsonData data;

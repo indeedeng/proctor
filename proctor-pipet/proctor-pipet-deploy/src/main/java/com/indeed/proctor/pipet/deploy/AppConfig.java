@@ -33,7 +33,9 @@ import java.util.concurrent.TimeUnit;
 public class AppConfig extends WebMvcConfigurerAdapter {
 
     @Bean
-    public JsonPipetConfig jsonPipetConfig(@Value("${proctor.pipet.config.path}") final String pipetConfigPath) throws IOException {
+    public JsonPipetConfig jsonPipetConfig(
+            @Value("${proctor.pipet.config.path}") final String pipetConfigPath)
+            throws IOException {
         final ObjectMapper mapper = new ObjectMapper();
         return mapper.readValue(new File(pipetConfigPath), JsonPipetConfig.class);
     }
@@ -48,11 +50,13 @@ public class AppConfig extends WebMvcConfigurerAdapter {
     @Autowired
     public VariableConfiguration variableConfiguration(final JsonPipetConfig jsonPipetConfig) {
         return VariableConfigurationJsonParser.newParser()
-            .registerStandardConverters()
-            // Custom types for UserAgent
-            .registerValueConverterByCanonicalName(UserAgentValueConverter.userAgentValueConverter())
-            .registerValueConverterBySimpleName(UserAgentValueConverter.userAgentValueConverter())
-            .buildFrom(jsonPipetConfig);
+                .registerStandardConverters()
+                // Custom types for UserAgent
+                .registerValueConverterByCanonicalName(
+                        UserAgentValueConverter.userAgentValueConverter())
+                .registerValueConverterBySimpleName(
+                        UserAgentValueConverter.userAgentValueConverter())
+                .buildFrom(jsonPipetConfig);
     }
 
     @Bean(destroyMethod = "shutdownNow")

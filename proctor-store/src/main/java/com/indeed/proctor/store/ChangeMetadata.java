@@ -13,7 +13,11 @@ public class ChangeMetadata {
     private final Instant timestamp;
     private final String comment;
 
-    ChangeMetadata(final String username, final String password, final String author, final String comment) {
+    ChangeMetadata(
+            final String username,
+            final String password,
+            final String author,
+            final String comment) {
         this(username, password, author, Instant.now(), comment);
     }
 
@@ -22,8 +26,7 @@ public class ChangeMetadata {
             @Nullable final String password,
             final String author,
             final Instant timestamp,
-            final String comment
-    ) {
+            final String comment) {
         this.username = username;
         this.password = password;
         this.author = Objects.requireNonNull(author);
@@ -73,11 +76,11 @@ public class ChangeMetadata {
             return false;
         }
         final ChangeMetadata that = (ChangeMetadata) o;
-        return Objects.equals(username, that.username) &&
-                Objects.equals(password, that.password) &&
-                Objects.equals(author, that.author) &&
-                Objects.equals(timestamp, that.timestamp) &&
-                Objects.equals(comment, that.comment);
+        return Objects.equals(username, that.username)
+                && Objects.equals(password, that.password)
+                && Objects.equals(author, that.author)
+                && Objects.equals(timestamp, that.timestamp)
+                && Objects.equals(comment, that.comment);
     }
 
     @Override
