@@ -25,3 +25,5 @@ dependencies {
     testImplementation libs.jsr305
     testImplementation libs.annotationApi
 }
+
+test.dependsOn(':proctor-common:shadowJar')
