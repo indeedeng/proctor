@@ -87,13 +87,7 @@ Now using version: 0.local.20230711170543
 > Task :proctor-common:compileJava
 ```
 
-To test with proctor-internal and other consumers of proctor OSS within Indeed run the symlink bash script to associate local maven repo with local gradle repo:
-
-```bash
-$ ./symlinkproctor.sh
-```
-
-After creating the symlink set the proctor version in the build.gradle to version from publish. Example above would be using `0.local.20230711170543`
+Example above would create local installation of proctor with version equal to `0.local.20230711170543`
 
 # Discussion
 
