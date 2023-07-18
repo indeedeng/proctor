@@ -1,0 +1,7 @@
+indeedOss.activateFeature 'library'
+indeedLibrary.name = 'proctor-tomcat-deps'
+
+dependencies {
+    api libs.tomcatElApi
+    api libs.tomcatJasperEl
+}

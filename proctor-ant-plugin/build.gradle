@@ -1,0 +1,19 @@
+indeedOss.activateFeature 'library'
+indeedLibrary.name = 'proctor-ant-plugin'
+
+dependencies {
+    implementation project(':proctor-codegen')
+    implementation project(':proctor-builder')
+    implementation project(':proctor-common')
+    implementation project(':proctor-store')
+    implementation libs.ant
+    implementation libs.guava
+    implementation libs.log4jApi
+    implementation libs.log4jCore
+    implementation libs.jacksonCore
+    implementation libs.jacksonDatabind
+    testImplementation libs.junit
+    testImplementation libs.annotationApi
+    testImplementation libs.jsr305
+    compileOnly libs.jsr305
+}

@@ -1,0 +1,16 @@
+indeedOss.activateFeature 'library'
+indeedLibrary.name = 'proctor-builder'
+
+dependencies {
+    implementation project(':proctor-common')
+    implementation project(':proctor-consumer')
+    implementation project(':proctor-store')
+    implementation project(':proctor-store-git')
+    implementation libs.commonsCli
+    implementation libs.log4jApi
+    implementation libs.log4jCore
+    implementation libs.jacksonCore
+    implementation libs.jacksonDatabind
+    implementation libs.guava
+    implementation libs.commonsLang
+}

@@ -1,0 +1,12 @@
+plugins {
+    id 'com.indeed.oss' version '1+'
+}
+
+indeedOss.activateFeature 'library'
+indeedLibrary.name = 'proctor-parent'
+
+
+task linkLocalPublish(type: Exec) {
+    dependsOn 'publishToMavenLocal'
+    commandLine './symlinkproctor.sh'
+}

@@ -1,0 +1,23 @@
+indeedOss.activateFeature 'library'
+indeedLibrary.name = 'proctor-store-svn'
+
+dependencies {
+    implementation project(':proctor-common')
+    implementation project(':proctor-store')
+    implementation 'com.indeed:util-varexport:1.0.49-1cfb888'
+    implementation 'org.tmatesoft.svnkit:svnkit:1.8.5'
+    implementation 'org.apache.commons:commons-pool2:2.2'
+    implementation libs.guava
+    implementation libs.commonsLang
+    implementation libs.commonsIo
+    implementation libs.jacksonCore
+    implementation libs.jacksonDatabind
+    implementation libs.log4jApi
+    implementation libs.log4jCore
+    compileOnly libs.jsr305
+    implementation 'com.indeed:util-varexport:1.0.49-1cfb888'
+    implementation 'org.eclipse.jgit:org.eclipse.jgit:5.2.0.201812061821-r'
+    testImplementation 'org.eclipse.jgit:org.eclipse.jgit.junit:5.2.0.201812061821-r'
+    testImplementation libs.junit
+    testImplementation libs.assertj
+}

@@ -1,0 +1,32 @@
+plugins {
+    id 'war'
+}
+
+indeedOss.activateFeature 'java'
+
+dependencies {
+    implementation project(':proctor-common')
+    implementation project(':proctor-store')
+    implementation project(':proctor-store-git')
+    implementation project(':proctor-webapp-library')
+    implementation libs.springWebmvc
+    implementation libs.springJdbc
+    implementation libs.guava
+    implementation libs.log4jApi
+    implementation libs.log4jCore
+    implementation libs.commonsLang
+    implementation 'javax.servlet:jstl:1.2'
+    implementation libs.jacksonDatabind
+    implementation libs.annotationApi
+    implementation 'org.apache.commons:commons-collections4:4.3'
+    implementation 'io.swagger:swagger-annotations:1.5.21'
+    testImplementation libs.junit
+    testImplementation libs.assertj
+    testImplementation libs.mockito
+    testImplementation libs.springTest
+    testImplementation libs.tomcatJasperEl
+    testImplementation libs.tomcatElApi
+    providedCompile libs.tomcatJspApi
+    providedCompile libs.tomcatServletApi
+    compileOnly libs.jsr305
+}

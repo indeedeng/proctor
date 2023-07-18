@@ -12,9 +12,12 @@ import org.junit.Test;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import com.indeed.proctor.codegen.test.groups.SplitSpecificationTestWithFiltersGroupsManager;
+import com.indeed.proctor.codegen.test.groups.SplitSpecificationTestWithFiltersGroupsContext;
+
 public class TestSplitSpecificationTestWithFiltersGroupsManager {
     private static final Logger LOGGER = LogManager.getLogger(TestSplitSpecificationTestWithFiltersGroupsManager.class);
-    private static final String SPECIFICATION_RESOURCE = "SplitSpecificationTestWithFiltersGroups.json";
+    private static final String SPECIFICATION_RESOURCE = "temp/SplitSpecificationTestWithFiltersGroups.json";
     private static final String SPECIFICATION_MATRIX = "splitspecificationtest.proctor-matrix.json";
 
     private SplitSpecificationTestWithFiltersGroupsManager manager;

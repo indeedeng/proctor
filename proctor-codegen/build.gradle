@@ -1,0 +1,14 @@
+indeedOss.activateFeature 'library'
+indeedLibrary.name = 'proctor-codegen'
+
+dependencies {
+    implementation project(':proctor-common')
+    implementation 'org.freemarker:freemarker:2.3.16'
+    implementation libs.guava
+    implementation libs.commonsLang
+    implementation libs.jacksonDatabind
+    testImplementation libs.annotationApi
+    testImplementation libs.jsr305
+    testImplementation libs.junit
+    testImplementation libs.assertj
+}

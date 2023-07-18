@@ -18,11 +18,14 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import com.indeed.proctor.codegen.test.groups.SplitSpecificationTestGroupsManager;
+import com.indeed.proctor.codegen.test.groups.SplitSpecificationTestGroupsContext;
+import com.indeed.proctor.codegen.test.groups.SplitSpecificationTestGroups;
 /**
  * Tests a GroupsManager generated for a specification split over 4 files,
  */
 public class TestSplitSpecificationTestGroupsManager {
-    private static final String SPECIFICATION_RESOURCE = "SplitSpecificationTestGroups.json";
+    private static final String SPECIFICATION_RESOURCE = "temp/SplitSpecificationTestGroups.json";
     private static final String SPECIFICATION_MATRIX = "splitspecificationtest.proctor-matrix.json";
 
     private SplitSpecificationTestGroupsManager manager;

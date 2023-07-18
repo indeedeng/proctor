@@ -2,6 +2,7 @@ package com.indeed.proctor.groups;
 
 import com.google.common.collect.ImmutableMap;
 import com.indeed.proctor.common.Identifiers;
+import com.indeed.proctor.common.Proctor;
 import com.indeed.proctor.common.ProctorResult;
 import com.indeed.proctor.common.model.TestType;
 import org.apache.logging.log4j.LogManager;
@@ -12,6 +13,9 @@ import org.junit.Test;
 import static com.indeed.proctor.groups.UtilMethods.calcBuckets;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import com.indeed.proctor.codegen.test.groups.EmptyContextTestGroupsManager;
+
+import java.util.function.Supplier;
 
 /**
  * Test to make sure specifications with no context variables generate code properly
@@ -27,7 +31,8 @@ public class TestEmptyContextTestGroupsManager {
 
     @Before()
     public void setUp() throws Exception {
-        manager = new EmptyContextTestGroupsManager(() -> UtilMethods.getProctor(SPECIFICATION_MATRIX, SPECIFICATION_RESOURCE));
+        final Proctor proctor = UtilMethods.getProctor(SPECIFICATION_MATRIX, SPECIFICATION_RESOURCE);
+        manager = new EmptyContextTestGroupsManager(() -> proctor);
     }
 
     @Test

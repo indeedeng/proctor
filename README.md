@@ -36,6 +36,59 @@ $ rake clean serve
   => open http://localhost:4000/ in browser
 ```
 
+# Building
+
+Need to use Java 11 SDK for using gradle:
+
+List installed java JVMs on MacOS:
+```bash
+$ /usr/libexec/java_home -V
+```
+
+Example output:
+```
+Matching Java Virtual Machines (9):
+    17.0.6 (arm64) "Azul Systems, Inc." - "Zulu 17.40.19" /Library/Java/JavaVirtualMachines/jdk17.0.6.jdk/Contents/Home
+    11.0.18 (arm64) "Azul Systems, Inc." - "Zulu 11.62.17" /Library/Java/JavaVirtualMachines/jdk11.0.18.jdk/Contents/Home
+    11.0.17 (arm64) "Azul Systems, Inc." - "Zulu 11.60.19" /Library/Java/JavaVirtualMachines/jdk11.0.17.jdk/Contents/Home
+    11.0.16 (arm64) "Azul Systems, Inc." - "Zulu 11.58.15" /Library/Java/JavaVirtualMachines/jdk11.0.16_8.jdk/Contents/Home
+    11.0.15 (arm64) "Azul Systems, Inc." - "Zulu 11.56.19" /Library/Java/JavaVirtualMachines/jdk11.0.15_10.jdk/Contents/Home
+    1.8.0_362 (arm64) "Azul Systems, Inc." - "Zulu 8.68.0.21" /Library/Java/JavaVirtualMachines/jdk1.8.0_362.jdk/Contents/Home
+    1.8.0_345 (arm64) "Azul Systems, Inc." - "Zulu 8.64.0.19" /Library/Java/JavaVirtualMachines/jdk1.8.0_345.jdk/Contents/Home
+    1.8.0_332 (arm64) "Azul Systems, Inc." - "Zulu 8.62.0.19" /Library/Java/JavaVirtualMachines/jdk1.8.0_332.jdk/Contents/Home
+    1.8.0_322 (arm64) "Azul Systems, Inc." - "Zulu 8.60.0.21" /Library/Java/JavaVirtualMachines/jdk1.8.0_322.jdk/Contents/Home
+```
+
+Set JVM version in MacOS:
+```bash
+$ export JAVA_HOME=`/usr/libexec/java_home -v 11.0.18`
+```
+
+How to Build:
+
+```bash
+$ ./gradlew build
+```
+
+# Local Install
+
+Run the following gradle command and note the local version from the output:
+
+```bash
+$ ./gradlew publish
+```
+
+Example output:
+
+```
+Calculating version to use for publish ...
+Now using version: 0.local.20230711170543
+
+> Task :proctor-common:compileJava
+```
+
+Example above would create local installation of proctor with version equal to `0.local.20230711170543`
+
 # Discussion
 
 Use the [indeedeng-proctor-users](https://groups.google.com/d/forum/indeedeng-proctor-users) Q&A forum to ask and answer questions about the use of Proctor.

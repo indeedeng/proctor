@@ -1,0 +1,48 @@
+plugins {
+    id "application"
+}
+
+indeedOss.activateFeature 'java'
+
+dependencies {
+    implementation project(':proctor-common')
+    implementation project(':proctor-consumer')
+    implementation project(':proctor-codegen')
+    implementation project(':proctor-builder')
+    implementation libs.commonsIo
+    implementation libs.jacksonDatabind
+    implementation libs.commonsLang
+    implementation libs.guava
+    implementation libs.log4jCore
+    implementation libs.log4jApi
+    testImplementation libs.junit
+    testImplementation libs.assertj
+    testImplementation libs.jacksonCore
+    testImplementation libs.servletApi
+    testImplementation libs.annotationApi
+    testImplementation libs.jsr305
+    testImplementation libs.mockito
+    testImplementation libs.easymock
+    testImplementation libs.easymockclassext
+    testImplementation libs.springTest
+    testImplementation 'com.indeed:util-core:1.0.49-1cfb888'
+    testImplementation 'com.indeed:util-varexport:1.0.49-1cfb888'
+
+}
+
+ext {
+    javaMainClass = "com.indeed.proctor.codegen.test.ProctorGradleAutogenTask"
+}
+
+application {
+    mainClassName = javaMainClass
+}
+
+task runWithJavaExec(type: JavaExec) {
+    group = "Execution"
+    description = "Run the main class with JavaExecTask"
+    classpath = sourceSets.main.runtimeClasspath
+    main = javaMainClass
+}
+
+compileTestJava.dependsOn(runWithJavaExec)

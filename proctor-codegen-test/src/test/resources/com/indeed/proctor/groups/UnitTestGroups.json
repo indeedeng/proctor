@@ -1,0 +1,158 @@
+{
+    "tests" : {
+        "pimple": {
+            "buckets": {
+                "inactive": -1,
+                "control": 0,
+                "test": 1
+            },
+            "fallbackValue": -1
+        },
+        "kluj": {
+            "buckets": {
+                "control": 0,
+                "test": 1,
+                "kloo": 2,
+                "loooj": 3
+            },
+            "description": "2nd test",
+            "fallbackValue": 0
+        },
+        "bubble": {
+            "buckets": {
+                "control": 0,
+                "test": 1,
+                "oop": 2,
+                "poop": 3
+            },
+            "description": "3rd \n\t\"test",
+            "fallbackValue": 0
+        },
+        "dubblez": {
+            "buckets": {
+                "control": 0,
+                "test": 1,
+                "oop": 2,
+                "poop": 3
+            },
+            "fallbackValue": 0
+        },
+        "oop_poop": {
+            "buckets": {
+                "control": 0,
+                "test": 1,
+                "oop": 2,
+                "poop": 3
+            },
+            "fallbackValue": 0
+        },
+        "payloaded": {
+            "buckets": {
+                "inactive": -1,
+                "control": 0,
+                "test": 1
+            },
+            "fallbackValue": -1,
+            "payload": {
+                "type": "stringArray"
+            }
+        },
+        "payloaded_verified": {
+            "buckets": {
+                "inactive": -1,
+                "control": 0,
+                "test": 1
+            },
+            "fallbackValue": -1,
+            "payload": {
+                "type": "doubleValue",
+                "validator": "${value >= 0}"
+            }
+        },
+        "map_payload": {
+            "buckets": {
+                "inactive": -1,
+                "control": 0,
+                "test": 1
+            },
+            "fallbackValue": -1,
+            "payload": {
+                "type": "map",
+                "schema": {
+                    "astring": "stringValue",
+                    "adouble": "doubleValue",
+                    "anarray": "longArray",
+                    "astringarr": "stringArray",
+                    "adarray": "doubleArray"
+                },
+                "validator": "${anarray[0]+adouble>0}"
+            }
+        },
+        "map_payload_int": {
+            "payloadOnly": true,
+            "payload": {
+                "type": "map",
+                "schema": {
+                    "adouble": "doubleValue",
+                    "along": "longValue"
+                },
+                "validator": "${adouble > -1}"
+            }
+        },
+        "payloadonly_maptype": {
+            "payloadOnly": true,
+            "payload": {
+                "type": "map",
+                "schema": {
+                    "astring": "stringValue",
+                    "adouble": "doubleValue"
+                }
+            }
+        },
+        "payloadonly_doubletype": {
+            "payloadOnly": true,
+            "payload": {
+                "type": "doubleValue"
+            }
+        },
+        "payloaded_excluded": {
+            "buckets": {
+                "inactive": -1,
+                "control": 0,
+                "test": 1
+            },
+            "fallbackValue": -1,
+            "payload": {
+                "type": "stringArray"
+            }
+        },
+        "no_buckets_specified": {
+            "fallbackValue": -1
+        },
+        "with_all_ascii_characters": {
+            "buckets": {
+                "inactive": -1,
+                "control": 0,
+                "test": 1
+            },
+            "description": " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~",
+            "fallbackValue": -1
+        },
+        "json_payload_test": {
+            "buckets": {
+                "inactive": -1,
+                "control": 0,
+                "test": 1
+            },
+            "fallbackValue": -1,
+            "payload": {
+                "type": "json"
+            }
+        }
+    },
+    "providedContext": {
+        "loggedIn" : "boolean",
+        "country": "String",
+        "account": "com.indeed.proctor.SampleOuterClass$Account"
+    }
+}
