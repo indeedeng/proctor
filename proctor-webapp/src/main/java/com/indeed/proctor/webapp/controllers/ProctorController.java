@@ -75,27 +75,24 @@ public class ProctorController extends AbstractController {
             @Qualifier("trunk") final ProctorStore trunkStore,
             @Qualifier("qa") final ProctorStore qaStore,
             @Qualifier("production") final ProctorStore productionStore,
-            final ProctorSpecificationSource specificationSource
-    ) {
+            final ProctorSpecificationSource specificationSource) {
         super(configuration, trunkStore, qaStore, productionStore);
         this.specificationSource = specificationSource;
     }
 
-    /**
-     * TODO: this should be the default screen at /
-     */
+    /** TODO: this should be the default screen at / */
     // not a @ApiOperation because it produces HTML
     @RequestMapping(value = "/", method = RequestMethod.GET)
     public String viewTestMatrix(
             final String branch,
             final Model model,
-            @RequestParam(defaultValue = "50") final Integer testsPerPage
-    ) {
+            @RequestParam(defaultValue = "50") final Integer testsPerPage) {
         final Environment which = determineEnvironmentFromParameter(branch);
 
         boolean emptyClients = true;
         for (final Environment environment : Environment.values()) {
-            emptyClients &= specificationSource.loadAllSpecifications(environment).keySet().isEmpty();
+            emptyClients &=
+                    specificationSource.loadAllSpecifications(environment).keySet().isEmpty();
         }
         model.addAttribute("emptyClients", emptyClients);
         model.addAttribute("testsPerPage", testsPerPage);
@@ -107,7 +104,8 @@ public class ProctorController extends AbstractController {
     public JsonView viewRawTestMatrix(final String branch) {
         final Environment which = determineEnvironmentFromParameter(branch);
         final TestMatrixVersion testMatrixVersion = getCurrentMatrix(which);
-        final TestMatrixArtifact testMatrixArtifact = ProctorUtils.convertToConsumableArtifact(testMatrixVersion);
+        final TestMatrixArtifact testMatrixArtifact =
+                ProctorUtils.convertToConsumableArtifact(testMatrixVersion);
         return new JsonView(testMatrixArtifact);
     }
 
@@ -124,13 +122,15 @@ public class ProctorController extends AbstractController {
         populateTestUsageViewModel(Environment.QA, qaMatrix, tests, Environment.QA);
 
         final TestMatrixVersion productionMatrix = getCurrentMatrix(Environment.PRODUCTION);
-        populateTestUsageViewModel(Environment.PRODUCTION, productionMatrix, tests, Environment.PRODUCTION);
+        populateTestUsageViewModel(
+                Environment.PRODUCTION, productionMatrix, tests, Environment.PRODUCTION);
 
         model.addAttribute("tests", tests);
         model.addAttribute("devMatrix", devMatrix);
         model.addAttribute("qaMatrix", qaMatrix);
         model.addAttribute("productionMatrix", productionMatrix);
-        model.addAttribute("session",
+        model.addAttribute(
+                "session",
                 SessionViewModel.builder()
                         .setUseCompiledCSS(getConfiguration().isUseCompiledCSS())
                         .setUseCompiledJavaScript(getConfiguration().isUseCompiledJavaScript())
@@ -143,13 +143,11 @@ public class ProctorController extends AbstractController {
     @ApiOperation(value = "Proctor test specification", response = TestMatrixArtifact.class)
     @RequestMapping(value = "/specification", method = RequestMethod.GET)
     public JsonView viewProctorSpecification(
-            final String branch,
-            final String app,
-            final String version
-    ) {
+            final String branch, final String app, final String version) {
         final Environment environment = determineEnvironmentFromParameter(branch);
         final AppVersion appVersion = new AppVersion(app, version);
-        final RemoteSpecificationResult spec = specificationSource.getRemoteResult(environment, appVersion);
+        final RemoteSpecificationResult spec =
+                specificationSource.getRemoteResult(environment, appVersion);
 
         return new JsonView(spec);
     }
@@ -158,8 +156,7 @@ public class ProctorController extends AbstractController {
             final Environment matrixEnvironment,
             final TestMatrixVersion matrix,
             final Map<String, CompatibilityRow> tests,
-            final Environment environment
-    ) {
+            final Environment environment) {
         final TestMatrixArtifact artifact = ProctorUtils.convertToConsumableArtifact(matrix);
         final Map<String, ConsumableTestDefinition> definedTests = artifact.getTests();
 
@@ -172,8 +169,7 @@ public class ProctorController extends AbstractController {
             final ProctorSpecifications specifications = clients.get(version);
             final Map<String, Collection<TestSpecification>> requiredTests =
                     specifications.getRequiredTests();
-            final Set<String> dynamicTests =
-                    specifications.getDynamicTests(definedTests);
+            final Set<String> dynamicTests = specifications.getDynamicTests(definedTests);
 
             for (final Entry<String, Collection<TestSpecification>> testEntry :
                     requiredTests.entrySet()) {
@@ -188,9 +184,7 @@ public class ProctorController extends AbstractController {
                                         version,
                                         artifact,
                                         testName,
-                                        testSpecifications
-                                )
-                        );
+                                        testSpecifications));
             }
 
             for (final String testName : dynamicTests) {
@@ -203,12 +197,7 @@ public class ProctorController extends AbstractController {
                         .addVersion(
                                 environment,
                                 CompatibleSpecificationResult.fromDynamicTest(
-                                        matrixEnvironment,
-                                        version,
-                                        artifact,
-                                        testName
-                                )
-                        );
+                                        matrixEnvironment, version, artifact, testName));
             }
         }
 
@@ -228,7 +217,8 @@ public class ProctorController extends AbstractController {
         populateCompatibilityRow(compatibilityMap, Environment.PRODUCTION);
 
         model.addAttribute("compatibilityMap", compatibilityMap);
-        model.addAttribute("session",
+        model.addAttribute(
+                "session",
                 SessionViewModel.builder()
                         .setUseCompiledCSS(getConfiguration().isUseCompiledCSS())
                         .setUseCompiledJavaScript(getConfiguration().isUseCompiledJavaScript())
@@ -237,7 +227,8 @@ public class ProctorController extends AbstractController {
         return ProctorView.MATRIX_COMPATIBILITY.getName();
     }
 
-    private void populateCompatibilityRow(final Map<Environment, CompatibilityRow> rows, final Environment rowEnv) {
+    private void populateCompatibilityRow(
+            final Map<Environment, CompatibilityRow> rows, final Environment rowEnv) {
         final CompatibilityRow row = new CompatibilityRow();
         rows.put(rowEnv, row);
         final TestMatrixVersion matrix = getCurrentMatrix(rowEnv);
@@ -249,30 +240,15 @@ public class ProctorController extends AbstractController {
 
     /**
      * We want a compatibility matrix of
-     * <p>
-     * TRUNK-MATRIX:
-     * [DEV-WEBAPPS]:
-     * (web-app-1): compatible?
-     * [QA-WEBAPPS]:
-     * (web-app-1): compatible?
-     * [PRODUCTION-WEBAPPS]:
-     * (web-app-1): compatible?
-     * <p>
-     * QA-MATRIX:
-     * [DEV-WEBAPPS]:
-     * (web-app-1): compatible?
-     * [QA-WEBAPPS]:
-     * (web-app-1): compatible?
-     * [PRODUCTION-WEBAPPS]:
-     * (web-app-1): compatible?
-     * <p>
-     * PRODUCTION-MATRIX:
-     * [DEV-WEBAPPS]:
-     * (web-app-1): compatible?
-     * [QA-WEBAPPS]:
-     * (web-app-1): compatible?
-     * [PRODUCTION-WEBAPPS]:
-     * (web-app-1): compatible?
+     *
+     * <p>TRUNK-MATRIX: [DEV-WEBAPPS]: (web-app-1): compatible? [QA-WEBAPPS]: (web-app-1):
+     * compatible? [PRODUCTION-WEBAPPS]: (web-app-1): compatible?
+     *
+     * <p>QA-MATRIX: [DEV-WEBAPPS]: (web-app-1): compatible? [QA-WEBAPPS]: (web-app-1): compatible?
+     * [PRODUCTION-WEBAPPS]: (web-app-1): compatible?
+     *
+     * <p>PRODUCTION-MATRIX: [DEV-WEBAPPS]: (web-app-1): compatible? [QA-WEBAPPS]: (web-app-1):
+     * compatible? [PRODUCTION-WEBAPPS]: (web-app-1): compatible?
      *
      * @param artifact
      * @param row
@@ -283,7 +259,8 @@ public class ProctorController extends AbstractController {
             final TestMatrixArtifact artifact,
             final CompatibilityRow row,
             final Environment webappEnvironment) {
-        final Map<AppVersion, RemoteSpecificationResult> clients = specificationSource.loadAllSpecifications(webappEnvironment);
+        final Map<AppVersion, RemoteSpecificationResult> clients =
+                specificationSource.loadAllSpecifications(webappEnvironment);
         // sort the apps (probably should sort the Map.Entry, but this is good enough for now
         final SortedSet<AppVersion> versions = Sets.newTreeSet(clients.keySet());
         for (final AppVersion version : versions) {
@@ -291,17 +268,21 @@ public class ProctorController extends AbstractController {
 
             final CompatibleSpecificationResult result;
             if (remoteResult.getSpecifications() != null) {
-                result = CompatibleSpecificationResult.fromProctorSpecifications(
-                        artifactEnvironment,
-                        version,
-                        artifact,
-                        remoteResult.getSpecifications()
-                );
+                result =
+                        CompatibleSpecificationResult.fromProctorSpecifications(
+                                artifactEnvironment,
+                                version,
+                                artifact,
+                                remoteResult.getSpecifications());
             } else {
-                final String error = "Failed to load a proctor specification from " + remoteResult.getFailures().keySet().stream()
-                        .map(ProctorClientApplication::toString)
-                        .collect(joining(", "));
-                result = new CompatibleSpecificationResult(version, false, error, Collections.emptySet());
+                final String error =
+                        "Failed to load a proctor specification from "
+                                + remoteResult.getFailures().keySet().stream()
+                                        .map(ProctorClientApplication::toString)
+                                        .collect(joining(", "));
+                result =
+                        new CompatibleSpecificationResult(
+                                version, false, error, Collections.emptySet());
             }
 
             row.addVersion(webappEnvironment, result);
@@ -309,12 +290,14 @@ public class ProctorController extends AbstractController {
     }
 
     /**
-     * represents a row in a compatibility matrix.
-     * Contains the list of web-apps + compatibility for each environment
-     * <p>
-     * For test-name by web-app break down, the compatibility should be of that web-app with a specific test + specification
-     * <p>
-     * For the {matrix} by web-app break down, the compatibility should be for the web-app specification with entire matrix.
+     * represents a row in a compatibility matrix. Contains the list of web-apps + compatibility for
+     * each environment
+     *
+     * <p>For test-name by web-app break down, the compatibility should be of that web-app with a
+     * specific test + specification
+     *
+     * <p>For the {matrix} by web-app break down, the compatibility should be for the web-app
+     * specification with entire matrix.
      */
     public static class CompatibilityRow {
         /* all of thse should refer to dev web apps */
@@ -360,7 +343,8 @@ public class ProctorController extends AbstractController {
     }
 
     @Nullable
-    private Date getUpdatedDate(final Map<String, List<Revision>> allHistories, final String testName) {
+    private Date getUpdatedDate(
+            final Map<String, List<Revision>> allHistories, final String testName) {
         if (allHistories == null) {
             return null;
         }
@@ -377,7 +361,8 @@ public class ProctorController extends AbstractController {
      *
      * @return view spring name
      */
-    private String getArtifactForView(final Model model, final Environment branch, final ProctorView view) {
+    private String getArtifactForView(
+            final Model model, final Environment branch, final ProctorView view) {
         final TestMatrixVersion testMatrix = getCurrentMatrix(branch);
         final TestMatrixDefinition testMatrixDefinition;
         if (testMatrix == null || testMatrix.getTestMatrixDefinition() == null) {
@@ -387,7 +372,8 @@ public class ProctorController extends AbstractController {
         }
 
         model.addAttribute("branch", branch);
-        model.addAttribute("session",
+        model.addAttribute(
+                "session",
                 SessionViewModel.builder()
                         .setUseCompiledCSS(getConfiguration().isUseCompiledCSS())
                         .setUseCompiledJavaScript(getConfiguration().isUseCompiledJavaScript())
@@ -397,27 +383,42 @@ public class ProctorController extends AbstractController {
 
         final Set<String> testNames = testMatrixDefinition.getTests().keySet();
         final Map<String, List<Revision>> allHistories = getAllHistories(branch);
-        final Map<String, Long> updatedTimeMap = Maps.toMap(testNames, testName -> {
-            final Date updatedDate = getUpdatedDate(allHistories, testName);
-            if (updatedDate != null) {
-                return updatedDate.getTime();
-            } else {
-                return FALLBACK_UPDATED_TIME;
-            }
-        });
+        final Map<String, Long> updatedTimeMap =
+                Maps.toMap(
+                        testNames,
+                        testName -> {
+                            final Date updatedDate = getUpdatedDate(allHistories, testName);
+                            if (updatedDate != null) {
+                                return updatedDate.getTime();
+                            } else {
+                                return FALLBACK_UPDATED_TIME;
+                            }
+                        });
         model.addAttribute("updatedTimeMap", updatedTimeMap);
 
         final String errorMessage = "Apparently not impossible exception generating JSON";
         try {
-            final String testMatrixJson = OBJECT_MAPPER.writer(new MinimalPrettyPrinter()).writeValueAsString(testMatrixDefinition);
+            final String testMatrixJson =
+                    OBJECT_MAPPER
+                            .writer(new MinimalPrettyPrinter())
+                            .writeValueAsString(testMatrixDefinition);
             model.addAttribute("testMatrixDefinition", testMatrixJson);
 
             final Map<String, Map<String, String>> colors = Maps.newHashMap();
-            for (final Entry<String, TestDefinition> entry : testMatrixDefinition.getTests().entrySet()) {
+            for (final Entry<String, TestDefinition> entry :
+                    testMatrixDefinition.getTests().entrySet()) {
                 final Map<String, String> testColors = Maps.newHashMap();
                 for (final TestBucket bucket : entry.getValue().getBuckets()) {
-                    final long hashedBucketName = Hashing.md5().newHasher().putString(bucket.getName(), Charsets.UTF_8).hash().asLong();
-                    final int color = ((int) (hashedBucketName & 0x00FFFFFFL)) | 0x00808080; //  convert a hash of the bucket to a color, but keep it light
+                    final long hashedBucketName =
+                            Hashing.md5()
+                                    .newHasher()
+                                    .putString(bucket.getName(), Charsets.UTF_8)
+                                    .hash()
+                                    .asLong();
+                    final int color =
+                            ((int) (hashedBucketName & 0x00FFFFFFL))
+                                    | 0x00808080; //  convert a hash of the bucket to a color, but
+                    // keep it light
                     testColors.put(bucket.getName(), Integer.toHexString(color));
                 }
                 colors.put(entry.getKey(), testColors);
@@ -456,10 +457,11 @@ public class ProctorController extends AbstractController {
         private final String error;
         private final Set<String> dynamicTests;
 
-        public CompatibleSpecificationResult(final AppVersion version,
-                                             final boolean compatible,
-                                             final String error,
-                                             final Set<String> dynamicTest) {
+        public CompatibleSpecificationResult(
+                final AppVersion version,
+                final boolean compatible,
+                final String error,
+                final Set<String> dynamicTest) {
             this.appVersion = version;
             isCompatible = compatible;
             this.error = error;
@@ -491,16 +493,13 @@ public class ProctorController extends AbstractController {
             return appVersion.toShortString();
         }
 
-        /**
-         * Construct a instance from a single required test with a specification
-         */
+        /** Construct a instance from a single required test with a specification */
         static CompatibleSpecificationResult fromRequiredTest(
                 final Environment matrixEnvironment,
                 final AppVersion version,
                 final TestMatrixArtifact artifact,
                 final String testName,
-                final Collection<TestSpecification> specifications
-        ) {
+                final Collection<TestSpecification> specifications) {
             final Map<String, Collection<TestSpecification>> requiredTests =
                     Collections.singletonMap(testName, specifications);
             final Set<String> dynamicTests = Collections.emptySet();
@@ -511,19 +510,18 @@ public class ProctorController extends AbstractController {
                     requiredTests,
                     dynamicTests,
                     (matrixSource, plr) ->
-                            "test " + testName + " is required by specification but invalid for " + matrixSource
-            );
+                            "test "
+                                    + testName
+                                    + " is required by specification but invalid for "
+                                    + matrixSource);
         }
 
-        /**
-         * Construct a instance from a single dynamic test without a specification
-         */
+        /** Construct a instance from a single dynamic test without a specification */
         static CompatibleSpecificationResult fromDynamicTest(
                 final Environment matrixEnvironment,
                 final AppVersion version,
                 final TestMatrixArtifact artifact,
-                final String testName
-        ) {
+                final String testName) {
             final Map<String, Collection<TestSpecification>> requiredTests = Collections.emptyMap();
             final Set<String> dynamicTests = Collections.singleton(testName);
             return fromTests(
@@ -533,19 +531,18 @@ public class ProctorController extends AbstractController {
                     requiredTests,
                     dynamicTests,
                     (matrixSource, plr) ->
-                            "test " + testName + " is matched in filters but invalid for " + matrixSource
-            );
+                            "test "
+                                    + testName
+                                    + " is matched in filters but invalid for "
+                                    + matrixSource);
         }
 
-        /**
-         * Construct a instance from proctor specifications of all tests for a client
-         */
+        /** Construct a instance from proctor specifications of all tests for a client */
         static CompatibleSpecificationResult fromProctorSpecifications(
                 final Environment artifactEnvironment,
                 final AppVersion version,
                 final TestMatrixArtifact artifact,
-                final ProctorSpecifications specifications
-        ) {
+                final ProctorSpecifications specifications) {
             return fromTests(
                     artifactEnvironment,
                     version,
@@ -553,9 +550,9 @@ public class ProctorController extends AbstractController {
                     specifications.getRequiredTests(),
                     specifications.getDynamicTests(artifact.getTests()),
                     (matrixSource, plr) ->
-                            String.format("Incompatible: Tests Missing: %s Invalid Tests: %s for %s",
-                                    plr.getMissingTests(), plr.getTestsWithErrors(), matrixSource)
-            );
+                            String.format(
+                                    "Incompatible: Tests Missing: %s Invalid Tests: %s for %s",
+                                    plr.getMissingTests(), plr.getTestsWithErrors(), matrixSource));
         }
 
         private static CompatibleSpecificationResult fromTests(
@@ -564,19 +561,19 @@ public class ProctorController extends AbstractController {
                 final TestMatrixArtifact artifact,
                 final Map<String, Collection<TestSpecification>> requiredTests,
                 final Set<String> dynamicTests,
-                final BiFunction<String, ProctorLoadResult, String> errorMessageFunction
-        ) {
-            final String matrixSource = environment.getName() + " r" + artifact.getAudit().getVersion();
-            final Map<String, TestSpecification> specMap = Maps.transformValues(
-                    requiredTests,
-                    // choosing arbitrary specification when it contains more than one.
-                    // This is because of limitation of verify method.
-                    // FIXME: This will give false negative if not all of them is incompatible
-                    IterableUtils::first
-            );
-            final ProctorLoadResult plr = ProctorUtils.verify(
-                    artifact, matrixSource, specMap, dynamicTests
-            );
+                final BiFunction<String, ProctorLoadResult, String> errorMessageFunction) {
+            final String matrixSource =
+                    environment.getName() + " r" + artifact.getAudit().getVersion();
+            final Map<String, TestSpecification> specMap =
+                    Maps.transformValues(
+                            requiredTests,
+                            // choosing arbitrary specification when it contains more than one.
+                            // This is because of limitation of verify method.
+                            // FIXME: This will give false negative if not all of them is
+                            // incompatible
+                            IterableUtils::first);
+            final ProctorLoadResult plr =
+                    ProctorUtils.verify(artifact, matrixSource, specMap, dynamicTests);
             final boolean compatible = !plr.hasInvalidTests();
             final String error = (compatible ? "" : errorMessageFunction.apply(matrixSource, plr));
             return new CompatibleSpecificationResult(version, compatible, error, dynamicTests);

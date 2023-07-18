@@ -42,27 +42,50 @@ public class TestAbstractGroups {
 
     @Before
     public void setUp() {
-        emptyGroup = new AbstractGroups(new ProctorResult("0", emptyMap(), emptyMap(), emptyMap())) {
-        };
+        emptyGroup =
+                new AbstractGroups(new ProctorResult("0", emptyMap(), emptyMap(), emptyMap())) {};
 
-        proctorResult = new ProctorGroupStubber.ProctorResultStubBuilder()
-                .withStubTest(ProctorGroupStubber.StubTest.CONTROL_SELECTED_TEST, CONTROL_BUCKET_WITH_PAYLOAD,
-                        INACTIVE_BUCKET, CONTROL_BUCKET_WITH_PAYLOAD, GROUP_1_BUCKET_WITH_PAYLOAD)
-                .withStubTest(ProctorGroupStubber.StubTest.GROUP1_SELECTED_TEST, GROUP_1_BUCKET_WITH_PAYLOAD,
-                        INACTIVE_BUCKET, CONTROL_BUCKET_WITH_PAYLOAD, GROUP_1_BUCKET_WITH_PAYLOAD)
-                .withStubTest(ProctorGroupStubber.StubTest.INACTIVE_SELECTED_TEST, INACTIVE_BUCKET,
-                        INACTIVE_BUCKET, GROUP_1_BUCKET)
-                // provides reference to FALLBACK_BUCKET that can be used in tests
-                .withStubTest(ProctorGroupStubber.StubTest.GROUP_WITH_FALLBACK_TEST, GROUP_1_BUCKET,
-                        INACTIVE_BUCKET, GROUP_1_BUCKET, FALLBACK_TEST_BUCKET)
-                // provides reference to FALLBACK_BUCKET that can be used in tests, no resolved test
-                .withStubTest(ProctorGroupStubber.StubTest.NO_BUCKETS_WITH_FALLBACK_TEST, null,
-                        INACTIVE_BUCKET, GROUP_1_BUCKET, FALLBACK_TEST_BUCKET)
-                .withStubTest(ProctorGroupStubber.StubTest.MISSING_DEFINITION_TEST, GROUP_1_BUCKET, (ConsumableTestDefinition) null)
-                .build();
+        proctorResult =
+                new ProctorGroupStubber.ProctorResultStubBuilder()
+                        .withStubTest(
+                                ProctorGroupStubber.StubTest.CONTROL_SELECTED_TEST,
+                                CONTROL_BUCKET_WITH_PAYLOAD,
+                                INACTIVE_BUCKET,
+                                CONTROL_BUCKET_WITH_PAYLOAD,
+                                GROUP_1_BUCKET_WITH_PAYLOAD)
+                        .withStubTest(
+                                ProctorGroupStubber.StubTest.GROUP1_SELECTED_TEST,
+                                GROUP_1_BUCKET_WITH_PAYLOAD,
+                                INACTIVE_BUCKET,
+                                CONTROL_BUCKET_WITH_PAYLOAD,
+                                GROUP_1_BUCKET_WITH_PAYLOAD)
+                        .withStubTest(
+                                ProctorGroupStubber.StubTest.INACTIVE_SELECTED_TEST,
+                                INACTIVE_BUCKET,
+                                INACTIVE_BUCKET,
+                                GROUP_1_BUCKET)
+                        // provides reference to FALLBACK_BUCKET that can be used in tests
+                        .withStubTest(
+                                ProctorGroupStubber.StubTest.GROUP_WITH_FALLBACK_TEST,
+                                GROUP_1_BUCKET,
+                                INACTIVE_BUCKET,
+                                GROUP_1_BUCKET,
+                                FALLBACK_TEST_BUCKET)
+                        // provides reference to FALLBACK_BUCKET that can be used in tests, no
+                        // resolved test
+                        .withStubTest(
+                                ProctorGroupStubber.StubTest.NO_BUCKETS_WITH_FALLBACK_TEST,
+                                null,
+                                INACTIVE_BUCKET,
+                                GROUP_1_BUCKET,
+                                FALLBACK_TEST_BUCKET)
+                        .withStubTest(
+                                ProctorGroupStubber.StubTest.MISSING_DEFINITION_TEST,
+                                GROUP_1_BUCKET,
+                                (ConsumableTestDefinition) null)
+                        .build();
         observer = new TestMarkingObserver(proctorResult);
-        sampleGroups = new AbstractGroups(proctorResult, observer) {
-        };
+        sampleGroups = new AbstractGroups(proctorResult, observer) {};
     }
 
     @Test
@@ -85,7 +108,6 @@ public class TestAbstractGroups {
         assertFalse(emptyGroup.isBucketActive("notexist", -1));
         assertTrue(emptyGroup.isBucketActive("notexist", 1, 1)); // using default value
         assertFalse(emptyGroup.isBucketActive("notexist", 1, 2));
-
     }
 
     @Test
@@ -99,20 +121,33 @@ public class TestAbstractGroups {
 
     @Test
     public void testGetPayload() {
-        assertThat(sampleGroups.getPayload(INACTIVE_SELECTED_TEST.getName())).isEqualTo(Payload.EMPTY_PAYLOAD);
-        assertThat(sampleGroups.getPayload(GROUP1_SELECTED_TEST.getName())).isEqualTo(GROUP_1_BUCKET_WITH_PAYLOAD.getPayload());
-        assertThat(sampleGroups.getPayload(CONTROL_SELECTED_TEST.getName())).isEqualTo(CONTROL_BUCKET_WITH_PAYLOAD.getPayload());
+        assertThat(sampleGroups.getPayload(INACTIVE_SELECTED_TEST.getName()))
+                .isEqualTo(Payload.EMPTY_PAYLOAD);
+        assertThat(sampleGroups.getPayload(GROUP1_SELECTED_TEST.getName()))
+                .isEqualTo(GROUP_1_BUCKET_WITH_PAYLOAD.getPayload());
+        assertThat(sampleGroups.getPayload(CONTROL_SELECTED_TEST.getName()))
+                .isEqualTo(CONTROL_BUCKET_WITH_PAYLOAD.getPayload());
 
         // Do not pick Fallback bucket for resolved buckets
-        assertThat(sampleGroups.getPayload(GROUP1_SELECTED_TEST.getName(), FALLBACK_BUCKET)).isEqualTo(GROUP_1_BUCKET_WITH_PAYLOAD.getPayload());
-        assertThat(sampleGroups.getPayload(CONTROL_SELECTED_TEST.getName(), FALLBACK_BUCKET)).isEqualTo(CONTROL_BUCKET_WITH_PAYLOAD.getPayload());
-        assertThat(sampleGroups.getPayload(INACTIVE_SELECTED_TEST.getName(), FALLBACK_BUCKET)).isEqualTo(Payload.EMPTY_PAYLOAD);
+        assertThat(sampleGroups.getPayload(GROUP1_SELECTED_TEST.getName(), FALLBACK_BUCKET))
+                .isEqualTo(GROUP_1_BUCKET_WITH_PAYLOAD.getPayload());
+        assertThat(sampleGroups.getPayload(CONTROL_SELECTED_TEST.getName(), FALLBACK_BUCKET))
+                .isEqualTo(CONTROL_BUCKET_WITH_PAYLOAD.getPayload());
+        assertThat(sampleGroups.getPayload(INACTIVE_SELECTED_TEST.getName(), FALLBACK_BUCKET))
+                .isEqualTo(Payload.EMPTY_PAYLOAD);
 
         // Because group1 bucket here has no payload, return empty
-        assertThat(sampleGroups.getPayload(GROUP_WITH_FALLBACK_TEST.getName(), FALLBACK_BUCKET)).isEqualTo(Payload.EMPTY_PAYLOAD);
+        assertThat(sampleGroups.getPayload(GROUP_WITH_FALLBACK_TEST.getName(), FALLBACK_BUCKET))
+                .isEqualTo(Payload.EMPTY_PAYLOAD);
         // because no bucket resolved, use fallback
-        assertThat(sampleGroups.getPayload(NO_BUCKETS_WITH_FALLBACK_TEST.getName(), FALLBACK_BUCKET)).isEqualTo(FALLBACK_TEST_BUCKET.getPayload());
-        assertThat(sampleGroups.getPayload(NO_BUCKETS_WITH_FALLBACK_TEST.getName(), FALLBACK_NOPAYLOAD_BUCKET)).isEqualTo(Payload.EMPTY_PAYLOAD);
+        assertThat(
+                        sampleGroups.getPayload(
+                                NO_BUCKETS_WITH_FALLBACK_TEST.getName(), FALLBACK_BUCKET))
+                .isEqualTo(FALLBACK_TEST_BUCKET.getPayload());
+        assertThat(
+                        sampleGroups.getPayload(
+                                NO_BUCKETS_WITH_FALLBACK_TEST.getName(), FALLBACK_NOPAYLOAD_BUCKET))
+                .isEqualTo(Payload.EMPTY_PAYLOAD);
         assertThat(sampleGroups.getPayload("notexist")).isEqualTo(Payload.EMPTY_PAYLOAD);
 
         assertThat(emptyGroup.getPayload("notexist")).isEqualTo(Payload.EMPTY_PAYLOAD);
@@ -127,30 +162,40 @@ public class TestAbstractGroups {
     @Test
     public void testToLongString() {
         assertThat(emptyGroup.toLongString()).isEmpty();
-        assertThat(sampleGroups.toLongString()).isEqualTo("abtst-group1,bgtst-control,btntst-inactive,groupwithfallbacktst-group1,no_definition_tst-group1");
+        assertThat(sampleGroups.toLongString())
+                .isEqualTo(
+                        "abtst-group1,bgtst-control,btntst-inactive,groupwithfallbacktst-group1,no_definition_tst-group1");
     }
 
     @Test
     public void testToLoggingString() {
-        assertThat((new AbstractGroups(new ProctorResult("0", emptyMap(), emptyMap(), emptyMap())) {
-        }).toLoggingString()).isEmpty();
+        assertThat(
+                        (new AbstractGroups(
+                                        new ProctorResult(
+                                                "0", emptyMap(), emptyMap(), emptyMap())) {})
+                                .toLoggingString())
+                .isEmpty();
         assertThat(sampleGroups.toLoggingString())
-                .isEqualTo("abtst1,bgtst0,groupwithfallbacktst2,no_definition_tst2,#A1:abtst1,#A1:bgtst0,#A1:groupwithfallbacktst2,#A1:no_definition_tst2");
+                .isEqualTo(
+                        "abtst1,bgtst0,groupwithfallbacktst2,no_definition_tst2,#A1:abtst1,#A1:bgtst0,#A1:groupwithfallbacktst2,#A1:no_definition_tst2");
     }
 
     @Test
     public void testToLoggingStringWithExposureAndObserver() {
 
         // same logging as current AbstractGroups
-        final ProctorGroupsWriter writer = new ProctorGroupsWriter.Builder(
-                TestGroupFormatter.WITHOUT_ALLOC_ID, TestGroupFormatter.WITH_ALLOC_ID
-        ).build();
+        final ProctorGroupsWriter writer =
+                new ProctorGroupsWriter.Builder(
+                                TestGroupFormatter.WITHOUT_ALLOC_ID,
+                                TestGroupFormatter.WITH_ALLOC_ID)
+                        .build();
 
         // no test usage observed yet
         assertThat(writer.writeGroupsAsString(observer.asProctorResult())).isEmpty();
 
         // getGroupsString and getAsProctorResult should not mark tests as used
-        final String fullLoggingString = "abtst1,bgtst0,groupwithfallbacktst2,no_definition_tst2,#A1:abtst1,#A1:bgtst0,#A1:groupwithfallbacktst2,#A1:no_definition_tst2";
+        final String fullLoggingString =
+                "abtst1,bgtst0,groupwithfallbacktst2,no_definition_tst2,#A1:abtst1,#A1:bgtst0,#A1:groupwithfallbacktst2,#A1:no_definition_tst2";
         assertThat(sampleGroups.getAsProctorResult()).isNotNull();
         assertThat(sampleGroups.toLoggingString()).isEqualTo(fullLoggingString);
         assertThat(sampleGroups.toLongString()).isNotBlank();
@@ -158,18 +203,25 @@ public class TestAbstractGroups {
 
         // getActiveBucket is observed
         assertThat(sampleGroups.getActiveBucket(GROUP1_SELECTED_TEST.getName())).isNotEmpty();
-        assertThat(writer.writeGroupsAsString(observer.asProctorResult())).isEqualTo("abtst1,#A1:abtst1");
+        assertThat(writer.writeGroupsAsString(observer.asProctorResult()))
+                .isEqualTo("abtst1,#A1:abtst1");
 
         // explicitly marked tests (e.g. from dynamic resolution)
         sampleGroups.markTestsUsed(singleton(CONTROL_SELECTED_TEST.getName()));
-        assertThat(writer.writeGroupsAsString(observer.asProctorResult())).isEqualTo("abtst1,bgtst0,#A1:abtst1,#A1:bgtst0");
+        assertThat(writer.writeGroupsAsString(observer.asProctorResult()))
+                .isEqualTo("abtst1,bgtst0,#A1:abtst1,#A1:bgtst0");
 
         // using JavascriptConfig means given tests might be exposed, so each test is marked as used
-        assertThat(sampleGroups.getJavaScriptConfig(ImmutableSet.of(GROUP_WITH_FALLBACK_TEST.getName()))).isNotEmpty();
+        assertThat(
+                        sampleGroups.getJavaScriptConfig(
+                                ImmutableSet.of(GROUP_WITH_FALLBACK_TEST.getName())))
+                .isNotEmpty();
         assertThat(writer.writeGroupsAsString(observer.asProctorResult()))
-                .isEqualTo("abtst1,bgtst0,groupwithfallbacktst2,#A1:abtst1,#A1:bgtst0,#A1:groupwithfallbacktst2");
+                .isEqualTo(
+                        "abtst1,bgtst0,groupwithfallbacktst2,#A1:abtst1,#A1:bgtst0,#A1:groupwithfallbacktst2");
 
-        // using JavascriptConfig without testnames means all tests might be exposed, so all tests are marked as used
+        // using JavascriptConfig without testnames means all tests might be exposed, so all tests
+        // are marked as used
         assertThat(sampleGroups.getJavaScriptConfig()).isNotEmpty();
         assertThat(writer.writeGroupsAsString(observer.asProctorResult()))
                 .isEqualTo(fullLoggingString);
@@ -178,27 +230,47 @@ public class TestAbstractGroups {
     @Test
     public void testGetLoggingTestNames() {
         assertThat(Sets.newHashSet(sampleGroups.getLoggingTestNames()))
-                .containsExactlyInAnyOrder(CONTROL_SELECTED_TEST.getName(), GROUP1_SELECTED_TEST.getName(), GROUP_WITH_FALLBACK_TEST.getName(), MISSING_DEFINITION_TEST.getName());
+                .containsExactlyInAnyOrder(
+                        CONTROL_SELECTED_TEST.getName(),
+                        GROUP1_SELECTED_TEST.getName(),
+                        GROUP_WITH_FALLBACK_TEST.getName(),
+                        MISSING_DEFINITION_TEST.getName());
     }
 
     @Test
     public void testAppendTestGroupsWithoutAllocations() {
         StringBuilder builder = new StringBuilder();
-        sampleGroups.appendTestGroupsWithoutAllocations(builder, ',', Lists.newArrayList(CONTROL_SELECTED_TEST.getName(), GROUP1_SELECTED_TEST.getName()));
+        sampleGroups.appendTestGroupsWithoutAllocations(
+                builder,
+                ',',
+                Lists.newArrayList(
+                        CONTROL_SELECTED_TEST.getName(), GROUP1_SELECTED_TEST.getName()));
         assertThat(builder.toString().split(",")).containsExactly("bgtst0", "abtst1");
 
         builder = new StringBuilder();
-        emptyGroup.appendTestGroupsWithoutAllocations(builder, ',', Lists.newArrayList(CONTROL_SELECTED_TEST.getName(), GROUP1_SELECTED_TEST.getName()));
+        emptyGroup.appendTestGroupsWithoutAllocations(
+                builder,
+                ',',
+                Lists.newArrayList(
+                        CONTROL_SELECTED_TEST.getName(), GROUP1_SELECTED_TEST.getName()));
         assertThat(builder.toString()).isEmpty();
     }
 
     @Test
     public void testAppendTestGroupsWithAllocations() {
         StringBuilder builder = new StringBuilder();
-        sampleGroups.appendTestGroupsWithAllocations(builder, ',', Lists.newArrayList(CONTROL_SELECTED_TEST.getName(), GROUP1_SELECTED_TEST.getName()));
+        sampleGroups.appendTestGroupsWithAllocations(
+                builder,
+                ',',
+                Lists.newArrayList(
+                        CONTROL_SELECTED_TEST.getName(), GROUP1_SELECTED_TEST.getName()));
         assertThat(builder.toString().split(",")).containsExactly("#A1:bgtst0", "#A1:abtst1");
         builder = new StringBuilder();
-        emptyGroup.appendTestGroupsWithAllocations(builder, ',', Lists.newArrayList(CONTROL_SELECTED_TEST.getName(), GROUP1_SELECTED_TEST.getName()));
+        emptyGroup.appendTestGroupsWithAllocations(
+                builder,
+                ',',
+                Lists.newArrayList(
+                        CONTROL_SELECTED_TEST.getName(), GROUP1_SELECTED_TEST.getName()));
         assertThat(builder.toString().split(",")).containsExactly("");
     }
 
@@ -208,16 +280,20 @@ public class TestAbstractGroups {
         sampleGroups.appendTestGroups(builder, ',');
         assertThat(builder.toString().split(","))
                 .containsExactlyInAnyOrder(
-                        "groupwithfallbacktst2", "bgtst0", "abtst1",
-                        "#A1:bgtst0", "#A1:abtst1", "#A1:groupwithfallbacktst2",
-                        "#A1:no_definition_tst2", "no_definition_tst2");
+                        "groupwithfallbacktst2",
+                        "bgtst0",
+                        "abtst1",
+                        "#A1:bgtst0",
+                        "#A1:abtst1",
+                        "#A1:groupwithfallbacktst2",
+                        "#A1:no_definition_tst2",
+                        "no_definition_tst2");
     }
 
     @Test
     public void testGetJavaScriptConfig() {
 
-        assertThat(emptyGroup.getJavaScriptConfig())
-                .hasSize(0);
+        assertThat(emptyGroup.getJavaScriptConfig()).hasSize(0);
 
         assertThat(sampleGroups.getJavaScriptConfig())
                 .hasSize(4)
@@ -229,15 +305,18 @@ public class TestAbstractGroups {
 
     @Test
     public void testGetJavaScriptConfigLists() {
-        assertThat(sampleGroups.getJavaScriptConfig(new FakeTest[]{
-                new FakeTest("notexist", 42),
-                new FakeTest(CONTROL_SELECTED_TEST.getName(), 43),
-                new FakeTest(GROUP1_SELECTED_TEST.getName(), 44)}))
+        assertThat(
+                        sampleGroups.getJavaScriptConfig(
+                                new FakeTest[] {
+                                    new FakeTest("notexist", 42),
+                                    new FakeTest(CONTROL_SELECTED_TEST.getName(), 43),
+                                    new FakeTest(GROUP1_SELECTED_TEST.getName(), 44)
+                                }))
                 .containsExactly(
                         Arrays.asList(42, null),
                         Arrays.asList(0, CONTROL_BUCKET_WITH_PAYLOAD.getPayload().getStringValue()),
-                        Arrays.asList(1, GROUP_1_BUCKET_WITH_PAYLOAD.getPayload().getStringValue())
-                );
+                        Arrays.asList(
+                                1, GROUP_1_BUCKET_WITH_PAYLOAD.getPayload().getStringValue()));
     }
 
     @SuppressWarnings("deprecation") // intentionally calling deprecated
@@ -254,7 +333,8 @@ public class TestAbstractGroups {
         assertThat(rawProctorResult.getMatrixVersion()).isEqualTo(proctorResult.getMatrixVersion());
         assertThat(rawProctorResult.getBuckets()).isEqualTo(proctorResult.getBuckets());
         assertThat(rawProctorResult.getAllocations()).isEqualTo(proctorResult.getAllocations());
-        assertThat(rawProctorResult.getTestDefinitions()).isEqualTo(proctorResult.getTestDefinitions());
+        assertThat(rawProctorResult.getTestDefinitions())
+                .isEqualTo(proctorResult.getTestDefinitions());
 
         // ensure getRawProctorResult is unmodifiable
         final ProctorResult rawProctorResult2 = sampleGroups.getRawProctorResult();
@@ -268,10 +348,13 @@ public class TestAbstractGroups {
         // same data, but not same instance
         final ProctorResult convertedProctorResult = sampleGroups.getAsProctorResult();
         assertThat(convertedProctorResult).isNotSameAs(proctorResult);
-        assertThat(convertedProctorResult.getMatrixVersion()).isEqualTo(proctorResult.getMatrixVersion());
+        assertThat(convertedProctorResult.getMatrixVersion())
+                .isEqualTo(proctorResult.getMatrixVersion());
         assertThat(convertedProctorResult.getBuckets()).isEqualTo(proctorResult.getBuckets());
-        assertThat(convertedProctorResult.getAllocations()).isEqualTo(proctorResult.getAllocations());
-        assertThat(convertedProctorResult.getTestDefinitions()).isEqualTo(proctorResult.getTestDefinitions());
+        assertThat(convertedProctorResult.getAllocations())
+                .isEqualTo(proctorResult.getAllocations());
+        assertThat(convertedProctorResult.getTestDefinitions())
+                .isEqualTo(proctorResult.getTestDefinitions());
 
         // ensure getAsProctorResult is unmodifiable
         assertThatThrownBy(() -> convertedProctorResult.getBuckets().clear())
@@ -281,8 +364,10 @@ public class TestAbstractGroups {
         assertThatThrownBy(() -> convertedProctorResult.getTestDefinitions().clear())
                 .isInstanceOf(UnsupportedOperationException.class);
 
-        // check legacy behavior still works (changing the input ProctorResult changes behavior of AbstractGroups)
-        // probably this is a bug rather than an undocumented feature, but for now prefer not to break clients
+        // check legacy behavior still works (changing the input ProctorResult changes behavior of
+        // AbstractGroups)
+        // probably this is a bug rather than an undocumented feature, but for now prefer not to
+        // break clients
         proctorResult.getBuckets().clear();
         proctorResult.getAllocations().clear();
         proctorResult.getTestDefinitions().clear();
@@ -295,5 +380,4 @@ public class TestAbstractGroups {
         assertThat(rawProctorResult.getAllocations()).isEmpty();
         assertThat(rawProctorResult.getTestDefinitions()).isEmpty();
     }
-
 }

@@ -4,8 +4,7 @@ import com.indeed.proctor.webapp.db.Environment;
 
 import javax.servlet.jsp.PageContext;
 
-/**
- */
+/** */
 public interface BasePageRenderer {
     enum BasePagePosition {
         HEAD,

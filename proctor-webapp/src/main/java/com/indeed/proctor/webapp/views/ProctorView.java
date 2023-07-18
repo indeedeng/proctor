@@ -1,8 +1,6 @@
 package com.indeed.proctor.webapp.views;
 
-/**
- * Names of json views / jsp files in resources/META-INF/resources/WEB-INF/jsp
- */
+/** Names of json views / jsp files in resources/META-INF/resources/WEB-INF/jsp */
 public enum ProctorView {
     DETAILS("definition/details"),
     EDIT("definition/edit"),
@@ -12,7 +10,7 @@ public enum ProctorView {
     MATRIX_COMPATIBILITY("matrix/compatibility"),
     JOBS("jobs"),
     ERROR("error"),
-    /*checkstyle*/;
+/*checkstyle*/ ;
 
     private final String name;
 

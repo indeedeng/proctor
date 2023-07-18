@@ -27,8 +27,6 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 
 import static java.util.Collections.emptyList;
@@ -56,16 +54,13 @@ public class TestTestMatrixApiController {
         STUB_TEST_DEFINITION.setRule("country == \"US\"");
         STUB_TEST_DEFINITION.setTestType(TestType.ANONYMOUS_USER);
         STUB_TEST_DEFINITION.setBuckets(ImmutableList.of(new TestBucket("", 1, "")));
-        STUB_TEST_DEFINITION.setAllocations(ImmutableList.of(new Allocation(
-                "",
-                ImmutableList.of(new Range(1, 1.0))
-        )));
+        STUB_TEST_DEFINITION.setAllocations(
+                ImmutableList.of(new Allocation("", ImmutableList.of(new Range(1, 1.0)))));
     }
 
     @Before
     public void setUp() {
-        final WebappConfiguration configuration =
-                new WebappConfiguration(false, false, 1000, 10);
+        final WebappConfiguration configuration = new WebappConfiguration(false, false, 1000, 10);
         final Supplier<String> generator = InMemoryProctorStore.autoincrementRevisionIdGenerator();
         trunkStore = new InMemoryProctorStore(generator);
         qaStore = new InMemoryProctorStore(generator);
@@ -94,19 +89,14 @@ public class TestTestMatrixApiController {
         final String qaRevision = addStubTest(qaStore);
         final String prodRevision = addStubTest(prodStore);
 
-        final List<String> revisions = Arrays.asList(
-                trunkRevision,
-                qaRevision,
-                prodRevision
-        );
+        final List<String> revisions = Arrays.asList(trunkRevision, qaRevision, prodRevision);
 
         for (final String revision : revisions) {
             final JsonView jsonView = controller.getTestMatrix(revision);
-            final TestMatrixVersion testMatrixVersion = parsedRenderedJson(
-                    jsonView, TestMatrixVersion.class);
+            final TestMatrixVersion testMatrixVersion =
+                    parsedRenderedJson(jsonView, TestMatrixVersion.class);
 
-            assertThat(testMatrixVersion.getVersion())
-                    .isEqualTo(revision);
+            assertThat(testMatrixVersion.getVersion()).isEqualTo(revision);
         }
     }
 
@@ -128,7 +118,8 @@ public class TestTestMatrixApiController {
         addStubTest(trunkStore);
         addStubTest(qaStore);
 
-        final JsonView jsonView = controller.getTestMatrixHistory(Environment.PRODUCTION.getName(), 1, 100);
+        final JsonView jsonView =
+                controller.getTestMatrixHistory(Environment.PRODUCTION.getName(), 1, 100);
         assertThat(parsedRenderedJson(jsonView, List.class)).isEqualTo(emptyList());
     }
 
@@ -151,7 +142,10 @@ public class TestTestMatrixApiController {
         final String unknownTestName = "fooTest";
         assertThat(unknownTestName).isNotEqualTo(STUB_TEST_NAME);
 
-        assertThatThrownBy(() -> controller.getTestDefinitionHistory(trunkRevision, unknownTestName, 0, 100))
+        assertThatThrownBy(
+                        () ->
+                                controller.getTestDefinitionHistory(
+                                        trunkRevision, unknownTestName, 0, 100))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("fooTest not found");
     }
@@ -163,8 +157,10 @@ public class TestTestMatrixApiController {
         addStubTest(prodStore);
 
         for (final Environment environment : Environment.values()) {
-            final JsonView jsonView = controller.getTestDefinition(environment.getName(), STUB_TEST_NAME);
-            final TestDefinition testDefinition = parsedRenderedJson(jsonView, TestDefinition.class);
+            final JsonView jsonView =
+                    controller.getTestDefinition(environment.getName(), STUB_TEST_NAME);
+            final TestDefinition testDefinition =
+                    parsedRenderedJson(jsonView, TestDefinition.class);
             assertThat(testDefinition).isEqualTo(STUB_TEST_DEFINITION);
         }
     }
@@ -177,7 +173,8 @@ public class TestTestMatrixApiController {
 
         for (final String revision : Arrays.asList(trunkRevision, qaRevision, prodRevision)) {
             final JsonView jsonView = controller.getTestDefinition(revision, STUB_TEST_NAME);
-            final TestDefinition testDefinition = parsedRenderedJson(jsonView, TestDefinition.class);
+            final TestDefinition testDefinition =
+                    parsedRenderedJson(jsonView, TestDefinition.class);
             assertThat(testDefinition).isEqualTo(STUB_TEST_DEFINITION);
         }
     }
@@ -193,32 +190,35 @@ public class TestTestMatrixApiController {
         final String qaRevision2 = addTest(qaStore, STUB_TEST_NAME, anotherTest);
 
         {
-            final JsonView jsonView = controller.getTestDefinitionHistory(Environment.WORKING.getName(), STUB_TEST_NAME, 0, 1);
+            final JsonView jsonView =
+                    controller.getTestDefinitionHistory(
+                            Environment.WORKING.getName(), STUB_TEST_NAME, 0, 1);
             final List<Map> revisions = parsedRenderedJson(jsonView, List.class);
             assertThat(revisions)
                     .extracting(r -> r.get("revision"))
                     .containsExactly(trunkRevision1);
         }
         {
-            final JsonView jsonView = controller.getTestDefinitionHistory(Environment.QA.getName(), STUB_TEST_NAME, 0, 2);
+            final JsonView jsonView =
+                    controller.getTestDefinitionHistory(
+                            Environment.QA.getName(), STUB_TEST_NAME, 0, 2);
             final List<Map> revisions = parsedRenderedJson(jsonView, List.class);
             assertThat(revisions)
                     .extracting(r -> r.get("revision"))
                     .containsExactly(qaRevision2, qaRevision1);
         }
         {
-            final JsonView jsonView = controller.getTestDefinitionHistory(Environment.PRODUCTION.getName(), STUB_TEST_NAME, 0, 3);
+            final JsonView jsonView =
+                    controller.getTestDefinitionHistory(
+                            Environment.PRODUCTION.getName(), STUB_TEST_NAME, 0, 3);
             final List<Map> revisions = parsedRenderedJson(jsonView, List.class);
-            assertThat(revisions)
-                    .extracting(r -> r.get("revision"))
-                    .containsExactly(prodRevision1);
+            assertThat(revisions).extracting(r -> r.get("revision")).containsExactly(prodRevision1);
         }
         {
-            final JsonView jsonView = controller.getTestDefinitionHistory(qaRevision1, STUB_TEST_NAME, 0, 2);
+            final JsonView jsonView =
+                    controller.getTestDefinitionHistory(qaRevision1, STUB_TEST_NAME, 0, 2);
             final List<Map> revisions = parsedRenderedJson(jsonView, List.class);
-            assertThat(revisions)
-                    .extracting(r -> r.get("revision"))
-                    .containsExactly(qaRevision1);
+            assertThat(revisions).extracting(r -> r.get("revision")).containsExactly(qaRevision1);
         }
     }
 
@@ -234,16 +234,19 @@ public class TestTestMatrixApiController {
                         .build(),
                 STUB_TEST_NAME,
                 STUB_TEST_DEFINITION,
-                emptyMap()
-        );
+                emptyMap());
 
         final String trunkRevision = trunkStore.getLatestVersion();
-        final JsonView testDefinitionHistory = controller.getTestDefinitionHistory(Environment.WORKING.getName(), STUB_TEST_NAME, 0, 100);
+        final JsonView testDefinitionHistory =
+                controller.getTestDefinitionHistory(
+                        Environment.WORKING.getName(), STUB_TEST_NAME, 0, 100);
         assertThat(parsedRenderedJson(testDefinitionHistory, List.class))
-                .hasOnlyOneElementSatisfying(o -> assertThat((Map) o)
-                        .containsEntry("author", "testUser")
-                        .containsEntry("message", "testComment")
-                        .containsEntry("revision", trunkRevision));
+                .hasOnlyOneElementSatisfying(
+                        o ->
+                                assertThat((Map) o)
+                                        .containsEntry("author", "testUser")
+                                        .containsEntry("message", "testComment")
+                                        .containsEntry("revision", trunkRevision));
     }
 
     @SuppressWarnings("unchecked")
@@ -258,16 +261,18 @@ public class TestTestMatrixApiController {
                         .build(),
                 STUB_TEST_NAME,
                 STUB_TEST_DEFINITION,
-                emptyMap()
-        );
+                emptyMap());
 
         final String trunkRevision = trunkStore.getLatestVersion();
-        final JsonView testDefinitionHistory = controller.getTestDefinitionHistory(trunkRevision, STUB_TEST_NAME, 0, 100);
+        final JsonView testDefinitionHistory =
+                controller.getTestDefinitionHistory(trunkRevision, STUB_TEST_NAME, 0, 100);
         assertThat(parsedRenderedJson(testDefinitionHistory, List.class))
-                .hasOnlyOneElementSatisfying(o -> assertThat((Map) o)
-                        .containsEntry("author", "testUser")
-                        .containsEntry("message", "testComment")
-                        .containsEntry("revision", trunkRevision));
+                .hasOnlyOneElementSatisfying(
+                        o ->
+                                assertThat((Map) o)
+                                        .containsEntry("author", "testUser")
+                                        .containsEntry("message", "testComment")
+                                        .containsEntry("revision", trunkRevision));
     }
 
     @Test
@@ -280,7 +285,8 @@ public class TestTestMatrixApiController {
         addTest(trunkStore, "test3", STUB_TEST_DEFINITION);
 
         final JsonView jsonView = controller.getTestHistories(branch, limit);
-        final TestHistoriesResponseModel actual = parsedRenderedJson(jsonView, TestHistoriesResponseModel.class);
+        final TestHistoriesResponseModel actual =
+                parsedRenderedJson(jsonView, TestHistoriesResponseModel.class);
 
         assertThat(actual.getTotalNumberOfTests()).isEqualTo(3);
         assertThat(actual.getTestHistories()).hasSize(2);
@@ -312,22 +318,21 @@ public class TestTestMatrixApiController {
                         .build(),
                 STUB_TEST_NAME,
                 STUB_TEST_DEFINITION,
-                emptyMap()
-        );
+                emptyMap());
         final String trunkRevision = trunkStore.getLatestVersion();
 
         final JsonView jsonView = controller.getRevisionDetails("trunk", trunkRevision);
 
         final Map actual = parsedRenderedJson(jsonView, Map.class);
-        final Map expected = ImmutableMap.of(
-                "revision", ImmutableMap.of(
-                        "revision", trunkRevision,
-                        "author", "testUser",
-                        "date", "1970-01-01T00:00:00.000+00:00",
-                        "message", "testComment"
-                ),
-                "modifiedTests", singletonList(STUB_TEST_NAME)
-        );
+        final Map expected =
+                ImmutableMap.of(
+                        "revision",
+                                ImmutableMap.of(
+                                        "revision", trunkRevision,
+                                        "author", "testUser",
+                                        "date", "1970-01-01T00:00:00.000+00:00",
+                                        "message", "testComment"),
+                        "modifiedTests", singletonList(STUB_TEST_NAME));
 
         assertThat(actual).isEqualTo(expected);
     }
@@ -340,7 +345,8 @@ public class TestTestMatrixApiController {
                 .isInstanceOf(StoreException.class);
     }
 
-    private static <T> T parsedRenderedJson(final JsonView jsonView, final Class<T> clazz) throws Exception {
+    private static <T> T parsedRenderedJson(final JsonView jsonView, final Class<T> clazz)
+            throws Exception {
         final String json = renderedJson(jsonView);
         return MAPPER.readValue(json, clazz);
     }
@@ -353,21 +359,14 @@ public class TestTestMatrixApiController {
         return stringWriter.toString();
     }
 
-    /**
-     * Add a stub test definition and return its revision id
-     */
-
-    private static String addStubTest(
-            final ProctorStore store
-    ) throws StoreException {
+    /** Add a stub test definition and return its revision id */
+    private static String addStubTest(final ProctorStore store) throws StoreException {
         return addTest(store, STUB_TEST_NAME, STUB_TEST_DEFINITION);
     }
 
     private static String addTest(
-            final ProctorStore store,
-            final String testName,
-            final TestDefinition definition
-    ) throws StoreException {
+            final ProctorStore store, final String testName, final TestDefinition definition)
+            throws StoreException {
         if (store.getCurrentTestDefinition(testName) == null) {
             store.addTestDefinition(
                     ChangeMetadata.builder()
@@ -377,12 +376,9 @@ public class TestTestMatrixApiController {
                             .build(),
                     testName,
                     definition,
-                    emptyMap()
-            );
+                    emptyMap());
         } else {
-            final String previousRevision = store.getHistory(
-                    testName, 0, 1
-            ).get(0).getRevision();
+            final String previousRevision = store.getHistory(testName, 0, 1).get(0).getRevision();
 
             store.updateTestDefinition(
                     ChangeMetadata.builder()
@@ -393,8 +389,7 @@ public class TestTestMatrixApiController {
                     previousRevision,
                     testName,
                     definition,
-                    emptyMap()
-            );
+                    emptyMap());
         }
 
         return store.getLatestVersion();

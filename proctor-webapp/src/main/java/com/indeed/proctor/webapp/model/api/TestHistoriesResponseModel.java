@@ -19,22 +19,22 @@ public class TestHistoriesResponseModel {
     @JsonCreator
     public TestHistoriesResponseModel(
             @JsonProperty("totalNumberOfTests") final int totalNumberOfTests,
-            @JsonProperty("testHistories") final List<TestHistory> testHistories
-    ) {
+            @JsonProperty("testHistories") final List<TestHistory> testHistories) {
         this.totalNumberOfTests = totalNumberOfTests;
         this.testHistories = testHistories;
     }
 
-    public TestHistoriesResponseModel(final Map<String, List<Revision>> histories, final int limit) {
+    public TestHistoriesResponseModel(
+            final Map<String, List<Revision>> histories, final int limit) {
         this.totalNumberOfTests = histories.size();
-        Stream<Map.Entry<String, List<Revision>>> stream = histories.entrySet().stream().sorted(
-                Map.Entry.comparingByKey()
-        );
+        Stream<Map.Entry<String, List<Revision>>> stream =
+                histories.entrySet().stream().sorted(Map.Entry.comparingByKey());
         if (limit >= 0) {
             stream = stream.limit(limit);
         }
-        testHistories = stream.map(entry -> new TestHistory(entry.getKey(), entry.getValue()))
-                .collect(Collectors.toList());
+        testHistories =
+                stream.map(entry -> new TestHistory(entry.getKey(), entry.getValue()))
+                        .collect(Collectors.toList());
     }
 
     @ApiModelProperty("the total number of tests")
@@ -56,8 +56,8 @@ public class TestHistoriesResponseModel {
             return false;
         }
         final TestHistoriesResponseModel that = (TestHistoriesResponseModel) o;
-        return getTotalNumberOfTests() == that.getTotalNumberOfTests() &&
-                Objects.equal(getTestHistories(), that.getTestHistories());
+        return getTotalNumberOfTests() == that.getTotalNumberOfTests()
+                && Objects.equal(getTestHistories(), that.getTestHistories());
     }
 
     @Override
@@ -74,8 +74,7 @@ public class TestHistoriesResponseModel {
         @JsonCreator
         public TestHistory(
                 @JsonProperty("testName") final String testName,
-                @JsonProperty("revisions") final List<Revision> revisions
-        ) {
+                @JsonProperty("revisions") final List<Revision> revisions) {
             this.testName = testName;
             this.revisions = revisions;
         }
@@ -99,8 +98,8 @@ public class TestHistoriesResponseModel {
                 return false;
             }
             final TestHistory that = (TestHistory) o;
-            return Objects.equal(getTestName(), that.getTestName()) &&
-                    Objects.equal(getRevisions(), that.getRevisions());
+            return Objects.equal(getTestName(), that.getTestName())
+                    && Objects.equal(getRevisions(), that.getRevisions());
         }
 
         @Override

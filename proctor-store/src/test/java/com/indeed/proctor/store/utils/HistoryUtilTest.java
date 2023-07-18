@@ -13,14 +13,15 @@ import static com.indeed.proctor.store.utils.HistoryUtil.selectRevisionHistorySe
 import static org.junit.Assert.assertEquals;
 
 public class HistoryUtilTest {
-    private static final List<Integer> DUMMY_HISTORY = Lists.newArrayList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
-    private static final List<Revision> REVISION_HISTORY = Lists.newArrayList(
-            makeRevision("1"),
-            makeRevision("2"),
-            makeRevision("3"),
-            makeRevision("4"),
-            makeRevision("5")
-    );
+    private static final List<Integer> DUMMY_HISTORY =
+            Lists.newArrayList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+    private static final List<Revision> REVISION_HISTORY =
+            Lists.newArrayList(
+                    makeRevision("1"),
+                    makeRevision("2"),
+                    makeRevision("3"),
+                    makeRevision("4"),
+                    makeRevision("5"));
 
     @Test
     public void testSelectHistorySet() {

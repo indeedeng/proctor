@@ -21,9 +21,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-/**
- * @author xiaoyun
- */
+/** @author xiaoyun */
 public class AllocationIdUtil {
     private static final Logger LOGGER = LogManager.getLogger(AllocationIdUtil.class);
     private static final Pattern ALLOCATION_ID_PATTERN = Pattern.compile("^#([A-Z]+)(\\d+)$");
@@ -38,21 +36,28 @@ public class AllocationIdUtil {
     }
 
     // Allocation id comparator. Compare allocation ids with format like "#A1"
-    public static final Comparator<String> ALLOCATION_ID_COMPARATOR = new Comparator<String>() {
-        @Override
-        public int compare(String o1, String o2) {
-            // Remove prefix and version from allocation id
-            Preconditions.checkArgument((o1.length() > 2 && o2.length() > 2), "Invalid allocation id, id1: %s, id2: %s", o1, o2);
-            final String id1Str = getAllocationName(o1);
-            final String id2Str = getAllocationName(o2);
-            final int id1Int = convertBase26ToDecimal(id1Str.toCharArray());
-            final int id2Int = convertBase26ToDecimal(id2Str.toCharArray());
-            return id1Int - id2Int;
-        }
-    };
+    public static final Comparator<String> ALLOCATION_ID_COMPARATOR =
+            new Comparator<String>() {
+                @Override
+                public int compare(String o1, String o2) {
+                    // Remove prefix and version from allocation id
+                    Preconditions.checkArgument(
+                            (o1.length() > 2 && o2.length() > 2),
+                            "Invalid allocation id, id1: %s, id2: %s",
+                            o1,
+                            o2);
+                    final String id1Str = getAllocationName(o1);
+                    final String id2Str = getAllocationName(o2);
+                    final int id1Int = convertBase26ToDecimal(id1Str.toCharArray());
+                    final int id2Int = convertBase26ToDecimal(id2Str.toCharArray());
+                    return id1Int - id2Int;
+                }
+            };
 
-    private static int getSegmentationChangeStartIndex(final TestDefinition previous, final TestDefinition current) {
-        // Currently we can't change the order of allocations, we can only add or delete or update allocations, the following logic is based on this.
+    private static int getSegmentationChangeStartIndex(
+            final TestDefinition previous, final TestDefinition current) {
+        // Currently we can't change the order of allocations, we can only add or delete or update
+        // allocations, the following logic is based on this.
         // Test rule change
         if (!Objects.equals(previous.getRule(), current.getRule())) {
             // Update all allocation ids
@@ -67,8 +72,11 @@ public class AllocationIdUtil {
         final List<Allocation> previousAllocations = previous.getAllocations();
         final List<Allocation> currentAllocations = current.getAllocations();
         for (int i = 0; i < Math.min(previousAllocations.size(), currentAllocations.size()); i++) {
-            if (!currentAllocations.get(i).getId().equals(previousAllocations.get(i).getId()) || // Added / deleted allocations
-                    !Objects.equals(currentAllocations.get(i).getRule(), previousAllocations.get(i).getRule())) { // Allocation rule changed
+            if (!currentAllocations.get(i).getId().equals(previousAllocations.get(i).getId())
+                    || // Added / deleted allocations
+                    !Objects.equals(
+                            currentAllocations.get(i).getRule(),
+                            previousAllocations.get(i).getRule())) { // Allocation rule changed
                 return i;
             }
         }
@@ -76,10 +84,10 @@ public class AllocationIdUtil {
         return -1;
     }
 
-    public static Set<Allocation> getOutdatedAllocations(final TestDefinition previous, final TestDefinition current) {
-        final boolean hasAllocId = current.getAllocations().stream().anyMatch(
-                x -> !StringUtils.isEmpty(x.getId())
-        );
+    public static Set<Allocation> getOutdatedAllocations(
+            final TestDefinition previous, final TestDefinition current) {
+        final boolean hasAllocId =
+                current.getAllocations().stream().anyMatch(x -> !StringUtils.isEmpty(x.getId()));
         final Set<Allocation> outdatedAllocations = new HashSet<>();
         // No existing allocation id, return
         if (!hasAllocId) {
@@ -96,16 +104,22 @@ public class AllocationIdUtil {
             }
         }
         // Check unbalanced ratio change
-        final int ratioCheckTo = updateFrom > -1 ? updateFrom : Math.min(previous.getAllocations().size(), current.getAllocations().size());
+        final int ratioCheckTo =
+                updateFrom > -1
+                        ? updateFrom
+                        : Math.min(
+                                previous.getAllocations().size(), current.getAllocations().size());
         for (int i = 0; i < ratioCheckTo; i++) {
-            if (isUnbalancedRatioChange(previous.getAllocations().get(i), current.getAllocations().get(i))) {
+            if (isUnbalancedRatioChange(
+                    previous.getAllocations().get(i), current.getAllocations().get(i))) {
                 outdatedAllocations.add(current.getAllocations().get(i));
             }
         }
         return outdatedAllocations;
     }
 
-    private static boolean isUnbalancedRatioChange(final Allocation previous, final Allocation current) {
+    private static boolean isUnbalancedRatioChange(
+            final Allocation previous, final Allocation current) {
         Map<Integer, Double> previousRatios = getBucketRatios(previous.getRanges());
         Map<Integer, Double> currentRatios = getBucketRatios(current.getRanges());
         final Map<Integer, Double> before = filterEmptyRatios(previousRatios);
@@ -158,12 +172,13 @@ public class AllocationIdUtil {
             final int newVersion = version + 1;
             return "#" + formerPart + newVersion;
         } else {
-            throw new IllegalStateException("Could not get the next version of allocation id for " + allocId);
+            throw new IllegalStateException(
+                    "Could not get the next version of allocation id for " + allocId);
         }
     }
 
     /**
-     * @param index   a base 10 integer
+     * @param index a base 10 integer
      * @param version version of the allocation id
      * @return the full allocaiton id. e.g. (26, 2) returns #BA2
      */
@@ -193,13 +208,19 @@ public class AllocationIdUtil {
     }
 
     private static char convertDigitToLetter(final int n) {
-        Preconditions.checkArgument(n < 26, "Invalid number: %s, you can only convert number between 0 and 26 to letter", n);
+        Preconditions.checkArgument(
+                n < 26,
+                "Invalid number: %s, you can only convert number between 0 and 26 to letter",
+                n);
         return (char) ('A' + n);
     }
 
     private static int convertLetterToDigit(final char c) {
         final int n = c - 'A';
-        Preconditions.checkArgument((n < 26 && n >= 0), "Invalid letter: %s, the letter should be upper case A -> Z", c);
+        Preconditions.checkArgument(
+                (n < 26 && n >= 0),
+                "Invalid letter: %s, the letter should be upper case A -> Z",
+                c);
         return n;
     }
 }

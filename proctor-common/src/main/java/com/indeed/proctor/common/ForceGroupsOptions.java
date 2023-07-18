@@ -10,8 +10,8 @@ import java.util.Optional;
 import java.util.StringJoiner;
 
 /**
- * Options to determine how to force groups in Proctor.
- * Usually this is parsed from a string value from a URL parameter.
+ * Options to determine how to force groups in Proctor. Usually this is parsed from a string value
+ * from a URL parameter.
  *
  * @see ForceGroupsOptionsStrings
  */
@@ -40,9 +40,7 @@ public class ForceGroupsOptions {
         return equals(EMPTY);
     }
 
-    /**
-     * Returns all bucket values to force assignment.
-     */
+    /** Returns all bucket values to force assignment. */
     public Map<String, Integer> getForceGroups() {
         return forceGroups;
     }
@@ -51,16 +49,12 @@ public class ForceGroupsOptions {
         return forcePayloads;
     }
 
-    /**
-     * Returns bucket value of a test to force assignment. Empty if no force is given.
-     */
+    /** Returns bucket value of a test to force assignment. Empty if no force is given. */
     public Optional<Integer> getForcedBucketValue(final String testName) {
         return Optional.ofNullable(forceGroups.get(testName));
     }
 
-    /**
-     * Returns payload value of a test to force assignment. Empty if no force is given.
-     */
+    /** Returns payload value of a test to force assignment. Empty if no force is given. */
     public Optional<Payload> getForcedPayloadValue(final String testName) {
         return Optional.ofNullable(forcePayloads.get(testName));
     }
@@ -81,7 +75,9 @@ public class ForceGroupsOptions {
             return false;
         }
         final ForceGroupsOptions that = (ForceGroupsOptions) o;
-        return Objects.equals(forceGroups, that.forceGroups) && (defaultMode == that.defaultMode) && Objects.equals(forcePayloads, that.forcePayloads);
+        return Objects.equals(forceGroups, that.forceGroups)
+                && (defaultMode == that.defaultMode)
+                && Objects.equals(forcePayloads, that.forcePayloads);
     }
 
     @Override

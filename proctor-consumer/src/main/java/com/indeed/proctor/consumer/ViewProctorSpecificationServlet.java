@@ -19,9 +19,11 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 
 public class ViewProctorSpecificationServlet extends HttpServlet {
-    private static final Logger LOGGER = LogManager.getLogger(ViewProctorSpecificationServlet.class);
+    private static final Logger LOGGER =
+            LogManager.getLogger(ViewProctorSpecificationServlet.class);
 
-    private static final String DEFAULT_PROCTOR_SPEC_PATH = "/WEB-INF/proctor/proctor-specification.json";
+    private static final String DEFAULT_PROCTOR_SPEC_PATH =
+            "/WEB-INF/proctor/proctor-specification.json";
     // Definitely don't want to blow up while viewing the spec
     private static final ObjectMapper OBJECT_MAPPER = Serializers.lenient();
 
@@ -37,13 +39,15 @@ public class ViewProctorSpecificationServlet extends HttpServlet {
     }
 
     @Override
-    protected void doGet(final HttpServletRequest req, final HttpServletResponse resp) throws ServletException, IOException {
+    protected void doGet(final HttpServletRequest req, final HttpServletResponse resp)
+            throws ServletException, IOException {
         resp.setContentType("text/plain;charset=UTF-8");
 
         final InputStream resourceAsStream;
         if (proctorSpecPath.startsWith("classpath:")) {
             final String proctorSpecClassPath = proctorSpecPath.substring("classpath:".length());
-            resourceAsStream = getClass().getClassLoader().getResourceAsStream(proctorSpecClassPath);
+            resourceAsStream =
+                    getClass().getClassLoader().getResourceAsStream(proctorSpecClassPath);
         } else {
             resourceAsStream = getServletContext().getResourceAsStream(proctorSpecPath);
         }
@@ -51,10 +55,12 @@ public class ViewProctorSpecificationServlet extends HttpServlet {
         final SpecificationResult results = new SpecificationResult();
         try {
             if (resourceAsStream == null) {
-                throw new ServletException("No resource stream for proctorSpecPath " + proctorSpecPath);
+                throw new ServletException(
+                        "No resource stream for proctorSpecPath " + proctorSpecPath);
             }
 
-            final ProctorSpecification specification = OBJECT_MAPPER.readValue(resourceAsStream, ProctorSpecification.class);
+            final ProctorSpecification specification =
+                    OBJECT_MAPPER.readValue(resourceAsStream, ProctorSpecification.class);
             results.setSpecification(specification);
         } catch (final Throwable t) {
             final String message = "Unable to parse specification in " + proctorSpecPath;

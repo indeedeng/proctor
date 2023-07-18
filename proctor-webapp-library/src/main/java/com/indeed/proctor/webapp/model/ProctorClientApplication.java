@@ -9,11 +9,12 @@ public class ProctorClientApplication {
     private final Date lastUpdate;
     private final String version;
 
-    public ProctorClientApplication(final String application,
-                                    final String baseApplicationUrl,
-                                    final String address,
-                                    final Date lastUpdate,
-                                    final String version) {
+    public ProctorClientApplication(
+            final String application,
+            final String baseApplicationUrl,
+            final String address,
+            final Date lastUpdate,
+            final String version) {
         this.application = application;
         this.baseApplicationUrl = baseApplicationUrl;
         this.address = address;

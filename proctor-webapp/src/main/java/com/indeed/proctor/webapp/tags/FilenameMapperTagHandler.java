@@ -29,11 +29,13 @@ public class FilenameMapperTagHandler extends TagSupport {
         return SKIP_BODY;
     }
 
-    public static String getVersionizedFilename(final PageContext pageContext, final String filename) {
+    public static String getVersionizedFilename(
+            final PageContext pageContext, final String filename) {
         return getVersionizedFilename((HttpServletRequest) pageContext.getRequest(), filename);
     }
 
-    public static String getVersionizedFilename(final HttpServletRequest httpServletRequest, final String filename) {
+    public static String getVersionizedFilename(
+            final HttpServletRequest httpServletRequest, final String filename) {
         final Object mapperObject = httpServletRequest.getAttribute(FILENAME_MAPPER);
         if (mapperObject instanceof Map) {
             final Map mapper = (Map) mapperObject;
@@ -44,4 +46,3 @@ public class FilenameMapperTagHandler extends TagSupport {
         return httpServletRequest.getContextPath() + filename;
     }
 }
-

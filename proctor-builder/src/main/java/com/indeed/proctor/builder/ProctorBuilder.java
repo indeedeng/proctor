@@ -21,10 +21,17 @@ public class ProctorBuilder {
     public ProctorBuilder(final ProctorReader proctorReader, final Writer outputSink) {
         this(proctorReader, outputSink, null);
     }
-    public ProctorBuilder(final ProctorReader proctorReader, final Writer outputSink, final String author) {
+
+    public ProctorBuilder(
+            final ProctorReader proctorReader, final Writer outputSink, final String author) {
         this(proctorReader, outputSink, author, "");
     }
-    public ProctorBuilder(final ProctorReader proctorReader, final Writer outputSink, final String author, final String version) {
+
+    public ProctorBuilder(
+            final ProctorReader proctorReader,
+            final Writer outputSink,
+            final String author,
+            final String version) {
         this.proctorReader = proctorReader;
         this.outputSink = outputSink;
         this.author = author;

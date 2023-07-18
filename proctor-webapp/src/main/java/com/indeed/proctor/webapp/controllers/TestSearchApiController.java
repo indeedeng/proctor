@@ -41,8 +41,7 @@ public class TestSearchApiController extends AbstractController {
             final WebappConfiguration configuration,
             @Qualifier("trunk") final ProctorStore trunkStore,
             @Qualifier("qa") final ProctorStore qaStore,
-            @Qualifier("production") final ProctorStore productionStore
-    ) {
+            @Qualifier("production") final ProctorStore productionStore) {
         super(configuration, trunkStore, qaStore, productionStore);
     }
 
@@ -50,10 +49,14 @@ public class TestSearchApiController extends AbstractController {
     enum FilterType {
         ALL(TestSearchUtil::matchAll),
         TESTNAME((testName, definition, query) -> TestSearchUtil.matchTestName(testName, query)),
-        DESCRIPTION(((testName, definition, query) -> TestSearchUtil.matchDescription(definition, query))),
+        DESCRIPTION(
+                ((testName, definition, query) ->
+                        TestSearchUtil.matchDescription(definition, query))),
         RULE((testName, definition, query) -> TestSearchUtil.matchRule(definition, query)),
         BUCKET((testName, definition, query) -> TestSearchUtil.matchBucket(definition, query)),
-        BUCKETDESCRIPTION((testName, definition, query) -> TestSearchUtil.matchBucketDescription(definition, query)),
+        BUCKETDESCRIPTION(
+                (testName, definition, query) ->
+                        TestSearchUtil.matchBucketDescription(definition, query)),
         ;
 
         private final TestFilter testFilter;
@@ -66,7 +69,8 @@ public class TestSearchApiController extends AbstractController {
             boolean matches(String testName, TestDefinition definition, String query);
         }
 
-        private boolean matchesIgnoreCase(final String testName, final TestDefinition definition, final String query) {
+        private boolean matchesIgnoreCase(
+                final String testName, final TestDefinition definition, final String query) {
             if (query.isEmpty()) {
                 return true;
             }
@@ -92,7 +96,10 @@ public class TestSearchApiController extends AbstractController {
         private final int totalTestCount;
         private final int matchingTestCount;
 
-        TestsResponse(final List<ProctorTest> tests, final int totalTestCount, final int matchingTestCount) {
+        TestsResponse(
+                final List<ProctorTest> tests,
+                final int totalTestCount,
+                final int matchingTestCount) {
             this.tests = tests;
             this.totalTestCount = totalTestCount;
             this.matchingTestCount = matchingTestCount;
@@ -141,14 +148,12 @@ public class TestSearchApiController extends AbstractController {
             final String testName,
             final TestDefinition definition,
             final FilterType type,
-            final List<String> queries
-    ) {
-        return queries.stream().allMatch(q ->
-                type.matchesIgnoreCase(testName, definition, q)
-        );
+            final List<String> queries) {
+        return queries.stream().allMatch(q -> type.matchesIgnoreCase(testName, definition, q));
     }
 
-    private static boolean matchesFilterActive(final List<Allocation> allocations, final FilterActive filterActive) {
+    private static boolean matchesFilterActive(
+            final List<Allocation> allocations, final FilterActive filterActive) {
         switch (filterActive) {
             case ALL:
                 return true;
@@ -163,36 +168,27 @@ public class TestSearchApiController extends AbstractController {
 
     @VisibleForTesting
     static Comparator<ProctorTest> getComparator(
-            final Sort sort,
-            final Set<String> favoriteTestNames
-    ) {
+            final Sort sort, final Set<String> favoriteTestNames) {
         switch (sort) {
             case TESTNAME:
                 return Comparator.comparing(ProctorTest::getName, String::compareToIgnoreCase);
             case FAVORITESFIRST:
                 return Comparator.comparing(
-                        ProctorTest::getName,
-                        TestSearchUtil.givenSetFirstComparator(favoriteTestNames)
-                ).thenComparing(
-                        ProctorTest::getName,
-                        String::compareToIgnoreCase
-                );
+                                ProctorTest::getName,
+                                TestSearchUtil.givenSetFirstComparator(favoriteTestNames))
+                        .thenComparing(ProctorTest::getName, String::compareToIgnoreCase);
             case UPDATEDDATE:
-                return Comparator.comparing(
-                        ProctorTest::getLastUpdated
-                ).reversed().thenComparing(
-                        ProctorTest::getName,
-                        String::compareToIgnoreCase
-                );
+                return Comparator.comparing(ProctorTest::getLastUpdated)
+                        .reversed()
+                        .thenComparing(ProctorTest::getName, String::compareToIgnoreCase);
             default:
                 throw new IllegalArgumentException();
         }
     }
 
     private static List<ProctorTest> toProctorTests(
-            final Map<String, TestDefinition> matrix,
-            final ProctorStore store
-    ) throws StoreException {
+            final Map<String, TestDefinition> matrix, final ProctorStore store)
+            throws StoreException {
         final List<ProctorTest> proctorTests = Lists.newArrayListWithExpectedSize(matrix.size());
         for (final Map.Entry<String, TestDefinition> e : matrix.entrySet()) {
             final List<Revision> revisions = store.getHistory(e.getKey(), 0, 1);
@@ -210,12 +206,12 @@ public class TestSearchApiController extends AbstractController {
     /**
      * API for proctor tests with filtering functionality
      *
-     * @param branch           environment
-     * @param limit            number of tests to return
-     * @param q                query string to search
-     * @param filterType       {@link FilterType}
-     * @param filterActive     {@link FilterActive}
-     * @param sort             {@link Sort}
+     * @param branch environment
+     * @param limit number of tests to return
+     * @param q query string to search
+     * @param filterType {@link FilterType}
+     * @param filterActive {@link FilterActive}
+     * @param sort {@link Sort}
      * @param favoriteTestsRaw comma-separated favorite tests saved in cookie
      * @return JSON of TestsResponse
      */
@@ -228,21 +224,29 @@ public class TestSearchApiController extends AbstractController {
             @RequestParam(defaultValue = "ALL") final FilterType filterType,
             @RequestParam(defaultValue = "ALL") final FilterActive filterActive,
             @RequestParam(defaultValue = "FAVORITESFIRST") final Sort sort,
-            @CookieValue(value = "FavoriteTests", defaultValue = "") final String favoriteTestsRaw
-    ) throws StoreException {
-        final Set<String> favoriteTestNames = Sets.newHashSet(Splitter.on(",").split(favoriteTestsRaw));
+            @CookieValue(value = "FavoriteTests", defaultValue = "") final String favoriteTestsRaw)
+            throws StoreException {
+        final Set<String> favoriteTestNames =
+                Sets.newHashSet(Splitter.on(",").split(favoriteTestsRaw));
 
         final Environment environment = determineEnvironmentFromParameter(branch);
-        final TestMatrixDefinition testMatrixDefinition = getCurrentMatrix(environment).getTestMatrixDefinition();
-        final Map<String, TestDefinition> allTestMatrix = testMatrixDefinition != null
-                ? testMatrixDefinition.getTests()
-                : Collections.emptyMap();
+        final TestMatrixDefinition testMatrixDefinition =
+                getCurrentMatrix(environment).getTestMatrixDefinition();
+        final Map<String, TestDefinition> allTestMatrix =
+                testMatrixDefinition != null
+                        ? testMatrixDefinition.getTests()
+                        : Collections.emptyMap();
 
         final List<String> queries = Arrays.asList(q.split("\\s+"));
-        final Map<String, TestDefinition> matchingTestMatrix = Maps.filterEntries(allTestMatrix,
-                e -> e != null && matchesAllIgnoreCase(e.getKey(), e.getValue(), filterType, queries)
-                        && matchesFilterActive(e.getValue().getAllocations(), filterActive)
-        );
+        final Map<String, TestDefinition> matchingTestMatrix =
+                Maps.filterEntries(
+                        allTestMatrix,
+                        e ->
+                                e != null
+                                        && matchesAllIgnoreCase(
+                                                e.getKey(), e.getValue(), filterType, queries)
+                                        && matchesFilterActive(
+                                                e.getValue().getAllocations(), filterActive));
 
         final List<ProctorTest> searchResult =
                 toProctorTests(matchingTestMatrix, determineStoreFromEnvironment(environment))
@@ -251,6 +255,7 @@ public class TestSearchApiController extends AbstractController {
                         .limit(limit)
                         .collect(toList());
 
-        return new JsonView(new TestsResponse(searchResult, allTestMatrix.size(), searchResult.size()));
+        return new JsonView(
+                new TestsResponse(searchResult, allTestMatrix.size(), searchResult.size()));
     }
 }

@@ -14,10 +14,10 @@ import javax.servlet.jsp.tagext.TagSupport;
 import java.io.IOException;
 import java.util.Map;
 
-/**
- */
+/** */
 public class RenderBasePageInjectionTemplatesHandler extends TagSupport {
-    private static final Logger LOGGER = LogManager.getLogger(RenderBasePageInjectionTemplatesHandler.class);
+    private static final Logger LOGGER =
+            LogManager.getLogger(RenderBasePageInjectionTemplatesHandler.class);
 
     private BasePagePosition position;
     private Environment branch;
@@ -43,9 +43,11 @@ public class RenderBasePageInjectionTemplatesHandler extends TagSupport {
     private String renderTemplates() {
         final StringBuilder renderedHTML = new StringBuilder();
         final ServletContext servletContext = pageContext.getServletContext();
-        final WebApplicationContext context = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
+        final WebApplicationContext context =
+                WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
         try {
-            final Map<String, BasePageRenderer> rendererBeans = BeanFactoryUtils.beansOfTypeIncludingAncestors(context, BasePageRenderer.class);
+            final Map<String, BasePageRenderer> rendererBeans =
+                    BeanFactoryUtils.beansOfTypeIncludingAncestors(context, BasePageRenderer.class);
             for (final BasePageRenderer renderer : rendererBeans.values()) {
                 if (position == renderer.getBasePagePosition()) {
                     renderedHTML.append(renderer.getRenderedHtml(branch));

@@ -10,33 +10,34 @@ import com.indeed.proctor.common.model.TestBucket;
 import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
-/**
- * Test stub subclasses of AbstractGroups
- */
+/** Test stub subclasses of AbstractGroups */
 public class ProctorGroupStubber {
-    static final Bucket<StubTest> FALLBACK_BUCKET = createModelBucket(StubTest.GROUP_WITH_FALLBACK_TEST, 42);
-    static final Bucket<StubTest> FALLBACK_NOPAYLOAD_BUCKET = createModelBucket(StubTest.NO_BUCKETS_WITH_FALLBACK_TEST, 66);
+    static final Bucket<StubTest> FALLBACK_BUCKET =
+            createModelBucket(StubTest.GROUP_WITH_FALLBACK_TEST, 42);
+    static final Bucket<StubTest> FALLBACK_NOPAYLOAD_BUCKET =
+            createModelBucket(StubTest.NO_BUCKETS_WITH_FALLBACK_TEST, 66);
 
     // Same Buckets reused for multiple tests, just for simplicity (would not happen in proctor)
     public static final TestBucket INACTIVE_BUCKET = new TestBucket("inactive", -1, "inactive");
-    public static final TestBucket CONTROL_BUCKET_WITH_PAYLOAD = new TestBucket("control", 0, "control", new Payload("controlPayload"));
-    public static final TestBucket GROUP_1_BUCKET_WITH_PAYLOAD = new TestBucket("group1", 1, "group1", new Payload("activePayload"));
+    public static final TestBucket CONTROL_BUCKET_WITH_PAYLOAD =
+            new TestBucket("control", 0, "control", new Payload("controlPayload"));
+    public static final TestBucket GROUP_1_BUCKET_WITH_PAYLOAD =
+            new TestBucket("group1", 1, "group1", new Payload("activePayload"));
     public static final TestBucket GROUP_1_BUCKET = new TestBucket("group1", 2, "group1");
-    public static final TestBucket FALLBACK_TEST_BUCKET = new TestBucket(
-            "fallbackBucket",
-            FALLBACK_BUCKET.getValue(),
-            "fallbackDesc",
-            new Payload("fallback"));
+    public static final TestBucket FALLBACK_TEST_BUCKET =
+            new TestBucket(
+                    "fallbackBucket",
+                    FALLBACK_BUCKET.getValue(),
+                    "fallbackDesc",
+                    new Payload("fallback"));
 
     /**
-     * Builds up a Proctor Result with given test definitions and selected buckets.
-     * For simplicity, allocations will all be 100% selected bucket
+     * Builds up a Proctor Result with given test definitions and selected buckets. For simplicity,
+     * allocations will all be 100% selected bucket
      */
     public static class ProctorResultStubBuilder {
 
@@ -68,28 +69,34 @@ public class ProctorGroupStubber {
             return new ProctorResult(
                     "0",
                     resolvedBuckets.entrySet().stream()
-                            .collect(Collectors.toMap(
-                                    e -> e.getKey().getName(),
-                                    Map.Entry::getValue)),
+                            .collect(
+                                    Collectors.toMap(
+                                            e -> e.getKey().getName(), Map.Entry::getValue)),
                     resolvedBuckets.entrySet().stream()
-                            .collect(Collectors.toMap(
-                                    e -> e.getKey().getName(),
-                                    e -> new Allocation(null, Collections.singletonList(new Range(e.getValue().getValue(), 1.0)), "#A1"))),
-                    definitions
-            );
+                            .collect(
+                                    Collectors.toMap(
+                                            e -> e.getKey().getName(),
+                                            e ->
+                                                    new Allocation(
+                                                            null,
+                                                            Collections.singletonList(
+                                                                    new Range(
+                                                                            e.getValue().getValue(),
+                                                                            1.0)),
+                                                            "#A1"))),
+                    definitions);
         }
     }
 
-    public static ConsumableTestDefinition stubDefinitionWithVersion(final String version, final TestBucket... buckets) {
+    public static ConsumableTestDefinition stubDefinitionWithVersion(
+            final String version, final TestBucket... buckets) {
         final ConsumableTestDefinition testDefinition = new ConsumableTestDefinition();
         testDefinition.setVersion(version);
         testDefinition.setBuckets(Arrays.asList(buckets));
         return testDefinition;
     }
 
-    /**
-     * simulate generated subclass from json, would be Enum normally
-     */
+    /** simulate generated subclass from json, would be Enum normally */
     private static Bucket<StubTest> createModelBucket(final StubTest test, final int value) {
         return new Bucket<StubTest>() {
             @Override
@@ -114,9 +121,7 @@ public class ProctorGroupStubber {
         };
     }
 
-    /**
-     * simulate generated enum from json
-     */
+    /** simulate generated enum from json */
     public enum StubTest implements com.indeed.proctor.consumer.Test {
         HOLDOUT_MASTER_TEST("holdout_tst", -1),
 
@@ -125,7 +130,8 @@ public class ProctorGroupStubber {
         GROUP_WITH_FALLBACK_TEST("groupwithfallbacktst", -1),
         INACTIVE_SELECTED_TEST("btntst", -1),
 
-        // proctor-test to test situation where bucket and allocation is available but definition is not.
+        // proctor-test to test situation where bucket and allocation is available but definition is
+        // not.
         // This is expected to be happen only in artificial case such as in testing.
         MISSING_DEFINITION_TEST("no_definition_tst", -1),
         SILENT_TEST("silent_tst", -1),
@@ -151,9 +157,7 @@ public class ProctorGroupStubber {
         }
     }
 
-    /**
-     * simulate generated subclass from json, would be enum normally
-     */
+    /** simulate generated subclass from json, would be enum normally */
     static class FakeTest implements com.indeed.proctor.consumer.Test {
 
         private final String name;

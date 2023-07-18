@@ -10,9 +10,7 @@ import javax.annotation.Nullable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * @author atran
- */
+/** @author atran */
 public class GitProctorUtils {
 
     public static final int DEFAULT_GIT_PULL_PUSH_TIMEOUT_SECONDS = 45;
@@ -23,19 +21,22 @@ public class GitProctorUtils {
     }
 
     /**
-     * Helper method to retrieve a canonical revision for git commits migrated from SVN. Migrated commits are
-     * detected by the presence of 'git-svn-id' in the commit message.
+     * Helper method to retrieve a canonical revision for git commits migrated from SVN. Migrated
+     * commits are detected by the presence of 'git-svn-id' in the commit message.
      *
      * @param revision the commit/revision to inspect
-     * @param branch   the name of the branch it came from
-     * @return the original SVN revision if it was a migrated commit from the branch specified, otherwise the git revision
+     * @param branch the name of the branch it came from
+     * @return the original SVN revision if it was a migrated commit from the branch specified,
+     *     otherwise the git revision
      */
     @CheckForNull
-    public static String resolveSvnMigratedRevision(@Nullable final Revision revision, final String branch) {
+    public static String resolveSvnMigratedRevision(
+            @Nullable final Revision revision, final String branch) {
         if (revision == null) {
             return null;
         }
-        final Pattern pattern = Pattern.compile("^git-svn-id: .*" + branch + "@([0-9]+) ", Pattern.MULTILINE);
+        final Pattern pattern =
+                Pattern.compile("^git-svn-id: .*" + branch + "@([0-9]+) ", Pattern.MULTILINE);
         final Matcher matcher = pattern.matcher(revision.getMessage());
         if (matcher.find()) {
             return matcher.group(1);
@@ -44,9 +45,7 @@ public class GitProctorUtils {
         }
     }
 
-    /**
-     * Determines id of a user who made a test edit from commit's author field.
-     */
+    /** Determines id of a user who made a test edit from commit's author field. */
     public static String determineAuthorId(final RevCommit commit) {
         final String name = Strings.nullToEmpty(commit.getAuthorIdent().getName());
         final String email = Strings.nullToEmpty(commit.getAuthorIdent().getEmailAddress());

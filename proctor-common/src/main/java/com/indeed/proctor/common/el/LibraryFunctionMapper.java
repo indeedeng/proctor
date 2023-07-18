@@ -11,12 +11,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 /**
- * Unified Expression Language support class for importing public static library functions for use in a UEL expression
+ * Unified Expression Language support class for importing public static library functions for use
+ * in a UEL expression
+ *
  * @author ketan
  */
 public class LibraryFunctionMapper extends FunctionMapper {
-    @Nonnull
-    private final Map<String, Map<String, Method>> libraries = Maps.newHashMap();
+    @Nonnull private final Map<String, Map<String, Method>> libraries = Maps.newHashMap();
     private static final int PUBLIC_AND_STATIC = Modifier.PUBLIC | Modifier.STATIC;
 
     public LibraryFunctionMapper(@Nonnull final Map<String, Class<?>> libraryClasses) {
@@ -41,7 +42,8 @@ public class LibraryFunctionMapper extends FunctionMapper {
 
     @Nullable
     @Override
-    public Method resolveFunction(@Nonnull final String namespace, @Nonnull final String functionName) {
+    public Method resolveFunction(
+            @Nonnull final String namespace, @Nonnull final String functionName) {
         final Map<String, Method> library = libraries.get(namespace);
         if (library == null) {
             return null;

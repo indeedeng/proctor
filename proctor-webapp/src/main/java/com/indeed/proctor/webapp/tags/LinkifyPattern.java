@@ -1,16 +1,14 @@
 package com.indeed.proctor.webapp.tags;
 
-import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-/**
- */
+/** */
 public class LinkifyPattern {
 
     private final String name;
     private final Pattern pattern;
     private final String replacement;
-
 
     LinkifyPattern(final String name, final String pattern, final String replacement) {
         this.name = name;

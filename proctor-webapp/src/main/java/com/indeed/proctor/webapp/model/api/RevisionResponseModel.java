@@ -8,25 +8,18 @@ import javax.annotation.Nonnull;
 import java.util.Date;
 import java.util.Objects;
 
-/**
- * API Model class for {@link Revision}
- */
+/** API Model class for {@link Revision} */
 public class RevisionResponseModel {
-    @Nonnull
-    private final String revision;
-    @Nonnull
-    private final String author;
-    @Nonnull
-    private final Date date;
-    @Nonnull
-    private final String message;
+    @Nonnull private final String revision;
+    @Nonnull private final String author;
+    @Nonnull private final Date date;
+    @Nonnull private final String message;
 
     RevisionResponseModel(
             @Nonnull final String revision,
             @Nonnull final String author,
             @Nonnull final Date date,
-            @Nonnull final String message
-    ) {
+            @Nonnull final String message) {
         this.revision = revision;
         this.author = author;
         this.date = date;
@@ -66,10 +59,10 @@ public class RevisionResponseModel {
             return false;
         }
         final RevisionResponseModel that = (RevisionResponseModel) o;
-        return Objects.equals(revision, that.revision) &&
-                Objects.equals(author, that.author) &&
-                Objects.equals(date, that.date) &&
-                Objects.equals(message, that.message);
+        return Objects.equals(revision, that.revision)
+                && Objects.equals(author, that.author)
+                && Objects.equals(date, that.date)
+                && Objects.equals(message, that.message);
     }
 
     @Override
@@ -92,7 +85,6 @@ public class RevisionResponseModel {
                 revision.getRevision(),
                 revision.getAuthor(),
                 revision.getDate(),
-                revision.getMessage()
-        );
+                revision.getMessage());
     }
 }

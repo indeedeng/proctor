@@ -6,14 +6,16 @@ import com.indeed.proctor.webapp.db.TrunkQaProdStoresFactory;
 import java.util.concurrent.ExecutorService;
 
 /**
- * A StoreFactory wrapping another StoreFactory, creating a store that is initialized asynchronously.
+ * A StoreFactory wrapping another StoreFactory, creating a store that is initialized
+ * asynchronously.
  */
 public class AsyncInitializedProctorStoreFactory implements TrunkQaProdStoresFactory {
 
     private final TrunkQaProdStoresFactory wrappedFactory;
     private final ExecutorService executorService;
 
-    public AsyncInitializedProctorStoreFactory(final TrunkQaProdStoresFactory wrappedFactory, final ExecutorService executorService) {
+    public AsyncInitializedProctorStoreFactory(
+            final TrunkQaProdStoresFactory wrappedFactory, final ExecutorService executorService) {
         this.wrappedFactory = wrappedFactory;
         this.executorService = executorService;
     }
@@ -30,7 +32,8 @@ public class AsyncInitializedProctorStoreFactory implements TrunkQaProdStoresFac
 
     @Override
     public ProctorStore getProductionStore() {
-        return new AsyncInitializedProctorStore(wrappedFactory::getProductionStore, executorService);
+        return new AsyncInitializedProctorStore(
+                wrappedFactory::getProductionStore, executorService);
     }
 
     @Override

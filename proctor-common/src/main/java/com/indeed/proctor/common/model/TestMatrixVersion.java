@@ -6,30 +6,26 @@ import java.util.Objects;
 import java.util.StringJoiner;
 
 /**
- * This represents what's serialized to the database, while {@link TestMatrixArtifact} represents what is consumed by applications
+ * This represents what's serialized to the database, while {@link TestMatrixArtifact} represents
+ * what is consumed by applications
  *
  * @author ketan
  */
 public class TestMatrixVersion {
-    @Nullable
-    private TestMatrixDefinition testMatrixDefinition;
-    @Nullable
-    private Date published;
+    @Nullable private TestMatrixDefinition testMatrixDefinition;
+    @Nullable private Date published;
     private String version;
-    @Nullable
-    private String description;
-    @Nullable
-    private String author;
+    @Nullable private String description;
+    @Nullable private String author;
 
-    public TestMatrixVersion() {
-    }
+    public TestMatrixVersion() {}
 
-    public TestMatrixVersion(@Nullable final TestMatrixDefinition testMatrixDefinition,
-                             @Nullable final Date published,
-                             final String version,
-                             @Nullable final String description,
-                             @Nullable final String author
-    ) {
+    public TestMatrixVersion(
+            @Nullable final TestMatrixDefinition testMatrixDefinition,
+            @Nullable final Date published,
+            final String version,
+            @Nullable final String description,
+            @Nullable final String author) {
         this.testMatrixDefinition = testMatrixDefinition;
         this.published = published;
         this.version = version;
@@ -38,8 +34,10 @@ public class TestMatrixVersion {
     }
 
     public TestMatrixVersion(final TestMatrixVersion testMatrixVersion) {
-        this.testMatrixDefinition = (testMatrixVersion.testMatrixDefinition != null) ?
-                new TestMatrixDefinition(testMatrixVersion.testMatrixDefinition) : null;
+        this.testMatrixDefinition =
+                (testMatrixVersion.testMatrixDefinition != null)
+                        ? new TestMatrixDefinition(testMatrixVersion.testMatrixDefinition)
+                        : null;
         this.published = testMatrixVersion.published;
         this.version = testMatrixVersion.version;
         this.description = testMatrixVersion.description;

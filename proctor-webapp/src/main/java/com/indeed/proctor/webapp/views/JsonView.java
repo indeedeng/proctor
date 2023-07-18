@@ -12,15 +12,14 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Map;
 
-/**
- * @author parker
- */
+/** @author parker */
 public class JsonView implements View {
 
     private static final String CONTENT_TYPE = "application/json;charset=utf-8";
     private static final Logger LOGGER = LogManager.getLogger(JsonView.class);
 
-    private static final ObjectWriter JSON_WRITER = Serializers.strict().writerWithDefaultPrettyPrinter();
+    private static final ObjectWriter JSON_WRITER =
+            Serializers.strict().writerWithDefaultPrettyPrinter();
     private final Object data;
 
     public JsonView(final Object data) {
@@ -33,9 +32,11 @@ public class JsonView implements View {
     }
 
     @Override
-    public void render(final Map<String, ?> model,
-                       final HttpServletRequest request,
-                       final HttpServletResponse response) throws Exception {
+    public void render(
+            final Map<String, ?> model,
+            final HttpServletRequest request,
+            final HttpServletResponse response)
+            throws Exception {
         response.setHeader("Content-Type", CONTENT_TYPE);
 
         try {
@@ -49,9 +50,7 @@ public class JsonView implements View {
         }
     }
 
-    /**
-     * True if the throwable is caused because client disconnected during process
-     */
+    /** True if the throwable is caused because client disconnected during process */
     private static boolean isDisconnectedClientError(final IOException e) {
         final Throwable cause = ExceptionUtils.getRootCause(e);
         return cause instanceof IOException && "broken pipe".equalsIgnoreCase(cause.getMessage());

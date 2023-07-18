@@ -22,58 +22,73 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class TestTestRangeSelector {
     @Test
     public void testFindMatchingRule_matchingAllocations() {
-        final TestRangeSelector selector = createTestRangeSelector(
-                stubTestDefinition(Arrays.asList("country == 'US'", "country == 'US' && lang == 'en'", "lang == 'en'"))
-                        .build()
-        );
-        assertThat(selector.findMatchingRule(ImmutableMap.of("country", "US", "lang", "ja"), emptyMap()))
+        final TestRangeSelector selector =
+                createTestRangeSelector(
+                        stubTestDefinition(
+                                        Arrays.asList(
+                                                "country == 'US'",
+                                                "country == 'US' && lang == 'en'",
+                                                "lang == 'en'"))
+                                .build());
+        assertThat(
+                        selector.findMatchingRule(
+                                ImmutableMap.of("country", "US", "lang", "ja"), emptyMap()))
                 .isEqualTo(0);
-        assertThat(selector.findMatchingRule(ImmutableMap.of("country", "US", "lang", "en"), emptyMap()))
+        assertThat(
+                        selector.findMatchingRule(
+                                ImmutableMap.of("country", "US", "lang", "en"), emptyMap()))
                 .isEqualTo(0); // matching 0 and 1 and 2 and earliest one is chosen.
-        assertThat(selector.findMatchingRule(ImmutableMap.of("country", "JP", "lang", "en"), emptyMap()))
+        assertThat(
+                        selector.findMatchingRule(
+                                ImmutableMap.of("country", "JP", "lang", "en"), emptyMap()))
                 .isEqualTo(2);
-        assertThat(selector.findMatchingRule(ImmutableMap.of("country", "JP", "lang", "ja"), emptyMap()))
+        assertThat(
+                        selector.findMatchingRule(
+                                ImmutableMap.of("country", "JP", "lang", "ja"), emptyMap()))
                 .isEqualTo(-1);
     }
 
     @Test
     public void testFindMatchingRule_testRule() {
-        final TestRangeSelector selector = createTestRangeSelector(
-                stubTestDefinition(Arrays.asList("country == 'US'", ""))
-                        .setRule("var == 1")
-                        .build()
-        );
-        assertThat(selector.findMatchingRule(ImmutableMap.of("country", "US", "var", 1), emptyMap()))
+        final TestRangeSelector selector =
+                createTestRangeSelector(
+                        stubTestDefinition(Arrays.asList("country == 'US'", ""))
+                                .setRule("var == 1")
+                                .build());
+        assertThat(
+                        selector.findMatchingRule(
+                                ImmutableMap.of("country", "US", "var", 1), emptyMap()))
                 .isEqualTo(0);
-        assertThat(selector.findMatchingRule(ImmutableMap.of("country", "US", "var", 0), emptyMap()))
+        assertThat(
+                        selector.findMatchingRule(
+                                ImmutableMap.of("country", "US", "var", 0), emptyMap()))
                 .isEqualTo(-1);
-        assertThat(selector.findMatchingRule(ImmutableMap.of("country", "JA", "var", 1), emptyMap()))
+        assertThat(
+                        selector.findMatchingRule(
+                                ImmutableMap.of("country", "JA", "var", 1), emptyMap()))
                 .isEqualTo(1);
     }
 
     @Test
     public void testFindMatchingRule_testDependency() {
-        final TestRangeSelector selector = createTestRangeSelector(
-                stubTestDefinition(Arrays.asList("country == 'US'", ""))
-                        .setDependsOn(new TestDependency("another_tst", 1))
-                        .build()
-        );
-        assertThat(selector.findMatchingRule(
-                ImmutableMap.of("country", "US"),
-                ImmutableMap.of("another_tst", new TestBucket("active", 1, ""))
-        ))
+        final TestRangeSelector selector =
+                createTestRangeSelector(
+                        stubTestDefinition(Arrays.asList("country == 'US'", ""))
+                                .setDependsOn(new TestDependency("another_tst", 1))
+                                .build());
+        assertThat(
+                        selector.findMatchingRule(
+                                ImmutableMap.of("country", "US"),
+                                ImmutableMap.of("another_tst", new TestBucket("active", 1, ""))))
                 .isEqualTo(0);
 
-        assertThat(selector.findMatchingRule(
-                ImmutableMap.of("country", "US"),
-                ImmutableMap.of("another_tst", new TestBucket("control", 0, ""))
-        ))
+        assertThat(
+                        selector.findMatchingRule(
+                                ImmutableMap.of("country", "US"),
+                                ImmutableMap.of("another_tst", new TestBucket("control", 0, ""))))
                 .isEqualTo(-1);
 
-        assertThat(selector.findMatchingRule(
-                ImmutableMap.of("country", "US"),
-                emptyMap()
-        ))
+        assertThat(selector.findMatchingRule(ImmutableMap.of("country", "US"), emptyMap()))
                 .isEqualTo(-1);
     }
 
@@ -85,15 +100,13 @@ public class TestTestRangeSelector {
                 .setAllocations(
                         rules.stream()
                                 .map(rule -> new Allocation(rule, singletonList(new Range(1, 1.0))))
-                                .collect(Collectors.toList())
-                );
+                                .collect(Collectors.toList()));
     }
 
     private static TestRangeSelector createTestRangeSelector(final TestDefinition definition) {
         return new TestRangeSelector(
                 RuleEvaluator.createDefaultRuleEvaluator(Collections.emptyMap()),
                 "dummy_test",
-                ConsumableTestDefinition.fromTestDefinition(definition)
-        );
+                ConsumableTestDefinition.fromTestDefinition(definition));
     }
 }

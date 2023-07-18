@@ -19,8 +19,8 @@ public class TestGroupsJavascriptGenerator extends TestGroupsGenerator {
             final String target,
             final String packageName,
             final String groupsClass,
-            final boolean useClosure
-    ) throws CodeGenException {
+            final boolean useClosure)
+            throws CodeGenException {
         final String templatePath = "/com/indeed/proctor/consumer/ant/";
         final String jsTemplateName = "groups-js.ftl";
         final String fileExtension = ".js";
@@ -36,16 +36,12 @@ public class TestGroupsJavascriptGenerator extends TestGroupsGenerator {
                     groupsClass,
                     templatePath,
                     jsTemplateName,
-                    fileExtension
-            );
+                    fileExtension);
         }
-
     }
 
     protected void addPayloadToTestDef(
-            final Map<String, Object> testDef,
-            final PayloadType specifiedPayloadType
-    ) {
+            final Map<String, Object> testDef, final PayloadType specifiedPayloadType) {
         testDef.put("payloadJavascriptType", specifiedPayloadType.javascriptTypeName);
         testDef.put("payloadDefaultValue", specifiedPayloadType.getDefaultJavascriptValue());
     }

@@ -26,14 +26,14 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-/**
- * @author parker
- */
+/** @author parker */
 public class TestSerializers {
     private static final String EXAMPLE_TEST_DEFINITION = "example-test-definition.json";
-    private static final String EXAMPLE_TEST_DEFINITION_WITH_DEPENDENCY = "example-test-definition-with-dependency.json";
+    private static final String EXAMPLE_TEST_DEFINITION_WITH_DEPENDENCY =
+            "example-test-definition-with-dependency.json";
     private static final String SUBRULE_TEST_DEFINITION = "subrule-example-test-definition.json";
-    private static final String UNRECOGNIZED_FIELDS_TEST_DEFINITION = "unrecognized-fields-test-definition.json";
+    private static final String UNRECOGNIZED_FIELDS_TEST_DEFINITION =
+            "unrecognized-fields-test-definition.json";
 
     @Test
     public void testTestDefiniton() throws IOException {
@@ -42,10 +42,11 @@ public class TestSerializers {
 
     @Test
     public void testTestDefinitionWithDependency() throws IOException {
-        try(InputStream input = getClass().getResourceAsStream(EXAMPLE_TEST_DEFINITION_WITH_DEPENDENCY)) {
-            final TestDefinition definition = Serializers.lenient().readValue(input, TestDefinition.class);
-            assertThat(definition.getDependsOn())
-                    .isEqualTo(new TestDependency("another_tst", 1));
+        try (InputStream input =
+                getClass().getResourceAsStream(EXAMPLE_TEST_DEFINITION_WITH_DEPENDENCY)) {
+            final TestDefinition definition =
+                    Serializers.lenient().readValue(input, TestDefinition.class);
+            assertThat(definition.getDependsOn()).isEqualTo(new TestDependency("another_tst", 1));
         }
     }
 
@@ -72,7 +73,8 @@ public class TestSerializers {
     @Test
     public void testAuditVersionAsInt() throws IOException {
         // Tests the legacy audit.version as integer
-        final String AUDIT_JSON = "{ \"version\" : 56783, \"updatedBy\" : \"jenkins-build-123\", \"updated\" : 1400693905572 }";
+        final String AUDIT_JSON =
+                "{ \"version\" : 56783, \"updatedBy\" : \"jenkins-build-123\", \"updated\" : 1400693905572 }";
         final Audit audit = Serializers.lenient().readValue(AUDIT_JSON, Audit.class);
         assertEquals("56783", audit.getVersion());
         assertEquals("jenkins-build-123", audit.getUpdatedBy());
@@ -82,7 +84,8 @@ public class TestSerializers {
     @Test
     public void testAuditVersionAsString() throws IOException {
         // Tests the audit.version as String
-        final String AUDIT_JSON = "{ \"version\" : \"56783\", \"updatedBy\" : \"jenkins-build-123\", \"updated\" : 1400693905572 }";
+        final String AUDIT_JSON =
+                "{ \"version\" : \"56783\", \"updatedBy\" : \"jenkins-build-123\", \"updated\" : 1400693905572 }";
         final Audit audit = Serializers.lenient().readValue(AUDIT_JSON, Audit.class);
         assertEquals("56783", audit.getVersion());
         assertEquals("jenkins-build-123", audit.getUpdatedBy());
@@ -107,7 +110,8 @@ public class TestSerializers {
         assertEquals("100000.0", mapper.writeValueAsString(100000.0));
     }
 
-    private void doAssertTestDefintion(final String resourceName, final ObjectMapper mapper) throws IOException {
+    private void doAssertTestDefintion(final String resourceName, final ObjectMapper mapper)
+            throws IOException {
         final InputStream input = getClass().getResourceAsStream(resourceName);
         assertNotNull("Input stream for " + resourceName + " should not be null", input);
         try {
@@ -149,7 +153,6 @@ public class TestSerializers {
         } finally {
             input.close();
         }
-
     }
 
     @Test
@@ -201,11 +204,9 @@ public class TestSerializers {
     @Test
     public void testEmptySpecificationDeserialize() throws IOException {
         final ObjectMapper objectMapper = Serializers.lenient();
-        final String json = "{" +
-                "\"tests\": {}," +
-                "\"providedContext\": {}" +
-                "}";
-        final ProctorSpecification specification = objectMapper.readValue(json, ProctorSpecification.class);
+        final String json = "{" + "\"tests\": {}," + "\"providedContext\": {}" + "}";
+        final ProctorSpecification specification =
+                objectMapper.readValue(json, ProctorSpecification.class);
         assertTrue(specification.getTests().isEmpty());
         assertTrue(specification.getProvidedContext().isEmpty());
         assertEquals(new DynamicFilters(), specification.getDynamicFilters());
@@ -214,26 +215,24 @@ public class TestSerializers {
     @Test
     public void testDynamicFilterSpecificationDeserialize() throws IOException {
         final ObjectMapper objectMapper = Serializers.lenient();
-        final String json = "{" +
-                "\"tests\": {}, " +
-                "\"providedContext\": {}, " +
-                "\"dynamicFilters\": [" +
-                "{\"type\": \"name_prefix\", \"prefix\": \"abc_\"}, " +
-                "{\"type\": \"name_pattern\", \"regex\": \"abc_[a-z]+_xyz\"}" +
-                "]" +
-                "}";
-        final ProctorSpecification specification = objectMapper.readValue(json, ProctorSpecification.class);
+        final String json =
+                "{"
+                        + "\"tests\": {}, "
+                        + "\"providedContext\": {}, "
+                        + "\"dynamicFilters\": ["
+                        + "{\"type\": \"name_prefix\", \"prefix\": \"abc_\"}, "
+                        + "{\"type\": \"name_pattern\", \"regex\": \"abc_[a-z]+_xyz\"}"
+                        + "]"
+                        + "}";
+        final ProctorSpecification specification =
+                objectMapper.readValue(json, ProctorSpecification.class);
         assertTrue(specification.getTests().isEmpty());
         assertTrue(specification.getProvidedContext().isEmpty());
         assertEquals(
                 new DynamicFilters(
                         Arrays.asList(
                                 new TestNamePrefixFilter("abc_"),
-                                new TestNamePatternFilter("abc_[a-z]+_xyz")
-                        )
-                ),
-                specification.getDynamicFilters()
-        );
+                                new TestNamePatternFilter("abc_[a-z]+_xyz"))),
+                specification.getDynamicFilters());
     }
-
 }

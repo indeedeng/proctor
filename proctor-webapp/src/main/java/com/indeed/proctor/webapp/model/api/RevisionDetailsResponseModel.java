@@ -5,25 +5,18 @@ import io.swagger.annotations.ApiModelProperty;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 
-/**
- * API Model class for {@link RevisionDetails}
- */
+/** API Model class for {@link RevisionDetails} */
 public class RevisionDetailsResponseModel {
-    @Nonnull
-    private final RevisionResponseModel revision;
-    @Nonnull
-    private final List<String> modifiedTests;
+    @Nonnull private final RevisionResponseModel revision;
+    @Nonnull private final List<String> modifiedTests;
 
     RevisionDetailsResponseModel(
             @Nonnull final RevisionResponseModel revision,
-            @Nonnull final List<String> modifiedTests
-    ) {
+            @Nonnull final List<String> modifiedTests) {
         this.revision = revision;
         this.modifiedTests = modifiedTests;
     }
@@ -49,8 +42,8 @@ public class RevisionDetailsResponseModel {
             return false;
         }
         final RevisionDetailsResponseModel that = (RevisionDetailsResponseModel) o;
-        return Objects.equals(revision, that.revision) &&
-                Objects.equals(modifiedTests, that.modifiedTests);
+        return Objects.equals(revision, that.revision)
+                && Objects.equals(modifiedTests, that.modifiedTests);
     }
 
     @Override
@@ -66,12 +59,10 @@ public class RevisionDetailsResponseModel {
                 .toString();
     }
 
-    public static RevisionDetailsResponseModel fromRevisionDetails(final RevisionDetails revisionDetails) {
+    public static RevisionDetailsResponseModel fromRevisionDetails(
+            final RevisionDetails revisionDetails) {
         return new RevisionDetailsResponseModel(
                 RevisionResponseModel.fromRevision(revisionDetails.getRevision()),
-                revisionDetails.getModifiedTests().stream()
-                        .sorted()
-                        .collect(Collectors.toList())
-        );
+                revisionDetails.getModifiedTests().stream().sorted().collect(Collectors.toList()));
     }
 }

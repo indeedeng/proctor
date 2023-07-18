@@ -12,9 +12,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
-/**
- * @author xiaoyun
- */
+/** @author xiaoyun */
 public class TestAllocationIdUtil {
     @Test
     public void testGenerateAllocationId() {
@@ -24,12 +22,16 @@ public class TestAllocationIdUtil {
     }
 
     private TestDefinition createSampleTestDefinition() {
-        final Allocation alloc1 = new Allocation("${country='us'}",
-                Lists.newArrayList(new Range(0, 0.5d), new Range(1, 0.5d)),
-                "#A1");
-        final Allocation alloc2 = new Allocation("${country='jp'}",
-                Lists.newArrayList(new Range(0, 0.5d), new Range(1, 0.5d)),
-                "#B1");
+        final Allocation alloc1 =
+                new Allocation(
+                        "${country='us'}",
+                        Lists.newArrayList(new Range(0, 0.5d), new Range(1, 0.5d)),
+                        "#A1");
+        final Allocation alloc2 =
+                new Allocation(
+                        "${country='jp'}",
+                        Lists.newArrayList(new Range(0, 0.5d), new Range(1, 0.5d)),
+                        "#B1");
 
         final TestDefinition testDefinition = new TestDefinition();
         testDefinition.setAllocations(Lists.newArrayList(alloc1, alloc2));
@@ -47,32 +49,53 @@ public class TestAllocationIdUtil {
         // When rule changes, all should update
         current = createSampleTestDefinition();
         current.setRule("${lang=en}");
-        assertEquals(new HashSet<>(Lists.newArrayList(current.getAllocations().get(0), current.getAllocations().get(1))), AllocationIdUtil.getOutdatedAllocations(previous, current));
+        assertEquals(
+                new HashSet<>(
+                        Lists.newArrayList(
+                                current.getAllocations().get(0), current.getAllocations().get(1))),
+                AllocationIdUtil.getOutdatedAllocations(previous, current));
 
         // When salt change, all should update
         current = createSampleTestDefinition();
         current.setSalt("newSalt");
-        assertEquals(new HashSet<>(Lists.newArrayList(current.getAllocations().get(0), current.getAllocations().get(1))), AllocationIdUtil.getOutdatedAllocations(previous, current));
+        assertEquals(
+                new HashSet<>(
+                        Lists.newArrayList(
+                                current.getAllocations().get(0), current.getAllocations().get(1))),
+                AllocationIdUtil.getOutdatedAllocations(previous, current));
 
-        // When allocation rule change, the rule-changed allocation and allocations after the rule-changed allocation
+        // When allocation rule change, the rule-changed allocation and allocations after the
+        // rule-changed allocation
         current = createSampleTestDefinition();
         current.getAllocations().get(0).setRule("newRule");
-        assertEquals(new HashSet<>(Lists.newArrayList(current.getAllocations().get(0), current.getAllocations().get(1))), AllocationIdUtil.getOutdatedAllocations(previous, current));
+        assertEquals(
+                new HashSet<>(
+                        Lists.newArrayList(
+                                current.getAllocations().get(0), current.getAllocations().get(1))),
+                AllocationIdUtil.getOutdatedAllocations(previous, current));
 
         // Add allocation, allocations after new allocation
         current = createSampleTestDefinition();
         current.getAllocations().add(1, new Allocation());
-        assertEquals(new HashSet<>(Lists.newArrayList(current.getAllocations().get(2))), AllocationIdUtil.getOutdatedAllocations(previous, current));
+        assertEquals(
+                new HashSet<>(Lists.newArrayList(current.getAllocations().get(2))),
+                AllocationIdUtil.getOutdatedAllocations(previous, current));
 
         // Delete allocation, allocations after deleted allocation
         current = createSampleTestDefinition();
         current.getAllocations().remove(0);
-        assertEquals(new HashSet<>(Lists.newArrayList(current.getAllocations().get(0))), AllocationIdUtil.getOutdatedAllocations(previous, current));
+        assertEquals(
+                new HashSet<>(Lists.newArrayList(current.getAllocations().get(0))),
+                AllocationIdUtil.getOutdatedAllocations(previous, current));
 
         // Unbalanced ratio change, only unbalanced allocation
         current = createSampleTestDefinition();
-        current.getAllocations().get(0).setRanges(Lists.newArrayList(new Range(0, 0.2d), new Range(1, 0.8d)));
-        assertEquals(new HashSet<>(Lists.newArrayList(current.getAllocations().get(0))), AllocationIdUtil.getOutdatedAllocations(previous, current));
+        current.getAllocations()
+                .get(0)
+                .setRanges(Lists.newArrayList(new Range(0, 0.2d), new Range(1, 0.8d)));
+        assertEquals(
+                new HashSet<>(Lists.newArrayList(current.getAllocations().get(0))),
+                AllocationIdUtil.getOutdatedAllocations(previous, current));
 
         // Added allocations at the end
         current = createSampleTestDefinition();

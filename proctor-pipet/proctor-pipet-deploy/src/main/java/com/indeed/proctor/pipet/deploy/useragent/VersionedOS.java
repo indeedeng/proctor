@@ -11,18 +11,18 @@ import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * @author matts
- */
+/** @author matts */
 public class VersionedOS {
-    @Nonnull
-    private final OperatingSystem os;
-    @Nonnull
-    private final String version;
+    @Nonnull private final OperatingSystem os;
+    @Nonnull private final String version;
     private final int majorVersion;
     private final int minorVersion;
 
-    private VersionedOS(@Nonnull final OperatingSystem os, @Nonnull final String version, int majorVersion, int minorVersion) {
+    private VersionedOS(
+            @Nonnull final OperatingSystem os,
+            @Nonnull final String version,
+            int majorVersion,
+            int minorVersion) {
         this.majorVersion = majorVersion;
         this.minorVersion = minorVersion;
         this.os = null == os.getGroup() ? os : os.getGroup();
@@ -65,7 +65,7 @@ public class VersionedOS {
 
         try {
             return Integer.parseInt(versionNumber);
-        } catch(NumberFormatException e) {
+        } catch (NumberFormatException e) {
             return -1;
         }
     }
@@ -76,11 +76,9 @@ public class VersionedOS {
 
         if (userAgent.isIOS()) {
             return parseOsVersion(getIOSVersion(userAgentString));
-        }
-        else if (userAgent.isAndroid()) {
+        } else if (userAgent.isAndroid()) {
             return parseOsVersion(getAndroidVersion(userAgentString));
-        }
-        else if (userAgent.isWindowsPhone()) {
+        } else if (userAgent.isWindowsPhone()) {
             return parseOsVersion(getWindowsPhoneVersion(userAgentString));
         }
 
@@ -101,6 +99,7 @@ public class VersionedOS {
     }
 
     private static final Pattern ANDROID_PATTERN = Pattern.compile("Android (\\d+(?:\\.\\d+)+)");
+
     public static String getAndroidVersion(String ua) {
         final Matcher m = ANDROID_PATTERN.matcher(ua);
         if (m.find()) {

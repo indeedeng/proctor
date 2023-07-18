@@ -1,8 +1,6 @@
 package com.indeed.proctor.webapp.controllers;
 
-/**
- * @author parker
- */
+/** @author parker */
 public class JsonResponse<T> {
     public T data;
     public boolean success;

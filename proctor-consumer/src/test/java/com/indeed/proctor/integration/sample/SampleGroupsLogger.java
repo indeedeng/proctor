@@ -1,8 +1,6 @@
 package com.indeed.proctor.integration.sample;
 
-/**
- * capture logs written in different ways for testing
- */
+/** capture logs written in different ways for testing */
 public class SampleGroupsLogger {
 
     private String logFullStringFromAbstractGroups;
@@ -13,7 +11,8 @@ public class SampleGroupsLogger {
         return logFullStringFromAbstractGroups;
     }
 
-    public SampleGroupsLogger setLogFullStringFromAbstractGroups(final String logFullStringFromAbstractGroups) {
+    public SampleGroupsLogger setLogFullStringFromAbstractGroups(
+            final String logFullStringFromAbstractGroups) {
         this.logFullStringFromAbstractGroups = logFullStringFromAbstractGroups;
         return this;
     }

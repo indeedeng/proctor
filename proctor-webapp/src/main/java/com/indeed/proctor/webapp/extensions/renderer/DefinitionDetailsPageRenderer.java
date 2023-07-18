@@ -4,8 +4,7 @@ import com.indeed.proctor.common.model.TestDefinition;
 
 import javax.servlet.jsp.PageContext;
 
-/**
- */
+/** */
 public interface DefinitionDetailsPageRenderer {
     enum DefinitionDetailsPagePosition {
         TOP,
@@ -16,11 +15,14 @@ public interface DefinitionDetailsPageRenderer {
     DefinitionDetailsPagePosition getDefinitionDetailsPagePosition();
 
     @Deprecated
-    default String getRenderedHtml(final String testName, final TestDefinition testDefinition){
+    default String getRenderedHtml(final String testName, final TestDefinition testDefinition) {
         return "";
     }
 
-    default String getRenderedHtml(final PageContext pageContext, final String testName, final TestDefinition testDefinition){
+    default String getRenderedHtml(
+            final PageContext pageContext,
+            final String testName,
+            final TestDefinition testDefinition) {
         return "";
     }
 }

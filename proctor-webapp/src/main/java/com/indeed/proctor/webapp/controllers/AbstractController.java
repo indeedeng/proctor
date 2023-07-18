@@ -25,31 +25,30 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-/**
- * @author parker
- */
+/** @author parker */
 public abstract class AbstractController {
     private static final Logger LOGGER = LogManager.getLogger(AbstractController.class);
 
     private final WebappConfiguration configuration;
     private final Map<Environment, ProctorStore> stores;
     /**
-     * List of stores with Production first, for fastest search lookup.
-     * (For git, since all stores use the same repo, it might not have any effect.)
+     * List of stores with Production first, for fastest search lookup. (For git, since all stores
+     * use the same repo, it might not have any effect.)
      */
     private final List<ProctorStore> storesList;
 
-    public AbstractController(final WebappConfiguration configuration,
-                              final ProctorStore trunkStore,
-                              final ProctorStore qaStore,
-                              final ProctorStore productionStore) {
+    public AbstractController(
+            final WebappConfiguration configuration,
+            final ProctorStore trunkStore,
+            final ProctorStore qaStore,
+            final ProctorStore productionStore) {
         this.configuration = configuration;
 
-        stores = ImmutableMap.of(
-                Environment.WORKING, trunkStore,
-                Environment.QA, qaStore,
-                Environment.PRODUCTION, productionStore
-        );
+        stores =
+                ImmutableMap.of(
+                        Environment.WORKING, trunkStore,
+                        Environment.QA, qaStore,
+                        Environment.PRODUCTION, productionStore);
         storesList = ImmutableList.of(productionStore, qaStore, trunkStore);
     }
 
@@ -93,34 +92,46 @@ public abstract class AbstractController {
         }
     }
 
-    protected RevisionDetails getRevisionDetails(final Environment branch, final String revisionId) throws StoreException {
+    protected RevisionDetails getRevisionDetails(final Environment branch, final String revisionId)
+            throws StoreException {
         return determineStoreFromEnvironment(branch).getRevisionDetails(revisionId);
     }
 
-    protected List<Revision> queryMatrixHistory(final Environment branch, final int start, final int limit) throws StoreException {
+    protected List<Revision> queryMatrixHistory(
+            final Environment branch, final int start, final int limit) throws StoreException {
         return determineStoreFromEnvironment(branch).getMatrixHistory(start, limit);
     }
 
-    protected Map<String, List<Revision>> queryHistories(final Environment branch) throws StoreException {
+    protected Map<String, List<Revision>> queryHistories(final Environment branch)
+            throws StoreException {
         return determineStoreFromEnvironment(branch).getAllHistories();
     }
 
-    protected TestMatrixVersion queryMatrixFromBranchOrRevision(final String branchOrRevision) throws StoreException {
+    protected TestMatrixVersion queryMatrixFromBranchOrRevision(final String branchOrRevision)
+            throws StoreException {
         final BranchOrRevisionRef bor = getBranchOrRevision(branchOrRevision);
         return bor.queryTestMatrixVersion();
     }
 
-    protected TestDefinition queryTestDefinition(final String branchOrRevision, final String testName) throws StoreException {
+    protected TestDefinition queryTestDefinition(
+            final String branchOrRevision, final String testName) throws StoreException {
         final BranchOrRevisionRef bor = getBranchOrRevision(branchOrRevision);
         return bor.queryTestDefinition(testName);
     }
 
-    protected List<Revision> queryTestDefinitionHistory(final String branchOrRevision, final String testName, final int start, final int limit) throws StoreException {
+    protected List<Revision> queryTestDefinitionHistory(
+            final String branchOrRevision, final String testName, final int start, final int limit)
+            throws StoreException {
         final BranchOrRevisionRef bor = getBranchOrRevision(branchOrRevision);
         return bor.queryTestDefinitionHistory(testName, start, limit);
     }
 
-    protected String doErrorView(final String error, final Throwable throwable, final int responseCode, final HttpServletResponse response, final Model model) {
+    protected String doErrorView(
+            final String error,
+            final Throwable throwable,
+            final int responseCode,
+            final HttpServletResponse response,
+            final Model model) {
         response.setStatus(responseCode);
         if (StringUtils.isNotEmpty(error)) {
             model.addAttribute("error", error);
@@ -131,10 +142,9 @@ public abstract class AbstractController {
         return ProctorView.ERROR.getName();
     }
 
-    /**
-     * Abstract Factory method
-     */
-    private BranchOrRevisionRef getBranchOrRevision(final String branchOrRevisionName) throws StoreException {
+    /** Abstract Factory method */
+    private BranchOrRevisionRef getBranchOrRevision(final String branchOrRevisionName)
+            throws StoreException {
         final Environment branch = Environment.fromName(branchOrRevisionName);
         if (branch == null) {
             return new RevisionRef(branchOrRevisionName, storesList);
@@ -143,9 +153,7 @@ public abstract class AbstractController {
         }
     }
 
-    /**
-     * Either branch (Trunk, QA, Production), or revision by id
-     */
+    /** Either branch (Trunk, QA, Production), or revision by id */
     private interface BranchOrRevisionRef {
         @Nullable
         TestDefinition queryTestDefinition(final String testName);
@@ -153,7 +161,8 @@ public abstract class AbstractController {
         @Nullable
         TestMatrixVersion queryTestMatrixVersion() throws StoreException;
 
-        List<Revision> queryTestDefinitionHistory(final String testName, final int start, final int limit) throws StoreException;
+        List<Revision> queryTestDefinitionHistory(
+                final String testName, final int start, final int limit) throws StoreException;
     }
 
     private static class BranchRef implements BranchOrRevisionRef {
@@ -176,7 +185,8 @@ public abstract class AbstractController {
         }
 
         @Override
-        public List<Revision> queryTestDefinitionHistory(final String testName, final int start, final int limit) throws StoreException {
+        public List<Revision> queryTestDefinitionHistory(
+                final String testName, final int start, final int limit) throws StoreException {
             return store.getHistory(testName, start, limit);
         }
     }
@@ -194,7 +204,8 @@ public abstract class AbstractController {
         @Nullable
         public TestDefinition queryTestDefinition(final String testName) {
             for (final ProctorStore store : stores) {
-                final TestDefinition test = TestDefinitionUtil.getTestDefinition(store, testName, revisionNumber);
+                final TestDefinition test =
+                        TestDefinitionUtil.getTestDefinition(store, testName, revisionNumber);
                 if (test != null) {
                     return test;
                 }
@@ -212,20 +223,28 @@ public abstract class AbstractController {
                         return testMatrix;
                     }
                 } catch (final StoreException e) {
-                    LOGGER.info(String.format("Failed to find revision %s in %s", revisionNumber, store.getName()));
+                    LOGGER.info(
+                            String.format(
+                                    "Failed to find revision %s in %s",
+                                    revisionNumber, store.getName()));
                 }
             }
             return null;
         }
 
         @Override
-        public List<Revision> queryTestDefinitionHistory(final String testName, final int start, final int limit) throws StoreException {
+        public List<Revision> queryTestDefinitionHistory(
+                final String testName, final int start, final int limit) throws StoreException {
             for (final ProctorStore store : stores) {
 
                 final Map<String, List<Revision>> allHistories = store.getAllHistories();
-                for (final Revision r : allHistories.getOrDefault(testName, Collections.emptyList())) {
+                for (final Revision r :
+                        allHistories.getOrDefault(testName, Collections.emptyList())) {
                     if (revisionNumber.equals(r.getRevision())) {
-                        LOGGER.debug(String.format("Found revision [%s] in history of test [%s] in store [%s]", revisionNumber, testName, store.getName()));
+                        LOGGER.debug(
+                                String.format(
+                                        "Found revision [%s] in history of test [%s] in store [%s]",
+                                        revisionNumber, testName, store.getName()));
                         return store.getHistory(testName, revisionNumber, start, limit);
                     }
                 }

@@ -39,8 +39,7 @@ import static java.util.Collections.singletonList;
 public class SampleSpringWebAppConfig extends WebMvcConfigurerAdapter {
 
     public static final String SAMPLETAG = "sampletag";
-    @Autowired
-    private ProctorSampleInterceptor proctorGroupsInterceptor;
+    @Autowired private ProctorSampleInterceptor proctorGroupsInterceptor;
 
     @Override
     public void addInterceptors(final InterceptorRegistry registry) {
@@ -52,9 +51,7 @@ public class SampleSpringWebAppConfig extends WebMvcConfigurerAdapter {
         return new SampleGroupsLogger();
     }
 
-    /**
-     * Stub Bean to replace json specification
-     */
+    /** Stub Bean to replace json specification */
     @Bean
     public ProctorSpecification staticSpecification() {
         return new ProctorSpecification(
@@ -62,7 +59,7 @@ public class SampleSpringWebAppConfig extends WebMvcConfigurerAdapter {
                 ImmutableMap.<String, TestSpecification>builder()
                         .put(SAMPLE_1_TST, new TestSpecification())
                         // DYNAMIC_INCLUDE_TST included dynamically via SAMPLETAG
-                        //.put(DYNAMIC_INCLUDE_TST, ...
+                        // .put(DYNAMIC_INCLUDE_TST, ...
                         .put(UNUSED_TST, new TestSpecification())
                         .build(),
                 new DynamicFilters(singletonList(new MetaTagsFilter(singleton(SAMPLETAG)))));
@@ -74,11 +71,12 @@ public class SampleSpringWebAppConfig extends WebMvcConfigurerAdapter {
     @Bean
     public TestMatrixArtifact testMatrixArtifact() {
         final TestMatrixArtifact testMatrixArtifact = new TestMatrixArtifact();
-        testMatrixArtifact.setTests(ImmutableMap.<String, ConsumableTestDefinition>builder()
-                .put(SAMPLE_1_TST, stubTestDefinition(emptyList()))
-                .put(DYNAMIC_INCLUDE_TST, stubTestDefinition(singletonList(SAMPLETAG)))
-                .put(UNUSED_TST, stubTestDefinition(emptyList()))
-                .build());
+        testMatrixArtifact.setTests(
+                ImmutableMap.<String, ConsumableTestDefinition>builder()
+                        .put(SAMPLE_1_TST, stubTestDefinition(emptyList()))
+                        .put(DYNAMIC_INCLUDE_TST, stubTestDefinition(singletonList(SAMPLETAG)))
+                        .put(UNUSED_TST, stubTestDefinition(emptyList()))
+                        .build());
         final Audit audit = new Audit();
         audit.setVersion("v1");
         testMatrixArtifact.setAudit(audit);
@@ -86,31 +84,36 @@ public class SampleSpringWebAppConfig extends WebMvcConfigurerAdapter {
     }
 
     private ConsumableTestDefinition stubTestDefinition(final List<String> metatags) {
-        return new ConsumableTestDefinition("", "", TestType.ANONYMOUS_USER, "salt1",
+        return new ConsumableTestDefinition(
+                "",
+                "",
+                TestType.ANONYMOUS_USER,
+                "salt1",
                 Arrays.asList(
                         new TestBucket("inactive", -1, ""),
                         new TestBucket("control", 0, ""),
                         new TestBucket("active", 1, "")),
-                Arrays.asList(new Allocation(
-                        "",
-                        Arrays.asList(new Range(-1, 0.5), new Range(0, 0.5)),
-                        "#A1"
-                )),
-                false, Collections.emptyMap(), "", metatags);
+                Arrays.asList(
+                        new Allocation(
+                                "", Arrays.asList(new Range(-1, 0.5), new Range(0, 0.5)), "#A1")),
+                false,
+                Collections.emptyMap(),
+                "",
+                metatags);
     }
 
     @Bean
     public StringProctorLoader proctorSupplier(
             final ProctorSpecification proctorSpecification,
-            final TestMatrixArtifact testMatrixArtifact
-    ) {
-        final StringProctorLoader stringProctorLoader = new StringProctorLoader(proctorSpecification, "fixed", "") {
-            @Override
-            protected TestMatrixArtifact loadTestMatrix() throws IOException {
-                // stubbed load
-                return testMatrixArtifact;
-            }
-        };
+            final TestMatrixArtifact testMatrixArtifact) {
+        final StringProctorLoader stringProctorLoader =
+                new StringProctorLoader(proctorSpecification, "fixed", "") {
+                    @Override
+                    protected TestMatrixArtifact loadTestMatrix() throws IOException {
+                        // stubbed load
+                        return testMatrixArtifact;
+                    }
+                };
         stringProctorLoader.load(); // simulate load
         return stringProctorLoader;
     }

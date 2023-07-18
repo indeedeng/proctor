@@ -4,8 +4,7 @@ import com.indeed.proctor.store.Revision;
 
 import javax.servlet.jsp.PageContext;
 
-/**
- */
+/** */
 public interface DefinitionHistoryPageRenderer {
     enum DefinitionHistoryPagePosition {
         PROMOTE_FORM_BOTTOM,
@@ -14,11 +13,14 @@ public interface DefinitionHistoryPageRenderer {
     DefinitionHistoryPagePosition getDefinitionHistoryPagePositionPosition();
 
     @Deprecated
-    default String getRenderedHtml(final String testName, final Revision testDefinitionVersion){
+    default String getRenderedHtml(final String testName, final Revision testDefinitionVersion) {
         return "";
     }
 
-    default String getRenderedHtml(final PageContext pageContext, final String testName, final Revision testDefinitionVersion){
+    default String getRenderedHtml(
+            final PageContext pageContext,
+            final String testName,
+            final Revision testDefinitionVersion) {
         return "";
     }
 }

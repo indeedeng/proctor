@@ -1,11 +1,8 @@
 package com.indeed.proctor.store;
 
-/**
- * @author parker
- */
+/** @author parker */
 public class StoreException extends Exception {
-    public StoreException() {
-    }
+    public StoreException() {}
 
     public StoreException(String s) {
         super(s);
@@ -20,8 +17,7 @@ public class StoreException extends Exception {
     }
 
     public static class ReadException extends StoreException {
-        public ReadException() {
-        }
+        public ReadException() {}
 
         public ReadException(String s) {
             super(s);

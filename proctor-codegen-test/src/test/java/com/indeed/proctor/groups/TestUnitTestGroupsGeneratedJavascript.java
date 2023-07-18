@@ -15,7 +15,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -27,7 +26,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 public class TestUnitTestGroupsGeneratedJavascript {
 
-    private static final ObjectMapper OBJECT_MAPPER =new ObjectMapper();
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final String UNIT_TEST_GROUPS_JS = "UnitTestGroups.js";
     private ScriptEngine jsEngine;
     private static final NameObfuscator OBFUSCATOR = new NameObfuscator();
@@ -35,10 +34,12 @@ public class TestUnitTestGroupsGeneratedJavascript {
 
     @BeforeClass
     public static void setupClass() throws IOException {
-        try (InputStream jsFileStream = TestUnitTestGroupsGeneratedJavascript.class.getResourceAsStream(UNIT_TEST_GROUPS_JS);
-             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(jsFileStream))) {
-            jsFile = bufferedReader
-                    .lines().collect(Collectors.joining("\n"));
+        try (InputStream jsFileStream =
+                        TestUnitTestGroupsGeneratedJavascript.class.getResourceAsStream(
+                                UNIT_TEST_GROUPS_JS);
+                BufferedReader bufferedReader =
+                        new BufferedReader(new InputStreamReader(jsFileStream))) {
+            jsFile = bufferedReader.lines().collect(Collectors.joining("\n"));
         }
     }
 
@@ -51,54 +52,58 @@ public class TestUnitTestGroupsGeneratedJavascript {
     @Test
     public void testGeneratedJsCompilesAndInitializesWithNoTests() {
         // control is fallback bucket in UnitTestGroups.json
-        assertThat(evaluateMethodWithMap(null, ".isBubbleControl()"))
-                .isEqualTo("true");
-        assertThat(evaluateMethodWithMap(emptyMap(), ".isBubbleControl()"))
-                .isEqualTo("true");
-        assertThat(evaluateMethodWithMap(emptyMap(), ".isBubbleTest()"))
-                .isEqualTo("false");
+        assertThat(evaluateMethodWithMap(null, ".isBubbleControl()")).isEqualTo("true");
+        assertThat(evaluateMethodWithMap(emptyMap(), ".isBubbleControl()")).isEqualTo("true");
+        assertThat(evaluateMethodWithMap(emptyMap(), ".isBubbleTest()")).isEqualTo("false");
         // inactive is fallback bucket in UnitTestGroups.json
-        assertThat(evaluateMethodWithMap(emptyMap(), ".isPimpleInactive()"))
-                .isEqualTo("true");
-        assertThat(evaluateMethodWithMap(emptyMap(), ".isPimpleControl()"))
-                .isEqualTo("false");
+        assertThat(evaluateMethodWithMap(emptyMap(), ".isPimpleInactive()")).isEqualTo("true");
+        assertThat(evaluateMethodWithMap(emptyMap(), ".isPimpleControl()")).isEqualTo("false");
     }
 
     @Test
     public void testGeneratedJsCompilesAndThrowsErrorWhenProvidedIncorrectTests() {
-        assertThatThrownBy(() -> {
-            jsEngine.eval("UnitTestGroups.init([[\"\"]])");
-        }).isInstanceOf(ScriptException.class);
+        assertThatThrownBy(
+                        () -> {
+                            jsEngine.eval("UnitTestGroups.init([[\"\"]])");
+                        })
+                .isInstanceOf(ScriptException.class);
     }
 
     @Test
-    public void testGeneratedJsCompilesAndInitializesWhenProvidedIncorrectMap()  {
-        assertThat(evaluateMethodWithMap(ImmutableMap.of("asdf",1), ".isBubbleControl()"))
-            .isEqualTo("true");
-    }
-
-    @Test
-    public void testGeneratedJsCompilesAndInitializesWhenProvidedMapWithOneExpectedValue()  {
-        assertThat(evaluateMethodWithMap(
-                ImmutableMap.of(OBFUSCATOR.obfuscateTestName("payloaded_excluded"),
-                        singletonList(1)),
-                ".isPayloaded_excludedTest()"))
+    public void testGeneratedJsCompilesAndInitializesWhenProvidedIncorrectMap() {
+        assertThat(evaluateMethodWithMap(ImmutableMap.of("asdf", 1), ".isBubbleControl()"))
                 .isEqualTo("true");
     }
 
     @Test
-    public void testGeneratedJsCompilesAndInitializesWhenProvidedTestWithPayload()  {
-        assertThat(evaluateMethodWithMap(
-                ImmutableMap.of(
-                        OBFUSCATOR.obfuscateTestName("payloaded_excluded"),
-                        Arrays.asList(1, true)),
-                ".isPayloaded_excludedTest()"))
+    public void testGeneratedJsCompilesAndInitializesWhenProvidedMapWithOneExpectedValue() {
+        assertThat(
+                        evaluateMethodWithMap(
+                                ImmutableMap.of(
+                                        OBFUSCATOR.obfuscateTestName("payloaded_excluded"),
+                                        singletonList(1)),
+                                ".isPayloaded_excludedTest()"))
                 .isEqualTo("true");
     }
 
-    private String evaluateMethodWithMap(final Map<String, Object> context, final String method)  {
+    @Test
+    public void testGeneratedJsCompilesAndInitializesWhenProvidedTestWithPayload() {
+        assertThat(
+                        evaluateMethodWithMap(
+                                ImmutableMap.of(
+                                        OBFUSCATOR.obfuscateTestName("payloaded_excluded"),
+                                        Arrays.asList(1, true)),
+                                ".isPayloaded_excludedTest()"))
+                .isEqualTo("true");
+    }
+
+    private String evaluateMethodWithMap(final Map<String, Object> context, final String method) {
         try {
-            jsEngine.eval("var map = " + (context == null ? "null" : OBJECT_MAPPER.writeValueAsString(context)));
+            jsEngine.eval(
+                    "var map = "
+                            + (context == null
+                                    ? "null"
+                                    : OBJECT_MAPPER.writeValueAsString(context)));
             return String.valueOf(jsEngine.eval("UnitTestGroups.init(map)" + method));
         } catch (JsonProcessingException | ScriptException e) {
             throw new RuntimeException(e);

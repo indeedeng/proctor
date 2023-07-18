@@ -11,7 +11,8 @@ public class TestVersionResult {
     private String version;
     private String description;
 
-    public TestVersionResult(List<Test> tests, Date published, String author, String version, String description) {
+    public TestVersionResult(
+            List<Test> tests, Date published, String author, String version, String description) {
         this.tests = tests;
         this.published = published;
         this.author = author;

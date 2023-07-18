@@ -6,11 +6,12 @@ import javax.annotation.Nonnull;
 
 /** @author parker */
 public final class UserAgentValueConverter implements ValueConverter<UserAgent> {
-    private UserAgentValueConverter() { }
+    private UserAgentValueConverter() {}
 
     public UserAgent convert(@Nonnull String rawValue) {
         return UserAgent.parseUserAgentStringSafely(rawValue);
     }
+
     @Override
     public Class<UserAgent> getType() {
         return UserAgent.class;

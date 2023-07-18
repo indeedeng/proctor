@@ -2,9 +2,7 @@ package com.indeed.proctor.pipet.core.var;
 
 import javax.annotation.Nonnull;
 
-/**
- * Holds classes for all context variable conversions defined in the pipet configuration file.
- */
+/** Holds classes for all context variable conversions defined in the pipet configuration file. */
 public final class ValueConverters {
 
     private ValueConverters() {
@@ -14,28 +12,36 @@ public final class ValueConverters {
     public static ValueConverter<Byte> byteValueConverter() {
         return new ByteValueConverter();
     }
+
     public static ValueConverter<Short> shortValueConverter() {
         return new ShortValueConverter();
     }
+
     public static ValueConverter<Integer> integerValueConverter() {
         return new IntegerValueConverter();
     }
+
     public static ValueConverter<Long> longValueConverter() {
         return new LongValueConverter();
     }
+
     public static ValueConverter<Float> floatValueConverter() {
         return new FloatValueConverter();
     }
+
     public static ValueConverter<Double> doubleValueConverter() {
         return new DoubleValueConverter();
     }
+
     public static ValueConverter<Boolean> booleanValueConverter() {
         return new BooleanValueConverter();
     }
+
     public static ValueConverter<Character> characterValueConverter() {
         return new CharacterValueConverter();
     }
-    public static ValueConverter<String> stringValueConverter(){
+
+    public static ValueConverter<String> stringValueConverter() {
         return new StringValueConverter();
     }
 

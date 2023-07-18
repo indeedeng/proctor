@@ -14,10 +14,10 @@ import javax.servlet.jsp.tagext.TagSupport;
 import java.io.IOException;
 import java.util.Map;
 
-/**
- */
+/** */
 public class RenderDefinitionDetailsPageInjectionTemplatesHandler extends TagSupport {
-    private static final Logger LOGGER = LogManager.getLogger(RenderDefinitionDetailsPageInjectionTemplatesHandler.class);
+    private static final Logger LOGGER =
+            LogManager.getLogger(RenderDefinitionDetailsPageInjectionTemplatesHandler.class);
 
     private DefinitionDetailsPagePosition position;
     private String testName;
@@ -48,13 +48,17 @@ public class RenderDefinitionDetailsPageInjectionTemplatesHandler extends TagSup
     private String renderTemplates() {
         final StringBuilder renderedHTML = new StringBuilder();
         final ServletContext servletContext = pageContext.getServletContext();
-        final WebApplicationContext context = WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
+        final WebApplicationContext context =
+                WebApplicationContextUtils.getRequiredWebApplicationContext(servletContext);
         try {
-            final Map<String, DefinitionDetailsPageRenderer> rendererBeans = BeanFactoryUtils.beansOfTypeIncludingAncestors(context, DefinitionDetailsPageRenderer.class);
+            final Map<String, DefinitionDetailsPageRenderer> rendererBeans =
+                    BeanFactoryUtils.beansOfTypeIncludingAncestors(
+                            context, DefinitionDetailsPageRenderer.class);
             for (final DefinitionDetailsPageRenderer renderer : rendererBeans.values()) {
                 if (position == renderer.getDefinitionDetailsPagePosition()) {
                     renderedHTML.append(renderer.getRenderedHtml(testName, testDefinition));
-                    renderedHTML.append(renderer.getRenderedHtml(pageContext, testName, testDefinition));
+                    renderedHTML.append(
+                            renderer.getRenderedHtml(pageContext, testName, testDefinition));
                 }
             }
         } catch (Exception e) {

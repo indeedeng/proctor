@@ -15,12 +15,13 @@ public class RevisionTest {
 
     @Test
     public void testDeserialize() throws IOException {
-        final String serializedRevision = "{" +
-                "\"revision\": \"123\"," +
-                "\"author\": \"test-user\"," +
-                "\"date\": \"2018-01-01T00:00:00.000+0000\"," +
-                "\"message\": \"test\"" +
-                "}";
+        final String serializedRevision =
+                "{"
+                        + "\"revision\": \"123\","
+                        + "\"author\": \"test-user\","
+                        + "\"date\": \"2018-01-01T00:00:00.000+0000\","
+                        + "\"message\": \"test\""
+                        + "}";
         final Revision revision = mapper.readValue(serializedRevision, Revision.class);
         assertEquals("123", revision.getRevision());
         assertEquals("test-user", revision.getAuthor());

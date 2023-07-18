@@ -41,45 +41,26 @@ public class TestProctorController {
         final Payload payloadControl = new Payload();
         payloadControl.setLongValue(0L);
 
-        final ConsumableTestDefinition testDefinition = ProctorUtils.convertToConsumableTestDefinition(
-                new TestDefinition(
-                        "-1",
-                        "lang == 'en'",
-                        TestType.ANONYMOUS_USER,
-                        "&" + TEST_NAME,
-                        Lists.newArrayList(
-                                new TestBucket(
-                                        "inactive",
-                                        -1,
-                                        "inactive",
-                                        payloadInactive
-                                ),
-                                new TestBucket(
-                                        "control",
-                                        0,
-                                        "control",
-                                        payloadControl
-                                )
-                        ),
-                        Lists.newArrayList(
-                                new Allocation(
-                                        null,
-                                        Lists.newArrayList(
-                                                new Range(
-                                                        -1,
-                                                        1.0
-                                                )
-                                        ),
-                                        "#A1"
-                                )
-                        ),
-                        false,
-                        Collections.emptyMap(),
-                        Collections.emptyMap(),
-                        "test for a unit test",
-                        Lists.newArrayList(TEST_NAME + "_tag")
-                )
-        );
+        final ConsumableTestDefinition testDefinition =
+                ProctorUtils.convertToConsumableTestDefinition(
+                        new TestDefinition(
+                                "-1",
+                                "lang == 'en'",
+                                TestType.ANONYMOUS_USER,
+                                "&" + TEST_NAME,
+                                Lists.newArrayList(
+                                        new TestBucket("inactive", -1, "inactive", payloadInactive),
+                                        new TestBucket("control", 0, "control", payloadControl)),
+                                Lists.newArrayList(
+                                        new Allocation(
+                                                null,
+                                                Lists.newArrayList(new Range(-1, 1.0)),
+                                                "#A1")),
+                                false,
+                                Collections.emptyMap(),
+                                Collections.emptyMap(),
+                                "test for a unit test",
+                                Lists.newArrayList(TEST_NAME + "_tag")));
 
         artifact.setTests(ImmutableMap.of(TEST_NAME, testDefinition));
 
@@ -96,9 +77,7 @@ public class TestProctorController {
         testSpecification.setBuckets(
                 ImmutableMap.of(
                         "inactive", -1,
-                        "control", 0
-                )
-        );
+                        "control", 0));
         final AppVersion appVersion = new AppVersion("sample application", "v1");
         final ProctorController.CompatibleSpecificationResult result =
                 ProctorController.CompatibleSpecificationResult.fromRequiredTest(
@@ -106,8 +85,7 @@ public class TestProctorController {
                         appVersion,
                         constructArtifact(),
                         TEST_NAME,
-                        Collections.singleton(testSpecification)
-                );
+                        Collections.singleton(testSpecification));
         assertTrue(result.isCompatible());
         assertFalse(result.isDynamicTest(TEST_NAME));
         assertTrue(StringUtils.isEmpty(result.getError()));
@@ -119,11 +97,7 @@ public class TestProctorController {
         final AppVersion appVersion = new AppVersion("sample application", "v1");
         final ProctorController.CompatibleSpecificationResult result =
                 ProctorController.CompatibleSpecificationResult.fromDynamicTest(
-                        Environment.PRODUCTION,
-                        appVersion,
-                        constructArtifact(),
-                        TEST_NAME
-                );
+                        Environment.PRODUCTION, appVersion, constructArtifact(), TEST_NAME);
         assertTrue(result.isCompatible());
         assertTrue(result.isDynamicTest(TEST_NAME));
         assertTrue(StringUtils.isEmpty(result.getError()));

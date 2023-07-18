@@ -40,8 +40,7 @@ public class FileBasedProctorStoreTest {
     private FileBasedPersisterCore coreMock;
     private FileBasedProctorStore store;
 
-    @Rule
-    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+    @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
     private FileBasedProctorStore.RcsClient gitClient;
 
     @Before
@@ -52,21 +51,21 @@ public class FileBasedProctorStoreTest {
         EasyMock.expectLastCall().anyTimes();
         replay(gitClient);
         coreMock = EasyMock.createMock(FileBasedPersisterCore.class);
-        final DelegatingCore coreMockWrapper = new DelegatingCore(coreMock, temporaryFolder.getRoot(), gitClient);
+        final DelegatingCore coreMockWrapper =
+                new DelegatingCore(coreMock, temporaryFolder.getRoot(), gitClient);
         store = new TestFileBasedProctorStore(coreMockWrapper);
     }
 
     @Test
     public void getTestMatrixNoTests() throws StoreException {
-        final TestVersionResult versionStub = new TestVersionResult(
-                Collections.<TestVersionResult.Test>emptyList(),
-                new Date(),
-                "fooAuthor",
-                "fooVersion",
-                "fooDescription");
-        expect(coreMock.determineVersions(
-                R0_REVISION
-        ))
+        final TestVersionResult versionStub =
+                new TestVersionResult(
+                        Collections.<TestVersionResult.Test>emptyList(),
+                        new Date(),
+                        "fooAuthor",
+                        "fooVersion",
+                        "fooDescription");
+        expect(coreMock.determineVersions(R0_REVISION))
                 // throw an unexpected type of runtime exception
                 .andReturn(versionStub)
                 // Must be evaluated, or this was not a valid test
@@ -91,14 +90,19 @@ public class FileBasedProctorStoreTest {
                 eq("fooPassw0rd"),
                 eq("fooComment"),
                 eq("r0"),
-                capture(capturedArgument)
-        );
+                capture(capturedArgument));
         EasyMock.expectLastCall();
         replay(coreMock);
 
         try {
-            store.updateTestDefinition("fooUser", "fooPassw0rd", "fooAuthor", "r0",
-                    definition, metadata, "fooComment");
+            store.updateTestDefinition(
+                    "fooUser",
+                    "fooPassw0rd",
+                    "fooAuthor",
+                    "r0",
+                    definition,
+                    metadata,
+                    "fooComment");
             fail("Expected Exception");
         } catch (final StoreException.TestUpdateException tue) {
             assertEquals("Attempting to update non-existent test r0", tue.getCause().getMessage());
@@ -109,11 +113,15 @@ public class FileBasedProctorStoreTest {
     public void updateTestDefinitionTestNoChange() throws Exception {
         final Map<String, String> metadata = Maps.newHashMap();
 
-        final File definitionFolder = store.getTestDefinitionDirectoryForTest("r0", temporaryFolder.getRoot());
+        final File definitionFolder =
+                store.getTestDefinitionDirectoryForTest("r0", temporaryFolder.getRoot());
         assertTrue(definitionFolder.mkdirs());
         final TestDefinition definition = new TestDefinition();
-        OBJECT_MAPPER.writeValue(new File(definitionFolder, FileBasedProctorStore.TEST_DEFINITION_FILENAME), definition);
-        OBJECT_MAPPER.writeValue(new File(definitionFolder, FileBasedProctorStore.TEST_METADATA_FILENAME), metadata);
+        OBJECT_MAPPER.writeValue(
+                new File(definitionFolder, FileBasedProctorStore.TEST_DEFINITION_FILENAME),
+                definition);
+        OBJECT_MAPPER.writeValue(
+                new File(definitionFolder, FileBasedProctorStore.TEST_METADATA_FILENAME), metadata);
 
         final Capture<FileBasedProctorStore.ProctorUpdater> capturedArgument = new Capture<>();
         coreMock.doInWorkingDirectory(
@@ -121,17 +129,24 @@ public class FileBasedProctorStoreTest {
                 eq("fooPassw0rd"),
                 eq("fooComment"),
                 eq("r0"),
-                capture(capturedArgument)
-        );
+                capture(capturedArgument));
         EasyMock.expectLastCall();
         replay(coreMock);
 
         try {
-            store.updateTestDefinition("fooUser", "fooPassw0rd", "fooAuthor", "r0",
-                    definition, metadata, "fooComment");
+            store.updateTestDefinition(
+                    "fooUser",
+                    "fooPassw0rd",
+                    "fooAuthor",
+                    "r0",
+                    definition,
+                    metadata,
+                    "fooComment");
             fail("Expected Exception");
         } catch (final StoreException.TestUpdateException tue) {
-            assertEquals("Attempting to save test definition without changes for test r0", tue.getCause().getMessage());
+            assertEquals(
+                    "Attempting to save test definition without changes for test r0",
+                    tue.getCause().getMessage());
         }
     }
 
@@ -147,9 +162,7 @@ public class FileBasedProctorStoreTest {
         }
 
         @Override
-        public void verifySetup() throws StoreException {
-
-        }
+        public void verifySetup() throws StoreException {}
 
         @Override
         public boolean cleanUserWorkspace(final String username) {
@@ -164,25 +177,30 @@ public class FileBasedProctorStoreTest {
 
         @Nonnull
         @Override
-        public List<Revision> getMatrixHistory(final int start, final int limit) throws StoreException {
+        public List<Revision> getMatrixHistory(final int start, final int limit)
+                throws StoreException {
             return null;
         }
 
         @Nonnull
         @Override
-        public List<Revision> getMatrixHistory(final Instant sinceInclusive, final Instant untilExclusive) throws StoreException {
+        public List<Revision> getMatrixHistory(
+                final Instant sinceInclusive, final Instant untilExclusive) throws StoreException {
             return null;
         }
 
         @Nonnull
         @Override
-        public List<Revision> getHistory(final String test, final int start, final int limit) throws StoreException {
+        public List<Revision> getHistory(final String test, final int start, final int limit)
+                throws StoreException {
             return null;
         }
 
         @Nonnull
         @Override
-        public List<Revision> getHistory(final String test, final String revision, final int start, final int limit) throws StoreException {
+        public List<Revision> getHistory(
+                final String test, final String revision, final int start, final int limit)
+                throws StoreException {
             return null;
         }
 
@@ -194,13 +212,16 @@ public class FileBasedProctorStoreTest {
 
         @Nonnull
         @Override
-        public List<TestEdit> getTestEdits(final String testName, final int start, final int limit) throws StoreException {
+        public List<TestEdit> getTestEdits(final String testName, final int start, final int limit)
+                throws StoreException {
             return null;
         }
 
         @Nonnull
         @Override
-        public List<TestEdit> getTestEdits(final String testName, final String revision, final int start, final int limit) throws StoreException {
+        public List<TestEdit> getTestEdits(
+                final String testName, final String revision, final int start, final int limit)
+                throws StoreException {
             return null;
         }
 
@@ -211,32 +232,37 @@ public class FileBasedProctorStoreTest {
         }
 
         @Override
-        public void refresh() throws StoreException {
-
-        }
+        public void refresh() throws StoreException {}
     }
 
-    /**
-     * calls delegate, but for doInWorkingDirectory, calls client
-     */
+    /** calls delegate, but for doInWorkingDirectory, calls client */
     private static class DelegatingCore implements FileBasedPersisterCore {
         private final FileBasedPersisterCore delegate;
         private FileBasedProctorStore.RcsClient client;
         private File dir;
 
-        public DelegatingCore(final FileBasedPersisterCore mock, final File newdir, final FileBasedProctorStore.RcsClient newClient) {
+        public DelegatingCore(
+                final FileBasedPersisterCore mock,
+                final File newdir,
+                final FileBasedProctorStore.RcsClient newClient) {
             delegate = mock;
             dir = newdir;
             client = newClient;
         }
 
         @Override
-        public <C> C getFileContents(final Class<C> c, final String[] path, final C defaultValue, final String revision) throws StoreException.ReadException, JsonProcessingException {
+        public <C> C getFileContents(
+                final Class<C> c, final String[] path, final C defaultValue, final String revision)
+                throws StoreException.ReadException, JsonProcessingException {
             return delegate.getFileContents(c, path, defaultValue, revision);
         }
 
         @Override
-        public void doInWorkingDirectory(final ChangeMetadata changeMetadata, final String previousVersion, final FileBasedProctorStore.ProctorUpdater updater) throws StoreException.TestUpdateException {
+        public void doInWorkingDirectory(
+                final ChangeMetadata changeMetadata,
+                final String previousVersion,
+                final FileBasedProctorStore.ProctorUpdater updater)
+                throws StoreException.TestUpdateException {
             try {
                 updater.doInWorkingDirectory(client, dir);
             } catch (final Exception e) {
@@ -245,7 +271,8 @@ public class FileBasedProctorStoreTest {
         }
 
         @Override
-        public TestVersionResult determineVersions(final String fetchRevision) throws StoreException.ReadException {
+        public TestVersionResult determineVersions(final String fetchRevision)
+                throws StoreException.ReadException {
             return delegate.determineVersions(fetchRevision);
         }
 

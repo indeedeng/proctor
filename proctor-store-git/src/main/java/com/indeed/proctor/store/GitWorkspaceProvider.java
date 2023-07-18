@@ -6,8 +6,8 @@ import java.util.concurrent.Callable;
 public interface GitWorkspaceProvider {
     /**
      * Delete the temp files in the working directory.
-     * @return A flag whose value indicates if the directory cleanup was
-     * successful
+     *
+     * @return A flag whose value indicates if the directory cleanup was successful
      */
     boolean cleanWorkingDirectory();
 
@@ -15,5 +15,6 @@ public interface GitWorkspaceProvider {
 
     <T> T synchronizedOperation(final Callable<T> callable);
 
-    <T> T synchronizedUpdateOperation (final GitProctorCallable<T> callable) throws StoreException.TestUpdateException;
+    <T> T synchronizedUpdateOperation(final GitProctorCallable<T> callable)
+            throws StoreException.TestUpdateException;
 }

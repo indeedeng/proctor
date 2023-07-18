@@ -41,27 +41,34 @@ public class GitProctor extends FileBasedProctorStore {
     */
 
     private final Git git;
-    @Nullable
-    private final String branchName;
+    @Nullable private final String branchName;
 
-    public GitProctor(final String gitPath,
-                      final String username,
-                      final String password,
-                      final String testDefinitionsDirectory) {
+    public GitProctor(
+            final String gitPath,
+            final String username,
+            final String password,
+            final String testDefinitionsDirectory) {
         this(gitPath, username, password, testDefinitionsDirectory, null);
     }
 
-    public GitProctor(final String gitPath,
-                      final String username,
-                      final String password,
-                      final String testDefinitionsDirectory,
-                      @Nullable final String branchName) {
-        this(new GitProctorCore(gitPath, username, password, testDefinitionsDirectory, Files.createTempDir()), testDefinitionsDirectory, branchName);
+    public GitProctor(
+            final String gitPath,
+            final String username,
+            final String password,
+            final String testDefinitionsDirectory,
+            @Nullable final String branchName) {
+        this(
+                new GitProctorCore(
+                        gitPath,
+                        username,
+                        password,
+                        testDefinitionsDirectory,
+                        Files.createTempDir()),
+                testDefinitionsDirectory,
+                branchName);
     }
 
-    public GitProctor(final String gitPath,
-                      final String username,
-                      final String password) {
+    public GitProctor(final String gitPath, final String username, final String password) {
         this(gitPath, username, password, DEFAULT_TEST_DEFINITIONS_DIRECTORY);
     }
 
@@ -74,11 +81,15 @@ public class GitProctor extends FileBasedProctorStore {
     }
 
     /**
-     * @param core                     a core with a defined remote and defined local working directory
-     * @param testDefinitionsDirectory where test definitions are located inside the local git repository
-     * @param branchName               stay on this branch if not null, else default branch from remote
+     * @param core a core with a defined remote and defined local working directory
+     * @param testDefinitionsDirectory where test definitions are located inside the local git
+     *     repository
+     * @param branchName stay on this branch if not null, else default branch from remote
      */
-    public GitProctor(final GitProctorCore core, final String testDefinitionsDirectory, @Nullable final String branchName) {
+    public GitProctor(
+            final GitProctorCore core,
+            final String testDefinitionsDirectory,
+            @Nullable final String branchName) {
         super(core, testDefinitionsDirectory);
         git = core.getGit();
         this.branchName = branchName;
@@ -127,53 +138,61 @@ public class GitProctor extends FileBasedProctorStore {
 
     @Nonnull
     @Override
-    public List<Revision> getMatrixHistory(final int start,
-                                           final int limit) throws StoreException {
+    public List<Revision> getMatrixHistory(final int start, final int limit) throws StoreException {
         final LogCommand logCommand;
         try {
             final ObjectId branchHead = git.getRepository().resolve(getGitCore().getRefName());
-            logCommand = git.log()
-                    .add(branchHead)
-                    .setSkip(start)
-                    .setMaxCount(limit);
+            logCommand = git.log().add(branchHead).setSkip(start).setMaxCount(limit);
             return getHistoryFromLogCommand(logCommand);
         } catch (final IOException e) {
-            throw new StoreException("Could not get history for starting at " + getGitCore().getRefName(), e);
+            throw new StoreException(
+                    "Could not get history for starting at " + getGitCore().getRefName(), e);
         }
     }
 
     @Nonnull
     @Override
-    public List<Revision> getMatrixHistory(final Instant sinceInclusive, final Instant untilExclusive) throws StoreException {
+    public List<Revision> getMatrixHistory(
+            final Instant sinceInclusive, final Instant untilExclusive) throws StoreException {
         throw new UnsupportedOperationException("Not implemented");
     }
 
     @Nonnull
     @Override
-    public List<Revision> getHistory(final String test,
-                                     final int start,
-                                     final int limit) throws StoreException {
+    public List<Revision> getHistory(final String test, final int start, final int limit)
+            throws StoreException {
         return getHistory(test, getLatestVersion(), start, limit);
     }
 
     @Nonnull
     @Override
-    public List<Revision> getHistory(final String test,
-                                     final String revision,
-                                     final int start,
-                                     final int limit) throws StoreException {
+    public List<Revision> getHistory(
+            final String test, final String revision, final int start, final int limit)
+            throws StoreException {
         try {
             final ObjectId commitId = ObjectId.fromString(revision);
-            final LogCommand logCommand = git.log()
-                    // TODO: create path to definition.json file, sanitize test name for invalid / relative characters
-                    .addPath(getTestDefinitionsDirectory() + File.separator + test + File.separator + FileBasedProctorStore.TEST_DEFINITION_FILENAME)
-                    .add(commitId)
-                    .setSkip(start)
-                    .setMaxCount(limit);
+            final LogCommand logCommand =
+                    git.log()
+                            // TODO: create path to definition.json file, sanitize test name for
+                            // invalid / relative characters
+                            .addPath(
+                                    getTestDefinitionsDirectory()
+                                            + File.separator
+                                            + test
+                                            + File.separator
+                                            + FileBasedProctorStore.TEST_DEFINITION_FILENAME)
+                            .add(commitId)
+                            .setSkip(start)
+                            .setMaxCount(limit);
             return getHistoryFromLogCommand(logCommand);
 
         } catch (final IOException e) {
-            throw new StoreException("Could not get history for " + test + " starting at " + getGitCore().getRefName(), e);
+            throw new StoreException(
+                    "Could not get history for "
+                            + test
+                            + " starting at "
+                            + getGitCore().getRefName(),
+                    e);
         }
     }
 
@@ -186,7 +205,8 @@ public class GitProctor extends FileBasedProctorStore {
                 return null;
             }
             final GitHistoryParser historyParser =
-                    GitHistoryParser.fromRepository(git.getRepository(), getTestDefinitionsDirectory());
+                    GitHistoryParser.fromRepository(
+                            git.getRepository(), getTestDefinitionsDirectory());
             return historyParser.parseRevisionDetails(objectId);
         } catch (final MissingObjectException e) {
             LOGGER.debug("unknown revision " + revisionId, e);
@@ -198,13 +218,16 @@ public class GitProctor extends FileBasedProctorStore {
 
     @Nonnull
     @Override
-    public List<TestEdit> getTestEdits(final String testName, final int start, final int limit) throws StoreException {
+    public List<TestEdit> getTestEdits(final String testName, final int start, final int limit)
+            throws StoreException {
         throw new UnsupportedOperationException("test edits is not supported in Git store");
     }
 
     @Nonnull
     @Override
-    public List<TestEdit> getTestEdits(final String testName, final String revision, final int start, final int limit) throws StoreException {
+    public List<TestEdit> getTestEdits(
+            final String testName, final String revision, final int start, final int limit)
+            throws StoreException {
         throw new UnsupportedOperationException("test edits is not supported in Git store");
     }
 
@@ -215,14 +238,16 @@ public class GitProctor extends FileBasedProctorStore {
         try {
             final ObjectId head = repository.resolve(Constants.HEAD);
             final GitHistoryParser historyParser =
-                    GitHistoryParser.fromRepository(git.getRepository(), getTestDefinitionsDirectory());
+                    GitHistoryParser.fromRepository(
+                            git.getRepository(), getTestDefinitionsDirectory());
             return historyParser.parseFromHead(head);
         } catch (final IOException e) {
             throw new StoreException("Could not get history " + getGitCore().getRefName(), e);
         }
     }
 
-    private List<Revision> getHistoryFromLogCommand(final LogCommand command) throws StoreException {
+    private List<Revision> getHistoryFromLogCommand(final LogCommand command)
+            throws StoreException {
         final List<Revision> versions = Lists.newArrayList();
         final Iterable<RevCommit> commits;
         try {
@@ -231,12 +256,14 @@ public class GitProctor extends FileBasedProctorStore {
             throw new StoreException("Could not get history", e);
         }
         for (final RevCommit commit : commits) {
-            versions.add(new Revision(
-                    commit.getName(),
-                    determineAuthorId(commit),
-                    new Date((long) commit.getCommitTime() * 1000 /* convert seconds to milliseconds */),
-                    commit.getFullMessage()
-            ));
+            versions.add(
+                    new Revision(
+                            commit.getName(),
+                            determineAuthorId(commit),
+                            new Date(
+                                    (long) commit.getCommitTime()
+                                            * 1000 /* convert seconds to milliseconds */),
+                            commit.getFullMessage()));
         }
         return versions;
     }

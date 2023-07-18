@@ -21,33 +21,39 @@ import static org.junit.Assert.assertTrue;
 
 public class UtilMethods {
 
-    private UtilMethods() {
-    }
+    private UtilMethods() {}
 
     static Proctor getProctor(final String matrixfilename, final String specificationFilename) {
         try {
             // just read from the resource .json file at the moment.ProctorUtils.java
 
-            final Reader matrixResource = new BufferedReader(new InputStreamReader(TestUnitTestGroupsManager.class.getResourceAsStream(matrixfilename)));
+            final Reader matrixResource =
+                    new BufferedReader(
+                            new InputStreamReader(
+                                    TestUnitTestGroupsManager.class.getResourceAsStream(
+                                            matrixfilename)));
             final String matrixString;
             try (StringWriter matrixStringWriter = new StringWriter()) {
                 CharStreams.copy(matrixResource, matrixStringWriter);
                 matrixString = matrixStringWriter.toString();
             }
 
-            final ProctorSpecification specification = getProctorSpecification(specificationFilename);
-            final StringProctorLoader loader = new StringProctorLoader(specification, matrixfilename, matrixString);
+            final ProctorSpecification specification =
+                    getProctorSpecification(specificationFilename);
+            final StringProctorLoader loader =
+                    new StringProctorLoader(specification, matrixfilename, matrixString);
 
             assertTrue("StringProctorLoader should load", loader.load());
             return loader.get();
         } catch (final IOException e) {
             throw new RuntimeException(e);
-
         }
     }
 
-    static ProctorSpecification getProctorSpecification(final String specificationFilename) throws IOException {
-        try (InputStream specificationStream = TestUnitTestGroupsManager.class.getResourceAsStream(specificationFilename)) {
+    static ProctorSpecification getProctorSpecification(final String specificationFilename)
+            throws IOException {
+        try (InputStream specificationStream =
+                TestUnitTestGroupsManager.class.getResourceAsStream(specificationFilename)) {
             return ProctorUtils.readSpecification(specificationStream);
         }
     }
@@ -57,7 +63,7 @@ public class UtilMethods {
         // Current behavior is mapping from { testName -> TestBucket }
 
         final ImmutableMap.Builder<String, String> builder = ImmutableMap.builder();
-        for (Map.Entry<String, TestBucket> entry: proctorResult.getBuckets().entrySet()) {
+        for (Map.Entry<String, TestBucket> entry : proctorResult.getBuckets().entrySet()) {
             final String testName = entry.getKey();
             final TestBucket testBucket = entry.getValue();
 

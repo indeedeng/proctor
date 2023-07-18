@@ -6,9 +6,11 @@ import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import javax.annotation.Nullable;
 
 /**
- * Filter to determine what tests you resolve dynamically besides required tests defined in a specification.
+ * Filter to determine what tests you resolve dynamically besides required tests defined in a
+ * specification.
  *
- * This class should NOT be subclassed to create custom filters, because that breaks deserialization of specifications.
+ * <p>This class should NOT be subclassed to create custom filters, because that breaks
+ * deserialization of specifications.
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
 public interface DynamicFilter {

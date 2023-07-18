@@ -6,6 +6,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.indeed.proctor.SampleOuterClass.Account;
+import com.indeed.proctor.codegen.test.groups.UnitTestGroups;
+import com.indeed.proctor.codegen.test.groups.UnitTestGroups.Payloaded;
+import com.indeed.proctor.codegen.test.groups.UnitTestGroupsContext;
+import com.indeed.proctor.codegen.test.groups.UnitTestGroupsManager;
+import com.indeed.proctor.codegen.test.groups.UnitTestGroupsPayload;
 import com.indeed.proctor.common.ForceGroupsOptions;
 import com.indeed.proctor.common.Identifiers;
 import com.indeed.proctor.common.ProctorResult;
@@ -14,11 +19,6 @@ import com.indeed.proctor.common.ProvidedContext;
 import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.common.model.TestType;
 import com.indeed.proctor.consumer.logging.TestMarkingObserver;
-import com.indeed.proctor.codegen.test.groups.UnitTestGroups;
-import com.indeed.proctor.codegen.test.groups.UnitTestGroups.Payloaded;
-import com.indeed.proctor.codegen.test.groups.UnitTestGroupsPayload;
-import com.indeed.proctor.codegen.test.groups.UnitTestGroupsManager;
-import com.indeed.proctor.codegen.test.groups.UnitTestGroupsContext;
 import com.indeed.util.varexport.VarExporter;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -43,9 +43,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-/**
- * @author parker
- */
+/** @author parker */
 public class TestUnitTestGroupsManager {
     private static final Logger LOGGER = LogManager.getLogger(TestUnitTestGroupsManager.class);
     private static final String SPECIFICATION_RESOURCE = "UnitTestGroups.json";
@@ -61,43 +59,51 @@ public class TestUnitTestGroupsManager {
 
     @Before()
     public void setUp() throws Exception {
-        manager = new UnitTestGroupsManager(() -> UtilMethods.getProctor(SPECIFICATION_MATRIX, SPECIFICATION_RESOURCE));
+        manager =
+                new UnitTestGroupsManager(
+                        () -> UtilMethods.getProctor(SPECIFICATION_MATRIX, SPECIFICATION_RESOURCE));
     }
 
     @Test
     public void testMultipleTypes() {
         // some unstructured combination of tests
-        final UnitTestGroupsContext testContext = UnitTestGroupsContext.newBuilder()
-                .setLoggedIn(true)
-                .setCountry("FR")
-                .setAccount(new Account(10))
-                .build();
+        final UnitTestGroupsContext testContext =
+                UnitTestGroupsContext.newBuilder()
+                        .setLoggedIn(true)
+                        .setCountry("FR")
+                        .setAccount(new Account(10))
+                        .build();
         {
-            final Identifiers identifiers = new Identifiers(ImmutableMap.<TestType, String>builder()
-                    .put(TestType.ANONYMOUS_USER, SPECIFICATION_MATRIX)
-                    .put(TestType.AUTHENTICATED_USER, SPECIFICATION_MATRIX)
-                    .put(TestType.PAGE, SPECIFICATION_MATRIX)
-                    .build());
+            final Identifiers identifiers =
+                    new Identifiers(
+                            ImmutableMap.<TestType, String>builder()
+                                    .put(TestType.ANONYMOUS_USER, SPECIFICATION_MATRIX)
+                                    .put(TestType.AUTHENTICATED_USER, SPECIFICATION_MATRIX)
+                                    .put(TestType.PAGE, SPECIFICATION_MATRIX)
+                                    .build());
 
             final ProctorResult result = testContext.getProctorResult(manager, identifiers);
             assertThat(calcBuckets(result))
-                    .isEqualTo(ImmutableMap.builder()
-                            .put("kluj", "kloo2")
-                            .put("map_payload", "inactive-1")
-                            .put("no_buckets_specified", "test1")
-                            .put("oop_poop", "test1")
-                            .put("payloaded", "inactive-1")
-                            .put("payloaded_verified", "inactive-1")
-                            .put("pimple", "control0")
-                            .build());
+                    .isEqualTo(
+                            ImmutableMap.builder()
+                                    .put("kluj", "kloo2")
+                                    .put("map_payload", "inactive-1")
+                                    .put("no_buckets_specified", "test1")
+                                    .put("oop_poop", "test1")
+                                    .put("payloaded", "inactive-1")
+                                    .put("payloaded_verified", "inactive-1")
+                                    .put("pimple", "control0")
+                                    .build());
         }
         {
-            final Identifiers identifiers = new Identifiers(ImmutableMap.<TestType, String>builder()
-                    .put(TestType.EMAIL_ADDRESS, SPECIFICATION_MATRIX)
-                    .put(TestType.AUTHENTICATED_USER, SPECIFICATION_MATRIX)
-                    .put(TestType.PAGE, SPECIFICATION_MATRIX)
-                    .build(),
-                    true);
+            final Identifiers identifiers =
+                    new Identifiers(
+                            ImmutableMap.<TestType, String>builder()
+                                    .put(TestType.EMAIL_ADDRESS, SPECIFICATION_MATRIX)
+                                    .put(TestType.AUTHENTICATED_USER, SPECIFICATION_MATRIX)
+                                    .put(TestType.PAGE, SPECIFICATION_MATRIX)
+                                    .build(),
+                            true);
 
             final ProctorResult result = testContext.getProctorResult(manager, identifiers);
             assertEquals(0, result.getBuckets().get("pimple").getValue());
@@ -110,11 +116,12 @@ public class TestUnitTestGroupsManager {
     @Test
     public void testRandom() {
         // assumes each of 4 bucket gets ~25% of requests in matrix
-        final UnitTestGroupsContext testContext = UnitTestGroupsContext.newBuilder()
-                .setLoggedIn(true)
-                .setCountry("FR")
-                .setAccount(new Account(10))
-                .build();
+        final UnitTestGroupsContext testContext =
+                UnitTestGroupsContext.newBuilder()
+                        .setLoggedIn(true)
+                        .setCountry("FR")
+                        .setAccount(new Account(10))
+                        .build();
         final Identifiers identifiers = new Identifiers(Collections.emptyMap(), true);
 
         final int[] valuesFound = new int[4];
@@ -130,22 +137,24 @@ public class TestUnitTestGroupsManager {
     @Test
     public void testUserBuckets() {
         {
-            final UnitTestGroupsContext testContext = UnitTestGroupsContext.newBuilder()
-                    .setLoggedIn(true)
-                    .setCountry("FR")
-                    .setAccount(new Account(10))
-                    .build();
+            final UnitTestGroupsContext testContext =
+                    UnitTestGroupsContext.newBuilder()
+                            .setLoggedIn(true)
+                            .setCountry("FR")
+                            .setAccount(new Account(10))
+                            .build();
             final Identifiers identifiers = new Identifiers(TestType.ANONYMOUS_USER, SAMPLE_ID);
             final ProctorResult result = testContext.getProctorResult(manager, identifiers);
             assertThat(calcBuckets(result))
-                    .isEqualTo(ImmutableMap.builder()
-                            .put("kluj", "test1")
-                            .put("map_payload", "inactive-1")
-                            .put("no_buckets_specified", "test1")
-                            .put("oop_poop", "control0")
-                            .put("payloaded", "inactive-1")
-                            .put("payloaded_verified", "inactive-1")
-                            .build());
+                    .isEqualTo(
+                            ImmutableMap.builder()
+                                    .put("kluj", "test1")
+                                    .put("map_payload", "inactive-1")
+                                    .put("no_buckets_specified", "test1")
+                                    .put("oop_poop", "control0")
+                                    .put("payloaded", "inactive-1")
+                                    .put("payloaded_verified", "inactive-1")
+                                    .build());
             // Check and make sure UnitTestGroups respects these groups and works as expected.
             final UnitTestGroups grps = new UnitTestGroups(result);
 
@@ -171,11 +180,12 @@ public class TestUnitTestGroupsManager {
 
     @Test
     public void testUsageObserver() {
-        final UnitTestGroupsContext testContext = UnitTestGroupsContext.newBuilder()
-                .setLoggedIn(true)
-                .setCountry("FR")
-                .setAccount(new Account(10))
-                .build();
+        final UnitTestGroupsContext testContext =
+                UnitTestGroupsContext.newBuilder()
+                        .setLoggedIn(true)
+                        .setCountry("FR")
+                        .setAccount(new Account(10))
+                        .build();
         final Identifiers identifiers = new Identifiers(TestType.ANONYMOUS_USER, SAMPLE_ID);
         final ProctorResult result = testContext.getProctorResult(manager, identifiers);
         final TestMarkingObserver testUsageObserver = new TestMarkingObserver(result);
@@ -188,18 +198,17 @@ public class TestUnitTestGroupsManager {
     @Test
     public void testPageBuckets() {
         {
-            final UnitTestGroupsContext testContext = UnitTestGroupsContext.newBuilder()
-                    .setLoggedIn(true)
-                    .setCountry("FR")
-                    .setAccount(new Account(10))
-                    .build();
+            final UnitTestGroupsContext testContext =
+                    UnitTestGroupsContext.newBuilder()
+                            .setLoggedIn(true)
+                            .setCountry("FR")
+                            .setAccount(new Account(10))
+                            .build();
             // LoggedIn + MX maps to [0, 0.5, 0.5] ranges
             final Identifiers identifiers = new Identifiers(TestType.PAGE, SAMPLE_ID);
             final ProctorResult result = testContext.getProctorResult(manager, identifiers);
             assertThat(calcBuckets(result))
-                    .isEqualTo(ImmutableMap.builder()
-                            .put("pimple", "test1")
-                            .build());
+                    .isEqualTo(ImmutableMap.builder().put("pimple", "test1").build());
             // Check and make sure UnitTestGroups respects these groups and works as expected.
             final UnitTestGroups grps = new UnitTestGroups(result);
             assertEquals(UnitTestGroups.Pimple.TEST, grps.getPimple());
@@ -216,18 +225,17 @@ public class TestUnitTestGroupsManager {
             assertEquals("pimple1", grps.toString());
         }
         {
-            final UnitTestGroupsContext testContext = UnitTestGroupsContext.newBuilder()
-                    .setLoggedIn(true)
-                    .setCountry("US")
-                    .setAccount(new Account(10))
-                    .build();
+            final UnitTestGroupsContext testContext =
+                    UnitTestGroupsContext.newBuilder()
+                            .setLoggedIn(true)
+                            .setCountry("US")
+                            .setAccount(new Account(10))
+                            .build();
             // LoggedIn + US maps to [1, 0, 0] range
             final Identifiers identifiers = new Identifiers(TestType.PAGE, SAMPLE_ID);
             final ProctorResult result = testContext.getProctorResult(manager, identifiers);
             assertThat(calcBuckets(result))
-                    .isEqualTo(ImmutableMap.builder()
-                            .put("pimple", "inactive-1")
-                            .build());
+                    .isEqualTo(ImmutableMap.builder().put("pimple", "inactive-1").build());
             // Check and make sure UnitTestGroups respects these groups and works as expected.
             final UnitTestGroups grps = new UnitTestGroups(result);
             assertEquals(UnitTestGroups.Pimple.INACTIVE, grps.getPimple());
@@ -244,11 +252,12 @@ public class TestUnitTestGroupsManager {
             assertEquals("", grps.toString());
         }
         {
-            final UnitTestGroupsContext testContext = UnitTestGroupsContext.newBuilder()
-                    .setLoggedIn(false)
-                    .setCountry("FR")
-                    .setAccount(new Account(10))
-                    .build();
+            final UnitTestGroupsContext testContext =
+                    UnitTestGroupsContext.newBuilder()
+                            .setLoggedIn(false)
+                            .setCountry("FR")
+                            .setAccount(new Account(10))
+                            .build();
             // LoggedIn=false + MX maps to [1, 0, 0] range
             final Identifiers identifiers = new Identifiers(TestType.PAGE, SAMPLE_ID);
             final ProctorResult result = testContext.getProctorResult(manager, identifiers);
@@ -272,11 +281,12 @@ public class TestUnitTestGroupsManager {
 
     @Test
     public void testCompanyBuckets() {
-        final UnitTestGroupsContext testContext = UnitTestGroupsContext.newBuilder()
-                .setLoggedIn(true)
-                .setCountry("US")
-                .setAccount(new Account(10))
-                .build();
+        final UnitTestGroupsContext testContext =
+                UnitTestGroupsContext.newBuilder()
+                        .setLoggedIn(true)
+                        .setCountry("US")
+                        .setAccount(new Account(10))
+                        .build();
         final Identifiers identifiers = new Identifiers(TestType.COMPANY, SAMPLE_ID);
         final ProctorResult result = testContext.getProctorResult(manager, identifiers);
         assertThat(calcBuckets(result)).isEmpty();
@@ -298,24 +308,28 @@ public class TestUnitTestGroupsManager {
 
     @Test
     public void testPayloads() {
-        final UnitTestGroupsContext testContext = UnitTestGroupsContext.newBuilder()
-                .setLoggedIn(true)
-                .setCountry("US")
-                .setAccount(new Account(10))
-                .build();
-        final Identifiers identifiers = new Identifiers(ImmutableMap.<TestType, String>builder()
-                .put(TestType.ANONYMOUS_USER, SPECIFICATION_MATRIX)
-                .build());
+        final UnitTestGroupsContext testContext =
+                UnitTestGroupsContext.newBuilder()
+                        .setLoggedIn(true)
+                        .setCountry("US")
+                        .setAccount(new Account(10))
+                        .build();
+        final Identifiers identifiers =
+                new Identifiers(
+                        ImmutableMap.<TestType, String>builder()
+                                .put(TestType.ANONYMOUS_USER, SPECIFICATION_MATRIX)
+                                .build());
         final ProctorResult result = testContext.getProctorResult(manager, identifiers);
         assertThat(calcBuckets(result))
-                .isEqualTo(ImmutableMap.builder()
-                        .put("kluj", "kloo2")
-                        .put("map_payload", "inactive-1")
-                        .put("no_buckets_specified", "test1")
-                        .put("oop_poop", "test1")
-                        .put("payloaded", "inactive-1")
-                        .put("payloaded_verified", "inactive-1")
-                        .build());
+                .isEqualTo(
+                        ImmutableMap.builder()
+                                .put("kluj", "kloo2")
+                                .put("map_payload", "inactive-1")
+                                .put("no_buckets_specified", "test1")
+                                .put("oop_poop", "test1")
+                                .put("payloaded", "inactive-1")
+                                .put("payloaded_verified", "inactive-1")
+                                .build());
         // Check and make sure UnitTestGroups respects these groups and works as expected.
         final UnitTestGroups grps = new UnitTestGroups(result);
         assertNotNull(grps.getPayloaded_verified());
@@ -327,142 +341,185 @@ public class TestUnitTestGroupsManager {
         // Get the current test payload
         assertEquals(0, grps.getPayloaded_verifiedPayload(), 0.001);
         // Test per-bucket payload fetch
-        assertEquals(0, grps.getPayloaded_verifiedPayloadForBucket(UnitTestGroups.Payloaded_verified.INACTIVE), 0.001);
-        assertEquals(5, grps.getPayloaded_verifiedPayloadForBucket(UnitTestGroups.Payloaded_verified.CONTROL), 0.001);
-        assertEquals(50, grps.getPayloaded_verifiedPayloadForBucket(UnitTestGroups.Payloaded_verified.TEST), 0.001);
+        assertEquals(
+                0,
+                grps.getPayloaded_verifiedPayloadForBucket(
+                        UnitTestGroups.Payloaded_verified.INACTIVE),
+                0.001);
+        assertEquals(
+                5,
+                grps.getPayloaded_verifiedPayloadForBucket(
+                        UnitTestGroups.Payloaded_verified.CONTROL),
+                0.001);
+        assertEquals(
+                50,
+                grps.getPayloaded_verifiedPayloadForBucket(UnitTestGroups.Payloaded_verified.TEST),
+                0.001);
 
         assertEquals("kluj2,no_buckets_specified1,oop_poop1", grps.toString());
 
         assertNotNull(grps.getPayloaded_excluded());
         assertEquals(
                 "Expected inactive even though there are no explicit assignments made to that group",
-                Payloaded.INACTIVE, grps.getPayloaded());
+                Payloaded.INACTIVE,
+                grps.getPayloaded());
         assertArrayEquals(
                 "Expected inactive payload to be used, not 'empty' default",
-                new String[]{"preexisting"}, grps.getPayloaded_excludedPayload());
+                new String[] {"preexisting"},
+                grps.getPayloaded_excludedPayload());
     }
 
     @Test
-    public void testTestDescriptions(){
-        final UnitTestGroupsContext testContext = UnitTestGroupsContext.newBuilder()
-                .setLoggedIn(true)
-                .setCountry("FR")
-                .setAccount(new Account(10))
-                .build();
+    public void testTestDescriptions() {
+        final UnitTestGroupsContext testContext =
+                UnitTestGroupsContext.newBuilder()
+                        .setLoggedIn(true)
+                        .setCountry("FR")
+                        .setAccount(new Account(10))
+                        .build();
         final Identifiers identifiers = new Identifiers(TestType.USER, SAMPLE_ID);
         final ProctorResult result = testContext.getProctorResult(manager, identifiers);
         assertThat(calcBuckets(result))
-                .isEqualTo(ImmutableMap.builder()
-                        .put("kluj", "test1")
-                        .put("map_payload", "inactive-1")
-                        .put("no_buckets_specified", "test1")
-                        .put("oop_poop", "control0")
-                        .put("payloaded", "inactive-1")
-                        .put("payloaded_verified", "inactive-1")
-                        .build());
+                .isEqualTo(
+                        ImmutableMap.builder()
+                                .put("kluj", "test1")
+                                .put("map_payload", "inactive-1")
+                                .put("no_buckets_specified", "test1")
+                                .put("oop_poop", "control0")
+                                .put("payloaded", "inactive-1")
+                                .put("payloaded_verified", "inactive-1")
+                                .build());
         // Check and make sure UnitTestGroups respects these groups and works as expected.
         final UnitTestGroups grps = new UnitTestGroups(result);
-        //make sure getDescription method exists and returns the correct description
+        // make sure getDescription method exists and returns the correct description
         assertEquals("2nd test", grps.getKlujDescription());
     }
 
     @Test
-    public void testTestDescriptions_checkEscaping(){
-        final UnitTestGroupsContext testContext = UnitTestGroupsContext.newBuilder()
-                .setLoggedIn(true)
-                .setCountry("FR")
-                .setAccount(new Account(10))
-                .build();
+    public void testTestDescriptions_checkEscaping() {
+        final UnitTestGroupsContext testContext =
+                UnitTestGroupsContext.newBuilder()
+                        .setLoggedIn(true)
+                        .setCountry("FR")
+                        .setAccount(new Account(10))
+                        .build();
         final Identifiers identifiers = new Identifiers(TestType.USER, SAMPLE_ID);
         final ProctorResult result = testContext.getProctorResult(manager, identifiers);
         assertThat(calcBuckets(result))
-                .isEqualTo(ImmutableMap.builder()
-                        .put("kluj", "test1")
-                        .put("map_payload", "inactive-1")
-                        .put("no_buckets_specified", "test1")
-                        .put("oop_poop", "control0")
-                        .put("payloaded", "inactive-1")
-                        .put("payloaded_verified", "inactive-1")
-                        .build());
+                .isEqualTo(
+                        ImmutableMap.builder()
+                                .put("kluj", "test1")
+                                .put("map_payload", "inactive-1")
+                                .put("no_buckets_specified", "test1")
+                                .put("oop_poop", "control0")
+                                .put("payloaded", "inactive-1")
+                                .put("payloaded_verified", "inactive-1")
+                                .build());
         // Check and make sure UnitTestGroups respects these groups and works as expected.
         final UnitTestGroups grps = new UnitTestGroups(result);
-        //make sure getDescription method exists and returns the correct description with escaping
+        // make sure getDescription method exists and returns the correct description with escaping
         assertEquals("3rd \n\t\"test", grps.getBubbleDescription());
     }
 
     @Test
-    public void testMapPayloadReturns(){
-        final UnitTestGroupsContext testContext = UnitTestGroupsContext.newBuilder()
-                .setLoggedIn(true)
-                .setCountry("FR")
-                .setAccount(new Account(10))
-                .build();
+    public void testMapPayloadReturns() {
+        final UnitTestGroupsContext testContext =
+                UnitTestGroupsContext.newBuilder()
+                        .setLoggedIn(true)
+                        .setCountry("FR")
+                        .setAccount(new Account(10))
+                        .build();
         final Identifiers identifiers = new Identifiers(TestType.USER, SAMPLE_ID);
         final ProctorResult result = testContext.getProctorResult(manager, identifiers);
 
         final UnitTestGroups grps = new UnitTestGroups(result);
         assertEquals("lol", grps.getMap_payloadPayload().getAstring());
         assertEquals(grps.getMap_payloadPayload().getAdouble(), (Double) 2.1);
-        assertArrayEquals(grps.getMap_payloadPayload().getAnarray(), new Long[]{1L, 2L, 3L});
-        assertArrayEquals(grps.getMap_payloadPayload().getAstringarr(), new String[]{"one","two","three"});
-        assertArrayEquals(grps.getMap_payloadPayload().getAdarray(), new Double[]{1.1,2.1,3.1});
+        assertArrayEquals(grps.getMap_payloadPayload().getAnarray(), new Long[] {1L, 2L, 3L});
+        assertArrayEquals(
+                grps.getMap_payloadPayload().getAstringarr(), new String[] {"one", "two", "three"});
+        assertArrayEquals(grps.getMap_payloadPayload().getAdarray(), new Double[] {1.1, 2.1, 3.1});
 
-        final UnitTestGroupsPayload.Map_payload unitTestGroupsPayloadTest = grps.getMap_payloadPayloadForBucket(UnitTestGroups.Map_payload.TEST);
+        final UnitTestGroupsPayload.Map_payload unitTestGroupsPayloadTest =
+                grps.getMap_payloadPayloadForBucket(UnitTestGroups.Map_payload.TEST);
         assertEquals("l", unitTestGroupsPayloadTest.getAstring());
         assertEquals(unitTestGroupsPayloadTest.getAdouble(), (Double) 1.1);
-        assertArrayEquals(unitTestGroupsPayloadTest.getAnarray(), new Long[]{1L, 2L, 3L});
-        assertArrayEquals(unitTestGroupsPayloadTest.getAstringarr(), new String[]{"one","two","three"});
-        assertArrayEquals(unitTestGroupsPayloadTest.getAdarray(), new Double[]{1.1,2.1,3.1});
+        assertArrayEquals(unitTestGroupsPayloadTest.getAnarray(), new Long[] {1L, 2L, 3L});
+        assertArrayEquals(
+                unitTestGroupsPayloadTest.getAstringarr(), new String[] {"one", "two", "three"});
+        assertArrayEquals(unitTestGroupsPayloadTest.getAdarray(), new Double[] {1.1, 2.1, 3.1});
 
-        final UnitTestGroupsPayload.Map_payload unitTestGroupsPayloadControl = grps.getMap_payloadPayloadForBucket(UnitTestGroups.Map_payload.CONTROL);
+        final UnitTestGroupsPayload.Map_payload unitTestGroupsPayloadControl =
+                grps.getMap_payloadPayloadForBucket(UnitTestGroups.Map_payload.CONTROL);
         assertEquals("str2", unitTestGroupsPayloadControl.getAstring());
         assertEquals(unitTestGroupsPayloadControl.getAdouble(), (Double) 3.1);
-        assertArrayEquals(unitTestGroupsPayloadControl.getAnarray(), new Long[]{1L, 2L, 3L});
-        assertArrayEquals(unitTestGroupsPayloadControl.getAstringarr(), new String[]{"one","two","three"});
-        assertArrayEquals(unitTestGroupsPayloadControl.getAdarray(), new Double[]{1.1,2.1,3.1});
+        assertArrayEquals(unitTestGroupsPayloadControl.getAnarray(), new Long[] {1L, 2L, 3L});
+        assertArrayEquals(
+                unitTestGroupsPayloadControl.getAstringarr(), new String[] {"one", "two", "three"});
+        assertArrayEquals(unitTestGroupsPayloadControl.getAdarray(), new Double[] {1.1, 2.1, 3.1});
     }
 
     @Test
-    public void testMapJsonReturns(){
-        final UnitTestGroupsContext testContext = UnitTestGroupsContext.newBuilder()
-                .setLoggedIn(true)
-                .setCountry("FR")
-                .setAccount(new Account(10))
-                .build();
+    public void testMapJsonReturns() {
+        final UnitTestGroupsContext testContext =
+                UnitTestGroupsContext.newBuilder()
+                        .setLoggedIn(true)
+                        .setCountry("FR")
+                        .setAccount(new Account(10))
+                        .build();
         final Identifiers identifiers = new Identifiers(TestType.USER, SAMPLE_ID);
         final ProctorResult result = testContext.getProctorResult(manager, identifiers);
 
         final UnitTestGroups grps = new UnitTestGroups(result);
-        assertEquals( "{\"foo\":{\"bar\":\"baz\",\"abc\":123}}", grps.getJson_payload_testPayload().toString());
-        assertEquals("{\"foo\":{\"bar\":\"baz\",\"abc\":456}}", grps.getJson_payload_testPayloadForBucket(UnitTestGroups.Json_payload_test.CONTROL).toString());
-        assertEquals("{\"foo\":{\"bar\":\"baz\",\"abc\":789}}", grps.getJson_payload_testPayloadForBucket(UnitTestGroups.Json_payload_test.TEST).toString());
+        assertEquals(
+                "{\"foo\":{\"bar\":\"baz\",\"abc\":123}}",
+                grps.getJson_payload_testPayload().toString());
+        assertEquals(
+                "{\"foo\":{\"bar\":\"baz\",\"abc\":456}}",
+                grps.getJson_payload_testPayloadForBucket(UnitTestGroups.Json_payload_test.CONTROL)
+                        .toString());
+        assertEquals(
+                "{\"foo\":{\"bar\":\"baz\",\"abc\":789}}",
+                grps.getJson_payload_testPayloadForBucket(UnitTestGroups.Json_payload_test.TEST)
+                        .toString());
 
-        assertEquals("{\"foo\":{\"bar\":\"baz\",\"abc\":123}}", grps.getJson_payload_testPayload(JsonNode.class).toString());
+        assertEquals(
+                "{\"foo\":{\"bar\":\"baz\",\"abc\":123}}",
+                grps.getJson_payload_testPayload(JsonNode.class).toString());
         assertNull(grps.getJson_payload_testPayload(Double.class));
         assertNull(grps.getJson_payload_testPayload(Long.class));
         assertNull(grps.getJson_payload_testPayload(String.class));
         assertNull(grps.getJson_payload_testPayload(Double[].class));
         assertNull(grps.getJson_payload_testPayload(Long[].class));
         assertNull(grps.getJson_payload_testPayload(String[].class));
-        assertEquals(ImmutableMap.of("foo", ImmutableMap.of("bar", "baz", "abc", 123)), grps.getJson_payload_testPayload(Map.class));
+        assertEquals(
+                ImmutableMap.of("foo", ImmutableMap.of("bar", "baz", "abc", 123)),
+                grps.getJson_payload_testPayload(Map.class));
     }
 
     @Test
     public void testGetMapPayloadForControlGroups() {
-        final UnitTestGroupsContext testContext = UnitTestGroupsContext.newBuilder()
-                .setLoggedIn(true)
-                .setCountry("FR")
-                .setAccount(new Account(10))
-                .build();
+        final UnitTestGroupsContext testContext =
+                UnitTestGroupsContext.newBuilder()
+                        .setLoggedIn(true)
+                        .setCountry("FR")
+                        .setAccount(new Account(10))
+                        .build();
 
-        final String identifier = findIdentifier(TestType.USER, testContext, UnitTestGroups.Test.MAP_PAYLOAD,
-                UnitTestGroups.Map_payload.CONTROL.getValue(), 1000);
+        final String identifier =
+                findIdentifier(
+                        TestType.USER,
+                        testContext,
+                        UnitTestGroups.Test.MAP_PAYLOAD,
+                        UnitTestGroups.Map_payload.CONTROL.getValue(),
+                        1000);
         final Identifiers identifiers = new Identifiers(TestType.USER, identifier);
         final ProctorResult result = testContext.getProctorResult(manager, identifiers);
 
         final UnitTestGroups grps = new UnitTestGroups(result);
 
-        assertEquals("`control` group should be chosen by the identifier",
+        assertEquals(
+                "`control` group should be chosen by the identifier",
                 UnitTestGroups.Map_payload.CONTROL.getValue(),
                 grps.getMap_payloadValue());
 
@@ -470,25 +527,30 @@ public class TestUnitTestGroupsManager {
         final UnitTestGroupsPayload.Map_payload payload = grps.getMap_payloadPayload();
         assertEquals("str2", payload.getAstring());
         assertEquals(payload.getAdouble(), (Double) 3.1);
-        assertArrayEquals(payload.getAnarray(), new Long[]{1L, 2L, 3L});
-        assertArrayEquals(payload.getAstringarr(), new String[]{"one", "two", "three"});
-        assertArrayEquals(payload.getAdarray(), new Double[]{1.1, 2.1, 3.1});
+        assertArrayEquals(payload.getAnarray(), new Long[] {1L, 2L, 3L});
+        assertArrayEquals(payload.getAstringarr(), new String[] {"one", "two", "three"});
+        assertArrayEquals(payload.getAdarray(), new Double[] {1.1, 2.1, 3.1});
     }
 
     @Test
     public void testNestedClasses() throws Exception {
-        final Map<String, String> declaredContext = UtilMethods.getProctorSpecification(SPECIFICATION_RESOURCE).getProvidedContext();
-        final Map<String, String> innerClassTypes = Maps.filterValues(declaredContext, new Predicate<String>() {
-            @Override
-            public boolean apply(final String subfrom) {
-                return subfrom.contains("$");
-            }
-        });
+        final Map<String, String> declaredContext =
+                UtilMethods.getProctorSpecification(SPECIFICATION_RESOURCE).getProvidedContext();
+        final Map<String, String> innerClassTypes =
+                Maps.filterValues(
+                        declaredContext,
+                        new Predicate<String>() {
+                            @Override
+                            public boolean apply(final String subfrom) {
+                                return subfrom.contains("$");
+                            }
+                        });
         assertFalse(
                 "Sample groups need to contain at least one inner class type",
                 innerClassTypes.isEmpty());
 
-        final ProvidedContext providedContext = ProctorUtils.convertContextToTestableMap(declaredContext);
+        final ProvidedContext providedContext =
+                ProctorUtils.convertContextToTestableMap(declaredContext);
         assertFalse(
                 "Expected the provided context to be populated since no class-not-found-error should have been thrown",
                 providedContext.getContext().isEmpty());
@@ -496,11 +558,11 @@ public class TestUnitTestGroupsManager {
 
     @Test
     public void testMapPayloadWithIntegerFormat() throws IOException {
-        final UnitTestGroupsContext testContext = UnitTestGroupsContext.newBuilder()
-                .setAccount(new Account(123))
-                .build();
-        final String identifier = findIdentifier(TestType.USER, testContext, UnitTestGroups.Test.MAP_PAYLOAD_INT,
-                1, 1000);
+        final UnitTestGroupsContext testContext =
+                UnitTestGroupsContext.newBuilder().setAccount(new Account(123)).build();
+        final String identifier =
+                findIdentifier(
+                        TestType.USER, testContext, UnitTestGroups.Test.MAP_PAYLOAD_INT, 1, 1000);
         final Identifiers identifiers = new Identifiers(TestType.USER, identifier);
         final ProctorResult result = testContext.getProctorResult(manager, identifiers);
 
@@ -512,11 +574,15 @@ public class TestUnitTestGroupsManager {
 
     @Test
     public void testPayloadOnlyMapType() {
-        final UnitTestGroupsContext testContext = UnitTestGroupsContext.newBuilder()
-                .setAccount(new Account(123))
-                .build();
-        final String identifier = findIdentifier(TestType.USER, testContext, UnitTestGroups.Test.PAYLOADONLY_MAPTYPE,
-                1, 1000);
+        final UnitTestGroupsContext testContext =
+                UnitTestGroupsContext.newBuilder().setAccount(new Account(123)).build();
+        final String identifier =
+                findIdentifier(
+                        TestType.USER,
+                        testContext,
+                        UnitTestGroups.Test.PAYLOADONLY_MAPTYPE,
+                        1,
+                        1000);
         final Identifiers identifiers = new Identifiers(TestType.USER, identifier);
         final ProctorResult result = testContext.getProctorResult(manager, identifiers);
 
@@ -528,11 +594,15 @@ public class TestUnitTestGroupsManager {
 
     @Test
     public void testPayloadOnlyDoubleType() {
-        final UnitTestGroupsContext testContext = UnitTestGroupsContext.newBuilder()
-                .setAccount(new Account(123))
-                .build();
-        final String identifier = findIdentifier(TestType.USER, testContext, UnitTestGroups.Test.PAYLOADONLY_DOUBLETYPE,
-                0, 1000);
+        final UnitTestGroupsContext testContext =
+                UnitTestGroupsContext.newBuilder().setAccount(new Account(123)).build();
+        final String identifier =
+                findIdentifier(
+                        TestType.USER,
+                        testContext,
+                        UnitTestGroups.Test.PAYLOADONLY_DOUBLETYPE,
+                        0,
+                        1000);
         final Identifiers identifiers = new Identifiers(TestType.USER, identifier);
         final ProctorResult result = testContext.getProctorResult(manager, identifiers);
 
@@ -551,30 +621,32 @@ public class TestUnitTestGroupsManager {
 
     @Test
     public void testPayloadReturningFallbackPayload() {
-        final UnitTestGroupsContext testContext = UnitTestGroupsContext.newBuilder()
-                .setLoggedIn(true)
-                .setCountry("US")
-                .setAccount(new Account(0))
-                .build();
-        final Identifiers identifiers = new Identifiers(ImmutableMap.<TestType, String>builder()
-                .put(TestType.ANONYMOUS_USER, "dummy_token")
-                .build());
+        final UnitTestGroupsContext testContext =
+                UnitTestGroupsContext.newBuilder()
+                        .setLoggedIn(true)
+                        .setCountry("US")
+                        .setAccount(new Account(0))
+                        .build();
+        final Identifiers identifiers =
+                new Identifiers(
+                        ImmutableMap.<TestType, String>builder()
+                                .put(TestType.ANONYMOUS_USER, "dummy_token")
+                                .build());
         final ProctorResult result = testContext.getProctorResult(manager, identifiers);
         assertThat(result.getTestDefinitions()).containsKey("payloadonly_doubletype");
         assertThat(result.getBuckets()).doesNotContainKey("payloadonly_doubletype");
 
         final UnitTestGroups grps = new UnitTestGroups(result);
         assertThat(grps.getPayloadonly_doubletypeValue()).isEqualTo(-1);
-        assertThat(grps.getPayloadonly_doubletypePayload())
-                .isNotNull()
-                .isEqualTo(-1.0);
+        assertThat(grps.getPayloadonly_doubletypePayload()).isNotNull().isEqualTo(-1.0);
     }
 
-    private String findIdentifier(final TestType testType,
-                                  final UnitTestGroupsContext context,
-                                  final UnitTestGroups.Test test,
-                                  final int targetValue,
-                                  final int maxIteration) {
+    private String findIdentifier(
+            final TestType testType,
+            final UnitTestGroupsContext context,
+            final UnitTestGroups.Test test,
+            final int targetValue,
+            final int maxIteration) {
         for (int i = 0; i < maxIteration; i++) {
             final String identifier = String.valueOf(i);
             final Identifiers identifiers = Identifiers.of(testType, identifier);
@@ -587,43 +659,53 @@ public class TestUnitTestGroupsManager {
                 return identifier;
             }
         }
-        throw new RuntimeException("identifier not found for target bucket within " + maxIteration + " iterations");
+        throw new RuntimeException(
+                "identifier not found for target bucket within " + maxIteration + " iterations");
     }
 
     @Test
-    public void testProctorResultWithSingleTestNameFilter(){
-        final UnitTestGroupsContext testContext = UnitTestGroupsContext.newBuilder()
-                .setLoggedIn(true)
-                .setCountry("FR")
-                .setAccount(new Account(10))
-                .build();
+    public void testProctorResultWithSingleTestNameFilter() {
+        final UnitTestGroupsContext testContext =
+                UnitTestGroupsContext.newBuilder()
+                        .setLoggedIn(true)
+                        .setCountry("FR")
+                        .setAccount(new Account(10))
+                        .build();
         final Identifiers identifiers = new Identifiers(TestType.USER, SAMPLE_ID);
-        final ProctorResult result = testContext.getProctorResult(manager, new MockHttpServletRequest(), new MockHttpServletResponse(), identifiers, false, ImmutableList.of("kluj"));
+        final ProctorResult result =
+                testContext.getProctorResult(
+                        manager,
+                        new MockHttpServletRequest(),
+                        new MockHttpServletResponse(),
+                        identifiers,
+                        false,
+                        ImmutableList.of("kluj"));
 
         assertThat(calcBuckets(result))
-                .isEqualTo(ImmutableMap.builder()
-                        .put("kluj", "test1")
-                        .build());
+                .isEqualTo(ImmutableMap.builder().put("kluj", "test1").build());
     }
 
     @Test
-    public void testProctorResultWithTestNameFilter(){
-        final UnitTestGroupsContext testContext = UnitTestGroupsContext.newBuilder()
-                .setLoggedIn(true)
-                .setCountry("FR")
-                .setAccount(new Account(10))
-                .build();
+    public void testProctorResultWithTestNameFilter() {
+        final UnitTestGroupsContext testContext =
+                UnitTestGroupsContext.newBuilder()
+                        .setLoggedIn(true)
+                        .setCountry("FR")
+                        .setAccount(new Account(10))
+                        .build();
         final Identifiers identifiers = new Identifiers(TestType.USER, SAMPLE_ID);
-        final Collection<String> testNameFilter = ImmutableList.of("kluj", "map_payload", "no_buckets_specified", "payloaded");
-        final ProctorResult result = testContext.getProctorResult(
-                manager,
-                new MockHttpServletRequest(),
-                new MockHttpServletResponse(),
-                identifiers,
-                false,
-                testNameFilter);
+        final Collection<String> testNameFilter =
+                ImmutableList.of("kluj", "map_payload", "no_buckets_specified", "payloaded");
+        final ProctorResult result =
+                testContext.getProctorResult(
+                        manager,
+                        new MockHttpServletRequest(),
+                        new MockHttpServletResponse(),
+                        identifiers,
+                        false,
+                        testNameFilter);
 
-        //Only calc bucket allocation for filtered test names
+        // Only calc bucket allocation for filtered test names
         assertThat(result.getBuckets())
                 .containsOnlyKeys("kluj", "map_payload", "no_buckets_specified", "payloaded");
 
@@ -636,21 +718,24 @@ public class TestUnitTestGroupsManager {
     }
 
     @Test
-    public void testProctorResultWithTestNameFilterWithoutHttp(){
-        final UnitTestGroupsContext testContext = UnitTestGroupsContext.newBuilder()
-                .setLoggedIn(true)
-                .setCountry("FR")
-                .setAccount(new Account(10))
-                .build();
+    public void testProctorResultWithTestNameFilterWithoutHttp() {
+        final UnitTestGroupsContext testContext =
+                UnitTestGroupsContext.newBuilder()
+                        .setLoggedIn(true)
+                        .setCountry("FR")
+                        .setAccount(new Account(10))
+                        .build();
         final Identifiers identifiers = new Identifiers(TestType.USER, SAMPLE_ID);
-        final Collection<String> testNameFilter = ImmutableList.of("kluj", "map_payload", "no_buckets_specified", "payloaded");
-        final ProctorResult result = testContext.getProctorResult(
-                manager,
-                identifiers,
-                new ForceGroupsOptions.Builder().build(),
-                testNameFilter);
+        final Collection<String> testNameFilter =
+                ImmutableList.of("kluj", "map_payload", "no_buckets_specified", "payloaded");
+        final ProctorResult result =
+                testContext.getProctorResult(
+                        manager,
+                        identifiers,
+                        new ForceGroupsOptions.Builder().build(),
+                        testNameFilter);
 
-        //Only calc bucket allocation for filtered test names
+        // Only calc bucket allocation for filtered test names
         assertThat(result.getBuckets())
                 .containsOnlyKeys("kluj", "map_payload", "no_buckets_specified", "payloaded");
 
