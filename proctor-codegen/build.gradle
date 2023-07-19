@@ -17,6 +17,8 @@ dependencies {
     testImplementation libs.assertj
 }
 
+// Need to remove all dependenceis that get added or will cause issues upstream when projects include
+// Plan to remove in PROC-1290: Remove Proctor Shading of Javax El libraries
 shadowJar {
     archiveClassifier.set('')
     dependencies {
