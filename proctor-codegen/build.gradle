@@ -43,4 +43,4 @@ shadowJar {
     relocate 'org.apache.tomcat', 'com.indeed.shaded.org.apache.el7'
 }
 
-shadowJar.shouldRunAfter jar
+shadowJar.mustRunAfter jar
