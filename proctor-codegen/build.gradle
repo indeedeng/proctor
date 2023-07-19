@@ -30,6 +30,7 @@ shadowJar {
         exclude(dependency('org.apache.logging.log4j:log4j-core:2.17.1'))
         exclude(dependency('com.indeed:util-varexport:1.0.49-1cfb888'))
         exclude(dependency('com.indeed:util-core:1.0.49-1cfb888'))
+        exclude(dependency('org.slf4j:slf4j-api:1.7.32'))
         exclude(dependency('com.fasterxml.jackson.core:jackson-core:2.13.4'))
         exclude(dependency('com.fasterxml.jackson.core:jackson-annotations:2.13.4'))
         exclude(dependency('org.freemarker:freemarker:2.3.16'))
