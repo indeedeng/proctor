@@ -46,3 +46,5 @@ task runWithJavaExec(type: JavaExec) {
 }
 
 compileTestJava.dependsOn(runWithJavaExec)
+
+runWithJavaExec.dependsOn(':proctor-codegen:shadowJar')

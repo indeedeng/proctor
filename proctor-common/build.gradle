@@ -31,6 +31,8 @@ dependencies {
     testImplementation libs.jsr305
 }
 
+// Need to remove all dependenceis that get added or will cause issues upstream when projects include
+// Plan to remove in PROC-1290: Remove Proctor Shading of Javax El libraries
 shadowJar {
     archiveClassifier.set('')
     dependencies {
@@ -53,4 +55,4 @@ shadowJar {
     relocate 'org.apache.tomcat', 'com.indeed.shaded.org.apache.el7'
 }
 
-shadowJar.shouldRunAfter jar
+shadowJar.mustRunAfter jar
