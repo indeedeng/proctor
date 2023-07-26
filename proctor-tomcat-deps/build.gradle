@@ -5,3 +5,15 @@ dependencies {
     api libs.tomcatElApi
     api libs.tomcatJasperEl
 }
+
+task editPom(type: Exec) {
+    commandLine './editPom.sh'
+}
+
+task generatePomFileForPubNamePublication {
+    finalizedBy editPom
+}
+
+editPom.mustRunAfter tasks.withType(GenerateMavenPom)
+
+tasks.withType(PublishToMavenRepository).all {dependsOn editPom}
