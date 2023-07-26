@@ -22,3 +22,4 @@ dependencies {
 
 test.dependsOn(':proctor-common:shadowJar')
 test.dependsOn(':proctor-codegen:shadowJar')
+test.dependsOn(':proctor-consumer:shadowJar')
