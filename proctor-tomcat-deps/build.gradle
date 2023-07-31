@@ -17,7 +17,3 @@ task generatePomFileForPubNamePublication {
 editPom.mustRunAfter tasks.withType(GenerateMavenPom)
 
 tasks.withType(PublishToMavenRepository).all {dependsOn editPom}
-
-jar {
-    exclude('org.apache.tomcat:tomcat-el-api', 'org.apache.tomcat:tomcat-jasper-el')
-}
