@@ -21,3 +21,7 @@ tasks.withType(PublishToMavenRepository).all { dependsOn editPom }
 jar {
     exclude('org.apache.tomcat:tomcat-el-api', 'org.apache.tomcat:tomcat-jasper-el')
 }
+
+tasks.withType(GenerateModuleMetadata) {
+    enabled = false
+}
