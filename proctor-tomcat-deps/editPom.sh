@@ -1,2 +1,2 @@
 #!/bin/bash
-sed -i '38d;44d' ./build/publications/maven/pom-default.xml
+sed -i '33d;39d' ./build/publications/maven/pom-default.xml
