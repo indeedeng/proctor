@@ -1,4 +1,4 @@
-indeedOss.activateFeature 'library'
+/*indeedOss.activateFeature 'library'
 indeedLibrary.name = 'proctor-tomcat-deps'
 
 dependencies {
@@ -25,3 +25,4 @@ jar {
 tasks.withType(GenerateModuleMetadata) {
     enabled = false
 }
+*/
