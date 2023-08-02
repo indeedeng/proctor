@@ -55,6 +55,7 @@ shadowJar {
         exclude(project(':proctor-tomcat-deps'))
         exclude(project(':proctor-common'))
     }
+    exclude('META-INF/web-fragment.xml')
     exclude('META-INF/services/javax.el.ExpressionFactory')
     relocate 'javax.el', 'com.indeed.shaded.javax.el7'
     relocate 'org.apache.el', 'com.indeed.shaded.org.apache.el7'
