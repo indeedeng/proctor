@@ -27,7 +27,6 @@ dependencies {
     testImplementation libs.springTest
     testImplementation 'com.indeed:util-core:1.0.49-1cfb888'
     testImplementation 'com.indeed:util-varexport:1.0.49-1cfb888'
-
 }
 
 ext {
@@ -48,3 +47,4 @@ task runWithJavaExec(type: JavaExec) {
 compileTestJava.dependsOn(runWithJavaExec)
 
 runWithJavaExec.dependsOn(':proctor-codegen:shadowJar')
+runWithJavaExec.dependsOn(':proctor-builder:shadowJar')

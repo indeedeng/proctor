@@ -30,3 +30,7 @@ dependencies {
     providedCompile libs.tomcatServletApi
     compileOnly libs.jsr305
 }
+
+test.dependsOn(':proctor-store:shadowJar')
+test.dependsOn(':proctor-store-git:shadowJar')
+test.dependsOn(':proctor-store-svn:shadowJar')
