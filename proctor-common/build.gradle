@@ -40,6 +40,8 @@ shadowJar {
         exclude(dependency('com.google.guava:guava:20.0'))
         exclude(dependency('org.apache.commons:commons-lang3:3.12.0'))
         exclude(dependency('org.apache.commons-logging:commons-logging'))
+        exclude(dependency('org.apache.logging.log4j:log4j'))
+        exclude(dependency('org.apache.logging:logging-parent'))
         exclude(dependency('com.google.code.findbugs:jsr305:1.3.9'))
         exclude(dependency('com.fasterxml.jackson.core:jackson-databind:2.13.4'))
         exclude(dependency('org.apache.logging.log4j:log4j-api:2.17.1'))
@@ -50,6 +52,7 @@ shadowJar {
         exclude(dependency('com.fasterxml.jackson.core:jackson-annotations:2.13.4'))
         exclude(project(':proctor-tomcat-deps'))
     }
+    exclude('META-INF/services/javax.el.ExpressionFactory')
     relocate 'javax.el', 'com.indeed.shaded.javax.el7'
     relocate 'org.apache.el', 'com.indeed.shaded.org.apache.el7'
     relocate 'org.apache.tomcat', 'com.indeed.shaded.org.apache.el7'

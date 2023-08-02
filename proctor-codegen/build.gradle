@@ -17,6 +17,9 @@ dependencies {
     testImplementation libs.assertj
 }
 
+shadowJar.dependsOn(':proctor-common:shadowJar')
+test.dependsOn(':proctor-common:shadowJar')
+
 // Need to remove all dependenceis that get added or will cause issues upstream when projects include
 // Plan to remove in PROC-1290: Remove Proctor Shading of Javax El libraries
 shadowJar {

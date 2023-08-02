@@ -32,3 +32,6 @@ dependencies {
 }
 
 compileJava.dependsOn(':proctor-common:jar')
+test.dependsOn(':proctor-store:shadowJar')
+test.dependsOn(':proctor-store-git:shadowJar')
+test.dependsOn(':proctor-store-svn:shadowJar')
