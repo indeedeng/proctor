@@ -1,3 +1,7 @@
+plugins {
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+}
+
 indeedOss.activateFeature 'library'
 indeedLibrary.name = 'proctor-webapp-library'
 
@@ -35,3 +39,80 @@ compileJava.dependsOn(':proctor-common:jar')
 test.dependsOn(':proctor-store:shadowJar')
 test.dependsOn(':proctor-store-git:shadowJar')
 test.dependsOn(':proctor-store-svn:shadowJar')
+
+shadowJar.dependsOn(':proctor-store:shadowJar')
+shadowJar.dependsOn(':proctor-store-git:shadowJar')
+shadowJar.dependsOn(':proctor-store-svn:shadowJar')
+
+// Need to remove all dependenceis that get added or will cause issues upstream when projects include
+// Plan to remove in PROC-1290: Remove Proctor Shading of Javax El libraries
+shadowJar {
+    archiveClassifier.set('')
+    dependencies {
+        exclude(dependency('org.apache.commons:commons-pool2:2.2'))
+        exclude(dependency('org.tmatesoft.svnkit:svnkit:1.8.5'))
+        exclude(dependency('org.springframework:spring-core:5.3.19'))
+        exclude(dependency('org.springframework:spring-jdbc:5.3.19'))
+        exclude(dependency('org.springframework:spring-beans:5.3.19'))
+        exclude(dependency('org.springframework:spring-web:5.3.19'))
+        exclude(dependency('org.springframework:spring-webmvc:5.3.19'))
+        exclude(dependency('org.springframework:spring-context:5.3.19'))
+        exclude(dependency('com.google.guava:guava:20.0'))
+        exclude(dependency('org.apache.commons:commons-lang3:3.12.0'))
+        exclude(dependency('commons-logging:commons-logging'))
+        exclude(dependency('commons-logging:commons-logging-api'))
+        exclude(dependency('commons-io:commons-io:2.6'))
+        exclude(dependency('org.slf4j:slf4j-api:1.7.32'))
+        exclude(dependency('com.google.code.findbugs:jsr305:1.3.9'))
+        exclude(dependency('com.fasterxml.jackson.core:jackson-databind:2.13.4'))
+        exclude(dependency('org.apache.logging.log4j:log4j-api:2.17.1'))
+        exclude(dependency('org.apache.logging.log4j:log4j-core:2.17.1'))
+        exclude(dependency('com.indeed:util-varexport:1.0.49-1cfb888'))
+        exclude(dependency('com.indeed:util-core:1.0.49-1cfb888'))
+        exclude(dependency('com.fasterxml.jackson.core:jackson-core:2.13.4'))
+        exclude(dependency('com.fasterxml.jackson.core:jackson-annotations:2.13.4'))
+        exclude(dependency('org.eclipse.jgit:org.eclipse.jgit:5.2.0.201812061821-r'))
+        exclude(dependency('com.jcraft:jsch:0.1.54'))
+        exclude(dependency('com.jcraft:jsch.agentproxy.usocket-jna'))
+        exclude(dependency('com.jcraft:jsch.agentproxy.pageant'))
+        exclude(dependency('com.jcraft:jsch.agentproxy.connector-factory'))
+        exclude(dependency('com.jcraft:jsch.agentproxy.svnkit-trilead-ssh2'))
+        exclude(dependency('com.jcraft:jsch.agentproxy.jsch'))
+        exclude(dependency('com.jcraft:jsch.agentproxy.core'))
+        exclude(dependency('com.jcraft:jsch.agentproxy.usocket-nc'))
+        exclude(dependency('com.jcraft:jsch.agentproxy.sshagent'))
+        exclude(dependency('com.jcraft:jzlib:1.1.1'))
+        exclude(dependency('com.googlecode.javaewah:JavaEWAH:1.1.6'))
+        exclude(dependency('org.tmatesoft.sqljet:sqljet:1.1.10'))
+        exclude(dependency('net.java.dev.jna:jna'))
+        exclude(dependency('de.regnis.q.sequence:sequence-library'))
+        exclude(dependency('com.trilead:trilead-ssh2'))
+        exclude(dependency('org.antlr:antlr-runtime'))
+        exclude(dependency('net.java.dev.jna:platform'))
+        exclude(dependency('org.apache.httpcomponents:httpclient:4.5.5'))
+        exclude(dependency('org.apache.commons:commons-collections4:4.3'))
+        exclude(dependency('javax.servlet:javax.servlet-api:3.1.0'))
+        exclude(dependency('org.springframework:spring-expression'))
+        exclude(dependency('org.springframework:spring-aop'))
+        exclude(dependency('org.springframework:spring-dao'))
+        exclude(dependency('org.springframework:spring-tx'))
+        exclude(dependency('org.springframework:spring-jca'))
+        exclude(dependency('org.apache.commons:commons-lang3:3.12.0'))
+        exclude(dependency('commons-codec:commons-codec'))
+        exclude(dependency('org.apache.httpcomponents:httpcore'))
+        exclude(dependency('org.apache.httpcomponents:httpcomponents-client'))
+        exclude(dependency('org.apache.httpcomponents:httpcomponents-core'))
+        exclude(dependency('org.aopalliance:com.springsource.oprg.aopalliance'))
+        exclude(project(':proctor-tomcat-deps'))
+        exclude(project(':proctor-common'))
+        exclude(project(':proctor-store'))
+        exclude(project(':proctor-store-git'))
+        exclude(project(':proctor-store-svn'))
+    }
+    exclude('META-INF/services/javax.el.ExpressionFactory')
+    relocate 'javax.el', 'com.indeed.shaded.javax.el7'
+    relocate 'org.apache.el', 'com.indeed.shaded.org.apache.el7'
+    relocate 'org.apache.tomcat', 'com.indeed.shaded.org.apache.el7'
+}
+
+shadowJar.mustRunAfter jar
