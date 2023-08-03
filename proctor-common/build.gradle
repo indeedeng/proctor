@@ -6,7 +6,7 @@ indeedOss.activateFeature 'library'
 indeedLibrary.name = 'proctor-common'
 
 dependencies {
-    implementation 'com.indeed:proctor-tomcat-deps:1.9.89'
+    implementation project(':proctor-tomcat-deps')
     implementation ('com.indeed:util-core:1.0.49-1cfb888') {
         exclude group: "org.slf4j", module: "slf4j-api"
     }
