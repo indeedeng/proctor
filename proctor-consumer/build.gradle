@@ -7,7 +7,7 @@ indeedLibrary.name = 'proctor-consumer'
 
 dependencies {
     implementation project(':proctor-common')
-    implementation 'com.indeed:proctor-tomcat-deps:1.9.89'
+    implementation project(':proctor-tomcat-deps')
     implementation 'com.indeed:util-core:1.0.49-1cfb888'
     implementation libs.guava
     implementation libs.commonsLang
