@@ -4,9 +4,3 @@ plugins {
 
 indeedOss.activateFeature 'library'
 indeedLibrary.name = 'proctor-parent'
-
-
-task linkLocalPublish(type: Exec) {
-    dependsOn 'publishToMavenLocal'
-    commandLine './symlinkproctor.sh'
-}

@@ -1,3 +1,7 @@
+plugins {
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+}
+
 indeedOss.activateFeature 'library'
 indeedLibrary.name = 'proctor-store-svn'
 
@@ -23,3 +27,60 @@ dependencies {
 }
 
 test.dependsOn(':proctor-common:shadowJar')
+test.dependsOn(':proctor-store:shadowJar')
+
+shadowJar.dependsOn(':proctor-store:shadowJar')
+shadowJar.dependsOn(':proctor-common:shadowJar')
+
+// Need to remove all dependenceis that get added or will cause issues upstream when projects include
+// Plan to remove in PROC-1290: Remove Proctor Shading of Javax El libraries
+shadowJar {
+    archiveClassifier.set('')
+    dependencies {
+        exclude(dependency('org.apache.commons:commons-pool2'))
+        exclude(dependency('org.tmatesoft.svnkit:svnkit'))
+        exclude(dependency('org.springframework:spring-core'))
+        exclude(dependency('com.google.guava:guava'))
+        exclude(dependency('org.apache.commons:commons-lang3'))
+        exclude(dependency('commons-logging:commons-logging'))
+        exclude(dependency('commons-logging:commons-logging-api'))
+        exclude(dependency('commons-io:commons-io'))
+        exclude(dependency('org.slf4j:slf4j-api'))
+        exclude(dependency('com.google.code.findbugs:jsr305'))
+        exclude(dependency('com.fasterxml.jackson.core:jackson-databind'))
+        exclude(dependency('org.apache.logging.log4j:log4j-api'))
+        exclude(dependency('org.apache.logging.log4j:log4j-core'))
+        exclude(dependency('com.indeed:util-varexport'))
+        exclude(dependency('com.indeed:util-core'))
+        exclude(dependency('com.fasterxml.jackson.core:jackson-core'))
+        exclude(dependency('com.fasterxml.jackson.core:jackson-annotations'))
+        exclude(dependency('org.eclipse.jgit:org.eclipse.jgit'))
+        exclude(dependency('com.jcraft:jsch'))
+        exclude(dependency('com.jcraft:jsch.agentproxy.usocket-jna'))
+        exclude(dependency('com.jcraft:jsch.agentproxy.pageant'))
+        exclude(dependency('com.jcraft:jsch.agentproxy.connector-factory'))
+        exclude(dependency('com.jcraft:jsch.agentproxy.svnkit-trilead-ssh2'))
+        exclude(dependency('com.jcraft:jsch.agentproxy.jsch'))
+        exclude(dependency('com.jcraft:jsch.agentproxy.core'))
+        exclude(dependency('com.jcraft:jsch.agentproxy.usocket-nc'))
+        exclude(dependency('com.jcraft:jsch.agentproxy.sshagent'))
+        exclude(dependency('com.jcraft:jzlib'))
+        exclude(dependency('com.googlecode.javaewah:JavaEWAH'))
+        exclude(dependency('org.tmatesoft.sqljet:sqljet'))
+        exclude(dependency('net.java.dev.jna:jna'))
+        exclude(dependency('de.regnis.q.sequence:sequence-library'))
+        exclude(dependency('com.trilead:trilead-ssh2'))
+        exclude(dependency('org.antlr:antlr-runtime'))
+        exclude(dependency('net.java.dev.jna:platform'))
+        exclude(project(':proctor-tomcat-deps'))
+        exclude(project(':proctor-common'))
+        exclude(project(':proctor-store'))
+    }
+    exclude('META-INF/web-fragment.xml')
+    exclude('META-INF/services/javax.el.ExpressionFactory')
+    relocate 'javax.el', 'com.indeed.shaded.javax.el7'
+    relocate 'org.apache.el', 'com.indeed.shaded.org.apache.el7'
+    relocate 'org.apache.tomcat', 'com.indeed.shaded.org.apache.el7'
+}
+
+shadowJar.mustRunAfter jar

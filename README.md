@@ -75,7 +75,7 @@ $ ./gradlew build
 Run the following gradle command and note the local version from the output:
 
 ```bash
-$ ./gradlew publish
+$ ./gradlew clean check publish --refresh-dependencies 
 ```
 
 Example output:

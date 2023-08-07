@@ -1,3 +1,7 @@
+plugins {
+    id 'com.github.johnrengelman.shadow' version '8.1.1'
+}
+
 indeedOss.activateFeature 'library'
 indeedLibrary.name = 'proctor-pipet-core'
 
@@ -22,3 +26,43 @@ dependencies {
 
 test.dependsOn(':proctor-common:shadowJar')
 test.dependsOn(':proctor-codegen:shadowJar')
+test.dependsOn(':proctor-consumer:shadowJar')
+
+shadowJar.dependsOn(':proctor-common:shadowJar')
+shadowJar.dependsOn(':proctor-consumer:shadowJar')
+shadowJar.dependsOn(':proctor-codegen:shadowJar')
+
+// Need to remove all dependenceis that get added or will cause issues upstream when projects include
+// Plan to remove in PROC-1290: Remove Proctor Shading of Javax El libraries
+shadowJar {
+    archiveClassifier.set('')
+    dependencies {
+        exclude(dependency('org.springframework:spring-web'))
+        exclude(dependency('com.google.guava:guava'))
+        exclude(dependency('org.apache.commons:commons-lang3'))
+        exclude(dependency('org.apache.commons-logging:commons-logging'))
+        exclude(dependency('com.google.code.findbugs:jsr305'))
+        exclude(dependency('com.fasterxml.jackson.core:jackson-databind'))
+        exclude(dependency('org.apache.logging.log4j:log4j-api'))
+        exclude(dependency('org.apache.logging.log4j:log4j-core'))
+        exclude(dependency('com.indeed:util-varexport'))
+        exclude(dependency('com.indeed:util-core'))
+        exclude(dependency('commons-cli:commons-cli'))
+        exclude(dependency('org.slf4j:slf4j-api'))
+        exclude(dependency('org.apache.commons:commons-lang3'))
+        exclude(dependency('com.fasterxml.jackson.core:jackson-core'))
+        exclude(dependency('com.fasterxml.jackson.core:jackson-annotations'))
+        exclude(dependency('org.freemarker:freemarker'))
+        exclude(project(':proctor-tomcat-deps'))
+        exclude(project(':proctor-common'))
+        exclude(project(':proctor-store'))
+        exclude(project(':proctor-store-git'))
+    }
+    exclude('META-INF/web-fragment.xml')
+    exclude('META-INF/services/javax.el.ExpressionFactory')
+    relocate 'javax.el', 'com.indeed.shaded.javax.el7'
+    relocate 'org.apache.el', 'com.indeed.shaded.org.apache.el7'
+    relocate 'org.apache.tomcat', 'com.indeed.shaded.org.apache.el7'
+}
+
+shadowJar.mustRunAfter jar

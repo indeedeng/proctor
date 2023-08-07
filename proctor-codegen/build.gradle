@@ -17,27 +17,33 @@ dependencies {
     testImplementation libs.assertj
 }
 
+shadowJar.dependsOn(':proctor-common:shadowJar')
+test.dependsOn(':proctor-common:shadowJar')
+
 // Need to remove all dependenceis that get added or will cause issues upstream when projects include
 // Plan to remove in PROC-1290: Remove Proctor Shading of Javax El libraries
 shadowJar {
     archiveClassifier.set('')
     dependencies {
-        exclude(dependency('org.springframework:spring-core:5.3.19'))
-        exclude(dependency('com.google.guava:guava:20.0'))
-        exclude(dependency('org.apache.commons:commons-lang3:3.12.0'))
+        exclude(dependency('org.springframework:spring-core'))
+        exclude(dependency('com.google.guava:guava'))
+        exclude(dependency('org.apache.commons:commons-lang3'))
         exclude(dependency('org.apache.commons-logging:commons-logging'))
-        exclude(dependency('com.google.code.findbugs:jsr305:1.3.9'))
-        exclude(dependency('com.fasterxml.jackson.core:jackson-databind:2.13.4'))
-        exclude(dependency('org.apache.logging.log4j:log4j-api:2.17.1'))
-        exclude(dependency('org.apache.logging.log4j:log4j-core:2.17.1'))
-        exclude(dependency('com.indeed:util-varexport:1.0.49-1cfb888'))
-        exclude(dependency('com.indeed:util-core:1.0.49-1cfb888'))
-        exclude(dependency('org.slf4j:slf4j-api:1.7.32'))
-        exclude(dependency('com.fasterxml.jackson.core:jackson-core:2.13.4'))
-        exclude(dependency('com.fasterxml.jackson.core:jackson-annotations:2.13.4'))
-        exclude(dependency('org.freemarker:freemarker:2.3.16'))
+        exclude(dependency('com.google.code.findbugs:jsr305'))
+        exclude(dependency('com.fasterxml.jackson.core:jackson-databind'))
+        exclude(dependency('org.apache.logging.log4j:log4j-api'))
+        exclude(dependency('org.apache.logging.log4j:log4j-core'))
+        exclude(dependency('com.indeed:util-varexport'))
+        exclude(dependency('com.indeed:util-core'))
+        exclude(dependency('org.slf4j:slf4j-api'))
+        exclude(dependency('com.fasterxml.jackson.core:jackson-core'))
+        exclude(dependency('com.fasterxml.jackson.core:jackson-annotations'))
+        exclude(dependency('org.freemarker:freemarker'))
         exclude(project(':proctor-tomcat-deps'))
+        exclude(project(':proctor-common'))
     }
+    exclude('META-INF/web-fragment.xml')
+    exclude('META-INF/services/javax.el.ExpressionFactory')
     relocate 'javax.el', 'com.indeed.shaded.javax.el7'
     relocate 'org.apache.el', 'com.indeed.shaded.org.apache.el7'
     relocate 'org.apache.tomcat', 'com.indeed.shaded.org.apache.el7'
