@@ -9,7 +9,10 @@ import com.indeed.proctor.common.ProctorResult;
 import com.indeed.proctor.common.model.Audit;
 import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.common.model.TestType;
+import com.indeed.proctor.consumer.logging.ExposureLogger;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Collection;
@@ -30,10 +33,13 @@ import static java.util.Collections.emptySortedMap;
 public abstract class AbstractGroupsManager implements ProctorContextDescriptor {
     private final Supplier<Proctor> proctorSource;
     private final Supplier<GroupsManagerInterceptor> interceptorSupplier;
+    @CheckForNull
+    private final ExposureLogger exposureLogger;
 
     protected AbstractGroupsManager(final Supplier<Proctor> proctorSource) {
         this.proctorSource = proctorSource;
         this.interceptorSupplier = GroupsManagerInterceptor::getDefault;
+        this.exposureLogger = null;
     }
 
     protected AbstractGroupsManager(
@@ -41,6 +47,21 @@ public abstract class AbstractGroupsManager implements ProctorContextDescriptor 
             final Supplier<GroupsManagerInterceptor> interceptorSupplier) {
         this.proctorSource = proctorSource;
         this.interceptorSupplier = interceptorSupplier;
+        this.exposureLogger = null;
+    }
+
+    protected AbstractGroupsManager(
+            final Supplier<Proctor> proctorSource,
+            final Supplier<GroupsManagerInterceptor> interceptorSupplier,
+            @Nullable final ExposureLogger exposureLogger
+    ) {
+        this.proctorSource = proctorSource;
+        if (interceptorSupplier != null) {
+            this.interceptorSupplier = interceptorSupplier;
+        } else {
+            this.interceptorSupplier = GroupsManagerInterceptor::getDefault;
+        }
+        this.exposureLogger = exposureLogger;
     }
 
     /**
@@ -136,8 +157,10 @@ public abstract class AbstractGroupsManager implements ProctorContextDescriptor 
         final ProctorResult proctorResult =
                 proctor.determineTestGroups(
                         identifiers, context, forceGroupsOptions, testNameFilter);
-
         interceptor.afterDetermineGroups(proctorResult);
+        if (this.exposureLogger != null) {
+            this.exposureLogger.logExposureInfo(proctorResult);
+        }
         return proctorResult;
     }
 
