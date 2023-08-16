@@ -104,7 +104,10 @@ class RandomTestChooser implements TestChooser<Void> {
             @Nonnull final Map<String, ValueExpression> localContext,
             @Nonnull final Map<String, TestBucket> testGroups) {
         final int matchingRuleIndex =
-                testRangeSelector.findMatchingRuleWithValueExpr(localContext, testGroups);
+                testRangeSelector.findMatchingRuleWithValueExpr(
+                        localContext,
+                        testGroups,
+                        ""); // empty string for identifier to allow picking random in selector
         if (matchingRuleIndex < 0) {
             return TestChooser.Result.EMPTY;
         }

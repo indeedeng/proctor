@@ -19,6 +19,7 @@ import com.indeed.proctor.common.model.TestType;
 import org.junit.Test;
 
 import javax.annotation.Nullable;
+import javax.el.ValueExpression;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,6 +35,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.indeed.proctor.common.ProctorUtils.containsUnitlessAllocation;
 import static com.indeed.proctor.common.ProctorUtils.convertContextToTestableMap;
 import static com.indeed.proctor.common.ProctorUtils.isEmptyElExpression;
 import static com.indeed.proctor.common.ProctorUtils.isEmptyWhitespace;
@@ -2634,6 +2636,81 @@ public class TestProctorUtils {
 
         assertThat(proctorSpecification.getTests().get("account1_tst").getPayload().getAllowForce())
                 .isTrue();
+    }
+
+    @Test
+    public void testContainsUnitlessAllocation() {
+        final ConsumableTestDefinition td =
+                ConsumableTestDefinition.fromTestDefinition(
+                        TestDefinition.builder()
+                                .setTestType(TestType.ANONYMOUS_USER)
+                                .setSalt("test")
+                                .setEnableUnitlessAllocations(true)
+                                .setAllocations(
+                                        ImmutableList.of(
+                                                new Allocation(
+                                                        "missingExperimentalUnit && country == 'US'",
+                                                        ImmutableList.of(
+                                                                new Range(0, 0),
+                                                                new Range(-1, 0),
+                                                                new Range(1, 1)))))
+                                .build());
+        final Map<String, ValueExpression> context =
+                Collections.singletonMap(
+                        "missingExperimentalUnit",
+                        RuleEvaluator.EXPRESSION_FACTORY.createValueExpression(
+                                "true", Object.class));
+        assertThat(containsUnitlessAllocation(td, context)).isTrue();
+    }
+
+    @Test
+    public void testContainUnitlessAllocation_ruleWithNoMissingExperimentalUnit() {
+        final ConsumableTestDefinition td =
+                ConsumableTestDefinition.fromTestDefinition(
+                        TestDefinition.builder()
+                                .setTestType(TestType.ANONYMOUS_USER)
+                                .setSalt("test")
+                                .setEnableUnitlessAllocations(true)
+                                .setAllocations(
+                                        ImmutableList.of(
+                                                new Allocation(
+                                                        "country == 'US'",
+                                                        ImmutableList.of(
+                                                                new Range(0, 0),
+                                                                new Range(-1, 0),
+                                                                new Range(1, 1)))))
+                                .build());
+        final Map<String, ValueExpression> context =
+                Collections.singletonMap(
+                        "missingExperimentalUnit",
+                        RuleEvaluator.EXPRESSION_FACTORY.createValueExpression(
+                                "true", Object.class));
+        assertThat(containsUnitlessAllocation(td, context)).isFalse();
+    }
+
+    @Test
+    public void testContainUnitlessAllocation_noEnabled() {
+        final ConsumableTestDefinition td =
+                ConsumableTestDefinition.fromTestDefinition(
+                        TestDefinition.builder()
+                                .setTestType(TestType.ANONYMOUS_USER)
+                                .setSalt("test")
+                                .setEnableUnitlessAllocations(false)
+                                .setAllocations(
+                                        ImmutableList.of(
+                                                new Allocation(
+                                                        "missingExperimentalUnit && country == 'US'",
+                                                        ImmutableList.of(
+                                                                new Range(0, 0),
+                                                                new Range(-1, 0),
+                                                                new Range(1, 1)))))
+                                .build());
+        final Map<String, ValueExpression> context =
+                Collections.singletonMap(
+                        "missingExperimentalUnit",
+                        RuleEvaluator.EXPRESSION_FACTORY.createValueExpression(
+                                "true", Object.class));
+        assertThat(containsUnitlessAllocation(td, context)).isFalse();
     }
 
     private static void setPayload(

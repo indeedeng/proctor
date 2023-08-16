@@ -37,6 +37,8 @@ import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static com.indeed.proctor.common.ProctorUtils.containsUnitlessAllocation;
+
 /**
  * The sole entry point for client applications determining the test buckets for a particular
  * client. Basically a Factory to create ProctorResult for a given identifier and context, based on
@@ -313,7 +315,7 @@ public class Proctor {
                 final String invalidIdentifierMessage =
                         String.format(
                                 "An invalid identifier '%s' for test type '%s'"
-                                        + " was detected. Using fallback buckets for the test type.",
+                                        + " was detected. Using fallback buckets for the test type unless unitless allocation is enabled.",
                                 identifier, testType);
                 if (identifier.isEmpty()) {
                     LOGGER.debug(invalidIdentifierMessage);
@@ -331,7 +333,13 @@ public class Proctor {
         for (final String testName : filteredEvaluationOrder) {
             final TestChooser<?> testChooser = testChoosers.get(testName);
             final String identifier;
-            if (testChooser instanceof StandardTestChooser) {
+            final boolean containsUnitlessAllocations =
+                    testTypesWithInvalidIdentifier.contains(
+                                    testChooser.getTestDefinition().getTestType())
+                            && containsUnitlessAllocation(
+                                    testChooser.getTestDefinition(), localContext);
+
+            if (testChooser instanceof StandardTestChooser && !containsUnitlessAllocations) {
                 final TestType testType = testChooser.getTestDefinition().getTestType();
                 if (testTypesWithInvalidIdentifier.contains(testType)) {
                     // skipping here to make it use the fallback bucket.
@@ -352,7 +360,7 @@ public class Proctor {
             }
 
             final TestChooser.Result chooseResult;
-            if (identifier == null) {
+            if (identifier == null && !containsUnitlessAllocations) {
                 chooseResult =
                         ((RandomTestChooser) testChooser)
                                 .choose(null, localContext, testGroups, forceGroupsOptions);

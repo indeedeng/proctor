@@ -1417,4 +1417,19 @@ public abstract class ProctorUtils {
 
         return false;
     }
+
+    public static boolean containsUnitlessAllocation(
+            final ConsumableTestDefinition testDefinition,
+            final Map<String, ValueExpression> localContext) {
+        return testDefinition != null
+                && testDefinition.getEnableUnitlessAllocations()
+                && localContext.containsKey("missingExperimentalUnit")
+                && localContext.get("missingExperimentalUnit").getValue(null).equals("true")
+                && testDefinition.getAllocations().stream()
+                        .anyMatch(
+                                allocation ->
+                                        allocation.getRule().contains("missingExperimentalUnit")
+                                                && allocation.getRanges().stream()
+                                                        .anyMatch(range -> range.getLength() == 1));
+    }
 }
