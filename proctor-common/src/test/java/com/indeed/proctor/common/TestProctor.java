@@ -577,7 +577,7 @@ public class TestProctor {
     }
 
     @Test
-    public void testDetermineTestGroups_UnitlessAllocation() {
+    public void testDetermineTestGroups_UnitlessAllocationMultipleTests() {
         final TestBucket inactiveBucket = new TestBucket("inactive", -1, "");
         final TestBucket controlBucket = new TestBucket("control", 0, "");
         final TestBucket activeBucket = new TestBucket("active", 1, "");
@@ -734,11 +734,11 @@ public class TestProctor {
         final TestBucket controlBucket = new TestBucket("control", 0, "");
         final TestBucket activeBucket = new TestBucket("active", 1, "");
         final TestBucket testBucket = new TestBucket("test", 2, "");
-        final Allocation allocationX =
+        final Allocation allocation_US =
                 new Allocation(
                         "missingExperimentalUnit && country == 'US'",
                         ImmutableList.of(new Range(0, 0), new Range(-1, 0), new Range(1, 1)));
-        final Allocation allocation_test =
+        final Allocation allocation_JP =
                 new Allocation(
                         "missingExperimentalUnit && country == 'JP'",
                         ImmutableList.of(new Range(0, 0), new Range(-1, 0), new Range(2, 1)));
@@ -750,7 +750,7 @@ public class TestProctor {
                                 .setSalt("&X")
                                 .setTestType(TestType.AUTHENTICATED_USER)
                                 .addBuckets(inactiveBucket, controlBucket, activeBucket, testBucket)
-                                .addAllocations(allocationX, allocation_test)
+                                .addAllocations(allocation_US, allocation_JP)
                                 .build());
 
         final Map<String, ConsumableTestDefinition> tests = ImmutableMap.of("X", testDefinitionX);
@@ -771,7 +771,7 @@ public class TestProctor {
                         ForceGroupsOptions.builder().build(),
                         Collections.emptyList());
 
-        assertThat(proctorResult.getAllocations()).containsEntry("X", allocation_test);
+        assertThat(proctorResult.getAllocations()).containsEntry("X", allocation_JP);
         assertThat(proctorResult.getBuckets()).containsEntry("X", testBucket);
         assertThat(proctorResult.getTestDefinitions()).containsEntry("X", testDefinitionX);
     }
