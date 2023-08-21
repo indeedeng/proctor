@@ -316,10 +316,6 @@ public class TestDefinition {
         return enableUnitlessAllocations;
     }
 
-    public void setEnableUnitlessAllocations(final boolean enableUnitlessAllocations) {
-        this.enableUnitlessAllocations = enableUnitlessAllocations;
-    }
-
     @Override
     public String toString() {
         return "TestDefinition{"
