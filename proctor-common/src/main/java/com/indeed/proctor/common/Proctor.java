@@ -339,20 +339,21 @@ public class Proctor {
                             && containsUnitlessAllocation(
                                     testChooser.getTestDefinition(), localContext);
 
-            if (testChooser instanceof StandardTestChooser && !containsUnitlessAllocations) {
+            if (testChooser instanceof StandardTestChooser) {
                 final TestType testType = testChooser.getTestDefinition().getTestType();
-                if (testTypesWithInvalidIdentifier.contains(testType)) {
+                if (testTypesWithInvalidIdentifier.contains(testType)
+                        && !containsUnitlessAllocations) {
                     // skipping here to make it use the fallback bucket.
                     continue;
                 }
 
                 identifier = identifiers.getIdentifier(testType);
-                if (identifier == null) {
+                if (identifier == null && !containsUnitlessAllocations) {
                     // No identifier for the testType of this chooser, nothing to do
                     continue;
                 }
             } else {
-                if (!identifiers.isRandomEnabled()) {
+                if (!identifiers.isRandomEnabled() && !containsUnitlessAllocations) {
                     // test wants random chooser, but client disabled random, nothing to do
                     continue;
                 }
