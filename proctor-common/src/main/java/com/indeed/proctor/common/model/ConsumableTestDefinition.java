@@ -31,6 +31,7 @@ public class ConsumableTestDefinition {
 
     /** @see TestDefinition#getDependsOn() */
     @Nullable private TestDependency dependsOn;
+    private boolean isDynamic = false;
 
     public ConsumableTestDefinition() {
         /* intentionally empty */
@@ -204,6 +205,14 @@ public class ConsumableTestDefinition {
 
     public boolean getSilent() {
         return silent;
+    }
+
+    public void setDynamic(final boolean dynamic) {
+        this.isDynamic = dynamic;
+    }
+
+    public boolean getDynamic() {
+        return isDynamic;
     }
 
     @Nonnull

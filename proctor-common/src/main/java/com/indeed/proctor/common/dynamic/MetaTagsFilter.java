@@ -27,7 +27,9 @@ public class MetaTagsFilter implements DynamicFilter {
 
     @Override
     public boolean matches(final String testName, final ConsumableTestDefinition testDefinition) {
-        return testDefinition.getMetaTags().stream().anyMatch(this.metaTags::contains);
+        boolean isMatched = testDefinition.getMetaTags().stream().anyMatch(this.metaTags::contains);
+        testDefinition.setDynamic(isMatched);
+        return isMatched;
     }
 
     @Override
