@@ -12,10 +12,17 @@ public class TestTestNamePatternFilter {
     @Test
     public void testPrefixPattern() {
         final TestNamePatternFilter filter = new TestNamePatternFilter("abc_.*");
-        assertTrue(filter.matches("abc_something", new ConsumableTestDefinition()));
+
+        ConsumableTestDefinition testDefinition1 = new ConsumableTestDefinition();
+        assertTrue(filter.matches("abc_something", testDefinition1));
+        assertTrue(testDefinition1.getDynamic());
+
         assertTrue(filter.matches("abc_", new ConsumableTestDefinition()));
         assertFalse(filter.matches("_abc_", new ConsumableTestDefinition()));
-        assertFalse(filter.matches("abc", new ConsumableTestDefinition()));
+
+        ConsumableTestDefinition testDefinition2 = new ConsumableTestDefinition();
+        assertFalse(filter.matches("abc", testDefinition2));
+        assertFalse(testDefinition2.getDynamic());
     }
 
     @Test

@@ -46,7 +46,9 @@ public class TestNamePatternFilter implements DynamicFilter {
     @Override
     public boolean matches(
             @Nullable final String testName, final ConsumableTestDefinition testDefinition) {
-        return !Strings.isNullOrEmpty(testName) && pattern.matcher(testName).matches();
+        boolean isMatched = !Strings.isNullOrEmpty(testName) && pattern.matcher(testName).matches();
+        testDefinition.setDynamic(isMatched);
+        return isMatched;
     }
 
     @Override
