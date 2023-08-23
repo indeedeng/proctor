@@ -53,6 +53,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -68,6 +69,7 @@ public abstract class ProctorUtils {
     private static final Logger LOGGER = LogManager.getLogger(ProctorUtils.class);
     private static final SpecificationGenerator SPECIFICATION_GENERATOR =
             new SpecificationGenerator();
+    private static final String UNITLESS_ALLOCATION_IDENTIFIER = "missingExperimentalUnit";
 
     public static MessageDigest createMessageDigest() {
         try {
@@ -1419,16 +1421,19 @@ public abstract class ProctorUtils {
     }
 
     public static boolean containsUnitlessAllocation(
-            final ConsumableTestDefinition testDefinition,
-            final Map<String, ValueExpression> localContext) {
-        return testDefinition != null
-                && testDefinition.getEnableUnitlessAllocations()
-                && localContext.containsKey("missingExperimentalUnit")
-                && localContext.get("missingExperimentalUnit").getValue(null).equals("true")
+            @Nonnull final ConsumableTestDefinition testDefinition,
+            @Nonnull final Map<String, ValueExpression> localContext) {
+        return testDefinition.getEnableUnitlessAllocations()
+                && localContext.get(UNITLESS_ALLOCATION_IDENTIFIER) != null
+                && Objects.equals(
+                        localContext.get(UNITLESS_ALLOCATION_IDENTIFIER).getValue(null), "true")
                 && testDefinition.getAllocations().stream()
                         .anyMatch(
                                 allocation ->
-                                        allocation.getRule().contains("missingExperimentalUnit")
+                                        allocation.getRule() != null
+                                                && allocation
+                                                        .getRule()
+                                                        .contains(UNITLESS_ALLOCATION_IDENTIFIER)
                                                 && allocation.getRanges().stream()
                                                         .anyMatch(range -> range.getLength() == 1));
     }

@@ -2713,6 +2713,31 @@ public class TestProctorUtils {
         assertThat(containsUnitlessAllocation(td, context)).isFalse();
     }
 
+    @Test
+    public void testContainUnitlessAllocation_enabledNoAllocations() {
+        final ConsumableTestDefinition td =
+                ConsumableTestDefinition.fromTestDefinition(
+                        TestDefinition.builder()
+                                .setTestType(TestType.ANONYMOUS_USER)
+                                .setSalt("test")
+                                .setEnableUnitlessAllocations(true)
+                                .setAllocations(
+                                        ImmutableList.of(
+                                                new Allocation(
+                                                        null,
+                                                        ImmutableList.of(
+                                                                new Range(0, 0),
+                                                                new Range(-1, 0),
+                                                                new Range(1, 1)))))
+                                .build());
+        final Map<String, ValueExpression> context =
+                Collections.singletonMap(
+                        "missingExperimentalUnit",
+                        RuleEvaluator.EXPRESSION_FACTORY.createValueExpression(
+                                "true", Object.class));
+        assertThat(containsUnitlessAllocation(td, context)).isFalse();
+    }
+
     private static void setPayload(
             final List<TestBucket> buckets, final int index, final Payload newPayload) {
         buckets.set(
