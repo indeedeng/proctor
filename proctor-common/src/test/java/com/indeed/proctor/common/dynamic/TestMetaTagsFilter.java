@@ -67,6 +67,7 @@ public class TestMetaTagsFilter {
                         testMetaTags);
 
         assertEquals(expected, filter.matches("", definition));
+        assertEquals(expected, definition.getDynamic());
     }
 
     @Test
