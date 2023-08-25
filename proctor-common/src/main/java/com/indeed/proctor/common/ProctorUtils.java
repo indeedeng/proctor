@@ -1446,6 +1446,9 @@ public abstract class ProctorUtils {
                                                         .getRule()
                                                         .contains(UNITLESS_ALLOCATION_IDENTIFIER)
                                                 && allocation.getRanges().stream()
-                                                        .anyMatch(range -> range.getLength() == 1));
+                                                        .anyMatch(
+                                                                range ->
+                                                                        range.getLength()
+                                                                                > 0.9999));
     }
 }
