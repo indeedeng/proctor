@@ -1148,6 +1148,19 @@ public abstract class ProctorUtils {
                 throw new IncompatibleTestMatrixException(
                         "Allocation range has no buckets, needs to add up to 1.");
             }
+            if (testDefinition.getEnableUnitlessAllocations() && allocation.getRule() != null) {
+                final int unitlessIdentifierIndex =
+                        allocation.getRule().indexOf(UNITLESS_ALLOCATION_IDENTIFIER);
+
+                if (unitlessIdentifierIndex != -1
+                        && (unitlessIdentifierIndex == 0
+                                || allocation.getRule().charAt(unitlessIdentifierIndex - 1) != '!')
+                        && ranges.stream().noneMatch(range -> range.getLength() > 0.9999)) {
+                    throw new IncompatibleTestMatrixException(
+                            "Allocation with \"missingExperimentalUnit\" in rule must have one bucket set to 100%");
+                }
+            }
+
             //  ensure that each range refers to a known bucket
             double bucketTotal = 0;
             for (final Range range : ranges) {

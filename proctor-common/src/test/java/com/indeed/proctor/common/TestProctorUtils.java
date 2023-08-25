@@ -2738,6 +2738,107 @@ public class TestProctorUtils {
         assertThat(containsUnitlessAllocation(td, context)).isFalse();
     }
 
+    @Test
+    public void verifyAndConsolidateShouldTestUnitlessAllocation() {
+        final List<TestBucket> buckets = fromCompactBucketFormat("inactive:-1,control:0,test:1");
+        final Map<String, TestSpecification> requiredTests =
+                ImmutableMap.of(TEST_A, transformTestBuckets(buckets));
+        {
+            final Map<String, ConsumableTestDefinition> tests = new HashMap<>();
+            final ConsumableTestDefinition td =
+                    constructDefinition(
+                            buckets,
+                            fromCompactAllocationFormat("missingExperimentalUnit|-1:0,0:0,1:1.0"));
+            td.setEnableUnitlessAllocations(true);
+            tests.put(TEST_A, td);
+
+            final TestMatrixArtifact matrix = constructArtifact(tests);
+
+            // verifyAndConsolidate should not throw an error
+            assertEquals(1, matrix.getTests().size());
+            assertValid("Unitless allocation test should be included", matrix, requiredTests);
+            assertEquals(
+                    "required tests should not be removed from the matrix",
+                    1,
+                    matrix.getTests().size());
+        }
+
+        {
+            final Map<String, ConsumableTestDefinition> tests = new HashMap<>();
+            final ConsumableTestDefinition td =
+                    constructDefinition(
+                            buckets,
+                            fromCompactAllocationFormat(
+                                    "missingExperimentalUnit|-1:0,0:0.5,1:0.5"));
+            td.setEnableUnitlessAllocations(true);
+            tests.put(TEST_A, td);
+
+            final TestMatrixArtifact matrix = constructArtifact(tests);
+
+            // verifyAndConsolidate should throw an error because missing allocation requires only
+            // one bucket set to 100%
+            assertEquals(1, matrix.getTests().size());
+            assertInvalid(
+                    "invalid test not required, unitless allocation must have one bucket set to 100%",
+                    matrix, requiredTests);
+            assertEquals(
+                    "required tests should not be removed from the matrix",
+                    1,
+                    matrix.getTests().size());
+        }
+
+        {
+            final Map<String, ConsumableTestDefinition> tests = new HashMap<>();
+            final ConsumableTestDefinition td =
+                    constructDefinition(
+                            buckets,
+                            fromCompactAllocationFormat(
+                                    "missingExperimentalUnit|-1:0,0:0.5,1:0.5"));
+            td.setEnableUnitlessAllocations(false);
+            tests.put(TEST_A, td);
+
+            final TestMatrixArtifact matrix = constructArtifact(tests);
+
+            // verifyAndConsolidate should not throw an error because unitless allocation not
+            // enabled
+            // one bucket set to 100%
+            assertEquals(1, matrix.getTests().size());
+            assertValid(
+                    "valid tests required, since unitless allocation not enabled",
+                    matrix,
+                    requiredTests);
+            assertEquals(
+                    "required tests should not be removed from the matrix",
+                    1,
+                    matrix.getTests().size());
+        }
+
+        {
+            final Map<String, ConsumableTestDefinition> tests = new HashMap<>();
+            final ConsumableTestDefinition td =
+                    constructDefinition(
+                            buckets,
+                            fromCompactAllocationFormat(
+                                    "!missingExperimentalUnit|-1:0,0:0.5,1:0.5"));
+            td.setEnableUnitlessAllocations(true);
+            tests.put(TEST_A, td);
+
+            final TestMatrixArtifact matrix = constructArtifact(tests);
+
+            // verifyAndConsolidate should not throw an error because unitless allocation enabled but !missingExperimentalUnit
+            // one bucket set to 100%
+            assertEquals(1, matrix.getTests().size());
+            assertValid(
+                    "valid tests required, since unitless allocation not enabled",
+                    matrix,
+                    requiredTests);
+            assertEquals(
+                    "required tests should not be removed from the matrix",
+                    1,
+                    matrix.getTests().size());
+        }
+    }
+
     private static void setPayload(
             final List<TestBucket> buckets, final int index, final Payload newPayload) {
         buckets.set(
