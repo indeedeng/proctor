@@ -53,7 +53,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -89,6 +88,9 @@ public abstract class ProctorUtils {
                     expressionFactory.createValueExpression(entry.getValue(), Object.class);
             context.put(entry.getKey(), ve);
         }
+        context.put(
+                UNITLESS_ALLOCATION_IDENTIFIER,
+                expressionFactory.createValueExpression(true, Object.class));
         return context;
     }
 
@@ -1434,12 +1436,8 @@ public abstract class ProctorUtils {
     }
 
     public static boolean containsUnitlessAllocation(
-            @Nonnull final ConsumableTestDefinition testDefinition,
-            @Nonnull final Map<String, ValueExpression> localContext) {
+            @Nonnull final ConsumableTestDefinition testDefinition) {
         return testDefinition.getEnableUnitlessAllocations()
-                && localContext.get(UNITLESS_ALLOCATION_IDENTIFIER) != null
-                && Objects.equals(
-                        localContext.get(UNITLESS_ALLOCATION_IDENTIFIER).getValue(null), "true")
                 && testDefinition.getAllocations().stream()
                         .anyMatch(
                                 allocation ->

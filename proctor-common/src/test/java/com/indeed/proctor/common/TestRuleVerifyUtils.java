@@ -168,6 +168,45 @@ public class TestRuleVerifyUtils {
     }
 
     @Test
+    public void testValidRulesWithMissingExperimentalUnitNotIncludedInLocalContext() {
+        expectValidRule(
+                "${missingExperimentalUnit && browser == 'IE'}",
+                new Object[][] {{"browser", "IE"}},
+                new String[] {});
+
+        expectValidRule(
+                "${!missingExperimentalUnit && browser == 'IE'}",
+                new Object[][] {{"browser", "IE"}},
+                new String[] {});
+
+        expectValidRule("${missingExperimentalUnit}", new Object[][] {}, new String[] {});
+    }
+
+    @Test
+    public void
+            testInvalidRulesWithMissingExperimentalUnitNotIncludedInLocalContext_MissingOtherVariables() {
+        InvalidRuleException invalidRuleException =
+                expectInvalidRule(
+                        "${missingExperimentalUnit && browser == 'IE' && obj.notExists()}",
+                        new Object[][] {
+                            {"browser", "IE"},
+                            {"obj", new TestClass()},
+                        },
+                        new String[] {});
+        assertThat(invalidRuleException.getMessage()).contains("Method not found");
+
+        invalidRuleException =
+                expectInvalidRule(
+                        "${missingExperimentalUnit && browser == 'IE' && obj.isFortyTwo(['42'])}",
+                        new Object[][] {
+                            {"browser", "IE"},
+                            {"obj", new TestClass()},
+                        },
+                        new String[] {});
+        assertThat(invalidRuleException.getMessage()).contains("syntax error");
+    }
+
+    @Test
     public void testVerifyRulesWithoutContext() {
         final InvalidRuleException e =
                 expectInvalidRule("${browser != 'IE9'}", new Object[][] {}, new String[] {});

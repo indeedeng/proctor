@@ -20,6 +20,7 @@ import static com.indeed.proctor.common.RuleEvaluator.checkRuleIsBooleanType;
 public class RuleVerifyUtils {
 
     private static final Logger LOGGER = LogManager.getLogger(RuleVerifyUtils.class);
+    private static final String UNITLESS_ALLOCATION_IDENTIFIER = "missingExperimentalUnit";
 
     private RuleVerifyUtils() {}
 
@@ -76,7 +77,8 @@ public class RuleVerifyUtils {
                 // Check identifiers in the AST and verify variable names
                 final Node undefinedIdentifier =
                         checkUndefinedIdentifier(root, elContext, absentIdentifiers);
-                if (undefinedIdentifier != null) {
+                if (undefinedIdentifier != null
+                        && !undefinedIdentifier.getImage().equals(UNITLESS_ALLOCATION_IDENTIFIER)) {
                     throw new InvalidRuleException(
                             String.format(
                                     "The variable %s is defined in rule %s, however it "

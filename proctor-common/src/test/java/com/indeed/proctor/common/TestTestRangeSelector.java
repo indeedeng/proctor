@@ -113,10 +113,10 @@ public class TestTestRangeSelector {
                                 ImmutableMap.of("country", "US"),
                                 ImmutableMap.of("another_tst", new TestBucket("control", 0, "")),
                                 ""))
-                .isEqualTo(-1);
+                .isEqualTo(0);
 
         assertThat(selector.findMatchingRule(ImmutableMap.of("country", "US"), emptyMap(), ""))
-                .isEqualTo(-1);
+                .isEqualTo(0);
     }
 
     private static TestDefinition.Builder stubTestDefinition(final List<String> rules) {

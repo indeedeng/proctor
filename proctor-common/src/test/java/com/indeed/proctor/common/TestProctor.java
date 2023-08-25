@@ -302,14 +302,10 @@ public class TestProctor {
                                 .setTestType(TestType.RANDOM)
                                 .build());
 
-        when(testChooser.choose(
-                        isNull(),
-                        eq(Collections.emptyMap()),
-                        anyMap(),
-                        eq(ForceGroupsOptions.empty())))
-                .thenReturn(result);
-
         when(testChooser.getTestDefinition()).thenReturn(testDefinition);
+
+        when(testChooser.choose(isNull(), anyMap(), anyMap(), eq(ForceGroupsOptions.empty())))
+                .thenReturn(result);
 
         final ProctorResult proctorResultWithRandom =
                 proctor.determineTestGroups(
@@ -328,11 +324,7 @@ public class TestProctor {
 
         // choose should not be called for identifiers with randomEnabled == false.
         verify(testChooser, times(1))
-                .choose(
-                        isNull(),
-                        eq(Collections.emptyMap()),
-                        anyMap(),
-                        eq(ForceGroupsOptions.empty()));
+                .choose(isNull(), anyMap(), anyMap(), eq(ForceGroupsOptions.empty()));
     }
 
     @Test

@@ -19,7 +19,6 @@ import com.indeed.proctor.common.model.TestType;
 import org.junit.Test;
 
 import javax.annotation.Nullable;
-import javax.el.ValueExpression;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -2655,12 +2654,7 @@ public class TestProctorUtils {
                                                                 new Range(-1, 0),
                                                                 new Range(1, 1)))))
                                 .build());
-        final Map<String, ValueExpression> context =
-                Collections.singletonMap(
-                        "missingExperimentalUnit",
-                        RuleEvaluator.EXPRESSION_FACTORY.createValueExpression(
-                                "true", Object.class));
-        assertThat(containsUnitlessAllocation(td, context)).isTrue();
+        assertThat(containsUnitlessAllocation(td)).isTrue();
     }
 
     @Test
@@ -2680,12 +2674,7 @@ public class TestProctorUtils {
                                                                 new Range(-1, 0),
                                                                 new Range(1, 1)))))
                                 .build());
-        final Map<String, ValueExpression> context =
-                Collections.singletonMap(
-                        "missingExperimentalUnit",
-                        RuleEvaluator.EXPRESSION_FACTORY.createValueExpression(
-                                "true", Object.class));
-        assertThat(containsUnitlessAllocation(td, context)).isFalse();
+        assertThat(containsUnitlessAllocation(td)).isFalse();
     }
 
     @Test
@@ -2705,12 +2694,7 @@ public class TestProctorUtils {
                                                                 new Range(-1, 0),
                                                                 new Range(1, 1)))))
                                 .build());
-        final Map<String, ValueExpression> context =
-                Collections.singletonMap(
-                        "missingExperimentalUnit",
-                        RuleEvaluator.EXPRESSION_FACTORY.createValueExpression(
-                                "true", Object.class));
-        assertThat(containsUnitlessAllocation(td, context)).isFalse();
+        assertThat(containsUnitlessAllocation(td)).isFalse();
     }
 
     @Test
@@ -2730,12 +2714,7 @@ public class TestProctorUtils {
                                                                 new Range(-1, 0),
                                                                 new Range(1, 1)))))
                                 .build());
-        final Map<String, ValueExpression> context =
-                Collections.singletonMap(
-                        "missingExperimentalUnit",
-                        RuleEvaluator.EXPRESSION_FACTORY.createValueExpression(
-                                "true", Object.class));
-        assertThat(containsUnitlessAllocation(td, context)).isFalse();
+        assertThat(containsUnitlessAllocation(td)).isFalse();
     }
 
     @Test
@@ -2825,7 +2804,8 @@ public class TestProctorUtils {
 
             final TestMatrixArtifact matrix = constructArtifact(tests);
 
-            // verifyAndConsolidate should not throw an error because unitless allocation enabled but !missingExperimentalUnit
+            // verifyAndConsolidate should not throw an error because unitless allocation enabled
+            // but !missingExperimentalUnit
             // one bucket set to 100%
             assertEquals(1, matrix.getTests().size());
             assertValid(

@@ -336,8 +336,7 @@ public class Proctor {
             final boolean containsUnitlessAllocations =
                     testTypesWithInvalidIdentifier.contains(
                                     testChooser.getTestDefinition().getTestType())
-                            && containsUnitlessAllocation(
-                                    testChooser.getTestDefinition(), localContext);
+                            && containsUnitlessAllocation(testChooser.getTestDefinition());
 
             if (testChooser instanceof StandardTestChooser) {
                 final TestType testType = testChooser.getTestDefinition().getTestType();
