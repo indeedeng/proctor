@@ -2780,7 +2780,6 @@ public class TestProctorUtils {
 
             // verifyAndConsolidate should not throw an error because unitless allocation not
             // enabled
-            // one bucket set to 100%
             assertEquals(1, matrix.getTests().size());
             assertValid(
                     "valid tests required, since unitless allocation not enabled",
@@ -2804,9 +2803,7 @@ public class TestProctorUtils {
 
             final TestMatrixArtifact matrix = constructArtifact(tests);
 
-            // verifyAndConsolidate should not throw an error because unitless allocation enabled
-            // but !missingExperimentalUnit
-            // one bucket set to 100%
+            // verifyAndConsolidate should not throw an error because !missingExperimentalUnit
             assertEquals(1, matrix.getTests().size());
             assertValid(
                     "valid tests required, since unitless allocation not enabled",
