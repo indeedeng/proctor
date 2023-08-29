@@ -57,15 +57,15 @@ public class TestTestRangeSelector {
                                 .build());
         assertThat(
                         selector.findMatchingRule(
-                                ImmutableMap.of("country", "US", "var", 1), emptyMap(), ""))
+                                ImmutableMap.of("country", "US", "var", 1), emptyMap(), "123"))
                 .isEqualTo(0);
         assertThat(
                         selector.findMatchingRule(
-                                ImmutableMap.of("country", "US", "var", 0), emptyMap(), ""))
+                                ImmutableMap.of("country", "US", "var", 0), emptyMap(), "123"))
                 .isEqualTo(-1);
         assertThat(
                         selector.findMatchingRule(
-                                ImmutableMap.of("country", "JA", "var", 1), emptyMap(), ""))
+                                ImmutableMap.of("country", "JA", "var", 1), emptyMap(), "123"))
                 .isEqualTo(1);
     }
 
@@ -99,30 +99,38 @@ public class TestTestRangeSelector {
         final TestRangeSelector selector =
                 createTestRangeSelector(
                         stubTestDefinition(
-                                        Arrays.asList("missingExperimentalUnit && country == 'US'"))
-                                .build());
+                                        Arrays.asList("missingExperimentalUnit && country == 'US'"),
+                                        true)
+                                .build(),
+                        new IdentifierValidator.NoEmptyValidator());
         assertThat(
                         selector.findMatchingRule(
-                                ImmutableMap.of("country", "US", "missingExperimentalUnit", "true"),
+                                ImmutableMap.of("country", "US"),
                                 ImmutableMap.of("another_tst", new TestBucket("active", 1, "")),
-                                null))
+                                ""))
                 .isEqualTo(0);
 
         assertThat(
                         selector.findMatchingRule(
-                                ImmutableMap.of("country", "US"),
-                                ImmutableMap.of("another_tst", new TestBucket("control", 0, "")),
+                                ImmutableMap.of("country", "JP"),
+                                ImmutableMap.of("another_tst", new TestBucket("control", 1, "")),
                                 ""))
-                .isEqualTo(0);
+                .isEqualTo(-1);
 
         assertThat(selector.findMatchingRule(ImmutableMap.of("country", "US"), emptyMap(), ""))
                 .isEqualTo(0);
     }
 
     private static TestDefinition.Builder stubTestDefinition(final List<String> rules) {
+        return stubTestDefinition(rules, false);
+    }
+
+    private static TestDefinition.Builder stubTestDefinition(
+            final List<String> rules, final boolean unitless) {
         return TestDefinition.builder()
                 .setTestType(TestType.ANONYMOUS_USER)
                 .setSalt("")
+                .setEnableUnitlessAllocations(unitless)
                 .addBuckets(new TestBucket("active", 1, ""))
                 .setAllocations(
                         rules.stream()
@@ -131,9 +139,15 @@ public class TestTestRangeSelector {
     }
 
     private static TestRangeSelector createTestRangeSelector(final TestDefinition definition) {
+        return createTestRangeSelector(definition, new IdentifierValidator.Noop());
+    }
+
+    private static TestRangeSelector createTestRangeSelector(
+            final TestDefinition definition, final IdentifierValidator id) {
         return new TestRangeSelector(
                 RuleEvaluator.createDefaultRuleEvaluator(Collections.emptyMap()),
                 "dummy_test",
-                ConsumableTestDefinition.fromTestDefinition(definition));
+                ConsumableTestDefinition.fromTestDefinition(definition),
+                id);
     }
 }

@@ -94,7 +94,8 @@ public class Proctor {
                                 RuleEvaluator.EXPRESSION_FACTORY,
                                 functionMapper,
                                 testName,
-                                testDefinition);
+                                testDefinition,
+                                identifierValidator);
             } else {
                 testChooser =
                         new StandardTestChooser(

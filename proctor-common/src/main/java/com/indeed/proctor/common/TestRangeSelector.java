@@ -54,14 +54,12 @@ public class TestRangeSelector {
     }
 
     TestRangeSelector(
-            @Nonnull final ExpressionFactory expressionFactory,
-            @Nonnull final FunctionMapper functionMapper,
-            final String testName,
-            @Nonnull final ConsumableTestDefinition testDefinition) {
-        this(
-                new RuleEvaluator(expressionFactory, functionMapper, testDefinition.getConstants()),
-                testName,
-                testDefinition);
+            @Nonnull final RuleEvaluator ruleEvaluator,
+            @Nonnull final String testName,
+            @Nonnull final ConsumableTestDefinition testDefinition,
+            @Nonnull final IdentifierValidator identifierValidator) {
+        this(ruleEvaluator, testName, testDefinition);
+        this.identifierValidator = identifierValidator;
     }
 
     TestRangeSelector(
