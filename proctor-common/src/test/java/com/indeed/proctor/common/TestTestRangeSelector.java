@@ -57,15 +57,15 @@ public class TestTestRangeSelector {
                                 .build());
         assertThat(
                         selector.findMatchingRule(
-                                ImmutableMap.of("country", "US", "var", 1), emptyMap(), "123"))
+                                ImmutableMap.of("country", "US", "var", 1), emptyMap(), ""))
                 .isEqualTo(0);
         assertThat(
                         selector.findMatchingRule(
-                                ImmutableMap.of("country", "US", "var", 0), emptyMap(), "123"))
+                                ImmutableMap.of("country", "US", "var", 0), emptyMap(), ""))
                 .isEqualTo(-1);
         assertThat(
                         selector.findMatchingRule(
-                                ImmutableMap.of("country", "JA", "var", 1), emptyMap(), "123"))
+                                ImmutableMap.of("country", "JA", "var", 1), emptyMap(), ""))
                 .isEqualTo(1);
     }
 
