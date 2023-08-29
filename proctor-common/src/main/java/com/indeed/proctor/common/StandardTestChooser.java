@@ -44,6 +44,21 @@ class StandardTestChooser implements TestChooser<String> {
         this(new TestRangeSelector(expressionFactory, functionMapper, testName, testDefinition));
     }
 
+    public StandardTestChooser(
+            @Nonnull final ExpressionFactory expressionFactory,
+            @Nonnull final FunctionMapper functionMapper,
+            @Nonnull final String testName,
+            @Nonnull final ConsumableTestDefinition testDefinition,
+            @Nonnull final IdentifierValidator identifierValidator) {
+        this(
+                new TestRangeSelector(
+                        expressionFactory,
+                        functionMapper,
+                        testName,
+                        testDefinition,
+                        identifierValidator));
+    }
+
     @VisibleForTesting
     StandardTestChooser(@Nonnull final TestRangeSelector selector) {
         this.testRangeSelector = selector;

@@ -101,7 +101,8 @@ public class Proctor {
                                 RuleEvaluator.EXPRESSION_FACTORY,
                                 functionMapper,
                                 testName,
-                                testDefinition);
+                                testDefinition,
+                                identifierValidator);
             }
             testChoosers.put(testName, testChooser);
             versions.put(testName, testDefinition.getVersion());

@@ -834,6 +834,63 @@ public class TestProctor {
                 .containsEntry("unitless_tst", unitlessTestDefinition);
     }
 
+    @Test
+    public void
+            testDetermineTestGroups_UnitlessIdentifierButNoMatchingMissingExperimentalUnitAllocation_shouldBeEmpty() {
+        final TestBucket inactiveBucket = new TestBucket("inactive", -1, "");
+        final TestBucket controlBucket = new TestBucket("control", 0, "");
+        final TestBucket activeBucket = new TestBucket("active", 1, "");
+        final TestBucket testBucket = new TestBucket("test", 2, "");
+        final Allocation unitlessAllocation_US =
+                new Allocation(
+                        "missingExperimentalUnit && country == 'UK'",
+                        ImmutableList.of(new Range(0, 0), new Range(-1, 0), new Range(1, 1)));
+        final Allocation unitlessAllocation_JP =
+                new Allocation(
+                        "missingExperimentalUnit && country == 'JP'",
+                        ImmutableList.of(new Range(0, 0), new Range(-1, 0), new Range(2, 1)));
+        final Allocation allocation_JP =
+                new Allocation(
+                        "country == 'US' && lang == 'en'",
+                        ImmutableList.of(new Range(0, 0), new Range(-1, 0), new Range(1, 1)));
+
+        final ConsumableTestDefinition unitlessTestDefinition =
+                ConsumableTestDefinition.fromTestDefinition(
+                        TestDefinition.builder()
+                                .setEnableUnitlessAllocations(true)
+                                .setSalt("&unitless_tst")
+                                .setTestType(TestType.AUTHENTICATED_USER)
+                                .addBuckets(inactiveBucket, controlBucket, activeBucket, testBucket)
+                                .addAllocations(
+                                        unitlessAllocation_US, unitlessAllocation_JP, allocation_JP)
+                                .build());
+
+        final Map<String, ConsumableTestDefinition> tests =
+                ImmutableMap.of("unitless_tst", unitlessTestDefinition);
+        final TestMatrixArtifact matrix = new TestMatrixArtifact();
+        matrix.setTests(tests);
+        matrix.setAudit(new Audit());
+
+        final Proctor proctor =
+                Proctor.construct(
+                        matrix,
+                        ProctorLoadResult.emptyResult(),
+                        RuleEvaluator.defaultFunctionMapperBuilder().build(),
+                        new IdentifierValidator.NoEmptyValidator());
+
+        final ProctorResult proctorResult =
+                proctor.determineTestGroups(
+                        Identifiers.of(TestType.AUTHENTICATED_USER, ""),
+                        ImmutableMap.of("country", "US", "lang", "en"),
+                        ForceGroupsOptions.builder().build(),
+                        Collections.emptyList());
+
+        assertThat(proctorResult.getAllocations()).isEmpty();
+        assertThat(proctorResult.getBuckets()).isEmpty();
+        assertThat(proctorResult.getTestDefinitions())
+                .containsEntry("unitless_tst", unitlessTestDefinition);
+    }
+
     private static TestMatrixArtifact createTestMatrixWithOneRandomTest(final String testName) {
         final TestMatrixArtifact matrix = new TestMatrixArtifact();
         final ConsumableTestDefinition testDefinition = new ConsumableTestDefinition();

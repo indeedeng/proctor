@@ -38,6 +38,20 @@ public class TestRangeSelector {
     @Nonnull private final String[] rules;
     @Nonnull private final TestBucket[][] rangeToBucket;
     private final RuleEvaluator ruleEvaluator;
+    @Nonnull private IdentifierValidator identifierValidator;
+
+    TestRangeSelector(
+            @Nonnull final ExpressionFactory expressionFactory,
+            @Nonnull final FunctionMapper functionMapper,
+            final String testName,
+            @Nonnull final ConsumableTestDefinition testDefinition,
+            @Nonnull final IdentifierValidator identifierValidator) {
+        this(
+                new RuleEvaluator(expressionFactory, functionMapper, testDefinition.getConstants()),
+                testName,
+                testDefinition);
+        this.identifierValidator = identifierValidator;
+    }
 
     TestRangeSelector(
             @Nonnull final ExpressionFactory expressionFactory,
@@ -123,7 +137,9 @@ public class TestRangeSelector {
             }
             for (int i = 0; i < rules.length; i++) {
                 rule = rules[i];
-                if ((identifier != null || rule.contains("missingExperimentalUnit"))
+                if (identifier != null
+                        && (identifierValidator.validate(testDefinition.getTestType(), identifier)
+                                || rule.contains("missingExperimentalUnit"))
                         && evaluator.apply(rule)) {
                     return i;
                 }
