@@ -14,13 +14,13 @@ import javax.el.ValueExpression;
 import java.util.List;
 import java.util.Set;
 
+import static com.indeed.proctor.common.ProctorUtils.UNITLESS_ALLOCATION_IDENTIFIER;
 import static com.indeed.proctor.common.ProctorUtils.isEmptyElExpression;
 import static com.indeed.proctor.common.RuleEvaluator.checkRuleIsBooleanType;
 
 public class RuleVerifyUtils {
 
     private static final Logger LOGGER = LogManager.getLogger(RuleVerifyUtils.class);
-    private static final String UNITLESS_ALLOCATION_IDENTIFIER = "missingExperimentalUnit";
 
     private RuleVerifyUtils() {}
 

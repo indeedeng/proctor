@@ -611,13 +611,14 @@ public class TestProctor {
                 Proctor.construct(
                         matrix,
                         ProctorLoadResult.emptyResult(),
-                        RuleEvaluator.defaultFunctionMapperBuilder().build());
+                        RuleEvaluator.defaultFunctionMapperBuilder().build(),
+                        new IdentifierValidator.NoEmptyValidator());
 
         final ProctorResult proctorResult =
                 proctor.determineTestGroups(
                         Identifiers.of(
                                 TestType.ANONYMOUS_USER, "cookie", TestType.AUTHENTICATED_USER, ""),
-                        ImmutableMap.of("country", "US", "missingExperimentalUnit", "true"),
+                        ImmutableMap.of("country", "US"),
                         ForceGroupsOptions.builder().build(),
                         Collections.emptyList());
 
@@ -663,12 +664,13 @@ public class TestProctor {
                 Proctor.construct(
                         matrix,
                         ProctorLoadResult.emptyResult(),
-                        RuleEvaluator.defaultFunctionMapperBuilder().build());
+                        RuleEvaluator.defaultFunctionMapperBuilder().build(),
+                        new IdentifierValidator.NoEmptyValidator());
 
         final ProctorResult proctorResult =
                 proctor.determineTestGroups(
-                        Identifiers.of(TestType.AUTHENTICATED_USER, null),
-                        ImmutableMap.of("country", "US"),
+                        Identifiers.of(TestType.AUTHENTICATED_USER, ""),
+                        ImmutableMap.of(),
                         ForceGroupsOptions.builder().build(),
                         Collections.emptyList());
 
@@ -708,12 +710,13 @@ public class TestProctor {
                 Proctor.construct(
                         matrix,
                         ProctorLoadResult.emptyResult(),
-                        RuleEvaluator.defaultFunctionMapperBuilder().build());
+                        RuleEvaluator.defaultFunctionMapperBuilder().build(),
+                        new IdentifierValidator.NoEmptyValidator());
 
         final ProctorResult proctorResult =
                 proctor.determineTestGroups(
-                        Identifiers.of(TestType.AUTHENTICATED_USER, null),
-                        ImmutableMap.of("country", "US", "missingExperimentalUnit", "true"),
+                        Identifiers.of(TestType.AUTHENTICATED_USER, ""),
+                        ImmutableMap.of("country", "US"),
                         ForceGroupsOptions.builder().build(),
                         Collections.emptyList());
 
@@ -758,18 +761,75 @@ public class TestProctor {
                 Proctor.construct(
                         matrix,
                         ProctorLoadResult.emptyResult(),
-                        RuleEvaluator.defaultFunctionMapperBuilder().build());
+                        RuleEvaluator.defaultFunctionMapperBuilder().build(),
+                        new IdentifierValidator.NoEmptyValidator());
 
         final ProctorResult proctorResult =
                 proctor.determineTestGroups(
                         Identifiers.of(TestType.AUTHENTICATED_USER, ""),
-                        ImmutableMap.of("country", "JP", "missingExperimentalUnit", "true"),
+                        ImmutableMap.of("country", "JP"),
                         ForceGroupsOptions.builder().build(),
                         Collections.emptyList());
 
         assertThat(proctorResult.getAllocations())
                 .containsEntry("unitless_tst", unitlessAllocation_JP);
         assertThat(proctorResult.getBuckets()).containsEntry("unitless_tst", testBucket);
+        assertThat(proctorResult.getTestDefinitions())
+                .containsEntry("unitless_tst", unitlessTestDefinition);
+    }
+
+    @Test
+    public void testDetermineTestGroups_UnitlessAllocationMultipleMissingAllocations_NotUnitless() {
+        final TestBucket inactiveBucket = new TestBucket("inactive", -1, "");
+        final TestBucket controlBucket = new TestBucket("control", 0, "");
+        final TestBucket activeBucket = new TestBucket("active", 1, "");
+        final TestBucket testBucket = new TestBucket("test", 2, "");
+        final Allocation unitlessAllocation_US =
+                new Allocation(
+                        "missingExperimentalUnit && country == 'US'",
+                        ImmutableList.of(new Range(0, 0), new Range(-1, 0), new Range(1, 1)));
+        final Allocation unitlessAllocation_JP =
+                new Allocation(
+                        "missingExperimentalUnit && country == 'JP'",
+                        ImmutableList.of(new Range(0, 0), new Range(-1, 0), new Range(2, 1)));
+        final Allocation allocation_JP =
+                new Allocation(
+                        "country == 'JP'",
+                        ImmutableList.of(new Range(0, 0), new Range(-1, 0), new Range(1, 1)));
+
+        final ConsumableTestDefinition unitlessTestDefinition =
+                ConsumableTestDefinition.fromTestDefinition(
+                        TestDefinition.builder()
+                                .setEnableUnitlessAllocations(true)
+                                .setSalt("&unitless_tst")
+                                .setTestType(TestType.AUTHENTICATED_USER)
+                                .addBuckets(inactiveBucket, controlBucket, activeBucket, testBucket)
+                                .addAllocations(
+                                        unitlessAllocation_US, unitlessAllocation_JP, allocation_JP)
+                                .build());
+
+        final Map<String, ConsumableTestDefinition> tests =
+                ImmutableMap.of("unitless_tst", unitlessTestDefinition);
+        final TestMatrixArtifact matrix = new TestMatrixArtifact();
+        matrix.setTests(tests);
+        matrix.setAudit(new Audit());
+
+        final Proctor proctor =
+                Proctor.construct(
+                        matrix,
+                        ProctorLoadResult.emptyResult(),
+                        RuleEvaluator.defaultFunctionMapperBuilder().build(),
+                        new IdentifierValidator.NoEmptyValidator());
+
+        final ProctorResult proctorResult =
+                proctor.determineTestGroups(
+                        Identifiers.of(TestType.AUTHENTICATED_USER, "123456789"),
+                        ImmutableMap.of("country", "JP"),
+                        ForceGroupsOptions.builder().build(),
+                        Collections.emptyList());
+
+        assertThat(proctorResult.getAllocations()).containsEntry("unitless_tst", allocation_JP);
+        assertThat(proctorResult.getBuckets()).containsEntry("unitless_tst", activeBucket);
         assertThat(proctorResult.getTestDefinitions())
                 .containsEntry("unitless_tst", unitlessTestDefinition);
     }

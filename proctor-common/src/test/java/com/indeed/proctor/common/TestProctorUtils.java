@@ -2639,81 +2639,77 @@ public class TestProctorUtils {
 
     @Test
     public void testContainsUnitlessAllocation() {
-        final ConsumableTestDefinition td =
-                ConsumableTestDefinition.fromTestDefinition(
-                        TestDefinition.builder()
-                                .setTestType(TestType.ANONYMOUS_USER)
-                                .setSalt("test")
-                                .setEnableUnitlessAllocations(true)
-                                .setAllocations(
-                                        ImmutableList.of(
-                                                new Allocation(
-                                                        "missingExperimentalUnit && country == 'US'",
-                                                        ImmutableList.of(
-                                                                new Range(0, 0),
-                                                                new Range(-1, 0),
-                                                                new Range(1, 1)))))
-                                .build());
+        final TestDefinition td =
+                TestDefinition.builder()
+                        .setTestType(TestType.ANONYMOUS_USER)
+                        .setSalt("test")
+                        .setEnableUnitlessAllocations(true)
+                        .setAllocations(
+                                ImmutableList.of(
+                                        new Allocation(
+                                                "missingExperimentalUnit && country == 'US'",
+                                                ImmutableList.of(
+                                                        new Range(0, 0),
+                                                        new Range(-1, 0),
+                                                        new Range(1, 1)))))
+                        .build();
         assertThat(containsUnitlessAllocation(td)).isTrue();
     }
 
     @Test
     public void testContainUnitlessAllocation_ruleWithNoMissingExperimentalUnit() {
-        final ConsumableTestDefinition td =
-                ConsumableTestDefinition.fromTestDefinition(
-                        TestDefinition.builder()
-                                .setTestType(TestType.ANONYMOUS_USER)
-                                .setSalt("test")
-                                .setEnableUnitlessAllocations(true)
-                                .setAllocations(
-                                        ImmutableList.of(
-                                                new Allocation(
-                                                        "country == 'US'",
-                                                        ImmutableList.of(
-                                                                new Range(0, 0),
-                                                                new Range(-1, 0),
-                                                                new Range(1, 1)))))
-                                .build());
+        final TestDefinition td =
+                TestDefinition.builder()
+                        .setTestType(TestType.ANONYMOUS_USER)
+                        .setSalt("test")
+                        .setEnableUnitlessAllocations(true)
+                        .setAllocations(
+                                ImmutableList.of(
+                                        new Allocation(
+                                                "country == 'US'",
+                                                ImmutableList.of(
+                                                        new Range(0, 0),
+                                                        new Range(-1, 0),
+                                                        new Range(1, 1)))))
+                        .build();
         assertThat(containsUnitlessAllocation(td)).isFalse();
     }
 
     @Test
     public void testContainUnitlessAllocation_noEnabled() {
-        final ConsumableTestDefinition td =
-                ConsumableTestDefinition.fromTestDefinition(
-                        TestDefinition.builder()
-                                .setTestType(TestType.ANONYMOUS_USER)
-                                .setSalt("test")
-                                .setEnableUnitlessAllocations(false)
-                                .setAllocations(
-                                        ImmutableList.of(
-                                                new Allocation(
-                                                        "missingExperimentalUnit && country == 'US'",
-                                                        ImmutableList.of(
-                                                                new Range(0, 0),
-                                                                new Range(-1, 0),
-                                                                new Range(1, 1)))))
-                                .build());
+        final TestDefinition td =
+                TestDefinition.builder()
+                        .setTestType(TestType.ANONYMOUS_USER)
+                        .setSalt("test")
+                        .setEnableUnitlessAllocations(false)
+                        .setAllocations(
+                                ImmutableList.of(
+                                        new Allocation(
+                                                "missingExperimentalUnit && country == 'US'",
+                                                ImmutableList.of(
+                                                        new Range(0, 0),
+                                                        new Range(-1, 0),
+                                                        new Range(1, 1)))))
+                        .build();
         assertThat(containsUnitlessAllocation(td)).isFalse();
     }
 
     @Test
     public void testContainUnitlessAllocation_enabledNoAllocations() {
-        final ConsumableTestDefinition td =
-                ConsumableTestDefinition.fromTestDefinition(
-                        TestDefinition.builder()
-                                .setTestType(TestType.ANONYMOUS_USER)
-                                .setSalt("test")
-                                .setEnableUnitlessAllocations(true)
-                                .setAllocations(
-                                        ImmutableList.of(
-                                                new Allocation(
-                                                        null,
-                                                        ImmutableList.of(
-                                                                new Range(0, 0),
-                                                                new Range(-1, 0),
-                                                                new Range(1, 1)))))
-                                .build());
+        final TestDefinition td =
+                TestDefinition.builder()
+                        .setTestType(TestType.ANONYMOUS_USER)
+                        .setSalt("test")
+                        .setEnableUnitlessAllocations(true)
+                        .setAllocations(
+                                ImmutableList.of(
+                                        new Allocation(
+                                                null,
+                                                ImmutableList.of(
+                                                        new Range(0, 0),
+                                                        new Range(-1, 0),
+                                                        new Range(1, 1)))))
+                        .build();
         assertThat(containsUnitlessAllocation(td)).isFalse();
     }
 

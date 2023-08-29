@@ -53,7 +53,8 @@ public class TestRuleVerifyUtils {
 
         final ProvidedContext providedContext =
                 ProvidedContext.forValueExpressionMap(
-                        ProctorUtils.convertToValueExpressionMap(expressionFactory, context),
+                        ProctorUtils.convertLocalContextToValueExpressionMap(
+                                expressionFactory, context),
                         Collections.emptySet());
         final VariableMapper variableMapper =
                 new MulticontextReadOnlyVariableMapper(testConstants, providedContext.getContext());
@@ -187,7 +188,7 @@ public class TestRuleVerifyUtils {
             testInvalidRulesWithMissingExperimentalUnitNotIncludedInLocalContext_MissingOtherVariables() {
         InvalidRuleException invalidRuleException =
                 expectInvalidRule(
-                        "${missingExperimentalUnit && browser == 'IE' && obj.notExists()}",
+                        "${missingExperimentalUnit && browser == 'IE' && obj.foobar()}",
                         new Object[][] {
                             {"browser", "IE"},
                             {"obj", new TestClass()},

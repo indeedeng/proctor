@@ -37,7 +37,7 @@ import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static com.indeed.proctor.common.ProctorUtils.containsUnitlessAllocation;
+import static com.indeed.proctor.common.ProctorUtils.UNITLESS_ALLOCATION_IDENTIFIER;
 
 /**
  * The sole entry point for client applications determining the test buckets for a particular
@@ -327,7 +327,7 @@ public class Proctor {
         }
 
         final Map<String, ValueExpression> localContext =
-                ProctorUtils.convertToValueExpressionMap(
+                ProctorUtils.convertLocalContextToValueExpressionMap(
                         RuleEvaluator.EXPRESSION_FACTORY, inputContext);
 
         for (final String testName : filteredEvaluationOrder) {
@@ -336,8 +336,13 @@ public class Proctor {
             final boolean containsUnitlessAllocations =
                     testTypesWithInvalidIdentifier.contains(
                                     testChooser.getTestDefinition().getTestType())
-                            && containsUnitlessAllocation(testChooser.getTestDefinition());
-
+                            && testChooser.getTestDefinition().getContainsUnitlessAllocation();
+            if (!containsUnitlessAllocations) {
+                localContext.put(
+                        UNITLESS_ALLOCATION_IDENTIFIER,
+                        RuleEvaluator.EXPRESSION_FACTORY.createValueExpression(
+                                false, Object.class));
+            }
             if (testChooser instanceof StandardTestChooser) {
                 final TestType testType = testChooser.getTestDefinition().getTestType();
                 if (testTypesWithInvalidIdentifier.contains(testType)

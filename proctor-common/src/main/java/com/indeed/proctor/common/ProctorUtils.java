@@ -68,7 +68,7 @@ public abstract class ProctorUtils {
     private static final Logger LOGGER = LogManager.getLogger(ProctorUtils.class);
     private static final SpecificationGenerator SPECIFICATION_GENERATOR =
             new SpecificationGenerator();
-    private static final String UNITLESS_ALLOCATION_IDENTIFIER = "missingExperimentalUnit";
+    public static final String UNITLESS_ALLOCATION_IDENTIFIER = "missingExperimentalUnit";
 
     public static MessageDigest createMessageDigest() {
         try {
@@ -88,6 +88,15 @@ public abstract class ProctorUtils {
                     expressionFactory.createValueExpression(entry.getValue(), Object.class);
             context.put(entry.getKey(), ve);
         }
+        return context;
+    }
+
+    @Nonnull
+    public static Map<String, ValueExpression> convertLocalContextToValueExpressionMap(
+            @Nonnull final ExpressionFactory expressionFactory,
+            @Nonnull final Map<String, Object> values) {
+        final Map<String, ValueExpression> context =
+                convertToValueExpressionMap(expressionFactory, values);
         context.put(
                 UNITLESS_ALLOCATION_IDENTIFIER,
                 expressionFactory.createValueExpression(true, Object.class));
@@ -1435,20 +1444,31 @@ public abstract class ProctorUtils {
         return false;
     }
 
-    public static boolean containsUnitlessAllocation(
-            @Nonnull final ConsumableTestDefinition testDefinition) {
+    public static boolean containsUnitlessAllocation(@Nonnull final TestDefinition testDefinition) {
         return testDefinition.getEnableUnitlessAllocations()
                 && testDefinition.getAllocations().stream()
                         .anyMatch(
-                                allocation ->
-                                        allocation.getRule() != null
-                                                && allocation
+                                (allocation) -> {
+                                    if (allocation.getRule() != null) {
+                                        final int unitlessIdentifierIndex =
+                                                allocation
                                                         .getRule()
-                                                        .contains(UNITLESS_ALLOCATION_IDENTIFIER)
+                                                        .indexOf(UNITLESS_ALLOCATION_IDENTIFIER);
+
+                                        return unitlessIdentifierIndex != -1
+                                                && (unitlessIdentifierIndex == 0
+                                                        || allocation
+                                                                        .getRule()
+                                                                        .charAt(
+                                                                                unitlessIdentifierIndex
+                                                                                        - 1)
+                                                                != '!')
                                                 && allocation.getRanges().stream()
                                                         .anyMatch(
                                                                 range ->
-                                                                        range.getLength()
-                                                                                > 0.9999));
+                                                                        range.getLength() > 0.9999);
+                                    }
+                                    return false;
+                                });
     }
 }

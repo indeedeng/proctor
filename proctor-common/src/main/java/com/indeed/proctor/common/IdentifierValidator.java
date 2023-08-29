@@ -21,4 +21,12 @@ public interface IdentifierValidator {
             return true;
         }
     }
+
+    class NoEmptyValidator implements IdentifierValidator {
+        @Override
+        public boolean validate(
+                @Nonnull final TestType testType, @Nonnull final String identifier) {
+            return !identifier.equals("");
+        }
+    }
 }
