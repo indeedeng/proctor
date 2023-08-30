@@ -1160,12 +1160,9 @@ public abstract class ProctorUtils {
                         "Allocation range has no buckets, needs to add up to 1.");
             }
             if (testDefinition.getEnableUnitlessAllocations() && allocation.getRule() != null) {
-                final int unitlessIdentifierIndex =
-                        allocation.getRule().indexOf(UNITLESS_ALLOCATION_IDENTIFIER);
 
-                if (unitlessIdentifierIndex != -1
-                        && (unitlessIdentifierIndex == 0
-                                || allocation.getRule().charAt(unitlessIdentifierIndex - 1) != '!')
+                final boolean isUnitlessAllocation = isUnitlessAllocation(allocation);
+                if (isUnitlessAllocation
                         && ranges.stream().noneMatch(range -> range.getLength() > 0.9999)) {
                     throw new IncompatibleTestMatrixException(
                             "Allocation with \"missingExperimentalUnit\" in rule must have one bucket set to 100%");
@@ -1444,31 +1441,28 @@ public abstract class ProctorUtils {
         return false;
     }
 
+    private static boolean isUnitlessAllocation(@Nonnull final Allocation allocation) {
+        final int unitlessIdentifierIndex =
+                allocation.getRule().indexOf(UNITLESS_ALLOCATION_IDENTIFIER);
+        final boolean unitlessButFalse =
+                allocation.getRule().contains(UNITLESS_ALLOCATION_IDENTIFIER + " == false");
+        return !unitlessButFalse
+                && unitlessIdentifierIndex != -1
+                && (unitlessIdentifierIndex == 0
+                        || allocation.getRule().charAt(unitlessIdentifierIndex - 1) != '!');
+    }
+
     public static boolean containsUnitlessAllocation(@Nonnull final TestDefinition testDefinition) {
         return testDefinition.getEnableUnitlessAllocations()
                 && testDefinition.getAllocations().stream()
                         .anyMatch(
-                                (allocation) -> {
-                                    if (allocation.getRule() != null) {
-                                        final int unitlessIdentifierIndex =
-                                                allocation
-                                                        .getRule()
-                                                        .indexOf(UNITLESS_ALLOCATION_IDENTIFIER);
-
-                                        return unitlessIdentifierIndex != -1
-                                                && (unitlessIdentifierIndex == 0
-                                                        || allocation
-                                                                        .getRule()
-                                                                        .charAt(
-                                                                                unitlessIdentifierIndex
-                                                                                        - 1)
-                                                                != '!')
+                                (allocation) ->
+                                        allocation.getRule() != null
+                                                && isUnitlessAllocation(allocation)
                                                 && allocation.getRanges().stream()
                                                         .anyMatch(
                                                                 range ->
-                                                                        range.getLength() > 0.9999);
-                                    }
-                                    return false;
-                                });
+                                                                        range.getLength()
+                                                                                > 0.9999));
     }
 }

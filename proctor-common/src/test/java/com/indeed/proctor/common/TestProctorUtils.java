@@ -2676,6 +2676,40 @@ public class TestProctorUtils {
     }
 
     @Test
+    public void testContainUnitlessAllocation_ruleWithMissingExperimentalUnitSetToFalse() {
+        TestDefinition td =
+                TestDefinition.builder()
+                        .setTestType(TestType.ANONYMOUS_USER)
+                        .setSalt("test")
+                        .setEnableUnitlessAllocations(true)
+                        .setAllocations(
+                                ImmutableList.of(
+                                        new Allocation(
+                                                "missingExperimentalUnit == false && country == 'US'",
+                                                ImmutableList.of(
+                                                        new Range(0, 0),
+                                                        new Range(-1, 0),
+                                                        new Range(1, 1)))))
+                        .build();
+        assertThat(containsUnitlessAllocation(td)).isFalse();
+        td =
+                TestDefinition.builder()
+                        .setTestType(TestType.ANONYMOUS_USER)
+                        .setSalt("test")
+                        .setEnableUnitlessAllocations(true)
+                        .setAllocations(
+                                ImmutableList.of(
+                                        new Allocation(
+                                                "!missingExperimentalUnit && country == 'US'",
+                                                ImmutableList.of(
+                                                        new Range(0, 0),
+                                                        new Range(-1, 0),
+                                                        new Range(1, 1)))))
+                        .build();
+        assertThat(containsUnitlessAllocation(td)).isFalse();
+    }
+
+    @Test
     public void testContainUnitlessAllocation_noEnabled() {
         final TestDefinition td =
                 TestDefinition.builder()
