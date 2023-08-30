@@ -58,6 +58,12 @@ public class Proctor {
                     .configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false)
                     .writerWithDefaultPrettyPrinter();
 
+    private static final ValueExpression VALUE_EXPRESSION_TRUE =
+            RuleEvaluator.EXPRESSION_FACTORY.createValueExpression(true, Object.class);
+
+    private static final ValueExpression VALUE_EXPRESSION_FALSE =
+            RuleEvaluator.EXPRESSION_FACTORY.createValueExpression(false, Object.class);
+
     public static Proctor construct(
             @Nonnull final TestMatrixArtifact matrix,
             @Nonnull final ProctorLoadResult loadResult,
@@ -339,12 +345,9 @@ public class Proctor {
                     testTypesWithInvalidIdentifier.contains(
                                     testChooser.getTestDefinition().getTestType())
                             && testChooser.getTestDefinition().getContainsUnitlessAllocation();
-            if (!containsUnitlessAllocations) {
-                localContext.put(
-                        UNITLESS_ALLOCATION_IDENTIFIER,
-                        RuleEvaluator.EXPRESSION_FACTORY.createValueExpression(
-                                false, Object.class));
-            }
+            localContext.put(
+                    UNITLESS_ALLOCATION_IDENTIFIER,
+                    containsUnitlessAllocations ? VALUE_EXPRESSION_TRUE : VALUE_EXPRESSION_FALSE);
             if (testChooser instanceof StandardTestChooser) {
                 final TestType testType = testChooser.getTestDefinition().getTestType();
                 if (testTypesWithInvalidIdentifier.contains(testType)
