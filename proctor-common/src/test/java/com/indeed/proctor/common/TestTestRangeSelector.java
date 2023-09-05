@@ -10,6 +10,7 @@ import com.indeed.proctor.common.model.TestDependency;
 import com.indeed.proctor.common.model.TestType;
 import org.junit.Test;
 
+import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -102,7 +103,7 @@ public class TestTestRangeSelector {
                                         Arrays.asList("missingExperimentalUnit && country == 'US'"),
                                         true)
                                 .build(),
-                        new IdentifierValidator.NoEmptyValidator());
+                        new NoEmptyIdentifierValidator());
         assertThat(
                         selector.findMatchingRule(
                                 ImmutableMap.of("country", "US"),
@@ -149,5 +150,13 @@ public class TestTestRangeSelector {
                 "dummy_test",
                 ConsumableTestDefinition.fromTestDefinition(definition),
                 id);
+    }
+
+    static class NoEmptyIdentifierValidator implements IdentifierValidator {
+        @Override
+        public boolean validate(
+                @Nonnull final TestType testType, @Nonnull final String identifier) {
+            return !identifier.equals("");
+        }
     }
 }

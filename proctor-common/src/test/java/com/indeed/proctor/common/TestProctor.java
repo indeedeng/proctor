@@ -18,6 +18,7 @@ import com.indeed.proctor.common.model.TestMatrixArtifact;
 import com.indeed.proctor.common.model.TestType;
 import org.junit.Test;
 
+import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -42,6 +43,14 @@ import static org.mockito.Mockito.when;
 
 /** @author piotr */
 public class TestProctor {
+    static class NoEmptyIdentifierValidator implements IdentifierValidator {
+        @Override
+        public boolean validate(
+                @Nonnull final TestType testType, @Nonnull final String identifier) {
+            return !identifier.equals("");
+        }
+    }
+
     @Test
     public void testAppendTestMatrix_emptyProctor() throws IOException {
         // Very simplistically test the appendTestMatrix output.
@@ -612,7 +621,7 @@ public class TestProctor {
                         matrix,
                         ProctorLoadResult.emptyResult(),
                         RuleEvaluator.defaultFunctionMapperBuilder().build(),
-                        new IdentifierValidator.NoEmptyValidator());
+                        new NoEmptyIdentifierValidator());
 
         final ProctorResult proctorResult =
                 proctor.determineTestGroups(
@@ -665,7 +674,7 @@ public class TestProctor {
                         matrix,
                         ProctorLoadResult.emptyResult(),
                         RuleEvaluator.defaultFunctionMapperBuilder().build(),
-                        new IdentifierValidator.NoEmptyValidator());
+                        new NoEmptyIdentifierValidator());
 
         final ProctorResult proctorResult =
                 proctor.determineTestGroups(
@@ -711,7 +720,7 @@ public class TestProctor {
                         matrix,
                         ProctorLoadResult.emptyResult(),
                         RuleEvaluator.defaultFunctionMapperBuilder().build(),
-                        new IdentifierValidator.NoEmptyValidator());
+                        new NoEmptyIdentifierValidator());
 
         final ProctorResult proctorResult =
                 proctor.determineTestGroups(
@@ -762,7 +771,7 @@ public class TestProctor {
                         matrix,
                         ProctorLoadResult.emptyResult(),
                         RuleEvaluator.defaultFunctionMapperBuilder().build(),
-                        new IdentifierValidator.NoEmptyValidator());
+                        new NoEmptyIdentifierValidator());
 
         final ProctorResult proctorResult =
                 proctor.determineTestGroups(
@@ -819,7 +828,7 @@ public class TestProctor {
                         matrix,
                         ProctorLoadResult.emptyResult(),
                         RuleEvaluator.defaultFunctionMapperBuilder().build(),
-                        new IdentifierValidator.NoEmptyValidator());
+                        new NoEmptyIdentifierValidator());
 
         final ProctorResult proctorResult =
                 proctor.determineTestGroups(
@@ -876,7 +885,7 @@ public class TestProctor {
                         matrix,
                         ProctorLoadResult.emptyResult(),
                         RuleEvaluator.defaultFunctionMapperBuilder().build(),
-                        new IdentifierValidator.NoEmptyValidator());
+                        new NoEmptyIdentifierValidator());
 
         final ProctorResult proctorResult =
                 proctor.determineTestGroups(
