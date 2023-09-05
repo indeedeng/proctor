@@ -1159,7 +1159,7 @@ public abstract class ProctorUtils {
                 throw new IncompatibleTestMatrixException(
                         "Allocation range has no buckets, needs to add up to 1.");
             }
-            if (testDefinition.getEnableUnitlessAllocations() && allocation.getRule() != null) {
+            if (testDefinition.getEnableUnitlessAllocations()) {
 
                 final boolean isUnitlessAllocation = isUnitlessAllocation(allocation);
                 if (isUnitlessAllocation
@@ -1441,7 +1441,10 @@ public abstract class ProctorUtils {
         return false;
     }
 
-    private static boolean isUnitlessAllocation(@Nonnull final Allocation allocation) {
+    private static boolean isUnitlessAllocation(final Allocation allocation) {
+        if (allocation == null || allocation.getRule() == null) {
+            return false;
+        }
         final int unitlessIdentifierIndex =
                 allocation.getRule().indexOf(UNITLESS_ALLOCATION_IDENTIFIER);
         final boolean unitlessButFalse =
@@ -1457,8 +1460,7 @@ public abstract class ProctorUtils {
                 && testDefinition.getAllocations().stream()
                         .anyMatch(
                                 (allocation) ->
-                                        allocation.getRule() != null
-                                                && isUnitlessAllocation(allocation)
+                                        isUnitlessAllocation(allocation)
                                                 && allocation.getRanges().stream()
                                                         .anyMatch(
                                                                 range ->
