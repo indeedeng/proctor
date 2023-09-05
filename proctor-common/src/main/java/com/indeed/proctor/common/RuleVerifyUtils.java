@@ -77,8 +77,7 @@ public class RuleVerifyUtils {
                 // Check identifiers in the AST and verify variable names
                 final Node undefinedIdentifier =
                         checkUndefinedIdentifier(root, elContext, absentIdentifiers);
-                if (undefinedIdentifier != null
-                        && !undefinedIdentifier.getImage().equals(UNITLESS_ALLOCATION_IDENTIFIER)) {
+                if (undefinedIdentifier != null) {
                     throw new InvalidRuleException(
                             String.format(
                                     "The variable %s is defined in rule %s, however it "
@@ -138,7 +137,9 @@ public class RuleVerifyUtils {
         if (node instanceof AstIdentifier) {
             final String name = node.getImage();
             final boolean hasVariable = elContext.getVariableMapper().resolveVariable(name) != null;
-            if (!hasVariable && !absentIdentifiers.contains(name)) {
+            if (!hasVariable
+                    && !absentIdentifiers.contains(name)
+                    && !name.equals(UNITLESS_ALLOCATION_IDENTIFIER)) {
                 return node;
             }
         } else {
