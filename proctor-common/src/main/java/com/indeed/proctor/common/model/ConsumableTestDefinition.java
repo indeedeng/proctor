@@ -216,7 +216,7 @@ public class ConsumableTestDefinition {
         return isDynamic;
     }
     public void setHasLogged(final boolean hasLogged) {
-        this.isDynamic = hasLogged;
+        this.hasLogged = hasLogged;
     }
     public boolean getHasLogged() {
         return hasLogged;
