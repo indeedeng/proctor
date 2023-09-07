@@ -198,7 +198,7 @@ public class ProctorResult {
         return inputContext;
     }
 
-    public boolean markTestAsLogged(String testHash) {
-        return this.hasLoggedTests.add(testHash);
+    public boolean markTestAsLogged(String test) {
+        return this.hasLoggedTests.add(test);
     }
 }
