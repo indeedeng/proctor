@@ -7,12 +7,7 @@ import com.indeed.proctor.common.model.TestBucket;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
-import java.util.HashSet;
+import java.util.*;
 
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySortedMap;
@@ -44,7 +39,7 @@ public class ProctorResult {
 
     private final Map<String, Object> inputContext;
 
-    private final HashSet<Integer> hasLoggedTests;
+    private final HashSet<String> hasLoggedTests;
 
     /**
      * Create a ProctorResult with copies of the provided collections
@@ -198,7 +193,7 @@ public class ProctorResult {
         return inputContext;
     }
 
-    public boolean markTestAsLogged(int testHash) {
+    public boolean markTestAsLogged(String testHash) {
         return this.hasLoggedTests.add(testHash);
     }
 }
