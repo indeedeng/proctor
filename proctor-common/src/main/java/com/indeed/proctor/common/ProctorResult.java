@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.HashSet;
 
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySortedMap;
@@ -42,6 +43,8 @@ public class ProctorResult {
     private final Identifiers identifiers;
 
     private final Map<String, Object> inputContext;
+
+    private final HashSet<String> hasLoggedTests;
 
     /**
      * Create a ProctorResult with copies of the provided collections
@@ -143,6 +146,7 @@ public class ProctorResult {
         this.testDefinitions = testDefinitions;
         this.identifiers = identifiers;
         this.inputContext = inputContext;
+        this.hasLoggedTests = new HashSet<>();
     }
 
     /**
@@ -192,5 +196,9 @@ public class ProctorResult {
     @Nonnull
     public Map<String, Object> getInputContext() {
         return inputContext;
+    }
+
+    public boolean markTestAsLogged(final String test) {
+        return this.hasLoggedTests.add(test);
     }
 }
