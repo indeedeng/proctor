@@ -1118,7 +1118,7 @@ public abstract class ProctorUtils {
         final String testRule = testDefinition.getRule();
 
         final Map<String, ValueExpression> testConstants =
-                ProctorUtils.convertToValueExpressionMap(
+                convertLocalContextToValueExpressionMap(
                         expressionFactory, testDefinition.getConstants());
         final VariableMapper variableMapper =
                 new MulticontextReadOnlyVariableMapper(testConstants, providedContext.getContext());
