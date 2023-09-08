@@ -137,7 +137,8 @@ public class TestRangeSelector {
                 rule = rules[i];
                 if (identifier != null
                         && (identifierValidator.validate(testDefinition.getTestType(), identifier)
-                                || rule.contains("missingExperimentalUnit"))
+                                || (testDefinition.getContainsUnitlessAllocation()
+                                        && rule.contains("missingExperimentalUnit")))
                         && evaluator.apply(rule)) {
                     return i;
                 }
