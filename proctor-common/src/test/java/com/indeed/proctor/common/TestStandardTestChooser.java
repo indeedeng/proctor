@@ -184,7 +184,8 @@ public class TestStandardTestChooser {
         EasyMock.replay(ruleEvaluator);
 
         final TestRangeSelector selector =
-                new TestRangeSelector(ruleEvaluator, testName, testDefinition);
+                new TestRangeSelector(
+                        ruleEvaluator, testName, testDefinition, new IdentifierValidator.Noop());
 
         // Ensure no exceptions thrown.
         final TestChooser.Result chooseResult =
@@ -248,7 +249,8 @@ public class TestStandardTestChooser {
 
         final RuleEvaluator ruleEvaluator = newRuleEvaluator(false);
         final TestRangeSelector selector =
-                new TestRangeSelector(ruleEvaluator, testName, testDefinition);
+                new TestRangeSelector(
+                        ruleEvaluator, testName, testDefinition, new IdentifierValidator.Noop());
 
         final TestChooser.Result chooseResult =
                 new StandardTestChooser(selector)
@@ -283,7 +285,8 @@ public class TestStandardTestChooser {
 
         final RuleEvaluator ruleEvaluator = newRuleEvaluator(true);
         final TestRangeSelector selector =
-                new TestRangeSelector(ruleEvaluator, testName, testDefinition);
+                new TestRangeSelector(
+                        ruleEvaluator, testName, testDefinition, new IdentifierValidator.Noop());
 
         final TestChooser.Result chooseResult =
                 new StandardTestChooser(selector)
@@ -318,7 +321,8 @@ public class TestStandardTestChooser {
 
         final RuleEvaluator ruleEvaluator = newRuleEvaluator(true);
         final TestRangeSelector selector =
-                new TestRangeSelector(ruleEvaluator, testName, testDefinition);
+                new TestRangeSelector(
+                        ruleEvaluator, testName, testDefinition, new IdentifierValidator.Noop());
 
         final TestChooser.Result chooseResult =
                 new StandardTestChooser(selector)
@@ -347,7 +351,8 @@ public class TestStandardTestChooser {
 
         final RuleEvaluator ruleEvaluator = newRuleEvaluator(true);
         final TestRangeSelector selector =
-                new TestRangeSelector(ruleEvaluator, testName, testDefinition);
+                new TestRangeSelector(
+                        ruleEvaluator, testName, testDefinition, new IdentifierValidator.Noop());
 
         final TestChooser.Result chooseResult =
                 new StandardTestChooser(selector)
@@ -361,7 +366,12 @@ public class TestStandardTestChooser {
     }
 
     private StandardTestChooser newChooser() {
-        return new StandardTestChooser(expressionFactory, functionMapper, testName, testDefinition);
+        return new StandardTestChooser(
+                expressionFactory,
+                functionMapper,
+                testName,
+                testDefinition,
+                new IdentifierValidator.Noop());
     }
 
     private RuleEvaluator newRuleEvaluator(final boolean result) {

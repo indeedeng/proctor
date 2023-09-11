@@ -35,8 +35,15 @@ class RandomTestChooser implements TestChooser<Void> {
             final ExpressionFactory expressionFactory,
             final FunctionMapper functionMapper,
             final String testName,
-            @Nonnull final ConsumableTestDefinition testDefinition) {
-        this(System.nanoTime(), expressionFactory, functionMapper, testName, testDefinition);
+            @Nonnull final ConsumableTestDefinition testDefinition,
+            @Nonnull final IdentifierValidator identifierValidator) {
+        this(
+                System.nanoTime(),
+                expressionFactory,
+                functionMapper,
+                testName,
+                testDefinition,
+                identifierValidator);
     }
 
     public RandomTestChooser(
@@ -44,9 +51,15 @@ class RandomTestChooser implements TestChooser<Void> {
             final ExpressionFactory expressionFactory,
             final FunctionMapper functionMapper,
             final String testName,
-            @Nonnull final ConsumableTestDefinition testDefinition) {
+            @Nonnull final ConsumableTestDefinition testDefinition,
+            @Nonnull final IdentifierValidator identifierValidator) {
         testRangeSelector =
-                new TestRangeSelector(expressionFactory, functionMapper, testName, testDefinition);
+                new TestRangeSelector(
+                        expressionFactory,
+                        functionMapper,
+                        testName,
+                        testDefinition,
+                        identifierValidator);
         allocations = testDefinition.getAllocations();
         random = new Random(seed);
     }
@@ -104,7 +117,10 @@ class RandomTestChooser implements TestChooser<Void> {
             @Nonnull final Map<String, ValueExpression> localContext,
             @Nonnull final Map<String, TestBucket> testGroups) {
         final int matchingRuleIndex =
-                testRangeSelector.findMatchingRuleWithValueExpr(localContext, testGroups);
+                testRangeSelector.findMatchingRuleWithValueExpr(
+                        localContext,
+                        testGroups,
+                        ""); // empty string for identifier to allow picking random in selector
         if (matchingRuleIndex < 0) {
             return TestChooser.Result.EMPTY;
         }

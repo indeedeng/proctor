@@ -40,8 +40,15 @@ class StandardTestChooser implements TestChooser<String> {
             @Nonnull final ExpressionFactory expressionFactory,
             @Nonnull final FunctionMapper functionMapper,
             @Nonnull final String testName,
-            @Nonnull final ConsumableTestDefinition testDefinition) {
-        this(new TestRangeSelector(expressionFactory, functionMapper, testName, testDefinition));
+            @Nonnull final ConsumableTestDefinition testDefinition,
+            @Nonnull final IdentifierValidator identifierValidator) {
+        this(
+                new TestRangeSelector(
+                        expressionFactory,
+                        functionMapper,
+                        testName,
+                        testDefinition,
+                        identifierValidator));
     }
 
     @VisibleForTesting
@@ -129,7 +136,8 @@ class StandardTestChooser implements TestChooser<String> {
             @Nonnull final Map<String, ValueExpression> localContext,
             @Nonnull final Map<String, TestBucket> testGroups) {
         final int matchingRuleIndex =
-                testRangeSelector.findMatchingRuleWithValueExpr(localContext, testGroups);
+                testRangeSelector.findMatchingRuleWithValueExpr(
+                        localContext, testGroups, identifier);
         if (matchingRuleIndex < 0) {
             return Result.EMPTY;
         }
