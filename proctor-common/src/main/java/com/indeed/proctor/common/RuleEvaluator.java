@@ -117,7 +117,7 @@ public class RuleEvaluator {
     public boolean evaluateBooleanRule(final String rule, @Nonnull final Map<String, Object> values)
             throws IllegalArgumentException {
         final Map<String, ValueExpression> localContext =
-                ProctorUtils.convertToValueExpressionMap(expressionFactory, values);
+                ProctorUtils.convertLocalContextToValueExpressionMap(expressionFactory, values);
         return evaluateBooleanRuleWithValueExpr(rule, localContext);
     }
 

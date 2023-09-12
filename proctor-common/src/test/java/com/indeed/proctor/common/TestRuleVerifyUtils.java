@@ -53,7 +53,8 @@ public class TestRuleVerifyUtils {
 
         final ProvidedContext providedContext =
                 ProvidedContext.forValueExpressionMap(
-                        ProctorUtils.convertToValueExpressionMap(expressionFactory, context),
+                        ProctorUtils.convertLocalContextToValueExpressionMap(
+                                expressionFactory, context),
                         Collections.emptySet());
         final VariableMapper variableMapper =
                 new MulticontextReadOnlyVariableMapper(testConstants, providedContext.getContext());
@@ -159,6 +160,45 @@ public class TestRuleVerifyUtils {
         invalidRuleException =
                 expectInvalidRule(
                         "${browser == 'IE' && obj.isFortyTwo(['42'])}",
+                        new Object[][] {
+                            {"browser", "IE"},
+                            {"obj", new TestClass()},
+                        },
+                        new String[] {});
+        assertThat(invalidRuleException.getMessage()).contains("syntax error");
+    }
+
+    @Test
+    public void testValidRulesWithMissingExperimentalUnitNotIncludedInLocalContext() {
+        expectValidRule(
+                "${missingExperimentalUnit && browser == 'IE'}",
+                new Object[][] {{"browser", "IE"}},
+                new String[] {});
+
+        expectValidRule(
+                "${!missingExperimentalUnit && browser == 'IE'}",
+                new Object[][] {{"browser", "IE"}},
+                new String[] {});
+
+        expectValidRule("${missingExperimentalUnit}", new Object[][] {}, new String[] {});
+    }
+
+    @Test
+    public void
+            testInvalidRulesWithMissingExperimentalUnitNotIncludedInLocalContext_MissingOtherVariables() {
+        InvalidRuleException invalidRuleException =
+                expectInvalidRule(
+                        "${missingExperimentalUnit && browser == 'IE' && obj.foobar()}",
+                        new Object[][] {
+                            {"browser", "IE"},
+                            {"obj", new TestClass()},
+                        },
+                        new String[] {});
+        assertThat(invalidRuleException.getMessage()).contains("Method not found");
+
+        invalidRuleException =
+                expectInvalidRule(
+                        "${missingExperimentalUnit && browser == 'IE' && obj.isFortyTwo(['42'])}",
                         new Object[][] {
                             {"browser", "IE"},
                             {"obj", new TestClass()},

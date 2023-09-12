@@ -33,8 +33,7 @@ import static java.util.Collections.emptySortedMap;
 public abstract class AbstractGroupsManager implements ProctorContextDescriptor {
     private final Supplier<Proctor> proctorSource;
     private final Supplier<GroupsManagerInterceptor> interceptorSupplier;
-    @CheckForNull
-    private final ExposureLogger exposureLogger;
+    @CheckForNull private final ExposureLogger exposureLogger;
 
     protected AbstractGroupsManager(final Supplier<Proctor> proctorSource) {
         this.proctorSource = proctorSource;
@@ -53,8 +52,7 @@ public abstract class AbstractGroupsManager implements ProctorContextDescriptor 
     protected AbstractGroupsManager(
             final Supplier<Proctor> proctorSource,
             final Supplier<GroupsManagerInterceptor> interceptorSupplier,
-            @Nullable final ExposureLogger exposureLogger
-    ) {
+            @Nullable final ExposureLogger exposureLogger) {
         this.proctorSource = proctorSource;
         if (interceptorSupplier != null) {
             this.interceptorSupplier = interceptorSupplier;
