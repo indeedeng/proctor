@@ -90,6 +90,15 @@ public class Proctor {
             @Nonnull final ProctorLoadResult loadResult,
             @Nonnull final FunctionMapper functionMapper,
             @Nonnull final IdentifierValidator identifierValidator) {
+        return construct(matrix, loadResult, functionMapper, identifierValidator, null);
+    }
+
+    public static Proctor construct(
+            @Nonnull final TestMatrixArtifact matrix,
+            @Nonnull final ProctorLoadResult loadResult,
+            @Nonnull final FunctionMapper functionMapper,
+            @Nonnull final IdentifierValidator identifierValidator,
+            @Nullable final ProctorResultReporter resultReporter) {
         final Map<String, TestChooser<?>> testChoosers = Maps.newLinkedHashMap();
         final Map<String, String> versions = Maps.newLinkedHashMap();
 
@@ -351,7 +360,7 @@ public class Proctor {
         final Map<String, ValueExpression> localContext =
                 ProctorUtils.convertLocalContextToValueExpressionMap(
                         RuleEvaluator.EXPRESSION_FACTORY, inputContext);
-
+        final Map<TestType, Integer> invalidIdentifierCount = new HashMap<>();
         for (final String testName : filteredEvaluationOrder) {
             final TestChooser<?> testChooser = testChoosers.get(testName);
             final String identifier;
@@ -418,14 +427,13 @@ public class Proctor {
 
         // TODO Can we make getAudit nonnull?
         final Audit audit = Preconditions.checkNotNull(matrix.getAudit(), "Missing audit");
-        final ProctorResult result =
-                new ProctorResult(
-                        audit.getVersion(),
-                        testGroups,
-                        testAllocations,
-                        testDefinitions,
-                        identifiers,
-                        inputContext);
+        final ProctorResult result = new ProctorResult(
+                audit.getVersion(),
+                testGroups,
+                testAllocations,
+                testDefinitions,
+                identifiers,
+                inputContext);
 
         if (resultReporter != null) {
             resultReporter.reportMetrics(result, invalidIdentifierCount);
