@@ -129,7 +129,12 @@ public class Proctor {
                 TestDependencies.determineEvaluationOrder(matrix.getTests());
 
         return new Proctor(
-                matrix, loadResult, testChoosers, testEvaluationOrder, identifierValidator, resultReporter);
+                matrix,
+                loadResult,
+                testChoosers,
+                testEvaluationOrder,
+                identifierValidator,
+                resultReporter);
     }
 
     @Nonnull
@@ -367,7 +372,8 @@ public class Proctor {
                 final TestType testType = testChooser.getTestDefinition().getTestType();
                 if (testTypesWithInvalidIdentifier.contains(testType)
                         && !containsUnitlessAllocations) {
-                    invalidIdentifierCount.put(testType, invalidIdentifierCount.getOrDefault(testType, 0) + 1);
+                    invalidIdentifierCount.put(
+                            testType, invalidIdentifierCount.getOrDefault(testType, 0) + 1);
                     // skipping here to make it use the fallback bucket.
                     continue;
                 }
@@ -414,13 +420,14 @@ public class Proctor {
 
         // TODO Can we make getAudit nonnull?
         final Audit audit = Preconditions.checkNotNull(matrix.getAudit(), "Missing audit");
-        final ProctorResult result = new ProctorResult(
-                audit.getVersion(),
-                testGroups,
-                testAllocations,
-                testDefinitions,
-                identifiers,
-                inputContext);
+        final ProctorResult result =
+                new ProctorResult(
+                        audit.getVersion(),
+                        testGroups,
+                        testAllocations,
+                        testDefinitions,
+                        identifiers,
+                        inputContext);
 
         if (resultReporter != null) {
             resultReporter.reportMetrics(result, invalidIdentifierCount);
