@@ -68,7 +68,6 @@ public abstract class ProctorUtils {
     private static final Logger LOGGER = LogManager.getLogger(ProctorUtils.class);
     private static final SpecificationGenerator SPECIFICATION_GENERATOR =
             new SpecificationGenerator();
-    public static final String UNITLESS_ALLOCATION_IDENTIFIER = "missingExperimentalUnit";
 
     public static MessageDigest createMessageDigest() {
         try {
@@ -88,18 +87,6 @@ public abstract class ProctorUtils {
                     expressionFactory.createValueExpression(entry.getValue(), Object.class);
             context.put(entry.getKey(), ve);
         }
-        return context;
-    }
-
-    @Nonnull
-    public static Map<String, ValueExpression> convertLocalContextToValueExpressionMap(
-            @Nonnull final ExpressionFactory expressionFactory,
-            @Nonnull final Map<String, Object> values) {
-        final Map<String, ValueExpression> context =
-                convertToValueExpressionMap(expressionFactory, values);
-        context.put(
-                UNITLESS_ALLOCATION_IDENTIFIER,
-                expressionFactory.createValueExpression(true, Object.class));
         return context;
     }
 
@@ -1118,7 +1105,7 @@ public abstract class ProctorUtils {
         final String testRule = testDefinition.getRule();
 
         final Map<String, ValueExpression> testConstants =
-                convertLocalContextToValueExpressionMap(
+                ProctorUtils.convertToValueExpressionMap(
                         expressionFactory, testDefinition.getConstants());
         final VariableMapper variableMapper =
                 new MulticontextReadOnlyVariableMapper(testConstants, providedContext.getContext());
@@ -1159,16 +1146,6 @@ public abstract class ProctorUtils {
                 throw new IncompatibleTestMatrixException(
                         "Allocation range has no buckets, needs to add up to 1.");
             }
-            if (testDefinition.getEnableUnitlessAllocations()) {
-
-                final boolean isUnitlessAllocation = isUnitlessAllocation(allocation);
-                if (isUnitlessAllocation
-                        && ranges.stream().noneMatch(range -> range.getLength() > 0.9999)) {
-                    throw new IncompatibleTestMatrixException(
-                            "Allocation with \"missingExperimentalUnit\" in rule must have one bucket set to 100%");
-                }
-            }
-
             //  ensure that each range refers to a known bucket
             double bucketTotal = 0;
             for (final Range range : ranges) {
@@ -1439,32 +1416,5 @@ public abstract class ProctorUtils {
         }
 
         return false;
-    }
-
-    private static boolean isUnitlessAllocation(final Allocation allocation) {
-        if (allocation == null || allocation.getRule() == null) {
-            return false;
-        }
-        final int unitlessIdentifierIndex =
-                allocation.getRule().indexOf(UNITLESS_ALLOCATION_IDENTIFIER);
-        final boolean unitlessButFalse =
-                allocation.getRule().contains(UNITLESS_ALLOCATION_IDENTIFIER + " == false");
-        return !unitlessButFalse
-                && unitlessIdentifierIndex != -1
-                && (unitlessIdentifierIndex == 0
-                        || allocation.getRule().charAt(unitlessIdentifierIndex - 1) != '!');
-    }
-
-    public static boolean containsUnitlessAllocation(@Nonnull final TestDefinition testDefinition) {
-        return testDefinition.getEnableUnitlessAllocations()
-                && testDefinition.getAllocations().stream()
-                        .anyMatch(
-                                (allocation) ->
-                                        isUnitlessAllocation(allocation)
-                                                && allocation.getRanges().stream()
-                                                        .anyMatch(
-                                                                range ->
-                                                                        range.getLength()
-                                                                                > 0.9999));
     }
 }

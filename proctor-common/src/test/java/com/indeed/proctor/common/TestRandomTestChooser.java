@@ -124,11 +124,7 @@ public class TestRandomTestChooser {
 
         final RandomTestChooser rtc =
                 new RandomTestChooser(
-                        expressionFactory,
-                        functionMapper,
-                        "testName",
-                        testDefinition,
-                        new IdentifierValidator.Noop());
+                        expressionFactory, functionMapper, "testName", testDefinition);
         return rtc;
     }
 }

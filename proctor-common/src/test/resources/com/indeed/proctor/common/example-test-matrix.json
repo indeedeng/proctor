@@ -110,8 +110,7 @@
       "silent" : false,
       "testType" : "USER",
       "description" : "A meta tag test",
-      "metaTags" : ["example_tag"],
-      "enableUnitlessAllocations" : true
+      "metaTags" : ["example_tag"]
     }
   }
 }
