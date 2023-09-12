@@ -14,7 +14,6 @@ import javax.el.ValueExpression;
 import java.util.List;
 import java.util.Set;
 
-import static com.indeed.proctor.common.ProctorUtils.UNITLESS_ALLOCATION_IDENTIFIER;
 import static com.indeed.proctor.common.ProctorUtils.isEmptyElExpression;
 import static com.indeed.proctor.common.RuleEvaluator.checkRuleIsBooleanType;
 
@@ -137,9 +136,7 @@ public class RuleVerifyUtils {
         if (node instanceof AstIdentifier) {
             final String name = node.getImage();
             final boolean hasVariable = elContext.getVariableMapper().resolveVariable(name) != null;
-            if (!hasVariable
-                    && !absentIdentifiers.contains(name)
-                    && !name.equals(UNITLESS_ALLOCATION_IDENTIFIER)) {
+            if (!hasVariable && !absentIdentifiers.contains(name)) {
                 return node;
             }
         } else {

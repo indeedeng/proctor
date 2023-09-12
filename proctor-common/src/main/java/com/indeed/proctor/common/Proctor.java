@@ -37,8 +37,6 @@ import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static com.indeed.proctor.common.ProctorUtils.UNITLESS_ALLOCATION_IDENTIFIER;
-
 /**
  * The sole entry point for client applications determining the test buckets for a particular
  * client. Basically a Factory to create ProctorResult for a given identifier and context, based on
@@ -57,12 +55,6 @@ public class Proctor {
             Serializers.lenient()
                     .configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false)
                     .writerWithDefaultPrettyPrinter();
-
-    private static final ValueExpression VALUE_EXPRESSION_TRUE =
-            RuleEvaluator.EXPRESSION_FACTORY.createValueExpression(true, Object.class);
-
-    private static final ValueExpression VALUE_EXPRESSION_FALSE =
-            RuleEvaluator.EXPRESSION_FACTORY.createValueExpression(false, Object.class);
 
     public static Proctor construct(
             @Nonnull final TestMatrixArtifact matrix,
@@ -100,16 +92,14 @@ public class Proctor {
                                 RuleEvaluator.EXPRESSION_FACTORY,
                                 functionMapper,
                                 testName,
-                                testDefinition,
-                                identifierValidator);
+                                testDefinition);
             } else {
                 testChooser =
                         new StandardTestChooser(
                                 RuleEvaluator.EXPRESSION_FACTORY,
                                 functionMapper,
                                 testName,
-                                testDefinition,
-                                identifierValidator);
+                                testDefinition);
             }
             testChoosers.put(testName, testChooser);
             versions.put(testName, testDefinition.getVersion());
@@ -323,7 +313,7 @@ public class Proctor {
                 final String invalidIdentifierMessage =
                         String.format(
                                 "An invalid identifier '%s' for test type '%s'"
-                                        + " was detected. Using fallback buckets for the test type unless unitless allocation is enabled.",
+                                        + " was detected. Using fallback buckets for the test type.",
                                 identifier, testType);
                 if (identifier.isEmpty()) {
                     LOGGER.debug(invalidIdentifierMessage);
@@ -335,34 +325,26 @@ public class Proctor {
         }
 
         final Map<String, ValueExpression> localContext =
-                ProctorUtils.convertLocalContextToValueExpressionMap(
+                ProctorUtils.convertToValueExpressionMap(
                         RuleEvaluator.EXPRESSION_FACTORY, inputContext);
 
         for (final String testName : filteredEvaluationOrder) {
             final TestChooser<?> testChooser = testChoosers.get(testName);
             final String identifier;
-            final boolean containsUnitlessAllocations =
-                    testTypesWithInvalidIdentifier.contains(
-                                    testChooser.getTestDefinition().getTestType())
-                            && testChooser.getTestDefinition().getContainsUnitlessAllocation();
-            localContext.put(
-                    UNITLESS_ALLOCATION_IDENTIFIER,
-                    containsUnitlessAllocations ? VALUE_EXPRESSION_TRUE : VALUE_EXPRESSION_FALSE);
             if (testChooser instanceof StandardTestChooser) {
                 final TestType testType = testChooser.getTestDefinition().getTestType();
-                if (testTypesWithInvalidIdentifier.contains(testType)
-                        && !containsUnitlessAllocations) {
+                if (testTypesWithInvalidIdentifier.contains(testType)) {
                     // skipping here to make it use the fallback bucket.
                     continue;
                 }
 
                 identifier = identifiers.getIdentifier(testType);
-                if (identifier == null && !containsUnitlessAllocations) {
+                if (identifier == null) {
                     // No identifier for the testType of this chooser, nothing to do
                     continue;
                 }
             } else {
-                if (!identifiers.isRandomEnabled() && !containsUnitlessAllocations) {
+                if (!identifiers.isRandomEnabled()) {
                     // test wants random chooser, but client disabled random, nothing to do
                     continue;
                 }
@@ -370,7 +352,7 @@ public class Proctor {
             }
 
             final TestChooser.Result chooseResult;
-            if (identifier == null && !containsUnitlessAllocations) {
+            if (identifier == null) {
                 chooseResult =
                         ((RandomTestChooser) testChooser)
                                 .choose(null, localContext, testGroups, forceGroupsOptions);

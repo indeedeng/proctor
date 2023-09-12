@@ -38,28 +38,16 @@ public class TestRangeSelector {
     @Nonnull private final String[] rules;
     @Nonnull private final TestBucket[][] rangeToBucket;
     private final RuleEvaluator ruleEvaluator;
-    @Nonnull private IdentifierValidator identifierValidator;
 
     TestRangeSelector(
             @Nonnull final ExpressionFactory expressionFactory,
             @Nonnull final FunctionMapper functionMapper,
             final String testName,
-            @Nonnull final ConsumableTestDefinition testDefinition,
-            @Nonnull final IdentifierValidator identifierValidator) {
+            @Nonnull final ConsumableTestDefinition testDefinition) {
         this(
                 new RuleEvaluator(expressionFactory, functionMapper, testDefinition.getConstants()),
                 testName,
                 testDefinition);
-        this.identifierValidator = identifierValidator;
-    }
-
-    TestRangeSelector(
-            @Nonnull final RuleEvaluator ruleEvaluator,
-            @Nonnull final String testName,
-            @Nonnull final ConsumableTestDefinition testDefinition,
-            @Nonnull final IdentifierValidator identifierValidator) {
-        this(ruleEvaluator, testName, testDefinition);
-        this.identifierValidator = identifierValidator;
     }
 
     TestRangeSelector(
@@ -98,26 +86,22 @@ public class TestRangeSelector {
     @Deprecated
     public int findMatchingRule(
             @Nonnull final Map<String, Object> values,
-            @Nonnull final Map<String, TestBucket> testGroups,
-            @Nullable final String identifier) {
+            @Nonnull final Map<String, TestBucket> testGroups) {
         return findMatchingRuleInternal(
-                rule -> ruleEvaluator.evaluateBooleanRule(rule, values), testGroups, identifier);
+                rule -> ruleEvaluator.evaluateBooleanRule(rule, values), testGroups);
     }
 
     public int findMatchingRuleWithValueExpr(
             @Nonnull final Map<String, ValueExpression> localContext,
-            @Nonnull final Map<String, TestBucket> testGroups,
-            @Nullable final String identifier) {
+            @Nonnull final Map<String, TestBucket> testGroups) {
         return findMatchingRuleInternal(
                 rule -> ruleEvaluator.evaluateBooleanRuleWithValueExpr(rule, localContext),
-                testGroups,
-                identifier);
+                testGroups);
     }
 
     private int findMatchingRuleInternal(
             final Function<String, Boolean> evaluator,
-            @Nonnull final Map<String, TestBucket> testGroups,
-            @Nullable final String identifier) {
+            @Nonnull final Map<String, TestBucket> testGroups) {
         final TestDependency dependsOn = testDefinition.getDependsOn();
         if (dependsOn != null) {
             final TestBucket testBucket = testGroups.get(dependsOn.getTestName());
@@ -133,13 +117,10 @@ public class TestRangeSelector {
                     return -1;
                 }
             }
+
             for (int i = 0; i < rules.length; i++) {
                 rule = rules[i];
-                if (identifier != null
-                        && (identifierValidator.validate(testDefinition.getTestType(), identifier)
-                                || (testDefinition.getContainsUnitlessAllocation()
-                                        && rule.contains("missingExperimentalUnit")))
-                        && evaluator.apply(rule)) {
+                if (evaluator.apply(rule)) {
                     return i;
                 }
             }

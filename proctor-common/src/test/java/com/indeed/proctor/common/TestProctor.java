@@ -18,7 +18,6 @@ import com.indeed.proctor.common.model.TestMatrixArtifact;
 import com.indeed.proctor.common.model.TestType;
 import org.junit.Test;
 
-import javax.annotation.Nonnull;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -43,14 +42,6 @@ import static org.mockito.Mockito.when;
 
 /** @author piotr */
 public class TestProctor {
-    static class NoEmptyIdentifierValidator implements IdentifierValidator {
-        @Override
-        public boolean validate(
-                @Nonnull final TestType testType, @Nonnull final String identifier) {
-            return !identifier.equals("");
-        }
-    }
-
     @Test
     public void testAppendTestMatrix_emptyProctor() throws IOException {
         // Very simplistically test the appendTestMatrix output.
@@ -304,16 +295,11 @@ public class TestProctor {
         final Allocation allocation = new Allocation();
         final TestChooser.Result result = new TestChooser.Result(testBucket, allocation);
 
-        final ConsumableTestDefinition testDefinition =
-                ConsumableTestDefinition.fromTestDefinition(
-                        TestDefinition.builder()
-                                .setSalt("&X")
-                                .setTestType(TestType.RANDOM)
-                                .build());
-
-        when(testChooser.getTestDefinition()).thenReturn(testDefinition);
-
-        when(testChooser.choose(isNull(), anyMap(), anyMap(), eq(ForceGroupsOptions.empty())))
+        when(testChooser.choose(
+                        isNull(),
+                        eq(Collections.emptyMap()),
+                        anyMap(),
+                        eq(ForceGroupsOptions.empty())))
                 .thenReturn(result);
 
         final ProctorResult proctorResultWithRandom =
@@ -333,7 +319,11 @@ public class TestProctor {
 
         // choose should not be called for identifiers with randomEnabled == false.
         verify(testChooser, times(1))
-                .choose(isNull(), anyMap(), anyMap(), eq(ForceGroupsOptions.empty()));
+                .choose(
+                        isNull(),
+                        eq(Collections.emptyMap()),
+                        anyMap(),
+                        eq(ForceGroupsOptions.empty()));
     }
 
     @Test
@@ -574,330 +564,6 @@ public class TestProctor {
                 .containsOnlyKeys("X", "Y")
                 .containsEntry("X", testDefinitionX)
                 .containsEntry("Y", testDefinitionY);
-    }
-
-    @Test
-    public void testDetermineTestGroups_UnitlessAllocationMultipleTests() {
-        final TestBucket inactiveBucket = new TestBucket("inactive", -1, "");
-        final TestBucket controlBucket = new TestBucket("control", 0, "");
-        final TestBucket activeBucket = new TestBucket("active", 1, "");
-        final Allocation unitlessAllocation =
-                new Allocation(
-                        "missingExperimentalUnit && country == 'US'",
-                        ImmutableList.of(new Range(0, 0), new Range(-1, 0), new Range(1, 1)));
-        final Allocation allocationY =
-                new Allocation(
-                        "country == 'US'",
-                        ImmutableList.of(new Range(0, 0), new Range(-1, 0), new Range(1, 1)));
-
-        final ConsumableTestDefinition unitlessTestDefinition =
-                ConsumableTestDefinition.fromTestDefinition(
-                        TestDefinition.builder()
-                                .setEnableUnitlessAllocations(true)
-                                .setSalt("&unitless_tst")
-                                .setTestType(TestType.AUTHENTICATED_USER)
-                                .addBuckets(inactiveBucket, controlBucket, activeBucket)
-                                .addAllocations(unitlessAllocation)
-                                .build());
-        final ConsumableTestDefinition testDefinitionY =
-                ConsumableTestDefinition.fromTestDefinition(
-                        TestDefinition.builder()
-                                .setSalt("&Y")
-                                .setTestType(TestType.ANONYMOUS_USER)
-                                .addBuckets(inactiveBucket, controlBucket, activeBucket)
-                                .addAllocations(allocationY)
-                                .build());
-
-        final Map<String, ConsumableTestDefinition> tests =
-                ImmutableMap.of(
-                        "unitless_tst", unitlessTestDefinition,
-                        "Y", testDefinitionY);
-        final TestMatrixArtifact matrix = new TestMatrixArtifact();
-        matrix.setTests(tests);
-        matrix.setAudit(new Audit());
-
-        final Proctor proctor =
-                Proctor.construct(
-                        matrix,
-                        ProctorLoadResult.emptyResult(),
-                        RuleEvaluator.defaultFunctionMapperBuilder().build(),
-                        new NoEmptyIdentifierValidator());
-
-        final ProctorResult proctorResult =
-                proctor.determineTestGroups(
-                        Identifiers.of(
-                                TestType.ANONYMOUS_USER, "cookie", TestType.AUTHENTICATED_USER, ""),
-                        ImmutableMap.of("country", "US"),
-                        ForceGroupsOptions.builder().build(),
-                        Collections.emptyList());
-
-        assertThat(proctorResult.getBuckets())
-                .containsEntry("unitless_tst", activeBucket)
-                .containsEntry("Y", activeBucket);
-        assertThat(proctorResult.getAllocations())
-                .containsEntry("unitless_tst", unitlessAllocation)
-                .containsEntry("Y", allocationY);
-        assertThat(proctorResult.getTestDefinitions())
-                .containsOnlyKeys("unitless_tst", "Y")
-                .containsEntry("unitless_tst", unitlessTestDefinition)
-                .containsEntry("Y", testDefinitionY);
-    }
-
-    @Test
-    public void testDetermineTestGroups_UnitlessAllocationMissingContextVariable() {
-        final TestBucket inactiveBucket = new TestBucket("inactive", -1, "");
-        final TestBucket controlBucket = new TestBucket("control", 0, "");
-        final TestBucket activeBucket = new TestBucket("active", 1, "");
-        final Allocation unitlessAllocation =
-                new Allocation(
-                        "missingExperimentalUnit && country == 'US'",
-                        ImmutableList.of(new Range(0, 0), new Range(-1, 0), new Range(1, 1)));
-
-        final ConsumableTestDefinition unitlessTestDefinition =
-                ConsumableTestDefinition.fromTestDefinition(
-                        TestDefinition.builder()
-                                .setEnableUnitlessAllocations(true)
-                                .setSalt("&unitless_tst")
-                                .setTestType(TestType.AUTHENTICATED_USER)
-                                .addBuckets(inactiveBucket, controlBucket, activeBucket)
-                                .addAllocations(unitlessAllocation)
-                                .build());
-
-        final Map<String, ConsumableTestDefinition> tests =
-                ImmutableMap.of("unitless_tst", unitlessTestDefinition);
-        final TestMatrixArtifact matrix = new TestMatrixArtifact();
-        matrix.setTests(tests);
-        matrix.setAudit(new Audit());
-
-        final Proctor proctor =
-                Proctor.construct(
-                        matrix,
-                        ProctorLoadResult.emptyResult(),
-                        RuleEvaluator.defaultFunctionMapperBuilder().build(),
-                        new NoEmptyIdentifierValidator());
-
-        final ProctorResult proctorResult =
-                proctor.determineTestGroups(
-                        Identifiers.of(TestType.AUTHENTICATED_USER, ""),
-                        ImmutableMap.of(),
-                        ForceGroupsOptions.builder().build(),
-                        Collections.emptyList());
-
-        assertThat(proctorResult.getAllocations()).isEmpty();
-        assertThat(proctorResult.getBuckets()).isEmpty();
-        assertThat(proctorResult.getTestDefinitions())
-                .containsEntry("unitless_tst", unitlessTestDefinition);
-    }
-
-    @Test
-    public void testDetermineTestGroups_UnitlessAllocationMissingFlag() {
-        final TestBucket inactiveBucket = new TestBucket("inactive", -1, "");
-        final TestBucket controlBucket = new TestBucket("control", 0, "");
-        final TestBucket activeBucket = new TestBucket("active", 1, "");
-        final Allocation unitless_allocation =
-                new Allocation(
-                        "missingExperimentalUnit && country == 'US'",
-                        ImmutableList.of(new Range(0, 0), new Range(-1, 0), new Range(1, 1)));
-
-        final ConsumableTestDefinition unitlessTestDefinition =
-                ConsumableTestDefinition.fromTestDefinition(
-                        TestDefinition.builder()
-                                .setEnableUnitlessAllocations(false)
-                                .setSalt("&unitless_tst")
-                                .setTestType(TestType.AUTHENTICATED_USER)
-                                .addBuckets(inactiveBucket, controlBucket, activeBucket)
-                                .addAllocations(unitless_allocation)
-                                .build());
-
-        final Map<String, ConsumableTestDefinition> tests =
-                ImmutableMap.of("unitless_tst", unitlessTestDefinition);
-        final TestMatrixArtifact matrix = new TestMatrixArtifact();
-        matrix.setTests(tests);
-        matrix.setAudit(new Audit());
-
-        final Proctor proctor =
-                Proctor.construct(
-                        matrix,
-                        ProctorLoadResult.emptyResult(),
-                        RuleEvaluator.defaultFunctionMapperBuilder().build(),
-                        new NoEmptyIdentifierValidator());
-
-        final ProctorResult proctorResult =
-                proctor.determineTestGroups(
-                        Identifiers.of(TestType.AUTHENTICATED_USER, ""),
-                        ImmutableMap.of("country", "US"),
-                        ForceGroupsOptions.builder().build(),
-                        Collections.emptyList());
-
-        assertThat(proctorResult.getAllocations()).isEmpty();
-        assertThat(proctorResult.getBuckets()).isEmpty();
-        assertThat(proctorResult.getTestDefinitions())
-                .containsEntry("unitless_tst", unitlessTestDefinition);
-    }
-
-    @Test
-    public void testDetermineTestGroups_UnitlessAllocationMultipleMissingAllocations() {
-        final TestBucket inactiveBucket = new TestBucket("inactive", -1, "");
-        final TestBucket controlBucket = new TestBucket("control", 0, "");
-        final TestBucket activeBucket = new TestBucket("active", 1, "");
-        final TestBucket testBucket = new TestBucket("test", 2, "");
-        final Allocation unitlessAllocation_US =
-                new Allocation(
-                        "missingExperimentalUnit && country == 'US'",
-                        ImmutableList.of(new Range(0, 0), new Range(-1, 0), new Range(1, 1)));
-        final Allocation unitlessAllocation_JP =
-                new Allocation(
-                        "missingExperimentalUnit && country == 'JP'",
-                        ImmutableList.of(new Range(0, 0), new Range(-1, 0), new Range(2, 1)));
-
-        final ConsumableTestDefinition unitlessTestDefinition =
-                ConsumableTestDefinition.fromTestDefinition(
-                        TestDefinition.builder()
-                                .setEnableUnitlessAllocations(true)
-                                .setSalt("&unitless_tst")
-                                .setTestType(TestType.AUTHENTICATED_USER)
-                                .addBuckets(inactiveBucket, controlBucket, activeBucket, testBucket)
-                                .addAllocations(unitlessAllocation_US, unitlessAllocation_JP)
-                                .build());
-
-        final Map<String, ConsumableTestDefinition> tests =
-                ImmutableMap.of("unitless_tst", unitlessTestDefinition);
-        final TestMatrixArtifact matrix = new TestMatrixArtifact();
-        matrix.setTests(tests);
-        matrix.setAudit(new Audit());
-
-        final Proctor proctor =
-                Proctor.construct(
-                        matrix,
-                        ProctorLoadResult.emptyResult(),
-                        RuleEvaluator.defaultFunctionMapperBuilder().build(),
-                        new NoEmptyIdentifierValidator());
-
-        final ProctorResult proctorResult =
-                proctor.determineTestGroups(
-                        Identifiers.of(TestType.AUTHENTICATED_USER, ""),
-                        ImmutableMap.of("country", "JP"),
-                        ForceGroupsOptions.builder().build(),
-                        Collections.emptyList());
-
-        assertThat(proctorResult.getAllocations())
-                .containsEntry("unitless_tst", unitlessAllocation_JP);
-        assertThat(proctorResult.getBuckets()).containsEntry("unitless_tst", testBucket);
-        assertThat(proctorResult.getTestDefinitions())
-                .containsEntry("unitless_tst", unitlessTestDefinition);
-    }
-
-    @Test
-    public void testDetermineTestGroups_UnitlessAllocationMultipleMissingAllocations_NotUnitless() {
-        final TestBucket inactiveBucket = new TestBucket("inactive", -1, "");
-        final TestBucket controlBucket = new TestBucket("control", 0, "");
-        final TestBucket activeBucket = new TestBucket("active", 1, "");
-        final TestBucket testBucket = new TestBucket("test", 2, "");
-        final Allocation unitlessAllocation_US =
-                new Allocation(
-                        "missingExperimentalUnit && country == 'US'",
-                        ImmutableList.of(new Range(0, 0), new Range(-1, 0), new Range(1, 1)));
-        final Allocation unitlessAllocation_JP =
-                new Allocation(
-                        "missingExperimentalUnit && country == 'JP'",
-                        ImmutableList.of(new Range(0, 0), new Range(-1, 0), new Range(2, 1)));
-        final Allocation allocation_JP =
-                new Allocation(
-                        "country == 'JP'",
-                        ImmutableList.of(new Range(0, 0), new Range(-1, 0), new Range(1, 1)));
-
-        final ConsumableTestDefinition unitlessTestDefinition =
-                ConsumableTestDefinition.fromTestDefinition(
-                        TestDefinition.builder()
-                                .setEnableUnitlessAllocations(true)
-                                .setSalt("&unitless_tst")
-                                .setTestType(TestType.AUTHENTICATED_USER)
-                                .addBuckets(inactiveBucket, controlBucket, activeBucket, testBucket)
-                                .addAllocations(
-                                        unitlessAllocation_US, unitlessAllocation_JP, allocation_JP)
-                                .build());
-
-        final Map<String, ConsumableTestDefinition> tests =
-                ImmutableMap.of("unitless_tst", unitlessTestDefinition);
-        final TestMatrixArtifact matrix = new TestMatrixArtifact();
-        matrix.setTests(tests);
-        matrix.setAudit(new Audit());
-
-        final Proctor proctor =
-                Proctor.construct(
-                        matrix,
-                        ProctorLoadResult.emptyResult(),
-                        RuleEvaluator.defaultFunctionMapperBuilder().build(),
-                        new NoEmptyIdentifierValidator());
-
-        final ProctorResult proctorResult =
-                proctor.determineTestGroups(
-                        Identifiers.of(TestType.AUTHENTICATED_USER, "123456789"),
-                        ImmutableMap.of("country", "JP"),
-                        ForceGroupsOptions.builder().build(),
-                        Collections.emptyList());
-
-        assertThat(proctorResult.getAllocations()).containsEntry("unitless_tst", allocation_JP);
-        assertThat(proctorResult.getBuckets()).containsEntry("unitless_tst", activeBucket);
-        assertThat(proctorResult.getTestDefinitions())
-                .containsEntry("unitless_tst", unitlessTestDefinition);
-    }
-
-    @Test
-    public void
-            testDetermineTestGroups_UnitlessIdentifierButNoMatchingMissingExperimentalUnitAllocation_shouldBeEmpty() {
-        final TestBucket inactiveBucket = new TestBucket("inactive", -1, "");
-        final TestBucket controlBucket = new TestBucket("control", 0, "");
-        final TestBucket activeBucket = new TestBucket("active", 1, "");
-        final TestBucket testBucket = new TestBucket("test", 2, "");
-        final Allocation unitlessAllocation_US =
-                new Allocation(
-                        "missingExperimentalUnit && country == 'UK'",
-                        ImmutableList.of(new Range(0, 0), new Range(-1, 0), new Range(1, 1)));
-        final Allocation unitlessAllocation_JP =
-                new Allocation(
-                        "missingExperimentalUnit && country == 'JP'",
-                        ImmutableList.of(new Range(0, 0), new Range(-1, 0), new Range(2, 1)));
-        final Allocation allocation_JP =
-                new Allocation(
-                        "country == 'US' && lang == 'en'",
-                        ImmutableList.of(new Range(0, 0), new Range(-1, 0), new Range(1, 1)));
-
-        final ConsumableTestDefinition unitlessTestDefinition =
-                ConsumableTestDefinition.fromTestDefinition(
-                        TestDefinition.builder()
-                                .setEnableUnitlessAllocations(true)
-                                .setSalt("&unitless_tst")
-                                .setTestType(TestType.AUTHENTICATED_USER)
-                                .addBuckets(inactiveBucket, controlBucket, activeBucket, testBucket)
-                                .addAllocations(
-                                        unitlessAllocation_US, unitlessAllocation_JP, allocation_JP)
-                                .build());
-
-        final Map<String, ConsumableTestDefinition> tests =
-                ImmutableMap.of("unitless_tst", unitlessTestDefinition);
-        final TestMatrixArtifact matrix = new TestMatrixArtifact();
-        matrix.setTests(tests);
-        matrix.setAudit(new Audit());
-
-        final Proctor proctor =
-                Proctor.construct(
-                        matrix,
-                        ProctorLoadResult.emptyResult(),
-                        RuleEvaluator.defaultFunctionMapperBuilder().build(),
-                        new NoEmptyIdentifierValidator());
-
-        final ProctorResult proctorResult =
-                proctor.determineTestGroups(
-                        Identifiers.of(TestType.AUTHENTICATED_USER, ""),
-                        ImmutableMap.of("country", "US", "lang", "en"),
-                        ForceGroupsOptions.builder().build(),
-                        Collections.emptyList());
-
-        assertThat(proctorResult.getAllocations()).isEmpty();
-        assertThat(proctorResult.getBuckets()).isEmpty();
-        assertThat(proctorResult.getTestDefinitions())
-                .containsEntry("unitless_tst", unitlessTestDefinition);
     }
 
     private static TestMatrixArtifact createTestMatrixWithOneRandomTest(final String testName) {

@@ -33,9 +33,6 @@ public class ConsumableTestDefinition {
     @Nullable private TestDependency dependsOn;
     private boolean isDynamic = false;
 
-    private boolean enableUnitlessAllocations = false;
-    private boolean containsUnitlessAllocation = false;
-
     public ConsumableTestDefinition() {
         /* intentionally empty */
     }
@@ -135,9 +132,7 @@ public class ConsumableTestDefinition {
             @Nonnull final Map<String, Object> constants,
             @Nullable final String description,
             @Nonnull final List<String> metaTags,
-            @Nullable final TestDependency dependsOn,
-            final boolean enableUnitlessAllocations,
-            final boolean containsUnitlessAllocation) {
+            @Nullable final TestDependency dependsOn) {
         this.constants = constants;
         this.version = version;
         this.salt = salt;
@@ -149,8 +144,6 @@ public class ConsumableTestDefinition {
         this.description = description;
         this.metaTags = metaTags;
         this.dependsOn = dependsOn;
-        this.enableUnitlessAllocations = enableUnitlessAllocations;
-        this.containsUnitlessAllocation = containsUnitlessAllocation;
     }
 
     @Nonnull
@@ -260,22 +253,6 @@ public class ConsumableTestDefinition {
         this.dependsOn = dependsOn;
     }
 
-    public boolean getEnableUnitlessAllocations() {
-        return enableUnitlessAllocations;
-    }
-
-    public void setEnableUnitlessAllocations(final boolean enableUnitlessAllocations) {
-        this.enableUnitlessAllocations = enableUnitlessAllocations;
-    }
-
-    public boolean getContainsUnitlessAllocation() {
-        return containsUnitlessAllocation;
-    }
-
-    public void setContainsUnitlessAllocation(final boolean containsUnitlessAllocation) {
-        this.containsUnitlessAllocation = containsUnitlessAllocation;
-    }
-
     @Nonnull
     public static ConsumableTestDefinition fromTestDefinition(@Nonnull final TestDefinition td) {
         final Map<String, Object> specialConstants = td.getSpecialConstants();
@@ -311,7 +288,6 @@ public class ConsumableTestDefinition {
                 }
             }
         }
-        final boolean containsUnitlessAllocation = ProctorUtils.containsUnitlessAllocation(td);
 
         final Map<String, Object> constants = Maps.newLinkedHashMap();
         constants.putAll(td.getConstants());
@@ -328,8 +304,6 @@ public class ConsumableTestDefinition {
                 constants,
                 td.getDescription(),
                 td.getMetaTags(),
-                td.getDependsOn(),
-                td.getEnableUnitlessAllocations(),
-                containsUnitlessAllocation);
+                td.getDependsOn());
     }
 }

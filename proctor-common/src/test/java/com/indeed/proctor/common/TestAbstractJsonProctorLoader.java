@@ -53,13 +53,7 @@ public class TestAbstractJsonProctorLoader {
                 .isCloseTo(0.25d, offset(1e-6));
         assertThat(testDefinition.getAllocations().get(0).getRanges().get(1).getLength())
                 .isCloseTo(0.75d, offset(1e-6));
-        assertThat(testDefinition.getEnableUnitlessAllocations()).isFalse();
-        assertThat(
-                        testMatrixArtifact
-                                .getTests()
-                                .get("meta_tags_tst")
-                                .getEnableUnitlessAllocations())
-                .isTrue();
+
         assertThat(testMatrixArtifact.getTests().get("null_tst")).isNull();
     }
 
