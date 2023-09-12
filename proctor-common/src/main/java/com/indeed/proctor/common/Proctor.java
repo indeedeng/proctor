@@ -124,7 +124,12 @@ public class Proctor {
                 TestDependencies.determineEvaluationOrder(matrix.getTests());
 
         return new Proctor(
-                matrix, loadResult, testChoosers, testEvaluationOrder, identifierValidator, resultReporter);
+                matrix,
+                loadResult,
+                testChoosers,
+                testEvaluationOrder,
+                identifierValidator,
+                resultReporter);
     }
 
     @Nonnull
@@ -359,6 +364,8 @@ public class Proctor {
             if (testChooser instanceof StandardTestChooser) {
                 final TestType testType = testChooser.getTestDefinition().getTestType();
                 if (testTypesWithInvalidIdentifier.contains(testType)) {
+                    invalidIdentifierCount.put(
+                            testType, invalidIdentifierCount.getOrDefault(testType, 0) + 1);
                     // skipping here to make it use the fallback bucket.
                     continue;
                 }
