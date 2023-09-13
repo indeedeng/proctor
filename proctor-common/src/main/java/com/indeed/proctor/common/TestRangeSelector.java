@@ -6,6 +6,7 @@ import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.Range;
 import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.common.model.TestDependency;
+import com.indeed.proctor.common.model.TestType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -136,7 +137,9 @@ public class TestRangeSelector {
             for (int i = 0; i < rules.length; i++) {
                 rule = rules[i];
                 if (identifier != null
-                        && (identifierValidator.validate(testDefinition.getTestType(), identifier)
+                        && (testDefinition.getTestType().equals(TestType.RANDOM)
+                                || identifierValidator.validate(
+                                        testDefinition.getTestType(), identifier)
                                 || (testDefinition.getContainsUnitlessAllocation()
                                         && rule.contains("missingExperimentalUnit")))
                         && evaluator.apply(rule)) {
