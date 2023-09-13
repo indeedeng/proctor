@@ -137,10 +137,7 @@ public class TestRangeSelector {
             for (int i = 0; i < rules.length; i++) {
                 rule = rules[i];
                 if (testDefinition.getTestType().equals(TestType.RANDOM)
-                        || (identifier != null
-                                        && (identifierValidator.validate(
-                                                        testDefinition.getTestType(), identifier)
-                                                || isUnitlessAllocation(rule)))
+                        || (isNormalAllocation(identifier) || isUnitlessAllocation(rule))
                                 && evaluator.apply(rule)) {
                     return i;
                 }
@@ -156,6 +153,11 @@ public class TestRangeSelector {
         }
 
         return -1;
+    }
+
+    private boolean isNormalAllocation(final String identifier) {
+        return identifier != null
+                && identifierValidator.validate(testDefinition.getTestType(), identifier);
     }
 
     private boolean isUnitlessAllocation(final String rule) {
