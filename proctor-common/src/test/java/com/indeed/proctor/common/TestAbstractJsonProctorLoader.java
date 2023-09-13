@@ -174,7 +174,7 @@ public class TestAbstractJsonProctorLoader {
         }
 
         String getSource() {
-            return "";
+            return null;
         }
     }
 }
