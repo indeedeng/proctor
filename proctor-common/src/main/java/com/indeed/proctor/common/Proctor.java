@@ -19,7 +19,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.el.FunctionMapper;
 import javax.el.ValueExpression;
 import java.io.IOException;
@@ -28,7 +27,6 @@ import java.io.Writer;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -53,6 +51,7 @@ import static com.indeed.proctor.common.ProctorUtils.UNITLESS_ALLOCATION_IDENTIF
  */
 public class Proctor {
     public static final Proctor EMPTY = createEmptyProctor();
+
     private static final Logger LOGGER = LogManager.getLogger(Proctor.class);
     private static final ObjectWriter OBJECT_WRITER =
             Serializers.lenient()
@@ -87,15 +86,6 @@ public class Proctor {
             @Nonnull final ProctorLoadResult loadResult,
             @Nonnull final FunctionMapper functionMapper,
             @Nonnull final IdentifierValidator identifierValidator) {
-        return construct(matrix, loadResult, functionMapper, identifierValidator, null);
-    }
-
-    public static Proctor construct(
-            @Nonnull final TestMatrixArtifact matrix,
-            @Nonnull final ProctorLoadResult loadResult,
-            @Nonnull final FunctionMapper functionMapper,
-            @Nonnull final IdentifierValidator identifierValidator,
-            @Nullable final ProctorResultReporter resultReporter) {
         final Map<String, TestChooser<?>> testChoosers = Maps.newLinkedHashMap();
         final Map<String, String> versions = Maps.newLinkedHashMap();
 
@@ -129,12 +119,7 @@ public class Proctor {
                 TestDependencies.determineEvaluationOrder(matrix.getTests());
 
         return new Proctor(
-                matrix,
-                loadResult,
-                testChoosers,
-                testEvaluationOrder,
-                identifierValidator,
-                resultReporter);
+                matrix, loadResult, testChoosers, testEvaluationOrder, identifierValidator);
     }
 
     @Nonnull
@@ -159,8 +144,7 @@ public class Proctor {
                 loadResult,
                 choosers,
                 testEvaluationOrder,
-                new IdentifierValidator.Noop(),
-                null);
+                new IdentifierValidator.Noop());
     }
 
     static final long INT_RANGE = (long) Integer.MAX_VALUE - (long) Integer.MIN_VALUE;
@@ -173,7 +157,6 @@ public class Proctor {
 
     private final List<String> testEvaluationOrder;
     private final Map<String, Integer> evaluationOrderMap;
-    @Nullable private final ProctorResultReporter resultReporter;
 
     @VisibleForTesting
     Proctor(
@@ -181,8 +164,7 @@ public class Proctor {
             @Nonnull final ProctorLoadResult loadResult,
             @Nonnull final Map<String, TestChooser<?>> testChoosers,
             @Nonnull final List<String> testEvaluationOrder,
-            @Nonnull final IdentifierValidator identifierValidator,
-            @Nullable final ProctorResultReporter resultReporter) {
+            @Nonnull final IdentifierValidator identifierValidator) {
         this.matrix = matrix;
         this.loadResult = loadResult;
         this.testChoosers = testChoosers;
@@ -199,7 +181,6 @@ public class Proctor {
         VarExporter.forNamespace(Proctor.class.getSimpleName()).includeInGlobal().export(this, "");
         VarExporter.forNamespace(DetailedExport.class.getSimpleName())
                 .export(new DetailedExport(), ""); //  intentionally not in global
-        this.resultReporter = resultReporter;
     }
 
     private static class DetailedExport {
@@ -356,7 +337,7 @@ public class Proctor {
         final Map<String, ValueExpression> localContext =
                 ProctorUtils.convertLocalContextToValueExpressionMap(
                         RuleEvaluator.EXPRESSION_FACTORY, inputContext);
-        final Map<TestType, Integer> invalidIdentifierCount = new HashMap<>();
+
         for (final String testName : filteredEvaluationOrder) {
             final TestChooser<?> testChooser = testChoosers.get(testName);
             final String identifier;
@@ -367,13 +348,10 @@ public class Proctor {
             localContext.put(
                     UNITLESS_ALLOCATION_IDENTIFIER,
                     containsUnitlessAllocations ? VALUE_EXPRESSION_TRUE : VALUE_EXPRESSION_FALSE);
-
             if (testChooser instanceof StandardTestChooser) {
                 final TestType testType = testChooser.getTestDefinition().getTestType();
                 if (testTypesWithInvalidIdentifier.contains(testType)
                         && !containsUnitlessAllocations) {
-                    invalidIdentifierCount.put(
-                            testType, invalidIdentifierCount.getOrDefault(testType, 0) + 1);
                     // skipping here to make it use the fallback bucket.
                     continue;
                 }
@@ -420,20 +398,13 @@ public class Proctor {
 
         // TODO Can we make getAudit nonnull?
         final Audit audit = Preconditions.checkNotNull(matrix.getAudit(), "Missing audit");
-        final ProctorResult result =
-                new ProctorResult(
-                        audit.getVersion(),
-                        testGroups,
-                        testAllocations,
-                        testDefinitions,
-                        identifiers,
-                        inputContext);
-
-        if (resultReporter != null) {
-            resultReporter.reportMetrics(result, invalidIdentifierCount);
-        }
-
-        return result;
+        return new ProctorResult(
+                audit.getVersion(),
+                testGroups,
+                testAllocations,
+                testDefinitions,
+                identifiers,
+                inputContext);
     }
 
     TestMatrixArtifact getArtifact() {

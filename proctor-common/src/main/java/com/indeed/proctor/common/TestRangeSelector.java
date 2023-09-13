@@ -136,13 +136,12 @@ public class TestRangeSelector {
             }
             for (int i = 0; i < rules.length; i++) {
                 rule = rules[i];
-                if (identifier != null
-                        && (testDefinition.getTestType().equals(TestType.RANDOM)
-                                || identifierValidator.validate(
-                                        testDefinition.getTestType(), identifier)
-                                || (testDefinition.getContainsUnitlessAllocation()
-                                        && rule.contains("missingExperimentalUnit")))
-                        && evaluator.apply(rule)) {
+                if (testDefinition.getTestType().equals(TestType.RANDOM)
+                        || (identifier != null
+                                        && (identifierValidator.validate(
+                                                        testDefinition.getTestType(), identifier)
+                                                || isUnitlessAllocation(rule)))
+                                && evaluator.apply(rule)) {
                     return i;
                 }
             }
@@ -157,6 +156,11 @@ public class TestRangeSelector {
         }
 
         return -1;
+    }
+
+    private boolean isUnitlessAllocation(final String rule) {
+        return testDefinition.getContainsUnitlessAllocation()
+                && rule.contains("missingExperimentalUnit");
     }
 
     @Nonnull
