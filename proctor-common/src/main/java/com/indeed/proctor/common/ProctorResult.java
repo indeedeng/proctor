@@ -9,10 +9,10 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.HashSet;
 
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySortedMap;

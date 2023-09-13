@@ -31,7 +31,6 @@ public class ConsumableTestDefinition {
 
     /** @see TestDefinition#getDependsOn() */
     @Nullable private TestDependency dependsOn;
-
     private boolean isDynamic = false;
 
     private boolean enableUnitlessAllocations = false;
