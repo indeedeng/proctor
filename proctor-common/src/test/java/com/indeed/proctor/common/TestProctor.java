@@ -283,8 +283,7 @@ public class TestProctor {
                         null,
                         Collections.singletonMap(testName, testChooser),
                         Collections.singletonList(testName),
-                        new IdentifierValidator.Noop(),
-                        null);
+                        new IdentifierValidator.NoEmpty());
 
         final Identifiers identifiersWithRandom = new Identifiers(Collections.emptyMap(), true);
         final Identifiers identifiersWithoutRandom = new Identifiers(Collections.emptyMap(), false);

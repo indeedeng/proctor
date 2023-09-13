@@ -5,6 +5,7 @@ import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.Range;
 import com.indeed.proctor.common.model.TestBucket;
+import com.indeed.proctor.common.model.TestType;
 import org.apache.el.ExpressionFactoryImpl;
 import org.junit.Test;
 
@@ -117,6 +118,7 @@ public class TestRandomTestChooser {
         testDefinition.setConstants(Collections.emptyMap());
 
         testDefinition.setBuckets(buckets);
+        testDefinition.setTestType(TestType.RANDOM);
 
         final List<Allocation> allocations = Lists.newArrayList();
         allocations.add(new Allocation("${}", ranges, "#A1"));

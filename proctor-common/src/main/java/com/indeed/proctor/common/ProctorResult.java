@@ -9,7 +9,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -43,8 +42,6 @@ public class ProctorResult {
     private final Identifiers identifiers;
 
     private final Map<String, Object> inputContext;
-
-    private final HashSet<String> hasLoggedTests;
 
     /**
      * Create a ProctorResult with copies of the provided collections
@@ -146,7 +143,6 @@ public class ProctorResult {
         this.testDefinitions = testDefinitions;
         this.identifiers = identifiers;
         this.inputContext = inputContext;
-        this.hasLoggedTests = new HashSet<>();
     }
 
     /**
@@ -196,9 +192,5 @@ public class ProctorResult {
     @Nonnull
     public Map<String, Object> getInputContext() {
         return inputContext;
-    }
-
-    public boolean markTestAsLogged(final String test) {
-        return this.hasLoggedTests.add(test);
     }
 }

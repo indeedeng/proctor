@@ -427,13 +427,14 @@ public class Proctor {
 
         // TODO Can we make getAudit nonnull?
         final Audit audit = Preconditions.checkNotNull(matrix.getAudit(), "Missing audit");
-        final ProctorResult result = new ProctorResult(
-                audit.getVersion(),
-                testGroups,
-                testAllocations,
-                testDefinitions,
-                identifiers,
-                inputContext);
+        final ProctorResult result =
+                new ProctorResult(
+                        audit.getVersion(),
+                        testGroups,
+                        testAllocations,
+                        testDefinitions,
+                        identifiers,
+                        inputContext);
 
         if (resultReporter != null) {
             resultReporter.reportMetrics(result, invalidIdentifierCount);

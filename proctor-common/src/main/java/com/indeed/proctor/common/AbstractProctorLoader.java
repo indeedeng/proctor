@@ -207,26 +207,11 @@ public abstract class AbstractProctorLoader extends DataLoadingTimerTask
         }
 
         final Proctor proctor =
-                Proctor.construct(
-                        testMatrix,
-                        loadResult,
-                        functionMapper,
-                        identifierValidator,
-                        getProctorResultReporter());
+                Proctor.construct(testMatrix, loadResult, functionMapper, identifierValidator);
         //  kind of lame to modify lastAudit here but current in load(), but the interface is a
         // little constraining
         setLastAudit(newAudit);
         return proctor;
-    }
-
-    /**
-     * user can override this function to provide a Proctor Result Reporter for monitoring
-     * determining Groups of proctor tests
-     *
-     * @return a ProctorResultReporter
-     */
-    protected ProctorResultReporter getProctorResultReporter() {
-        return null;
     }
 
     @VisibleForTesting
