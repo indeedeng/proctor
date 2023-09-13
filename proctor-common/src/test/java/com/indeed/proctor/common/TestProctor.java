@@ -394,15 +394,17 @@ public class TestProctor {
 
     @Test
     public void testDetermineTestGroupsWithInvalidIdentifier() {
+        final TestBucket inactivetestBucket = new TestBucket("inactive", -1, "");
         final TestBucket testBucket = new TestBucket("active", 1, "");
-        final Allocation allocation = new Allocation("", ImmutableList.of(new Range(1, 1.0)));
+        final Allocation allocation =
+                new Allocation("", ImmutableList.of(new Range(-1, 0.0), new Range(1, 1.0)));
 
         final ConsumableTestDefinition testDefinitionX =
                 ConsumableTestDefinition.fromTestDefinition(
                         TestDefinition.builder()
                                 .setSalt("&X")
                                 .setTestType(TestType.ANONYMOUS_USER)
-                                .addBuckets(testBucket)
+                                .addBuckets(inactivetestBucket, testBucket)
                                 .addAllocations(allocation)
                                 .build());
         final ConsumableTestDefinition testDefinitionY =
@@ -410,14 +412,23 @@ public class TestProctor {
                         TestDefinition.builder()
                                 .setSalt("&Y")
                                 .setTestType(TestType.AUTHENTICATED_USER)
-                                .addBuckets(testBucket)
+                                .addBuckets(inactivetestBucket, testBucket)
+                                .addAllocations(allocation)
+                                .build());
+        final ConsumableTestDefinition randomTd =
+                ConsumableTestDefinition.fromTestDefinition(
+                        TestDefinition.builder()
+                                .setSalt("&Z")
+                                .setTestType(TestType.RANDOM)
+                                .addBuckets(inactivetestBucket, testBucket)
                                 .addAllocations(allocation)
                                 .build());
 
         final Map<String, ConsumableTestDefinition> tests =
                 ImmutableMap.of(
                         "X", testDefinitionX,
-                        "Y", testDefinitionY);
+                        "Y", testDefinitionY,
+                        "Z", randomTd);
         final TestMatrixArtifact matrix = new TestMatrixArtifact();
         matrix.setTests(tests);
         matrix.setAudit(new Audit());
@@ -428,26 +439,37 @@ public class TestProctor {
                         ProctorLoadResult.emptyResult(),
                         RuleEvaluator.defaultFunctionMapperBuilder().build(),
                         (testType, identifier) ->
-                                !(testType.equals(TestType.AUTHENTICATED_USER)
-                                        && "logged-out".equals(identifier)));
-
+                                (identifier.equals("")
+                                        || !(testType.equals(TestType.AUTHENTICATED_USER)
+                                                && "logged-out".equals(identifier))));
+        final Identifiers identifiers =
+                new Identifiers(
+                        ImmutableMap.of(
+                                TestType.ANONYMOUS_USER,
+                                "cookie",
+                                TestType.AUTHENTICATED_USER,
+                                "logged-out"),
+                        true);
         final ProctorResult proctorResult =
                 proctor.determineTestGroups(
-                        Identifiers.of(
-                                TestType.ANONYMOUS_USER, "cookie",
-                                TestType.AUTHENTICATED_USER, "logged-out"),
+                        identifiers,
                         Collections.emptyMap(),
                         Collections.emptyMap(),
-                        ImmutableList.of("X"));
+                        Collections.emptySet());
 
-        assertThat(proctorResult.getBuckets()).containsOnlyKeys("X").containsEntry("X", testBucket);
+        assertThat(proctorResult.getBuckets())
+                .containsOnlyKeys("X", "Z")
+                .containsEntry("X", testBucket)
+                .containsEntry("Z", testBucket);
         assertThat(proctorResult.getAllocations())
-                .containsOnlyKeys("X")
-                .containsEntry("X", allocation);
+                .containsOnlyKeys("X", "Z")
+                .containsEntry("X", allocation)
+                .containsEntry("Z", allocation);
         assertThat(proctorResult.getTestDefinitions())
-                .containsOnlyKeys("X", "Y")
+                .containsOnlyKeys("X", "Y", "Z")
                 .containsEntry("X", testDefinitionX)
-                .containsEntry("Y", testDefinitionY);
+                .containsEntry("Y", testDefinitionY)
+                .containsEntry("Z", randomTd);
     }
 
     @Test

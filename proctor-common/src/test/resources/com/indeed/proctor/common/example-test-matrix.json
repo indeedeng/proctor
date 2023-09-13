@@ -110,7 +110,51 @@
       "silent" : false,
       "testType" : "USER",
       "description" : "A meta tag test",
-      "metaTags" : ["example_tag"]
+      "metaTags" : ["example_tag"],
+      "enableUnitlessAllocations" : true
+    },
+    "example_random_test": {
+      "constants": {},
+      "version": "-1",
+      "salt": "&example_random_test",
+      "rule": null,
+      "buckets": [
+        {
+          "name": "inactive",
+          "value": -1,
+          "description": ""
+        },
+        {
+          "name": "sample",
+          "value": 0,
+          "description": ""
+        }
+      ],
+      "allocations": [
+        {
+          "rule": null,
+          "ranges": [
+            {
+              "bucketValue": -1,
+              "length": 0
+            },
+            {
+              "bucketValue": 0,
+              "length": 1
+            }
+          ],
+          "id": "#A9",
+          "name": ""
+        }
+      ],
+      "silent": true,
+      "testType": "RANDOM",
+      "description": "example_random_test",
+      "metaTags": [],
+      "dependsOn": null,
+      "enableUnitlessAllocations": false,
+      "containsUnitlessAllocation": false,
+      "dynamic": false
     }
   }
 }
