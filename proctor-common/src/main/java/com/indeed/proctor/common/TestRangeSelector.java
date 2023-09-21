@@ -165,7 +165,8 @@ public class TestRangeSelector {
     }
 
     private boolean isUnitlessAllocation(final String rule) {
-        return testDefinition.getContainsUnitlessAllocation()
+        return rule != null
+                && testDefinition.getContainsUnitlessAllocation()
                 && rule.contains("missingExperimentalUnit");
     }
 
