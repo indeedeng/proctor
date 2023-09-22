@@ -140,7 +140,7 @@ public class Proctor {
     }
 
     static final long INT_RANGE = (long) Integer.MAX_VALUE - (long) Integer.MIN_VALUE;
-    private static final String ANONYMOUS_CONTEXT_VARIABLE = "anonymous";
+    private static final String INCOGNITO_CONTEXT_VARIABLE = "incognito";
     private final TestMatrixArtifact matrix;
     private final ProctorLoadResult loadResult;
     @Nonnull private final Map<String, TestChooser<?>> testChoosers;
@@ -475,9 +475,9 @@ public class Proctor {
     }
 
     private boolean getAnonymousEnabled(@Nonnull final Map<String, Object> inputContext) {
-        if (inputContext.containsKey(ANONYMOUS_CONTEXT_VARIABLE)) {
-            return Objects.equals(inputContext.get(ANONYMOUS_CONTEXT_VARIABLE), "true")
-                    || Objects.equals(inputContext.get(ANONYMOUS_CONTEXT_VARIABLE), true);
+        if (inputContext.containsKey(INCOGNITO_CONTEXT_VARIABLE)) {
+            return Objects.equals(inputContext.get(INCOGNITO_CONTEXT_VARIABLE), "true")
+                    || Objects.equals(inputContext.get(INCOGNITO_CONTEXT_VARIABLE), true);
         }
         return false;
     }

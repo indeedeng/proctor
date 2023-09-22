@@ -567,7 +567,7 @@ public class TestProctor {
     }
 
     @Test
-    public void testDetermineTestGroups_OnlyEvaluateAnonymousTestsWhenEnabled() {
+    public void testDetermineTestGroups_OnlyEvaluateIncognitoTestsWhenEnabled() {
         final TestBucket inactiveBucket = new TestBucket("inactive", -1, "");
         final TestBucket controlBucket = new TestBucket("control", 0, "");
         final TestBucket activeBucket = new TestBucket("active", 1, "");
@@ -580,7 +580,7 @@ public class TestProctor {
                         "",
                         ImmutableList.of(new Range(0, 0.3), new Range(-1, 0.4), new Range(1, 0.3)));
 
-        final ConsumableTestDefinition testDefinition_anonymous =
+        final ConsumableTestDefinition testDefinition_incognito =
                 ConsumableTestDefinition.fromTestDefinition(
                         TestDefinition.builder()
                                 .setSalt("&X")
@@ -589,7 +589,7 @@ public class TestProctor {
                                 .addAllocations(allocationX)
                                 .setIncognito(true)
                                 .build());
-        final ConsumableTestDefinition testDefinition_nonAnonymous =
+        final ConsumableTestDefinition testDefinition_nonIncognito =
                 ConsumableTestDefinition.fromTestDefinition(
                         TestDefinition.builder()
                                 .setSalt("&Y")
@@ -601,10 +601,10 @@ public class TestProctor {
 
         final Map<String, ConsumableTestDefinition> tests =
                 ImmutableMap.of(
-                        "foo", testDefinition_anonymous,
-                        "bar", testDefinition_anonymous,
-                        "ignore", testDefinition_nonAnonymous,
-                        "ignore2", testDefinition_nonAnonymous);
+                        "foo", testDefinition_incognito,
+                        "bar", testDefinition_incognito,
+                        "ignore", testDefinition_nonIncognito,
+                        "ignore2", testDefinition_nonIncognito);
         final TestMatrixArtifact matrix = new TestMatrixArtifact();
         matrix.setTests(tests);
         matrix.setAudit(new Audit());
@@ -618,7 +618,7 @@ public class TestProctor {
         final ProctorResult proctorResult =
                 proctor.determineTestGroups(
                         Identifiers.of(TestType.ANONYMOUS_USER, "cookie"),
-                        ImmutableMap.of("anonymous", "true"),
+                        ImmutableMap.of("incognito", "true"),
                         ForceGroupsOptions.builder().build(),
                         Collections.emptyList());
 
@@ -629,10 +629,10 @@ public class TestProctor {
         assertThat(proctorResult.getAllocations()).containsOnlyKeys("foo", "bar");
         assertThat(proctorResult.getTestDefinitions())
                 .containsOnlyKeys("foo", "bar", "ignore", "ignore2")
-                .containsEntry("foo", testDefinition_anonymous)
-                .containsEntry("bar", testDefinition_anonymous)
-                .containsEntry("ignore", testDefinition_nonAnonymous)
-                .containsEntry("ignore2", testDefinition_nonAnonymous);
+                .containsEntry("foo", testDefinition_incognito)
+                .containsEntry("bar", testDefinition_incognito)
+                .containsEntry("ignore", testDefinition_nonIncognito)
+                .containsEntry("ignore2", testDefinition_nonIncognito);
     }
 
     private static TestMatrixArtifact createTestMatrixWithOneRandomTest(final String testName) {
