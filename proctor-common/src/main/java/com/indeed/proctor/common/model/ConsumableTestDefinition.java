@@ -33,7 +33,7 @@ public class ConsumableTestDefinition {
     @Nullable private TestDependency dependsOn;
 
     private boolean isDynamic = false;
-    private boolean anonymous = false;
+    private boolean incognito = false;
 
     public ConsumableTestDefinition() {
         /* intentionally empty */
@@ -147,7 +147,7 @@ public class ConsumableTestDefinition {
         this.description = description;
         this.metaTags = metaTags;
         this.dependsOn = dependsOn;
-        this.anonymous = anonymous;
+        this.incognito = anonymous;
     }
 
     @Nonnull
@@ -257,12 +257,12 @@ public class ConsumableTestDefinition {
         this.dependsOn = dependsOn;
     }
 
-    public void setAnonymous(final boolean anonymous) {
-        this.anonymous = anonymous;
+    public void setIncognito(final boolean incognito) {
+        this.incognito = incognito;
     }
 
-    public boolean getAnonymous() {
-        return anonymous;
+    public boolean getIncognito() {
+        return incognito;
     }
 
     @Nonnull
@@ -317,6 +317,6 @@ public class ConsumableTestDefinition {
                 td.getDescription(),
                 td.getMetaTags(),
                 td.getDependsOn(),
-                td.getAnonymous());
+                td.getIncognito());
     }
 }

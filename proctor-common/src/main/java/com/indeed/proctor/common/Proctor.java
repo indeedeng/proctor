@@ -336,7 +336,7 @@ public class Proctor {
         for (final String testName : filteredEvaluationOrder) {
             final TestChooser<?> testChooser = testChoosers.get(testName);
             final String identifier;
-            if (evaluateAnonymousTestsOnly && !testChooser.getTestDefinition().getAnonymous()) {
+            if (evaluateAnonymousTestsOnly && !testChooser.getTestDefinition().getIncognito()) {
                 continue;
             }
 

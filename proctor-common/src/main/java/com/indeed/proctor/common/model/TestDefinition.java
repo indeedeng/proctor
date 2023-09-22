@@ -51,7 +51,7 @@ public class TestDefinition {
     /** @see #getDependsOn() */
     @Nullable private TestDependency dependsOn;
 
-    private boolean anonymous;
+    private boolean incognito;
 
     public TestDefinition() {
         /* intentionally empty */
@@ -135,7 +135,7 @@ public class TestDefinition {
         this.testType = testType;
         this.description = description;
         this.metaTags = metaTags;
-        this.anonymous = false;
+        this.incognito = false;
     }
 
     public TestDefinition(@Nonnull final TestDefinition other) {
@@ -155,7 +155,7 @@ public class TestDefinition {
         description = builder.description;
         metaTags = builder.metaTags.build();
         dependsOn = builder.dependsOn;
-        anonymous = builder.anonymous;
+        incognito = builder.incognito;
     }
 
     public static Builder builder() {
@@ -313,8 +313,8 @@ public class TestDefinition {
         this.dependsOn = dependsOn;
     }
 
-    public boolean getAnonymous() {
-        return anonymous;
+    public boolean getIncognito() {
+        return incognito;
     }
 
     @Override
@@ -349,7 +349,7 @@ public class TestDefinition {
                 + ", dependsOn="
                 + dependsOn
                 + ", anonymous="
-                + anonymous
+                + incognito
                 + '}';
     }
 
@@ -382,7 +382,7 @@ public class TestDefinition {
                 description,
                 metaTags,
                 dependsOn,
-                anonymous);
+                incognito);
     }
 
     /**
@@ -413,7 +413,7 @@ public class TestDefinition {
                 && Objects.equals(description, that.description)
                 && Objects.equals(metaTags, that.metaTags)
                 && Objects.equals(dependsOn, that.dependsOn)
-                && Objects.equals(anonymous, that.anonymous);
+                && Objects.equals(incognito, that.incognito);
     }
 
     @VisibleForTesting
@@ -452,7 +452,7 @@ public class TestDefinition {
         private String description;
         private ImmutableList.Builder<String> metaTags = ImmutableList.builder();
         private TestDependency dependsOn;
-        private boolean anonymous;
+        private boolean incognito;
 
         public Builder from(@Nonnull final TestDefinition other) {
             setVersion(other.version);
@@ -467,7 +467,7 @@ public class TestDefinition {
             setDescription(other.description);
             setMetaTags(other.metaTags);
             setDependsOn(other.dependsOn);
-            setAnonymous(other.anonymous);
+            setIncognito(other.incognito);
             return this;
         }
 
@@ -566,8 +566,8 @@ public class TestDefinition {
             return this;
         }
 
-        public Builder setAnonymous(final boolean anonymous) {
-            this.anonymous = anonymous;
+        public Builder setIncognito(final boolean incognito) {
+            this.incognito = incognito;
             return this;
         }
 
