@@ -31,7 +31,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -475,10 +475,9 @@ public class Proctor {
     }
 
     private boolean getAnonymousEnabled(@Nonnull final Map<String, Object> inputContext) {
-        if (inputContext.containsKey(INCOGNITO_CONTEXT_VARIABLE)) {
-            return Objects.equals(inputContext.get(INCOGNITO_CONTEXT_VARIABLE), "true")
-                    || Objects.equals(inputContext.get(INCOGNITO_CONTEXT_VARIABLE), true);
-        }
-        return false;
+        return Optional.ofNullable(inputContext.get(INCOGNITO_CONTEXT_VARIABLE))
+                .map(Object::toString)
+                .map(value -> value.equalsIgnoreCase("true"))
+                .orElse(false);
     }
 }
