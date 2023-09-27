@@ -28,3 +28,7 @@ java {
 
 test.dependsOn(':proctor-common:shadowJar')
 test.dependsOn(':proctor-pipet-core:shadowJar')
+war.dependsOn(':proctor-pipet-core:shadowJar')
+war.dependsOn(':proctor-common:shadowJar')
+war.dependsOn(':proctor-consumer:shadowJar')
+war.dependsOn(':proctor-codegen:shadowJar')
