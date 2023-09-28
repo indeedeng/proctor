@@ -334,7 +334,7 @@ public class Proctor {
         for (final String testName : filteredEvaluationOrder) {
             final TestChooser<?> testChooser = testChoosers.get(testName);
             final String identifier;
-            if (getIncognitoEnabled(inputContext)
+            if (isIncognitoEnabled(inputContext)
                     && !testChooser.getTestDefinition().getEvaluateForIncognitoUsers()) {
                 continue;
             }
@@ -473,7 +473,7 @@ public class Proctor {
         OBJECT_WRITER.writeValue(writer, filtered);
     }
 
-    private boolean getIncognitoEnabled(@Nonnull final Map<String, Object> inputContext) {
+    private boolean isIncognitoEnabled(@Nonnull final Map<String, Object> inputContext) {
         return Optional.ofNullable(inputContext.get(INCOGNITO_CONTEXT_VARIABLE))
                 .map(Object::toString)
                 .map(value -> value.equalsIgnoreCase("true"))
