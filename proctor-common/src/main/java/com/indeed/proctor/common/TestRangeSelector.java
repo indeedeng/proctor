@@ -6,6 +6,7 @@ import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.Range;
 import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.common.model.TestDependency;
+import com.indeed.proctor.common.model.TestType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -135,11 +136,7 @@ public class TestRangeSelector {
             }
             for (int i = 0; i < rules.length; i++) {
                 rule = rules[i];
-                if (identifier != null
-                        && (identifierValidator.validate(testDefinition.getTestType(), identifier)
-                                || (testDefinition.getContainsUnitlessAllocation()
-                                        && rule.contains("missingExperimentalUnit")))
-                        && evaluator.apply(rule)) {
+                if (isValidAllocation(identifier, rule) && evaluator.apply(rule)) {
                     return i;
                 }
             }
@@ -154,6 +151,23 @@ public class TestRangeSelector {
         }
 
         return -1;
+    }
+
+    private boolean isValidAllocation(final String identifier, final String rule) {
+        return testDefinition.getTestType().equals(TestType.RANDOM)
+                || isNormalAllocation(identifier)
+                || isUnitlessAllocation(rule);
+    }
+
+    private boolean isNormalAllocation(final String identifier) {
+        return identifier != null
+                && identifierValidator.validate(testDefinition.getTestType(), identifier);
+    }
+
+    private boolean isUnitlessAllocation(final String rule) {
+        return rule != null
+                && testDefinition.getContainsUnitlessAllocation()
+                && rule.contains("missingExperimentalUnit");
     }
 
     @Nonnull
