@@ -273,7 +273,7 @@ public class TestTestDefinition {
                         .setDescription(description)
                         .setMetaTags(metatags)
                         .setDependsOn(dependsOn)
-                        .setEvaluteForIncognitoUsers(incognito)
+                        .setEvaluateForIncognitoUsers(incognito)
                         .build();
 
         final TestDefinition definition2 = TestDefinition.builder().from(definition1).build();
@@ -291,7 +291,7 @@ public class TestTestDefinition {
             assertThat(definition.getDescription()).isEqualTo(description);
             assertThat(definition.getMetaTags()).isEqualTo(metatags);
             assertThat(definition.getDependsOn()).isEqualTo(dependsOn);
-            assertThat(definition.getEvaluteForIncognitoUsers()).isEqualTo(incognito);
+            assertThat(definition.getEvaluateForIncognitoUsers()).isEqualTo(incognito);
         }
     }
 }

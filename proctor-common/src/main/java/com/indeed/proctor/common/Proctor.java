@@ -335,7 +335,7 @@ public class Proctor {
             final TestChooser<?> testChooser = testChoosers.get(testName);
             final String identifier;
             if (getIncognitoEnabled(inputContext)
-                    && !testChooser.getTestDefinition().getEvaluteForIncognitoUsers()) {
+                    && !testChooser.getTestDefinition().getEvaluateForIncognitoUsers()) {
                 continue;
             }
 

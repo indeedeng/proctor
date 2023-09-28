@@ -587,7 +587,7 @@ public class TestProctor {
                                 .setTestType(TestType.ANONYMOUS_USER)
                                 .addBuckets(inactiveBucket, controlBucket, activeBucket)
                                 .addAllocations(allocationX)
-                                .setEvaluteForIncognitoUsers(true)
+                                .setEvaluateForIncognitoUsers(true)
                                 .build());
         final ConsumableTestDefinition testDefinition_nonIncognito =
                 ConsumableTestDefinition.fromTestDefinition(
@@ -596,7 +596,7 @@ public class TestProctor {
                                 .setTestType(TestType.ANONYMOUS_USER)
                                 .addBuckets(inactiveBucket, controlBucket, activeBucket)
                                 .addAllocations(allocationY)
-                                .setEvaluteForIncognitoUsers(false)
+                                .setEvaluateForIncognitoUsers(false)
                                 .build());
 
         final Map<String, ConsumableTestDefinition> tests =
