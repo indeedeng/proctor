@@ -31,7 +31,9 @@ public class ConsumableTestDefinition {
 
     /** @see TestDefinition#getDependsOn() */
     @Nullable private TestDependency dependsOn;
+
     private boolean isDynamic = false;
+    private boolean incognito = false;
 
     public ConsumableTestDefinition() {
         /* intentionally empty */
@@ -132,7 +134,8 @@ public class ConsumableTestDefinition {
             @Nonnull final Map<String, Object> constants,
             @Nullable final String description,
             @Nonnull final List<String> metaTags,
-            @Nullable final TestDependency dependsOn) {
+            @Nullable final TestDependency dependsOn,
+            final boolean anonymous) {
         this.constants = constants;
         this.version = version;
         this.salt = salt;
@@ -144,6 +147,7 @@ public class ConsumableTestDefinition {
         this.description = description;
         this.metaTags = metaTags;
         this.dependsOn = dependsOn;
+        this.incognito = anonymous;
     }
 
     @Nonnull
@@ -253,6 +257,14 @@ public class ConsumableTestDefinition {
         this.dependsOn = dependsOn;
     }
 
+    public void setIncognito(final boolean incognito) {
+        this.incognito = incognito;
+    }
+
+    public boolean getIncognito() {
+        return incognito;
+    }
+
     @Nonnull
     public static ConsumableTestDefinition fromTestDefinition(@Nonnull final TestDefinition td) {
         final Map<String, Object> specialConstants = td.getSpecialConstants();
@@ -304,6 +316,7 @@ public class ConsumableTestDefinition {
                 constants,
                 td.getDescription(),
                 td.getMetaTags(),
-                td.getDependsOn());
+                td.getDependsOn(),
+                td.getIncognito());
     }
 }

@@ -257,6 +257,7 @@ public class TestTestDefinition {
         final String description = "sample test";
         final List<String> metatags = ImmutableList.of("sample_test_tag");
         final TestDependency dependsOn = new TestDependency("sample_par_test", 1);
+        final boolean incognito = true;
 
         final TestDefinition definition1 =
                 TestDefinition.builder()
@@ -272,6 +273,7 @@ public class TestTestDefinition {
                         .setDescription(description)
                         .setMetaTags(metatags)
                         .setDependsOn(dependsOn)
+                        .setIncognito(incognito)
                         .build();
 
         final TestDefinition definition2 = TestDefinition.builder().from(definition1).build();
@@ -289,6 +291,7 @@ public class TestTestDefinition {
             assertThat(definition.getDescription()).isEqualTo(description);
             assertThat(definition.getMetaTags()).isEqualTo(metatags);
             assertThat(definition.getDependsOn()).isEqualTo(dependsOn);
+            assertThat(definition.getIncognito()).isEqualTo(incognito);
         }
     }
 }

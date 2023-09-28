@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -51,6 +52,7 @@ public class Proctor {
     public static final Proctor EMPTY = createEmptyProctor();
 
     private static final Logger LOGGER = LogManager.getLogger(Proctor.class);
+
     private static final ObjectWriter OBJECT_WRITER =
             Serializers.lenient()
                     .configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false)
@@ -138,6 +140,7 @@ public class Proctor {
     }
 
     static final long INT_RANGE = (long) Integer.MAX_VALUE - (long) Integer.MIN_VALUE;
+    private static final String INCOGNITO_CONTEXT_VARIABLE = "incognito";
     private final TestMatrixArtifact matrix;
     private final ProctorLoadResult loadResult;
     @Nonnull private final Map<String, TestChooser<?>> testChoosers;
@@ -328,9 +331,15 @@ public class Proctor {
                 ProctorUtils.convertToValueExpressionMap(
                         RuleEvaluator.EXPRESSION_FACTORY, inputContext);
 
+        final boolean evaluateAnonymousTestsOnly = getAnonymousEnabled(inputContext);
+
         for (final String testName : filteredEvaluationOrder) {
             final TestChooser<?> testChooser = testChoosers.get(testName);
             final String identifier;
+            if (evaluateAnonymousTestsOnly && !testChooser.getTestDefinition().getIncognito()) {
+                continue;
+            }
+
             if (testChooser instanceof StandardTestChooser) {
                 final TestType testType = testChooser.getTestDefinition().getTestType();
                 if (testTypesWithInvalidIdentifier.contains(testType)) {
@@ -463,5 +472,12 @@ public class Proctor {
         filtered.setAudit(this.matrix.getAudit());
         filtered.setTests(Maps.filterKeys(this.matrix.getTests(), Predicates.in(testNameFilter)));
         OBJECT_WRITER.writeValue(writer, filtered);
+    }
+
+    private boolean getAnonymousEnabled(@Nonnull final Map<String, Object> inputContext) {
+        return Optional.ofNullable(inputContext.get(INCOGNITO_CONTEXT_VARIABLE))
+                .map(Object::toString)
+                .map(value -> value.equalsIgnoreCase("true"))
+                .orElse(false);
     }
 }
