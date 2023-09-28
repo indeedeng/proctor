@@ -33,7 +33,7 @@ public class ConsumableTestDefinition {
     @Nullable private TestDependency dependsOn;
 
     private boolean isDynamic = false;
-    private boolean incognito = false;
+    private boolean evaluteForIncognitoUsers = false;
 
     public ConsumableTestDefinition() {
         /* intentionally empty */
@@ -135,7 +135,7 @@ public class ConsumableTestDefinition {
             @Nullable final String description,
             @Nonnull final List<String> metaTags,
             @Nullable final TestDependency dependsOn,
-            final boolean anonymous) {
+            final boolean bypassIncognito) {
         this.constants = constants;
         this.version = version;
         this.salt = salt;
@@ -147,7 +147,7 @@ public class ConsumableTestDefinition {
         this.description = description;
         this.metaTags = metaTags;
         this.dependsOn = dependsOn;
-        this.incognito = anonymous;
+        this.evaluteForIncognitoUsers = bypassIncognito;
     }
 
     @Nonnull
@@ -257,12 +257,12 @@ public class ConsumableTestDefinition {
         this.dependsOn = dependsOn;
     }
 
-    public void setIncognito(final boolean incognito) {
-        this.incognito = incognito;
+    public void setEvaluteForIncognitoUsers(final boolean evaluteForIncognitoUsers) {
+        this.evaluteForIncognitoUsers = evaluteForIncognitoUsers;
     }
 
-    public boolean getIncognito() {
-        return incognito;
+    public boolean getEvaluteForIncognitoUsers() {
+        return evaluteForIncognitoUsers;
     }
 
     @Nonnull
@@ -317,6 +317,6 @@ public class ConsumableTestDefinition {
                 td.getDescription(),
                 td.getMetaTags(),
                 td.getDependsOn(),
-                td.getIncognito());
+                td.getEvaluteForIncognitoUsers());
     }
 }

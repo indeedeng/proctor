@@ -140,7 +140,7 @@ public class Proctor {
     }
 
     static final long INT_RANGE = (long) Integer.MAX_VALUE - (long) Integer.MIN_VALUE;
-    private static final String INCOGNITO_CONTEXT_VARIABLE = "incognito";
+    private static final String INCOGNITO_CONTEXT_VARIABLE = "isIncognitoUser";
     private final TestMatrixArtifact matrix;
     private final ProctorLoadResult loadResult;
     @Nonnull private final Map<String, TestChooser<?>> testChoosers;
@@ -331,12 +331,11 @@ public class Proctor {
                 ProctorUtils.convertToValueExpressionMap(
                         RuleEvaluator.EXPRESSION_FACTORY, inputContext);
 
-        final boolean evaluateAnonymousTestsOnly = getAnonymousEnabled(inputContext);
-
         for (final String testName : filteredEvaluationOrder) {
             final TestChooser<?> testChooser = testChoosers.get(testName);
             final String identifier;
-            if (evaluateAnonymousTestsOnly && !testChooser.getTestDefinition().getIncognito()) {
+            if (getIncognitoEnabled(inputContext)
+                    && !testChooser.getTestDefinition().getEvaluteForIncognitoUsers()) {
                 continue;
             }
 
@@ -474,7 +473,7 @@ public class Proctor {
         OBJECT_WRITER.writeValue(writer, filtered);
     }
 
-    private boolean getAnonymousEnabled(@Nonnull final Map<String, Object> inputContext) {
+    private boolean getIncognitoEnabled(@Nonnull final Map<String, Object> inputContext) {
         return Optional.ofNullable(inputContext.get(INCOGNITO_CONTEXT_VARIABLE))
                 .map(Object::toString)
                 .map(value -> value.equalsIgnoreCase("true"))
