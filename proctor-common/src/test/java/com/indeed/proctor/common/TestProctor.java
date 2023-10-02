@@ -587,7 +587,7 @@ public class TestProctor {
                                 .setTestType(TestType.ANONYMOUS_USER)
                                 .addBuckets(inactiveBucket, controlBucket, activeBucket)
                                 .addAllocations(allocationX)
-                                .setIncognito(true)
+                                .setEvaluateForIncognitoUsers(true)
                                 .build());
         final ConsumableTestDefinition testDefinition_nonIncognito =
                 ConsumableTestDefinition.fromTestDefinition(
@@ -596,7 +596,7 @@ public class TestProctor {
                                 .setTestType(TestType.ANONYMOUS_USER)
                                 .addBuckets(inactiveBucket, controlBucket, activeBucket)
                                 .addAllocations(allocationY)
-                                .setIncognito(false)
+                                .setEvaluateForIncognitoUsers(false)
                                 .build());
 
         final Map<String, ConsumableTestDefinition> tests =
@@ -618,7 +618,7 @@ public class TestProctor {
         final ProctorResult proctorResult =
                 proctor.determineTestGroups(
                         Identifiers.of(TestType.ANONYMOUS_USER, "cookie"),
-                        ImmutableMap.of("incognito", "true"),
+                        ImmutableMap.of("isIncognitoUser", "true"),
                         ForceGroupsOptions.builder().build(),
                         Collections.emptyList());
 
