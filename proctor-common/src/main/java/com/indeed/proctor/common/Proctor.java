@@ -369,23 +369,18 @@ public class Proctor {
                 }
 
                 identifier = identifiers.getIdentifier(testType);
-                chooseResult =
-                        ((StandardTestChooser) testChooser)
-                                .choose(
-                                        identifier,
-                                        localContext,
-                                        testGroups,
-                                        forceGroupsOptions,
-                                        testTypesWithInvalidIdentifier);
             } else {
-                chooseResult =
-                        ((RandomTestChooser) testChooser)
-                                .choose(
-                                        localContext,
-                                        testGroups,
-                                        forceGroupsOptions,
-                                        identifiers.isRandomEnabled());
+                identifier = null;
             }
+
+            chooseResult =
+                    testChooser.choose(
+                            identifier,
+                            localContext,
+                            testGroups,
+                            forceGroupsOptions,
+                            testTypesWithInvalidIdentifier,
+                            identifiers.isRandomEnabled());
 
             if (chooseResult.getTestBucket() != null) {
                 testGroups.put(testName, chooseResult.getTestBucket());

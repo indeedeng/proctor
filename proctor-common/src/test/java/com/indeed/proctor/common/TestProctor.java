@@ -302,16 +302,20 @@ public class TestProctor {
                 .thenReturn(result);
 
         when(testChooser.choose(
+                        isNull(),
                         eq(Collections.emptyMap()),
                         anyMap(),
                         eq(ForceGroupsOptions.empty()),
+                        eq(Collections.emptySet()),
                         eq(true)))
                 .thenReturn(result);
 
         when(testChooser.choose(
+                        isNull(),
                         eq(Collections.emptyMap()),
                         anyMap(),
                         eq(ForceGroupsOptions.empty()),
+                        eq(Collections.emptySet()),
                         eq(false)))
                 .thenReturn(TestChooser.Result.EMPTY);
 

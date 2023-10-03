@@ -47,12 +47,14 @@ class StandardTestChooser implements TestChooser<String> {
     }
 
     @Nonnull
+    @Override
     public TestChooser.Result choose(
             @Nullable final String identifier,
             @Nonnull final Map<String, ValueExpression> localContext,
             @Nonnull final Map<String, TestBucket> testGroups,
             @Nonnull final ForceGroupsOptions forceGroupsOptions,
-            @Nonnull final Set<TestType> testTypesWithInvalidIdentifier) {
+            @Nonnull final Set<TestType> testTypesWithInvalidIdentifier,
+            final boolean isRandomEnabled) {
         final TestType testType = getTestDefinition().getTestType();
         if (testTypesWithInvalidIdentifier.contains(testType)) {
             // skipping here to make it use the fallback bucket.

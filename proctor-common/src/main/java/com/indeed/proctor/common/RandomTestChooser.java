@@ -5,6 +5,7 @@ import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.Range;
 import com.indeed.proctor.common.model.TestBucket;
+import com.indeed.proctor.common.model.TestType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -18,6 +19,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 /**
  * Embodies the logic for a single purely random test, including applicability rule and
@@ -58,10 +60,13 @@ class RandomTestChooser implements TestChooser<Void> {
     }
 
     @Nonnull
+    @Override
     public TestChooser.Result choose(
+            @Nullable final String identifier,
             @Nonnull final Map<String, ValueExpression> localContext,
             @Nonnull final Map<String, TestBucket> testGroups,
             @Nonnull final ForceGroupsOptions forceGroupsOptions,
+            @Nonnull final Set<TestType> testTypesWithInvalidIdentifier,
             final boolean isRandomEnabled) {
         if (!isRandomEnabled) {
             // skipping here to make it use the fallback bucket.
