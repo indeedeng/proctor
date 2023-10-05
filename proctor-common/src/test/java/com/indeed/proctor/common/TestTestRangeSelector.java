@@ -32,19 +32,19 @@ public class TestTestRangeSelector {
                                 .build());
         assertThat(
                         selector.findMatchingRule(
-                                ImmutableMap.of("country", "US", "lang", "ja"), emptyMap()))
+                                ImmutableMap.of("country", "US", "lang", "ja"), emptyMap(), ""))
                 .isEqualTo(0);
         assertThat(
                         selector.findMatchingRule(
-                                ImmutableMap.of("country", "US", "lang", "en"), emptyMap()))
+                                ImmutableMap.of("country", "US", "lang", "en"), emptyMap(), ""))
                 .isEqualTo(0); // matching 0 and 1 and 2 and earliest one is chosen.
         assertThat(
                         selector.findMatchingRule(
-                                ImmutableMap.of("country", "JP", "lang", "en"), emptyMap()))
+                                ImmutableMap.of("country", "JP", "lang", "en"), emptyMap(), ""))
                 .isEqualTo(2);
         assertThat(
                         selector.findMatchingRule(
-                                ImmutableMap.of("country", "JP", "lang", "ja"), emptyMap()))
+                                ImmutableMap.of("country", "JP", "lang", "ja"), emptyMap(), ""))
                 .isEqualTo(-1);
     }
 
@@ -57,15 +57,15 @@ public class TestTestRangeSelector {
                                 .build());
         assertThat(
                         selector.findMatchingRule(
-                                ImmutableMap.of("country", "US", "var", 1), emptyMap()))
+                                ImmutableMap.of("country", "US", "var", 1), emptyMap(), ""))
                 .isEqualTo(0);
         assertThat(
                         selector.findMatchingRule(
-                                ImmutableMap.of("country", "US", "var", 0), emptyMap()))
+                                ImmutableMap.of("country", "US", "var", 0), emptyMap(), ""))
                 .isEqualTo(-1);
         assertThat(
                         selector.findMatchingRule(
-                                ImmutableMap.of("country", "JA", "var", 1), emptyMap()))
+                                ImmutableMap.of("country", "JA", "var", 1), emptyMap(), ""))
                 .isEqualTo(1);
     }
 
@@ -79,23 +79,65 @@ public class TestTestRangeSelector {
         assertThat(
                         selector.findMatchingRule(
                                 ImmutableMap.of("country", "US"),
-                                ImmutableMap.of("another_tst", new TestBucket("active", 1, ""))))
+                                ImmutableMap.of("another_tst", new TestBucket("active", 1, "")),
+                                ""))
                 .isEqualTo(0);
 
         assertThat(
                         selector.findMatchingRule(
                                 ImmutableMap.of("country", "US"),
-                                ImmutableMap.of("another_tst", new TestBucket("control", 0, ""))))
+                                ImmutableMap.of("another_tst", new TestBucket("control", 0, "")),
+                                ""))
                 .isEqualTo(-1);
 
-        assertThat(selector.findMatchingRule(ImmutableMap.of("country", "US"), emptyMap()))
+        assertThat(selector.findMatchingRule(ImmutableMap.of("country", "US"), emptyMap(), ""))
+                .isEqualTo(-1);
+    }
+
+    @Test
+    public void testFindMatchingRule_UnitlessAllocation_NotUnitless() {
+        final TestRangeSelector selector =
+                createTestRangeSelector(
+                        stubTestDefinition(
+                                        Arrays.asList("missingExperimentalUnit && country == 'US'"),
+                                        false)
+                                .build(),
+                        new IdentifierValidator.NoEmpty());
+        assertThat(
+                        selector.findMatchingRule(
+                                ImmutableMap.of(
+                                        "country", "US", "missingExperimentalUnit", "false"),
+                                ImmutableMap.of("another_tst", new TestBucket("active", 1, "")),
+                                ""))
+                .isEqualTo(-1);
+
+        assertThat(
+                        selector.findMatchingRule(
+                                ImmutableMap.of(
+                                        "country", "JP", "missingExperimentalUnit", "false"),
+                                ImmutableMap.of("another_tst", new TestBucket("control", 1, "")),
+                                ""))
+                .isEqualTo(-1);
+
+        assertThat(
+                        selector.findMatchingRule(
+                                ImmutableMap.of(
+                                        "country", "US", "missingExperimentalUnit", "false"),
+                                emptyMap(),
+                                ""))
                 .isEqualTo(-1);
     }
 
     private static TestDefinition.Builder stubTestDefinition(final List<String> rules) {
+        return stubTestDefinition(rules, false);
+    }
+
+    private static TestDefinition.Builder stubTestDefinition(
+            final List<String> rules, final boolean unitless) {
         return TestDefinition.builder()
                 .setTestType(TestType.ANONYMOUS_USER)
                 .setSalt("")
+                .setEnableUnitlessAllocations(unitless)
                 .addBuckets(new TestBucket("active", 1, ""))
                 .setAllocations(
                         rules.stream()
@@ -104,9 +146,15 @@ public class TestTestRangeSelector {
     }
 
     private static TestRangeSelector createTestRangeSelector(final TestDefinition definition) {
+        return createTestRangeSelector(definition, new IdentifierValidator.Noop());
+    }
+
+    private static TestRangeSelector createTestRangeSelector(
+            final TestDefinition definition, final IdentifierValidator id) {
         return new TestRangeSelector(
                 RuleEvaluator.createDefaultRuleEvaluator(Collections.emptyMap()),
                 "dummy_test",
-                ConsumableTestDefinition.fromTestDefinition(definition));
+                ConsumableTestDefinition.fromTestDefinition(definition),
+                id);
     }
 }

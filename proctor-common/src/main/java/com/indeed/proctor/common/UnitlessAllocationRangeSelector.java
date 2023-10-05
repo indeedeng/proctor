@@ -1,7 +1,6 @@
 package com.indeed.proctor.common;
 
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
-import com.indeed.proctor.common.model.TestType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -19,6 +18,14 @@ public class UnitlessAllocationRangeSelector extends TestRangeSelector {
         super(expressionFactory, functionMapper, testName, testDefinition, identifierValidator);
     }
 
+    UnitlessAllocationRangeSelector(
+            @Nonnull final RuleEvaluator ruleEvaluator,
+            @Nonnull final String testName,
+            @Nonnull final ConsumableTestDefinition testDefinition,
+            @Nonnull final IdentifierValidator identifierValidator) {
+        super(ruleEvaluator, testName, testDefinition, identifierValidator);
+    }
+
     @Override
     protected int getMatchingAllocation(
             final Function<String, Boolean> evaluator, @Nullable final String identifier) {
@@ -33,9 +40,7 @@ public class UnitlessAllocationRangeSelector extends TestRangeSelector {
     }
 
     private boolean isValidAllocation(final String identifier, final String rule) {
-        return getTestDefinition().getTestType().equals(TestType.RANDOM)
-                || isNormalAllocation(identifier)
-                || isUnitlessAllocation(rule);
+        return isNormalAllocation(identifier) || isUnitlessAllocation(rule);
     }
 
     private boolean isNormalAllocation(final String identifier) {
