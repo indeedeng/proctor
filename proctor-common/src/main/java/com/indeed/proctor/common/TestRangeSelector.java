@@ -141,6 +141,7 @@ public class TestRangeSelector {
                     return i;
                 }
             }
+            return getMatchingAllocation(evaluator, identifier);
         } catch (final RuntimeException e) {
             LOGGER.error(
                     "Failed to evaluate test rules; ",
@@ -151,6 +152,16 @@ public class TestRangeSelector {
                                     rule, testName, e.getMessage())));
         }
 
+        return -1;
+    }
+
+    protected int getMatchingAllocation(
+            final Function<String, Boolean> evaluator, @Nullable final String identifier) {
+        for (int i = 0; i < rules.length; i++) {
+            if (evaluator.apply(rules[i])) {
+                return i;
+            }
+        }
         return -1;
     }
 
@@ -184,6 +195,11 @@ public class TestRangeSelector {
     @Nonnull
     public String getTestName() {
         return testName;
+    }
+
+    @Nonnull
+    public IdentifierValidator getIdentifierValidator() {
+        return identifierValidator;
     }
 
     /** appends testbuckets in a notation a bit similar to Json */

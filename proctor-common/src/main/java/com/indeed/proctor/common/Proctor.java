@@ -90,15 +90,6 @@ public class Proctor {
             @Nonnull final ProctorLoadResult loadResult,
             @Nonnull final FunctionMapper functionMapper,
             @Nonnull final IdentifierValidator identifierValidator) {
-        return construct(matrix, loadResult, functionMapper, identifierValidator, null);
-    }
-
-    public static Proctor construct(
-            @Nonnull final TestMatrixArtifact matrix,
-            @Nonnull final ProctorLoadResult loadResult,
-            @Nonnull final FunctionMapper functionMapper,
-            @Nonnull final IdentifierValidator identifierValidator,
-            @Nullable final ProctorResultReporter resultReporter) {
         final Map<String, TestChooser<?>> testChoosers = Maps.newLinkedHashMap();
         final Map<String, String> versions = Maps.newLinkedHashMap();
 
@@ -116,13 +107,23 @@ public class Proctor {
                                 testDefinition,
                                 identifierValidator);
             } else {
-                testChooser =
-                        new StandardTestChooser(
-                                RuleEvaluator.EXPRESSION_FACTORY,
-                                functionMapper,
-                                testName,
-                                testDefinition,
-                                identifierValidator);
+                if (testDefinition.getEnableUnitlessAllocations()) {
+                    testChooser =
+                            new UnitlessTestChooser(
+                                    RuleEvaluator.EXPRESSION_FACTORY,
+                                    functionMapper,
+                                    testName,
+                                    testDefinition,
+                                    identifierValidator);
+                } else {
+                    testChooser =
+                            new StandardTestChooser(
+                                    RuleEvaluator.EXPRESSION_FACTORY,
+                                    functionMapper,
+                                    testName,
+                                    testDefinition,
+                                    identifierValidator);
+                }
             }
             testChoosers.put(testName, testChooser);
             versions.put(testName, testDefinition.getVersion());
@@ -376,9 +377,10 @@ public class Proctor {
             localContext.put(
                     UNITLESS_ALLOCATION_IDENTIFIER,
                     containsUnitlessAllocations ? VALUE_EXPRESSION_TRUE : VALUE_EXPRESSION_FALSE);
-
-            if (testChooser instanceof StandardTestChooser) {
-                final TestType testType = testChooser.getTestDefinition().getTestType();
+            final TestType testType = testChooser.getTestDefinition().getTestType();
+            if (testChooser instanceof UnitlessTestChooser) {
+                identifier = identifiers.getIdentifier(testType);
+            } else if (testChooser instanceof StandardTestChooser) {
                 if (testTypesWithInvalidIdentifier.contains(testType)) {
                     invalidIdentifierCount.put(
                             testType, invalidIdentifierCount.getOrDefault(testType, 0) + 1);
@@ -387,17 +389,18 @@ public class Proctor {
                 }
 
                 identifier = identifiers.getIdentifier(testType);
-                if (identifier == null && !containsUnitlessAllocations) {
+                if (identifier == null) {
                     // No identifier for the testType of this chooser, nothing to do
                     continue;
                 }
             } else {
-                if (!identifiers.isRandomEnabled() && !containsUnitlessAllocations) {
+                if (!identifiers.isRandomEnabled()) {
                     // test wants random chooser, but client disabled random, nothing to do
                     continue;
                 }
                 identifier = null;
             }
+
 
             final TestChooser.Result chooseResult =
                     testChooser.choose(
