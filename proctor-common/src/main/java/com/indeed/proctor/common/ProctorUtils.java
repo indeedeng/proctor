@@ -97,7 +97,7 @@ public abstract class ProctorUtils {
             @Nonnull final Map<String, Object> values) {
         final Map<String, ValueExpression> context =
                 convertToValueExpressionMap(expressionFactory, values);
-        context.put(
+        context.putIfAbsent(
                 UNITLESS_ALLOCATION_IDENTIFIER,
                 expressionFactory.createValueExpression(true, Object.class));
         return context;

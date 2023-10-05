@@ -10,7 +10,6 @@ import com.indeed.proctor.common.model.TestDependency;
 import com.indeed.proctor.common.model.TestType;
 import org.junit.Test;
 
-import javax.annotation.Nonnull;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -96,30 +95,37 @@ public class TestTestRangeSelector {
     }
 
     @Test
-    public void testFindMatchingRule_UnitlessAllocation() {
+    public void testFindMatchingRule_UnitlessAllocation_NotUnitless() {
         final TestRangeSelector selector =
                 createTestRangeSelector(
                         stubTestDefinition(
                                         Arrays.asList("missingExperimentalUnit && country == 'US'"),
-                                        true)
+                                        false)
                                 .build(),
-                        new NoEmptyIdentifierValidator());
+                        new IdentifierValidator.NoEmpty());
         assertThat(
                         selector.findMatchingRule(
-                                ImmutableMap.of("country", "US"),
+                                ImmutableMap.of(
+                                        "country", "US", "missingExperimentalUnit", "false"),
                                 ImmutableMap.of("another_tst", new TestBucket("active", 1, "")),
                                 ""))
-                .isEqualTo(0);
+                .isEqualTo(-1);
 
         assertThat(
                         selector.findMatchingRule(
-                                ImmutableMap.of("country", "JP"),
+                                ImmutableMap.of(
+                                        "country", "JP", "missingExperimentalUnit", "false"),
                                 ImmutableMap.of("another_tst", new TestBucket("control", 1, "")),
                                 ""))
                 .isEqualTo(-1);
 
-        assertThat(selector.findMatchingRule(ImmutableMap.of("country", "US"), emptyMap(), ""))
-                .isEqualTo(0);
+        assertThat(
+                        selector.findMatchingRule(
+                                ImmutableMap.of(
+                                        "country", "US", "missingExperimentalUnit", "false"),
+                                emptyMap(),
+                                ""))
+                .isEqualTo(-1);
     }
 
     private static TestDefinition.Builder stubTestDefinition(final List<String> rules) {
@@ -150,13 +156,5 @@ public class TestTestRangeSelector {
                 "dummy_test",
                 ConsumableTestDefinition.fromTestDefinition(definition),
                 id);
-    }
-
-    static class NoEmptyIdentifierValidator implements IdentifierValidator {
-        @Override
-        public boolean validate(
-                @Nonnull final TestType testType, @Nonnull final String identifier) {
-            return !identifier.equals("");
-        }
     }
 }
