@@ -6,7 +6,6 @@ import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.Range;
 import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.common.model.TestDependency;
-import com.indeed.proctor.common.model.TestType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -127,19 +126,14 @@ public class TestRangeSelector {
             }
         }
 
-        @Nullable String rule = testDefinition.getRule();
+        @Nullable final String rule = testDefinition.getRule();
         try {
             if (rule != null) {
                 if (!evaluator.apply(rule)) {
                     return -1;
                 }
             }
-            for (int i = 0; i < rules.length; i++) {
-                rule = rules[i];
-                if (isValidAllocation(identifier, rule) && evaluator.apply(rule)) {
-                    return i;
-                }
-            }
+            return getMatchingAllocation(evaluator, identifier);
         } catch (final RuntimeException e) {
             LOGGER.error(
                     "Failed to evaluate test rules; ",
@@ -153,21 +147,14 @@ public class TestRangeSelector {
         return -1;
     }
 
-    private boolean isValidAllocation(final String identifier, final String rule) {
-        return testDefinition.getTestType().equals(TestType.RANDOM)
-                || isNormalAllocation(identifier)
-                || isUnitlessAllocation(rule);
-    }
-
-    private boolean isNormalAllocation(final String identifier) {
-        return identifier != null
-                && identifierValidator.validate(testDefinition.getTestType(), identifier);
-    }
-
-    private boolean isUnitlessAllocation(final String rule) {
-        return rule != null
-                && testDefinition.getContainsUnitlessAllocation()
-                && rule.contains("missingExperimentalUnit");
+    protected int getMatchingAllocation(
+            final Function<String, Boolean> evaluator, @Nullable final String identifier) {
+        for (int i = 0; i < rules.length; i++) {
+            if (evaluator.apply(rules[i])) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     @Nonnull
@@ -200,6 +187,11 @@ public class TestRangeSelector {
     @Nonnull
     public String getTestName() {
         return testName;
+    }
+
+    @Nonnull
+    public IdentifierValidator getIdentifierValidator() {
+        return identifierValidator;
     }
 
     /** appends testbuckets in a notation a bit similar to Json */
