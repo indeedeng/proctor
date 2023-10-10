@@ -40,8 +40,6 @@ import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static com.indeed.proctor.common.ProctorUtils.UNITLESS_ALLOCATION_IDENTIFIER;
-
 /**
  * The sole entry point for client applications determining the test buckets for a particular
  * client. Basically a Factory to create ProctorResult for a given identifier and context, based on
