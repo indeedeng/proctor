@@ -19,6 +19,24 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+/**
+ * This class traverses a tomcat el syntax tree and transforms it into a new
+ * expression that evaluates to true if the original expression could be true
+ * given only a subset of the variables referenced.
+ *
+ * Expected usage is via the static destroyUnknowns method, which visits each
+ * node in the tree to identify variables that are not in the variablesDefined
+ * set and then transforms the expression to remove those nodes. Parents of
+ * unknowns are recursively replaced using a
+ * simple 3-valued logic (https://en.wikipedia.org/wiki/Three-valued_logic) with
+ * maybeAnd, maybeOr, and maybeNot, with the semantics one would expect defined
+ * in ProctorRuleFunctions.
+ *
+ * In the end the new maybeBool expression x is wrapped in a "not false" test: x
+ * != false. The final expression will resolve to true if the original
+ * expression is definitely true or unknown (could be true) given the known
+ * values.
+ */
 class NodeHunter implements NodeVisitor {
     private final Set<Node> initialUnknowns = Collections.newSetFromMap(new IdentityHashMap<>());
     private final Map<Node, Node> replacements = new IdentityHashMap<>();
