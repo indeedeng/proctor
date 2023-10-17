@@ -359,7 +359,7 @@ public class Proctor {
         }
 
         final Map<String, ValueExpression> localContext =
-                ProctorUtils.convertLocalContextToValueExpressionMap(
+                ProctorUtils.convertToValueExpressionMap(
                         RuleEvaluator.EXPRESSION_FACTORY, inputContext);
         final Map<TestType, Integer> invalidIdentifierCount = new HashMap<>();
         for (final String testName : filteredEvaluationOrder) {
@@ -379,7 +379,13 @@ public class Proctor {
                     containsUnitlessAllocations ? VALUE_EXPRESSION_TRUE : VALUE_EXPRESSION_FALSE);
             final TestType testType = testChooser.getTestDefinition().getTestType();
             if (testChooser instanceof UnitlessTestChooser) {
-                identifier = identifiers.getIdentifier(testType);
+                identifier =
+                        identifiers.getIdentifier(testType) == null
+                                        && testChooser
+                                                .getTestDefinition()
+                                                .getContainsUnitlessAllocation()
+                                ? ""
+                                : identifiers.getIdentifier(testType);
             } else if (testChooser instanceof StandardTestChooser) {
                 if (testTypesWithInvalidIdentifier.contains(testType)) {
                     invalidIdentifierCount.put(
