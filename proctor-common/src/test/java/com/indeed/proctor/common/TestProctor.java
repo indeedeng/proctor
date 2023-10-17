@@ -36,8 +36,6 @@ import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /** @author piotr */
@@ -303,6 +301,24 @@ public class TestProctor {
                         eq(ForceGroupsOptions.empty())))
                 .thenReturn(result);
 
+        when(testChooser.choose(
+                        isNull(),
+                        eq(Collections.emptyMap()),
+                        anyMap(),
+                        eq(ForceGroupsOptions.empty()),
+                        eq(Collections.emptySet()),
+                        eq(true)))
+                .thenReturn(result);
+
+        when(testChooser.choose(
+                        isNull(),
+                        eq(Collections.emptyMap()),
+                        anyMap(),
+                        eq(ForceGroupsOptions.empty()),
+                        eq(Collections.emptySet()),
+                        eq(false)))
+                .thenReturn(TestChooser.Result.EMPTY);
+
         final ProctorResult proctorResultWithRandom =
                 proctor.determineTestGroups(
                         identifiersWithRandom, inputContext, Collections.emptyMap());
@@ -317,14 +333,6 @@ public class TestProctor {
 
         assertThat(proctorResultWithoutRandom.getBuckets()).isEqualTo(Collections.emptyMap());
         assertThat(proctorResultWithoutRandom.getAllocations()).isEqualTo(Collections.emptyMap());
-
-        // choose should not be called for identifiers with randomEnabled == false.
-        verify(testChooser, times(1))
-                .choose(
-                        isNull(),
-                        eq(Collections.emptyMap()),
-                        anyMap(),
-                        eq(ForceGroupsOptions.empty()));
     }
 
     @Test

@@ -358,7 +358,6 @@ public class Proctor {
                     && !testChooser.getTestDefinition().getEvaluateForIncognitoUsers()) {
                 continue;
             }
-
             if (testChooser instanceof StandardTestChooser) {
                 final TestType testType = testChooser.getTestDefinition().getTestType();
                 if (testTypesWithInvalidIdentifier.contains(testType)) {
@@ -369,28 +368,19 @@ public class Proctor {
                 }
 
                 identifier = identifiers.getIdentifier(testType);
-                if (identifier == null) {
-                    // No identifier for the testType of this chooser, nothing to do
-                    continue;
-                }
             } else {
-                if (!identifiers.isRandomEnabled()) {
-                    // test wants random chooser, but client disabled random, nothing to do
-                    continue;
-                }
                 identifier = null;
             }
 
-            final TestChooser.Result chooseResult;
-            if (identifier == null) {
-                chooseResult =
-                        ((RandomTestChooser) testChooser)
-                                .choose(null, localContext, testGroups, forceGroupsOptions);
-            } else {
-                chooseResult =
-                        ((StandardTestChooser) testChooser)
-                                .choose(identifier, localContext, testGroups, forceGroupsOptions);
-            }
+            final TestChooser.Result chooseResult =
+                    testChooser.choose(
+                            identifier,
+                            localContext,
+                            testGroups,
+                            forceGroupsOptions,
+                            testTypesWithInvalidIdentifier,
+                            identifiers.isRandomEnabled());
+
             if (chooseResult.getTestBucket() != null) {
                 testGroups.put(testName, chooseResult.getTestBucket());
             }
@@ -410,13 +400,14 @@ public class Proctor {
 
         // TODO Can we make getAudit nonnull?
         final Audit audit = Preconditions.checkNotNull(matrix.getAudit(), "Missing audit");
-        final ProctorResult result = new ProctorResult(
-                audit.getVersion(),
-                testGroups,
-                testAllocations,
-                testDefinitions,
-                identifiers,
-                inputContext);
+        final ProctorResult result =
+                new ProctorResult(
+                        audit.getVersion(),
+                        testGroups,
+                        testAllocations,
+                        testDefinitions,
+                        identifiers,
+                        inputContext);
 
         if (resultReporter != null) {
             resultReporter.reportMetrics(result, invalidIdentifierCount);
