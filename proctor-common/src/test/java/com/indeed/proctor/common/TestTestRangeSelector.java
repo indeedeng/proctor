@@ -101,8 +101,7 @@ public class TestTestRangeSelector {
                         stubTestDefinition(
                                         Arrays.asList("missingExperimentalUnit && country == 'US'"),
                                         false)
-                                .build(),
-                        new IdentifierValidator.NoEmpty());
+                                .build());
         assertThat(
                         selector.findMatchingRule(
                                 ImmutableMap.of(
@@ -146,15 +145,9 @@ public class TestTestRangeSelector {
     }
 
     private static TestRangeSelector createTestRangeSelector(final TestDefinition definition) {
-        return createTestRangeSelector(definition, new IdentifierValidator.Noop());
-    }
-
-    private static TestRangeSelector createTestRangeSelector(
-            final TestDefinition definition, final IdentifierValidator id) {
         return new TestRangeSelector(
                 RuleEvaluator.createDefaultRuleEvaluator(Collections.emptyMap()),
                 "dummy_test",
-                ConsumableTestDefinition.fromTestDefinition(definition),
-                id);
+                ConsumableTestDefinition.fromTestDefinition(definition));
     }
 }

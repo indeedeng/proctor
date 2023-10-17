@@ -283,7 +283,8 @@ public class TestProctor {
                         null,
                         Collections.singletonMap(testName, testChooser),
                         Collections.singletonList(testName),
-                        new IdentifierValidator.NoEmpty());
+                        new IdentifierValidator.NoEmpty(),
+                        null);
 
         final Identifiers identifiersWithRandom = new Identifiers(Collections.emptyMap(), true);
         final Identifiers identifiersWithoutRandom = new Identifiers(Collections.emptyMap(), false);
@@ -293,16 +294,18 @@ public class TestProctor {
         final Allocation allocation = new Allocation();
         final TestChooser.Result result = new TestChooser.Result(testBucket, allocation);
 
-        when(testChooser.choose(
-                        isNull(),
-                        eq(Collections.emptyMap()),
-                        anyMap(),
-                        eq(ForceGroupsOptions.empty())))
-                .thenReturn(result);
+        final ConsumableTestDefinition testDefinition =
+                ConsumableTestDefinition.fromTestDefinition(
+                        TestDefinition.builder()
+                                .setSalt("&X")
+                                .setTestType(TestType.RANDOM)
+                                .build());
+
+        when(testChooser.getTestDefinition()).thenReturn(testDefinition);
 
         when(testChooser.choose(
                         isNull(),
-                        eq(Collections.emptyMap()),
+                        anyMap(),
                         anyMap(),
                         eq(ForceGroupsOptions.empty()),
                         eq(Collections.emptySet()),
@@ -311,7 +314,7 @@ public class TestProctor {
 
         when(testChooser.choose(
                         isNull(),
-                        eq(Collections.emptyMap()),
+                        anyMap(),
                         anyMap(),
                         eq(ForceGroupsOptions.empty()),
                         eq(Collections.emptySet()),
@@ -440,7 +443,8 @@ public class TestProctor {
                         (testType, identifier) ->
                                 (identifier.equals("")
                                         || !(testType.equals(TestType.AUTHENTICATED_USER)
-                                                && "logged-out".equals(identifier))));
+                                                && "logged-out".equals(identifier))),
+                        null);
         final Identifiers identifiers =
                 new Identifiers(
                         ImmutableMap.of(

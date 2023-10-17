@@ -6,7 +6,6 @@ import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.Range;
 import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.common.model.TestDependency;
-import com.indeed.proctor.common.model.TestType;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -39,28 +38,16 @@ public class TestRangeSelector {
     @Nonnull private final String[] rules;
     @Nonnull private final TestBucket[][] rangeToBucket;
     private final RuleEvaluator ruleEvaluator;
-    @Nonnull private IdentifierValidator identifierValidator;
 
     TestRangeSelector(
             @Nonnull final ExpressionFactory expressionFactory,
             @Nonnull final FunctionMapper functionMapper,
             final String testName,
-            @Nonnull final ConsumableTestDefinition testDefinition,
-            @Nonnull final IdentifierValidator identifierValidator) {
+            @Nonnull final ConsumableTestDefinition testDefinition) {
         this(
                 new RuleEvaluator(expressionFactory, functionMapper, testDefinition.getConstants()),
                 testName,
                 testDefinition);
-        this.identifierValidator = identifierValidator;
-    }
-
-    TestRangeSelector(
-            @Nonnull final RuleEvaluator ruleEvaluator,
-            @Nonnull final String testName,
-            @Nonnull final ConsumableTestDefinition testDefinition,
-            @Nonnull final IdentifierValidator identifierValidator) {
-        this(ruleEvaluator, testName, testDefinition);
-        this.identifierValidator = identifierValidator;
     }
 
     TestRangeSelector(
@@ -127,7 +114,7 @@ public class TestRangeSelector {
             }
         }
 
-        @Nullable String rule = testDefinition.getRule();
+        @Nullable final String rule = testDefinition.getRule();
         try {
             if (rule != null) {
                 if (!evaluator.apply(rule)) {
@@ -135,12 +122,6 @@ public class TestRangeSelector {
                 }
             }
 
-            for (int i = 0; i < rules.length; i++) {
-                rule = rules[i];
-                if (evaluator.apply(rule)) {
-                    return i;
-                }
-            }
             return getMatchingAllocation(evaluator, identifier);
         } catch (final RuntimeException e) {
             LOGGER.error(
@@ -195,11 +176,6 @@ public class TestRangeSelector {
     @Nonnull
     public String getTestName() {
         return testName;
-    }
-
-    @Nonnull
-    public IdentifierValidator getIdentifierValidator() {
-        return identifierValidator;
     }
 
     /** appends testbuckets in a notation a bit similar to Json */

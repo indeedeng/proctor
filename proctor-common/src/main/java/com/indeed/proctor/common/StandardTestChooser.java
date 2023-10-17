@@ -153,7 +153,8 @@ class StandardTestChooser implements TestChooser<String> {
             @Nonnull final Map<String, ValueExpression> localContext,
             @Nonnull final Map<String, TestBucket> testGroups) {
         final int matchingRuleIndex =
-                testRangeSelector.findMatchingRuleWithValueExpr(localContext, testGroups);
+                testRangeSelector.findMatchingRuleWithValueExpr(
+                        localContext, testGroups, identifier);
         if (matchingRuleIndex < 0) {
             return Result.EMPTY;
         }

@@ -72,7 +72,7 @@ public class Proctor {
             @Nonnull final TestMatrixArtifact matrix,
             @Nonnull final ProctorLoadResult loadResult,
             @Nonnull final FunctionMapper functionMapper) {
-        return construct(matrix, loadResult, functionMapper, new IdentifierValidator.Noop());
+        return construct(matrix, loadResult, functionMapper, new IdentifierValidator.Noop(), null);
     }
 
     /**
@@ -89,7 +89,8 @@ public class Proctor {
             @Nonnull final TestMatrixArtifact matrix,
             @Nonnull final ProctorLoadResult loadResult,
             @Nonnull final FunctionMapper functionMapper,
-            @Nonnull final IdentifierValidator identifierValidator) {
+            @Nonnull final IdentifierValidator identifierValidator,
+            @Nullable final ProctorResultReporter resultReporter) {
         final Map<String, TestChooser<?>> testChoosers = Maps.newLinkedHashMap();
         final Map<String, String> versions = Maps.newLinkedHashMap();
 
@@ -104,8 +105,7 @@ public class Proctor {
                                 RuleEvaluator.EXPRESSION_FACTORY,
                                 functionMapper,
                                 testName,
-                                testDefinition,
-                                identifierValidator);
+                                testDefinition);
             } else {
                 if (testDefinition.getEnableUnitlessAllocations()) {
                     testChooser =
@@ -121,8 +121,7 @@ public class Proctor {
                                     RuleEvaluator.EXPRESSION_FACTORY,
                                     functionMapper,
                                     testName,
-                                    testDefinition,
-                                    identifierValidator);
+                                    testDefinition);
                 }
             }
             testChoosers.put(testName, testChooser);
@@ -390,23 +389,11 @@ public class Proctor {
                 if (testTypesWithInvalidIdentifier.contains(testType)) {
                     invalidIdentifierCount.put(
                             testType, invalidIdentifierCount.getOrDefault(testType, 0) + 1);
-                    // skipping here to make it use the fallback bucket.
-                    continue;
                 }
-
                 identifier = identifiers.getIdentifier(testType);
-                if (identifier == null) {
-                    // No identifier for the testType of this chooser, nothing to do
-                    continue;
-                }
             } else {
-                if (!identifiers.isRandomEnabled()) {
-                    // test wants random chooser, but client disabled random, nothing to do
-                    continue;
-                }
                 identifier = null;
             }
-
 
             final TestChooser.Result chooseResult =
                     testChooser.choose(
@@ -526,5 +513,12 @@ public class Proctor {
         filtered.setAudit(this.matrix.getAudit());
         filtered.setTests(Maps.filterKeys(this.matrix.getTests(), Predicates.in(testNameFilter)));
         OBJECT_WRITER.writeValue(writer, filtered);
+    }
+
+    private boolean isIncognitoEnabled(@Nonnull final Map<String, Object> inputContext) {
+        return Optional.ofNullable(inputContext.get(INCOGNITO_CONTEXT_VARIABLE))
+                .map(Object::toString)
+                .map(value -> value.equalsIgnoreCase("true"))
+                .orElse(false);
     }
 }

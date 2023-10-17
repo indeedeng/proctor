@@ -86,7 +86,6 @@
       "description" : "An some test",
       "metaTags" : ["sometag"]
     },
-    "null_tst": null,
     "meta_tags_tst" : {
       "constants" : {
         "ENGLISH" : "en"
@@ -153,7 +152,6 @@
       "metaTags": [],
       "dependsOn": null,
       "enableUnitlessAllocations": false,
-      "containsUnitlessAllocation": false,
       "dynamic": false
     }
   }

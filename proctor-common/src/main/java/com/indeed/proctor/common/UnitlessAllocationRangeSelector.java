@@ -9,13 +9,16 @@ import javax.el.FunctionMapper;
 import java.util.function.Function;
 
 public class UnitlessAllocationRangeSelector extends TestRangeSelector {
+    @Nonnull private final IdentifierValidator identifierValidator;
+
     UnitlessAllocationRangeSelector(
             @Nonnull final ExpressionFactory expressionFactory,
             @Nonnull final FunctionMapper functionMapper,
             final String testName,
             @Nonnull final ConsumableTestDefinition testDefinition,
             @Nonnull final IdentifierValidator identifierValidator) {
-        super(expressionFactory, functionMapper, testName, testDefinition, identifierValidator);
+        super(expressionFactory, functionMapper, testName, testDefinition);
+        this.identifierValidator = identifierValidator;
     }
 
     UnitlessAllocationRangeSelector(
@@ -23,7 +26,8 @@ public class UnitlessAllocationRangeSelector extends TestRangeSelector {
             @Nonnull final String testName,
             @Nonnull final ConsumableTestDefinition testDefinition,
             @Nonnull final IdentifierValidator identifierValidator) {
-        super(ruleEvaluator, testName, testDefinition, identifierValidator);
+        super(ruleEvaluator, testName, testDefinition);
+        this.identifierValidator = identifierValidator;
     }
 
     @Override
@@ -45,7 +49,7 @@ public class UnitlessAllocationRangeSelector extends TestRangeSelector {
 
     private boolean isNormalAllocation(final String identifier) {
         return identifier != null
-                && getIdentifierValidator().validate(getTestDefinition().getTestType(), identifier);
+                && identifierValidator.validate(getTestDefinition().getTestType(), identifier);
     }
 
     private boolean isUnitlessAllocation(final String rule) {
