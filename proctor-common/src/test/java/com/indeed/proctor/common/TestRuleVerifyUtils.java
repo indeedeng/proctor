@@ -53,7 +53,7 @@ public class TestRuleVerifyUtils {
 
         final ProvidedContext providedContext =
                 ProvidedContext.forValueExpressionMap(
-                        ProctorUtils.convertLocalContextToValueExpressionMap(
+                        ProctorUtils.convertConstantsToValueExpressionMap(
                                 expressionFactory, context),
                         Collections.emptySet());
         final VariableMapper variableMapper =

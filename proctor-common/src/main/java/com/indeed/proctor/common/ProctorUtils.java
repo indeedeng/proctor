@@ -92,12 +92,12 @@ public abstract class ProctorUtils {
     }
 
     @Nonnull
-    public static Map<String, ValueExpression> convertLocalContextToValueExpressionMap(
+    public static Map<String, ValueExpression> convertConstantsToValueExpressionMap(
             @Nonnull final ExpressionFactory expressionFactory,
             @Nonnull final Map<String, Object> values) {
         final Map<String, ValueExpression> context =
                 convertToValueExpressionMap(expressionFactory, values);
-        context.putIfAbsent(
+        context.put(
                 UNITLESS_ALLOCATION_IDENTIFIER,
                 expressionFactory.createValueExpression(true, Object.class));
         return context;
@@ -1118,7 +1118,7 @@ public abstract class ProctorUtils {
         final String testRule = testDefinition.getRule();
 
         final Map<String, ValueExpression> testConstants =
-                convertLocalContextToValueExpressionMap(
+                convertConstantsToValueExpressionMap(
                         expressionFactory, testDefinition.getConstants());
         final VariableMapper variableMapper =
                 new MulticontextReadOnlyVariableMapper(testConstants, providedContext.getContext());
