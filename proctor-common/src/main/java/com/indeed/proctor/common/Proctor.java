@@ -358,7 +358,7 @@ public class Proctor {
                     && !testChooser.getTestDefinition().getEvaluateForIncognitoUsers()) {
                 continue;
             }
-
+            final TestChooser.Result chooseResult;
             if (testChooser instanceof StandardTestChooser) {
                 final TestType testType = testChooser.getTestDefinition().getTestType();
                 if (testTypesWithInvalidIdentifier.contains(testType)) {
@@ -369,28 +369,24 @@ public class Proctor {
                 }
 
                 identifier = identifiers.getIdentifier(testType);
-                if (identifier == null) {
-                    // No identifier for the testType of this chooser, nothing to do
-                    continue;
-                }
-            } else {
-                if (!identifiers.isRandomEnabled()) {
-                    // test wants random chooser, but client disabled random, nothing to do
-                    continue;
-                }
-                identifier = null;
-            }
-
-            final TestChooser.Result chooseResult;
-            if (identifier == null) {
-                chooseResult =
-                        ((RandomTestChooser) testChooser)
-                                .choose(null, localContext, testGroups, forceGroupsOptions);
-            } else {
                 chooseResult =
                         ((StandardTestChooser) testChooser)
-                                .choose(identifier, localContext, testGroups, forceGroupsOptions);
+                                .choose(
+                                        identifier,
+                                        localContext,
+                                        testGroups,
+                                        forceGroupsOptions,
+                                        testTypesWithInvalidIdentifier);
+            } else {
+                chooseResult =
+                        ((RandomTestChooser) testChooser)
+                                .choose(
+                                        localContext,
+                                        testGroups,
+                                        forceGroupsOptions,
+                                        identifiers.isRandomEnabled());
             }
+
             if (chooseResult.getTestBucket() != null) {
                 testGroups.put(testName, chooseResult.getTestBucket());
             }

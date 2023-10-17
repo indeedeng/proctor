@@ -57,6 +57,19 @@ class RandomTestChooser implements TestChooser<Void> {
                 "type", testRangeSelector.getTestDefinition().getTestType().name());
     }
 
+    @Nonnull
+    public TestChooser.Result choose(
+            @Nonnull final Map<String, ValueExpression> localContext,
+            @Nonnull final Map<String, TestBucket> testGroups,
+            @Nonnull final ForceGroupsOptions forceGroupsOptions,
+            final boolean isRandomEnabled) {
+        if (!isRandomEnabled) {
+            // skipping here to make it use the fallback bucket.
+            return Result.EMPTY;
+        }
+        return TestChooser.super.choose(null, localContext, testGroups, forceGroupsOptions);
+    }
+
     @Override
     public String toString() {
         final Map<String, String> parameters = getDescriptorParameters();

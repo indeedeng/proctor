@@ -9,6 +9,7 @@ import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.Range;
 import com.indeed.proctor.common.model.TestBucket;
+import com.indeed.proctor.common.model.TestType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -21,6 +22,7 @@ import java.io.Writer;
 import java.security.MessageDigest;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static java.util.stream.Collectors.joining;
 
@@ -42,6 +44,26 @@ class StandardTestChooser implements TestChooser<String> {
             @Nonnull final String testName,
             @Nonnull final ConsumableTestDefinition testDefinition) {
         this(new TestRangeSelector(expressionFactory, functionMapper, testName, testDefinition));
+    }
+
+    @Nonnull
+    public TestChooser.Result choose(
+            @Nullable final String identifier,
+            @Nonnull final Map<String, ValueExpression> localContext,
+            @Nonnull final Map<String, TestBucket> testGroups,
+            @Nonnull final ForceGroupsOptions forceGroupsOptions,
+            @Nonnull final Set<TestType> testTypesWithInvalidIdentifier) {
+        final TestType testType = getTestDefinition().getTestType();
+        if (testTypesWithInvalidIdentifier.contains(testType)) {
+            // skipping here to make it use the fallback bucket.
+            return Result.EMPTY;
+        }
+
+        if (identifier == null) {
+            // No identifier for the testType of this chooser, nothing to do
+            return Result.EMPTY;
+        }
+        return TestChooser.super.choose(identifier, localContext, testGroups, forceGroupsOptions);
     }
 
     @VisibleForTesting
