@@ -358,7 +358,6 @@ public class Proctor {
                     && !testChooser.getTestDefinition().getEvaluateForIncognitoUsers()) {
                 continue;
             }
-            final TestChooser.Result chooseResult;
             if (testChooser instanceof StandardTestChooser) {
                 final TestType testType = testChooser.getTestDefinition().getTestType();
                 if (testTypesWithInvalidIdentifier.contains(testType)) {
@@ -373,7 +372,7 @@ public class Proctor {
                 identifier = null;
             }
 
-            chooseResult =
+            final TestChooser.Result chooseResult =
                     testChooser.choose(
                             identifier,
                             localContext,
