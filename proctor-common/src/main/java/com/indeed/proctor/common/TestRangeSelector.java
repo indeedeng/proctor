@@ -86,22 +86,26 @@ public class TestRangeSelector {
     @Deprecated
     public int findMatchingRule(
             @Nonnull final Map<String, Object> values,
-            @Nonnull final Map<String, TestBucket> testGroups) {
+            @Nonnull final Map<String, TestBucket> testGroups,
+            @Nullable final String identifier) {
         return findMatchingRuleInternal(
-                rule -> ruleEvaluator.evaluateBooleanRule(rule, values), testGroups);
+                rule -> ruleEvaluator.evaluateBooleanRule(rule, values), testGroups, identifier);
     }
 
     public int findMatchingRuleWithValueExpr(
             @Nonnull final Map<String, ValueExpression> localContext,
-            @Nonnull final Map<String, TestBucket> testGroups) {
+            @Nonnull final Map<String, TestBucket> testGroups,
+            @Nullable final String identifier) {
         return findMatchingRuleInternal(
                 rule -> ruleEvaluator.evaluateBooleanRuleWithValueExpr(rule, localContext),
-                testGroups);
+                testGroups,
+                identifier);
     }
 
     private int findMatchingRuleInternal(
             final Function<String, Boolean> evaluator,
-            @Nonnull final Map<String, TestBucket> testGroups) {
+            @Nonnull final Map<String, TestBucket> testGroups,
+            @Nullable final String identifier) {
         final TestDependency dependsOn = testDefinition.getDependsOn();
         if (dependsOn != null) {
             final TestBucket testBucket = testGroups.get(dependsOn.getTestName());
@@ -110,7 +114,7 @@ public class TestRangeSelector {
             }
         }
 
-        @Nullable String rule = testDefinition.getRule();
+        @Nullable final String rule = testDefinition.getRule();
         try {
             if (rule != null) {
                 if (!evaluator.apply(rule)) {
@@ -118,12 +122,7 @@ public class TestRangeSelector {
                 }
             }
 
-            for (int i = 0; i < rules.length; i++) {
-                rule = rules[i];
-                if (evaluator.apply(rule)) {
-                    return i;
-                }
-            }
+            return getMatchingAllocation(evaluator, identifier);
         } catch (final RuntimeException e) {
             LOGGER.error(
                     "Failed to evaluate test rules; ",
@@ -134,6 +133,16 @@ public class TestRangeSelector {
                                     rule, testName, e.getMessage())));
         }
 
+        return -1;
+    }
+
+    protected int getMatchingAllocation(
+            final Function<String, Boolean> evaluator, @Nullable final String identifier) {
+        for (int i = 0; i < rules.length; i++) {
+            if (evaluator.apply(rules[i])) {
+                return i;
+            }
+        }
         return -1;
     }
 

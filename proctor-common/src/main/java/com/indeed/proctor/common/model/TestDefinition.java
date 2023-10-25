@@ -53,6 +53,8 @@ public class TestDefinition {
 
     private boolean evaluateForIncognitoUsers;
 
+    private boolean enableUnitlessAllocations;
+
     public TestDefinition() {
         /* intentionally empty */
     }
@@ -156,6 +158,7 @@ public class TestDefinition {
         metaTags = builder.metaTags.build();
         dependsOn = builder.dependsOn;
         evaluateForIncognitoUsers = builder.evaluateForIncognitoUsers;
+        enableUnitlessAllocations = builder.enableUnitlessAllocations;
     }
 
     public static Builder builder() {
@@ -317,6 +320,10 @@ public class TestDefinition {
         return evaluateForIncognitoUsers;
     }
 
+    public boolean getEnableUnitlessAllocations() {
+        return enableUnitlessAllocations;
+    }
+
     @Override
     public String toString() {
         return "TestDefinition{"
@@ -350,6 +357,8 @@ public class TestDefinition {
                 + dependsOn
                 + ", evaluteForIncognitoUsers="
                 + evaluateForIncognitoUsers
+                + ", enableUnitlessAllocations="
+                + enableUnitlessAllocations
                 + '}';
     }
 
@@ -382,7 +391,8 @@ public class TestDefinition {
                 description,
                 metaTags,
                 dependsOn,
-                evaluateForIncognitoUsers);
+                evaluateForIncognitoUsers,
+                enableUnitlessAllocations);
     }
 
     /**
@@ -413,7 +423,8 @@ public class TestDefinition {
                 && Objects.equals(description, that.description)
                 && Objects.equals(metaTags, that.metaTags)
                 && Objects.equals(dependsOn, that.dependsOn)
-                && Objects.equals(evaluateForIncognitoUsers, that.evaluateForIncognitoUsers);
+                && Objects.equals(evaluateForIncognitoUsers, that.evaluateForIncognitoUsers)
+                && Objects.equals(enableUnitlessAllocations, that.enableUnitlessAllocations);
     }
 
     @VisibleForTesting
@@ -453,6 +464,7 @@ public class TestDefinition {
         private ImmutableList.Builder<String> metaTags = ImmutableList.builder();
         private TestDependency dependsOn;
         private boolean evaluateForIncognitoUsers;
+        private boolean enableUnitlessAllocations;
 
         public Builder from(@Nonnull final TestDefinition other) {
             setVersion(other.version);
@@ -468,6 +480,7 @@ public class TestDefinition {
             setMetaTags(other.metaTags);
             setDependsOn(other.dependsOn);
             setEvaluateForIncognitoUsers(other.evaluateForIncognitoUsers);
+            setEnableUnitlessAllocations(other.enableUnitlessAllocations);
             return this;
         }
 
@@ -568,6 +581,11 @@ public class TestDefinition {
 
         public Builder setEvaluateForIncognitoUsers(final boolean evaluateForIncognitoUsers) {
             this.evaluateForIncognitoUsers = evaluateForIncognitoUsers;
+            return this;
+        }
+
+        public Builder setEnableUnitlessAllocations(final boolean enableUnitlessAllocations) {
+            this.enableUnitlessAllocations = enableUnitlessAllocations;
             return this;
         }
 

@@ -1,12 +1,15 @@
 package com.indeed.proctor.common;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.indeed.proctor.common.dynamic.DynamicFilters;
 import com.indeed.proctor.common.dynamic.MetaTagsFilter;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.Payload;
+import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.common.model.TestMatrixArtifact;
+import com.indeed.proctor.common.model.TestType;
 import org.junit.Test;
 
 import java.io.File;
@@ -23,7 +26,8 @@ import static org.assertj.core.api.Assertions.offset;
 
 public class TestAbstractJsonProctorLoader {
     private static final Set<String> TESTS_IN_EXAMPLE_TEST_MATRIX =
-            ImmutableSet.of("exampletst", "sometst", "null_tst", "meta_tags_tst");
+            ImmutableSet.of(
+                    "exampletst", "sometst", "null_tst", "meta_tags_tst", "example_random_test");
     private ExampleJsonProctorLoader proctorLoader;
 
     @Test
@@ -40,7 +44,7 @@ public class TestAbstractJsonProctorLoader {
         assertThat(testMatrixArtifact.getAudit().getUpdatedBy()).isEqualTo("shoichi");
         assertThat(testMatrixArtifact.getTests()).hasSize(4);
         assertThat(testMatrixArtifact.getTests())
-                .containsKeys("exampletst", "sometst", "null_tst", "meta_tags_tst");
+                .containsKeys("exampletst", "sometst", "meta_tags_tst", "example_random_test");
 
         final ConsumableTestDefinition testDefinition =
                 testMatrixArtifact.getTests().get("exampletst");
@@ -55,6 +59,25 @@ public class TestAbstractJsonProctorLoader {
                 .isCloseTo(0.75d, offset(1e-6));
 
         assertThat(testMatrixArtifact.getTests().get("null_tst")).isNull();
+    }
+
+    @Test
+    public void testLoadJsonTestMatrixAndGetResult() {
+        proctorLoader =
+                new ExampleJsonProctorLoader(TESTS_IN_EXAMPLE_TEST_MATRIX, Collections.emptySet());
+
+        proctorLoader.load();
+        final Proctor proctor = proctorLoader.get();
+
+        final Identifiers id =
+                new Identifiers(ImmutableMap.of(TestType.AUTHENTICATED_USER, "1"), true);
+        final ProctorResult result =
+                proctor.determineTestGroups(
+                        id, ImmutableMap.of("lang", "ENGLISH"), Collections.emptyMap());
+        assertThat(result.getBuckets())
+                .containsEntry(
+                        "example_random_test",
+                        TestBucket.builder().value(1).name("sample").build());
     }
 
     @Test
@@ -137,12 +160,17 @@ public class TestAbstractJsonProctorLoader {
                                     ? new DynamicFilters()
                                     : new DynamicFilters(
                                             ImmutableList.of(new MetaTagsFilter(metaTags)))),
-                    RuleEvaluator.defaultFunctionMapperBuilder().build());
+                    RuleEvaluator.defaultFunctionMapperBuilder().build(),
+                    new IdentifierValidator.NoEmpty());
         }
 
+        @Override
         TestMatrixArtifact loadTestMatrix()
                 throws IOException, MissingTestMatrixException, TestMatrixOutdatedException {
-            return null;
+            final String path = getClass().getResource("example-test-matrix.json").getPath();
+            final File testMatrixFile = new File(path);
+            final Reader reader = new FileReader(testMatrixFile);
+            return loadJsonTestMatrix(reader);
         }
 
         String getSource() {
