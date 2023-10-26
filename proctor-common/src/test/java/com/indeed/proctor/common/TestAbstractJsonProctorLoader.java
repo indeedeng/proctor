@@ -78,6 +78,7 @@ public class TestAbstractJsonProctorLoader {
                 .containsEntry(
                         "example_random_test",
                         TestBucket.builder().value(1).name("sample").build());
+        assertThat(result.getAllocations()).containsKey("example_random_test");
     }
 
     @Test
