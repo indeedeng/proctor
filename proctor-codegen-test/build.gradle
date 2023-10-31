@@ -48,3 +48,7 @@ compileTestJava.dependsOn(runWithJavaExec)
 
 runWithJavaExec.dependsOn(':proctor-codegen:shadowJar')
 runWithJavaExec.dependsOn(':proctor-builder:shadowJar')
+startScripts.dependsOn(':proctor-common:shadowJar')
+startScripts.dependsOn(':proctor-consumer:shadowJar')
+startScripts.dependsOn(':proctor-codegen:shadowJar')
+startScripts.dependsOn(':proctor-builder:shadowJar')

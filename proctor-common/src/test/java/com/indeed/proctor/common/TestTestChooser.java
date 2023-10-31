@@ -7,6 +7,7 @@ import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.Payload;
 import com.indeed.proctor.common.model.Range;
 import com.indeed.proctor.common.model.TestBucket;
+import com.indeed.proctor.common.model.TestType;
 import org.junit.Test;
 
 import javax.annotation.Nonnull;
@@ -18,6 +19,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -97,6 +99,18 @@ public class TestTestChooser {
         @Override
         public String getTestName() {
             return "example_tst";
+        }
+
+        @Nonnull
+        @Override
+        public TestChooser.Result choose(
+                @Nullable final String identifier,
+                @Nonnull final Map<String, ValueExpression> localContext,
+                @Nonnull final Map<String, TestBucket> testGroups,
+                @Nonnull final ForceGroupsOptions forceGroupsOptions,
+                @Nonnull final Set<TestType> testTypesWithInvalidIdentifier,
+                final boolean isRandomEnabled) {
+            return TestChooser.super.choose(null, localContext, testGroups, forceGroupsOptions);
         }
 
         @Nonnull

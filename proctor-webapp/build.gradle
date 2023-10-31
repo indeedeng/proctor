@@ -34,3 +34,6 @@ dependencies {
 test.dependsOn(':proctor-store:shadowJar')
 test.dependsOn(':proctor-store-git:shadowJar')
 test.dependsOn(':proctor-store-svn:shadowJar')
+war.dependsOn(':proctor-store:shadowJar')
+war.dependsOn(':proctor-store-git:shadowJar')
+war.dependsOn(':proctor-store-svn:shadowJar')

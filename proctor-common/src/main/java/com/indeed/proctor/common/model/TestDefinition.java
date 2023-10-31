@@ -51,6 +51,10 @@ public class TestDefinition {
     /** @see #getDependsOn() */
     @Nullable private TestDependency dependsOn;
 
+    private boolean evaluateForIncognitoUsers;
+
+    private boolean enableUnitlessAllocations;
+
     public TestDefinition() {
         /* intentionally empty */
     }
@@ -133,6 +137,7 @@ public class TestDefinition {
         this.testType = testType;
         this.description = description;
         this.metaTags = metaTags;
+        this.evaluateForIncognitoUsers = false;
     }
 
     public TestDefinition(@Nonnull final TestDefinition other) {
@@ -152,6 +157,8 @@ public class TestDefinition {
         description = builder.description;
         metaTags = builder.metaTags.build();
         dependsOn = builder.dependsOn;
+        evaluateForIncognitoUsers = builder.evaluateForIncognitoUsers;
+        enableUnitlessAllocations = builder.enableUnitlessAllocations;
     }
 
     public static Builder builder() {
@@ -309,6 +316,14 @@ public class TestDefinition {
         this.dependsOn = dependsOn;
     }
 
+    public boolean getEvaluateForIncognitoUsers() {
+        return evaluateForIncognitoUsers;
+    }
+
+    public boolean getEnableUnitlessAllocations() {
+        return enableUnitlessAllocations;
+    }
+
     @Override
     public String toString() {
         return "TestDefinition{"
@@ -340,6 +355,10 @@ public class TestDefinition {
                 + metaTags
                 + ", dependsOn="
                 + dependsOn
+                + ", evaluteForIncognitoUsers="
+                + evaluateForIncognitoUsers
+                + ", enableUnitlessAllocations="
+                + enableUnitlessAllocations
                 + '}';
     }
 
@@ -371,7 +390,9 @@ public class TestDefinition {
                 testType,
                 description,
                 metaTags,
-                dependsOn);
+                dependsOn,
+                evaluateForIncognitoUsers,
+                enableUnitlessAllocations);
     }
 
     /**
@@ -401,7 +422,9 @@ public class TestDefinition {
                 && Objects.equals(testType, that.testType)
                 && Objects.equals(description, that.description)
                 && Objects.equals(metaTags, that.metaTags)
-                && Objects.equals(dependsOn, that.dependsOn);
+                && Objects.equals(dependsOn, that.dependsOn)
+                && Objects.equals(evaluateForIncognitoUsers, that.evaluateForIncognitoUsers)
+                && Objects.equals(enableUnitlessAllocations, that.enableUnitlessAllocations);
     }
 
     @VisibleForTesting
@@ -440,6 +463,8 @@ public class TestDefinition {
         private String description;
         private ImmutableList.Builder<String> metaTags = ImmutableList.builder();
         private TestDependency dependsOn;
+        private boolean evaluateForIncognitoUsers;
+        private boolean enableUnitlessAllocations;
 
         public Builder from(@Nonnull final TestDefinition other) {
             setVersion(other.version);
@@ -454,6 +479,8 @@ public class TestDefinition {
             setDescription(other.description);
             setMetaTags(other.metaTags);
             setDependsOn(other.dependsOn);
+            setEvaluateForIncognitoUsers(other.evaluateForIncognitoUsers);
+            setEnableUnitlessAllocations(other.enableUnitlessAllocations);
             return this;
         }
 
@@ -549,6 +576,16 @@ public class TestDefinition {
 
         public Builder setDependsOn(@Nullable final TestDependency dependsOn) {
             this.dependsOn = dependsOn;
+            return this;
+        }
+
+        public Builder setEvaluateForIncognitoUsers(final boolean evaluateForIncognitoUsers) {
+            this.evaluateForIncognitoUsers = evaluateForIncognitoUsers;
+            return this;
+        }
+
+        public Builder setEnableUnitlessAllocations(final boolean enableUnitlessAllocations) {
+            this.enableUnitlessAllocations = enableUnitlessAllocations;
             return this;
         }
 

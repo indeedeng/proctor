@@ -19,6 +19,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.el.FunctionMapper;
 import javax.el.ValueExpression;
 import java.io.IOException;
@@ -27,15 +28,19 @@ import java.io.Writer;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import static com.indeed.proctor.common.ProctorUtils.UNITLESS_ALLOCATION_IDENTIFIER;
 
 /**
  * The sole entry point for client applications determining the test buckets for a particular
@@ -51,16 +56,23 @@ public class Proctor {
     public static final Proctor EMPTY = createEmptyProctor();
 
     private static final Logger LOGGER = LogManager.getLogger(Proctor.class);
+
     private static final ObjectWriter OBJECT_WRITER =
             Serializers.lenient()
                     .configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false)
                     .writerWithDefaultPrettyPrinter();
 
+    private static final ValueExpression VALUE_EXPRESSION_TRUE =
+            RuleEvaluator.EXPRESSION_FACTORY.createValueExpression(true, Object.class);
+
+    private static final ValueExpression VALUE_EXPRESSION_FALSE =
+            RuleEvaluator.EXPRESSION_FACTORY.createValueExpression(false, Object.class);
+
     public static Proctor construct(
             @Nonnull final TestMatrixArtifact matrix,
             @Nonnull final ProctorLoadResult loadResult,
             @Nonnull final FunctionMapper functionMapper) {
-        return construct(matrix, loadResult, functionMapper, new IdentifierValidator.Noop());
+        return construct(matrix, loadResult, functionMapper, new IdentifierValidator.Noop(), null);
     }
 
     /**
@@ -77,7 +89,8 @@ public class Proctor {
             @Nonnull final TestMatrixArtifact matrix,
             @Nonnull final ProctorLoadResult loadResult,
             @Nonnull final FunctionMapper functionMapper,
-            @Nonnull final IdentifierValidator identifierValidator) {
+            @Nonnull final IdentifierValidator identifierValidator,
+            @Nullable final ProctorResultReporter resultReporter) {
         final Map<String, TestChooser<?>> testChoosers = Maps.newLinkedHashMap();
         final Map<String, String> versions = Maps.newLinkedHashMap();
 
@@ -94,12 +107,22 @@ public class Proctor {
                                 testName,
                                 testDefinition);
             } else {
-                testChooser =
-                        new StandardTestChooser(
-                                RuleEvaluator.EXPRESSION_FACTORY,
-                                functionMapper,
-                                testName,
-                                testDefinition);
+                if (testDefinition.getEnableUnitlessAllocations()) {
+                    testChooser =
+                            new UnitlessTestChooser(
+                                    RuleEvaluator.EXPRESSION_FACTORY,
+                                    functionMapper,
+                                    testName,
+                                    testDefinition,
+                                    identifierValidator);
+                } else {
+                    testChooser =
+                            new StandardTestChooser(
+                                    RuleEvaluator.EXPRESSION_FACTORY,
+                                    functionMapper,
+                                    testName,
+                                    testDefinition);
+                }
             }
             testChoosers.put(testName, testChooser);
             versions.put(testName, testDefinition.getVersion());
@@ -109,7 +132,12 @@ public class Proctor {
                 TestDependencies.determineEvaluationOrder(matrix.getTests());
 
         return new Proctor(
-                matrix, loadResult, testChoosers, testEvaluationOrder, identifierValidator);
+                matrix,
+                loadResult,
+                testChoosers,
+                testEvaluationOrder,
+                identifierValidator,
+                resultReporter);
     }
 
     @Nonnull
@@ -134,10 +162,12 @@ public class Proctor {
                 loadResult,
                 choosers,
                 testEvaluationOrder,
-                new IdentifierValidator.Noop());
+                new IdentifierValidator.Noop(),
+                null);
     }
 
     static final long INT_RANGE = (long) Integer.MAX_VALUE - (long) Integer.MIN_VALUE;
+    private static final String INCOGNITO_CONTEXT_VARIABLE = "isIncognitoUser";
     private final TestMatrixArtifact matrix;
     private final ProctorLoadResult loadResult;
     @Nonnull private final Map<String, TestChooser<?>> testChoosers;
@@ -147,6 +177,7 @@ public class Proctor {
 
     private final List<String> testEvaluationOrder;
     private final Map<String, Integer> evaluationOrderMap;
+    @Nullable private final ProctorResultReporter resultReporter;
 
     @VisibleForTesting
     Proctor(
@@ -154,7 +185,8 @@ public class Proctor {
             @Nonnull final ProctorLoadResult loadResult,
             @Nonnull final Map<String, TestChooser<?>> testChoosers,
             @Nonnull final List<String> testEvaluationOrder,
-            @Nonnull final IdentifierValidator identifierValidator) {
+            @Nonnull final IdentifierValidator identifierValidator,
+            @Nullable final ProctorResultReporter resultReporter) {
         this.matrix = matrix;
         this.loadResult = loadResult;
         this.testChoosers = testChoosers;
@@ -171,6 +203,7 @@ public class Proctor {
         VarExporter.forNamespace(Proctor.class.getSimpleName()).includeInGlobal().export(this, "");
         VarExporter.forNamespace(DetailedExport.class.getSimpleName())
                 .export(new DetailedExport(), ""); //  intentionally not in global
+        this.resultReporter = resultReporter;
     }
 
     private static class DetailedExport {
@@ -313,7 +346,7 @@ public class Proctor {
                 final String invalidIdentifierMessage =
                         String.format(
                                 "An invalid identifier '%s' for test type '%s'"
-                                        + " was detected. Using fallback buckets for the test type.",
+                                        + " was detected. Using fallback buckets for the test type unless unitless allocation is enabled.",
                                 identifier, testType);
                 if (identifier.isEmpty()) {
                     LOGGER.debug(invalidIdentifierMessage);
@@ -327,40 +360,50 @@ public class Proctor {
         final Map<String, ValueExpression> localContext =
                 ProctorUtils.convertToValueExpressionMap(
                         RuleEvaluator.EXPRESSION_FACTORY, inputContext);
-
+        final Map<TestType, Integer> invalidIdentifierCount = new HashMap<>();
         for (final String testName : filteredEvaluationOrder) {
             final TestChooser<?> testChooser = testChoosers.get(testName);
             final String identifier;
-            if (testChooser instanceof StandardTestChooser) {
-                final TestType testType = testChooser.getTestDefinition().getTestType();
-                if (testTypesWithInvalidIdentifier.contains(testType)) {
-                    // skipping here to make it use the fallback bucket.
-                    continue;
-                }
+            if (isIncognitoEnabled(inputContext)
+                    && !testChooser.getTestDefinition().getEvaluateForIncognitoUsers()) {
+                continue;
+            }
 
+            final boolean containsUnitlessAllocations =
+                    testTypesWithInvalidIdentifier.contains(
+                                    testChooser.getTestDefinition().getTestType())
+                            && testChooser.getTestDefinition().getContainsUnitlessAllocation();
+            localContext.put(
+                    UNITLESS_ALLOCATION_IDENTIFIER,
+                    containsUnitlessAllocations ? VALUE_EXPRESSION_TRUE : VALUE_EXPRESSION_FALSE);
+            final TestType testType = testChooser.getTestDefinition().getTestType();
+            if (testChooser instanceof UnitlessTestChooser) {
+                identifier =
+                        identifiers.getIdentifier(testType) == null
+                                        && testChooser
+                                                .getTestDefinition()
+                                                .getContainsUnitlessAllocation()
+                                ? ""
+                                : identifiers.getIdentifier(testType);
+            } else if (testChooser instanceof StandardTestChooser) {
+                if (testTypesWithInvalidIdentifier.contains(testType)) {
+                    invalidIdentifierCount.put(
+                            testType, invalidIdentifierCount.getOrDefault(testType, 0) + 1);
+                }
                 identifier = identifiers.getIdentifier(testType);
-                if (identifier == null) {
-                    // No identifier for the testType of this chooser, nothing to do
-                    continue;
-                }
             } else {
-                if (!identifiers.isRandomEnabled()) {
-                    // test wants random chooser, but client disabled random, nothing to do
-                    continue;
-                }
                 identifier = null;
             }
 
-            final TestChooser.Result chooseResult;
-            if (identifier == null) {
-                chooseResult =
-                        ((RandomTestChooser) testChooser)
-                                .choose(null, localContext, testGroups, forceGroupsOptions);
-            } else {
-                chooseResult =
-                        ((StandardTestChooser) testChooser)
-                                .choose(identifier, localContext, testGroups, forceGroupsOptions);
-            }
+            final TestChooser.Result chooseResult =
+                    testChooser.choose(
+                            identifier,
+                            localContext,
+                            testGroups,
+                            forceGroupsOptions,
+                            testTypesWithInvalidIdentifier,
+                            identifiers.isRandomEnabled());
+
             if (chooseResult.getTestBucket() != null) {
                 testGroups.put(testName, chooseResult.getTestBucket());
             }
@@ -380,13 +423,20 @@ public class Proctor {
 
         // TODO Can we make getAudit nonnull?
         final Audit audit = Preconditions.checkNotNull(matrix.getAudit(), "Missing audit");
-        return new ProctorResult(
-                audit.getVersion(),
-                testGroups,
-                testAllocations,
-                testDefinitions,
-                identifiers,
-                inputContext);
+        final ProctorResult result =
+                new ProctorResult(
+                        audit.getVersion(),
+                        testGroups,
+                        testAllocations,
+                        testDefinitions,
+                        identifiers,
+                        inputContext);
+
+        if (resultReporter != null) {
+            resultReporter.reportMetrics(result, invalidIdentifierCount);
+        }
+
+        return result;
     }
 
     TestMatrixArtifact getArtifact() {
@@ -463,5 +513,12 @@ public class Proctor {
         filtered.setAudit(this.matrix.getAudit());
         filtered.setTests(Maps.filterKeys(this.matrix.getTests(), Predicates.in(testNameFilter)));
         OBJECT_WRITER.writeValue(writer, filtered);
+    }
+
+    private boolean isIncognitoEnabled(@Nonnull final Map<String, Object> inputContext) {
+        return Optional.ofNullable(inputContext.get(INCOGNITO_CONTEXT_VARIABLE))
+                .map(Object::toString)
+                .map(value -> value.equalsIgnoreCase("true"))
+                .orElse(false);
     }
 }

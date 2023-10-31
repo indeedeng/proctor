@@ -6,6 +6,7 @@ import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.Payload;
 import com.indeed.proctor.common.model.Range;
 import com.indeed.proctor.common.model.TestBucket;
+import com.indeed.proctor.common.model.TestType;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -17,6 +18,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 interface TestChooser<IdentifierType> {
@@ -44,6 +46,15 @@ interface TestChooser<IdentifierType> {
             @Nullable IdentifierType identifier,
             @Nonnull final Map<String, ValueExpression> localContext,
             @Nonnull Map<String, TestBucket> testGroups);
+
+    @Nonnull
+    TestChooser.Result choose(
+            @Nullable final String identifier,
+            @Nonnull final Map<String, ValueExpression> localContext,
+            @Nonnull final Map<String, TestBucket> testGroups,
+            @Nonnull final ForceGroupsOptions forceGroupsOptions,
+            @Nonnull final Set<TestType> testTypesWithInvalidIdentifier,
+            final boolean isRandomEnabled);
 
     @Nonnull
     default TestChooser.Result choose(
