@@ -342,7 +342,9 @@ public class Proctor {
         final Set<TestType> testTypesWithInvalidIdentifier = new HashSet<>();
         for (final TestType testType : identifiers.getAvailableTestTypes()) {
             final String identifier = identifiers.getIdentifier(testType);
-            if ((identifier != null) && !identifierValidator.validate(testType, identifier)) {
+            if (identifier == null) {
+                testTypesWithInvalidIdentifier.add(testType);
+            } else if (!identifierValidator.validate(testType, identifier)) {
                 final String invalidIdentifierMessage =
                         String.format(
                                 "An invalid identifier '%s' for test type '%s'"
