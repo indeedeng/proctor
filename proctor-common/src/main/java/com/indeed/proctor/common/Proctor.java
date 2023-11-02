@@ -342,9 +342,7 @@ public class Proctor {
         final Set<TestType> testTypesWithInvalidIdentifier = new HashSet<>();
         for (final TestType testType : identifiers.getAvailableTestTypes()) {
             final String identifier = identifiers.getIdentifier(testType);
-            if (identifier == null) {
-                testTypesWithInvalidIdentifier.add(testType);
-            } else if (!identifierValidator.validate(testType, identifier)) {
+            if ((identifier != null) && !identifierValidator.validate(testType, identifier)) {
                 final String invalidIdentifierMessage =
                         String.format(
                                 "An invalid identifier '%s' for test type '%s'"
@@ -380,13 +378,7 @@ public class Proctor {
                     containsUnitlessAllocations ? VALUE_EXPRESSION_TRUE : VALUE_EXPRESSION_FALSE);
             final TestType testType = testChooser.getTestDefinition().getTestType();
             if (testChooser instanceof UnitlessTestChooser) {
-                identifier =
-                        identifiers.getIdentifier(testType) == null
-                                        && testChooser
-                                                .getTestDefinition()
-                                                .getContainsUnitlessAllocation()
-                                ? ""
-                                : identifiers.getIdentifier(testType);
+                identifier = identifiers.getIdentifier(testType);
             } else if (testChooser instanceof StandardTestChooser) {
                 if (testTypesWithInvalidIdentifier.contains(testType)) {
                     invalidIdentifierCount.put(
