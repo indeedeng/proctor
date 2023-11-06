@@ -37,6 +37,10 @@ public class UnitlessTestChooser extends StandardTestChooser {
             @Nonnull final ForceGroupsOptions forceGroupsOptions,
             @Nonnull final Set<TestType> testTypesWithInvalidIdentifier,
             final boolean isRandomEnabled) {
+        // null is not valid identifier for unitless
+        if (identifier == null) {
+            return Result.EMPTY;
+        }
         return super.choose(identifier, localContext, testGroups, forceGroupsOptions);
     }
 }

@@ -24,6 +24,7 @@ import java.io.Writer;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -473,6 +474,255 @@ public class TestProctor {
                 .containsEntry("X", testDefinitionX)
                 .containsEntry("Y", testDefinitionY)
                 .containsEntry("Z", randomTd);
+    }
+
+    @Test
+    public void testDetermineTestGroupsWithInvalidIdentifier_UnitlessEnabled() {
+        final TestBucket inactivetestBucket = new TestBucket("inactive", -1, "");
+        final TestBucket testBucket = new TestBucket("active", 1, "");
+        final Allocation allocation =
+                new Allocation(
+                        "missingExperimentalUnit",
+                        ImmutableList.of(new Range(-1, 0.0), new Range(1, 1.0)));
+
+        final ConsumableTestDefinition testDefinitionX =
+                ConsumableTestDefinition.fromTestDefinition(
+                        TestDefinition.builder()
+                                .setSalt("&X")
+                                .setEnableUnitlessAllocations(true)
+                                .setTestType(TestType.ANONYMOUS_USER)
+                                .addBuckets(inactivetestBucket, testBucket)
+                                .addAllocations(allocation)
+                                .build());
+        final Map<String, ConsumableTestDefinition> tests = ImmutableMap.of("X", testDefinitionX);
+        final TestMatrixArtifact matrix = new TestMatrixArtifact();
+        matrix.setTests(tests);
+        matrix.setAudit(new Audit());
+
+        final Proctor proctor =
+                Proctor.construct(
+                        matrix,
+                        ProctorLoadResult.emptyResult(),
+                        RuleEvaluator.defaultFunctionMapperBuilder().build(),
+                        new IdentifierValidator.NoEmpty(),
+                        null);
+        final Identifiers identifiers =
+                new Identifiers(ImmutableMap.of(TestType.ANONYMOUS_USER, ""), true);
+        final ProctorResult proctorResult =
+                proctor.determineTestGroups(
+                        identifiers,
+                        Collections.emptyMap(),
+                        Collections.emptyMap(),
+                        Collections.emptySet());
+
+        assertThat(proctorResult.getBuckets()).containsOnlyKeys("X").containsEntry("X", testBucket);
+        assertThat(proctorResult.getAllocations())
+                .containsOnlyKeys("X")
+                .containsEntry("X", allocation);
+        assertThat(proctorResult.getTestDefinitions())
+                .containsOnlyKeys("X")
+                .containsEntry("X", testDefinitionX);
+    };
+
+    @Test
+    public void testDetermineTestGroupsWithNullIdentifier_UnitlessEnabled() {
+        final TestBucket inactivetestBucket = new TestBucket("inactive", -1, "");
+        final TestBucket testBucket = new TestBucket("active", 1, "");
+        final Allocation allocation =
+                new Allocation(
+                        "missingExperimentalUnit",
+                        ImmutableList.of(new Range(-1, 0.0), new Range(1, 1.0)));
+
+        final ConsumableTestDefinition testDefinitionX =
+                ConsumableTestDefinition.fromTestDefinition(
+                        TestDefinition.builder()
+                                .setSalt("&X")
+                                .setEnableUnitlessAllocations(true)
+                                .setTestType(TestType.ANONYMOUS_USER)
+                                .addBuckets(inactivetestBucket, testBucket)
+                                .addAllocations(allocation)
+                                .build());
+        final Map<String, ConsumableTestDefinition> tests = ImmutableMap.of("X", testDefinitionX);
+        final TestMatrixArtifact matrix = new TestMatrixArtifact();
+        matrix.setTests(tests);
+        matrix.setAudit(new Audit());
+
+        final Proctor proctor =
+                Proctor.construct(
+                        matrix,
+                        ProctorLoadResult.emptyResult(),
+                        RuleEvaluator.defaultFunctionMapperBuilder().build(),
+                        new IdentifierValidator.NoEmpty(),
+                        null);
+
+        final Map<TestType, String> ids = new HashMap<>();
+        ids.put(TestType.ANONYMOUS_USER, null);
+        final Identifiers identifiers = new Identifiers(ids, true);
+        final ProctorResult proctorResult =
+                proctor.determineTestGroups(
+                        identifiers,
+                        Collections.emptyMap(),
+                        Collections.emptyMap(),
+                        Collections.emptySet());
+
+        assertThat(proctorResult.getBuckets()).isEmpty();
+        assertThat(proctorResult.getAllocations()).isEmpty();
+        assertThat(proctorResult.getTestDefinitions())
+                .containsOnlyKeys("X")
+                .containsEntry("X", testDefinitionX);
+    }
+
+    @Test
+    public void testDetermineTestGroupsWithNullIdentifier_UnitlessEnabled_falseAndTrueInRule() {
+        final TestBucket inactivetestBucket = new TestBucket("inactive", -1, "");
+        final TestBucket controlBucket = new TestBucket("control", 0, "");
+        final TestBucket testBucket = new TestBucket("active", 1, "");
+        final Allocation allocation =
+                new Allocation(
+                        "!missingExperimentalUnit",
+                        ImmutableList.of(new Range(-1, 0.0), new Range(1, 1.0)));
+        final Allocation allocationTrue =
+                new Allocation(
+                        "missingExperimentalUnit",
+                        ImmutableList.of(new Range(-1, 0.0), new Range(0, 1.0)));
+
+        final ConsumableTestDefinition testDefinitionX =
+                ConsumableTestDefinition.fromTestDefinition(
+                        TestDefinition.builder()
+                                .setSalt("&X")
+                                .setEnableUnitlessAllocations(true)
+                                .setTestType(TestType.ANONYMOUS_USER)
+                                .addBuckets(inactivetestBucket, controlBucket, testBucket)
+                                .addAllocations(allocation, allocationTrue)
+                                .build());
+        final Map<String, ConsumableTestDefinition> tests = ImmutableMap.of("X", testDefinitionX);
+        final TestMatrixArtifact matrix = new TestMatrixArtifact();
+        matrix.setTests(tests);
+        matrix.setAudit(new Audit());
+
+        final Proctor proctor =
+                Proctor.construct(
+                        matrix,
+                        ProctorLoadResult.emptyResult(),
+                        RuleEvaluator.defaultFunctionMapperBuilder().build(),
+                        new IdentifierValidator.NoEmpty(),
+                        null);
+
+        final Map<TestType, String> ids = new HashMap<>();
+        ids.put(TestType.ANONYMOUS_USER, null);
+        final Identifiers identifiers = new Identifiers(ids, true);
+        final ProctorResult proctorResult =
+                proctor.determineTestGroups(
+                        identifiers,
+                        Collections.emptyMap(),
+                        Collections.emptyMap(),
+                        Collections.emptySet());
+
+        assertThat(proctorResult.getBuckets()).isEmpty();
+        assertThat(proctorResult.getAllocations()).isEmpty();
+        assertThat(proctorResult.getTestDefinitions())
+                .containsOnlyKeys("X")
+                .containsEntry("X", testDefinitionX);
+    }
+
+    @Test
+    public void testDetermineTestGroupsWithEmptyIdentifier_UnitlessEnabled_falseAndTrueInRule() {
+        final TestBucket inactivetestBucket = new TestBucket("inactive", -1, "");
+        final TestBucket controlBucket = new TestBucket("control", 0, "");
+        final TestBucket testBucket = new TestBucket("active", 1, "");
+        final Allocation allocation =
+                new Allocation(
+                        "!missingExperimentalUnit",
+                        ImmutableList.of(new Range(-1, 0.0), new Range(1, 1.0)));
+        final Allocation allocationTrue =
+                new Allocation(
+                        "missingExperimentalUnit",
+                        ImmutableList.of(new Range(-1, 0.0), new Range(0, 1.0)));
+
+        final ConsumableTestDefinition testDefinitionX =
+                ConsumableTestDefinition.fromTestDefinition(
+                        TestDefinition.builder()
+                                .setSalt("&X")
+                                .setEnableUnitlessAllocations(true)
+                                .setTestType(TestType.ANONYMOUS_USER)
+                                .addBuckets(inactivetestBucket, controlBucket, testBucket)
+                                .addAllocations(allocation, allocationTrue)
+                                .build());
+        final Map<String, ConsumableTestDefinition> tests = ImmutableMap.of("X", testDefinitionX);
+        final TestMatrixArtifact matrix = new TestMatrixArtifact();
+        matrix.setTests(tests);
+        matrix.setAudit(new Audit());
+
+        final Proctor proctor =
+                Proctor.construct(
+                        matrix,
+                        ProctorLoadResult.emptyResult(),
+                        RuleEvaluator.defaultFunctionMapperBuilder().build(),
+                        new IdentifierValidator.NoEmpty(),
+                        null);
+
+        final ProctorResult proctorResult =
+                proctor.determineTestGroups(
+                        Identifiers.of(TestType.ANONYMOUS_USER, ""),
+                        Collections.emptyMap(),
+                        Collections.emptyMap(),
+                        Collections.emptySet());
+
+        assertThat(proctorResult.getBuckets()).containsEntry("X", controlBucket);
+        assertThat(proctorResult.getAllocations()).containsEntry("X", allocationTrue);
+        assertThat(proctorResult.getTestDefinitions())
+                .containsOnlyKeys("X")
+                .containsEntry("X", testDefinitionX);
+    }
+
+    @Test
+    public void testDetermineTestGroupsWithValidIdentifier_UnitlessEnabled_falseAndTrueInRule() {
+        final TestBucket inactivetestBucket = new TestBucket("inactive", -1, "");
+        final TestBucket controlBucket = new TestBucket("control", 0, "");
+        final TestBucket testBucket = new TestBucket("active", 1, "");
+        final Allocation allocation =
+                new Allocation(
+                        "!missingExperimentalUnit",
+                        ImmutableList.of(new Range(-1, 0.0), new Range(1, 1.0)));
+        final Allocation allocationTrue =
+                new Allocation(
+                        "missingExperimentalUnit",
+                        ImmutableList.of(new Range(-1, 0.0), new Range(0, 1.0)));
+
+        final ConsumableTestDefinition testDefinitionX =
+                ConsumableTestDefinition.fromTestDefinition(
+                        TestDefinition.builder()
+                                .setSalt("&X")
+                                .setEnableUnitlessAllocations(true)
+                                .setTestType(TestType.ANONYMOUS_USER)
+                                .addBuckets(inactivetestBucket, controlBucket, testBucket)
+                                .addAllocations(allocation, allocationTrue)
+                                .build());
+        final Map<String, ConsumableTestDefinition> tests = ImmutableMap.of("X", testDefinitionX);
+        final TestMatrixArtifact matrix = new TestMatrixArtifact();
+        matrix.setTests(tests);
+        matrix.setAudit(new Audit());
+
+        final Proctor proctor =
+                Proctor.construct(
+                        matrix,
+                        ProctorLoadResult.emptyResult(),
+                        RuleEvaluator.defaultFunctionMapperBuilder().build(),
+                        new IdentifierValidator.NoEmpty(),
+                        null);
+
+        final ProctorResult proctorResult =
+                proctor.determineTestGroups(
+                        Identifiers.of(TestType.ANONYMOUS_USER, "foobar"),
+                        Collections.emptyMap(),
+                        Collections.emptyMap(),
+                        Collections.emptySet());
+
+        assertThat(proctorResult.getBuckets()).containsEntry("X", testBucket);
+        assertThat(proctorResult.getAllocations()).containsEntry("X", allocation);
+        assertThat(proctorResult.getTestDefinitions())
+                .containsOnlyKeys("X")
+                .containsEntry("X", testDefinitionX);
     }
 
     @Test
