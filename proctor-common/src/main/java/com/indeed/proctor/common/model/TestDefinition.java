@@ -55,6 +55,8 @@ public class TestDefinition {
 
     private boolean enableUnitlessAllocations;
 
+    private boolean silentExposureLogging;
+
     public TestDefinition() {
         /* intentionally empty */
     }
@@ -159,6 +161,7 @@ public class TestDefinition {
         dependsOn = builder.dependsOn;
         evaluateForIncognitoUsers = builder.evaluateForIncognitoUsers;
         enableUnitlessAllocations = builder.enableUnitlessAllocations;
+        silentExposureLogging = builder.silentExposureLogging;
     }
 
     public static Builder builder() {
@@ -324,6 +327,10 @@ public class TestDefinition {
         return enableUnitlessAllocations;
     }
 
+    public boolean getSilentExposureLogging() {
+        return silentExposureLogging;
+    }
+
     @Override
     public String toString() {
         return "TestDefinition{"
@@ -359,6 +366,8 @@ public class TestDefinition {
                 + evaluateForIncognitoUsers
                 + ", enableUnitlessAllocations="
                 + enableUnitlessAllocations
+                + ", silentExposureLogging="
+                + silentExposureLogging
                 + '}';
     }
 
@@ -392,7 +401,8 @@ public class TestDefinition {
                 metaTags,
                 dependsOn,
                 evaluateForIncognitoUsers,
-                enableUnitlessAllocations);
+                enableUnitlessAllocations,
+                silentExposureLogging);
     }
 
     /**
@@ -424,7 +434,8 @@ public class TestDefinition {
                 && Objects.equals(metaTags, that.metaTags)
                 && Objects.equals(dependsOn, that.dependsOn)
                 && Objects.equals(evaluateForIncognitoUsers, that.evaluateForIncognitoUsers)
-                && Objects.equals(enableUnitlessAllocations, that.enableUnitlessAllocations);
+                && Objects.equals(enableUnitlessAllocations, that.enableUnitlessAllocations)
+                && Objects.equals(silentExposureLogging, that.silentExposureLogging);
     }
 
     @VisibleForTesting
@@ -465,6 +476,7 @@ public class TestDefinition {
         private TestDependency dependsOn;
         private boolean evaluateForIncognitoUsers;
         private boolean enableUnitlessAllocations;
+        private boolean silentExposureLogging;
 
         public Builder from(@Nonnull final TestDefinition other) {
             setVersion(other.version);
@@ -481,6 +493,7 @@ public class TestDefinition {
             setDependsOn(other.dependsOn);
             setEvaluateForIncognitoUsers(other.evaluateForIncognitoUsers);
             setEnableUnitlessAllocations(other.enableUnitlessAllocations);
+            setSilentExposureLogging(other.silentExposureLogging);
             return this;
         }
 
@@ -586,6 +599,11 @@ public class TestDefinition {
 
         public Builder setEnableUnitlessAllocations(final boolean enableUnitlessAllocations) {
             this.enableUnitlessAllocations = enableUnitlessAllocations;
+            return this;
+        }
+
+        public Builder setSilentExposureLogging(final boolean silentExposureLogging) {
+            this.silentExposureLogging = silentExposureLogging;
             return this;
         }
 
