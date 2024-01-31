@@ -140,8 +140,7 @@ public class ConsumableTestDefinition {
             @Nullable final TestDependency dependsOn,
             final boolean evaluateForIncognitoUsers,
             final boolean enableUnitlessAllocations,
-            final boolean containsUnitlessAllocation,
-            final boolean enableExposureLogging) {
+            final boolean containsUnitlessAllocation) {
         this.constants = constants;
         this.version = version;
         this.salt = salt;
@@ -156,7 +155,6 @@ public class ConsumableTestDefinition {
         this.evaluateForIncognitoUsers = evaluateForIncognitoUsers;
         this.enableUnitlessAllocations = enableUnitlessAllocations;
         this.containsUnitlessAllocation = containsUnitlessAllocation;
-        this.enableExposureLogging = enableExposureLogging;
     }
 
     @Nonnull
@@ -353,7 +351,6 @@ public class ConsumableTestDefinition {
                 td.getDependsOn(),
                 td.getEvaluateForIncognitoUsers(),
                 td.getEnableUnitlessAllocations(),
-                containsUnitlessAllocation,
-                td.getEnableExposureLogging());
+                containsUnitlessAllocation);
     }
 }
