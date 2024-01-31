@@ -36,6 +36,7 @@ public class ConsumableTestDefinition {
     private boolean evaluateForIncognitoUsers = false;
     private boolean enableUnitlessAllocations = false;
     private boolean containsUnitlessAllocation = false;
+    private boolean enableExposureLogging = false;
 
     public ConsumableTestDefinition() {
         /* intentionally empty */
@@ -139,7 +140,8 @@ public class ConsumableTestDefinition {
             @Nullable final TestDependency dependsOn,
             final boolean evaluateForIncognitoUsers,
             final boolean enableUnitlessAllocations,
-            final boolean containsUnitlessAllocation) {
+            final boolean containsUnitlessAllocation,
+            final boolean enableExposureLogging) {
         this.constants = constants;
         this.version = version;
         this.salt = salt;
@@ -154,6 +156,7 @@ public class ConsumableTestDefinition {
         this.evaluateForIncognitoUsers = evaluateForIncognitoUsers;
         this.enableUnitlessAllocations = enableUnitlessAllocations;
         this.containsUnitlessAllocation = containsUnitlessAllocation;
+        this.enableExposureLogging = enableExposureLogging;
     }
 
     @Nonnull
@@ -287,6 +290,14 @@ public class ConsumableTestDefinition {
         this.containsUnitlessAllocation = containsUnitlessAllocation;
     }
 
+    public boolean getEnableExposureLogging() {
+        return enableExposureLogging;
+    }
+
+    public void setEnableExposureLogging(final boolean enableExposureLogging) {
+        this.enableExposureLogging = enableExposureLogging;
+    }
+
     @Nonnull
     public static ConsumableTestDefinition fromTestDefinition(@Nonnull final TestDefinition td) {
         final Map<String, Object> specialConstants = td.getSpecialConstants();
@@ -342,6 +353,7 @@ public class ConsumableTestDefinition {
                 td.getDependsOn(),
                 td.getEvaluateForIncognitoUsers(),
                 td.getEnableUnitlessAllocations(),
-                containsUnitlessAllocation);
+                containsUnitlessAllocation,
+                td.getEnableExposureLogging());
     }
 }
