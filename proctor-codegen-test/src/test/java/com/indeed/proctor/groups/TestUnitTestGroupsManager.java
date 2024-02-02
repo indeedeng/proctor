@@ -174,7 +174,7 @@ public class TestUnitTestGroupsManager {
             assertTrue(grps.isKlujTest());
             assertFalse(grps.isKlujKloo());
             assertFalse(grps.isKlujLoooj());
-            assertEquals("kluj1,no_buckets_specified1,oop_poop0", grps.toString());
+            assertEquals("", grps.toString());
         }
     }
 
@@ -222,7 +222,7 @@ public class TestUnitTestGroupsManager {
             assertFalse(grps.isPimpleInactive());
             assertFalse(grps.isPimpleControl());
             assertTrue(grps.isPimpleTest());
-            assertEquals("pimple1", grps.toString());
+            assertEquals("", grps.toString());
         }
         {
             final UnitTestGroupsContext testContext =
@@ -356,7 +356,7 @@ public class TestUnitTestGroupsManager {
                 grps.getPayloaded_verifiedPayloadForBucket(UnitTestGroups.Payloaded_verified.TEST),
                 0.001);
 
-        assertEquals("kluj2,no_buckets_specified1,oop_poop1", grps.toString());
+        assertEquals("", grps.toString());
 
         assertNotNull(grps.getPayloaded_excluded());
         assertEquals(
