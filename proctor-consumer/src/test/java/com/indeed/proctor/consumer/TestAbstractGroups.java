@@ -238,25 +238,6 @@ public class TestAbstractGroups {
     }
 
     @Test
-    public void testAppendTestGroupsWithoutAllocations() {
-        StringBuilder builder = new StringBuilder();
-        sampleGroups.appendTestGroupsWithoutAllocations(
-                builder,
-                ',',
-                Lists.newArrayList(
-                        CONTROL_SELECTED_TEST.getName(), GROUP1_SELECTED_TEST.getName()));
-        assertThat(builder.toString().split(",")).containsExactly("bgtst0", "abtst1");
-
-        builder = new StringBuilder();
-        emptyGroup.appendTestGroupsWithoutAllocations(
-                builder,
-                ',',
-                Lists.newArrayList(
-                        CONTROL_SELECTED_TEST.getName(), GROUP1_SELECTED_TEST.getName()));
-        assertThat(builder.toString()).isEmpty();
-    }
-
-    @Test
     public void testAppendTestGroupsWithAllocations() {
         StringBuilder builder = new StringBuilder();
         sampleGroups.appendTestGroupsWithAllocations(

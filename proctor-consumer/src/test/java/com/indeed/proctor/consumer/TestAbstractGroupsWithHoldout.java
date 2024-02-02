@@ -222,17 +222,6 @@ public class TestAbstractGroupsWithHoldout {
     }
 
     @Test
-    public void testAppendTestGroupsWithoutAllocations() {
-        StringBuilder builder = new StringBuilder();
-        groupsWithHoldOut.appendTestGroupsWithoutAllocations(
-                builder,
-                ',',
-                Lists.newArrayList(
-                        CONTROL_SELECTED_TEST.getName(), GROUP1_SELECTED_TEST.getName()));
-        assertThat(builder.toString().split(",")).containsExactly("bgtst-1", "abtst-1");
-    }
-
-    @Test
     public void testAppendTestGroupsWithAllocations() {
         StringBuilder builder = new StringBuilder();
         groupsWithHoldOut.appendTestGroupsWithAllocations(

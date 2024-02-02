@@ -151,17 +151,6 @@ public class TestAbstractGroupsWithForced {
     }
 
     @Test
-    public void testAppendTestGroupsWithoutAllocations() {
-        final StringBuilder builder = new StringBuilder();
-        sampleGroupsWithForced.appendTestGroupsWithoutAllocations(
-                builder,
-                ',',
-                Lists.newArrayList(
-                        CONTROL_SELECTED_TEST.getName(), GROUP1_SELECTED_TEST.getName()));
-        assertThat(builder.toString().split(",")).containsExactly("bgtst0", "abtst0");
-    }
-
-    @Test
     public void testAppendTestGroupsWithAllocations() {
         final StringBuilder builder = new StringBuilder();
         sampleGroupsWithForced.appendTestGroupsWithAllocations(
