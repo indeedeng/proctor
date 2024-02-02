@@ -44,12 +44,15 @@ public class SampleSpringApplicationIntegrationTest {
         runRequestAndCheck(
                 "user1",
                 "sample1_tst0",
+                "#A1:sample1_tst0,#A1:unused_tst0",
                 "sample1_tst0,unused_tst0,#A1:sample1_tst0,#A1:unused_tst0",
                 "#A1:sample1_tst0");
-        runRequestAndCheck("user3", "sample1_tst-1", "unused_tst0,#A1:unused_tst0", "");
+        runRequestAndCheck(
+                "user3", "sample1_tst-1", "#A1:unused_tst0", "unused_tst0,#A1:unused_tst0", "");
         runRequestAndCheck(
                 "user5",
                 "sample1_tst0",
+                "#A1:dynamic_include_tst0,#A1:sample1_tst0,#A1:unused_tst0",
                 "dynamic_include_tst0,sample1_tst0,unused_tst0,#A1:dynamic_include_tst0,#A1:sample1_tst0,#A1:unused_tst0",
                 "#A1:sample1_tst0");
     }
@@ -57,6 +60,7 @@ public class SampleSpringApplicationIntegrationTest {
     private void runRequestAndCheck(
             final String identifier,
             final String expectedBody,
+            final String expectedAbstractGroupsString,
             final String expectedFullLogString,
             final String expectedExposureLogString)
             throws Exception {
@@ -68,7 +72,7 @@ public class SampleSpringApplicationIntegrationTest {
         final String body = result.getResponse().getContentAsString();
         assertThat(body).isEqualTo(expectedBody);
         assertThat(groupsLogger.getLogFullStringFromAbstractGroups())
-                .isEqualTo(expectedFullLogString);
+                .isEqualTo(expectedAbstractGroupsString);
         assertThat(groupsLogger.getLogFullStringFromWriter()).isEqualTo(expectedFullLogString);
         assertThat(groupsLogger.getExposureString()).isEqualTo(expectedExposureLogString);
     }

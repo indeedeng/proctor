@@ -210,8 +210,7 @@ public class TestAbstractGroupsWithHoldout {
                                 .toLoggingString())
                 .isEmpty();
         assertThat(groupsWithHoldOut.toLoggingString())
-                .isEqualTo(
-                        "holdout_tst2,no_definition_tst2,#A1:holdout_tst2,#A1:no_definition_tst2");
+                .isEqualTo("#A1:holdout_tst2,#A1:no_definition_tst2");
     }
 
     @Test
