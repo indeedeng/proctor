@@ -42,18 +42,12 @@ public class SampleSpringApplicationIntegrationTest {
     public void testDeterminedBucketResultAndLog() throws Exception {
         // group memberships determined from hashes of identifiers
         runRequestAndCheck(
-                "user1",
-                "sample1_tst0",
-                "#A1:sample1_tst0,#A1:unused_tst0",
-                "sample1_tst0,unused_tst0,#A1:sample1_tst0,#A1:unused_tst0",
-                "#A1:sample1_tst0");
-        runRequestAndCheck(
-                "user3", "sample1_tst-1", "#A1:unused_tst0", "unused_tst0,#A1:unused_tst0", "");
+                "user1", "sample1_tst0", "#A1:sample1_tst0,#A1:unused_tst0", "#A1:sample1_tst0");
+        runRequestAndCheck("user3", "sample1_tst-1", "#A1:unused_tst0", "");
         runRequestAndCheck(
                 "user5",
                 "sample1_tst0",
                 "#A1:dynamic_include_tst0,#A1:sample1_tst0,#A1:unused_tst0",
-                "dynamic_include_tst0,sample1_tst0,unused_tst0,#A1:dynamic_include_tst0,#A1:sample1_tst0,#A1:unused_tst0",
                 "#A1:sample1_tst0");
     }
 
@@ -61,7 +55,6 @@ public class SampleSpringApplicationIntegrationTest {
             final String identifier,
             final String expectedBody,
             final String expectedAbstractGroupsString,
-            final String expectedFullLogString,
             final String expectedExposureLogString)
             throws Exception {
 
@@ -73,7 +66,6 @@ public class SampleSpringApplicationIntegrationTest {
         assertThat(body).isEqualTo(expectedBody);
         assertThat(groupsLogger.getLogFullStringFromAbstractGroups())
                 .isEqualTo(expectedAbstractGroupsString);
-        assertThat(groupsLogger.getLogFullStringFromWriter()).isEqualTo(expectedFullLogString);
         assertThat(groupsLogger.getExposureString()).isEqualTo(expectedExposureLogString);
     }
 }

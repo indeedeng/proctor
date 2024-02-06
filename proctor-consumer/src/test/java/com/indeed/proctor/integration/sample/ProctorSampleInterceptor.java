@@ -23,11 +23,6 @@ public class ProctorSampleInterceptor extends HandlerInterceptorAdapter {
     private final SampleGroupsManager proctorGroupsManager;
     private final SampleGroupsLogger groupLogger;
 
-    // same logging as current AbstractGroups
-    final ProctorGroupsWriter legacyWriter =
-            new ProctorGroupsWriter.Builder(
-                            TestGroupFormatter.WITHOUT_ALLOC_ID, TestGroupFormatter.WITH_ALLOC_ID)
-                    .build();
     final ProctorGroupsWriter simpleWriter =
             ProctorGroupsWriter.Builder.withFormatter(TestGroupFormatter.WITH_ALLOC_ID).build();
 
@@ -54,9 +49,6 @@ public class ProctorSampleInterceptor extends HandlerInterceptorAdapter {
 
         // log determined buckets for segmentation in later later analysis outside proctor
         groupLogger.setLogFullStringFromAbstractGroups(proctorGroups.toLoggingString());
-        // log using new new writer approach, but in same format as abstractGroups
-        groupLogger.setLogFullStringFromWriter(
-                legacyWriter.writeGroupsAsString(proctorGroups.getAsProctorResult()));
 
         // provide groups to request handlers as request property
         request.setAttribute(PROCTOR_GROUPS_ATTRIBUTE, proctorGroups);
