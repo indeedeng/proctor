@@ -143,6 +143,7 @@ public class ${mainClassName} extends AbstractGroups {
     /**
       * @deprecated Use {@link #get${testDef.javaClassName}Value()} instead
       */
+    @Deprecated
     public int get${testDef.javaClassName}Value(final int defaultValue) {
         return getValue(${testEnumName}.${testDef.enumName}.getName(), defaultValue);
     }
