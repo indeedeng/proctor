@@ -138,9 +138,7 @@ public class ProctorGroupsWriterTest {
     @Test
     public void testWriterCanReturnTheSameLoggingStringAsAbstractGroups() {
         assertThat(
-                        new ProctorGroupsWriter.Builder(
-                                        TestGroupFormatter.WITHOUT_ALLOC_ID,
-                                        TestGroupFormatter.WITH_ALLOC_ID)
+                        new ProctorGroupsWriter.Builder(TestGroupFormatter.WITH_ALLOC_ID)
                                 .build()
                                 .writeGroupsAsString(PROCTOR_RESULT))
                 .isEqualTo(new AbstractGroups(PROCTOR_RESULT) {}.toLoggingString());

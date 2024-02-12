@@ -382,11 +382,9 @@ public abstract class AbstractGroups {
     }
 
     /**
-     * For each testname returned by getLoggingTestNames(), appends each test group in two forms to
-     * the StringBuilder using the separator to delimit them. The two forms are [test name + bucket
-     * value] and [allocation id + ":" + test name + bucket value]. For example, it appends
-     * "bgcolortst1,#A1:bgcolortst1" if test name is bgcolortst and allocation id is #A1 and
-     * separator is ",".
+     * For each testname returned by getLoggingTestNames(), appends each test group in the form of
+     * [allocation id + ":" + test name + bucket value]. For example, it appends "#A1:bgcolortst1"
+     * if test name is bgcolortst and allocation id is #A1 and separator is ",".
      *
      * <p>the separator should be appended after each test group added to the string builder {@link
      * #toString()} {@link #buildTestGroupString()} or {@link #appendTestGroups(StringBuilder)}
@@ -397,8 +395,6 @@ public abstract class AbstractGroups {
      */
     public void appendTestGroups(final StringBuilder sb, final char separator) {
         final List<String> testNames = getLoggingTestNames();
-        // log all tests without allocations first, in case logging string gets cut off
-        appendTestGroupsWithoutAllocations(sb, separator, testNames);
         appendTestGroupsWithAllocations(sb, separator, testNames);
     }
 
@@ -425,22 +421,6 @@ public abstract class AbstractGroups {
                 // avoid marking
                 .filter(testName -> getValueWithoutMarkingUsage(testName, -1) >= 0)
                 .collect(Collectors.toList());
-    }
-
-    /**
-     * Appends test groups in the form without allocation ids as [test name + bucket value] for
-     * given test names.
-     */
-    protected final void appendTestGroupsWithoutAllocations(
-            final StringBuilder sb, final char separator, final List<String> testNames) {
-        for (final String testName : testNames) {
-            getActiveBucketWithoutMarkingUsage(testName)
-                    .ifPresent(
-                            testBucket ->
-                                    sb.append(testName)
-                                            .append(testBucket.getValue())
-                                            .append(separator));
-        }
     }
 
     /**

@@ -139,8 +139,7 @@ public class TestAbstractGroupsWithForced {
                                                 "0", emptyMap(), emptyMap(), emptyMap())) {})
                                 .toLoggingString())
                 .isEmpty();
-        assertThat(sampleGroupsWithForced.toLoggingString())
-                .isEqualTo("abtst0,bgtst0,#A1:abtst0,#A1:bgtst0");
+        assertThat(sampleGroupsWithForced.toLoggingString()).isEqualTo("#A1:abtst0,#A1:bgtst0");
     }
 
     @Test
@@ -148,17 +147,6 @@ public class TestAbstractGroupsWithForced {
         assertThat(Sets.newHashSet(sampleGroupsWithForced.getLoggingTestNames()))
                 .containsExactlyInAnyOrder(
                         CONTROL_SELECTED_TEST.getName(), GROUP1_SELECTED_TEST.getName());
-    }
-
-    @Test
-    public void testAppendTestGroupsWithoutAllocations() {
-        final StringBuilder builder = new StringBuilder();
-        sampleGroupsWithForced.appendTestGroupsWithoutAllocations(
-                builder,
-                ',',
-                Lists.newArrayList(
-                        CONTROL_SELECTED_TEST.getName(), GROUP1_SELECTED_TEST.getName()));
-        assertThat(builder.toString().split(",")).containsExactly("bgtst0", "abtst0");
     }
 
     @Test
@@ -177,9 +165,7 @@ public class TestAbstractGroupsWithForced {
         final StringBuilder builder = new StringBuilder();
         sampleGroupsWithForced.appendTestGroups(builder, ',');
         assertThat(builder.toString().split(","))
-                .containsExactlyInAnyOrder(
-                        "bgtst0", "abtst0",
-                        "#A1:bgtst0", "#A1:abtst0");
+                .containsExactlyInAnyOrder("#A1:bgtst0", "#A1:abtst0");
     }
 
     @Test

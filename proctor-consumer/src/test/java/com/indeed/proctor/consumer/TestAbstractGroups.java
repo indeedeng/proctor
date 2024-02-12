@@ -177,7 +177,7 @@ public class TestAbstractGroups {
                 .isEmpty();
         assertThat(sampleGroups.toLoggingString())
                 .isEqualTo(
-                        "abtst1,bgtst0,groupwithfallbacktst2,no_definition_tst2,#A1:abtst1,#A1:bgtst0,#A1:groupwithfallbacktst2,#A1:no_definition_tst2");
+                        "#A1:abtst1,#A1:bgtst0,#A1:groupwithfallbacktst2,#A1:no_definition_tst2");
     }
 
     @Test
@@ -185,17 +185,14 @@ public class TestAbstractGroups {
 
         // same logging as current AbstractGroups
         final ProctorGroupsWriter writer =
-                new ProctorGroupsWriter.Builder(
-                                TestGroupFormatter.WITHOUT_ALLOC_ID,
-                                TestGroupFormatter.WITH_ALLOC_ID)
-                        .build();
+                new ProctorGroupsWriter.Builder(TestGroupFormatter.WITH_ALLOC_ID).build();
 
         // no test usage observed yet
         assertThat(writer.writeGroupsAsString(observer.asProctorResult())).isEmpty();
 
         // getGroupsString and getAsProctorResult should not mark tests as used
         final String fullLoggingString =
-                "abtst1,bgtst0,groupwithfallbacktst2,no_definition_tst2,#A1:abtst1,#A1:bgtst0,#A1:groupwithfallbacktst2,#A1:no_definition_tst2";
+                "#A1:abtst1,#A1:bgtst0,#A1:groupwithfallbacktst2,#A1:no_definition_tst2";
         assertThat(sampleGroups.getAsProctorResult()).isNotNull();
         assertThat(sampleGroups.toLoggingString()).isEqualTo(fullLoggingString);
         assertThat(sampleGroups.toLongString()).isNotBlank();
@@ -203,13 +200,12 @@ public class TestAbstractGroups {
 
         // getActiveBucket is observed
         assertThat(sampleGroups.getActiveBucket(GROUP1_SELECTED_TEST.getName())).isNotEmpty();
-        assertThat(writer.writeGroupsAsString(observer.asProctorResult()))
-                .isEqualTo("abtst1,#A1:abtst1");
+        assertThat(writer.writeGroupsAsString(observer.asProctorResult())).isEqualTo("#A1:abtst1");
 
         // explicitly marked tests (e.g. from dynamic resolution)
         sampleGroups.markTestsUsed(singleton(CONTROL_SELECTED_TEST.getName()));
         assertThat(writer.writeGroupsAsString(observer.asProctorResult()))
-                .isEqualTo("abtst1,bgtst0,#A1:abtst1,#A1:bgtst0");
+                .isEqualTo("#A1:abtst1,#A1:bgtst0");
 
         // using JavascriptConfig means given tests might be exposed, so each test is marked as used
         assertThat(
@@ -217,8 +213,7 @@ public class TestAbstractGroups {
                                 ImmutableSet.of(GROUP_WITH_FALLBACK_TEST.getName())))
                 .isNotEmpty();
         assertThat(writer.writeGroupsAsString(observer.asProctorResult()))
-                .isEqualTo(
-                        "abtst1,bgtst0,groupwithfallbacktst2,#A1:abtst1,#A1:bgtst0,#A1:groupwithfallbacktst2");
+                .isEqualTo("#A1:abtst1,#A1:bgtst0,#A1:groupwithfallbacktst2");
 
         // using JavascriptConfig without testnames means all tests might be exposed, so all tests
         // are marked as used
@@ -235,25 +230,6 @@ public class TestAbstractGroups {
                         GROUP1_SELECTED_TEST.getName(),
                         GROUP_WITH_FALLBACK_TEST.getName(),
                         MISSING_DEFINITION_TEST.getName());
-    }
-
-    @Test
-    public void testAppendTestGroupsWithoutAllocations() {
-        StringBuilder builder = new StringBuilder();
-        sampleGroups.appendTestGroupsWithoutAllocations(
-                builder,
-                ',',
-                Lists.newArrayList(
-                        CONTROL_SELECTED_TEST.getName(), GROUP1_SELECTED_TEST.getName()));
-        assertThat(builder.toString().split(",")).containsExactly("bgtst0", "abtst1");
-
-        builder = new StringBuilder();
-        emptyGroup.appendTestGroupsWithoutAllocations(
-                builder,
-                ',',
-                Lists.newArrayList(
-                        CONTROL_SELECTED_TEST.getName(), GROUP1_SELECTED_TEST.getName()));
-        assertThat(builder.toString()).isEmpty();
     }
 
     @Test
@@ -280,14 +256,10 @@ public class TestAbstractGroups {
         sampleGroups.appendTestGroups(builder, ',');
         assertThat(builder.toString().split(","))
                 .containsExactlyInAnyOrder(
-                        "groupwithfallbacktst2",
-                        "bgtst0",
-                        "abtst1",
                         "#A1:bgtst0",
                         "#A1:abtst1",
                         "#A1:groupwithfallbacktst2",
-                        "#A1:no_definition_tst2",
-                        "no_definition_tst2");
+                        "#A1:no_definition_tst2");
     }
 
     @Test

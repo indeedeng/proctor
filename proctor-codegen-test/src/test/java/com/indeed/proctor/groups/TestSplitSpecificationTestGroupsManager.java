@@ -110,7 +110,7 @@ public class TestSplitSpecificationTestGroupsManager {
             assertTrue(grps.isTwoTest3());
             assertFalse(grps.isTwoTest1());
             assertFalse(grps.isTwoTest2());
-            assertEquals("two3", grps.toString());
+            assertEquals("", grps.toString());
         }
     }
 
@@ -157,7 +157,7 @@ public class TestSplitSpecificationTestGroupsManager {
         assertEquals(
                 50, grps.getThreePayloadForBucket(SplitSpecificationTestGroups.Three.TEST), 0.001);
 
-        assertEquals("two2", grps.toString());
+        assertEquals("", grps.toString());
     }
 
     @Test

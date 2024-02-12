@@ -210,8 +210,7 @@ public class TestAbstractGroupsWithHoldout {
                                 .toLoggingString())
                 .isEmpty();
         assertThat(groupsWithHoldOut.toLoggingString())
-                .isEqualTo(
-                        "holdout_tst2,no_definition_tst2,#A1:holdout_tst2,#A1:no_definition_tst2");
+                .isEqualTo("#A1:holdout_tst2,#A1:no_definition_tst2");
     }
 
     @Test
@@ -219,17 +218,6 @@ public class TestAbstractGroupsWithHoldout {
         assertThat(Sets.newHashSet(groupsWithHoldOut.getLoggingTestNames()))
                 .containsExactlyInAnyOrder(
                         HOLDOUT_MASTER_TEST.getName(), MISSING_DEFINITION_TEST.getName());
-    }
-
-    @Test
-    public void testAppendTestGroupsWithoutAllocations() {
-        StringBuilder builder = new StringBuilder();
-        groupsWithHoldOut.appendTestGroupsWithoutAllocations(
-                builder,
-                ',',
-                Lists.newArrayList(
-                        CONTROL_SELECTED_TEST.getName(), GROUP1_SELECTED_TEST.getName()));
-        assertThat(builder.toString().split(",")).containsExactly("bgtst-1", "abtst-1");
     }
 
     @Test
