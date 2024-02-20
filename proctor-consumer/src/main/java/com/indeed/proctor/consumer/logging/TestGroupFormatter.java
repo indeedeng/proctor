@@ -21,7 +21,8 @@ public interface TestGroupFormatter {
 
     /**
      * Appends test groups in the form with allocation ids as [allocation-id + ":" + test-name +
-     * bucket-value] for given test names. If allocation Id is empty, appends nothing
+     * bucket-value] for given test names. If force group append legacy format [test-name +
+     * bucket-value]. If allocation Id is empty, appends nothing
      */
     TestGroupFormatter WITH_ALLOC_ID =
             (sb, testName, allocationId, bucketValue) -> {
