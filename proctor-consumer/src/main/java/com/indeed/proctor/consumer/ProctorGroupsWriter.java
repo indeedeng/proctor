@@ -81,7 +81,7 @@ public class ProctorGroupsWriter {
 
         for (final TestGroupFormatter formatter : formatters) {
             for (final String testName : filteredTestNames) {
-                // no allocation might exist for this testbucket
+                // no allocation might exist for this testbucket which represents a force group
                 final String allocId =
                         proctorResult.getAllocations().get(testName) == null
                                 ? "forced"
