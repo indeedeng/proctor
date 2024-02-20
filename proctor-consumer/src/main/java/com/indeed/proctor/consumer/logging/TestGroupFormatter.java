@@ -26,9 +26,13 @@ public interface TestGroupFormatter {
     TestGroupFormatter WITH_ALLOC_ID =
             (sb, testName, allocationId, bucketValue) -> {
                 if (!StringUtils.isEmpty(allocationId)) {
-                    sb.append(allocationId).append(DEFAULT_ALLOCATION_GROUP_SEPARATOR);
-                    WITHOUT_ALLOC_ID.appendProctorTestGroup(
-                            sb, testName, allocationId, bucketValue);
+                    if (allocationId.equals("forced")) {
+                        WITHOUT_ALLOC_ID.appendProctorTestGroup(sb, testName, "", bucketValue);
+                    } else {
+                        sb.append(allocationId).append(DEFAULT_ALLOCATION_GROUP_SEPARATOR);
+                        WITHOUT_ALLOC_ID.appendProctorTestGroup(
+                                sb, testName, allocationId, bucketValue);
+                    }
                 }
             };
 

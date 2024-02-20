@@ -83,9 +83,11 @@ public class ProctorGroupsWriter {
             for (final String testName : filteredTestNames) {
                 // no allocation might exist for this testbucket
                 final String allocId =
-                        Optional.ofNullable(proctorResult.getAllocations().get(testName))
-                                .map(Allocation::getId)
-                                .orElse("");
+                        proctorResult.getAllocations().get(testName) == null
+                                ? "forced"
+                                : Optional.ofNullable(proctorResult.getAllocations().get(testName))
+                                        .map(Allocation::getId)
+                                        .orElse("");
                 // allocation should never be null, guarding against NPE anyway
                 // id can be blank for historical data
                 final int lengthBefore = stringBuilder.length();
