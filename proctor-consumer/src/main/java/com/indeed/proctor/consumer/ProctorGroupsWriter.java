@@ -84,7 +84,7 @@ public class ProctorGroupsWriter {
                 // no allocation might exist for this testbucket which represents a force group
                 final String allocId =
                         proctorResult.getAllocations().get(testName) == null
-                                ? "forced"
+                                ? "force"
                                 : Optional.ofNullable(proctorResult.getAllocations().get(testName))
                                         .map(Allocation::getId)
                                         .orElse("");

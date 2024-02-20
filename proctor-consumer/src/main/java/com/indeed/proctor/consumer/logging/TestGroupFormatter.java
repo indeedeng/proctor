@@ -27,7 +27,7 @@ public interface TestGroupFormatter {
     TestGroupFormatter WITH_ALLOC_ID =
             (sb, testName, allocationId, bucketValue) -> {
                 if (!StringUtils.isEmpty(allocationId)) {
-                    if (allocationId.equals("forced")) {
+                    if (allocationId.equals("force")) {
                         WITHOUT_ALLOC_ID.appendProctorTestGroup(sb, testName, "", bucketValue);
                     } else {
                         sb.append(allocationId).append(DEFAULT_ALLOCATION_GROUP_SEPARATOR);
