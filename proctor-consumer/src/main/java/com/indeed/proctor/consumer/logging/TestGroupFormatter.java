@@ -21,14 +21,19 @@ public interface TestGroupFormatter {
 
     /**
      * Appends test groups in the form with allocation ids as [allocation-id + ":" + test-name +
-     * bucket-value] for given test names. If allocation Id is empty, appends nothing
+     * bucket-value] for given test names. If force group append legacy format [test-name +
+     * bucket-value]. If allocation Id is empty, appends nothing
      */
     TestGroupFormatter WITH_ALLOC_ID =
             (sb, testName, allocationId, bucketValue) -> {
                 if (!StringUtils.isEmpty(allocationId)) {
-                    sb.append(allocationId).append(DEFAULT_ALLOCATION_GROUP_SEPARATOR);
-                    WITHOUT_ALLOC_ID.appendProctorTestGroup(
-                            sb, testName, allocationId, bucketValue);
+                    if (allocationId.equals("force")) {
+                        WITHOUT_ALLOC_ID.appendProctorTestGroup(sb, testName, "", bucketValue);
+                    } else {
+                        sb.append(allocationId).append(DEFAULT_ALLOCATION_GROUP_SEPARATOR);
+                        WITHOUT_ALLOC_ID.appendProctorTestGroup(
+                                sb, testName, allocationId, bucketValue);
+                    }
                 }
             };
 
