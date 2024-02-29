@@ -162,7 +162,7 @@ public class TestRuleEvaluator {
     }
 
     @Test
-    public void testElExpressionsShouldBeAvailableMap() {
+    public void testElExpressionsShouldBeAvailableNestedMap() {
         final Map<String, Boolean> value = singletonMap("bar", true);
         final Map<String, Object> values = singletonMap("foo", value);
         {
