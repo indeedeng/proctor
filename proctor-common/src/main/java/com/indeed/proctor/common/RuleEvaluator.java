@@ -169,13 +169,10 @@ public class RuleEvaluator {
         // To support users writing rules, be more strict here in requiring the type of the
         // value to be expected before coercion
         Class<?> type = ve.getType(elContext);
-        // if rule is not primitive type attempt to get value with context values
-        if (!ClassUtils.isPrimitiveWrapper(type)) {
-            type = ve.getValue(elContext).getClass();
-        }
-
         if (ClassUtils.isPrimitiveWrapper(type)) {
             type = ClassUtils.wrapperToPrimitive(type);
+        } else if (type == Object.class) {
+            type = ve.getExpectedType();
         }
         // allow null to be coerced for historic reasons
         if ((type != null) && (type != boolean.class)) {
