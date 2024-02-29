@@ -10,17 +10,7 @@ import org.apache.logging.log4j.Logger;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
-import javax.el.ArrayELResolver;
-import javax.el.BeanELResolver;
-import javax.el.CompositeELResolver;
-import javax.el.ELContext;
-import javax.el.ELResolver;
-import javax.el.ExpressionFactory;
-import javax.el.FunctionMapper;
-import javax.el.ListELResolver;
-import javax.el.MapELResolver;
-import javax.el.ValueExpression;
-import javax.el.VariableMapper;
+import javax.el.*;
 import java.util.Map;
 
 /**
@@ -172,8 +162,9 @@ public class RuleEvaluator {
 
         // if object is map check what the base value type is
         if (type == Object.class) {
-            final Object base = ve.getValueReference(elContext).getBase();
-            final Object property = ve.getValueReference(elContext).getProperty();
+            final ValueReference valueReference = ve.getValueReference(elContext);
+            final Object base = valueReference.getBase();
+            final Object property = valueReference.getProperty();
             try {
                 if (base instanceof Map<?, ?>) {
                     final Map<?, ?> map = (Map<?, ?>) base;
