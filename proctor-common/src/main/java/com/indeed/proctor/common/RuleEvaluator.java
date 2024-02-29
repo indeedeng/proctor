@@ -175,6 +175,10 @@ public class RuleEvaluator {
         return evaluateBooleanRulePartialWithValueExpr(rule, localContext);
     }
 
+    /**
+     * This method should only be used for partial matching with proctor rules
+     * @return Evaluates a partial rule
+     **/
     public boolean evaluateBooleanRulePartialWithValueExpr(
             final String rule, @Nonnull final Map<String, ValueExpression> values)
             throws IllegalArgumentException {
