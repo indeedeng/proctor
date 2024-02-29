@@ -9,6 +9,7 @@ import org.junit.Test;
 
 import javax.el.ELException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 
 import static java.util.Collections.emptyMap;
@@ -163,8 +164,13 @@ public class TestRuleEvaluator {
 
     @Test
     public void testElExpressionsShouldBeAvailableNestedMap() {
-        final Map<String, Boolean> value = singletonMap("bar", true);
-        final Map<String, Object> values = singletonMap("foo", value);
+        final Map<String, Boolean> value = new HashMap<>();
+        value.put("bar", true);
+        final Map<String, Map<String, Object>> traits =
+                singletonMap("baz", singletonMap("alpha", true));
+        final Map<String, Object> values = new HashMap<>();
+        values.put("foo", value);
+        values.put("traits", traits);
         {
             final String rule = "${foo.bar == true}";
             assertTrue(
@@ -176,6 +182,55 @@ public class TestRuleEvaluator {
             assertTrue(
                     "rule '" + rule + "' should be true for " + values,
                     ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+        {
+            final String rule = "${!foo.bar}";
+            assertFalse(
+                    "rule '" + rule + "' should be true for " + values,
+                    ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+        {
+            final String rule = "${traits.baz.alpha}";
+            assertTrue(
+                    "rule '" + rule + "' should be true for " + values,
+                    ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+
+        // check false cases
+        value.put("bar", false);
+        {
+            final String rule = "${foo.bar == true}";
+            assertFalse(
+                    "rule '" + rule + "' should be true for " + values,
+                    ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+        {
+            final String rule = "${foo.bar}";
+            assertFalse(
+                    "rule '" + rule + "' should be true for " + values,
+                    ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+    }
+
+    @Test
+    public void testElExpressionsShouldBeAvailableNestedMapErrors() {
+        final Map<String, Map<String, String>> traits =
+                singletonMap("baz", singletonMap("alpha", "123"));
+        final Map<String, Object> values = new HashMap<>();
+        values.put("traits", traits);
+        {
+            final String rule = "${traits.baz.alpha}";
+            assertThatThrownBy(() -> ruleEvaluator.evaluateBooleanRule(rule, values))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining(
+                            "Received non-boolean return value: class java.lang.String from rule");
+        }
+        {
+            final String rule = "${traits.fakeValue}";
+            assertThatThrownBy(() -> ruleEvaluator.evaluateBooleanRule(rule, values))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining(
+                            "Received nested value which does not exist in context map: value fakeValue in rule ${traits.fakeValue}");
         }
     }
 

@@ -169,9 +169,25 @@ public class RuleEvaluator {
         // To support users writing rules, be more strict here in requiring the type of the
         // value to be expected before coercion
         Class<?> type = ve.getType(elContext);
+
+        // if object is map check what the base value type is
         if (type == Object.class) {
-            type = ve.getExpectedType();
+            final Object base = ve.getValueReference(elContext).getBase();
+            final Object property = ve.getValueReference(elContext).getProperty();
+            try {
+                if (base instanceof Map<?, ?>) {
+                    final Map<?, ?> map = (Map<?, ?>) base;
+                    type = map.get(property).getClass();
+                }
+            } catch (final NullPointerException e) {
+                throw new IllegalArgumentException(
+                        "Received nested value which does not exist in context map: value "
+                                + property
+                                + " in rule "
+                                + rule);
+            }
         }
+
         if (ClassUtils.isPrimitiveWrapper(type)) {
             type = ClassUtils.wrapperToPrimitive(type);
         }
