@@ -213,6 +213,11 @@ public class TestRuleEvaluator {
     }
 
     @Test
+    public void testDummy() {
+        assertFalse(Object.class.equals(Map.class));
+    }
+
+    @Test
     public void testElExpressionsShouldBeAvailableNestedMapErrors() {
         final Map<String, Map<String, String>> traits =
                 singletonMap("baz", singletonMap("alpha", "123"));

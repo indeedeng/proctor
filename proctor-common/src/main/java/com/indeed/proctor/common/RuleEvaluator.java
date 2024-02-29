@@ -172,7 +172,7 @@ public class RuleEvaluator {
         Class<?> type = ve.getType(elContext);
 
         // if object is map check what the base value type is
-        if (type == Object.class) {
+        if (type.equals(Object.class)) {
             final ValueReference valueReference = ve.getValueReference(elContext);
             final Object base = valueReference.getBase();
             final Object property = valueReference.getProperty();
