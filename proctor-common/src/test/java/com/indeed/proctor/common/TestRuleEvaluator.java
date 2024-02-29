@@ -161,6 +161,24 @@ public class TestRuleEvaluator {
         }
     }
 
+    @Test
+    public void testElExpressionsShouldBeAvailableMap() {
+        final Map<String, Boolean> value = singletonMap("bar", true);
+        final Map<String, Object> values = singletonMap("foo", value);
+        {
+            final String rule = "${foo.bar == true}";
+            assertTrue(
+                    "rule '" + rule + "' should be true for " + values,
+                    ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+        {
+            final String rule = "${foo.bar}";
+            assertTrue(
+                    "rule '" + rule + "' should be true for " + values,
+                    ruleEvaluator.evaluateBooleanRule(rule, values));
+        }
+    }
+
     public static class Temp {
         public String getY() {
             return "barY";

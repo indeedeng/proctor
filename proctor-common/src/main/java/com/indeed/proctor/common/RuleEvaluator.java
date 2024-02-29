@@ -171,6 +171,11 @@ public class RuleEvaluator {
         Class<?> type = ve.getType(elContext);
         if (ClassUtils.isPrimitiveWrapper(type)) {
             type = ClassUtils.wrapperToPrimitive(type);
+        } else {
+            type = ve.getValue(elContext).getClass();
+            if (ClassUtils.isAssignable(type, Boolean.class)) {
+                type = boolean.class;
+            }
         }
         // allow null to be coerced for historic reasons
         if ((type != null) && (type != boolean.class)) {
