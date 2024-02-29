@@ -23,6 +23,7 @@ import javax.el.ValueExpression;
 import javax.el.ValueReference;
 import javax.el.VariableMapper;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * A nice tidy packaging of javax.el stuff.
@@ -172,7 +173,7 @@ public class RuleEvaluator {
         Class<?> type = ve.getType(elContext);
 
         // if object is map check what the base value type is
-        if (type.equals(Object.class)) {
+        if (Objects.equals(type, Object.class)) {
             final ValueReference valueReference = ve.getValueReference(elContext);
             final Object base = valueReference.getBase();
             final Object property = valueReference.getProperty();
