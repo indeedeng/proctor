@@ -80,4 +80,44 @@ public class ProctorRuleFunctions {
         }
         return inRange(version, start, end);
     }
+
+    public static MaybeBool maybeAnd(final MaybeBool op1, final MaybeBool op2) {
+        if (MaybeBool.FALSE == op1 || MaybeBool.FALSE == op2) {
+            return MaybeBool.FALSE;
+        }
+        if (MaybeBool.TRUE == op1 && MaybeBool.TRUE == op2) {
+            return MaybeBool.TRUE;
+        }
+        return MaybeBool.UNKNOWN;
+    }
+
+    public static MaybeBool maybeOr(final MaybeBool op1, final MaybeBool op2) {
+        if (MaybeBool.TRUE == op1 || MaybeBool.TRUE == op2) {
+            return MaybeBool.TRUE;
+        }
+        if (MaybeBool.FALSE == op1 && MaybeBool.FALSE == op2) {
+            return MaybeBool.FALSE;
+        }
+        return MaybeBool.UNKNOWN;
+    }
+
+    public static MaybeBool maybeNot(final MaybeBool maybeBool) {
+        if (MaybeBool.TRUE == maybeBool) {
+            return MaybeBool.FALSE;
+        }
+        if (MaybeBool.FALSE == maybeBool) {
+            return MaybeBool.TRUE;
+        }
+        return MaybeBool.UNKNOWN;
+    }
+
+    public static MaybeBool toMaybeBool(final boolean b) {
+        return b ? MaybeBool.TRUE : MaybeBool.FALSE;
+    }
+
+    public enum MaybeBool {
+        TRUE,
+        FALSE,
+        UNKNOWN;
+    }
 }

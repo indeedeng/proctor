@@ -2,6 +2,7 @@ package com.indeed.proctor.common;
 
 import com.indeed.proctor.common.el.LibraryFunctionMapperBuilder;
 import com.indeed.proctor.common.el.MulticontextReadOnlyVariableMapper;
+import com.indeed.proctor.common.el.PartialExpressionBuilder;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.el.ExpressionFactoryImpl;
@@ -21,7 +22,9 @@ import javax.el.ListELResolver;
 import javax.el.MapELResolver;
 import javax.el.ValueExpression;
 import javax.el.VariableMapper;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * A nice tidy packaging of javax.el stuff.
@@ -159,7 +162,64 @@ public class RuleEvaluator {
                         + " from rule "
                         + rule);
     }
+    /**
+     * @deprecated Use evaluateBooleanRulePartialWithValueExpr(String, Map) instead, it's more
+     *     efficient
+     */
+    @Deprecated
+    public boolean evaluateBooleanRulePartial(
+            final String rule, @Nonnull final Map<String, Object> values)
+            throws IllegalArgumentException {
+        final Map<String, ValueExpression> localContext =
+                ProctorUtils.convertToValueExpressionMap(expressionFactory, values);
+        return evaluateBooleanRulePartialWithValueExpr(rule, localContext);
+    }
 
+    /**
+     * This method should only be used for partial matching with proctor rules
+     * @return Evaluates a partial rule
+     **/
+    public boolean evaluateBooleanRulePartialWithValueExpr(
+            final String rule, @Nonnull final Map<String, ValueExpression> values)
+            throws IllegalArgumentException {
+        if (StringUtils.isBlank(rule)) {
+            return true;
+        }
+        if (!rule.startsWith("${") || !rule.endsWith("}")) {
+            LOGGER.error("Invalid rule '" + rule + "'"); //  TODO: should this be an exception?
+            return false;
+        }
+        final String bareRule = ProctorUtils.removeElExpressionBraces(rule);
+        if (StringUtils.isBlank(bareRule) || "true".equalsIgnoreCase(bareRule)) {
+            return true; //  always passes
+        }
+        if ("false".equalsIgnoreCase(bareRule)) {
+            return false;
+        }
+
+        final ELContext elContext = createElContext(values);
+        final Set<String> variablesDefined = new HashSet<>();
+        variablesDefined.addAll(values.keySet());
+        variablesDefined.addAll(testConstants.keySet());
+        final PartialExpressionBuilder builder =
+                new PartialExpressionBuilder(rule, elContext, variablesDefined);
+        final ValueExpression ve = builder.createValueExpression(boolean.class);
+        checkRuleIsBooleanType(rule, elContext, ve);
+
+        final Object result = ve.getValue(elContext);
+
+        if (result instanceof Boolean) {
+            return ((Boolean) result);
+        }
+        // this should never happen, evaluateRule throws ELException when it cannot coerce to
+        // Boolean
+        throw new IllegalArgumentException(
+                "Received non-boolean return value: "
+                        + (result == null ? "null" : result.getClass().getCanonicalName())
+                        + " from rule "
+                        + rule);
+    }
+    
     /** @throws IllegalArgumentException if type of expression is not boolean */
     static void checkRuleIsBooleanType(
             final String rule, final ELContext elContext, final ValueExpression ve) {
