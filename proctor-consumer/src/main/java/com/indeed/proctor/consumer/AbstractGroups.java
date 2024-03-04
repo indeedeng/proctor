@@ -436,8 +436,14 @@ public abstract class AbstractGroups {
                                 // no allocation might exist for this testbucket
                                 final Allocation allocation =
                                         proctorResult.getAllocations().get(testName);
-                                if ((allocation != null)
-                                        && !Strings.isNullOrEmpty(allocation.getId())) {
+                                // null allocation equals forced group -> log in legacy format
+                                // [test name + bucket value]
+                                if (allocation == null) {
+                                    sb.append(testName)
+                                            .append(testBucket.getValue())
+                                            .append(separator);
+
+                                } else if (!Strings.isNullOrEmpty(allocation.getId())) {
                                     sb.append(allocation.getId())
                                             .append(ALLOCATION_GROUP_SEPARATOR)
                                             .append(testName)

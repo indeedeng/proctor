@@ -27,7 +27,33 @@ public class TestRuleEvaluator {
     @Before
     public void setUp() throws Exception {
         final Map<String, Object> testConstants =
-                singletonMap("LANGUAGES_ENABLED", Lists.newArrayList("en", "fr", "de"));
+                ImmutableMap.of(
+                        "LANGUAGES_ENABLED", Lists.newArrayList("en", "fr", "de"),
+                        "US_REMOTE_Q",
+                                Lists.newArrayList(
+                                        "work from home remote",
+                                        "remote work from home",
+                                        "remote work from home jobs on indeed",
+                                        "at home work",
+                                        "online",
+                                        "work home online",
+                                        "online work from home",
+                                        "work at home",
+                                        "at home",
+                                        "online",
+                                        "work from home",
+                                        "remote"),
+                        "US_REMOTE_L",
+                                Lists.newArrayList(
+                                        "work at home",
+                                        "at home",
+                                        "online",
+                                        "work from home",
+                                        "remote",
+                                        "remote",
+                                        "us",
+                                        "remote,us",
+                                        ""));
         ruleEvaluator =
                 new RuleEvaluator(
                         RuleEvaluator.EXPRESSION_FACTORY,
@@ -637,5 +663,76 @@ public class TestRuleEvaluator {
         assertThat(ruleEvaluator.evaluateRule("${4}", emptyMap(), String.class)).isEqualTo("4");
         assertThat(ruleEvaluator.evaluateRule("${true}", emptyMap(), String.class))
                 .isEqualTo("true");
+    }
+
+    @Test
+    public void testPartialMatchEmptyContextMatch() throws Exception {
+        final String rule =
+                "${3<4 && (2 > 1 || proctor:versionInRange(version, '1.2.0.0', '2.4.0.0'))}";
+        final Map<String, Object> values = emptyMap();
+        assertTrue(ruleEvaluator.evaluateBooleanRulePartial(rule, values));
+    }
+
+    @Test
+    public void testPartialMatchEmptyContextNoMatch() throws Exception {
+        final String rule =
+                "${3<4 && 2<1 && proctor:versionInRange(version, '1.2.0.0', '2.4.0.0')}";
+        final Map<String, Object> values = emptyMap();
+        assertFalse(ruleEvaluator.evaluateBooleanRulePartial(rule, values));
+    }
+
+    @Test
+    public void testPartialMatchComplexRule() throws Exception {
+        final String rule =
+                "${country == 'US' && adFormat == 'web' && hasAccount && (indeed:contains(US_REMOTE_Q, fn:toLowerCase(fn:trim(query))) || indeed:contains(US_REMOTE_L, searchLocation))}";
+        assertTrue(ruleEvaluator.evaluateBooleanRulePartial(rule, ImmutableMap.of()));
+        assertTrue(
+                ruleEvaluator.evaluateBooleanRulePartial(
+                        rule, ImmutableMap.of("country", "US", "adFormat", "web")));
+        assertFalse(
+                ruleEvaluator.evaluateBooleanRulePartial(
+                        rule, ImmutableMap.of("country", "GB", "adFormat", "web")));
+        assertFalse(
+                ruleEvaluator.evaluateBooleanRulePartial(
+                        rule, ImmutableMap.of("country", "US", "adFormat", "mob")));
+        assertFalse(
+                ruleEvaluator.evaluateBooleanRulePartial(
+                        rule,
+                        ImmutableMap.of("query", "software engineer", "searchLocation", "Austin")));
+        assertTrue(
+                ruleEvaluator.evaluateBooleanRulePartial(
+                        rule, ImmutableMap.of("query", "remote", "searchLocation", "Austin")));
+        assertTrue(
+                ruleEvaluator.evaluateBooleanRulePartial(
+                        rule,
+                        ImmutableMap.of("query", "software engineer", "searchLocation", "remote")));
+        assertTrue(
+                ruleEvaluator.evaluateBooleanRulePartial(
+                        rule, ImmutableMap.of("query", "software engineer")));
+        assertTrue(
+                ruleEvaluator.evaluateBooleanRulePartial(
+                        rule, ImmutableMap.of("searchLocation", "Austin")));
+        assertFalse(
+                ruleEvaluator.evaluateBooleanRulePartial(
+                        rule, ImmutableMap.of("hasAccount", false, "searchLocation", "Austin")));
+    }
+
+    @Test
+    public void testPartialFalseSometimesHelps() throws Exception {
+        final String rule = "${!(country == 'US' && adFormat == 'web')}";
+        assertFalse(
+                ruleEvaluator.evaluateBooleanRulePartial(
+                        rule, ImmutableMap.of("country", "US", "adFormat", "web")));
+        assertTrue(
+                ruleEvaluator.evaluateBooleanRulePartial(rule, ImmutableMap.of("country", "US")));
+        assertTrue(
+                ruleEvaluator.evaluateBooleanRulePartial(rule, ImmutableMap.of("adFormat", "web")));
+        assertTrue(
+                ruleEvaluator.evaluateBooleanRulePartial(rule, ImmutableMap.of("country", "GB")));
+        assertTrue(
+                ruleEvaluator.evaluateBooleanRulePartial(rule, ImmutableMap.of("country", "mob")));
+        assertTrue(
+                ruleEvaluator.evaluateBooleanRulePartial(
+                        rule, ImmutableMap.of("country", "US", "adFormat", "mob")));
     }
 }

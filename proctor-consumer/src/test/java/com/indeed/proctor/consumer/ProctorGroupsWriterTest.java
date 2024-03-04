@@ -24,6 +24,7 @@ public class ProctorGroupsWriterTest {
     private static final String EMPTY_ALLOCID_DEFINITION_TEST_NAME = "c_empty_alloc_id";
     private static final String GROUP1_TEST_NAME = "d_foo_tst";
     private static final String SILENT_TEST_NAME = "e_silent_tst";
+    private static final String FORCED_TEST_NAME = "f_forced_tst";
 
     // for this test, buckets can be reused between test definitions, sorting by testname
     public static final TestBucket INACTIVE_BUCKET = new TestBucket("fooname", -1, "foodesc");
@@ -44,6 +45,7 @@ public class ProctorGroupsWriterTest {
                     .put(EMPTY_ALLOCID_DEFINITION_TEST_NAME, CONTROL_BUCKET)
                     .put(GROUP1_TEST_NAME, GROUP1_BUCKET)
                     .put(SILENT_TEST_NAME, GROUP1_BUCKET)
+                    .put(FORCED_TEST_NAME, GROUP1_BUCKET)
                     .build();
     private static final Map<String, Allocation> ALLOCATIONS =
             new ImmutableSortedMap.Builder<String, Allocation>(Ordering.natural())
@@ -60,6 +62,7 @@ public class ProctorGroupsWriterTest {
                     .put(EMPTY_ALLOCID_DEFINITION_TEST_NAME, stubDefinition(GROUP1_BUCKET))
                     .put(GROUP1_TEST_NAME, stubDefinition(GROUP1_BUCKET))
                     .put(SILENT_TEST_NAME, stubDefinition(GROUP1_BUCKET, d -> d.setSilent(true)))
+                    .put(FORCED_TEST_NAME, stubDefinition(GROUP1_BUCKET))
                     .build();
 
     private static final ProctorResult PROCTOR_RESULT =
@@ -83,7 +86,7 @@ public class ProctorGroupsWriterTest {
     public void testDoubleFormattingWriter() {
         // legacy Indeed behavior
         final String expected =
-                "b_missing_definition0,c_empty_alloc_id0,d_foo_tst1,#A:b_missing_definition0,#A:d_foo_tst1";
+                "b_missing_definition0,c_empty_alloc_id0,d_foo_tst1,f_forced_tst1,#A:b_missing_definition0,#A:d_foo_tst1,f_forced_tst1";
 
         final ProctorGroupsWriter defaultWriter =
                 new ProctorGroupsWriter.Builder(
@@ -97,8 +100,10 @@ public class ProctorGroupsWriterTest {
                                         MISSING_DEFINITION_TEST_NAME + 0,
                                         EMPTY_ALLOCID_DEFINITION_TEST_NAME + 0,
                                         GROUP1_TEST_NAME + 1,
+                                        FORCED_TEST_NAME + 1,
                                         "#A:" + MISSING_DEFINITION_TEST_NAME + 0,
-                                        "#A:" + GROUP1_TEST_NAME + 1)
+                                        "#A:" + GROUP1_TEST_NAME + 1,
+                                        FORCED_TEST_NAME + 1)
                                 .with(","));
     }
 
@@ -111,7 +116,7 @@ public class ProctorGroupsWriterTest {
                         .setIncludeInactiveGroups(true)
                         .build();
         assertThat(writerWithAllocIds.writeGroupsAsString(PROCTOR_RESULT))
-                .isEqualTo("#A:a_inactive_tst-1,#A:d_foo_tst1,#A:e_silent_tst1");
+                .isEqualTo("#A:a_inactive_tst-1,#A:d_foo_tst1,#A:e_silent_tst1,f_forced_tst1");
 
         final ProctorGroupsWriter writerWithoutAllocIds =
                 new ProctorGroupsWriter.Builder(TestGroupFormatter.WITHOUT_ALLOC_ID)
@@ -119,7 +124,7 @@ public class ProctorGroupsWriterTest {
                         .setIncludeTestWithoutDefinition(false)
                         .build();
         assertThat(writerWithoutAllocIds.writeGroupsAsString(PROCTOR_RESULT))
-                .isEqualTo("c_empty_alloc_id0,d_foo_tst1,e_silent_tst1");
+                .isEqualTo("c_empty_alloc_id0,d_foo_tst1,e_silent_tst1,f_forced_tst1");
     }
 
     @Test
