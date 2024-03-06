@@ -113,6 +113,16 @@ public class TestRuleVerifyUtils {
     }
 
     @Test
+    public void testVerifyRulesNestedMapBoolean() {
+        expectValidRule(
+                "${foo.bar}",
+                new Object[][] {
+                    {"foo", Collections.singletonMap("bar", true)},
+                },
+                new String[] {});
+    }
+
+    @Test
     public void testValidRulesWithMethodCall() {
         expectValidRule(
                 "${browser == 'IE9' && obj.matches()}",

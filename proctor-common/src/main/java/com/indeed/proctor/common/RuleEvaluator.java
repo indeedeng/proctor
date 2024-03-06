@@ -21,9 +21,11 @@ import javax.el.FunctionMapper;
 import javax.el.ListELResolver;
 import javax.el.MapELResolver;
 import javax.el.ValueExpression;
+import javax.el.ValueReference;
 import javax.el.VariableMapper;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -229,6 +231,26 @@ public class RuleEvaluator {
         // To support users writing rules, be more strict here in requiring the type of the
         // value to be expected before coercion
         Class<?> type = ve.getType(elContext);
+
+        // if object is map check what the base value type is
+        if (Objects.equals(type, Object.class)) {
+            final ValueReference valueReference = ve.getValueReference(elContext);
+            final Object base = valueReference.getBase();
+            final Object property = valueReference.getProperty();
+            try {
+                if (base instanceof Map<?, ?>) {
+                    final Map<?, ?> map = (Map<?, ?>) base;
+                    type = map.get(property).getClass();
+                }
+            } catch (final NullPointerException e) {
+                throw new IllegalArgumentException(
+                        "Received nested value which does not exist in context map: value "
+                                + property
+                                + " in rule "
+                                + rule);
+            }
+        }
+
         if (ClassUtils.isPrimitiveWrapper(type)) {
             type = ClassUtils.wrapperToPrimitive(type);
         }
