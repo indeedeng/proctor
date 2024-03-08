@@ -10,9 +10,12 @@ import com.indeed.proctor.common.model.TestDependency;
 import com.indeed.proctor.common.model.TestType;
 import org.junit.Test;
 
+import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyMap;
@@ -95,6 +98,17 @@ public class TestTestRangeSelector {
     }
 
     @Test
+    public void testFindMatchingRule_Error() {
+        final TestRangeSelector selector =
+                createTestRangeSelector(
+                        stubTestDefinition(singletonList("trait.ad.country == 'US'"), false)
+                                .build());
+        final Map<String, Object> context = new HashMap<>();
+
+        assertThat(selector.findMatchingRule(context, emptyMap(), "")).isEqualTo(-1);
+    }
+
+    @Test
     public void testFindMatchingRule_UnitlessAllocation_NotUnitless() {
         final TestRangeSelector selector =
                 createTestRangeSelector(
@@ -128,19 +142,25 @@ public class TestTestRangeSelector {
     }
 
     private static TestDefinition.Builder stubTestDefinition(final List<String> rules) {
-        return stubTestDefinition(rules, false);
+        return stubTestDefinition(rules, false, null);
     }
 
     private static TestDefinition.Builder stubTestDefinition(
             final List<String> rules, final boolean unitless) {
+        return stubTestDefinition(rules, false, null);
+    }
+
+    private static TestDefinition.Builder stubTestDefinition(
+            final List<String> rules, final boolean unitless, @Nullable final String rule) {
         return TestDefinition.builder()
+                .setRule(rule)
                 .setTestType(TestType.ANONYMOUS_USER)
                 .setSalt("")
                 .setEnableUnitlessAllocations(unitless)
                 .addBuckets(new TestBucket("active", 1, ""))
                 .setAllocations(
                         rules.stream()
-                                .map(rule -> new Allocation(rule, singletonList(new Range(1, 1.0))))
+                                .map(r -> new Allocation(r, singletonList(new Range(1, 1.0))))
                                 .collect(Collectors.toList()));
     }
 

@@ -37,6 +37,7 @@ public class TestRangeSelector {
     @Nonnull private final ConsumableTestDefinition testDefinition;
     @Nonnull private final String[] rules;
     @Nonnull private final TestBucket[][] rangeToBucket;
+    private String currentRule;
     private final RuleEvaluator ruleEvaluator;
 
     TestRangeSelector(
@@ -115,6 +116,7 @@ public class TestRangeSelector {
         }
 
         @Nullable final String rule = testDefinition.getRule();
+        currentRule = rule;
         try {
             if (rule != null) {
                 if (!evaluator.apply(rule)) {
@@ -130,7 +132,7 @@ public class TestRangeSelector {
                             e,
                             String.format(
                                     "Error evaluating rule '%s' for test '%s': '%s'. Failing evaluation and continuing.",
-                                    rule, testName, e.getMessage())));
+                                    currentRule, testName, e.getMessage())));
         }
 
         return -1;
@@ -139,6 +141,7 @@ public class TestRangeSelector {
     protected int getMatchingAllocation(
             final Function<String, Boolean> evaluator, @Nullable final String identifier) {
         for (int i = 0; i < rules.length; i++) {
+            currentRule = rules[i];
             if (evaluator.apply(rules[i])) {
                 return i;
             }
