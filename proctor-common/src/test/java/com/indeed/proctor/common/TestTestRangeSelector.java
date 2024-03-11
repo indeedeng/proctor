@@ -11,8 +11,9 @@ import com.indeed.proctor.common.model.TestType;
 import org.junit.Test;
 
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyMap;
@@ -95,6 +96,17 @@ public class TestTestRangeSelector {
     }
 
     @Test
+    public void testFindMatchingRule_Error() {
+        final TestRangeSelector selector =
+                createTestRangeSelector(
+                        stubTestDefinition(singletonList("trait.ad.country == 'US'"), false)
+                                .build());
+        final Map<String, Object> context = new HashMap<>();
+
+        assertThat(selector.findMatchingRule(context, emptyMap(), "")).isEqualTo(-1);
+    }
+
+    @Test
     public void testFindMatchingRule_UnitlessAllocation_NotUnitless() {
         final TestRangeSelector selector =
                 createTestRangeSelector(
@@ -127,26 +139,26 @@ public class TestTestRangeSelector {
                 .isEqualTo(-1);
     }
 
-    private static TestDefinition.Builder stubTestDefinition(final List<String> rules) {
-        return stubTestDefinition(rules, false);
+    private static TestDefinition.Builder stubTestDefinition(final List<String> allocationRules) {
+        return stubTestDefinition(allocationRules, false);
     }
 
     private static TestDefinition.Builder stubTestDefinition(
-            final List<String> rules, final boolean unitless) {
+            final List<String> allocationRules, final boolean unitless) {
         return TestDefinition.builder()
                 .setTestType(TestType.ANONYMOUS_USER)
                 .setSalt("")
                 .setEnableUnitlessAllocations(unitless)
                 .addBuckets(new TestBucket("active", 1, ""))
                 .setAllocations(
-                        rules.stream()
+                        allocationRules.stream()
                                 .map(rule -> new Allocation(rule, singletonList(new Range(1, 1.0))))
                                 .collect(Collectors.toList()));
     }
 
     private static TestRangeSelector createTestRangeSelector(final TestDefinition definition) {
         return new TestRangeSelector(
-                RuleEvaluator.createDefaultRuleEvaluator(Collections.emptyMap()),
+                RuleEvaluator.createDefaultRuleEvaluator(emptyMap()),
                 "dummy_test",
                 ConsumableTestDefinition.fromTestDefinition(definition));
     }

@@ -179,8 +179,9 @@ public class RuleEvaluator {
 
     /**
      * This method should only be used for partial matching with proctor rules
+     *
      * @return Evaluates a partial rule
-     **/
+     */
     public boolean evaluateBooleanRulePartialWithValueExpr(
             final String rule, @Nonnull final Map<String, ValueExpression> values)
             throws IllegalArgumentException {
@@ -221,7 +222,7 @@ public class RuleEvaluator {
                         + " from rule "
                         + rule);
     }
-    
+
     /** @throws IllegalArgumentException if type of expression is not boolean */
     static void checkRuleIsBooleanType(
             final String rule, final ELContext elContext, final ValueExpression ve) {

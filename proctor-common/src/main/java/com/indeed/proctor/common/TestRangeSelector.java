@@ -125,7 +125,7 @@ public class TestRangeSelector {
             return getMatchingAllocation(evaluator, identifier);
         } catch (final RuntimeException e) {
             LOGGER.error(
-                    "Failed to evaluate test rules; ",
+                    "Failed to evaluate test rule; ",
                     new InvalidRuleException(
                             e,
                             String.format(
@@ -138,10 +138,21 @@ public class TestRangeSelector {
 
     protected int getMatchingAllocation(
             final Function<String, Boolean> evaluator, @Nullable final String identifier) {
-        for (int i = 0; i < rules.length; i++) {
-            if (evaluator.apply(rules[i])) {
-                return i;
+        int i = 0;
+        try {
+            for (i = 0; i < rules.length; i++) {
+                if (evaluator.apply(rules[i])) {
+                    return i;
+                }
             }
+        } catch (final RuntimeException e) {
+            LOGGER.error(
+                    "Failed to evaluate test allocation rules; ",
+                    new InvalidRuleException(
+                            e,
+                            String.format(
+                                    "Error evaluating rule '%s' for test '%s': '%s'. Failing evaluation and continuing.",
+                                    rules[i], testName, e.getMessage())));
         }
         return -1;
     }
