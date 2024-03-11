@@ -238,9 +238,4 @@ public class TestRangeSelector {
         }
         writer.print(" },");
     }
-
-    @VisibleForTesting
-    public Logger getLogger() {
-        return LOGGER;
-    }
 }
