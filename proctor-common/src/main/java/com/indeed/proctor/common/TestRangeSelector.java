@@ -1,6 +1,5 @@
 package com.indeed.proctor.common;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Maps;
 import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
