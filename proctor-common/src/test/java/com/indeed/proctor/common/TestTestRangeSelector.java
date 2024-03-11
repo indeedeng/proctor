@@ -10,9 +10,7 @@ import com.indeed.proctor.common.model.TestDependency;
 import com.indeed.proctor.common.model.TestType;
 import org.junit.Test;
 
-import javax.annotation.Nullable;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -141,32 +139,26 @@ public class TestTestRangeSelector {
                 .isEqualTo(-1);
     }
 
-    private static TestDefinition.Builder stubTestDefinition(final List<String> rules) {
-        return stubTestDefinition(rules, false, null);
+    private static TestDefinition.Builder stubTestDefinition(final List<String> allocationRules) {
+        return stubTestDefinition(allocationRules, false);
     }
 
     private static TestDefinition.Builder stubTestDefinition(
-            final List<String> rules, final boolean unitless) {
-        return stubTestDefinition(rules, false, null);
-    }
-
-    private static TestDefinition.Builder stubTestDefinition(
-            final List<String> rules, final boolean unitless, @Nullable final String rule) {
+            final List<String> allocationRules, final boolean unitless) {
         return TestDefinition.builder()
-                .setRule(rule)
                 .setTestType(TestType.ANONYMOUS_USER)
                 .setSalt("")
                 .setEnableUnitlessAllocations(unitless)
                 .addBuckets(new TestBucket("active", 1, ""))
                 .setAllocations(
-                        rules.stream()
-                                .map(r -> new Allocation(r, singletonList(new Range(1, 1.0))))
+                        allocationRules.stream()
+                                .map(rule -> new Allocation(rule, singletonList(new Range(1, 1.0))))
                                 .collect(Collectors.toList()));
     }
 
     private static TestRangeSelector createTestRangeSelector(final TestDefinition definition) {
         return new TestRangeSelector(
-                RuleEvaluator.createDefaultRuleEvaluator(Collections.emptyMap()),
+                RuleEvaluator.createDefaultRuleEvaluator(emptyMap()),
                 "dummy_test",
                 ConsumableTestDefinition.fromTestDefinition(definition));
     }

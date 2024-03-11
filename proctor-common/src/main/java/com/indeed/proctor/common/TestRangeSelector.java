@@ -1,5 +1,6 @@
 package com.indeed.proctor.common;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Maps;
 import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
@@ -37,7 +38,6 @@ public class TestRangeSelector {
     @Nonnull private final ConsumableTestDefinition testDefinition;
     @Nonnull private final String[] rules;
     @Nonnull private final TestBucket[][] rangeToBucket;
-    private String currentRule;
     private final RuleEvaluator ruleEvaluator;
 
     TestRangeSelector(
@@ -116,7 +116,6 @@ public class TestRangeSelector {
         }
 
         @Nullable final String rule = testDefinition.getRule();
-        currentRule = rule;
         try {
             if (rule != null) {
                 if (!evaluator.apply(rule)) {
@@ -127,12 +126,12 @@ public class TestRangeSelector {
             return getMatchingAllocation(evaluator, identifier);
         } catch (final RuntimeException e) {
             LOGGER.error(
-                    "Failed to evaluate test rules; ",
+                    "Failed to evaluate test rule; ",
                     new InvalidRuleException(
                             e,
                             String.format(
                                     "Error evaluating rule '%s' for test '%s': '%s'. Failing evaluation and continuing.",
-                                    currentRule, testName, e.getMessage())));
+                                    rule, testName, e.getMessage())));
         }
 
         return -1;
@@ -140,11 +139,21 @@ public class TestRangeSelector {
 
     protected int getMatchingAllocation(
             final Function<String, Boolean> evaluator, @Nullable final String identifier) {
-        for (int i = 0; i < rules.length; i++) {
-            currentRule = rules[i];
-            if (evaluator.apply(rules[i])) {
-                return i;
+        int i = 0;
+        try {
+            for (i = 0; i < rules.length; i++) {
+                if (evaluator.apply(rules[i])) {
+                    return i;
+                }
             }
+        } catch (final RuntimeException e) {
+            LOGGER.error(
+                    "Failed to evaluate test allocation rules; ",
+                    new InvalidRuleException(
+                            e,
+                            String.format(
+                                    "Error evaluating rule '%s' for test '%s': '%s'. Failing evaluation and continuing.",
+                                    rules[i], testName, e.getMessage())));
         }
         return -1;
     }
@@ -228,5 +237,10 @@ public class TestRangeSelector {
             }
         }
         writer.print(" },");
+    }
+
+    @VisibleForTesting
+    public Logger getLogger() {
+        return LOGGER;
     }
 }
