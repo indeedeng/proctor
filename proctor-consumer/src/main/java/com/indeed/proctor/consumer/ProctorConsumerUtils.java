@@ -217,7 +217,10 @@ public class ProctorConsumerUtils {
             final String contextPath, final ForceGroupsOptions forceGroupsOptions) {
         //  be sure to quote cookies because they have characters that are not allowed raw
         final String cookieValue =
-                ForceGroupsOptionsStrings.generateForceGroupsStringForCookies(forceGroupsOptions);
+                '"'
+                        + ForceGroupsOptionsStrings.generateForceGroupsStringForCookies(
+                                forceGroupsOptions)
+                        + '"';
 
         final String cookiePath;
         if (StringUtils.isBlank(contextPath)) {
