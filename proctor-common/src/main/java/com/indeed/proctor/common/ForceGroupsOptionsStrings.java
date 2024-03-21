@@ -10,6 +10,9 @@ import org.apache.logging.log4j.Logger;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -284,6 +287,16 @@ public class ForceGroupsOptionsStrings {
                                                                 forcePayloads.get(testName))
                                                 : testName + bucketValue));
         return String.join(",", tokens);
+    }
+
+    public static String generateForceGroupsStringForCookies(final ForceGroupsOptions options) {
+        try {
+            return URLEncoder.encode(
+                    generateForceGroupsString(options), StandardCharsets.UTF_8.toString());
+        } catch (final UnsupportedEncodingException e) {
+            LOGGER.error("Invalid force group string for cookie storage");
+        }
+        return "";
     }
 
     @Nonnull
