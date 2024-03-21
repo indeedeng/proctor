@@ -313,13 +313,13 @@ public class TestProctorConsumerUtils {
     public void testCreateForcedGroupsCookie() {
         Cookie cookie = createForcedGroupsCookie("myapp", emptyMap());
         assertThat(cookie.getName()).isEqualTo("prforceGroups");
-        assertThat(cookie.getValue()).isEqualTo("\"\"");
+        assertThat(cookie.getValue()).isEqualTo("");
         assertThat(cookie.getPath()).isEqualTo("myapp");
         assertThat(cookie.getVersion()).isEqualTo(0);
 
         cookie = createForcedGroupsCookie("myapp", Collections.singletonMap("foo", 2));
         assertThat(cookie.getName()).isEqualTo("prforceGroups");
-        assertThat(cookie.getValue()).isEqualTo("\"foo2\"");
+        assertThat(cookie.getValue()).isEqualTo("foo2");
         assertThat(cookie.getPath()).isEqualTo("myapp");
         assertThat(cookie.getVersion()).isEqualTo(0);
 
@@ -328,7 +328,7 @@ public class TestProctorConsumerUtils {
         forceGroups.put("bar", 3);
         cookie = createForcedGroupsCookie("myapp", forceGroups);
         assertThat(cookie.getName()).isEqualTo("prforceGroups");
-        assertThat(cookie.getValue()).isEqualTo("\"bar3%2Cfoo2\"");
+        assertThat(cookie.getValue()).isEqualTo("bar3%2Cfoo2");
         assertThat(cookie.getPath()).isEqualTo("myapp");
         assertThat(cookie.getVersion()).isEqualTo(0);
 
@@ -337,7 +337,7 @@ public class TestProctorConsumerUtils {
 
         final String forceGroup = getForceGroupsStringFromRequest(request);
 
-        assertThat(forceGroup).isEqualTo("\"bar3,foo2\"");
+        assertThat(forceGroup).isEqualTo("bar3,foo2");
     }
 
     @Test
