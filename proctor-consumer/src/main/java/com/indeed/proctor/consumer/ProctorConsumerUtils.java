@@ -8,6 +8,8 @@ import com.indeed.proctor.common.Proctor;
 import com.indeed.proctor.common.ProctorResult;
 import com.indeed.proctor.common.model.TestType;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -38,6 +40,7 @@ public class ProctorConsumerUtils {
 
     public static final String FORCE_GROUPS_COOKIE_NAME = "prforceGroups";
     public static final String FORCE_GROUPS_HEADER = "X-PRFORCEGROUPS";
+    private static final Logger LOGGER = LogManager.getLogger(ProctorConsumerUtils.class);
 
     public static ProctorResult determineBuckets(
             final HttpServletRequest request,
@@ -177,8 +180,9 @@ public class ProctorConsumerUtils {
                             try {
                                 return URLDecoder.decode(cookie, StandardCharsets.UTF_8.toString());
                             } catch (final UnsupportedEncodingException e) {
-                                throw new RuntimeException(e);
+                                LOGGER.error("Could not parse force group cookie", e);
                             }
+                            return "";
                         })
                 .collect(Collectors.joining(","));
     }

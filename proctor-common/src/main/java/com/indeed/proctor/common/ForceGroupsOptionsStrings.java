@@ -294,7 +294,7 @@ public class ForceGroupsOptionsStrings {
             return URLEncoder.encode(
                     generateForceGroupsString(options), StandardCharsets.UTF_8.toString());
         } catch (final UnsupportedEncodingException e) {
-            LOGGER.error("Invalid force group string for cookie storage");
+            LOGGER.error("Invalid force group string for cookie storage", e);
         }
         return "";
     }
