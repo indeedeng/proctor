@@ -8,12 +8,17 @@ import com.indeed.proctor.common.Proctor;
 import com.indeed.proctor.common.ProctorResult;
 import com.indeed.proctor.common.model.TestType;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
@@ -35,6 +40,7 @@ public class ProctorConsumerUtils {
 
     public static final String FORCE_GROUPS_COOKIE_NAME = "prforceGroups";
     public static final String FORCE_GROUPS_HEADER = "X-PRFORCEGROUPS";
+    private static final Logger LOGGER = LogManager.getLogger(ProctorConsumerUtils.class);
 
     public static ProctorResult determineBuckets(
             final HttpServletRequest request,
@@ -169,6 +175,15 @@ public class ProctorConsumerUtils {
                 .filter(x -> FORCE_GROUPS_COOKIE_NAME.equals(x.getName()))
                 .map(Cookie::getValue)
                 .filter(Objects::nonNull)
+                .map(
+                        cookie -> {
+                            try {
+                                return URLDecoder.decode(cookie, StandardCharsets.UTF_8.toString());
+                            } catch (final UnsupportedEncodingException e) {
+                                LOGGER.error("Could not parse force group cookie", e);
+                            }
+                            return "";
+                        })
                 .collect(Collectors.joining(","));
     }
 
@@ -206,7 +221,10 @@ public class ProctorConsumerUtils {
             final String contextPath, final ForceGroupsOptions forceGroupsOptions) {
         //  be sure to quote cookies because they have characters that are not allowed raw
         final String cookieValue =
-                '"' + ForceGroupsOptionsStrings.generateForceGroupsString(forceGroupsOptions) + '"';
+                '"'
+                        + ForceGroupsOptionsStrings.generateForceGroupsStringForCookies(
+                                forceGroupsOptions)
+                        + '"';
 
         final String cookiePath;
         if (StringUtils.isBlank(contextPath)) {

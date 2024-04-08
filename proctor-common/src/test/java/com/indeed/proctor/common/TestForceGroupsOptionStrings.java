@@ -48,6 +48,12 @@ public class TestForceGroupsOptionStrings {
                                 .putForceGroup("abc", 1)
                                 .setDefaultMode(ForceGroupsDefaultMode.MIN_LIVE)
                                 .build());
+        assertThat(ForceGroupsOptionsStrings.parseForceGroupsString("abc-1,ced2"))
+                .isEqualTo(
+                        ForceGroupsOptions.builder()
+                                .putForceGroup("abc", -1)
+                                .putForceGroup("ced", 2)
+                                .build());
     }
 
     @Test
@@ -88,6 +94,14 @@ public class TestForceGroupsOptionStrings {
                                         .setDefaultMode(ForceGroupsDefaultMode.MIN_LIVE)
                                         .build()))
                 .isEqualTo("default_to_min_live");
+
+        assertThat(
+                        ForceGroupsOptionsStrings.generateForceGroupsString(
+                                ForceGroupsOptions.builder()
+                                        .putForceGroup("abc", 1)
+                                        .putForceGroup("ced", 1)
+                                        .build()))
+                .isEqualTo("abc1,ced1");
     }
 
     @Test

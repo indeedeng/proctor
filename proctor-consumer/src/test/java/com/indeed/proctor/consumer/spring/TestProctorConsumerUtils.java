@@ -19,6 +19,7 @@ import java.util.Map;
 
 import static com.indeed.proctor.consumer.ProctorConsumerUtils.FORCE_GROUPS_PARAMETER;
 import static com.indeed.proctor.consumer.ProctorConsumerUtils.createForcedGroupsCookie;
+import static com.indeed.proctor.consumer.ProctorConsumerUtils.getForceGroupsStringFromRequest;
 import static com.indeed.proctor.consumer.ProctorConsumerUtils.parseForceGroupsList;
 import static com.indeed.proctor.consumer.ProctorConsumerUtils.setForcedGroupsCookie;
 import static java.util.Collections.emptyMap;
@@ -169,16 +170,14 @@ public class TestProctorConsumerUtils {
         {
             final MockHttpServletRequest mockRequest = new MockHttpServletRequest();
             mockRequest.addParameter(FORCE_GROUPS_PARAMETER, "testing1");
-            final String forceGroups =
-                    ProctorConsumerUtils.getForceGroupsStringFromRequest(mockRequest);
+            final String forceGroups = getForceGroupsStringFromRequest(mockRequest);
             assertThat(forceGroups).isEqualTo("testing1");
         }
         // Test that header works
         {
             final MockHttpServletRequest mockRequest = new MockHttpServletRequest();
             mockRequest.addHeader(ProctorConsumerUtils.FORCE_GROUPS_HEADER, "testing1");
-            final String forceGroups =
-                    ProctorConsumerUtils.getForceGroupsStringFromRequest(mockRequest);
+            final String forceGroups = getForceGroupsStringFromRequest(mockRequest);
             assertThat(forceGroups).isEqualTo("testing1");
         }
         // Test that cookie works
@@ -187,8 +186,7 @@ public class TestProctorConsumerUtils {
             final Cookie cookie =
                     new Cookie(ProctorConsumerUtils.FORCE_GROUPS_COOKIE_NAME, "testing1");
             mockRequest.setCookies(cookie);
-            final String forceGroups =
-                    ProctorConsumerUtils.getForceGroupsStringFromRequest(mockRequest);
+            final String forceGroups = getForceGroupsStringFromRequest(mockRequest);
             assertThat(forceGroups).isEqualTo("testing1");
         }
         // Test that parameter beats cookie
@@ -198,8 +196,7 @@ public class TestProctorConsumerUtils {
             final Cookie cookie =
                     new Cookie(ProctorConsumerUtils.FORCE_GROUPS_COOKIE_NAME, "testing2");
             mockRequest.setCookies(cookie);
-            final String forceGroups =
-                    ProctorConsumerUtils.getForceGroupsStringFromRequest(mockRequest);
+            final String forceGroups = getForceGroupsStringFromRequest(mockRequest);
             assertThat(forceGroups).isEqualTo("testing1");
         }
         // Test that parameter beats header
@@ -207,8 +204,7 @@ public class TestProctorConsumerUtils {
             final MockHttpServletRequest mockRequest = new MockHttpServletRequest();
             mockRequest.addParameter(FORCE_GROUPS_PARAMETER, "testing1");
             mockRequest.addHeader(ProctorConsumerUtils.FORCE_GROUPS_HEADER, "testing2");
-            final String forceGroups =
-                    ProctorConsumerUtils.getForceGroupsStringFromRequest(mockRequest);
+            final String forceGroups = getForceGroupsStringFromRequest(mockRequest);
             assertThat(forceGroups).isEqualTo("testing1");
         }
         // Test that parameter beats header and cookie
@@ -219,8 +215,7 @@ public class TestProctorConsumerUtils {
             final Cookie cookie =
                     new Cookie(ProctorConsumerUtils.FORCE_GROUPS_COOKIE_NAME, "testing3");
             mockRequest.setCookies(cookie);
-            final String forceGroups =
-                    ProctorConsumerUtils.getForceGroupsStringFromRequest(mockRequest);
+            final String forceGroups = getForceGroupsStringFromRequest(mockRequest);
             assertThat(forceGroups).isEqualTo("testing1");
         }
         // Test that header beats cookie
@@ -230,15 +225,13 @@ public class TestProctorConsumerUtils {
             final Cookie cookie =
                     new Cookie(ProctorConsumerUtils.FORCE_GROUPS_COOKIE_NAME, "testing2");
             mockRequest.setCookies(cookie);
-            final String forceGroups =
-                    ProctorConsumerUtils.getForceGroupsStringFromRequest(mockRequest);
+            final String forceGroups = getForceGroupsStringFromRequest(mockRequest);
             assertThat(forceGroups).isEqualTo("testing1");
         }
         // Test missing param, missing header, missing cookie
         {
             final MockHttpServletRequest mockRequest = new MockHttpServletRequest();
-            final String forceGroups =
-                    ProctorConsumerUtils.getForceGroupsStringFromRequest(mockRequest);
+            final String forceGroups = getForceGroupsStringFromRequest(mockRequest);
             assertThat(forceGroups).isEqualTo("");
         }
         // Test empty param, some cookies
@@ -247,8 +240,7 @@ public class TestProctorConsumerUtils {
             final Cookie junkCookie = new Cookie("random", "totally random");
             final Cookie anotherJunkCookie = new Cookie("what", "yeah");
             mockRequest.setCookies(junkCookie, anotherJunkCookie);
-            final String forceGroups =
-                    ProctorConsumerUtils.getForceGroupsStringFromRequest(mockRequest);
+            final String forceGroups = getForceGroupsStringFromRequest(mockRequest);
             assertThat(forceGroups).isEqualTo("");
         }
     }
@@ -330,6 +322,22 @@ public class TestProctorConsumerUtils {
         assertThat(cookie.getValue()).isEqualTo("\"foo2\"");
         assertThat(cookie.getPath()).isEqualTo("myapp");
         assertThat(cookie.getVersion()).isEqualTo(0);
+
+        final Map<String, Integer> forceGroups = new java.util.HashMap<>();
+        forceGroups.put("foo", 2);
+        forceGroups.put("bar", 3);
+        cookie = createForcedGroupsCookie("myapp", forceGroups);
+        assertThat(cookie.getName()).isEqualTo("prforceGroups");
+        assertThat(cookie.getValue()).isEqualTo("\"bar3%2Cfoo2\"");
+        assertThat(cookie.getPath()).isEqualTo("myapp");
+        assertThat(cookie.getVersion()).isEqualTo(0);
+
+        final MockHttpServletRequest request = new MockHttpServletRequest();
+        request.setCookies(cookie);
+
+        final String forceGroup = getForceGroupsStringFromRequest(request);
+
+        assertThat(forceGroup).isEqualTo("\"bar3,foo2\"");
     }
 
     @Test
@@ -356,8 +364,7 @@ public class TestProctorConsumerUtils {
                             .putForceGroup("third_test", 2)
                             .build();
 
-            final String forceGroupsString =
-                    ProctorConsumerUtils.getForceGroupsStringFromRequest(mockRequest);
+            final String forceGroupsString = getForceGroupsStringFromRequest(mockRequest);
             final ForceGroupsOptions forceGroupsOptions =
                     ProctorConsumerUtils.parseForcedGroupsOptions(mockRequest);
             assertThat(forceGroupsString).isEqualTo(expectedForceGroupsString);
@@ -376,8 +383,7 @@ public class TestProctorConsumerUtils {
                             .putForceGroup("third_test", 2)
                             .build();
 
-            final String forceGroupsString =
-                    ProctorConsumerUtils.getForceGroupsStringFromRequest(mockRequest);
+            final String forceGroupsString = getForceGroupsStringFromRequest(mockRequest);
             final ForceGroupsOptions forceGroupsOptions =
                     ProctorConsumerUtils.parseForcedGroupsOptions(mockRequest);
             assertThat(forceGroupsString).isEqualTo(expectedForceGroupsString);
@@ -397,8 +403,7 @@ public class TestProctorConsumerUtils {
                             .putForceGroup("third_test", 2)
                             .build();
 
-            final String forceGroupsString =
-                    ProctorConsumerUtils.getForceGroupsStringFromRequest(mockRequest);
+            final String forceGroupsString = getForceGroupsStringFromRequest(mockRequest);
             final ForceGroupsOptions forceGroupsOptions =
                     ProctorConsumerUtils.parseForcedGroupsOptions(mockRequest);
             assertThat(forceGroupsString).isEqualTo(expectedForceGroupsString);
@@ -419,8 +424,7 @@ public class TestProctorConsumerUtils {
                             .putForcePayload("first_test", new Payload(1L))
                             .build();
 
-            final String forceGroupsString =
-                    ProctorConsumerUtils.getForceGroupsStringFromRequest(mockRequest);
+            final String forceGroupsString = getForceGroupsStringFromRequest(mockRequest);
             final ForceGroupsOptions forceGroupsOptions =
                     ProctorConsumerUtils.parseForcedGroupsOptions(
                             mockRequest, ImmutableSet.of("first_test"));
