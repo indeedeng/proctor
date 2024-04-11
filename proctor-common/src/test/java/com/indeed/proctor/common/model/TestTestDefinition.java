@@ -274,6 +274,7 @@ public class TestTestDefinition {
                         .setMetaTags(metatags)
                         .setDependsOn(dependsOn)
                         .setEvaluateForIncognitoUsers(incognito)
+                        .setForceLogging(true)
                         .build();
 
         final TestDefinition definition2 = TestDefinition.builder().from(definition1).build();
@@ -292,6 +293,7 @@ public class TestTestDefinition {
             assertThat(definition.getMetaTags()).isEqualTo(metatags);
             assertThat(definition.getDependsOn()).isEqualTo(dependsOn);
             assertThat(definition.getEvaluateForIncognitoUsers()).isEqualTo(incognito);
+            assertThat(definition.getEvaluateForIncognitoUsers()).isEqualTo(true);
         }
     }
 }

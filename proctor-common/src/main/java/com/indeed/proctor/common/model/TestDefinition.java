@@ -55,6 +55,8 @@ public class TestDefinition {
 
     private boolean enableUnitlessAllocations;
 
+    private boolean forceLogging;
+
     public TestDefinition() {
         /* intentionally empty */
     }
@@ -138,6 +140,7 @@ public class TestDefinition {
         this.description = description;
         this.metaTags = metaTags;
         this.evaluateForIncognitoUsers = false;
+        this.forceLogging = false;
     }
 
     public TestDefinition(@Nonnull final TestDefinition other) {
@@ -159,6 +162,7 @@ public class TestDefinition {
         dependsOn = builder.dependsOn;
         evaluateForIncognitoUsers = builder.evaluateForIncognitoUsers;
         enableUnitlessAllocations = builder.enableUnitlessAllocations;
+        forceLogging = builder.forceLogging;
     }
 
     public static Builder builder() {
@@ -324,6 +328,10 @@ public class TestDefinition {
         return enableUnitlessAllocations;
     }
 
+    public boolean getForceLogging() {
+        return forceLogging;
+    }
+
     @Override
     public String toString() {
         return "TestDefinition{"
@@ -359,6 +367,8 @@ public class TestDefinition {
                 + evaluateForIncognitoUsers
                 + ", enableUnitlessAllocations="
                 + enableUnitlessAllocations
+                + ", forceLogging="
+                + forceLogging
                 + '}';
     }
 
@@ -392,7 +402,8 @@ public class TestDefinition {
                 metaTags,
                 dependsOn,
                 evaluateForIncognitoUsers,
-                enableUnitlessAllocations);
+                enableUnitlessAllocations,
+                forceLogging);
     }
 
     /**
@@ -424,7 +435,8 @@ public class TestDefinition {
                 && Objects.equals(metaTags, that.metaTags)
                 && Objects.equals(dependsOn, that.dependsOn)
                 && Objects.equals(evaluateForIncognitoUsers, that.evaluateForIncognitoUsers)
-                && Objects.equals(enableUnitlessAllocations, that.enableUnitlessAllocations);
+                && Objects.equals(enableUnitlessAllocations, that.enableUnitlessAllocations)
+                && Objects.equals(forceLogging, that.forceLogging);
     }
 
     @VisibleForTesting
@@ -465,6 +477,7 @@ public class TestDefinition {
         private TestDependency dependsOn;
         private boolean evaluateForIncognitoUsers;
         private boolean enableUnitlessAllocations;
+        private boolean forceLogging;
 
         public Builder from(@Nonnull final TestDefinition other) {
             setVersion(other.version);
@@ -481,6 +494,7 @@ public class TestDefinition {
             setDependsOn(other.dependsOn);
             setEvaluateForIncognitoUsers(other.evaluateForIncognitoUsers);
             setEnableUnitlessAllocations(other.enableUnitlessAllocations);
+            setForceLogging(other.forceLogging);
             return this;
         }
 
@@ -586,6 +600,11 @@ public class TestDefinition {
 
         public Builder setEnableUnitlessAllocations(final boolean enableUnitlessAllocations) {
             this.enableUnitlessAllocations = enableUnitlessAllocations;
+            return this;
+        }
+
+        public Builder setForceLogging(final boolean forceLogging) {
+            this.forceLogging = forceLogging;
             return this;
         }
 
