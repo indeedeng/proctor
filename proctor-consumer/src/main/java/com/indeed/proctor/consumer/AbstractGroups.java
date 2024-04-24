@@ -458,14 +458,19 @@ public abstract class AbstractGroups {
 
     private boolean filterRolledOutAllocations(final String testName) {
         final ConsumableTestDefinition td = proctorResult.getTestDefinitions().get(testName);
-        if (td == null) {
-            return true;
-        }
-        final boolean forceLogging = td.getForceLogging();
-        final Allocation allocation = proctorResult.getAllocations().get(testName);
-        if (allocation != null
-                && allocation.getRanges().stream().anyMatch(range -> range.getLength() == 1)) {
-            return forceLogging;
+        return checkRolledOutAllocation(testName, td, proctorResult);
+    }
+
+    public static boolean checkRolledOutAllocation(
+            final String testName,
+            final ConsumableTestDefinition td,
+            final ProctorResult proctorResult) {
+        if (td != null) {
+            final Allocation allocation = proctorResult.getAllocations().get(testName);
+            if (allocation != null
+                    && allocation.getRanges().stream().anyMatch(range -> range.getLength() == 1)) {
+                return td.getForceLogging();
+            }
         }
         return true;
     }

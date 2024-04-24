@@ -14,6 +14,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiPredicate;
 
+import static com.indeed.proctor.consumer.AbstractGroups.checkRolledOutAllocation;
+
 /**
  * Helper class to build a Strings to log, helping with analysis of experiments.
  *
@@ -204,17 +206,8 @@ public class ProctorGroupsWriter {
                             return additionalFilter.test(testName, proctorResult);
                         }
                         // Suppress 100% allocation logging
-                        if (consumableTestDefinition != null) {
-                            final Allocation allocation =
-                                    proctorResult.getAllocations().get(testName);
-                            if (allocation != null
-                                    && allocation.getRanges().stream()
-                                            .anyMatch(range -> range.getLength() == 1)) {
-                                return consumableTestDefinition.getForceLogging();
-                            }
-                        }
-
-                        return true;
+                        return checkRolledOutAllocation(
+                                testName, consumableTestDefinition, proctorResult);
                     });
         }
     }
