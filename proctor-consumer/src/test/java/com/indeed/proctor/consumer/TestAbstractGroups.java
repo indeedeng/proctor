@@ -27,6 +27,7 @@ import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.GROUP_WIT
 import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.INACTIVE_SELECTED_TEST;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.MISSING_DEFINITION_TEST;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.NO_BUCKETS_WITH_FALLBACK_TEST;
+import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.SUPPRESS_LOGGING_TST;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -49,6 +50,13 @@ public class TestAbstractGroups {
                 new ProctorGroupStubber.ProctorResultStubBuilder()
                         .withStubTest(
                                 ProctorGroupStubber.StubTest.CONTROL_SELECTED_TEST,
+                                CONTROL_BUCKET_WITH_PAYLOAD,
+                                INACTIVE_BUCKET,
+                                CONTROL_BUCKET_WITH_PAYLOAD,
+                                GROUP_1_BUCKET_WITH_PAYLOAD)
+                        .withStubTest(
+                                false,
+                                ProctorGroupStubber.StubTest.SUPPRESS_LOGGING_TST,
                                 CONTROL_BUCKET_WITH_PAYLOAD,
                                 INACTIVE_BUCKET,
                                 CONTROL_BUCKET_WITH_PAYLOAD,
@@ -164,7 +172,7 @@ public class TestAbstractGroups {
         assertThat(emptyGroup.toLongString()).isEmpty();
         assertThat(sampleGroups.toLongString())
                 .isEqualTo(
-                        "abtst-group1,bgtst-control,btntst-inactive,groupwithfallbacktst-group1,no_definition_tst-group1");
+                        "abtst-group1,bgtst-control,btntst-inactive,groupwithfallbacktst-group1,no_definition_tst-group1,suppress_logging_example_tst-control");
     }
 
     @Test
@@ -268,11 +276,12 @@ public class TestAbstractGroups {
         assertThat(emptyGroup.getJavaScriptConfig()).hasSize(0);
 
         assertThat(sampleGroups.getJavaScriptConfig())
-                .hasSize(4)
+                .hasSize(5)
                 .containsEntry(GROUP1_SELECTED_TEST.getName(), 1)
                 .containsEntry(CONTROL_SELECTED_TEST.getName(), 0)
                 .containsEntry(GROUP_WITH_FALLBACK_TEST.getName(), 2)
-                .containsEntry(MISSING_DEFINITION_TEST.getName(), 2);
+                .containsEntry(MISSING_DEFINITION_TEST.getName(), 2)
+                .containsEntry(SUPPRESS_LOGGING_TST.getName(), 0);
     }
 
     @Test

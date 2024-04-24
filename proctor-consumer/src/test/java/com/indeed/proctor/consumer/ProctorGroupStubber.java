@@ -48,7 +48,19 @@ public class ProctorGroupStubber {
                 final StubTest stubTest,
                 @Nullable final TestBucket resolved,
                 final TestBucket... definedBuckets) {
-            withStubTest(stubTest, resolved, stubDefinitionWithVersion("v1", definedBuckets));
+            withStubTest(stubTest, resolved, stubDefinitionWithVersion(true, "v1", definedBuckets));
+            return this;
+        }
+
+        public ProctorResultStubBuilder withStubTest(
+                final boolean forceLogging,
+                final StubTest stubTest,
+                @Nullable final TestBucket resolved,
+                final TestBucket... definedBuckets) {
+            withStubTest(
+                    stubTest,
+                    resolved,
+                    stubDefinitionWithVersion(forceLogging, "v1", definedBuckets));
             return this;
         }
 
@@ -89,10 +101,11 @@ public class ProctorGroupStubber {
     }
 
     public static ConsumableTestDefinition stubDefinitionWithVersion(
-            final String version, final TestBucket... buckets) {
+            final boolean forceLogging, final String version, final TestBucket... buckets) {
         final ConsumableTestDefinition testDefinition = new ConsumableTestDefinition();
         testDefinition.setVersion(version);
         testDefinition.setBuckets(Arrays.asList(buckets));
+        testDefinition.setForceLogging(forceLogging);
         return testDefinition;
     }
 
@@ -126,6 +139,7 @@ public class ProctorGroupStubber {
         HOLDOUT_MASTER_TEST("holdout_tst", -1),
 
         CONTROL_SELECTED_TEST("bgtst", -1),
+        SUPPRESS_LOGGING_TST("suppress_logging_example_tst", -1),
         GROUP1_SELECTED_TEST("abtst", -1),
         GROUP_WITH_FALLBACK_TEST("groupwithfallbacktst", -1),
         INACTIVE_SELECTED_TEST("btntst", -1),

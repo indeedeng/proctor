@@ -417,6 +417,8 @@ public abstract class AbstractGroups {
                             return (consumableTestDefinition == null)
                                     || !consumableTestDefinition.getSilent();
                         })
+                // Suppress 100% allocation logging
+                .filter(this::filterRolledOutAllocations)
                 // call to getValueWithouMarkingUsage() to allow overrides of getActiveBucket, but
                 // avoid marking
                 .filter(testName -> getValueWithoutMarkingUsage(testName, -1) >= 0)
@@ -452,6 +454,20 @@ public abstract class AbstractGroups {
                                 }
                             });
         }
+    }
+
+    private boolean filterRolledOutAllocations(final String testName) {
+        final ConsumableTestDefinition td = proctorResult.getTestDefinitions().get(testName);
+        if (td == null) {
+            return true;
+        }
+        final boolean forceLogging = td.getForceLogging();
+        final Allocation allocation = proctorResult.getAllocations().get(testName);
+        if (allocation != null
+                && allocation.getRanges().stream().anyMatch(range -> range.getLength() == 1)) {
+            return forceLogging;
+        }
+        return true;
     }
 
     /**

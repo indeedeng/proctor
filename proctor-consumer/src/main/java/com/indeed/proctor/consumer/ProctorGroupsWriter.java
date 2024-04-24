@@ -203,6 +203,17 @@ public class ProctorGroupsWriter {
                         if (additionalFilter != null) {
                             return additionalFilter.test(testName, proctorResult);
                         }
+                        // Suppress 100% allocation logging
+                        if (consumableTestDefinition != null) {
+                            final Allocation allocation =
+                                    proctorResult.getAllocations().get(testName);
+                            if (allocation != null
+                                    && allocation.getRanges().stream()
+                                            .anyMatch(range -> range.getLength() == 1)) {
+                                return consumableTestDefinition.getForceLogging();
+                            }
+                        }
+
                         return true;
                     });
         }
