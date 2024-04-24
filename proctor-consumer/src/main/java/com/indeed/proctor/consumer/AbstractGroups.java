@@ -418,7 +418,7 @@ public abstract class AbstractGroups {
                                     || !consumableTestDefinition.getSilent();
                         })
                 // Suppress 100% allocation logging
-                .filter(this::filterRolledOutAllocations)
+                .filter(this::isTestRolledOut)
                 // call to getValueWithouMarkingUsage() to allow overrides of getActiveBucket, but
                 // avoid marking
                 .filter(testName -> getValueWithoutMarkingUsage(testName, -1) >= 0)
@@ -456,12 +456,12 @@ public abstract class AbstractGroups {
         }
     }
 
-    private boolean filterRolledOutAllocations(final String testName) {
+    private boolean isTestRolledOut(final String testName) {
         final ConsumableTestDefinition td = proctorResult.getTestDefinitions().get(testName);
-        return shouldLogRolledOutAllocation(testName, td, proctorResult);
+        return isTestRolledOut(testName, td, proctorResult);
     }
 
-    public static boolean shouldLogRolledOutAllocation(
+    public static boolean isTestRolledOut(
             final String testName,
             final ConsumableTestDefinition td,
             final ProctorResult proctorResult) {

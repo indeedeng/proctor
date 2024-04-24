@@ -16,7 +16,7 @@ import org.junit.Test;
 
 import java.util.Arrays;
 
-import static com.indeed.proctor.consumer.AbstractGroups.shouldLogRolledOutAllocation;
+import static com.indeed.proctor.consumer.AbstractGroups.isTestRolledOut;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.CONTROL_BUCKET_WITH_PAYLOAD;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.FALLBACK_BUCKET;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.FALLBACK_NOPAYLOAD_BUCKET;
@@ -217,19 +217,10 @@ public class TestAbstractGroups {
                                 GROUP_1_BUCKET_WITH_PAYLOAD)
                         .build();
 
-        assertThat(
-                shouldLogRolledOutAllocation(
-                        "suppress_logging_example_tst",
-                        tdWithForceLogging,
-                        result)
-        ).isTrue();
-        
-        assertThat(
-                shouldLogRolledOutAllocation(
-                        "suppress_logging_example_tst",
-                        td,
-                        result)
-        ).isFalse();
+        assertThat(isTestRolledOut("suppress_logging_example_tst", tdWithForceLogging, result))
+                .isTrue();
+
+        assertThat(isTestRolledOut("suppress_logging_example_tst", td, result)).isFalse();
     }
 
     @Test
