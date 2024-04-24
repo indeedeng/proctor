@@ -6,6 +6,8 @@ import com.google.common.collect.Sets;
 import com.indeed.proctor.common.ProctorResult;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.Payload;
+import com.indeed.proctor.common.model.TestDefinition;
+import com.indeed.proctor.common.model.TestType;
 import com.indeed.proctor.consumer.ProctorGroupStubber.FakeTest;
 import com.indeed.proctor.consumer.logging.TestGroupFormatter;
 import com.indeed.proctor.consumer.logging.TestMarkingObserver;
@@ -14,6 +16,7 @@ import org.junit.Test;
 
 import java.util.Arrays;
 
+import static com.indeed.proctor.consumer.AbstractGroups.shouldLogRolledOutAllocation;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.CONTROL_BUCKET_WITH_PAYLOAD;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.FALLBACK_BUCKET;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.FALLBACK_NOPAYLOAD_BUCKET;
@@ -186,6 +189,47 @@ public class TestAbstractGroups {
         assertThat(sampleGroups.toLoggingString())
                 .isEqualTo(
                         "#A1:abtst1,#A1:bgtst0,#A1:groupwithfallbacktst2,#A1:no_definition_tst2");
+    }
+
+    @Test
+    public void testCheckRolledOutAllocation() {
+        final ConsumableTestDefinition td =
+                ConsumableTestDefinition.fromTestDefinition(
+                        TestDefinition.builder()
+                                .setTestType(TestType.RANDOM)
+                                .setSalt("foo")
+                                .build());
+        final ConsumableTestDefinition tdWithForceLogging =
+                ConsumableTestDefinition.fromTestDefinition(
+                        TestDefinition.builder()
+                                .setTestType(TestType.RANDOM)
+                                .setSalt("foo")
+                                .setForceLogging(true)
+                                .build());
+        final ProctorResult result =
+                new ProctorGroupStubber.ProctorResultStubBuilder()
+                        .withStubTest(
+                                false,
+                                ProctorGroupStubber.StubTest.SUPPRESS_LOGGING_TST,
+                                CONTROL_BUCKET_WITH_PAYLOAD,
+                                INACTIVE_BUCKET,
+                                CONTROL_BUCKET_WITH_PAYLOAD,
+                                GROUP_1_BUCKET_WITH_PAYLOAD)
+                        .build();
+
+        assertThat(
+                shouldLogRolledOutAllocation(
+                        "suppress_logging_example_tst",
+                        tdWithForceLogging,
+                        result)
+        ).isTrue();
+        
+        assertThat(
+                shouldLogRolledOutAllocation(
+                        "suppress_logging_example_tst",
+                        td,
+                        result)
+        ).isFalse();
     }
 
     @Test

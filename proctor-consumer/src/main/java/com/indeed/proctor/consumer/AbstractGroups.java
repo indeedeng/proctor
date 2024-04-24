@@ -458,10 +458,10 @@ public abstract class AbstractGroups {
 
     private boolean filterRolledOutAllocations(final String testName) {
         final ConsumableTestDefinition td = proctorResult.getTestDefinitions().get(testName);
-        return checkRolledOutAllocation(testName, td, proctorResult);
+        return shouldLogRolledOutAllocation(testName, td, proctorResult);
     }
 
-    public static boolean checkRolledOutAllocation(
+    public static boolean shouldLogRolledOutAllocation(
             final String testName,
             final ConsumableTestDefinition td,
             final ProctorResult proctorResult) {
