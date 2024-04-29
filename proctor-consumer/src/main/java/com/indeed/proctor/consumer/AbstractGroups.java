@@ -193,6 +193,20 @@ public abstract class AbstractGroups {
     }
 
     /**
+     * mark a test to additionally be included in getAsUsedTestsProctorResult(), even when no
+     * corresponding method has been called. for usecases where exposure happens without calls to
+     * generated methods calling getValue()
+     */
+    public final void markTestUsed(final String testName) {
+        if (testUsageObserver != null) {
+            testUsageObserver.markUsedForToggling(testName);
+        }
+        if (exposureLogger != null) {
+            exposureLogger.logExposureInfo(proctorResult, testName);
+        }
+    }
+
+    /**
      * @return the bucket that has been determined by the current proctorResult, or override bucket
      *     if valid, or empty if testname not valid
      */
