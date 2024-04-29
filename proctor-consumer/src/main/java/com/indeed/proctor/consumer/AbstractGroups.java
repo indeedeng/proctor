@@ -187,6 +187,9 @@ public abstract class AbstractGroups {
         if (testUsageObserver != null) {
             testUsageObserver.markUsedForToggling(testNames);
         }
+        if (exposureLogger != null) {
+            testNames.forEach(testName -> exposureLogger.logExposureInfo(proctorResult, testName));
+        }
     }
 
     /**
