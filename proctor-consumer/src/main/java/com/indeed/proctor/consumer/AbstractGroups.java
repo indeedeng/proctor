@@ -399,9 +399,31 @@ public abstract class AbstractGroups {
     }
 
     /**
-     * Return test names for tests that are non-silent or doesn't have available definition, and
-     * have a non-negative active bucket, in a stable sort. Stable sort is beneficial for log string
-     * compression, for debugging, and may help in cases of size-limited output.
+     * For each testname returned by getLoggingTestNames(), appends each test group in the form of
+     * [allocation id + ":" + test name + bucket value]. For example, it appends "#A1:bgcolortst1"
+     * if test name is bgcolortst and allocation id is #A1 and separator is ",".
+     *
+     * <p>the separator should be appended after each test group added to the string builder {@link
+     * #toString()} {@link #buildTestGroupString()} or {@link #appendTestGroups(StringBuilder)}
+     *
+     * @param sb a string builder
+     * @param separator a char used as separator x appends an empty string or a x-separated,
+     *     x-finalized list of groups
+     */
+    public void appendTestGroups(
+            final StringBuilder sb,
+            final char separator,
+            final boolean filterRolledOutAllocations) {
+        final List<String> testNames =
+                filterRolledOutAllocations ? getLoggingTestNames() : getLoggingTestNamesFullList();
+        appendTestGroupsWithAllocations(sb, separator, testNames);
+    }
+
+    /**
+     * Return test names for tests that are non-silent, doesn't have available definition, is not
+     * 100% rolled out, and have a non-negative active bucket, in a stable sort. Stable sort is
+     * beneficial for log string compression, for debugging, and may help in cases of size-limited
+     * output.
      */
     protected final List<String> getLoggingTestNames() {
         final Map<String, ConsumableTestDefinition> testDefinitions =
@@ -419,6 +441,31 @@ public abstract class AbstractGroups {
                         })
                 // Suppress 100% allocation logging
                 .filter(this::loggableRolledOutAllocation)
+                // call to getValueWithouMarkingUsage() to allow overrides of getActiveBucket, but
+                // avoid marking
+                .filter(testName -> getValueWithoutMarkingUsage(testName, -1) >= 0)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Return test names for tests that are non-silent or doesn't have available definition, and
+     * have a non-negative active bucket, in a stable sort. Stable sort is beneficial for log string
+     * compression, for debugging, and may help in cases of size-limited output.
+     */
+    protected final List<String> getLoggingTestNamesFullList() {
+        final Map<String, ConsumableTestDefinition> testDefinitions =
+                proctorResult.getTestDefinitions();
+        // following lines should preserve the order in the map to ensure logging values are stable
+        final Map<String, TestBucket> buckets = proctorResult.getBuckets();
+        return buckets.keySet().stream()
+                .filter(
+                        testName -> {
+                            final ConsumableTestDefinition consumableTestDefinition =
+                                    testDefinitions.get(testName);
+                            // fallback to non-silent when test definition is not available
+                            return (consumableTestDefinition == null)
+                                    || !consumableTestDefinition.getSilent();
+                        })
                 // call to getValueWithouMarkingUsage() to allow overrides of getActiveBucket, but
                 // avoid marking
                 .filter(testName -> getValueWithoutMarkingUsage(testName, -1) >= 0)

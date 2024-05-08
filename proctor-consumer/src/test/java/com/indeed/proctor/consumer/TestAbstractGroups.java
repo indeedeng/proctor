@@ -222,7 +222,8 @@ public class TestAbstractGroups {
                                 "suppress_logging_example_tst", tdWithForceLogging, result))
                 .isTrue();
 
-        assertThat(loggableRolledOutAllocation("suppress_logging_example_tst", td, result)).isFalse();
+        assertThat(loggableRolledOutAllocation("suppress_logging_example_tst", td, result))
+                .isFalse();
     }
 
     @Test
