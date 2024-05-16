@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiPredicate;
 
-import static com.indeed.proctor.consumer.AbstractGroups.loggableRolledOutAllocation;
+import static com.indeed.proctor.consumer.AbstractGroups.loggableAllocation;
 
 /**
  * Helper class to build a Strings to log, helping with analysis of experiments.
@@ -206,7 +206,7 @@ public class ProctorGroupsWriter {
                             return additionalFilter.test(testName, proctorResult);
                         }
                         // Suppress 100% allocation logging
-                        return loggableRolledOutAllocation(
+                        return loggableAllocation(
                                 testName, consumableTestDefinition, proctorResult);
                     });
         }
