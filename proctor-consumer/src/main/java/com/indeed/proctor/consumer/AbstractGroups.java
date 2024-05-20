@@ -356,6 +356,28 @@ public abstract class AbstractGroups {
     }
 
     /**
+     * String to be logged for debugging purposes. For historic reasons inside Indeed, contains two
+     * output formats per testname. This method does not filter out 100% allocations.
+     *
+     * <p>Additional custom groups can be added by overriding getCustomGroupsForLogging().
+     *
+     * @return a comma-separated List of {testname}{active-bucket-VALUE} and
+     *     {AllocationId}{testname}{active-bucket-VALUE} for all LIVE tests
+     */
+    public String toLoggingStringNoAllocationFilter() {
+        if (isEmpty()) {
+            return "";
+        }
+        final StringBuilder sb = new StringBuilder(proctorResult.getBuckets().size() * 10);
+        appendTestGroups(sb, GROUPS_SEPARATOR, false);
+        // remove trailing comma
+        if (sb.length() > 0) {
+            sb.deleteCharAt(sb.length() - 1);
+        }
+        return sb.toString();
+    }
+
+    /**
      * @return an empty string or a comma-separated, comma-finalized list of groups
      * @deprecated use toLoggingString()
      */

@@ -192,6 +192,36 @@ public class TestAbstractGroups {
     }
 
     @Test
+    public void testToLoggingStringNoAllocationFilter() {
+        final ConsumableTestDefinition td =
+                ConsumableTestDefinition.fromTestDefinition(
+                        TestDefinition.builder()
+                                .setTestType(TestType.RANDOM)
+                                .setSalt("foo")
+                                .build());
+        final ConsumableTestDefinition tdWithForceLogging =
+                ConsumableTestDefinition.fromTestDefinition(
+                        TestDefinition.builder()
+                                .setTestType(TestType.RANDOM)
+                                .setSalt("foo")
+                                .setForceLogging(true)
+                                .build());
+        final ProctorResult result =
+                new ProctorGroupStubber.ProctorResultStubBuilder()
+                        .withStubTest(
+                                false,
+                                ProctorGroupStubber.StubTest.SUPPRESS_LOGGING_TST,
+                                CONTROL_BUCKET_WITH_PAYLOAD,
+                                INACTIVE_BUCKET,
+                                CONTROL_BUCKET_WITH_PAYLOAD,
+                                GROUP_1_BUCKET_WITH_PAYLOAD)
+                        .build();
+
+        assertThat((new AbstractGroups(result) {}).toLoggingStringNoAllocationFilter())
+                .isEqualTo("#A1:suppress_logging_example_tst0");
+    }
+
+    @Test
     public void testCheckRolledOutAllocation() {
         final ConsumableTestDefinition td =
                 ConsumableTestDefinition.fromTestDefinition(
