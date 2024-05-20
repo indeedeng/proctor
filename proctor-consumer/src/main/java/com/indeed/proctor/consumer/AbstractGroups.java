@@ -364,7 +364,7 @@ public abstract class AbstractGroups {
      * @return a comma-separated List of {testname}{active-bucket-VALUE} and
      *     {AllocationId}{testname}{active-bucket-VALUE} for all LIVE tests
      */
-    public String toLoggingStringNoAllocationFilter() {
+    public String toVerifyGroupsString() {
         if (isEmpty()) {
             return "";
         }

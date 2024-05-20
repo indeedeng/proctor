@@ -192,7 +192,7 @@ public class TestAbstractGroups {
     }
 
     @Test
-    public void testToLoggingStringNoAllocationFilter() {
+    public void testToVerifyGroupsString() {
         final ConsumableTestDefinition td =
                 ConsumableTestDefinition.fromTestDefinition(
                         TestDefinition.builder()
@@ -217,7 +217,7 @@ public class TestAbstractGroups {
                                 GROUP_1_BUCKET_WITH_PAYLOAD)
                         .build();
 
-        assertThat((new AbstractGroups(result) {}).toLoggingStringNoAllocationFilter())
+        assertThat((new AbstractGroups(result) {}).toVerifyGroupsString())
                 .isEqualTo("#A1:suppress_logging_example_tst0");
     }
 
