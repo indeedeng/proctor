@@ -4,10 +4,11 @@ import lombok.Data;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collections;
 import java.util.List;
 
 @Data
 public class PayloadExperimentConfig {
     @Nullable String priority;
-    @Nonnull List<String> namespace;
+    @Nonnull List<String> namespace = Collections.emptyList();
 }
