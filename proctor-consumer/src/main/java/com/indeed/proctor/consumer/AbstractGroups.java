@@ -356,8 +356,8 @@ public abstract class AbstractGroups {
     }
 
     /**
-     * String to be used for verification/debugging purposes. For historic reasons inside Indeed, contains two
-     * output formats per testname. This method does not filter out 100% allocations.
+     * String to be used for verification/debugging purposes. For historic reasons inside Indeed,
+     * contains two output formats per testname. This method does not filter out 100% allocations.
      *
      * <p>Additional custom groups can be added by overriding getCustomGroupsForLogging().
      *
