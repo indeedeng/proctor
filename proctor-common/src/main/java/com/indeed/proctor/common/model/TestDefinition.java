@@ -57,6 +57,8 @@ public class TestDefinition {
 
     private boolean forceLogging;
 
+    @Nullable PayloadExperimentConfig payloadExperimentConfig;
+
     public TestDefinition() {
         /* intentionally empty */
     }
@@ -141,6 +143,7 @@ public class TestDefinition {
         this.metaTags = metaTags;
         this.evaluateForIncognitoUsers = false;
         this.forceLogging = false;
+        payloadExperimentConfig = null;
     }
 
     public TestDefinition(@Nonnull final TestDefinition other) {
@@ -163,6 +166,7 @@ public class TestDefinition {
         evaluateForIncognitoUsers = builder.evaluateForIncognitoUsers;
         enableUnitlessAllocations = builder.enableUnitlessAllocations;
         forceLogging = builder.forceLogging;
+        payloadExperimentConfig = builder.payloadExperimentConfig;
     }
 
     public static Builder builder() {
@@ -332,6 +336,11 @@ public class TestDefinition {
         return forceLogging;
     }
 
+    @Nullable
+    public PayloadExperimentConfig getPayloadExperimentConfig() {
+        return payloadExperimentConfig;
+    }
+
     @Override
     public String toString() {
         return "TestDefinition{"
@@ -369,6 +378,8 @@ public class TestDefinition {
                 + enableUnitlessAllocations
                 + ", forceLogging="
                 + forceLogging
+                + ", payloadExperimentConfig="
+                + payloadExperimentConfig
                 + '}';
     }
 
@@ -403,7 +414,8 @@ public class TestDefinition {
                 dependsOn,
                 evaluateForIncognitoUsers,
                 enableUnitlessAllocations,
-                forceLogging);
+                forceLogging,
+                payloadExperimentConfig);
     }
 
     /**
@@ -436,7 +448,8 @@ public class TestDefinition {
                 && Objects.equals(dependsOn, that.dependsOn)
                 && Objects.equals(evaluateForIncognitoUsers, that.evaluateForIncognitoUsers)
                 && Objects.equals(enableUnitlessAllocations, that.enableUnitlessAllocations)
-                && Objects.equals(forceLogging, that.forceLogging);
+                && Objects.equals(forceLogging, that.forceLogging)
+                && Objects.equals(payloadExperimentConfig, that.payloadExperimentConfig);
     }
 
     @VisibleForTesting
@@ -478,6 +491,7 @@ public class TestDefinition {
         private boolean evaluateForIncognitoUsers;
         private boolean enableUnitlessAllocations;
         private boolean forceLogging;
+        private PayloadExperimentConfig payloadExperimentConfig;
 
         public Builder from(@Nonnull final TestDefinition other) {
             setVersion(other.version);
@@ -495,6 +509,7 @@ public class TestDefinition {
             setEvaluateForIncognitoUsers(other.evaluateForIncognitoUsers);
             setEnableUnitlessAllocations(other.enableUnitlessAllocations);
             setForceLogging(other.forceLogging);
+            setPayloadExperimentConfig(other.payloadExperimentConfig);
             return this;
         }
 
@@ -605,6 +620,12 @@ public class TestDefinition {
 
         public Builder setForceLogging(final boolean forceLogging) {
             this.forceLogging = forceLogging;
+            return this;
+        }
+
+        public Builder setPayloadExperimentConfig(
+                final PayloadExperimentConfig payloadExperimentConfig) {
+            this.payloadExperimentConfig = payloadExperimentConfig;
             return this;
         }
 
