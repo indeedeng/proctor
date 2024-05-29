@@ -373,6 +373,28 @@ public abstract class AbstractGroups {
     }
 
     /**
+     * String to be used for verification/debugging purposes. For historic reasons inside Indeed,
+     * contains two output formats per testname. This method does not filter out 100% allocations.
+     *
+     * <p>Additional custom groups can be added by overriding getCustomGroupsForLogging().
+     *
+     * @return a comma-separated List of {testname}{active-bucket-VALUE} and
+     *     {AllocationId}{testname}{active-bucket-VALUE} for all LIVE tests
+     */
+    public String toVerifyGroupsString() {
+        if (isEmpty()) {
+            return "";
+        }
+        final StringBuilder sb = new StringBuilder(proctorResult.getBuckets().size() * 10);
+        appendTestGroups(sb, GROUPS_SEPARATOR, false);
+        // remove trailing comma
+        if (sb.length() > 0) {
+            sb.deleteCharAt(sb.length() - 1);
+        }
+        return sb.toString();
+    }
+
+    /**
      * @return an empty string or a comma-separated, comma-finalized list of groups
      * @deprecated use toLoggingString()
      */
@@ -416,11 +438,60 @@ public abstract class AbstractGroups {
     }
 
     /**
+     * For each testname returned by getLoggingTestNames(), appends each test group in the form of
+     * [allocation id + ":" + test name + bucket value]. For example, it appends "#A1:bgcolortst1"
+     * if test name is bgcolortst and allocation id is #A1 and separator is ",".
+     *
+     * <p>the separator should be appended after each test group added to the string builder {@link
+     * #toString()} {@link #buildTestGroupString()} or {@link #appendTestGroups(StringBuilder)}
+     *
+     * @param sb a string builder
+     * @param separator a char used as separator x appends an empty string or a x-separated,
+     *     x-finalized list of groups
+     */
+    public void appendTestGroups(
+            final StringBuilder sb,
+            final char separator,
+            final boolean filterRolledOutAllocations) {
+        final List<String> testNames =
+                filterRolledOutAllocations ? getLoggingTestNames() : getLoggingTestNamesFullList();
+        appendTestGroupsWithAllocations(sb, separator, testNames);
+    }
+
+    /**
+     * Return test names for tests that are non-silent, doesn't have available definition, is not
+     * 100% rolled out, and have a non-negative active bucket, in a stable sort. Stable sort is
+     * beneficial for log string compression, for debugging, and may help in cases of size-limited
+     * output.
+     */
+    protected final List<String> getLoggingTestNames() {
+        final Map<String, ConsumableTestDefinition> testDefinitions =
+                proctorResult.getTestDefinitions();
+        // following lines should preserve the order in the map to ensure logging values are stable
+        final Map<String, TestBucket> buckets = proctorResult.getBuckets();
+        return buckets.keySet().stream()
+                .filter(
+                        testName -> {
+                            final ConsumableTestDefinition consumableTestDefinition =
+                                    testDefinitions.get(testName);
+                            // fallback to non-silent when test definition is not available
+                            return (consumableTestDefinition == null)
+                                    || !consumableTestDefinition.getSilent();
+                        })
+                // Suppress 100% allocation logging
+                .filter(this::loggableAllocation)
+                // call to getValueWithouMarkingUsage() to allow overrides of getActiveBucket, but
+                // avoid marking
+                .filter(testName -> getValueWithoutMarkingUsage(testName, -1) >= 0)
+                .collect(Collectors.toList());
+    }
+
+    /**
      * Return test names for tests that are non-silent or doesn't have available definition, and
      * have a non-negative active bucket, in a stable sort. Stable sort is beneficial for log string
      * compression, for debugging, and may help in cases of size-limited output.
      */
-    protected final List<String> getLoggingTestNames() {
+    protected final List<String> getLoggingTestNamesFullList() {
         final Map<String, ConsumableTestDefinition> testDefinitions =
                 proctorResult.getTestDefinitions();
         // following lines should preserve the order in the map to ensure logging values are stable
@@ -469,6 +540,25 @@ public abstract class AbstractGroups {
                                 }
                             });
         }
+    }
+
+    private boolean loggableAllocation(final String testName) {
+        final ConsumableTestDefinition td = proctorResult.getTestDefinitions().get(testName);
+        return loggableAllocation(testName, td, proctorResult);
+    }
+
+    public static boolean loggableAllocation(
+            final String testName,
+            final ConsumableTestDefinition td,
+            final ProctorResult proctorResult) {
+        if (td != null) {
+            final Allocation allocation = proctorResult.getAllocations().get(testName);
+            if (allocation != null
+                    && allocation.getRanges().stream().anyMatch(range -> range.getLength() == 1)) {
+                return td.getForceLogging();
+            }
+        }
+        return true;
     }
 
     /**
