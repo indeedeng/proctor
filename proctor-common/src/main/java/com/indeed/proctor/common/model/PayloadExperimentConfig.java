@@ -9,6 +9,6 @@ import java.util.List;
 
 @Data
 public class PayloadExperimentConfig {
-    @Nullable String priority;
-    @Nonnull List<String> namespace = Collections.emptyList();
+    @Nullable private String priority;
+    @Nonnull private List<String> namespace = Collections.emptyList();
 }
