@@ -10,5 +10,16 @@ import java.util.List;
 @Data
 public class PayloadExperimentConfig {
     @Nullable private String priority;
-    @Nonnull private List<String> namespace = Collections.emptyList();
+    @Nonnull private List<String> namespaces = Collections.emptyList();
+
+    @Override
+    public String toString() {
+        return "PayloadExperimentConfig{"
+                + "priority='"
+                + priority
+                + '\''
+                + ", namespaces="
+                + namespaces
+                + '}';
+    }
 }
