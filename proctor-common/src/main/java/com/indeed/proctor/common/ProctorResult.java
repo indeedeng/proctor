@@ -105,6 +105,29 @@ public class ProctorResult {
                 (testDefinitions == null) ? emptyMap() : new HashMap<>(testDefinitions));
     }
 
+    @Deprecated
+    public ProctorResult(
+            final String matrixVersion,
+            @Nonnull final Map<String, TestBucket> buckets,
+            @Nonnull final Map<String, Allocation> allocations,
+            // allowing null for historical reasons
+            @Nullable final Map<String, ConsumableTestDefinition> testDefinitions,
+            @Nonnull final Map<String, PayloadProperty> properties) {
+        // Potentially client applications might need to build ProctorResult instances in each
+        // request, and some apis
+        // have large proctorResult objects, so if teams use this constructor, this may have a
+        // noticeable
+        // impact on latency and GC, so ideally clients should avoid this constructor.
+        this(
+                matrixVersion,
+                new TreeMap<>(buckets),
+                new TreeMap<>(allocations),
+                (testDefinitions == null) ? emptyMap() : new HashMap<>(testDefinitions),
+                new Identifiers(emptyMap()),
+                emptyMap(),
+                properties);
+    }
+
     /**
      * Plain constructor, not creating TreeMaps.
      *

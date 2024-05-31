@@ -1,5 +1,7 @@
 package com.indeed.proctor.consumer;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -14,19 +16,8 @@ import org.junit.Test;
 
 import java.util.Arrays;
 
-import static com.indeed.proctor.consumer.ProctorGroupStubber.CONTROL_BUCKET_WITH_PAYLOAD;
-import static com.indeed.proctor.consumer.ProctorGroupStubber.FALLBACK_BUCKET;
-import static com.indeed.proctor.consumer.ProctorGroupStubber.FALLBACK_NOPAYLOAD_BUCKET;
-import static com.indeed.proctor.consumer.ProctorGroupStubber.FALLBACK_TEST_BUCKET;
-import static com.indeed.proctor.consumer.ProctorGroupStubber.GROUP_1_BUCKET;
-import static com.indeed.proctor.consumer.ProctorGroupStubber.GROUP_1_BUCKET_WITH_PAYLOAD;
-import static com.indeed.proctor.consumer.ProctorGroupStubber.INACTIVE_BUCKET;
-import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.CONTROL_SELECTED_TEST;
-import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.GROUP1_SELECTED_TEST;
-import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.GROUP_WITH_FALLBACK_TEST;
-import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.INACTIVE_SELECTED_TEST;
-import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.MISSING_DEFINITION_TEST;
-import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.NO_BUCKETS_WITH_FALLBACK_TEST;
+import static com.indeed.proctor.consumer.ProctorGroupStubber.*;
+import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.*;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -83,6 +74,7 @@ public class TestAbstractGroups {
                                 ProctorGroupStubber.StubTest.MISSING_DEFINITION_TEST,
                                 GROUP_1_BUCKET,
                                 (ConsumableTestDefinition) null)
+                        .withStubProperty(PROPERTY_TEST, GROUP_1_BUCKET_PROPERTY_PAYLOAD)
                         .build();
         observer = new TestMarkingObserver(proctorResult);
         sampleGroups = new AbstractGroups(proctorResult, observer) {};
@@ -154,6 +146,16 @@ public class TestAbstractGroups {
     }
 
     @Test
+    public void testGetProperty() throws JsonProcessingException {
+        final ObjectMapper ob = new ObjectMapper();
+        assertThat(sampleGroups.getProperty("another.property", String[].class))
+                .isEqualTo(new String[] {"abc"});
+        assertThat(sampleGroups.getProperty("another.property"))
+                .isEqualTo(ob.readTree("[\"abc\"]"));
+        assertThat(sampleGroups.getProperty("some.property")).isEqualTo(ob.readTree("{}"));
+    }
+
+    @Test
     public void testIsEmpty() {
         assertThat(emptyGroup.isEmpty()).isTrue();
         assertThat(sampleGroups.isEmpty()).isFalse();
@@ -164,7 +166,7 @@ public class TestAbstractGroups {
         assertThat(emptyGroup.toLongString()).isEmpty();
         assertThat(sampleGroups.toLongString())
                 .isEqualTo(
-                        "abtst-group1,bgtst-control,btntst-inactive,groupwithfallbacktst-group1,no_definition_tst-group1");
+                        "abtst-group1,bgtst-control,btntst-inactive,groupwithfallbacktst-group1,no_definition_tst-group1,propertytest-group1");
     }
 
     @Test
@@ -177,7 +179,7 @@ public class TestAbstractGroups {
                 .isEmpty();
         assertThat(sampleGroups.toLoggingString())
                 .isEqualTo(
-                        "#A1:abtst1,#A1:bgtst0,#A1:groupwithfallbacktst2,#A1:no_definition_tst2");
+                        "#A1:abtst1,#A1:bgtst0,#A1:groupwithfallbacktst2,#A1:no_definition_tst2,#A1:propertytest2");
     }
 
     @Test
@@ -192,7 +194,7 @@ public class TestAbstractGroups {
 
         // getGroupsString and getAsProctorResult should not mark tests as used
         final String fullLoggingString =
-                "#A1:abtst1,#A1:bgtst0,#A1:groupwithfallbacktst2,#A1:no_definition_tst2";
+                "#A1:abtst1,#A1:bgtst0,#A1:groupwithfallbacktst2,#A1:no_definition_tst2,#A1:propertytest2";
         assertThat(sampleGroups.getAsProctorResult()).isNotNull();
         assertThat(sampleGroups.toLoggingString()).isEqualTo(fullLoggingString);
         assertThat(sampleGroups.toLongString()).isNotBlank();
@@ -229,7 +231,8 @@ public class TestAbstractGroups {
                         CONTROL_SELECTED_TEST.getName(),
                         GROUP1_SELECTED_TEST.getName(),
                         GROUP_WITH_FALLBACK_TEST.getName(),
-                        MISSING_DEFINITION_TEST.getName());
+                        MISSING_DEFINITION_TEST.getName(),
+                        PROPERTY_TEST.getName());
     }
 
     @Test
@@ -252,14 +255,15 @@ public class TestAbstractGroups {
 
     @Test
     public void testAppendTestGroups() {
-        StringBuilder builder = new StringBuilder();
+        final StringBuilder builder = new StringBuilder();
         sampleGroups.appendTestGroups(builder, ',');
         assertThat(builder.toString().split(","))
                 .containsExactlyInAnyOrder(
                         "#A1:bgtst0",
                         "#A1:abtst1",
                         "#A1:groupwithfallbacktst2",
-                        "#A1:no_definition_tst2");
+                        "#A1:no_definition_tst2",
+                        "#A1:propertytest2");
     }
 
     @Test
@@ -268,11 +272,12 @@ public class TestAbstractGroups {
         assertThat(emptyGroup.getJavaScriptConfig()).hasSize(0);
 
         assertThat(sampleGroups.getJavaScriptConfig())
-                .hasSize(4)
+                .hasSize(5)
                 .containsEntry(GROUP1_SELECTED_TEST.getName(), 1)
                 .containsEntry(CONTROL_SELECTED_TEST.getName(), 0)
                 .containsEntry(GROUP_WITH_FALLBACK_TEST.getName(), 2)
-                .containsEntry(MISSING_DEFINITION_TEST.getName(), 2);
+                .containsEntry(MISSING_DEFINITION_TEST.getName(), 2)
+                .containsEntry(PROPERTY_TEST.getName(), 2);
     }
 
     @Test
