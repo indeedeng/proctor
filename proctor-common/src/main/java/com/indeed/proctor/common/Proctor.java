@@ -8,12 +8,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Maps;
-import com.indeed.proctor.common.model.Allocation;
-import com.indeed.proctor.common.model.Audit;
-import com.indeed.proctor.common.model.ConsumableTestDefinition;
-import com.indeed.proctor.common.model.TestBucket;
-import com.indeed.proctor.common.model.TestMatrixArtifact;
-import com.indeed.proctor.common.model.TestType;
+import com.indeed.proctor.common.model.*;
 import com.indeed.util.varexport.VarExporter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -323,6 +318,7 @@ public class Proctor {
         // this method
         final SortedMap<String, TestBucket> testGroups = new TreeMap<>();
         final SortedMap<String, Allocation> testAllocations = new TreeMap<>();
+        final SortedMap<String, PayloadProperty> testProperties = new TreeMap<>();
 
         final List<String> filteredEvaluationOrder;
         if (determineAllTests) {
@@ -400,6 +396,9 @@ public class Proctor {
 
             if (chooseResult.getTestBucket() != null) {
                 testGroups.put(testName, chooseResult.getTestBucket());
+                if (testChooser.getTestDefinition().getPayloadExperimentConfig() != null) {
+                    testProperties.putAll(getProperties(testName, chooseResult.getTestBucket()));
+                }
             }
             if (chooseResult.getAllocation() != null) {
                 testAllocations.put(testName, chooseResult.getAllocation());
@@ -424,7 +423,8 @@ public class Proctor {
                         testAllocations,
                         testDefinitions,
                         identifiers,
-                        inputContext);
+                        inputContext,
+                        testProperties);
 
         if (resultReporter != null) {
             resultReporter.reportMetrics(result, invalidIdentifierCount);
@@ -514,5 +514,25 @@ public class Proctor {
                 .map(Object::toString)
                 .map(value -> value.equalsIgnoreCase("true"))
                 .orElse(false);
+    }
+
+    private Map<String, PayloadProperty> getProperties(
+            final String testName, final TestBucket testBucket) {
+        final Payload payload = testBucket.getPayload();
+        if (payload != null && payload.getJson() != null) {
+            final SortedMap<String, PayloadProperty> testProperties = new TreeMap<>();
+            payload.getJson()
+                    .fields()
+                    .forEachRemaining(
+                            field ->
+                                    testProperties.put(
+                                            field.getKey(),
+                                            PayloadProperty.builder()
+                                                    .value(field.getValue())
+                                                    .testName(testName)
+                                                    .build()));
+            return testProperties;
+        }
+        return Collections.emptyMap();
     }
 }
