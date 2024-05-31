@@ -30,6 +30,7 @@ import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.GROUP_WIT
 import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.INACTIVE_SELECTED_TEST;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.MISSING_DEFINITION_TEST;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.NO_BUCKETS_WITH_FALLBACK_TEST;
+import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.SUPPRESS_LOGGING_TST;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.PROPERTY_TEST;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singleton;
