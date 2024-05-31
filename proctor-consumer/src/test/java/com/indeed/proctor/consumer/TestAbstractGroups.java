@@ -16,8 +16,21 @@ import org.junit.Test;
 
 import java.util.Arrays;
 
-import static com.indeed.proctor.consumer.ProctorGroupStubber.*;
-import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.*;
+import static com.indeed.proctor.consumer.ProctorGroupStubber.CONTROL_BUCKET_WITH_PAYLOAD;
+import static com.indeed.proctor.consumer.ProctorGroupStubber.FALLBACK_BUCKET;
+import static com.indeed.proctor.consumer.ProctorGroupStubber.FALLBACK_NOPAYLOAD_BUCKET;
+import static com.indeed.proctor.consumer.ProctorGroupStubber.FALLBACK_TEST_BUCKET;
+import static com.indeed.proctor.consumer.ProctorGroupStubber.GROUP_1_BUCKET;
+import static com.indeed.proctor.consumer.ProctorGroupStubber.GROUP_1_BUCKET_PROPERTY_PAYLOAD;
+import static com.indeed.proctor.consumer.ProctorGroupStubber.GROUP_1_BUCKET_WITH_PAYLOAD;
+import static com.indeed.proctor.consumer.ProctorGroupStubber.INACTIVE_BUCKET;
+import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.CONTROL_SELECTED_TEST;
+import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.GROUP1_SELECTED_TEST;
+import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.GROUP_WITH_FALLBACK_TEST;
+import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.INACTIVE_SELECTED_TEST;
+import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.MISSING_DEFINITION_TEST;
+import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.NO_BUCKETS_WITH_FALLBACK_TEST;
+import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.PROPERTY_TEST;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
