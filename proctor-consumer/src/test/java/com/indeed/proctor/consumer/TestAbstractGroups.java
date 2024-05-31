@@ -32,6 +32,7 @@ import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.MISSING_D
 import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.NO_BUCKETS_WITH_FALLBACK_TEST;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.SUPPRESS_LOGGING_TST;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.PROPERTY_TEST;
+
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singleton;
 import static org.assertj.core.api.Assertions.assertThat;
