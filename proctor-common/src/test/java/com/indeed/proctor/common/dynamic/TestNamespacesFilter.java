@@ -20,14 +20,14 @@ public class TestNamespacesFilter {
     private static final ObjectMapper OBJECT_MAPPER = Serializers.lenient();
 
     @Test
-    public void testMatchEmptyMetaTags() {
+    public void testMatchEmptyNamespaces() {
         assertThatThrownBy(() -> new NamespacesFilter(emptySet()))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("namespaces should be non-empty string list.");
     }
 
     @Test
-    public void testMatchSingleMetaTag() {
+    public void testMatchSingleNamespaces() {
         final NamespacesFilter filter = new NamespacesFilter(ImmutableSet.of("test"));
 
         assertFilterMatchesEquals(true, filter, ImmutableList.of("test"));
@@ -38,7 +38,7 @@ public class TestNamespacesFilter {
     }
 
     @Test
-    public void testMatchMetaTags() {
+    public void testMatchNamespaces() {
         final NamespacesFilter filter = new NamespacesFilter(ImmutableSet.of("test1", "test2"));
 
         assertFilterMatchesEquals(true, filter, ImmutableList.of("test1"));
