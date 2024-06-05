@@ -8,7 +8,17 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.indeed.proctor.common.model.*;
+import com.indeed.proctor.common.model.Allocation;
+import com.indeed.proctor.common.model.Audit;
+import com.indeed.proctor.common.model.ConsumableTestDefinition;
+import com.indeed.proctor.common.model.Payload;
+import com.indeed.proctor.common.model.PayloadExperimentConfig;
+import com.indeed.proctor.common.model.Range;
+import com.indeed.proctor.common.model.TestBucket;
+import com.indeed.proctor.common.model.TestDefinition;
+import com.indeed.proctor.common.model.TestDependency;
+import com.indeed.proctor.common.model.TestMatrixArtifact;
+import com.indeed.proctor.common.model.TestType;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -985,26 +995,20 @@ public class TestProctor {
                 .containsOnlyKeys("key1", "key2", "some.property", "another.property")
                 .containsEntry(
                         "key1",
-                        PayloadProperty.builder()
-                                .value(new ObjectMapper().readTree("1"))
-                                .testName("foo")
-                                .build())
+                        PayloadProperty.builder().value(p1.get("key1")).testName("foo").build())
                 .containsEntry(
                         "key2",
-                        PayloadProperty.builder()
-                                .value(new ObjectMapper().readTree("\"abc\""))
-                                .testName("foo")
-                                .build())
+                        PayloadProperty.builder().value(p1.get("key2")).testName("foo").build())
                 .containsEntry(
                         "some.property",
                         PayloadProperty.builder()
-                                .value(new ObjectMapper().readTree("{}"))
+                                .value(p2.get("some.property"))
                                 .testName("bar")
                                 .build())
                 .containsEntry(
                         "another.property",
                         PayloadProperty.builder()
-                                .value(new ObjectMapper().readTree("[\"abc\"]"))
+                                .value(p2.get("another.property"))
                                 .testName("bar")
                                 .build());
         ;
