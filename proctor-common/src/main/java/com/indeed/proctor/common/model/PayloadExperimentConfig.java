@@ -24,4 +24,14 @@ public class PayloadExperimentConfig {
                 + namespaces
                 + '}';
     }
+
+    public static boolean isHigherPriority(
+            final PayloadExperimentConfig payloadConfig,
+            final PayloadExperimentConfig otherPayloadConfig) {
+        return payloadConfig != null
+                && payloadConfig.getPriority() != null
+                && otherPayloadConfig != null
+                && otherPayloadConfig.getPriority() != null
+                && payloadConfig.getPriority().compareTo(otherPayloadConfig.getPriority()) < 0;
+    }
 }

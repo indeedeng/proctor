@@ -43,6 +43,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static com.indeed.proctor.common.ProctorUtils.UNITLESS_ALLOCATION_IDENTIFIER;
+import static com.indeed.proctor.common.model.PayloadExperimentConfig.isHigherPriority;
 
 /**
  * The sole entry point for client applications determining the test buckets for a particular
@@ -552,15 +553,7 @@ public class Proctor {
                                                     .get(testName)
                                                     .getTestDefinition()
                                                     .getPayloadExperimentConfig();
-                                    if (currPayloadConfig != null
-                                            && currPayloadConfig.getPriority() != null
-                                            && newPayloadConfig != null
-                                            && newPayloadConfig.getPriority() != null
-                                            && currPayloadConfig
-                                                            .getPriority()
-                                                            .compareTo(
-                                                                    newPayloadConfig.getPriority())
-                                                    < 0) {
+                                    if (isHigherPriority(currPayloadConfig, newPayloadConfig)) {
                                         testProperties.put(
                                                 field.getKey(),
                                                 PayloadProperty.builder()
