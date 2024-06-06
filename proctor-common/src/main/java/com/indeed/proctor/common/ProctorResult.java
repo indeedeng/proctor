@@ -84,7 +84,7 @@ public class ProctorResult {
      * @param buckets the resolved bucket for each test
      * @param allocations the determined allocation for each test
      * @param testDefinitions the original test definitions
-     * @deprecated this constructor creates copies of all input collections
+     * @deprecated this constructor creates copies of all input collections negatively effecting performance
      */
     @Deprecated
     public ProctorResult(
@@ -103,6 +103,39 @@ public class ProctorResult {
                 new TreeMap<>(buckets),
                 new TreeMap<>(allocations),
                 (testDefinitions == null) ? emptyMap() : new HashMap<>(testDefinitions));
+    }
+
+    /**
+     * Create a ProctorResult with copies of the provided collections
+     *
+     * @param matrixVersion any string, used for debugging
+     * @param buckets the resolved bucket for each test
+     * @param allocations the determined allocation for each test
+     * @param testDefinitions the original test definitions
+     * @param properties the properties
+     * @deprecated this constructor creates copies of all input collections negatively effecting performance
+     */
+    @Deprecated
+    public ProctorResult(
+            final String matrixVersion,
+            @Nonnull final Map<String, TestBucket> buckets,
+            @Nonnull final Map<String, Allocation> allocations,
+            // allowing null for historical reasons
+            @Nullable final Map<String, ConsumableTestDefinition> testDefinitions,
+            @Nonnull final Map<String, PayloadProperty> properties) {
+        // Potentially client applications might need to build ProctorResult instances in each
+        // request, and some apis
+        // have large proctorResult objects, so if teams use this constructor, this may have a
+        // noticeable
+        // impact on latency and GC, so ideally clients should avoid this constructor.
+        this(
+                matrixVersion,
+                new TreeMap<>(buckets),
+                new TreeMap<>(allocations),
+                (testDefinitions == null) ? emptyMap() : new HashMap<>(testDefinitions),
+                new Identifiers(emptyMap()),
+                emptyMap(),
+                properties);
     }
 
     /**

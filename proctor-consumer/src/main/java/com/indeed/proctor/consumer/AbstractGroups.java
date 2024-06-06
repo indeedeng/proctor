@@ -1,7 +1,10 @@
 package com.indeed.proctor.consumer;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
+import com.indeed.proctor.common.PayloadProperty;
 import com.indeed.proctor.common.ProctorResult;
 import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
@@ -39,6 +42,7 @@ import java.util.stream.Collectors;
  */
 public abstract class AbstractGroups {
     private static final Logger LOGGER = LogManager.getLogger(AbstractGroups.class);
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private final ProctorResult proctorResult;
 
     // Option using injected Observer
@@ -317,6 +321,20 @@ public abstract class AbstractGroups {
     @CheckForNull
     final TestBucket getTestBucketWithValue(final String testName, final int bucketValue) {
         return getTestBucketWithValueOptional(proctorResult, testName, bucketValue).orElse(null);
+    }
+
+    public @Nullable JsonNode getProperty(final String propertyName) {
+        return Optional.ofNullable(proctorResult.getProperties().get(propertyName))
+                .map(PayloadProperty::getValue)
+                .orElse(null);
+    }
+
+    public @Nullable <T> T getProperty(final String propertyName, final Class<T> propertyClazz) {
+        try {
+            return OBJECT_MAPPER.convertValue(getProperty(propertyName), propertyClazz);
+        } catch (final IllegalArgumentException e) {
+            return null;
+        }
     }
 
     /** @return a comma-separated String of {testname}-{active-bucket-name} for ALL tests */
