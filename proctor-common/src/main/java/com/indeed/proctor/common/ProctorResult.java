@@ -84,7 +84,7 @@ public class ProctorResult {
      * @param buckets the resolved bucket for each test
      * @param allocations the determined allocation for each test
      * @param testDefinitions the original test definitions
-     * @deprecated this constructor creates copies of all input collections
+     * @deprecated this constructor creates copies of all input collections negatively effecting performance
      */
     @Deprecated
     public ProctorResult(
@@ -105,6 +105,16 @@ public class ProctorResult {
                 (testDefinitions == null) ? emptyMap() : new HashMap<>(testDefinitions));
     }
 
+    /**
+     * Create a ProctorResult with copies of the provided collections
+     *
+     * @param matrixVersion any string, used for debugging
+     * @param buckets the resolved bucket for each test
+     * @param allocations the determined allocation for each test
+     * @param testDefinitions the original test definitions
+     * @param properties the properties
+     * @deprecated this constructor creates copies of all input collections negatively effecting performance
+     */
     @Deprecated
     public ProctorResult(
             final String matrixVersion,
