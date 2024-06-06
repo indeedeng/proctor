@@ -524,6 +524,11 @@ public class Proctor {
                 .orElse(false);
     }
 
+    /**
+     * Aggregates properties of Payload Experiments for look up in Proctor Result. Checks Priority
+     * of Property to handle conflicting overrides of properties within namespaces. Properties are
+     * the Key:Value pairs of fields stored in JsonNode Payload type.
+     */
     private void populateProperties(
             final String testName,
             final TestBucket testBucket,
@@ -533,36 +538,37 @@ public class Proctor {
             payload.getJson()
                     .fields()
                     .forEachRemaining(
-                            field -> {
-                                final PayloadProperty curr = testProperties.get(field.getKey());
-                                if (curr == null) {
-                                    testProperties.put(
-                                            field.getKey(),
-                                            PayloadProperty.builder()
-                                                    .value(field.getValue())
-                                                    .testName(testName)
-                                                    .build());
-                                } else {
-                                    final PayloadExperimentConfig currPayloadConfig =
-                                            testChoosers
-                                                    .get(curr.getTestName())
-                                                    .getTestDefinition()
-                                                    .getPayloadExperimentConfig();
-                                    final PayloadExperimentConfig newPayloadConfig =
-                                            testChoosers
-                                                    .get(testName)
-                                                    .getTestDefinition()
-                                                    .getPayloadExperimentConfig();
-                                    if (isHigherPriority(currPayloadConfig, newPayloadConfig)) {
-                                        testProperties.put(
-                                                field.getKey(),
-                                                PayloadProperty.builder()
-                                                        .value(field.getValue())
-                                                        .testName(testName)
-                                                        .build());
-                                    }
-                                }
-                            });
+                            field -> attemptStoringProperty(field, testName, testProperties));
+        }
+    }
+
+    private void attemptStoringProperty(
+            final Map.Entry<String, com.fasterxml.jackson.databind.JsonNode> field,
+            final String testName,
+            final Map<String, PayloadProperty> testProperties) {
+        final PayloadProperty curr = testProperties.get(field.getKey());
+        // store property if it does not exist in map
+        if (curr == null) {
+            testProperties.put(
+                    field.getKey(),
+                    PayloadProperty.builder().value(field.getValue()).testName(testName).build());
+        } else {
+            final PayloadExperimentConfig currPayloadConfig =
+                    testChoosers
+                            .get(curr.getTestName())
+                            .getTestDefinition()
+                            .getPayloadExperimentConfig();
+            final PayloadExperimentConfig newPayloadConfig =
+                    testChoosers.get(testName).getTestDefinition().getPayloadExperimentConfig();
+            // store property if it has higher priority than the currently stored property
+            if (isHigherPriority(currPayloadConfig, newPayloadConfig)) {
+                testProperties.put(
+                        field.getKey(),
+                        PayloadProperty.builder()
+                                .value(field.getValue())
+                                .testName(testName)
+                                .build());
+            }
         }
     }
 }
