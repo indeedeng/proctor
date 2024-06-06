@@ -1,5 +1,6 @@
 package com.indeed.proctor.common.model;
 
+import lombok.Builder;
 import lombok.Data;
 
 import javax.annotation.Nonnull;
@@ -8,6 +9,7 @@ import java.util.Collections;
 import java.util.List;
 
 @Data
+@Builder
 public class PayloadExperimentConfig {
     @Nullable private String priority;
     @Nonnull private List<String> namespaces = Collections.emptyList();
