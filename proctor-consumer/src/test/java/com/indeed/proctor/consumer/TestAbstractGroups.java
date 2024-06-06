@@ -202,7 +202,7 @@ public class TestAbstractGroups {
                 .isEmpty();
         assertThat(sampleGroups.toLoggingString())
                 .isEqualTo(
-                        "#A1:abtst1,#A1:bgtst0,#A1:groupwithfallbacktst2,#A1:no_definition_tst2,#A1:propertytest2");
+                        "#A1:abtst1,#A1:bgtst0,#A1:groupwithfallbacktst2,#A1:no_definition_tst2");
     }
 
     @Test
@@ -317,7 +317,7 @@ public class TestAbstractGroups {
 
         // getGroupsString and getAsProctorResult should not mark tests as used
         final String fullLoggingString =
-                "#A1:abtst1,#A1:bgtst0,#A1:groupwithfallbacktst2,#A1:no_definition_tst2,#A1:propertytest2";
+                "#A1:abtst1,#A1:bgtst0,#A1:groupwithfallbacktst2,#A1:no_definition_tst2";
         assertThat(sampleGroups.getAsProctorResult()).isNotNull();
         assertThat(sampleGroups.toLoggingString()).isEqualTo(fullLoggingString);
         assertThat(sampleGroups.toLongString()).isNotBlank();
@@ -354,8 +354,7 @@ public class TestAbstractGroups {
                         CONTROL_SELECTED_TEST.getName(),
                         GROUP1_SELECTED_TEST.getName(),
                         GROUP_WITH_FALLBACK_TEST.getName(),
-                        MISSING_DEFINITION_TEST.getName(),
-                        PROPERTY_TEST.getName());
+                        MISSING_DEFINITION_TEST.getName());
     }
 
     @Test
@@ -385,8 +384,7 @@ public class TestAbstractGroups {
                         "#A1:bgtst0",
                         "#A1:abtst1",
                         "#A1:groupwithfallbacktst2",
-                        "#A1:no_definition_tst2",
-                        "#A1:propertytest2");
+                        "#A1:no_definition_tst2");
     }
 
     @Test
@@ -395,7 +393,7 @@ public class TestAbstractGroups {
         assertThat(emptyGroup.getJavaScriptConfig()).hasSize(0);
 
         assertThat(sampleGroups.getJavaScriptConfig())
-                .hasSize(5)
+                .hasSize(6)
                 .containsEntry(GROUP1_SELECTED_TEST.getName(), 1)
                 .containsEntry(CONTROL_SELECTED_TEST.getName(), 0)
                 .containsEntry(GROUP_WITH_FALLBACK_TEST.getName(), 2)
