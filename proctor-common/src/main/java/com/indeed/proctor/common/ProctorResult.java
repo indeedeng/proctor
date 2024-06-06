@@ -135,7 +135,7 @@ public class ProctorResult {
                 (testDefinitions == null) ? emptyMap() : new HashMap<>(testDefinitions),
                 new Identifiers(emptyMap()),
                 emptyMap(),
-                properties);
+                (properties == null) ? emptyMap() : new HashMap<>(properties));
     }
 
     /**
