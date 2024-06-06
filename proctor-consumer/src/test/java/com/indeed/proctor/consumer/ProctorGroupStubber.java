@@ -117,7 +117,7 @@ public class ProctorGroupStubber {
                                                         .testName(stubTest.getName())
                                                         .value(field.getValue())
                                                         .build()));
-                definitions.put(stubTest.getName(), stubDefinitionWithVersion("v1", resolved));
+                definitions.put(stubTest.getName(), stubDefinitionWithVersion(false, "v1", resolved));
             }
             return this;
         }
