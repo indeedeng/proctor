@@ -12,6 +12,7 @@ import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.Audit;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
 import com.indeed.proctor.common.model.Payload;
+import com.indeed.proctor.common.model.PayloadExperimentConfig;
 import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.common.model.TestMatrixArtifact;
 import com.indeed.proctor.common.model.TestType;
@@ -42,6 +43,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static com.indeed.proctor.common.ProctorUtils.UNITLESS_ALLOCATION_IDENTIFIER;
+import static com.indeed.proctor.common.model.PayloadExperimentConfig.isHigherPriority;
 
 /**
  * The sole entry point for client applications determining the test buckets for a particular
@@ -403,7 +405,7 @@ public class Proctor {
             if (chooseResult.getTestBucket() != null) {
                 testGroups.put(testName, chooseResult.getTestBucket());
                 if (testChooser.getTestDefinition().getPayloadExperimentConfig() != null) {
-                    testProperties.putAll(getProperties(testName, chooseResult.getTestBucket()));
+                    populateProperties(testName, chooseResult.getTestBucket(), testProperties);
                 }
             }
             if (chooseResult.getAllocation() != null) {
@@ -522,23 +524,45 @@ public class Proctor {
                 .orElse(false);
     }
 
-    private Map<String, PayloadProperty> getProperties(
-            final String testName, final TestBucket testBucket) {
+    private void populateProperties(
+            final String testName,
+            final TestBucket testBucket,
+            final Map<String, PayloadProperty> testProperties) {
         final Payload payload = testBucket.getPayload();
         if (payload != null && payload.getJson() != null) {
-            final SortedMap<String, PayloadProperty> testProperties = new TreeMap<>();
             payload.getJson()
                     .fields()
                     .forEachRemaining(
-                            field ->
+                            field -> {
+                                final PayloadProperty curr = testProperties.get(field.getKey());
+                                if (curr == null) {
                                     testProperties.put(
                                             field.getKey(),
                                             PayloadProperty.builder()
                                                     .value(field.getValue())
                                                     .testName(testName)
-                                                    .build()));
-            return testProperties;
+                                                    .build());
+                                } else {
+                                    final PayloadExperimentConfig currPayloadConfig =
+                                            testChoosers
+                                                    .get(curr.getTestName())
+                                                    .getTestDefinition()
+                                                    .getPayloadExperimentConfig();
+                                    final PayloadExperimentConfig newPayloadConfig =
+                                            testChoosers
+                                                    .get(testName)
+                                                    .getTestDefinition()
+                                                    .getPayloadExperimentConfig();
+                                    if (isHigherPriority(currPayloadConfig, newPayloadConfig)) {
+                                        testProperties.put(
+                                                field.getKey(),
+                                                PayloadProperty.builder()
+                                                        .value(field.getValue())
+                                                        .testName(testName)
+                                                        .build());
+                                    }
+                                }
+                            });
         }
-        return Collections.emptyMap();
     }
 }
