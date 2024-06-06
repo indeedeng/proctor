@@ -171,7 +171,6 @@ public class ProctorResult {
      * @param identifiers the identifiers used for determine groups
      * @param inputContext the context variables
      */
-    @Deprecated
     public ProctorResult(
             @Nonnull final String matrixVersion,
             @Nonnull final SortedMap<String, TestBucket> buckets,
@@ -186,7 +185,7 @@ public class ProctorResult {
                 testDefinitions,
                 identifiers,
                 inputContext,
-                new HashMap<>());
+                emptyMap());
     }
 
     /**

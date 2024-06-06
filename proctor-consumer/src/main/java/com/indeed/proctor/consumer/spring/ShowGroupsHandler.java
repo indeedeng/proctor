@@ -29,7 +29,7 @@ public class ShowGroupsHandler implements HttpRequestHandler {
             writer.println("Did not determine any groups");
         } else {
             final StringBuilder sb = new StringBuilder();
-            grps.appendTestGroups(sb, '\n');
+            grps.appendTestGroups(sb, '\n', false);
             writer.print(sb.toString());
         }
     }
