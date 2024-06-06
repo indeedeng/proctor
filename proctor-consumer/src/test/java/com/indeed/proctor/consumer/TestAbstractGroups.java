@@ -400,7 +400,7 @@ public class TestAbstractGroups {
                 .containsEntry(CONTROL_SELECTED_TEST.getName(), 0)
                 .containsEntry(GROUP_WITH_FALLBACK_TEST.getName(), 2)
                 .containsEntry(MISSING_DEFINITION_TEST.getName(), 2)
-                .containsEntry(PROPERTY_TEST.getName(), 2);
+                .containsEntry(PROPERTY_TEST.getName(), 2)
                 .containsEntry(SUPPRESS_LOGGING_TST.getName(), 0);
     }
 
