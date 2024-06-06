@@ -38,6 +38,8 @@ public class ConsumableTestDefinition {
     private boolean containsUnitlessAllocation = false;
     private boolean forceLogging = false;
 
+    @Nullable PayloadExperimentConfig payloadExperimentConfig;
+
     public ConsumableTestDefinition() {
         /* intentionally empty */
     }
@@ -141,7 +143,8 @@ public class ConsumableTestDefinition {
             final boolean evaluateForIncognitoUsers,
             final boolean enableUnitlessAllocations,
             final boolean containsUnitlessAllocation,
-            final boolean forceLogging) {
+            final boolean forceLogging,
+            final PayloadExperimentConfig payloadExperimentConfig) {
         this.constants = constants;
         this.version = version;
         this.salt = salt;
@@ -157,6 +160,7 @@ public class ConsumableTestDefinition {
         this.enableUnitlessAllocations = enableUnitlessAllocations;
         this.containsUnitlessAllocation = containsUnitlessAllocation;
         this.forceLogging = forceLogging;
+        this.payloadExperimentConfig = payloadExperimentConfig;
     }
 
     @Nonnull
@@ -298,6 +302,15 @@ public class ConsumableTestDefinition {
         this.forceLogging = forceLogging;
     }
 
+    @Nullable
+    public PayloadExperimentConfig getPayloadExperimentConfig() {
+        return payloadExperimentConfig;
+    }
+
+    public void setPayloadExperimentConfig(final PayloadExperimentConfig payloadExperimentConfig) {
+        this.payloadExperimentConfig = payloadExperimentConfig;
+    }
+
     @Nonnull
     public static ConsumableTestDefinition fromTestDefinition(@Nonnull final TestDefinition td) {
         final Map<String, Object> specialConstants = td.getSpecialConstants();
@@ -354,6 +367,7 @@ public class ConsumableTestDefinition {
                 td.getEvaluateForIncognitoUsers(),
                 td.getEnableUnitlessAllocations(),
                 containsUnitlessAllocation,
-                td.getForceLogging());
+                td.getForceLogging(),
+                td.getPayloadExperimentConfig());
     }
 }
