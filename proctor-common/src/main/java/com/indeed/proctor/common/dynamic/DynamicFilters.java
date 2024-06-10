@@ -32,7 +32,8 @@ public class DynamicFilters implements JsonSerializable {
                             TestNamePrefixFilter.class,
                             TestNamePatternFilter.class,
                             MetaTagsFilter.class,
-                            MatchAllFilter.class));
+                            MatchAllFilter.class,
+                            NamespacesFilter.class));
 
     private final List<DynamicFilter> filters;
 

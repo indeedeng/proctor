@@ -684,7 +684,8 @@ public abstract class AbstractGroups {
                         (SortedMap<String, Allocation>) proctorResult.getAllocations()),
                 Collections.unmodifiableMap(proctorResult.getTestDefinitions()),
                 proctorResult.getIdentifiers(),
-                Collections.unmodifiableMap(proctorResult.getInputContext()));
+                Collections.unmodifiableMap(proctorResult.getInputContext()),
+                Collections.unmodifiableMap(proctorResult.getProperties()));
     }
 
     /**
