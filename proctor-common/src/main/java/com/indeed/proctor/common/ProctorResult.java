@@ -84,7 +84,8 @@ public class ProctorResult {
      * @param buckets the resolved bucket for each test
      * @param allocations the determined allocation for each test
      * @param testDefinitions the original test definitions
-     * @deprecated this constructor creates copies of all input collections negatively effecting performance
+     * @deprecated this constructor creates copies of all input collections negatively effecting
+     *     performance
      */
     @Deprecated
     public ProctorResult(
@@ -113,7 +114,8 @@ public class ProctorResult {
      * @param allocations the determined allocation for each test
      * @param testDefinitions the original test definitions
      * @param properties the properties
-     * @deprecated this constructor creates copies of all input collections negatively effecting performance
+     * @deprecated this constructor creates copies of all input collections negatively effecting
+     *     performance
      */
     @Deprecated
     public ProctorResult(
