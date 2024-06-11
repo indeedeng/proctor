@@ -561,13 +561,17 @@ public class Proctor {
             final PayloadExperimentConfig newPayloadConfig =
                     testChoosers.get(testName).getTestDefinition().getPayloadExperimentConfig();
             // store property if it has higher priority than the currently stored property
-            if (isHigherPriority(currPayloadConfig, newPayloadConfig)) {
-                testProperties.put(
-                        field.getKey(),
-                        PayloadProperty.builder()
-                                .value(field.getValue())
-                                .testName(testName)
-                                .build());
+            try {
+                if (isHigherPriority(currPayloadConfig, newPayloadConfig)) {
+                    testProperties.put(
+                            field.getKey(),
+                            PayloadProperty.builder()
+                                    .value(field.getValue())
+                                    .testName(testName)
+                                    .build());
+                }
+            } catch (final NumberFormatException e) {
+                LOGGER.error("Failed to parse priority value to Long: ", e);
             }
         }
     }

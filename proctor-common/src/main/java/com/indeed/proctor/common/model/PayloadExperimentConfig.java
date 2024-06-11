@@ -38,6 +38,7 @@ public class PayloadExperimentConfig {
                 && payloadConfig.getPriority() != null
                 && otherPayloadConfig != null
                 && otherPayloadConfig.getPriority() != null
-                && payloadConfig.getPriority().compareTo(otherPayloadConfig.getPriority()) < 0;
+                && Long.parseLong(payloadConfig.getPriority())
+                        < Long.parseLong(otherPayloadConfig.getPriority());
     }
 }
