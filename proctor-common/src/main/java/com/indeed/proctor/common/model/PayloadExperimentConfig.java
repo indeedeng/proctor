@@ -31,14 +31,13 @@ public class PayloadExperimentConfig {
                 + '}';
     }
 
-    public static boolean isHigherPriority(
-            final PayloadExperimentConfig payloadConfig,
-            final PayloadExperimentConfig otherPayloadConfig) {
-        return payloadConfig != null
-                && payloadConfig.getPriority() != null
-                && otherPayloadConfig != null
-                && otherPayloadConfig.getPriority() != null
-                && Long.parseLong(payloadConfig.getPriority())
-                        < Long.parseLong(otherPayloadConfig.getPriority());
+    public boolean isHigherPriorityThan(final PayloadExperimentConfig otherPayloadConfig) {
+        final long currPriority =
+                this.getPriority() == null ? Long.MIN_VALUE : Long.parseLong(this.getPriority());
+        final long otherPriority =
+                otherPayloadConfig == null || otherPayloadConfig.getPriority() == null
+                        ? Long.MIN_VALUE
+                        : Long.parseLong(otherPayloadConfig.getPriority());
+        return currPriority < otherPriority;
     }
 }

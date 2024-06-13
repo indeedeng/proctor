@@ -12,7 +12,10 @@ import org.junit.Test;
 
 import java.util.List;
 
-import static java.util.Collections.*;
+import static java.util.Collections.EMPTY_LIST;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
+import static java.util.Collections.emptySet;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.Assert.assertEquals;
 
