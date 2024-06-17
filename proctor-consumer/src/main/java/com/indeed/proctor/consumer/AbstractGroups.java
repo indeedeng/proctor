@@ -324,9 +324,12 @@ public abstract class AbstractGroups {
     }
 
     public @Nullable JsonNode getProperty(final String propertyName) {
-        return Optional.ofNullable(proctorResult.getProperties().get(propertyName))
-                .map(PayloadProperty::getValue)
-                .orElse(null);
+        final Optional<PayloadProperty> payloadProperty =
+                Optional.ofNullable(proctorResult.getProperties().get(propertyName));
+
+        payloadProperty.ifPresent(p -> markTestUsed(p.getTestName()));
+
+        return payloadProperty.map(PayloadProperty::getValue).orElse(null);
     }
 
     public @Nullable <T> T getProperty(final String propertyName, final Class<T> propertyClazz) {
