@@ -212,7 +212,7 @@ public class ProctorGroupsWriter {
                         // Do not log payload experiments which were overwritten
                         if (consumableTestDefinition != null
                                 && consumableTestDefinition.getPayloadExperimentConfig() != null
-                                && proctorResult.getProperties().values().stream()
+                                && !proctorResult.getProperties().values().stream()
                                         .map(PayloadProperty::getTestName)
                                         .collect(Collectors.toSet())
                                         .contains(testName)) {

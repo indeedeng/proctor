@@ -1,12 +1,19 @@
 package com.indeed.proctor.consumer;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Ordering;
+import com.indeed.proctor.common.PayloadProperty;
 import com.indeed.proctor.common.ProctorResult;
 import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
+import com.indeed.proctor.common.model.PayloadExperimentConfig;
 import com.indeed.proctor.common.model.TestBucket;
+import com.indeed.proctor.common.model.TestDefinition;
+import com.indeed.proctor.common.model.TestType;
 import com.indeed.proctor.consumer.logging.TestGroupFormatter;
 import org.assertj.core.util.Strings;
 import org.junit.Test;
@@ -25,6 +32,8 @@ public class ProctorGroupsWriterTest {
     private static final String GROUP1_TEST_NAME = "d_foo_tst";
     private static final String SILENT_TEST_NAME = "e_silent_tst";
     private static final String FORCED_TEST_NAME = "f_forced_tst";
+    private static final String PAYLOAD_PROPERTY_TEST_NAME = "g_payload_tst";
+    private static final String WINNING_PAYLOAD_PROPERTY_TEST_NAME = "h_winning_payload_tst";
 
     // for this test, buckets can be reused between test definitions, sorting by testname
     public static final TestBucket INACTIVE_BUCKET = new TestBucket("fooname", -1, "foodesc");
@@ -46,6 +55,8 @@ public class ProctorGroupsWriterTest {
                     .put(GROUP1_TEST_NAME, GROUP1_BUCKET)
                     .put(SILENT_TEST_NAME, GROUP1_BUCKET)
                     .put(FORCED_TEST_NAME, GROUP1_BUCKET)
+                    .put(WINNING_PAYLOAD_PROPERTY_TEST_NAME, GROUP1_BUCKET)
+                    .put(PAYLOAD_PROPERTY_TEST_NAME, GROUP1_BUCKET)
                     .build();
     private static final Map<String, Allocation> ALLOCATIONS =
             new ImmutableSortedMap.Builder<String, Allocation>(Ordering.natural())
@@ -54,7 +65,34 @@ public class ProctorGroupsWriterTest {
                     .put(EMPTY_ALLOCID_DEFINITION_TEST_NAME, ALLOCATION_EMPTY_ID)
                     .put(GROUP1_TEST_NAME, ALLOCATION_A)
                     .put(SILENT_TEST_NAME, ALLOCATION_A)
+                    .put(WINNING_PAYLOAD_PROPERTY_TEST_NAME, ALLOCATION_A)
+                    .put(PAYLOAD_PROPERTY_TEST_NAME, ALLOCATION_A)
                     .build();
+
+    static final ConsumableTestDefinition PROPERTY_TD =
+            ConsumableTestDefinition.fromTestDefinition(
+                    TestDefinition.builder()
+                            .setTestType(TestType.RANDOM)
+                            .setSalt("foo")
+                            .setForceLogging(true)
+                            .setPayloadExperimentConfig(
+                                    PayloadExperimentConfig.builder()
+                                            .priority("123")
+                                            .namespaces(ImmutableList.of("test"))
+                                            .build())
+                            .build());
+    static final ConsumableTestDefinition WINNING_PROPERTY_TD =
+            ConsumableTestDefinition.fromTestDefinition(
+                    TestDefinition.builder()
+                            .setTestType(TestType.RANDOM)
+                            .setSalt("foo")
+                            .setForceLogging(true)
+                            .setPayloadExperimentConfig(
+                                    PayloadExperimentConfig.builder()
+                                            .priority("20000")
+                                            .namespaces(ImmutableList.of("test"))
+                                            .build())
+                            .build());
 
     private static final Map<String, ConsumableTestDefinition> DEFINITIONS =
             ImmutableMap.<String, ConsumableTestDefinition>builder()
@@ -63,10 +101,29 @@ public class ProctorGroupsWriterTest {
                     .put(GROUP1_TEST_NAME, stubDefinition(GROUP1_BUCKET))
                     .put(SILENT_TEST_NAME, stubDefinition(GROUP1_BUCKET, d -> d.setSilent(true)))
                     .put(FORCED_TEST_NAME, stubDefinition(GROUP1_BUCKET))
+                    .put(WINNING_PAYLOAD_PROPERTY_TEST_NAME, WINNING_PROPERTY_TD)
+                    .put(PAYLOAD_PROPERTY_TEST_NAME, PROPERTY_TD)
                     .build();
+    private static final Map<String, PayloadProperty> PROPERTIES;
+
+    static {
+        try {
+            PROPERTIES =
+                    ImmutableMap.<String, PayloadProperty>builder()
+                            .put(
+                                    "foo",
+                                    PayloadProperty.builder()
+                                            .value(new ObjectMapper().readTree("1"))
+                                            .testName(WINNING_PAYLOAD_PROPERTY_TEST_NAME)
+                                            .build())
+                            .build();
+        } catch (final JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     private static final ProctorResult PROCTOR_RESULT =
-            new ProctorResult(null, BUCKETS, ALLOCATIONS, DEFINITIONS);
+            new ProctorResult(null, BUCKETS, ALLOCATIONS, DEFINITIONS, PROPERTIES);
 
     @Test
     public void testWithEmptyResult() {
@@ -86,7 +143,7 @@ public class ProctorGroupsWriterTest {
     public void testDoubleFormattingWriter() {
         // legacy Indeed behavior
         final String expected =
-                "b_missing_definition0,c_empty_alloc_id0,d_foo_tst1,f_forced_tst1,#A:b_missing_definition0,#A:d_foo_tst1,f_forced_tst1";
+                "b_missing_definition0,c_empty_alloc_id0,d_foo_tst1,f_forced_tst1,h_winning_payload_tst1,#A:b_missing_definition0,#A:d_foo_tst1,f_forced_tst1,#A:h_winning_payload_tst1";
 
         final ProctorGroupsWriter defaultWriter =
                 new ProctorGroupsWriter.Builder(
@@ -101,9 +158,11 @@ public class ProctorGroupsWriterTest {
                                         EMPTY_ALLOCID_DEFINITION_TEST_NAME + 0,
                                         GROUP1_TEST_NAME + 1,
                                         FORCED_TEST_NAME + 1,
+                                        WINNING_PAYLOAD_PROPERTY_TEST_NAME + 1,
                                         "#A:" + MISSING_DEFINITION_TEST_NAME + 0,
                                         "#A:" + GROUP1_TEST_NAME + 1,
-                                        FORCED_TEST_NAME + 1)
+                                        FORCED_TEST_NAME + 1,
+                                        "#A:" + WINNING_PAYLOAD_PROPERTY_TEST_NAME + 1)
                                 .with(","));
     }
 
@@ -116,7 +175,8 @@ public class ProctorGroupsWriterTest {
                         .setIncludeInactiveGroups(true)
                         .build();
         assertThat(writerWithAllocIds.writeGroupsAsString(PROCTOR_RESULT))
-                .isEqualTo("#A:a_inactive_tst-1,#A:d_foo_tst1,#A:e_silent_tst1,f_forced_tst1");
+                .isEqualTo(
+                        "#A:a_inactive_tst-1,#A:d_foo_tst1,#A:e_silent_tst1,f_forced_tst1,#A:h_winning_payload_tst1");
 
         final ProctorGroupsWriter writerWithoutAllocIds =
                 new ProctorGroupsWriter.Builder(TestGroupFormatter.WITHOUT_ALLOC_ID)
@@ -124,7 +184,8 @@ public class ProctorGroupsWriterTest {
                         .setIncludeTestWithoutDefinition(false)
                         .build();
         assertThat(writerWithoutAllocIds.writeGroupsAsString(PROCTOR_RESULT))
-                .isEqualTo("c_empty_alloc_id0,d_foo_tst1,e_silent_tst1,f_forced_tst1");
+                .isEqualTo(
+                        "c_empty_alloc_id0,d_foo_tst1,e_silent_tst1,f_forced_tst1,h_winning_payload_tst1");
     }
 
     @Test
