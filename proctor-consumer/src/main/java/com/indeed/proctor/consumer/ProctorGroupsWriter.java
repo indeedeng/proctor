@@ -1,5 +1,6 @@
 package com.indeed.proctor.consumer;
 
+import com.indeed.proctor.common.PayloadProperty;
 import com.indeed.proctor.common.ProctorResult;
 import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
@@ -12,7 +13,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.BiPredicate;
+import java.util.stream.Collectors;
 
 import static com.indeed.proctor.consumer.AbstractGroups.loggableAllocation;
 
@@ -30,7 +33,7 @@ public class ProctorGroupsWriter {
     // for historic reasons, allow more than one formatter
     private final TestGroupFormatter[] formatters;
     private final BiPredicate<String, ProctorResult> testFilter;
-
+    private Set<String> winningPayloadExperiment;
     /**
      * @param groupsSeparator how elements in logged string are separated
      * @param formatters ideally only one, all groups will be logged for all formatters
@@ -71,7 +74,7 @@ public class ProctorGroupsWriter {
             initialCapacity += testName.length() + 10;
         }
         initialCapacity *= formatters.length;
-        for (String c : classifiers) {
+        for (final String c : classifiers) {
             initialCapacity += c.length() + 1;
         }
 
@@ -205,6 +208,17 @@ public class ProctorGroupsWriter {
                         if (additionalFilter != null) {
                             return additionalFilter.test(testName, proctorResult);
                         }
+
+                        // Do not log payload experiments which were overwritten
+                        if (consumableTestDefinition != null
+                                && consumableTestDefinition.getPayloadExperimentConfig() != null
+                                && proctorResult.getProperties().values().stream()
+                                        .map(PayloadProperty::getTestName)
+                                        .collect(Collectors.toSet())
+                                        .contains(testName)) {
+                            return false;
+                        }
+
                         // Suppress 100% allocation logging
                         return loggableAllocation(
                                 testName, consumableTestDefinition, proctorResult);

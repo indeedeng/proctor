@@ -487,6 +487,10 @@ public abstract class AbstractGroups {
                 proctorResult.getTestDefinitions();
         // following lines should preserve the order in the map to ensure logging values are stable
         final Map<String, TestBucket> buckets = proctorResult.getBuckets();
+        final Set<String> winningPayloadExperiments =
+                proctorResult.getProperties().values().stream()
+                        .map(PayloadProperty::getTestName)
+                        .collect(Collectors.toSet());
         return buckets.keySet().stream()
                 .filter(
                         testName -> {
@@ -496,6 +500,7 @@ public abstract class AbstractGroups {
                             return (consumableTestDefinition == null)
                                     || !consumableTestDefinition.getSilent();
                         })
+                .filter(testName -> loggablePayloadExperiment(testName, winningPayloadExperiments))
                 // Suppress 100% allocation logging
                 .filter(this::loggableAllocation)
                 // call to getValueWithouMarkingUsage() to allow overrides of getActiveBucket, but
@@ -563,6 +568,21 @@ public abstract class AbstractGroups {
     private boolean loggableAllocation(final String testName) {
         final ConsumableTestDefinition td = proctorResult.getTestDefinitions().get(testName);
         return loggableAllocation(testName, td, proctorResult);
+    }
+
+    private boolean loggablePayloadExperiment(
+            final String testName, final Set<String> validPayloadExperiments) {
+        final ConsumableTestDefinition td = proctorResult.getTestDefinitions().get(testName);
+        return loggablePayloadExperiment(testName, td, validPayloadExperiments);
+    }
+
+    public static boolean loggablePayloadExperiment(
+            final String testName,
+            @Nullable final ConsumableTestDefinition td,
+            final Set<String> validPayloadExperiments) {
+        return td == null
+                || td.getPayloadExperimentConfig() == null
+                || validPayloadExperiments.contains(testName);
     }
 
     public static boolean loggableAllocation(
