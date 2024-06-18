@@ -30,6 +30,22 @@ public class ProctorGroupStubber {
             new TestBucket("control", 0, "control", new Payload("controlPayload"));
     public static final TestBucket GROUP_1_BUCKET_WITH_PAYLOAD =
             new TestBucket("group1", 1, "group1", new Payload("activePayload"));
+
+    public static final TestBucket JSON_BUCKET;
+
+    static {
+        try {
+            JSON_BUCKET =
+                    new TestBucket(
+                            "group1",
+                            1,
+                            "group1",
+                            new Payload(new ObjectMapper().readTree("{\"foo\": 1, \"bar\": 2}")));
+        } catch (final JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static final TestBucket GROUP_1_BUCKET = new TestBucket("group1", 2, "group1");
 
     public static final TestBucket GROUP_1_BUCKET_PROPERTY_PAYLOAD;
@@ -64,7 +80,7 @@ public class ProctorGroupStubber {
     public static class ProctorResultStubBuilder {
 
         private final Map<String, ConsumableTestDefinition> definitions = new TreeMap<>();
-        private final Map<StubTest, TestBucket> resolvedBuckets = new TreeMap<>();
+        private final Map<String, TestBucket> resolvedBuckets = new TreeMap<>();
         private final Map<String, PayloadProperty> properties = new TreeMap<>();
 
         public ProctorResultStubBuilder withStubTest(
@@ -92,7 +108,7 @@ public class ProctorGroupStubber {
                 @Nullable final TestBucket resolved,
                 final ConsumableTestDefinition definition) {
             if (resolved != null) {
-                resolvedBuckets.put(stubTest, resolved);
+                resolvedBuckets.put(stubTest.getName(), resolved);
             }
             if (definition != null) {
                 definitions.put(stubTest.getName(), definition);
@@ -103,7 +119,7 @@ public class ProctorGroupStubber {
         public ProctorResultStubBuilder withStubProperty(
                 final StubTest stubTest, @Nullable final TestBucket resolved) {
             if (resolved != null) {
-                resolvedBuckets.put(stubTest, resolved);
+                resolvedBuckets.put(stubTest.getName(), resolved);
                 assert resolved.getPayload() != null;
                 assert resolved.getPayload().getJson() != null;
                 resolved.getPayload()
@@ -123,17 +139,39 @@ public class ProctorGroupStubber {
             return this;
         }
 
+        public ProctorResultStubBuilder withStubProperty(
+                final String testName,
+                final ConsumableTestDefinition td,
+                @Nullable final TestBucket resolved) {
+            if (resolved != null) {
+                definitions.put(testName, td);
+                resolvedBuckets.put(testName, resolved);
+                assert resolved.getPayload() != null;
+                assert resolved.getPayload().getJson() != null;
+                resolved.getPayload()
+                        .getJson()
+                        .fields()
+                        .forEachRemaining(
+                                field ->
+                                        properties.put(
+                                                field.getKey(),
+                                                PayloadProperty.builder()
+                                                        .testName(testName)
+                                                        .value(field.getValue())
+                                                        .build()));
+            }
+            return this;
+        }
+
         public ProctorResult build() {
             return new ProctorResult(
                     "0",
                     resolvedBuckets.entrySet().stream()
-                            .collect(
-                                    Collectors.toMap(
-                                            e -> e.getKey().getName(), Map.Entry::getValue)),
+                            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)),
                     resolvedBuckets.entrySet().stream()
                             .collect(
                                     Collectors.toMap(
-                                            e -> e.getKey().getName(),
+                                            Map.Entry::getKey,
                                             e ->
                                                     new Allocation(
                                                             null,

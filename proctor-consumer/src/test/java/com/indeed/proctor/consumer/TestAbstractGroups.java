@@ -2,6 +2,7 @@ package com.indeed.proctor.consumer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -26,6 +27,7 @@ import static com.indeed.proctor.consumer.ProctorGroupStubber.GROUP_1_BUCKET;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.GROUP_1_BUCKET_PROPERTY_PAYLOAD;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.GROUP_1_BUCKET_WITH_PAYLOAD;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.INACTIVE_BUCKET;
+import static com.indeed.proctor.consumer.ProctorGroupStubber.JSON_BUCKET;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.CONTROL_SELECTED_TEST;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.GROUP1_SELECTED_TEST;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.GROUP_WITH_FALLBACK_TEST;
@@ -233,6 +235,43 @@ public class TestAbstractGroups {
 
         assertThat((new AbstractGroups(result) {}).toVerifyGroupsString())
                 .isEqualTo("#A1:suppress_logging_example_tst0");
+    }
+
+    @Test
+    public void testToLoggingWithProperties() {
+        final ConsumableTestDefinition td =
+                ConsumableTestDefinition.fromTestDefinition(
+                        TestDefinition.builder()
+                                .setTestType(TestType.RANDOM)
+                                .setSalt("foo")
+                                .setForceLogging(true)
+                                .setPayloadExperimentConfig(
+                                        PayloadExperimentConfig.builder()
+                                                .priority("123")
+                                                .namespaces(ImmutableList.of("test"))
+                                                .build())
+                                .build());
+        final ConsumableTestDefinition tdWithHigherPriority =
+                ConsumableTestDefinition.fromTestDefinition(
+                        TestDefinition.builder()
+                                .setTestType(TestType.RANDOM)
+                                .setSalt("foo")
+                                .setForceLogging(true)
+                                .setPayloadExperimentConfig(
+                                        PayloadExperimentConfig.builder()
+                                                .priority("20000")
+                                                .namespaces(ImmutableList.of("test"))
+                                                .build())
+                                .build());
+        final ProctorResult result =
+                new ProctorGroupStubber.ProctorResultStubBuilder()
+                        .withStubProperty(CONTROL_SELECTED_TEST.getName(), td, JSON_BUCKET)
+                        .withStubProperty(
+                                PROPERTY_TEST.getName(), tdWithHigherPriority, JSON_BUCKET)
+                        .build();
+
+        assertThat((new AbstractGroups(result) {}).toLoggingString())
+                .isEqualTo("#A1:propertytest1");
     }
 
     @Test
