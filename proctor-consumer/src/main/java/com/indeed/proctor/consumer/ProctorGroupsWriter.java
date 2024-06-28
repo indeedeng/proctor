@@ -1,6 +1,5 @@
 package com.indeed.proctor.consumer;
 
-import com.indeed.proctor.common.PayloadProperty;
 import com.indeed.proctor.common.ProctorResult;
 import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
@@ -15,7 +14,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiPredicate;
-import java.util.stream.Collectors;
 
 import static com.indeed.proctor.consumer.AbstractGroups.loggableAllocation;
 
@@ -212,10 +210,10 @@ public class ProctorGroupsWriter {
                         // Do not log payload experiments which were overwritten
                         if (consumableTestDefinition != null
                                 && consumableTestDefinition.getPayloadExperimentConfig() != null
-                                && !proctorResult.getProperties().values().stream()
-                                        .map(PayloadProperty::getTestName)
-                                        .collect(Collectors.toSet())
-                                        .contains(testName)) {
+                                && proctorResult.getProperties().values().stream()
+                                        .noneMatch(
+                                                property ->
+                                                        property.getTestName().equals(testName))) {
                             return false;
                         }
 
