@@ -29,9 +29,27 @@ public class RuleVerifyUtils {
      *
      * @param shouldEvaluate if false, only checks syntax is correct
      */
+    @Deprecated
     public static void verifyRule(
             final String testRule,
             final boolean shouldEvaluate,
+            final ExpressionFactory expressionFactory,
+            final ELContext elContext,
+            final Set<String> absentIdentifiers)
+            throws InvalidRuleException {
+        verifyRule(
+                testRule,
+                shouldEvaluate
+                        ? ProvidedContext.ProvidedContextEvaluationMode.EVALUATE_WITH_CONTEXT
+                        : ProvidedContext.ProvidedContextEvaluationMode.SKIP_EVALUATION,
+                expressionFactory,
+                elContext,
+                absentIdentifiers);
+    }
+
+    public static void verifyRule(
+            final String testRule,
+            final ProvidedContext.ProvidedContextEvaluationMode evaluationMode,
             final ExpressionFactory expressionFactory,
             final ELContext elContext,
             final Set<String> absentIdentifiers)
@@ -51,7 +69,7 @@ public class RuleVerifyUtils {
                                 testRule));
             }
 
-            if (shouldEvaluate) {
+            if (evaluationMode != ProvidedContext.ProvidedContextEvaluationMode.SKIP_EVALUATION) {
                 /*
                  * must have a context to test against, even if it's "Collections.emptyMap()", how to
                  * tell if this method is used for ProctorBuilder or during load of the testMatrix.
@@ -73,17 +91,20 @@ public class RuleVerifyUtils {
                                     testRule));
                 }
 
-                // Check identifiers in the AST and verify variable names
-                final Node undefinedIdentifier =
-                        checkUndefinedIdentifier(root, elContext, absentIdentifiers);
-                if (undefinedIdentifier != null) {
-                    throw new InvalidRuleException(
-                            String.format(
-                                    "The variable %s is defined in rule %s, however it "
-                                            + "is not defined in the application's test specification. Add the variable to your application's "
-                                            + "providedContext.json or remove it from the rule, or if the application should not load your "
-                                            + "test report the issue to the Proctor team.",
-                                    undefinedIdentifier.getImage(), testRule));
+                if (evaluationMode
+                        == ProvidedContext.ProvidedContextEvaluationMode.EVALUATE_WITH_CONTEXT) {
+                    // Check identifiers in the AST and verify variable names
+                    final Node undefinedIdentifier =
+                            checkUndefinedIdentifier(root, elContext, absentIdentifiers);
+                    if (undefinedIdentifier != null) {
+                        throw new InvalidRuleException(
+                                String.format(
+                                        "The variable %s is defined in rule %s, however it "
+                                                + "is not defined in the application's test specification. Add the variable to your application's "
+                                                + "providedContext.json or remove it from the rule, or if the application should not load your "
+                                                + "test report the issue to the Proctor team.",
+                                        undefinedIdentifier.getImage(), testRule));
+                    }
                 }
 
                 // Evaluate rule with given context

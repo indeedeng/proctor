@@ -123,6 +123,22 @@ public class TestRuleVerifyUtils {
     }
 
     @Test
+    public void testVerifyRulesProctorVersion() {
+        expectInvalidRule(
+                "${version != proctor:version('213.0')}",
+                new Object[][] {
+                    {"version", ""},
+                },
+                new String[] {});
+        expectValidRule(
+                "${version != proctor:version('213.0.0.0')}",
+                new Object[][] {
+                    {"version", ""},
+                },
+                new String[] {});
+    }
+
+    @Test
     public void testValidRulesWithMethodCall() {
         expectValidRule(
                 "${browser == 'IE9' && obj.matches()}",
