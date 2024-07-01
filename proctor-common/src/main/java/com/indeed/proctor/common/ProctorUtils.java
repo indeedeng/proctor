@@ -1077,7 +1077,7 @@ public abstract class ProctorUtils {
             @Nonnull final ConsumableTestDefinition testDefinition)
             throws IncompatibleTestMatrixException {
         verifyInternallyConsistentDefinition(
-                testName, matrixSource, testDefinition, ProvidedContext.nonEvaluableContext());
+                testName, matrixSource, testDefinition, ProvidedContext.evaluableContext());
     }
 
     /**
@@ -1216,7 +1216,7 @@ public abstract class ProctorUtils {
             try {
                 RuleVerifyUtils.verifyRule(
                         rule,
-                        providedContext.shouldEvaluate(),
+                        providedContext.getEvaluationMode(),
                         expressionFactory,
                         elContext,
                         providedContext.getUninstantiatedIdentifiers());
