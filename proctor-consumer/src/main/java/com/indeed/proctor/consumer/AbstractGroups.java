@@ -1,7 +1,10 @@
 package com.indeed.proctor.consumer;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
+import com.indeed.proctor.common.PayloadProperty;
 import com.indeed.proctor.common.ProctorResult;
 import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
@@ -39,6 +42,7 @@ import java.util.stream.Collectors;
  */
 public abstract class AbstractGroups {
     private static final Logger LOGGER = LogManager.getLogger(AbstractGroups.class);
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private final ProctorResult proctorResult;
 
     // Option using injected Observer
@@ -319,6 +323,23 @@ public abstract class AbstractGroups {
         return getTestBucketWithValueOptional(proctorResult, testName, bucketValue).orElse(null);
     }
 
+    public @Nullable JsonNode getProperty(final String propertyName) {
+        final Optional<PayloadProperty> payloadProperty =
+                Optional.ofNullable(proctorResult.getProperties().get(propertyName));
+
+        payloadProperty.ifPresent(p -> markTestUsed(p.getTestName()));
+
+        return payloadProperty.map(PayloadProperty::getValue).orElse(null);
+    }
+
+    public @Nullable <T> T getProperty(final String propertyName, final Class<T> propertyClazz) {
+        try {
+            return OBJECT_MAPPER.convertValue(getProperty(propertyName), propertyClazz);
+        } catch (final IllegalArgumentException e) {
+            return null;
+        }
+    }
+
     /** @return a comma-separated String of {testname}-{active-bucket-name} for ALL tests */
     public String toLongString() {
         if (isEmpty()) {
@@ -469,6 +490,10 @@ public abstract class AbstractGroups {
                 proctorResult.getTestDefinitions();
         // following lines should preserve the order in the map to ensure logging values are stable
         final Map<String, TestBucket> buckets = proctorResult.getBuckets();
+        final Set<String> winningPayloadExperiments =
+                proctorResult.getProperties().values().stream()
+                        .map(PayloadProperty::getTestName)
+                        .collect(Collectors.toSet());
         return buckets.keySet().stream()
                 .filter(
                         testName -> {
@@ -478,6 +503,7 @@ public abstract class AbstractGroups {
                             return (consumableTestDefinition == null)
                                     || !consumableTestDefinition.getSilent();
                         })
+                .filter(testName -> loggablePayloadExperiment(testName, winningPayloadExperiments))
                 // Suppress 100% allocation logging
                 .filter(this::loggableAllocation)
                 // call to getValueWithouMarkingUsage() to allow overrides of getActiveBucket, but
@@ -545,6 +571,21 @@ public abstract class AbstractGroups {
     private boolean loggableAllocation(final String testName) {
         final ConsumableTestDefinition td = proctorResult.getTestDefinitions().get(testName);
         return loggableAllocation(testName, td, proctorResult);
+    }
+
+    private boolean loggablePayloadExperiment(
+            final String testName, final Set<String> validPayloadExperiments) {
+        final ConsumableTestDefinition td = proctorResult.getTestDefinitions().get(testName);
+        return loggablePayloadExperiment(testName, td, validPayloadExperiments);
+    }
+
+    public static boolean loggablePayloadExperiment(
+            final String testName,
+            @Nullable final ConsumableTestDefinition td,
+            final Set<String> validPayloadExperiments) {
+        return td == null
+                || td.getPayloadExperimentConfig() == null
+                || validPayloadExperiments.contains(testName);
     }
 
     public static boolean loggableAllocation(
@@ -666,7 +707,8 @@ public abstract class AbstractGroups {
                         (SortedMap<String, Allocation>) proctorResult.getAllocations()),
                 Collections.unmodifiableMap(proctorResult.getTestDefinitions()),
                 proctorResult.getIdentifiers(),
-                Collections.unmodifiableMap(proctorResult.getInputContext()));
+                Collections.unmodifiableMap(proctorResult.getInputContext()),
+                Collections.unmodifiableMap(proctorResult.getProperties()));
     }
 
     /**

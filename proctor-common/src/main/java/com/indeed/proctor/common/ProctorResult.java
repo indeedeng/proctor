@@ -30,6 +30,7 @@ public class ProctorResult {
                     emptySortedMap(),
                     emptyMap(),
                     new Identifiers(emptyMap()),
+                    emptyMap(),
                     emptyMap());
 
     private final String matrixVersion;
@@ -39,6 +40,8 @@ public class ProctorResult {
     @Nonnull private final SortedMap<String, Allocation> allocations;
     /** maps from testname to TestDefinition */
     @Nonnull private final Map<String, ConsumableTestDefinition> testDefinitions;
+
+    @Nonnull private final Map<String, PayloadProperty> properties;
 
     private final Identifiers identifiers;
 
@@ -81,7 +84,8 @@ public class ProctorResult {
      * @param buckets the resolved bucket for each test
      * @param allocations the determined allocation for each test
      * @param testDefinitions the original test definitions
-     * @deprecated this constructor creates copies of all input collections
+     * @deprecated this constructor creates copies of all input collections negatively effecting
+     *     performance
      */
     @Deprecated
     public ProctorResult(
@@ -100,6 +104,40 @@ public class ProctorResult {
                 new TreeMap<>(buckets),
                 new TreeMap<>(allocations),
                 (testDefinitions == null) ? emptyMap() : new HashMap<>(testDefinitions));
+    }
+
+    /**
+     * Create a ProctorResult with copies of the provided collections
+     *
+     * @param matrixVersion any string, used for debugging
+     * @param buckets the resolved bucket for each test
+     * @param allocations the determined allocation for each test
+     * @param testDefinitions the original test definitions
+     * @param properties the properties
+     * @deprecated this constructor creates copies of all input collections negatively effecting
+     *     performance
+     */
+    @Deprecated
+    public ProctorResult(
+            final String matrixVersion,
+            @Nonnull final Map<String, TestBucket> buckets,
+            @Nonnull final Map<String, Allocation> allocations,
+            // allowing null for historical reasons
+            @Nullable final Map<String, ConsumableTestDefinition> testDefinitions,
+            @Nonnull final Map<String, PayloadProperty> properties) {
+        // Potentially client applications might need to build ProctorResult instances in each
+        // request, and some apis
+        // have large proctorResult objects, so if teams use this constructor, this may have a
+        // noticeable
+        // impact on latency and GC, so ideally clients should avoid this constructor.
+        this(
+                matrixVersion,
+                new TreeMap<>(buckets),
+                new TreeMap<>(allocations),
+                (testDefinitions == null) ? emptyMap() : new HashMap<>(testDefinitions),
+                new Identifiers(emptyMap()),
+                emptyMap(),
+                (properties == null) ? emptyMap() : new HashMap<>(properties));
     }
 
     /**
@@ -132,6 +170,8 @@ public class ProctorResult {
      * @param buckets the resolved bucket for each test
      * @param allocations the determined allocation for each test
      * @param testDefinitions the original test definitions
+     * @param identifiers the identifiers used for determine groups
+     * @param inputContext the context variables
      */
     public ProctorResult(
             @Nonnull final String matrixVersion,
@@ -140,6 +180,35 @@ public class ProctorResult {
             @Nonnull final Map<String, ConsumableTestDefinition> testDefinitions,
             @Nonnull final Identifiers identifiers,
             @Nonnull final Map<String, Object> inputContext) {
+        this(
+                matrixVersion,
+                buckets,
+                allocations,
+                testDefinitions,
+                identifiers,
+                inputContext,
+                emptyMap());
+    }
+
+    /**
+     * Plain constructor, not creating TreeMaps.
+     *
+     * @param matrixVersion any string, used for debugging
+     * @param buckets the resolved bucket for each test
+     * @param allocations the determined allocation for each test
+     * @param testDefinitions the original test definitions
+     * @param identifiers the identifiers used for determine groups
+     * @param inputContext the context variables
+     * @param properties the aggregated properties of payload experiments
+     */
+    public ProctorResult(
+            @Nonnull final String matrixVersion,
+            @Nonnull final SortedMap<String, TestBucket> buckets,
+            @Nonnull final SortedMap<String, Allocation> allocations,
+            @Nonnull final Map<String, ConsumableTestDefinition> testDefinitions,
+            @Nonnull final Identifiers identifiers,
+            @Nonnull final Map<String, Object> inputContext,
+            @Nonnull final Map<String, PayloadProperty> properties) {
         this.matrixVersion = matrixVersion;
         this.buckets = buckets;
         this.allocations = allocations;
@@ -147,6 +216,7 @@ public class ProctorResult {
         this.identifiers = identifiers;
         this.inputContext = inputContext;
         this.hasLoggedTests = new HashSet<>();
+        this.properties = properties;
     }
 
     /**
@@ -161,7 +231,8 @@ public class ProctorResult {
                 Collections.unmodifiableSortedMap(proctorResult.allocations),
                 Collections.unmodifiableMap(proctorResult.testDefinitions),
                 proctorResult.identifiers,
-                Collections.unmodifiableMap(proctorResult.inputContext));
+                Collections.unmodifiableMap(proctorResult.inputContext),
+                Collections.unmodifiableMap(proctorResult.properties));
     }
 
     @SuppressWarnings("UnusedDeclaration")
@@ -196,6 +267,11 @@ public class ProctorResult {
     @Nonnull
     public Map<String, Object> getInputContext() {
         return inputContext;
+    }
+
+    @Nonnull
+    public Map<String, PayloadProperty> getProperties() {
+        return properties;
     }
 
     public boolean markTestAsLogged(final String test) {

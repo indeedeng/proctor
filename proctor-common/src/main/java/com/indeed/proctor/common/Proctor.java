@@ -11,6 +11,8 @@ import com.google.common.collect.Maps;
 import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.Audit;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
+import com.indeed.proctor.common.model.Payload;
+import com.indeed.proctor.common.model.PayloadExperimentConfig;
 import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.common.model.TestMatrixArtifact;
 import com.indeed.proctor.common.model.TestType;
@@ -323,6 +325,7 @@ public class Proctor {
         // this method
         final SortedMap<String, TestBucket> testGroups = new TreeMap<>();
         final SortedMap<String, Allocation> testAllocations = new TreeMap<>();
+        final SortedMap<String, PayloadProperty> testProperties = new TreeMap<>();
 
         final List<String> filteredEvaluationOrder;
         if (determineAllTests) {
@@ -400,6 +403,9 @@ public class Proctor {
 
             if (chooseResult.getTestBucket() != null) {
                 testGroups.put(testName, chooseResult.getTestBucket());
+                if (testChooser.getTestDefinition().getPayloadExperimentConfig() != null) {
+                    populateProperties(testName, chooseResult.getTestBucket(), testProperties);
+                }
             }
             if (chooseResult.getAllocation() != null) {
                 testAllocations.put(testName, chooseResult.getAllocation());
@@ -424,7 +430,8 @@ public class Proctor {
                         testAllocations,
                         testDefinitions,
                         identifiers,
-                        inputContext);
+                        inputContext,
+                        testProperties);
 
         if (resultReporter != null) {
             resultReporter.reportMetrics(result, invalidIdentifierCount);
@@ -514,5 +521,58 @@ public class Proctor {
                 .map(Object::toString)
                 .map(value -> value.equalsIgnoreCase("true"))
                 .orElse(false);
+    }
+
+    /**
+     * Aggregates properties of Payload Experiments for look up in Proctor Result. Checks Priority
+     * of Property to handle conflicting overrides of properties within namespaces. Properties are
+     * the Key:Value pairs of fields stored in JsonNode Payload type.
+     */
+    private void populateProperties(
+            final String testName,
+            final TestBucket testBucket,
+            final Map<String, PayloadProperty> testProperties) {
+        final Payload payload = testBucket.getPayload();
+        if (payload != null && payload.getJson() != null) {
+            payload.getJson()
+                    .fields()
+                    .forEachRemaining(
+                            field -> attemptStoringProperty(field, testName, testProperties));
+        }
+    }
+
+    private void attemptStoringProperty(
+            final Map.Entry<String, com.fasterxml.jackson.databind.JsonNode> field,
+            final String testName,
+            final Map<String, PayloadProperty> testProperties) {
+        final PayloadProperty curr = testProperties.get(field.getKey());
+        // store property if it does not exist in map
+        if (curr == null) {
+            testProperties.put(
+                    field.getKey(),
+                    PayloadProperty.builder().value(field.getValue()).testName(testName).build());
+        } else {
+            final PayloadExperimentConfig currPayloadConfig =
+                    testChoosers
+                            .get(curr.getTestName())
+                            .getTestDefinition()
+                            .getPayloadExperimentConfig();
+            final PayloadExperimentConfig newPayloadConfig =
+                    testChoosers.get(testName).getTestDefinition().getPayloadExperimentConfig();
+            // store property if it has higher priority than the currently stored property
+            try {
+                if (currPayloadConfig == null
+                        || currPayloadConfig.isHigherPriorityThan(newPayloadConfig)) {
+                    testProperties.put(
+                            field.getKey(),
+                            PayloadProperty.builder()
+                                    .value(field.getValue())
+                                    .testName(testName)
+                                    .build());
+                }
+            } catch (final NumberFormatException e) {
+                LOGGER.error("Failed to parse priority value to Long: ", e);
+            }
+        }
     }
 }

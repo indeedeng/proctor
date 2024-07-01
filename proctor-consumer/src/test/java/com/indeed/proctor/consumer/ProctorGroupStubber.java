@@ -1,5 +1,8 @@
 package com.indeed.proctor.consumer;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.indeed.proctor.common.PayloadProperty;
 import com.indeed.proctor.common.ProctorResult;
 import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
@@ -27,7 +30,42 @@ public class ProctorGroupStubber {
             new TestBucket("control", 0, "control", new Payload("controlPayload"));
     public static final TestBucket GROUP_1_BUCKET_WITH_PAYLOAD =
             new TestBucket("group1", 1, "group1", new Payload("activePayload"));
+
+    public static final TestBucket JSON_BUCKET;
+
+    static {
+        try {
+            JSON_BUCKET =
+                    new TestBucket(
+                            "group1",
+                            1,
+                            "group1",
+                            new Payload(new ObjectMapper().readTree("{\"foo\": 1, \"bar\": 2}")));
+        } catch (final JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static final TestBucket GROUP_1_BUCKET = new TestBucket("group1", 2, "group1");
+
+    public static final TestBucket GROUP_1_BUCKET_PROPERTY_PAYLOAD;
+
+    static {
+        try {
+            GROUP_1_BUCKET_PROPERTY_PAYLOAD =
+                    new TestBucket(
+                            "group1",
+                            2,
+                            "group1",
+                            new Payload(
+                                    new ObjectMapper()
+                                            .readTree(
+                                                    "{\"some.property\": {}, \"another.property\": [\"abc\"]}")));
+        } catch (final JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static final TestBucket FALLBACK_TEST_BUCKET =
             new TestBucket(
                     "fallbackBucket",
@@ -42,7 +80,8 @@ public class ProctorGroupStubber {
     public static class ProctorResultStubBuilder {
 
         private final Map<String, ConsumableTestDefinition> definitions = new TreeMap<>();
-        private final Map<StubTest, TestBucket> resolvedBuckets = new TreeMap<>();
+        private final Map<String, TestBucket> resolvedBuckets = new TreeMap<>();
+        private final Map<String, PayloadProperty> properties = new TreeMap<>();
 
         public ProctorResultStubBuilder withStubTest(
                 final StubTest stubTest,
@@ -69,10 +108,57 @@ public class ProctorGroupStubber {
                 @Nullable final TestBucket resolved,
                 final ConsumableTestDefinition definition) {
             if (resolved != null) {
-                resolvedBuckets.put(stubTest, resolved);
+                resolvedBuckets.put(stubTest.getName(), resolved);
             }
             if (definition != null) {
                 definitions.put(stubTest.getName(), definition);
+            }
+            return this;
+        }
+
+        public ProctorResultStubBuilder withStubProperty(
+                final StubTest stubTest, @Nullable final TestBucket resolved) {
+            if (resolved != null) {
+                resolvedBuckets.put(stubTest.getName(), resolved);
+                assert resolved.getPayload() != null;
+                assert resolved.getPayload().getJson() != null;
+                resolved.getPayload()
+                        .getJson()
+                        .fields()
+                        .forEachRemaining(
+                                field ->
+                                        properties.put(
+                                                field.getKey(),
+                                                PayloadProperty.builder()
+                                                        .testName(stubTest.getName())
+                                                        .value(field.getValue())
+                                                        .build()));
+                definitions.put(
+                        stubTest.getName(), stubDefinitionWithVersion(false, "v1", resolved));
+            }
+            return this;
+        }
+
+        public ProctorResultStubBuilder withStubProperty(
+                final String testName,
+                final ConsumableTestDefinition td,
+                @Nullable final TestBucket resolved) {
+            if (resolved != null) {
+                definitions.put(testName, td);
+                resolvedBuckets.put(testName, resolved);
+                assert resolved.getPayload() != null;
+                assert resolved.getPayload().getJson() != null;
+                resolved.getPayload()
+                        .getJson()
+                        .fields()
+                        .forEachRemaining(
+                                field ->
+                                        properties.put(
+                                                field.getKey(),
+                                                PayloadProperty.builder()
+                                                        .testName(testName)
+                                                        .value(field.getValue())
+                                                        .build()));
             }
             return this;
         }
@@ -81,13 +167,11 @@ public class ProctorGroupStubber {
             return new ProctorResult(
                     "0",
                     resolvedBuckets.entrySet().stream()
-                            .collect(
-                                    Collectors.toMap(
-                                            e -> e.getKey().getName(), Map.Entry::getValue)),
+                            .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)),
                     resolvedBuckets.entrySet().stream()
                             .collect(
                                     Collectors.toMap(
-                                            e -> e.getKey().getName(),
+                                            Map.Entry::getKey,
                                             e ->
                                                     new Allocation(
                                                             null,
@@ -96,7 +180,8 @@ public class ProctorGroupStubber {
                                                                             e.getValue().getValue(),
                                                                             1.0)),
                                                             "#A1"))),
-                    definitions);
+                    definitions,
+                    properties);
         }
     }
 
@@ -150,7 +235,8 @@ public class ProctorGroupStubber {
         MISSING_DEFINITION_TEST("no_definition_tst", -1),
         SILENT_TEST("silent_tst", -1),
 
-        NO_BUCKETS_WITH_FALLBACK_TEST("nobucketfallbacktst", -1);
+        NO_BUCKETS_WITH_FALLBACK_TEST("nobucketfallbacktst", -1),
+        PROPERTY_TEST("propertytest", -1);
 
         private final String name;
         private final int fallbackValue;

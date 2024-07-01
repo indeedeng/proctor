@@ -29,6 +29,11 @@ dependencies {
     testImplementation libs.annotationApi
     testImplementation libs.mockito
     testImplementation libs.jsr305
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
+
+    testCompileOnly libs.lombok
+    testAnnotationProcessor libs.lombok
 }
 
 // Need to remove all dependenceis that get added or will cause issues upstream when projects include

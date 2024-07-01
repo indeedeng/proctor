@@ -1,5 +1,8 @@
 package com.indeed.proctor.consumer;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -21,14 +24,17 @@ import static com.indeed.proctor.consumer.ProctorGroupStubber.FALLBACK_BUCKET;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.FALLBACK_NOPAYLOAD_BUCKET;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.FALLBACK_TEST_BUCKET;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.GROUP_1_BUCKET;
+import static com.indeed.proctor.consumer.ProctorGroupStubber.GROUP_1_BUCKET_PROPERTY_PAYLOAD;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.GROUP_1_BUCKET_WITH_PAYLOAD;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.INACTIVE_BUCKET;
+import static com.indeed.proctor.consumer.ProctorGroupStubber.JSON_BUCKET;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.CONTROL_SELECTED_TEST;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.GROUP1_SELECTED_TEST;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.GROUP_WITH_FALLBACK_TEST;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.INACTIVE_SELECTED_TEST;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.MISSING_DEFINITION_TEST;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.NO_BUCKETS_WITH_FALLBACK_TEST;
+import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.PROPERTY_TEST;
 import static com.indeed.proctor.consumer.ProctorGroupStubber.StubTest.SUPPRESS_LOGGING_TST;
 import static java.util.Collections.emptyMap;
 import static java.util.Collections.singleton;
@@ -93,6 +99,7 @@ public class TestAbstractGroups {
                                 ProctorGroupStubber.StubTest.MISSING_DEFINITION_TEST,
                                 GROUP_1_BUCKET,
                                 (ConsumableTestDefinition) null)
+                        .withStubProperty(PROPERTY_TEST, GROUP_1_BUCKET_PROPERTY_PAYLOAD)
                         .build();
         observer = new TestMarkingObserver(proctorResult);
         sampleGroups = new AbstractGroups(proctorResult, observer) {};
@@ -164,6 +171,16 @@ public class TestAbstractGroups {
     }
 
     @Test
+    public void testGetProperty() throws JsonProcessingException {
+        final ObjectMapper ob = new ObjectMapper();
+        assertThat(sampleGroups.getProperty("another.property", String[].class))
+                .isEqualTo(new String[] {"abc"});
+        assertThat(sampleGroups.getProperty("another.property"))
+                .isEqualTo(ob.readTree("[\"abc\"]"));
+        assertThat(sampleGroups.getProperty("some.property")).isEqualTo(ob.readTree("{}"));
+    }
+
+    @Test
     public void testIsEmpty() {
         assertThat(emptyGroup.isEmpty()).isTrue();
         assertThat(sampleGroups.isEmpty()).isFalse();
@@ -174,7 +191,7 @@ public class TestAbstractGroups {
         assertThat(emptyGroup.toLongString()).isEmpty();
         assertThat(sampleGroups.toLongString())
                 .isEqualTo(
-                        "abtst-group1,bgtst-control,btntst-inactive,groupwithfallbacktst-group1,no_definition_tst-group1,suppress_logging_example_tst-control");
+                        "abtst-group1,bgtst-control,btntst-inactive,groupwithfallbacktst-group1,no_definition_tst-group1,propertytest-group1,suppress_logging_example_tst-control");
     }
 
     @Test
@@ -218,6 +235,43 @@ public class TestAbstractGroups {
 
         assertThat((new AbstractGroups(result) {}).toVerifyGroupsString())
                 .isEqualTo("#A1:suppress_logging_example_tst0");
+    }
+
+    @Test
+    public void testToLoggingWithProperties() {
+        final ConsumableTestDefinition td =
+                ConsumableTestDefinition.fromTestDefinition(
+                        TestDefinition.builder()
+                                .setTestType(TestType.RANDOM)
+                                .setSalt("foo")
+                                .setForceLogging(true)
+                                .setPayloadExperimentConfig(
+                                        PayloadExperimentConfig.builder()
+                                                .priority("123")
+                                                .namespaces(ImmutableList.of("test"))
+                                                .build())
+                                .build());
+        final ConsumableTestDefinition tdWithHigherPriority =
+                ConsumableTestDefinition.fromTestDefinition(
+                        TestDefinition.builder()
+                                .setTestType(TestType.RANDOM)
+                                .setSalt("foo")
+                                .setForceLogging(true)
+                                .setPayloadExperimentConfig(
+                                        PayloadExperimentConfig.builder()
+                                                .priority("20000")
+                                                .namespaces(ImmutableList.of("test"))
+                                                .build())
+                                .build());
+        final ProctorResult result =
+                new ProctorGroupStubber.ProctorResultStubBuilder()
+                        .withStubProperty(CONTROL_SELECTED_TEST.getName(), td, JSON_BUCKET)
+                        .withStubProperty(
+                                PROPERTY_TEST.getName(), tdWithHigherPriority, JSON_BUCKET)
+                        .build();
+
+        assertThat((new AbstractGroups(result) {}).toLoggingString())
+                .isEqualTo("#A1:propertytest1");
     }
 
     @Test
@@ -362,7 +416,7 @@ public class TestAbstractGroups {
 
     @Test
     public void testAppendTestGroups() {
-        StringBuilder builder = new StringBuilder();
+        final StringBuilder builder = new StringBuilder();
         sampleGroups.appendTestGroups(builder, ',');
         assertThat(builder.toString().split(","))
                 .containsExactlyInAnyOrder(
@@ -378,11 +432,12 @@ public class TestAbstractGroups {
         assertThat(emptyGroup.getJavaScriptConfig()).hasSize(0);
 
         assertThat(sampleGroups.getJavaScriptConfig())
-                .hasSize(5)
+                .hasSize(6)
                 .containsEntry(GROUP1_SELECTED_TEST.getName(), 1)
                 .containsEntry(CONTROL_SELECTED_TEST.getName(), 0)
                 .containsEntry(GROUP_WITH_FALLBACK_TEST.getName(), 2)
                 .containsEntry(MISSING_DEFINITION_TEST.getName(), 2)
+                .containsEntry(PROPERTY_TEST.getName(), 2)
                 .containsEntry(SUPPRESS_LOGGING_TST.getName(), 0);
     }
 

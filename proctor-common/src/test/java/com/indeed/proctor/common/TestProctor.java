@@ -1,5 +1,6 @@
 package com.indeed.proctor.common;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Splitter;
@@ -10,6 +11,8 @@ import com.google.common.collect.Maps;
 import com.indeed.proctor.common.model.Allocation;
 import com.indeed.proctor.common.model.Audit;
 import com.indeed.proctor.common.model.ConsumableTestDefinition;
+import com.indeed.proctor.common.model.Payload;
+import com.indeed.proctor.common.model.PayloadExperimentConfig;
 import com.indeed.proctor.common.model.Range;
 import com.indeed.proctor.common.model.TestBucket;
 import com.indeed.proctor.common.model.TestDefinition;
@@ -917,6 +920,216 @@ public class TestProctor {
                 .containsEntry("bar", testDefinition_incognito)
                 .containsEntry("ignore", testDefinition_nonIncognito)
                 .containsEntry("ignore2", testDefinition_nonIncognito);
+    }
+
+    @Test
+    public void testDetermineTestGroups_withProperty() throws JsonProcessingException {
+        final JsonNode p1 = new ObjectMapper().readTree("{\"key1\": 1, \"key2\": \"abc\"}");
+        final JsonNode p2 =
+                new ObjectMapper()
+                        .readTree("{\"some.property\": {}, \"another.property\": [\"abc\"]}");
+        final TestBucket inactiveBucket = new TestBucket("inactive", -1, "", new Payload(p1));
+        final TestBucket controlBucket = new TestBucket("control", 0, "", new Payload(p2));
+        final TestBucket activeBucket = new TestBucket("active", 1, "", new Payload(p1));
+        final Allocation allocationX = new Allocation("", ImmutableList.of(new Range(1, 1.0)));
+        final Allocation allocationY = new Allocation("", ImmutableList.of(new Range(0, 1.0)));
+
+        final ConsumableTestDefinition testDefinition1 =
+                ConsumableTestDefinition.fromTestDefinition(
+                        TestDefinition.builder()
+                                .setSalt("&X")
+                                .setTestType(TestType.ANONYMOUS_USER)
+                                .addBuckets(inactiveBucket, controlBucket, activeBucket)
+                                .addAllocations(allocationX)
+                                .setPayloadExperimentConfig(
+                                        PayloadExperimentConfig.builder()
+                                                .namespaces(ImmutableList.of("foobar"))
+                                                .priority("1")
+                                                .build())
+                                .build());
+        final ConsumableTestDefinition testDefinition2 =
+                ConsumableTestDefinition.fromTestDefinition(
+                        TestDefinition.builder()
+                                .setSalt("&Y")
+                                .setTestType(TestType.ANONYMOUS_USER)
+                                .addBuckets(inactiveBucket, controlBucket, activeBucket)
+                                .addAllocations(allocationY)
+                                .setPayloadExperimentConfig(
+                                        PayloadExperimentConfig.builder()
+                                                .namespaces(ImmutableList.of("foobar"))
+                                                .priority("1")
+                                                .build())
+                                .build());
+
+        final Map<String, ConsumableTestDefinition> tests =
+                ImmutableMap.of(
+                        "foo", testDefinition1,
+                        "bar", testDefinition2);
+        final TestMatrixArtifact matrix = new TestMatrixArtifact();
+        matrix.setTests(tests);
+        matrix.setAudit(new Audit());
+
+        final Proctor proctor =
+                Proctor.construct(
+                        matrix,
+                        ProctorLoadResult.emptyResult(),
+                        RuleEvaluator.defaultFunctionMapperBuilder().build());
+
+        final ProctorResult proctorResult =
+                proctor.determineTestGroups(
+                        Identifiers.of(TestType.ANONYMOUS_USER, "cookie"),
+                        Collections.emptyMap(),
+                        ForceGroupsOptions.builder().build(),
+                        Collections.emptyList());
+
+        assertThat(proctorResult.getBuckets())
+                .containsOnlyKeys("foo", "bar")
+                .containsEntry("foo", activeBucket)
+                .containsEntry("bar", controlBucket);
+        assertThat(proctorResult.getAllocations()).containsOnlyKeys("foo", "bar");
+        assertThat(proctorResult.getTestDefinitions())
+                .containsOnlyKeys("foo", "bar")
+                .containsEntry("foo", testDefinition1)
+                .containsEntry("bar", testDefinition2);
+        assertThat(proctorResult.getProperties())
+                .containsOnlyKeys("key1", "key2", "some.property", "another.property")
+                .containsEntry(
+                        "key1",
+                        PayloadProperty.builder().value(p1.get("key1")).testName("foo").build())
+                .containsEntry(
+                        "key2",
+                        PayloadProperty.builder().value(p1.get("key2")).testName("foo").build())
+                .containsEntry(
+                        "some.property",
+                        PayloadProperty.builder()
+                                .value(p2.get("some.property"))
+                                .testName("bar")
+                                .build())
+                .containsEntry(
+                        "another.property",
+                        PayloadProperty.builder()
+                                .value(p2.get("another.property"))
+                                .testName("bar")
+                                .build());
+        ;
+    }
+
+    @Test
+    public void testDetermineTestGroups_withPropertyAndPriority() throws JsonProcessingException {
+        final JsonNode p1 = new ObjectMapper().readTree("{\"key1\": 1, \"key2\": \"abc\"}");
+        final JsonNode p2 =
+                new ObjectMapper()
+                        .readTree(
+                                "{\"key1\": 2, \"some.property\": {}, \"another.property\": [\"abc\"]}");
+        final JsonNode p3 = new ObjectMapper().readTree("{\"some.property\": {\"sub\": 123}}");
+        final TestBucket inactiveBucket = new TestBucket("inactive", -1, "", new Payload(p3));
+        final TestBucket controlBucket = new TestBucket("control", 0, "", new Payload(p2));
+        final TestBucket activeBucket = new TestBucket("active", 1, "", new Payload(p1));
+        final Allocation allocation1 = new Allocation("", ImmutableList.of(new Range(1, 1.0)));
+        final Allocation allocation2 = new Allocation("", ImmutableList.of(new Range(0, 1.0)));
+        final Allocation allocation3 = new Allocation("", ImmutableList.of(new Range(-1, 1.0)));
+
+        final ConsumableTestDefinition testDefinition1 =
+                ConsumableTestDefinition.fromTestDefinition(
+                        TestDefinition.builder()
+                                .setSalt("&X")
+                                .setTestType(TestType.ANONYMOUS_USER)
+                                .addBuckets(inactiveBucket, controlBucket, activeBucket)
+                                .addAllocations(allocation1)
+                                .setPayloadExperimentConfig(
+                                        PayloadExperimentConfig.builder()
+                                                .namespaces(ImmutableList.of("foobar"))
+                                                .priority("1")
+                                                .build())
+                                .build());
+        final ConsumableTestDefinition testDefinition2 =
+                ConsumableTestDefinition.fromTestDefinition(
+                        TestDefinition.builder()
+                                .setSalt("&Y")
+                                .setTestType(TestType.ANONYMOUS_USER)
+                                .addBuckets(inactiveBucket, controlBucket, activeBucket)
+                                .addAllocations(allocation2)
+                                .setPayloadExperimentConfig(
+                                        PayloadExperimentConfig.builder()
+                                                .namespaces(ImmutableList.of("foobar"))
+                                                .priority("2")
+                                                .build())
+                                .build());
+
+        final ConsumableTestDefinition testDefinition3 =
+                ConsumableTestDefinition.fromTestDefinition(
+                        TestDefinition.builder()
+                                .setSalt("&Y")
+                                .setTestType(TestType.ANONYMOUS_USER)
+                                .addBuckets(inactiveBucket, controlBucket, activeBucket)
+                                .addAllocations(allocation3)
+                                .setPayloadExperimentConfig(
+                                        PayloadExperimentConfig.builder()
+                                                .namespaces(ImmutableList.of("foobar"))
+                                                .priority("3")
+                                                .build())
+                                .build());
+
+        final Map<String, ConsumableTestDefinition> tests =
+                ImmutableMap.of(
+                        "foo", testDefinition1,
+                        "bar", testDefinition2,
+                        "baz", testDefinition3);
+        final TestMatrixArtifact matrix = new TestMatrixArtifact();
+        matrix.setTests(tests);
+        matrix.setAudit(new Audit());
+
+        final Proctor proctor =
+                Proctor.construct(
+                        matrix,
+                        ProctorLoadResult.emptyResult(),
+                        RuleEvaluator.defaultFunctionMapperBuilder().build());
+
+        final ProctorResult proctorResult =
+                proctor.determineTestGroups(
+                        Identifiers.of(TestType.ANONYMOUS_USER, "cookie"),
+                        Collections.emptyMap(),
+                        ForceGroupsOptions.builder().build(),
+                        Collections.emptyList());
+
+        assertThat(proctorResult.getBuckets())
+                .containsOnlyKeys("foo", "bar", "baz")
+                .containsEntry("foo", activeBucket)
+                .containsEntry("bar", controlBucket)
+                .containsEntry("baz", inactiveBucket);
+        assertThat(proctorResult.getAllocations()).containsOnlyKeys("foo", "bar", "baz");
+        assertThat(proctorResult.getTestDefinitions())
+                .containsOnlyKeys("foo", "bar", "baz")
+                .containsEntry("foo", testDefinition1)
+                .containsEntry("bar", testDefinition2)
+                .containsEntry("baz", testDefinition3);
+        assertThat(proctorResult.getProperties())
+                .containsOnlyKeys("key1", "key2", "some.property", "another.property")
+                .containsEntry(
+                        "key1",
+                        PayloadProperty.builder()
+                                .value(new ObjectMapper().readTree("2"))
+                                .testName("bar")
+                                .build())
+                .containsEntry(
+                        "key2",
+                        PayloadProperty.builder()
+                                .value(new ObjectMapper().readTree("\"abc\""))
+                                .testName("foo")
+                                .build())
+                .containsEntry(
+                        "some.property",
+                        PayloadProperty.builder()
+                                .value(new ObjectMapper().readTree("{\"sub\": 123}"))
+                                .testName("baz")
+                                .build())
+                .containsEntry(
+                        "another.property",
+                        PayloadProperty.builder()
+                                .value(new ObjectMapper().readTree("[\"abc\"]"))
+                                .testName("bar")
+                                .build());
+        ;
     }
 
     private static TestMatrixArtifact createTestMatrixWithOneRandomTest(final String testName) {
