@@ -9,9 +9,6 @@ Proctor is a A/B testing framework written in Java that enables [data-driven pro
 
 Proctor consists of data-model, client specification, client loader, matrix builder, java code generator.
 
-**Build Status**
-[![Build Status](https://travis-ci.org/indeedeng/proctor.svg?branch=master)](https://travis-ci.org/indeedeng/proctor)
-
 # Features:
 - consistent tests across multiple applications
 - group assignment adjustments without code deploys
