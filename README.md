@@ -2,12 +2,12 @@
 
 ![Lifecycle](https://img.shields.io/osslifecycle/indeedeng/proctor.svg)
 
+NOTE: Indeed has discontinued supporting this project. Archiving will take place on 7/10/24.
+If you are interested in taking over as the Maintainer, please contact Indeed at opensource@indeed.com
+
 Proctor is a A/B testing framework written in Java that enables [data-driven product design](https://engineering.indeedblog.com/talks/data-driven-product-design/) at Indeed.
 
 Proctor consists of data-model, client specification, client loader, matrix builder, java code generator.
-
-**Build Status**
-[![Build Status](https://travis-ci.org/indeedeng/proctor.svg?branch=master)](https://travis-ci.org/indeedeng/proctor)
 
 # Features:
 - consistent tests across multiple applications
