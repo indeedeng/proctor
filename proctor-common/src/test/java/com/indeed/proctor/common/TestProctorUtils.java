@@ -473,6 +473,22 @@ public class TestProctorUtils {
                                 "-1:0.25,0:0.5,1:0.25"));
         verifyInternallyConsistentDefinition(
                 "testELevalProctor", "test el recognition", testDefVal1);
+
+        // testing valid functions pass with proctor included functions (will throw exception if
+        // can't find) and backwards compatibility
+        final ConsumableTestDefinition testDefVal2 =
+                constructDefinition(
+                        buckets,
+                        fromCompactAllocationFormat(
+                                "${proctor:version('213.0')=='2.0.0.0'}|-1:0.5,0:0.5,1:0.0",
+                                "-1:0.25,0:0.5,1:0.25"));
+        assertThatThrownBy(
+                        () ->
+                                verifyInternallyConsistentDefinition(
+                                        "testELevalProctor", "test el recognition", testDefVal2))
+                .isInstanceOf(IncompatibleTestMatrixException.class)
+                .hasMessage(
+                        "Invalid allocation rule in testELevalProctor: Failed to evaluate a rule ${proctor:version('213.0')=='2.0.0.0'}: Problems calling function [proctor:version]");
     }
 
     @Test
