@@ -17,6 +17,6 @@ jobs:
         with:
           java-version: '11'
           distribution: 'zulu'
-      - uses: gradle/gradle-build-action@v2.0.1
+      - uses: gradle/gradle-build-action@v2.4.2
         with:
           arguments: check
